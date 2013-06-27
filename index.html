@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Babylon Engine for HTML5</title>
+    <link href="index.css" rel="stylesheet" />
+    <script src="hand.js"></script>
+    <script src="Babylon/Tools/babylon.math.js"></script>
+    <script src="Babylon/Tools/babylon.tools.js"></script>
+    <script src="Babylon/babylon.engine.js"></script>
+    <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
+    <script src="Babylon/Culling/babylon.boundingBox.js"></script>
+    <script src="Babylon/Culling/babylon.boundingInfo.js"></script>
+    <script src="Babylon/Lights/babylon.light.js"></script>
+    <script src="Babylon/Lights/babylon.pointLight.js"></script>
+    <script src="Babylon/Lights/babylon.directionalLight.js"></script>
+    <script src="Babylon/Collisions/babylon.collisionPlane.js"></script>
+    <script src="Babylon/Collisions/babylon.collider.js"></script>
+    <script src="Babylon/Cameras/babylon.camera.js"></script>
+    <script src="Babylon/Cameras/babylon.freeCamera.js"></script>
+    <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
+    <script src="Babylon/Cameras/babylon.arcRotateCamera.js"></script>
+    <script src="Babylon/babylon.scene.js"></script>
+    <script src="Babylon/Mesh/babylon.mesh.js"></script>
+    <script src="Babylon/Mesh/babylon.subMesh.js"></script>
+    <script src="Babylon/Materials/textures/babylon.baseTexture.js"></script>
+    <script src="Babylon/Materials/textures/babylon.texture.js"></script>
+    <script src="Babylon/Materials/textures/babylon.cubeTexture.js"></script>
+    <script src="Babylon/Materials/textures/babylon.renderTargetTexture.js"></script>
+    <script src="Babylon/Materials/textures/babylon.mirrorTexture.js"></script>
+    <script src="Babylon/Materials/textures/babylon.dynamicTexture.js"></script>
+    <script src="Babylon/Materials/babylon.effect.js"></script>
+    <script src="Babylon/Materials/babylon.material.js"></script>
+    <script src="Babylon/Materials/babylon.standardMaterial.js"></script>
+    <script src="Babylon/Materials/babylon.multiMaterial.js"></script>
+    <script src="Babylon/Tools/babylon.sceneLoader.js"></script>
+    <script src="Babylon/Sprites/babylon.spriteManager.js"></script>
+    <script src="Babylon/Sprites/babylon.sprite.js"></script>
+    <script src="Babylon/Layer/babylon.layer.js"></script>
+    <script src="Babylon/Particles/babylon.particle.js"></script>
+    <script src="Babylon/Particles/babylon.particleSystem.js"></script>
+    <script src="Babylon/Animations/babylon.animation.js"></script>
+    <script src="Babylon/Animations/babylon.animatable.js"></script>
+<!--    <script src="babylon.js"></script>-->
+    <script src="test.js"></script>
+    <script src="lights_test.js"></script>
+    <script src="index.js"></script>
+</head>
+<body onload="onload();">
+    <div id="rootDiv">
+        <div id="screen1">
+            <div id="menuPanel">
+                <br/>
+                <div id="title3">* Warning: <i>IE11 WebGL</i> support is still in <b>preview stage</b> and some rendering may be incorrect *</div>
+                <div id="items"></div>
+            </div>
+            <img id="back" src="Assets/BandeauEmbleme.png" />
+            <img id="mainTitle" src="Assets/Logo.png" />
+            
+            <div id="gradient"></div>
+
+            <div id="title0">WEBGL.</div>
+            <div id="title1">SIMPLE.</div>
+            <div id="title2">POWERFUL.</div>
+
+            <div id="downloadText">DOWNLOAD</div>
+            <a href="babylon.zip">
+                <img id="downloadLink" src="Assets/BtnDownload.png" class="button" /></a>
+            <div id="aboutText">ABOUT</div>
+            <img id="aboutLink" src="Assets/BtnAbout.png" class="button" />
+
+        </div>
+        <div id="aboutPanel">
+            <div id="aboutParagraph">
+                <h1>Credits</h1>
+                <p>
+                    <i>3D engine:</i> David <b>CATUHE</b> (<a href="http://www.twitter.com/@deltakosh">@deltakosh</a>)<br />
+                    <i>Scenes:</i> Michel <b>ROUSSEAU</b> (<a href="http://www.twitter.com/@rousseau_michel">@rousseau_michel</a>)<br />
+                    <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
+                    <i>Game FX:</i> Sébastien <b>PERTUS</b> (<a href="http://www.twitter.com/@sebastienpertus">@sebastienpertus</a>)<br />
+                    <i>Game FX:</i> David <b>ROUSSE</b>T (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
+                </p>
+                <h1>About babylon.js</h1>
+                <p>
+                    Babylon.js is a <b>webgl</b> / <b>javascript</b> 3D engine.
+                    It supports the following features:
+                    <ul>
+                        <li>Complete scene graph with lights, cameras, materials and meshes</li>
+                        <li>Standard material is a <b>per pixel</b> material that supports:
+                            <ul>
+                                <li>Diffuse lightning and texture</li>
+                                <li>Ambient lightning and texture</li>
+                                <li>Specular lightning</li>
+                                <li>Opacity texture</li>
+                                <li>Reflection texture (Spheric, planar, cubic and projection)</li>
+                                <li><b>Mirror texture</b></li>
+                                <li><b>Emissive texture</b></li>
+                                <li><b>Specular texture</b></li>
+                                <li>Up to 4 lights (point or directional)</li>
+                            </ul>
+                        </li>
+                        <li>Render target textures</li>
+                        <li>Dynamic textures (canvas)</li>
+                        <li>Custom materials</li>
+                        <li>Alpha blending</li>
+                        <li>Alpha testing</li>
+                        <li>Billboarding</li>
+                        <li>Scene picking</li>
+                        <li><b>Collisions engine</b></li>
+                        <li>Cameras:
+                            <ul>
+                                <li>Arc rotate camera</li>
+                                <li>Free camera</li>
+                                <li><b>Tocuh camera</b></li>
+                            </ul>
+                        </li>
+                        <li>Frustum clipping</li>
+                        <li>Sub-meshes clipping</li>
+                        <li><b>Fullscreen mode</b></li>
+                        <li>Babylon file format is a JSON file that can be produced from:
+                            <ul>
+                                <li>.OBJ</li>
+                                <li>.FBX</li>
+                                <li>.MXB</li>
+                                <li>Blender</li>
+                            </ul>
+                        </li>
+                        <li>Hardware scaling</li>
+                        <li>Antialiasing</li>
+                        <li><b>Particles Systems</b></li>
+                        <li>Mesh cloning</li>
+                        <li><b>Animations engine</b></li>
+                        <li>Sprites and 2D layers</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+        <div id="opacityMask" class="hidden"></div>
+        <div id="renderZone" class="movedRight">
+            <canvas id="renderCanvas"></canvas>
+            <div id="fps"></div>
+            <div id="stats"></div>
+            <div id="status"></div>
+            <div id="controlPanel">
+                <div id="controlsZone">
+                    <div id="leftPart">
+                        <p>
+                            <input type="checkbox" id="wireframe" />Wireframe
+                        </p>
+                        <p>
+                            <input type="checkbox" id="enableStats" checked="true" />Statistics<br />
+                        </p>
+                        <p>
+                            <input type="checkbox" id="collisions" checked="true" />Collisions<br />
+                        </p>
+                        <p>
+                            <button id="fullscreen">Switch fullscreen mode</button>
+                        </p>
+                    </div>
+                    <div id="rightPart">
+                        <p>
+                            Hardware scaling:
+                            <select id="hardwareScalingLevel">
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                            </select>
+                        </p>
+                        <p id="extensions"></p>
+                    </div>
+                </div>
+                <div class="tag">Control panel</div>
+                <div class="tag" id="clickableTag"></div>
+            </div>
+        </div>
+        <div id="notSupported" class="hidden">Sorry but your browser does not support WebGL...</div>
+        <div id="loadingBack" class="loadingBack"></div>
+        <div id="loadingText" class="loadingText"></div>
+    </div>
+</body>
+</html>
