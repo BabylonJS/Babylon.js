@@ -21,7 +21,8 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
 - Billboarding
 - Scene picking
 - Collisions engine
-- Cameras: ◦Arc rotate camera
+- Cameras: 
+ - Arc rotate camera
  - Free camera
  - Tocuh camera
 - Frustum clipping
