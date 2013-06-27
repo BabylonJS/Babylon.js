@@ -1,0 +1,89 @@
+﻿var BABYLON = BABYLON || {};
+
+(function () {
+    BABYLON.BaseTexture = function (url, scene) {
+        this._scene = scene;
+        this._scene.textures.push(this);
+    };
+    
+    // Members
+    BABYLON.BaseTexture.prototype.hasAlpha = false;
+    BABYLON.BaseTexture.prototype.level = 1;
+    BABYLON.BaseTexture.prototype._texture = null;
+    
+    BABYLON.BaseTexture.prototype.onDispose = null;
+
+    // Properties
+    BABYLON.BaseTexture.prototype.getInternalTexture = function () {
+        return this._texture;
+    };
+    
+    BABYLON.BaseTexture.prototype.isReady = function () {
+        return (this._texture !== undefined && this._texture.isReady);
+    };
+
+    // Methods
+    BABYLON.BaseTexture.prototype.getSize = function() {
+        if (this._texture._width) {
+            return { width: this._texture._width, height: this._texture._height };
+        }
+                    
+        if (this._texture._size) {
+            return { width: this._texture._size, height: this._texture._size };
+        }
+                        
+        return { width: 0, height: 0 };
+    };
+    
+    BABYLON.BaseTexture.prototype.getBaseSize = function () {
+        if (!this.isReady())
+            return { width: 0, height: 0 };
+
+        if (this._texture._size) {
+            return { width: this._texture._size, height: this._texture._size };
+        }
+
+        return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+    };
+    
+    BABYLON.BaseTexture.prototype._getFromCache = function (url, noMipmap) {
+        var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+        for (var index = 0; index < texturesCache.length; index++) {
+            var texturesCacheEntry = texturesCache[index];
+
+            if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                texturesCacheEntry.references++;
+                return texturesCacheEntry;
+            }
+        }
+
+        return null;
+    };
+
+    BABYLON.BaseTexture.prototype.dispose = function () {
+        if (this._texture === undefined) {
+            return;
+        }
+        var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+        this._texture.references--;
+        
+        // Remove from scene
+        var index = this._scene.textures.indexOf(this);
+        this._scene.textures.splice(index, 1);
+        
+        // Final reference ?
+        if (this._texture.references == 0) {
+            var index = texturesCache.indexOf(this._texture);
+            texturesCache.splice(index, 1);
+
+            this._scene.getEngine()._releaseTexture(this._texture);
+
+            delete this._texture;
+        }
+        
+        // Callback
+        if (this.onDispose) {
+            this.onDispose();
+        }
+    };
+})();
