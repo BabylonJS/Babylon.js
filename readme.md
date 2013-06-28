@@ -24,7 +24,7 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
 - Cameras: 
  - Arc rotate camera
  - Free camera
- - Tocuh camera
+ - Touch camera
 - Frustum clipping
 - Sub-meshes clipping
 - Fullscreen mode
@@ -72,10 +72,6 @@ A "contributor" is any person that distributes its contribution under this licen
 (D) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
 
 (E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
-
-### Contributors
-
-- David Catuhe (@deltakosh)
 
 ### External dependencies
 - hand.js: http://handjs.codeplex.com

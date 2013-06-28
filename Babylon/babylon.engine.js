@@ -110,7 +110,7 @@
     };
 
     BABYLON.Engine.prototype.runRenderLoop = function (renderFunction) {
-        this._runningLoop = true
+        this._runningLoop = true;
         var that = this;
 
         var loop = function () {
