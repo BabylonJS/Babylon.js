@@ -628,7 +628,7 @@
     ////////////////////////////////// Matrix //////////////////////////////////
 
     BABYLON.Matrix = function () {
-        this.m = [];
+        this.m = new Array(16);
     };
 
     // Properties

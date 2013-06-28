@@ -105,6 +105,32 @@
     };
 
     // Methods
+    BABYLON.Engine.prototype.stopRenderLoop = function () {
+        this._runningLoop = false;
+    };
+
+    BABYLON.Engine.prototype.runRenderLoop = function (renderFunction) {
+        this._runningLoop = true
+        var that = this;
+
+        var loop = function () {
+            // Start new frame
+            that.beginFrame();
+
+            renderFunction();
+
+            // Present
+            that.endFrame();
+
+            if (that._runningLoop) {
+                // Register new frame
+                BABYLON.Tools.QueueNewFrame(loop);
+            }
+        };
+
+        BABYLON.Tools.QueueNewFrame(loop);
+    };
+
     BABYLON.Engine.prototype.switchFullscreen = function (element) {
         if (this.isFullscreen) {
             BABYLON.Tools.ExitFullscreen();
