@@ -8,7 +8,6 @@
         texture.hasAlpha = parsedTexture.hasAlpha;
         texture.level = parsedTexture.level;
         texture.coordinatesMode = parsedTexture.coordinatesMode;
-        texture.isCube = true;
 
         return texture;
     };

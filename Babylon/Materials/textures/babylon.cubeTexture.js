@@ -14,6 +14,8 @@
         if (!this._texture) {
             this._texture = scene.getEngine().createCubeTexture(rootUrl);
         }
+        
+        this.isCube = true;
     };
 
     BABYLON.CubeTexture.prototype = Object.create(BABYLON.BaseTexture.prototype);
