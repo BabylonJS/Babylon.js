@@ -568,7 +568,7 @@
     };
 
     // Statics
-    BABYLON.Mesh.createBox = function (name, size, scene) {
+    BABYLON.Mesh.CreateBox = function (name, size, scene) {
         var box = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var normals = [
@@ -621,7 +621,7 @@
         return box;
     };
 
-    BABYLON.Mesh.createSphere = function (name, segments, diameter, scene) {
+    BABYLON.Mesh.CreateSphere = function (name, segments, diameter, scene) {
         var sphere = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var radius = diameter / 2;
@@ -673,7 +673,7 @@
     };
 
     // Plane
-    BABYLON.Mesh.createPlane = function (name, size, scene) {
+    BABYLON.Mesh.CreatePlane = function (name, size, scene) {
         var plane = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var indices = [];
