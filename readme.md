@@ -12,7 +12,7 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
  - Mirror texture
  - Emissive texture
  - Specular texture
- - Up to 4 lights (point or directional)
+ - Up to 4 lights (points, directionals, spots, hemispherics)
 - Render target textures
 - Dynamic textures (canvas)
 - Custom materials

@@ -12,7 +12,7 @@
         this._texture = this._getFromCache(rootUrl);
         
         if (!this._texture) {
-            this._texture = scene.getEngine().createCubeTexture(rootUrl);
+            this._texture = scene.getEngine().createCubeTexture(rootUrl, scene);
         }
         
         this.isCube = true;

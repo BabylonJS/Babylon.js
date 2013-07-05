@@ -17,21 +17,48 @@ uniform vec4 vMisc;
 uniform vec4 vLightData0;
 uniform vec3 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
+#ifdef SPOTLIGHT0
+uniform vec4 vLightDirection0;
 #endif
+#ifdef HEMILIGHT0
+uniform vec3 vLightGround0;
+#endif
+#endif
+
 #ifdef LIGHT1
 uniform vec4 vLightData1;
 uniform vec3 vLightDiffuse1;
 uniform vec3 vLightSpecular1;
+#ifdef SPOTLIGHT1
+uniform vec4 vLightDirection1;
 #endif
+#ifdef HEMILIGHT1
+uniform vec3 vLightGround1;
+#endif
+#endif
+
 #ifdef LIGHT2
 uniform vec4 vLightData2;
 uniform vec3 vLightDiffuse2;
 uniform vec3 vLightSpecular2;
+#ifdef SPOTLIGHT2
+uniform vec4 vLightDirection2;
 #endif
+#ifdef HEMILIGHT2
+uniform vec3 vLightGround2;
+#endif
+#endif
+
 #ifdef LIGHT3
 uniform vec4 vLightData3;
 uniform vec3 vLightDiffuse3;
 uniform vec3 vLightSpecular3;
+#ifdef SPOTLIGHT3
+uniform vec4 vLightDirection3;
+#endif
+#ifdef HEMILIGHT3
+uniform vec3 vLightGround3;
+#endif
 #endif
 
 // Samplers
@@ -82,12 +109,12 @@ varying float fClipDistance;
 
 // Light Computing
 struct lightingInfo
-{ 
-	vec3 diffuse; 
-	vec3 specular; 
-}; 
+{
+	vec3 diffuse;
+	vec3 specular;
+};
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec4 lightData, vec3 diffuseColor, vec3 specularColor) {	
+lightingInfo computeLighting(vec3 viewDirectionW, vec4 lightData, vec3 diffuseColor, vec3 specularColor) {
 	lightingInfo result;
 
 	vec3 lightVectorW;
@@ -95,7 +122,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec4 lightData, vec3 diffuseCo
 	{
 		lightVectorW = normalize(lightData.xyz - vPositionW);
 	}
-	else 
+	else
 	{
 		lightVectorW = normalize(-lightData.xyz);
 	}
@@ -105,10 +132,61 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec4 lightData, vec3 diffuseCo
 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
-	float specComp = dot(normalize(vNormalW), angleW);
+	float specComp = max(0., dot(normalize(vNormalW), angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
 	result.diffuse = ndl * diffuseColor;
+	result.specular = specComp * specularColor;
+
+	return result;
+}
+
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor) {
+	lightingInfo result;
+
+	vec3 lightVectorW = normalize(lightData.xyz - vPositionW);
+
+	// diffuse
+	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));
+	float spotAtten = 0.0;
+
+	if (cosAngle >= lightDirection.w)
+	{
+		cosAngle = max(0., pow(cosAngle, lightData.w));
+		spotAtten = (cosAngle - lightDirection.w) / (1. - cosAngle);
+
+		// Diffuse
+		float ndl = max(0., dot(vNormalW, -lightDirection.xyz));
+
+		// Specular
+		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
+		float specComp = max(0., dot(normalize(vNormalW), angleW));
+		specComp = pow(specComp, vSpecularColor.a);
+
+		result.diffuse = ndl * spotAtten * diffuseColor;
+		result.specular = specComp * specularColor * spotAtten;
+
+		return result;
+	}
+
+	result.diffuse = vec3(0.);
+	result.specular = vec3(0.);
+
+	return result;
+}
+
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor) {
+	lightingInfo result;
+
+	// Diffuse
+	float ndl = dot(vNormalW, lightData.xyz) * 0.5 + 0.5;
+
+	// Specular
+	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
+	float specComp = max(0., dot(normalize(vNormalW), angleW));
+	specComp = pow(specComp, vSpecularColor.a);
+
+	result.diffuse = mix(groundColor, diffuseColor, ndl);
 	result.specular = specComp * specularColor;
 
 	return result;
@@ -150,22 +228,57 @@ void main(void) {
 	vec3 specularBase = vec3(0., 0., 0.);
 
 #ifdef LIGHT0
+#ifdef SPOTLIGHT0
+	lightingInfo info = computeSpotLighting(viewDirectionW, vLightData0, vLightDirection0, vLightDiffuse0, vLightSpecular0);
+#endif
+#ifdef HEMILIGHT0
+	lightingInfo info = computeHemisphericLighting(viewDirectionW, vLightData0, vLightDiffuse0, vLightSpecular0, vLightGround0);
+#endif
+#ifdef POINTDIRLIGHT0
 	lightingInfo info = computeLighting(viewDirectionW, vLightData0, vLightDiffuse0, vLightSpecular0);
+#endif
 	diffuseBase += info.diffuse;
 	specularBase += info.specular;
 #endif
+
 #ifdef LIGHT1
+#ifdef SPOTLIGHT1
+	info = computeSpotLighting(viewDirectionW, vLightData1, vLightDirection1, vLightDiffuse1, vLightSpecular1);
+#endif
+#ifdef HEMILIGHT1
+	info = computeHemisphericLighting(viewDirectionW, vLightData1, vLightDiffuse1, vLightSpecular1, vLightGround1);
+#endif
+#ifdef POINTDIRLIGHT1
 	info = computeLighting(viewDirectionW, vLightData1, vLightDiffuse1, vLightSpecular1);
+#endif
 	diffuseBase += info.diffuse;
 	specularBase += info.specular;
 #endif
+
 #ifdef LIGHT2
+#ifdef SPOTLIGHT2
+	info = computeSpotLighting(viewDirectionW, vLightData2, vLightDirection2, vLightDiffuse2, vLightSpecular2);
+#endif
+#ifdef HEMILIGHT2
+	info = computeHemisphericLighting(viewDirectionW, vLightData2, vLightDiffuse2, vLightSpecular2, vLightGround2);
+#endif
+#ifdef POINTDIRLIGHT2
 	info = computeLighting(viewDirectionW, vLightData2, vLightDiffuse2, vLightSpecular2);
+#endif
 	diffuseBase += info.diffuse;
 	specularBase += info.specular;
 #endif
+
 #ifdef LIGHT3
+#ifdef SPOTLIGHT3
+	info = computeSpotLighting(viewDirectionW, vLightData3, vLightDirection3, vLightDiffuse3, vLightSpecular3);
+#endif
+#ifdef HEMILIGHT3
+	info = computeHemisphericLighting(viewDirectionW, vLightData3, vLightDiffuse3, vLightSpecular3, vLightGround3);
+#endif
+#ifdef POINTDIRLIGHT3
 	info = computeLighting(viewDirectionW, vLightData3, vLightDiffuse3, vLightSpecular3);
+#endif
 	diffuseBase += info.diffuse;
 	specularBase += info.specular;
 #endif
@@ -190,7 +303,7 @@ void main(void) {
 		coords.y = 1.0 - coords.y;
 
 		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y;
-	}	
+	}
 #endif
 
 	// Alpha
@@ -198,7 +311,7 @@ void main(void) {
 
 #ifdef OPACITY
 	vec3 opacityMap = texture2D(opacitySampler, vOpacityUV).rgb * vec3(0.3, 0.59, 0.11);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z )* vOpacityInfos.y;
+	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
 #endif
 
 	// Emissive
@@ -210,7 +323,7 @@ void main(void) {
 	// Specular map
 	vec3 specularColor = vSpecularColor.rgb;
 #ifdef SPECULAR
-	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;	
+	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;
 #endif
 
 	// Composition

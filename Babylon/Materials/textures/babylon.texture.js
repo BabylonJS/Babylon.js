@@ -10,7 +10,7 @@
         this._texture = this._getFromCache(url, noMipmap);
         
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(url, noMipmap, invertY);
+            this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
         }
         
         // Animations
