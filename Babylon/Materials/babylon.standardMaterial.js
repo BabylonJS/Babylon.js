@@ -106,8 +106,17 @@
                 continue;
             }
 
-            defines.push("#define LIGHT" + lightIndex++);
+            defines.push("#define LIGHT" + lightIndex);
+            
+            if (light instanceof BABYLON.SpotLight) {
+                defines.push("#define SPOTLIGHT" + lightIndex);
+            } else if (light instanceof BABYLON.HemisphericLight) {
+                defines.push("#define HEMILIGHT" + lightIndex);
+            } else {
+                defines.push("#define POINTDIRLIGHT" + lightIndex);
+            }
 
+            lightIndex++;
             if (lightIndex == 4)
                 break;
         }
@@ -141,10 +150,10 @@
             this._effect = this._scene.getEngine().createEffect(shaderName,
                 attribs,
                 ["world", "view", "worldViewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                 "vLightData0", "vLightDiffuse0", "vLightSpecular0",
-                 "vLightData1", "vLightDiffuse1", "vLightSpecular1",
-                 "vLightData2", "vLightDiffuse2", "vLightSpecular2",
-                 "vLightData3", "vLightDiffuse3", "vLightSpecular3",
+                 "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0",
+                 "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1",
+                 "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2",
+                 "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3",
                  "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos",
                  "vMisc", "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix"],
                 ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler"],
@@ -271,14 +280,27 @@
             if (!light.isEnabled) {
                 continue;
             }
-            
-            if (light.position) {
+                        
+            if (light instanceof BABYLON.PointLight) {
+                // Point Light
                 this._effect.setVector4("vLightData" + lightIndex, light.position.x, light.position.y, light.position.z, 0);
-            } else {
+            } else if (light instanceof BABYLON.DirectionalLight) {
+                // Directional Light
                 this._effect.setVector4("vLightData" + lightIndex, light.direction.x, light.direction.y, light.direction.z, 1);
+            } else if (light instanceof BABYLON.SpotLight) {
+                // Spot Light
+                this._effect.setVector4("vLightData" + lightIndex, light.position.x, light.position.y, light.position.z, light.exponent);
+                var normalizeDirection = BABYLON.Vector3.Normalize(light.direction);
+                this._effect.setVector4("vLightDirection" + lightIndex, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(light.angle * 0.5));
+            } else if (light instanceof BABYLON.HemisphericLight) {
+                // Hemispheric Light
+                var normalizeDirection = BABYLON.Vector3.Normalize(light.direction);
+                this._effect.setVector4("vLightData" + lightIndex, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
+                this._effect.setColor3("vLightGround" + lightIndex, light.groundColor.scale(light.intensity));
             }
             this._effect.setColor3("vLightDiffuse" + lightIndex, light.diffuse.scale(light.intensity));
             this._effect.setColor3("vLightSpecular" + lightIndex, light.specular.scale(light.intensity));
+
             lightIndex++;
 
             if (lightIndex == 4)

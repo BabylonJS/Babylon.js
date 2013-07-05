@@ -489,7 +489,7 @@
         return count;
     };
 
-    BABYLON.Engine.prototype.createTexture = function (url, noMipmap, invertY) {
+    BABYLON.Engine.prototype.createTexture = function (url, noMipmap, invertY, scene) {
         var texture = this._gl.createTexture();
         var that = this;
         var img = new Image();
@@ -519,8 +519,14 @@
             texture._width = that._workingCanvas.width;
             texture._height = that._workingCanvas.height;
             texture.isReady = true;
+            scene._removePendingData(img);
         };
 
+        img.onerror = function () {
+            scene._removePendingData(img);
+        };
+
+        scene._addPendingData(img);
         img.src = url;
 
         texture.url = url;
@@ -616,22 +622,29 @@
 
     var extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
 
-    var cascadeLoad = function (rootUrl, index, loadedImages, onfinish) {
+    var cascadeLoad = function (rootUrl, index, loadedImages, scene, onfinish) {
         var img = new Image();
         img.onload = function () {
             loadedImages.push(this);
 
+            scene._removePendingData(img);
+
             if (index != extensions.length - 1) {
-                cascadeLoad(rootUrl, index + 1, loadedImages, onfinish);
+                cascadeLoad(rootUrl, index + 1, loadedImages, scene, onfinish);
             } else {
                 onfinish(loadedImages);
             }
         };
 
+        img.onerrror = function () {
+            scene._removePendingData(img);
+        };
+
+        scene._addPendingData(img);
         img.src = rootUrl + extensions[index];
     };
 
-    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl) {
+    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene) {
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -641,7 +654,7 @@
         this._loadedTexturesCache.push(texture);
 
         var that = this;
-        cascadeLoad(rootUrl, 0, [], function (imgs) {
+        cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
             var width = getExponantOfTwo(imgs[0].width);
             var height = width;
 

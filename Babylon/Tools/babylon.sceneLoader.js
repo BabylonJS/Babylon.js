@@ -201,6 +201,34 @@
         return animation;
     };
 
+    var parseLight = function(parsedLight, scene) {
+        var light;
+
+        switch (parsedLight.type) {
+            case 0:
+                light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                break;
+            case 1:
+                light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                break;
+            case 2:
+                light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
+                break;
+            case 3:
+                light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
+                break;
+        }
+
+        light.id = parsedLight.id;
+
+        if (parsedLight.intensity) {
+            light.intensity = parsedLight.intensity;
+        }
+        light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
+        light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
+    };
+
     var parseMesh = function (parsedMesh, scene) {
         var declaration = null;
         
@@ -361,19 +389,7 @@
                 // Lights
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
-                    var light;
-                    if (parsedLight.type === 0) {
-                        light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
-                    } else {
-                        light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
-                    }
-                    light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
-                    light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
-                    light.id = parsedLight.id;
-
-                    if (parsedLight.intensity) {
-                        light.intensity = parsedLight.intensity;
-                    }
+                    parseLight(parsedLight, scene);
                 }
 
                 // Cameras
