@@ -14,6 +14,7 @@
         this.reflectionTexture = null;
         this.emissiveTexture = null;
         this.specularTexture = null;
+        this.bumpTexture = null;
 
         this.ambientColor = new BABYLON.Color3(0, 0, 0);
         this.diffuseColor = new BABYLON.Color3(1, 1, 1);
@@ -63,6 +64,10 @@
         if (this.specularTexture && !this.specularTexture.isReady()) {
             return false;
         }
+        
+        if (this.bumpTexture && !this.bumpTexture.isReady()) {
+            return false;
+        }
 
         // Effect
         var defines = [];
@@ -88,6 +93,10 @@
 
         if (this.specularTexture) {
             defines.push("#define SPECULAR");
+        }
+        
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
+            defines.push("#define BUMP");
         }
 
         if (BABYLON.clipPlane) {
@@ -154,9 +163,9 @@
                  "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1",
                  "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2",
                  "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3",
-                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos",
-                 "vMisc", "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix"],
-                ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler"],
+                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
+                 "vMisc", "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix"],
+                ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler"],
                 join);
         }
         if (!this._effect.isReady()) {
@@ -264,6 +273,13 @@
             this._effect.setVector2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
+        
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
+            this._effect.setTexture("bumpSampler", this.bumpTexture);
+
+            this._effect.setVector2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
+            this._effect.setMatrix("bumpMatrix", this.bumpTexture._computeTextureMatrix());
+        }
 
         this._effect.setMatrix("world", world);
         this._effect.setMatrix("worldViewProjection", world.multiply(this._scene.getTransformMatrix()));
@@ -367,6 +383,10 @@
 
         if (this.specularTexture) {
             this.specularTexture.dispose();
+        }
+        
+        if (this.bumpTexture) {
+            this.bumpTexture.dispose();
         }
 
         // Remove from scene

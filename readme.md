@@ -4,7 +4,8 @@
 
 Babylon.js is a webgl / javascript 3D engine. It supports the following features: 
 - Complete scene graph with lights, cameras, materials and meshes
-- Standard material is a per pixel material that supports: ◦Diffuse lightning and texture
+- Standard material is a per pixel material that supports:
+ - Diffuse lightning and texture
  - Ambient lightning and texture
  - Specular lightning
  - Opacity texture
@@ -12,9 +13,11 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
  - Mirror texture
  - Emissive texture
  - Specular texture
+ - Bump texture (Normal map)
  - Up to 4 lights (points, directionals, spots, hemispherics)
 - Render target textures
 - Dynamic textures (canvas)
+- Video textures
 - Custom materials
 - Alpha blending
 - Alpha testing
@@ -28,7 +31,8 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
 - Frustum clipping
 - Sub-meshes clipping
 - Fullscreen mode
-- Babylon file format is a JSON file that can be produced from: ◦.OBJ
+- Babylon file format is a JSON file that can be produced from:
+ - .OBJ
  - .FBX
  - .MXB
  - Blender
