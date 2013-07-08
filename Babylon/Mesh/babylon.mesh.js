@@ -681,10 +681,10 @@
 
         // Vertices
         var halfSize = size / 2.0;
-        vertices.push(-halfSize, -halfSize, 0, 0, 1.0, 0, 0.0, 0.0);
-        vertices.push(halfSize, -halfSize, 0, 0, 1.0, 0, 1.0, 0.0);
-        vertices.push(halfSize, halfSize, 0, 0, 1.0, 0, 1.0, 1.0);
-        vertices.push(-halfSize, halfSize, 0, 0, 1.0, 0, 0.0, 1.0);
+        vertices.push(-halfSize, -halfSize, 0, 0, 0, -1.0, 0.0, 0.0);
+        vertices.push(halfSize, -halfSize, 0, 0, 0, -1.0, 1.0, 0.0);
+        vertices.push(halfSize, halfSize, 0, 0, 0, -1.0, 1.0, 1.0);
+        vertices.push(-halfSize, halfSize, 0, 0, 0, -1.0, 0.0, 1.0);
 
         // Indices
         indices.push(0);

@@ -1,3 +1,6 @@
+1.0.3:
+ - Video textures
+ - Normal map (bump) 
 1.0.2:
  - Spot lights
  - Hemispheric lights

@@ -11,11 +11,11 @@
         this.wrapV = false;
 
         this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
-        var size = this.getSize();
+        var textureSize = this.getSize();
 
         this._canvas = document.createElement("canvas");
-        this._canvas.width = size.width;
-        this._canvas.height = size.height;
+        this._canvas.width = textureSize.width;
+        this._canvas.height = textureSize.height;
         this._context = this._canvas.getContext("2d");
     };
 

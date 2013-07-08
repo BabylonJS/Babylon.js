@@ -227,7 +227,10 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 						Export_babylon.export_texture("reflectionTexture", mtex.diffuse_color_factor, mtex, scene, file_handler, filepath)
 					if mtex.use_map_emit:
 						# Emissive
-						Export_babylon.export_texture("emissiveTexture", mtex.emit_factor, mtex, scene, file_handler, filepath)						
+						Export_babylon.export_texture("emissiveTexture", mtex.emit_factor, mtex, scene, file_handler, filepath)		
+					if mtex.use_map_normal:
+						# Bump
+						Export_babylon.export_texture("bumpTexture", mtex.emit_factor, mtex, scene, file_handler, filepath)							
 		
 		file_handler.write("}")			
 	

@@ -37,6 +37,10 @@
         this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
         this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
 
+        // Extensions
+        var derivatives = this._gl.getExtension('OES_standard_derivatives');
+        this._caps.standardDerivatives = (derivatives !== undefined);
+
         // Cache
         this._loadedTexturesCache = [];
         this._activeTexturesCache = [];
@@ -326,9 +330,9 @@
         for (var index = 0; index < attributesNames.length; index++) {
             try {
                 results.push(this._gl.getAttribLocation(shaderProgram, attributesNames[index]));
-            } catch(e) {
+            } catch (e) {
                 results.push(-1);
-            } 
+            }
         }
 
         return results;
@@ -418,7 +422,7 @@
             this._currentState.culling = culling;
         }
     };
-    
+
     BABYLON.Engine.prototype.setDepthBuffer = function (enable) {
         if (enable) {
             this._gl.enable(this._gl.DEPTH_TEST);
@@ -571,6 +575,18 @@
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
+        if (!texture.noMipmap) {
+            this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        }
+        this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+        this._activeTexturesCache = [];
+        texture.isReady = true;
+    };
+
+    BABYLON.Engine.prototype.updateVideoTexture = function (texture, video) {
+        this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, false);
+        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
         if (!texture.noMipmap) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
         }
@@ -733,6 +749,12 @@
                 this._activeTexturesCache[channel] = null;
             }
             return;
+        }
+
+        if (texture instanceof BABYLON.VideoTexture) {
+            if (texture._update()) {
+                this._activeTexturesCache[channel] = null;
+            }
         }
 
         if (this._activeTexturesCache[channel] == texture) {

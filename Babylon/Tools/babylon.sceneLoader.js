@@ -101,6 +101,10 @@
         if (parsedMaterial.specularTexture) {
             material.specularTexture = loadTexture(rootUrl, parsedMaterial.specularTexture, scene);
         }
+        
+        if (parsedMaterial.bumpTexture) {
+            material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
+        }
 
         return material;
     };

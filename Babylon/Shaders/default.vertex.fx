@@ -57,6 +57,12 @@ uniform vec2 vSpecularInfos;
 uniform mat4 specularMatrix;
 #endif
 
+#ifdef BUMP
+varying vec2 vBumpUV;
+uniform vec2 vBumpInfos;
+uniform mat4 bumpMatrix;
+#endif
+
 // Output
 varying vec3 vPositionW;
 varying vec3 vNormalW;
@@ -169,6 +175,17 @@ void main(void) {
 	else
 	{
 		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));
+	}
+#endif
+
+#ifdef BUMP
+	if (vBumpInfos.x == 0.)
+	{
+		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));
+	}
+	else
+	{
+		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
