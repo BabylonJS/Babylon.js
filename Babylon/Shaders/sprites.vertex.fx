@@ -11,6 +11,10 @@ uniform mat4 projection;
 // Output
 varying vec2 vUV;
 
+#ifdef FOG
+varying float fFogDistance;
+#endif
+
 void main(void) {	
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz; 
 	vec3 cornerPos;
@@ -36,4 +40,9 @@ void main(void) {
 	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));
 
 	vUV = (uvOffset + cellInfo.zw) * uvScale;
+
+	// Fog
+#ifdef FOG
+	fFogDistance = viewPos.z;
+#endif
 }

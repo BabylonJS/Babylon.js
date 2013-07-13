@@ -61,10 +61,15 @@
         this.sprites = [];
         
         // Effects
-        this._effect = this._scene.getEngine().createEffect("sprites",
+        this._effectBase = this._scene.getEngine().createEffect("sprites",
                     ["position", "options", "cellInfo"],
                     ["view", "projection", "textureInfos", "alphaTest"],
                     ["diffuseSampler"], "");
+        
+        this._effectFog = this._scene.getEngine().createEffect("sprites",
+                    ["position", "options", "cellInfo"],
+                    ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
+                    ["diffuseSampler"], "#define FOG");
     };
     
     // Members
@@ -73,7 +78,7 @@
     // Methods
     BABYLON.SpriteManager.prototype.render = function() {
         // Check
-        if (!this._effect.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
+        if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
             return 0;
 
         var engine = this._scene.getEngine();
@@ -97,24 +102,36 @@
         engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
        
         // Render
-        engine.enableEffect(this._effect);
+        var effect = this._effectBase;
+
+        if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            effect = this._effectFog;
+        }
+        
+        engine.enableEffect(effect);
 
         var viewMatrix = this._scene.getViewMatrix();
-        this._effect.setTexture("diffuseSampler", this._spriteTexture);
-        this._effect.setMatrix("view", viewMatrix);
-        this._effect.setMatrix("projection", this._scene.getProjectionMatrix());
+        effect.setTexture("diffuseSampler", this._spriteTexture);
+        effect.setMatrix("view", viewMatrix);
+        effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-        this._effect.setVector2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+        effect.setVector2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+        
+        // Fog
+        if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
+            effect.setColor3("vFogColor", this._scene.fogColor);
+        }
 
         // VBOs
-        engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+        engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
         // Draw order
-        this._effect.setBool("alphaTest", true);
+        effect.setBool("alphaTest", true);
         engine.setColorWrite(false);
         engine.draw(true, 0, max * 6);
         engine.setColorWrite(true);
-        this._effect.setBool("alphaTest", false);
+        effect.setBool("alphaTest", false);
         
         engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
         engine.draw(true, 0, max * 6);

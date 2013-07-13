@@ -21,6 +21,13 @@
 
         this._onReadyCallbacks = [];
         this._pendingData = [];
+        
+        // Fog
+        this.fogMode = BABYLON.Scene.FOGMODE_NONE;
+        this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
+        this.fogDensity = 0.1;
+        this.fogStart = 0;
+        this.fogEnd = 1000.0;
 
         // Lights
         this.lights = [];
@@ -343,9 +350,10 @@
     BABYLON.Scene.prototype._localRender = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, activeMeshes) {
         var engine = this._engine;
         // Opaque
-        for (var subIndex = 0; subIndex < opaqueSubMeshes.length; subIndex++) {
-            var submesh = opaqueSubMeshes[subIndex];
-
+        var subIndex;
+        var submesh;
+        for (subIndex = 0; subIndex < opaqueSubMeshes.length; subIndex++) {
+            submesh = opaqueSubMeshes[subIndex];
             this._activeVertices += submesh.verticesCount;
 
             submesh.render();
@@ -353,9 +361,8 @@
 
         // Alpha test
         engine.setAlphaTesting(true);
-        for (var subIndex = 0; subIndex < alphaTestSubMeshes.length; subIndex++) {
-            var submesh = alphaTestSubMeshes[subIndex];
-
+        for (subIndex = 0; subIndex < alphaTestSubMeshes.length; subIndex++) {
+            submesh = alphaTestSubMeshes[subIndex];
             this._activeVertices += submesh.verticesCount;
 
             submesh.render();
@@ -375,9 +382,8 @@
 
         // Transparent
         engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-        for (var subIndex = 0; subIndex < transparentSubMeshes.length; subIndex++) {
-            var submesh = transparentSubMeshes[subIndex];
-
+        for (subIndex = 0; subIndex < transparentSubMeshes.length; subIndex++) {
+            submesh = transparentSubMeshes[subIndex];
             this._activeVertices += submesh.verticesCount;
 
             submesh.render();
@@ -441,9 +447,10 @@
 
         // Backgrounds
         engine.setDepthBuffer(false);
-        for (var layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-            var layer = this.layers[layerIndex];
-
+        var layerIndex;
+        var layer;
+        for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+            layer = this.layers[layerIndex];
             if (layer.isBackground) {
                 layer.render();
             }
@@ -455,9 +462,8 @@
 
         // Foregrounds
         engine.setDepthBuffer(false);
-        for (var layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-            var layer = this.layers[layerIndex];
-
+        for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+            layer = this.layers[layerIndex];
             if (!layer.isBackground) {
                 layer.render();
             }
@@ -490,7 +496,8 @@
 
         // Detach cameras
         var canvas = this._engine.getRenderingCanvas();
-        for (var index = 0; index < this.cameras.length; index++) {
+        var index;
+        for (index = 0; index < this.cameras.length; index++) {
             this.cameras[index].detachControl(canvas);
         }
 
@@ -525,7 +532,7 @@
         }
 
         // Remove from engine
-        var index = this._engine.scenes.indexOf(this);
+        index = this._engine.scenes.indexOf(this);
         this._engine.scenes.splice(index, 1);
 
         this._engine.wipeCaches();
@@ -633,4 +640,9 @@
         return { hit: distance != Number.MAX_VALUE, distance: distance, pickedMesh: pickedMesh, pickedPoint: pickedPoint };
     };
 
+    // Statics
+    BABYLON.Scene.FOGMODE_NONE = 0;
+    BABYLON.Scene.FOGMODE_EXP = 1;
+    BABYLON.Scene.FOGMODE_EXP2 = 2;
+    BABYLON.Scene.FOGMODE_LINEAR = 3;
 })();

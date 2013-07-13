@@ -68,17 +68,6 @@
         }
 
         this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
-
-        // Effects
-        this._baseEffect = this._scene.getEngine().createEffect("particles",
-                    ["position", "color", "options"],
-                    ["view", "projection", "textureMask"],
-                    ["diffuseSampler"], "");
-
-        this._clippedEffect = this._scene.getEngine().createEffect("particles",
-                    ["position", "color", "options"],
-                    ["invView", "view", "projection", "vClipPlane", "textureMask"],
-                    ["diffuseSampler"], "#define CLIPPLANE");
     };
 
     // Members
@@ -197,12 +186,34 @@
         }
     };
 
+    BABYLON.ParticleSystem.prototype._getEffect = function () {
+        var defines = [];
+        
+        if (BABYLON.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+        
+        // Effect
+        var join = defines.join("\n");
+        if (this._cachedDefines != join) {
+            this._cachedDefines = join;
+            this._effect = this._scene.getEngine().createEffect("particles",
+                ["position", "color", "options"],
+                ["invView", "view", "projection", "vClipPlane", "textureMask"],
+                ["diffuseSampler"], join);
+        }
+
+        return this._effect;
+    };
+
     BABYLON.ParticleSystem.prototype.animate = function () {
         if (!this._started)
             return;
 
+        var effect = this._getEffect();
+
         // Check
-        if (!this.emitter || !this._baseEffect.isReady() || !this._clippedEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
+        if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
             return;
 
         this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
@@ -263,37 +274,32 @@
     };
 
     BABYLON.ParticleSystem.prototype.render = function () {
-        // Effect
-        if (BABYLON.clipPlane) {
-            this._effect = this._clippedEffect;
-        } else {
-            this._effect = this._baseEffect;
-        }
+        var effect = this._getEffect();
 
         // Check
-        if (!this.emitter || !this._effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this.particles.length)
+        if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this.particles.length)
             return 0;
 
         var engine = this._scene.getEngine();
 
         // Render
-        engine.enableEffect(this._effect);
+        engine.enableEffect(effect);
 
         var viewMatrix = this._scene.getViewMatrix();
-        this._effect.setTexture("diffuseSampler", this.particleTexture);
-        this._effect.setMatrix("view", viewMatrix);
-        this._effect.setMatrix("projection", this._scene.getProjectionMatrix());
-        this._effect.setVector4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
+        effect.setTexture("diffuseSampler", this.particleTexture);
+        effect.setMatrix("view", viewMatrix);
+        effect.setMatrix("projection", this._scene.getProjectionMatrix());
+        effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
         if (BABYLON.clipPlane) {
             var invView = viewMatrix.clone();
             invView.invert();
-            this._effect.setMatrix("invView", invView);
-            this._effect.setVector4("vClipPlane", BABYLON.clipPlane.normal.x, BABYLON.clipPlane.normal.y, BABYLON.clipPlane.normal.z, BABYLON.clipPlane.d);
-        }
+            effect.setMatrix("invView", invView);
+            effect.setFloat4("vClipPlane", BABYLON.clipPlane.normal.x, BABYLON.clipPlane.normal.y, BABYLON.clipPlane.normal.z, BABYLON.clipPlane.d);
+        }        
 
         // VBOs
-        engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+        engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
         // Draw order
         if (this.blendMode === BABYLON.ParticleSystem.BLENDMODE_ONEONE) {
