@@ -75,6 +75,14 @@
     BABYLON.Mesh.prototype.getVertices = function () {
         return this._vertices;
     };
+    
+    BABYLON.Mesh.prototype.getTotalIndices = function () {
+        return this._indices.length;
+    };
+
+    BABYLON.Mesh.prototype.getIndices = function () {
+        return this._indices;
+    };
 
     BABYLON.Mesh.prototype.getVertexStrideSize = function () {
         return this._vertexStrideSize;

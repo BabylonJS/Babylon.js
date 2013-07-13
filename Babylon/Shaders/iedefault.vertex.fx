@@ -41,7 +41,7 @@ uniform vec3 vEyePosition;
 uniform mat4 view;
 varying vec3 vReflectionUVW;
 
-uniform vec2 vReflectionInfos;
+uniform vec3 vReflectionInfos;
 uniform mat4 reflectionMatrix;
 #endif
 

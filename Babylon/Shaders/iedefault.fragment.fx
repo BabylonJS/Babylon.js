@@ -10,12 +10,10 @@ uniform vec3 vAmbientColor;
 uniform vec4 vDiffuseColor;
 uniform vec4 vSpecularColor;
 uniform vec3 vEmissiveColor;
-uniform vec4 vMisc;
-uniform vec4 vLightsType;
 
 // Lights
 #ifdef LIGHT0
-uniform vec3 vLightData0;
+uniform vec4 vLightData0;
 uniform vec3 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
 #endif
@@ -43,7 +41,7 @@ uniform vec2 vOpacityInfos;
 varying vec3 vReflectionUVW;
 uniform samplerCube reflectionCubeSampler;
 uniform sampler2D reflection2DSampler;
-uniform vec2 vReflectionInfos;
+uniform vec3 vReflectionInfos;
 #endif
 
 #ifdef EMISSIVE
@@ -103,13 +101,13 @@ void main(void) {
 
 #ifdef LIGHT0
 	vec3 lightVectorW;
-	if (vLightsType.x == 0.)
+	if (vLightData0.w == 0.)
 	{
-		lightVectorW = normalize(vLightData0 - vPositionW);
+		lightVectorW = normalize(vLightData0.xyz - vPositionW);
 	}
 	else 
 	{
-		lightVectorW = normalize(-vLightData0);
+		lightVectorW = normalize(-vLightData0.xyz);
 	}
 
 	// diffuse
@@ -128,7 +126,7 @@ void main(void) {
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
-	if (vMisc.x != 0.0)
+	if (vReflectionInfos.z != 0.0)
 	{
 		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;
 	}

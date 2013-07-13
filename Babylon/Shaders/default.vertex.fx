@@ -16,6 +16,7 @@ attribute vec2 uv2;
 
 // Uniforms
 uniform mat4 world;
+uniform mat4 view;
 uniform mat4 worldViewProjection;
 
 #ifdef DIFFUSE
@@ -38,10 +39,8 @@ uniform vec2 vOpacityInfos;
 
 #ifdef REFLECTION
 uniform vec3 vEyePosition;
-uniform mat4 view;
 varying vec3 vReflectionUVW;
-
-uniform vec2 vReflectionInfos;
+uniform vec3 vReflectionInfos;
 uniform mat4 reflectionMatrix;
 #endif
 
@@ -70,6 +69,10 @@ varying vec3 vNormalW;
 #ifdef CLIPPLANE
 uniform vec4 vClipPlane;
 varying float fClipDistance;
+#endif
+
+#ifdef FOG
+varying float fFogDistance;
 #endif
 
 #ifdef REFLECTION
@@ -192,5 +195,10 @@ void main(void) {
 	// Clip plane
 #ifdef CLIPPLANE
 		fClipDistance = dot(worldPos, vClipPlane);
+#endif
+
+	// Fog
+#ifdef FOG
+		fFogDistance = (view * worldPos).z;
 #endif
 }

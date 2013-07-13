@@ -379,6 +379,13 @@
 
         this._gl.uniform3f(uniform, vector3.x, vector3.y, vector3.z);
     };
+    
+    BABYLON.Engine.prototype.setFloat3 = function (uniform, x, y, z) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform3f(uniform, x, y, z);
+    };
 
     BABYLON.Engine.prototype.setBool = function (uniform, bool) {
         if (!uniform)
@@ -387,7 +394,7 @@
         this._gl.uniform1i(uniform, bool);
     };
 
-    BABYLON.Engine.prototype.setVector4 = function (uniform, x, y, z, w) {
+    BABYLON.Engine.prototype.setFloat4 = function (uniform, x, y, z, w) {
         if (!uniform)
             return;
 

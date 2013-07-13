@@ -10,7 +10,6 @@ uniform vec3 vAmbientColor;
 uniform vec4 vDiffuseColor;
 uniform vec4 vSpecularColor;
 uniform vec3 vEmissiveColor;
-uniform vec4 vMisc;
 
 // Lights
 #ifdef LIGHT0
@@ -84,7 +83,7 @@ uniform vec2 vOpacityInfos;
 varying vec3 vReflectionUVW;
 uniform samplerCube reflectionCubeSampler;
 uniform sampler2D reflection2DSampler;
-uniform vec2 vReflectionInfos;
+uniform vec3 vReflectionInfos;
 #endif
 
 #ifdef EMISSIVE
@@ -112,6 +111,43 @@ varying vec3 vNormalW;
 
 #ifdef CLIPPLANE
 varying float fClipDistance;
+#endif
+
+// Fog
+#ifdef FOG
+
+#define FOGMODE_NONE    0.
+#define FOGMODE_EXP     1.
+#define FOGMODE_EXP2    2.
+#define FOGMODE_LINEAR  3.
+#define E 2.71828
+
+uniform vec4 vFogInfos;
+uniform vec3 vFogColor;
+varying float fFogDistance;
+
+float CalcFogFactor()
+{
+	float fogCoeff = 1.0;
+	float fogStart = vFogInfos.y;
+	float fogEnd = vFogInfos.z;
+	float fogDensity = vFogInfos.w;
+
+	if (FOGMODE_LINEAR == vFogInfos.x)
+	{
+		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
+	}
+	else if (FOGMODE_EXP == vFogInfos.x)
+	{
+		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
+	}
+	else if (FOGMODE_EXP2 == vFogInfos.x)
+	{
+		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
+	}
+
+	return min(1., max(0., fogCoeff));
+}
 #endif
 
 #ifdef BUMP
@@ -332,7 +368,7 @@ void main(void) {
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
-	if (vMisc.x != 0.0)
+	if (vReflectionInfos.z != 0.0)
 	{
 		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;
 	}
@@ -375,5 +411,12 @@ void main(void) {
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 	vec3 finalSpecular = specularBase * specularColor;
 
-	gl_FragColor = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+
+#ifdef FOG
+	float fog = CalcFogFactor();
+	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
+#endif
+
+	gl_FragColor = color;
 }

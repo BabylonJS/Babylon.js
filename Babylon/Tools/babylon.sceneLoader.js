@@ -390,6 +390,15 @@
                 scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
                 scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
 
+                // Fog
+                if (parsedData.fogMode && parsedData.fogMode !== 0) {
+                    scene.fogMode = parsedData.fogMode;
+                    scene.fogColor = BABYLON.Color3.FromArray(parsedData.fogColor);
+                    scene.fogStart = parsedData.fogStart;
+                    scene.fogEnd = parsedData.fogEnd;
+                    scene.fogDensity = parsedData.fogDensity;
+                }
+
                 // Lights
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];

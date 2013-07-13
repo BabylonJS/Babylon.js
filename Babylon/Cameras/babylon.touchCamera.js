@@ -12,6 +12,8 @@
         this.cameraRotation = new BABYLON.Vector2(0, 0);
         this.rotation = new BABYLON.Vector3(0, 0, 0);
         this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+        this.angularSensibility = 200000.0;
+        this.moveSensibility = 500.0;
 
         if (!scene.activeCamera) {
             scene.activeCamera = this;
@@ -111,13 +113,13 @@
         if (!this._offsetX) {
             return;
         }
-        this.cameraRotation.y += this._offsetX / 100000.0;
+        this.cameraRotation.y += this._offsetX / this.angularSensibility;
 
         if (this._pointerPressed.length > 1) {
-            this.cameraRotation.x += -this._offsetY / 100000.0;
+            this.cameraRotation.x += -this._offsetY / this.angularSensibility;
         } else {
             var speed = this._computeLocalCameraSpeed();
-            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / 500.0);
+            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
 
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
             this.cameraDirection = this.cameraDirection.add(BABYLON.Vector3.TransformCoordinates(direction, cameraTransform));

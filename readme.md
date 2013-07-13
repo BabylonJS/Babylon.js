@@ -42,6 +42,7 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
 - Mesh cloning
 - Animations engine
 - Sprites and 2D layers
+- Fog
 
 ### License
 
