@@ -340,6 +340,10 @@
         if (this.specularTexture && this.specularTexture.animations && this.specularTexture.animations.length > 0) {
             results.push(this.specularTexture);
         }
+        
+        if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
+            results.push(this.bumpTexture);
+        }
 
         return results;
     };
@@ -373,13 +377,6 @@
             this.bumpTexture.dispose();
         }
 
-        // Remove from scene
-        var index = this._scene.materials.indexOf(this);
-        this._scene.materials.splice(index, 1);
-
-        // Callback
-        if (this.onDispose) {
-            this.onDispose();
-        }
+        this.baseDispose();
     };
 })();

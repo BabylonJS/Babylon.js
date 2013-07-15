@@ -250,8 +250,8 @@
 
                 if (order >= 0) {
                     this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
-                    offset += vertexDeclaration[index] * 4;
                 }
+                offset += vertexDeclaration[index] * 4;
             }
         }
 

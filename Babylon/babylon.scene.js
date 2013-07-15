@@ -21,6 +21,8 @@
 
         this._onReadyCallbacks = [];
         this._pendingData = [];
+
+        this._onBeforeRenderCallbacks = [];
         
         // Fog
         this.fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -137,6 +139,18 @@
             return;
         }
         this._onReadyCallbacks.push(func);
+    };
+    
+    BABYLON.Scene.prototype.registerBeforeRender = function (func) {
+        this._onBeforeRenderCallbacks.push(func);
+    };
+    
+    BABYLON.Scene.prototype.unregisterBeforeRender = function (func) {
+        var index = this._onBeforeRenderCallbacks.indexOf(func);
+
+        if (index > -1) {
+            this._onBeforeRenderCallbacks.splice(index, 1);
+        }
     };
 
     BABYLON.Scene.prototype._addPendingData = function (data) {
@@ -412,6 +426,10 @@
         if (this.beforeRender) {
             this.beforeRender();
         }
+        
+        for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            this._onBeforeRenderCallbacks[callbackIndex]();
+        }
 
         // Camera
         if (!this.activeCamera)
@@ -446,29 +464,33 @@
         engine.clear(this.clearColor, this.autoClear, true);
 
         // Backgrounds
-        engine.setDepthBuffer(false);
-        var layerIndex;
-        var layer;
-        for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-            layer = this.layers[layerIndex];
-            if (layer.isBackground) {
-                layer.render();
+        if (this.layers.length) {
+            engine.setDepthBuffer(false);
+            var layerIndex;
+            var layer;
+            for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+                layer = this.layers[layerIndex];
+                if (layer.isBackground) {
+                    layer.render();
+                }
             }
+            engine.setDepthBuffer(true);
         }
-        engine.setDepthBuffer(true);
 
         // Render
         this._localRender(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
 
         // Foregrounds
-        engine.setDepthBuffer(false);
-        for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-            layer = this.layers[layerIndex];
-            if (!layer.isBackground) {
-                layer.render();
+        if (this.layers.length) {
+            engine.setDepthBuffer(false);
+            for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+                layer = this.layers[layerIndex];
+                if (!layer.isBackground) {
+                    layer.render();
+                }
             }
+            engine.setDepthBuffer(true);
         }
-        engine.setDepthBuffer(true);
 
         this._renderDuration = new Date() - beforeRenderDate;
 
