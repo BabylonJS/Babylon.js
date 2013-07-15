@@ -118,8 +118,8 @@ void main(void) {
 	float specComp = dot(normalize(vNormalW), angleW);
 	specComp = pow(specComp, vSpecularColor.a);
 
-	specularBase += ndl * vLightDiffuse0;
-	diffuseBase += specComp * vLightSpecular0;
+	diffuseBase += ndl * vLightDiffuse0;
+	specularBase += specComp * vLightSpecular0;
 #endif
 
 	// Reflection

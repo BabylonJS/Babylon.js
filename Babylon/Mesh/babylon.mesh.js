@@ -224,13 +224,20 @@
         return new BABYLON.SubMesh(0, 0, this._totalVertices, 0, this._indices.length, this);
     };
 
-    BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount) {
+    BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable) {
         if (this._vertexBuffer) {
             this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
         }
 
         this._uvCount = uvCount;
-        this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
+        
+        if (updatable) {
+            this._vertexBuffer = this._scene.getEngine().createDynamicVertexBuffer(vertices.length * 4);
+            this._scene.getEngine().updateDynamicVertexBuffer(this._vertexBuffer, vertices);
+        } else {
+            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
+        }
+        
         this._vertices = vertices;
 
         this._totalVertices = vertices.length / this.getFloatVertexStrideSize();
@@ -239,6 +246,11 @@
 
         this._createGlobalSubMesh();
         this._positions = null;
+    };
+
+    BABYLON.Mesh.prototype.updateVertices = function(vertices) {
+        var engine = this._scene.getEngine();
+        engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
     };
 
     BABYLON.Mesh.prototype.setIndices = function (indices) {
@@ -576,7 +588,7 @@
     };
 
     // Statics
-    BABYLON.Mesh.CreateBox = function (name, size, scene) {
+    BABYLON.Mesh.CreateBox = function (name, size, scene, updatable) {
         var box = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var normals = [
@@ -623,13 +635,13 @@
             vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, 1.0, 0.0);
         }
 
-        box.setVertices(vertices, 1);
+        box.setVertices(vertices, 1, updatable);
         box.setIndices(indices);
 
         return box;
     };
 
-    BABYLON.Mesh.CreateSphere = function (name, segments, diameter, scene) {
+    BABYLON.Mesh.CreateSphere = function (name, segments, diameter, scene, updatable) {
         var sphere = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var radius = diameter / 2;
@@ -674,14 +686,14 @@
             }
         }
 
-        sphere.setVertices(vertices, 1);
+        sphere.setVertices(vertices, 1, updatable);
         sphere.setIndices(indices);
 
         return sphere;
     };
 
     // Plane
-    BABYLON.Mesh.CreatePlane = function (name, size, scene) {
+    BABYLON.Mesh.CreatePlane = function (name, size, scene, updatable) {
         var plane = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var indices = [];
@@ -703,9 +715,49 @@
         indices.push(2);
         indices.push(3);
 
-        plane.setVertices(vertices, 1);
+        plane.setVertices(vertices, 1, updatable);
         plane.setIndices(indices);
 
         return plane;
     };
+    
+    BABYLON.Mesh.CreateGround = function(name, width, height, subdivisions, scene, updatable) {
+        var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
+
+        var indices = [];
+        var vertices = [];
+        var row, col;
+
+        for (row = 0; row <= subdivisions; row++)
+        {
+            for (col = 0; col <= subdivisions; col++)
+            {
+                var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                var normal = new BABYLON.Vector3(0, 1, 0);
+
+                vertices.push(  position.x, position.y, position.z, 
+                                normal.x, normal.y, normal.y,
+                                col / subdivisions, row / subdivisions);
+            }
+        }
+
+        for (row = 0; row < subdivisions; row++)
+        {
+            for (col = 0; col < subdivisions; col++)
+            {
+                indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                indices.push(col + 1 + row * (subdivisions + 1));
+                indices.push(col + row * (subdivisions + 1));
+
+                indices.push(col + (row + 1) * (subdivisions + 1));
+                indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                indices.push(col + row * (subdivisions + 1));
+            }
+        }
+        
+        ground.setVertices(vertices, 1, updatable);
+        ground.setIndices(indices);
+
+        return ground;
+    }
 })();

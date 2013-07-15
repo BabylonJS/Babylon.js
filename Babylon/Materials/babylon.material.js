@@ -47,15 +47,19 @@
     
     BABYLON.Material.prototype.unbind = function () {
     };
-
-    BABYLON.Material.prototype.dispose = function () {
+    
+    BABYLON.Material.prototype.baseDispose = function () {
         // Remove from scene
         var index = this._scene.materials.indexOf(this);
         this._scene.materials.splice(index, 1);
-        
+
         // Callback
         if (this.onDispose) {
             this.onDispose();
         }
+    };
+
+    BABYLON.Material.prototype.dispose = function () {
+        this.baseDispose();
     };
 })();
