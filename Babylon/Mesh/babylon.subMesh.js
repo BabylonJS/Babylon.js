@@ -11,10 +11,14 @@
         this.indexCount = indexCount;
 
         var stride = this._mesh.getFloatVertexStrideSize();
-        this._boundingInfo = new BABYLON.BoundingInfo(this._mesh.getVertices(), stride, verticesStart * stride, (verticesStart + verticesCount) * stride);
+        this._boundingInfo = new BABYLON.BoundingInfo(this._mesh.getVertices(), stride, verticesStart * stride, verticesCount * stride);
     };
     
     //Properties
+    BABYLON.SubMesh.prototype.getBoundingInfo = function() {
+        return this._boundingInfo;
+    };
+
     BABYLON.SubMesh.prototype.getMaterial = function () {
         var rootMaterial = this._mesh.material;
         
@@ -63,7 +67,7 @@
     };
 
     BABYLON.SubMesh.prototype.canIntersects = function(ray) {
-        return ray.intersectsSphere(this._boundingInfo.boundingSphere);
+        return ray.intersectsBox(this._boundingInfo.boundingBox);
     };
 
     BABYLON.SubMesh.prototype.intersects = function (ray, positions, indices) {
@@ -93,5 +97,24 @@
     // Clone    
     BABYLON.SubMesh.prototype.clone = function(newMesh) {
         return new BABYLON.SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh);
+    };
+    
+    // Statics
+    BABYLON.SubMesh.CreateFromIndices = function(materialIndex, startIndex, indexCount, mesh) {
+        var minVertexIndex = Number.MAX_VALUE;
+        var maxVertexIndex = -Number.MAX_VALUE;
+
+        var indices = mesh.getIndices();
+
+        for (var index = startIndex; index < startIndex + indexCount; index++) {
+            var vertexIndex = indices[index];
+
+            if (vertexIndex < minVertexIndex)
+                minVertexIndex = vertexIndex;
+            else if (vertexIndex > maxVertexIndex)
+                maxVertexIndex = vertexIndex;
+        }
+
+        return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh);
     };
 })();

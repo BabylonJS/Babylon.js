@@ -5,7 +5,7 @@
         this.minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         this.maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        for (var index = start; index < count; index += stride) {
+        for (var index = start; index < start + count; index += stride) {
             var current = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
 
             this.minimum = BABYLON.Vector3.Minimize(current, this.minimum);
@@ -103,6 +103,12 @@
 
         return true;
     };
+    
+    BABYLON.BoundingBox.prototype.intersectsSphere = function (sphere) {    
+        var vector = BABYLON.Vector3.Clamp(sphere.centerWorld, this.minimumWorld, this.maximumWorld);
+        var num = BABYLON.Vector3.DistanceSquared(sphere.centerWorld, vector);
+        return (num <= (sphere.radiusWorld * sphere.radiusWorld));
+    };
 
     // Statics
     BABYLON.BoundingBox.intersects = function (box0, box1) {
@@ -117,5 +123,4 @@
 
         return true;
     };
-
 })();

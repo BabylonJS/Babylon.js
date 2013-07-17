@@ -4,6 +4,8 @@ precision mediump float;
 
 uniform bool alphaTest;
 
+varying vec4 vColor;
+
 // Samplers
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
@@ -54,6 +56,8 @@ void main(void) {
 		if (baseColor.a < 0.95)
 			discard;
 	}
+
+	baseColor *= vColor;
 
 #ifdef FOG
 	float fog = CalcFogFactor();

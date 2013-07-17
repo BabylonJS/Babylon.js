@@ -2,6 +2,7 @@
 attribute vec3 position;
 attribute vec4 options;
 attribute vec4 cellInfo;
+attribute vec4 color;
 
 // Uniforms
 uniform vec2 textureInfos;
@@ -10,6 +11,7 @@ uniform mat4 projection;
 
 // Output
 varying vec2 vUV;
+varying vec4 vColor;
 
 #ifdef FOG
 varying float fFogDistance;
@@ -35,6 +37,9 @@ void main(void) {
 	// Position
 	viewPos += rotatedCorner;
 	gl_Position = projection * vec4(viewPos, 1.0);   
+
+	// Color
+	vColor = color;
 	
 	// Texture
 	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));

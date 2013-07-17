@@ -9,6 +9,99 @@
     };
 
     // Methods
+    BABYLON.Ray.prototype.intersectsBox = function (box) {
+        var d = 0.0;
+        var maxValue = Number.MAX_VALUE;
+
+        if (Math.abs(this.direction.x) < 0.0000001)
+        {
+            if (this.origin.x < box.minimum.x || this.origin.x > box.maximum.x)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            var inv = 1.0 / this.direction.x;
+            var min = (box.minimum.x - this.origin.x) * inv;
+            var max = (box.maximum.x - this.origin.x) * inv;
+
+            if (min > max)
+            {
+                var temp = min;
+                min = max;
+                max = temp;
+            }
+
+            d = Math.max(min, d);
+            maxValue = Math.min(max, maxValue);
+
+            if (d > maxValue)
+            {
+                return false;
+            }
+        }
+
+        if (Math.abs(this.direction.y) < 0.0000001)
+        {
+            if (this.origin.y < box.minimum.y || this.origin.y > box.maximum.y)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            var inv = 1.0 / this.direction.y;
+            var min = (box.minimum.y - this.origin.y) * inv;
+            var max = (box.maximum.y - this.origin.y) * inv;
+
+            if (min > max)
+            {
+                var temp = min;
+                min = max;
+                max = temp;
+            }
+
+            d = Math.max(min, d);
+            maxValue = Math.min(max, maxValue);
+
+            if (d > maxValue)
+            {
+                return false;
+            }
+        }
+
+        if (Math.abs(this.direction.z) < 0.0000001)
+        {
+            if (this.origin.z < box.minimum.z || this.origin.z > box.maximum.z)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            var inv = 1.0 / this.direction.z;
+            var min = (box.minimum.z - this.origin.z) * inv;
+            var max = (box.maximum.z - this.origin.z) * inv;
+
+            if (min > max)
+            {
+                var temp = min;
+                min = max;
+                max = temp;
+            }
+
+            d = Math.max(min, d);
+            maxValue = Math.min(max, maxValue);
+
+            if (d > maxValue)
+            {
+                return false;
+            }
+        }
+        return true;        
+    };
+    
     BABYLON.Ray.prototype.intersectsSphere = function (sphere) {
         var x = sphere.center.x - this.origin.x;
         var y = sphere.center.y - this.origin.y;
