@@ -1,10 +1,11 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Layer = function (name, imgUrl, scene, isBackground) {
+    BABYLON.Layer = function (name, imgUrl, scene, isBackground, color) {
         this.name = name;
         this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
         this.isBackground = isBackground === undefined ? true : isBackground;
+        this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
 
         this._scene = scene;
         this._scene.layers.push(this);
@@ -34,7 +35,7 @@
         // Effects
         this._effect = this._scene.getEngine().createEffect("layer",
                     ["position"],
-                    ["textureMatrix"],
+                    ["textureMatrix", "color"],
                     ["textureSampler"], "");
     };
 
@@ -55,6 +56,9 @@
         // Texture
         this._effect.setTexture("textureSampler", this.texture);
         this._effect.setMatrix("textureMatrix", this.texture._computeTextureMatrix());
+
+        // Color
+        this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
 
         // VBOs
         engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);

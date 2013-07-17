@@ -5,7 +5,7 @@
         var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        for (var index = start; index < count; index += stride) {
+        for (var index = start; index < start + count; index += stride) {
             var current = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
 
             minimum = BABYLON.Vector3.Minimize(current, minimum);

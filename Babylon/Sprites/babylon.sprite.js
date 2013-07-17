@@ -8,6 +8,7 @@
         this._manager.sprites.push(this);
 
         this.position = BABYLON.Vector3.Zero();
+        this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
 
         this._frameCount = 0;
     };

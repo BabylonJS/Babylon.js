@@ -60,6 +60,11 @@
     BABYLON.Mesh.prototype.onDispose = false;
 
     // Properties
+
+    BABYLON.Mesh.prototype.getBoundingInfo = function () {
+        return this._boundingInfo;
+    };
+
     BABYLON.Mesh.prototype.getScene = function () {
         return this._scene;
     };
@@ -223,7 +228,25 @@
         this.subMeshes = [];
         return new BABYLON.SubMesh(0, 0, this._totalVertices, 0, this._indices.length, this);
     };
+    
 
+    BABYLON.Mesh.prototype.subdivide = function(count) {
+        if (count < 1) {
+            return;
+        }
+        
+        var subdivisionSize = this._indices.length / count;
+        var offset = 0;
+        
+        this.subMeshes = [];
+        for (var index = 0; index < count; index++)
+        {
+            BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, this._indices.length - offset), this);
+
+            offset += subdivisionSize;
+        }
+    };
+    
     BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable) {
         if (this._vertexBuffer) {
             this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
@@ -251,6 +274,8 @@
     BABYLON.Mesh.prototype.updateVertices = function(vertices) {
         var engine = this._scene.getEngine();
         engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
+        this._vertices = vertices;
+        this._positions = null;
     };
 
     BABYLON.Mesh.prototype.setIndices = function (indices) {
@@ -733,10 +758,10 @@
             for (col = 0; col <= subdivisions; col++)
             {
                 var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
-                var normal = new BABYLON.Vector3(0, 1, 0);
+                var normal = new BABYLON.Vector3(0, 1.0, 0);
 
                 vertices.push(  position.x, position.y, position.z, 
-                                normal.x, normal.y, normal.y,
+                                normal.x, normal.y, normal.z,
                                 col / subdivisions, row / subdivisions);
             }
         }

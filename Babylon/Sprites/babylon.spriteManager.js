@@ -24,6 +24,11 @@
         var offset = (sprite.cellIndex / rowSize) >> 0;
         vertices.push(sprite.cellIndex - offset * rowSize);
         vertices.push(offset);
+        // Color
+        vertices.push(sprite.color.r);
+        vertices.push(sprite.color.g);
+        vertices.push(sprite.color.b);
+        vertices.push(sprite.color.a);
     };
 
     BABYLON.SpriteManager = function (name, imgUrl, capacity, cellSize, scene, epsilon) {
@@ -39,8 +44,8 @@
         this._scene.spriteManagers.push(this);
         
         // VBO
-        this._vertexDeclaration = [3, 4, 4];
-        this._vertexStrideSize = 11 * 4; // 11 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY)
+        this._vertexDeclaration = [3, 4, 4, 4];
+        this._vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
         this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
 
         var indices = [];
@@ -62,12 +67,12 @@
         
         // Effects
         this._effectBase = this._scene.getEngine().createEffect("sprites",
-                    ["position", "options", "cellInfo"],
+                    ["position", "options", "cellInfo", "color"],
                     ["view", "projection", "textureInfos", "alphaTest"],
                     ["diffuseSampler"], "");
         
         this._effectFog = this._scene.getEngine().createEffect("sprites",
-                    ["position", "options", "cellInfo"],
+                    ["position", "options", "cellInfo", "color"],
                     ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                     ["diffuseSampler"], "#define FOG");
     };
