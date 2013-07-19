@@ -3,6 +3,7 @@
 #define MAP_PLANAR		2.
 #define MAP_CUBIC		3.
 #define MAP_PROJECTION	4.
+#define MAP_SKYBOX		5.
 
 // Attributes
 attribute vec3 position;
@@ -96,11 +97,15 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 		vec3 viewDir = worldPos.xyz - vEyePosition;
 		vec3 coords = reflect(viewDir, worldNormal);
 
-		return vec3(reflectionMatrix * vec4(coords, 0));	
+		return vec3(reflectionMatrix * vec4(coords, 0));
 	}
 	else if (mode == MAP_PROJECTION)
 	{
 		return vec3(reflectionMatrix * (view * worldPos));
+	}
+	else if (mode == MAP_SKYBOX)
+	{
+		return position;
 	}
 
 	return vec3(0, 0, 0);

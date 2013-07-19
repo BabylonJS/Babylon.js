@@ -7,8 +7,8 @@
 
         this.name = name;
 
-        this.wrapU = false;
-        this.wrapV = false;
+        this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+        this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
 
         this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
         var textureSize = this.getSize();

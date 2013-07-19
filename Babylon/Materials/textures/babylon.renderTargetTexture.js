@@ -18,12 +18,12 @@
     BABYLON.RenderTargetTexture.prototype.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
 
     // Methods  
-    BABYLON.RenderTargetTexture.prototype._onBeforeRender = null;
-    BABYLON.RenderTargetTexture.prototype._onAfterRender = null;
+    BABYLON.RenderTargetTexture.prototype.onBeforeRender = null;
+    BABYLON.RenderTargetTexture.prototype.onAfterRender = null;
     
     BABYLON.RenderTargetTexture.prototype.render = function () {
-        if (this._onBeforeRender) {
-            this._onBeforeRender();
+        if (this.onBeforeRender) {
+            this.onBeforeRender();
         }
 
         var scene = this._scene;
@@ -81,8 +81,8 @@
         // Unbind
         engine.unBindFramebuffer(this._texture);
         
-        if (this._onAfterRender) {
-            this._onAfterRender();
+        if (this.onAfterRender) {
+            this.onAfterRender();
         }
     };
 
