@@ -51,6 +51,7 @@
     // Members    
     BABYLON.Mesh.prototype.material = null;
     BABYLON.Mesh.prototype.parent = null;
+    BABYLON.Mesh.prototype._isReady = true;
     BABYLON.Mesh.prototype._isEnabled = true;
     BABYLON.Mesh.prototype.isVisible = true;
     BABYLON.Mesh.prototype.isPickable = true;
@@ -124,9 +125,13 @@
 
         return true;
     };
+    
+    BABYLON.Mesh.prototype.isReady = function () {
+        return this._isReady;
+    };
 
     BABYLON.Mesh.prototype.isEnabled = function () {
-        if (!this._isEnabled) {
+        if (!this.isReady ()|| !this._isEnabled) {
             return false;
         }
 
@@ -746,7 +751,7 @@
 
         return plane;
     };
-    
+
     BABYLON.Mesh.CreateGround = function(name, width, height, subdivisions, scene, updatable) {
         var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
@@ -754,23 +759,19 @@
         var vertices = [];
         var row, col;
 
-        for (row = 0; row <= subdivisions; row++)
-        {
-            for (col = 0; col <= subdivisions; col++)
-            {
+        for (row = 0; row <= subdivisions; row++) {
+            for (col = 0; col <= subdivisions; col++) {
                 var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
                 var normal = new BABYLON.Vector3(0, 1.0, 0);
 
-                vertices.push(  position.x, position.y, position.z, 
-                                normal.x, normal.y, normal.z,
-                                col / subdivisions, row / subdivisions);
+                vertices.push(position.x, position.y, position.z,
+                    normal.x, normal.y, normal.z,
+                    col / subdivisions, row / subdivisions);
             }
         }
 
-        for (row = 0; row < subdivisions; row++)
-        {
-            for (col = 0; col < subdivisions; col++)
-            {
+        for (row = 0; row < subdivisions; row++) {
+            for (col = 0; col < subdivisions; col++) {
                 indices.push(col + 1 + (row + 1) * (subdivisions + 1));
                 indices.push(col + 1 + row * (subdivisions + 1));
                 indices.push(col + row * (subdivisions + 1));
@@ -780,10 +781,137 @@
                 indices.push(col + row * (subdivisions + 1));
             }
         }
-        
+
         ground.setVertices(vertices, 1, updatable);
         ground.setIndices(indices);
 
         return ground;
-    }
+    };
+
+    BABYLON.Mesh.CreateGroundFromHeightMap = function(name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
+        var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
+
+        var img = new Image();
+        img.onload = function() {
+            var indices = [];
+            var vertices = [];
+            var row, col;
+
+            // Getting height map data
+            var canvas = document.createElement("canvas");
+            var context = canvas.getContext("2d");
+            var heightMapWidth = img.width;
+            var heightMapHeight = img.height;
+            canvas.width = heightMapWidth;
+            canvas.height = heightMapHeight;
+
+            context.drawImage(img, 0, 0);
+
+            var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+
+            // Vertices
+            for (row = 0; row <= subdivisions; row++) {
+                for (col = 0; col <= subdivisions; col++) {
+                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+
+                    // Compute height
+                    var heightMapX = (((position.x + width / 2) / width) * (heightMapWidth - 1)) | 0;
+                    var heightMapY = (((position.z + height / 2) / height) * (heightMapHeight - 1)) | 0;
+
+                    var pos = (heightMapX + heightMapY * heightMapWidth) * 4;
+                    var r = buffer[pos] / 255.0;
+                    var g = buffer[pos + 1] / 255.0;
+                    var b = buffer[pos + 2] / 255.0;
+
+                    var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+
+                    position.y = minHeight + (maxHeight - minHeight) * gradient;
+
+                    // Add  vertex
+                    vertices.push(position.x, position.y, position.z,
+                        0, 0, 0,
+                        col / subdivisions, row / subdivisions);
+                }
+            }
+
+            // Indices
+            for (row = 0; row < subdivisions; row++) {
+                for (col = 0; col < subdivisions; col++) {
+                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                    indices.push(col + 1 + row * (subdivisions + 1));
+                    indices.push(col + row * (subdivisions + 1));
+
+                    indices.push(col + (row + 1) * (subdivisions + 1));
+                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                    indices.push(col + row * (subdivisions + 1));
+                }
+            }
+
+            // Normals
+            BABYLON.Mesh.ComputeNormal(vertices, indices, ground.getFloatVertexStrideSize());
+
+            // Transfer
+            ground.setVertices(vertices, 1, updatable);
+            ground.setIndices(indices);
+
+            ground._isReady = true;
+        };
+
+        img.src = url;
+
+        ground._isReady = false;
+
+        return ground;
+    };
+    
+    // Tools
+    BABYLON.Mesh.ComputeNormal = function(vertices, indices, stride, normalOffset) {
+        var positions = [];
+        var facesOfVertices = [];
+        var index;
+
+        if (normalOffset === undefined) {
+            normalOffset = 3;
+        }
+
+        for (index = 0; index < vertices.length; index += stride) {
+            var position = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
+            positions.push(position);
+            facesOfVertices.push([]);
+        }
+        // Compute normals
+        var facesNormals = [];
+        for (index = 0; index < indices.length / 3; index++) {
+            var i1 = indices[index * 3];
+            var i2 = indices[index * 3 + 1];
+            var i3 = indices[index * 3 + 2];
+
+            var p1 = positions[i1];
+            var p2 = positions[i2];
+            var p3 = positions[i3];
+
+            var p1p2 = p1.subtract(p2);
+            var p3p2 = p3.subtract(p2);
+
+            facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+            facesOfVertices[i1].push(index);
+            facesOfVertices[i2].push(index);
+            facesOfVertices[i3].push(index);
+        }
+
+        for (index = 0; index < positions.length; index++) {
+            var faces = facesOfVertices[index];
+
+            var normal = BABYLON.Vector3.Zero();
+            for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
+                normal = normal.add(facesNormals[faces[faceIndex]]);
+            }
+
+            normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
+
+            vertices[index * stride + normalOffset] = normal.x;
+            vertices[index * stride + normalOffset + 1] = normal.y;
+            vertices[index * stride + normalOffset + 2] = normal.z;
+        }
+    };
 })();

@@ -309,6 +309,11 @@
             var mesh = this.meshes[meshIndex];
 
             this._totalVertices += mesh.getTotalVertices();
+            
+            if (!mesh.isReady()) {
+                continue;
+            }
+
             mesh.computeWorldMatrix();
 
             if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(frustumPlanes)) {
