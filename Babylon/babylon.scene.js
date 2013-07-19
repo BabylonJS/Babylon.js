@@ -632,7 +632,7 @@
         for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
             var mesh = this.meshes[meshIndex];
 
-            if (!mesh.isEnabled() || !mesh.isVisible) {
+            if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
                 continue;
             }
 

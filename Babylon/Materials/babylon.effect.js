@@ -123,6 +123,14 @@
         this._engine.setVector3(this.getUniform(uniformName), vector3);
     };
     
+    BABYLON.Effect.prototype.setFloat2 = function (uniformName, x, y) {
+        if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y)
+            return;
+
+        this._valueCache[uniformName] = [x, y];
+        this._engine.setFloat2(this.getUniform(uniformName), x, y);
+    };
+    
     BABYLON.Effect.prototype.setFloat3 = function (uniformName, x, y, z) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z)
             return;

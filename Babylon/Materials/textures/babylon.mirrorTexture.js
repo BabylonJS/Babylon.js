@@ -16,7 +16,7 @@
     BABYLON.MirrorTexture.prototype.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
     
     // Method
-    BABYLON.MirrorTexture.prototype._onBeforeRender = function () {
+    BABYLON.MirrorTexture.prototype.onBeforeRender = function () {
         var scene = this._scene;
 
         var mirrorMatrix = BABYLON.Matrix.Reflection(this.mirrorPlane);
@@ -29,7 +29,7 @@
         scene.getEngine().cullBackFaces = false;
     };
 
-    BABYLON.MirrorTexture.prototype._onAfterRender = function () {
+    BABYLON.MirrorTexture.prototype.onAfterRender = function () {
         var scene = this._scene;
 
         scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());

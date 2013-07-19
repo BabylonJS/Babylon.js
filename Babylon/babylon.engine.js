@@ -27,7 +27,7 @@
         this._workingContext = this._workingCanvas.getContext("2d");
 
         // Viewport
-        this._hardwareScalingLevel = 1.0;
+        this._hardwareScalingLevel = 1.0 / window.devicePixelRatio || 1.0
         this.resize();
 
         // Caps
@@ -378,6 +378,13 @@
             return;
 
         this._gl.uniform3f(uniform, vector3.x, vector3.y, vector3.z);
+    };
+    
+    BABYLON.Engine.prototype.setFloat2 = function (uniform, x, y) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform2f(uniform, x, y);
     };
     
     BABYLON.Engine.prototype.setFloat3 = function (uniform, x, y, z) {
@@ -785,12 +792,33 @@
 
             if (internalTexture._cachedWrapU !== texture.wrapU) {
                 internalTexture._cachedWrapU = texture.wrapU;
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, texture.wrapU ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
+
+                switch (texture.wrapU) {
+                    case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
+                        break;
+                    case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+                        break;
+                    case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
+                        break;
+                }
             }
 
             if (internalTexture._cachedWrapV !== texture.wrapV) {
                 internalTexture._cachedWrapV = texture.wrapV;
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, texture.wrapV ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
+                switch (texture.wrapV) {
+                    case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
+                        break;
+                    case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+                        break;
+                    case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
+                        break;
+                }
             }
         }
     };

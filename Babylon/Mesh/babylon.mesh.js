@@ -53,6 +53,7 @@
     BABYLON.Mesh.prototype.parent = null;
     BABYLON.Mesh.prototype._isEnabled = true;
     BABYLON.Mesh.prototype.isVisible = true;
+    BABYLON.Mesh.prototype.isPickable = true;
     BABYLON.Mesh.prototype.visibility = 1.0;
     BABYLON.Mesh.prototype.billboardMode = BABYLON.Mesh.BILLBOARDMODE_NONE;
     BABYLON.Mesh.prototype.checkCollisions = false;

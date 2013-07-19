@@ -36,8 +36,8 @@
         this._capacity = capacity;
         this.cellSize = cellSize;
         this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
-        this._spriteTexture.wrapU = false;
-        this._spriteTexture.wrapV = false;
+        this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+        this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._epsilon = epsilon === undefined ? 0.01 : epsilon;
 
         this._scene = scene;

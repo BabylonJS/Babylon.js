@@ -25,6 +25,11 @@
     BABYLON.Texture.PLANAR_MODE = 2;
     BABYLON.Texture.CUBIC_MODE = 3;
     BABYLON.Texture.PROJECTION_MODE = 4;
+    BABYLON.Texture.SKYBOX_MODE = 5;
+    
+    BABYLON.Texture.CLAMP_ADDRESSMODE = 0;
+    BABYLON.Texture.WRAP_ADDRESSMODE = 1;
+    BABYLON.Texture.MIRROR_ADDRESSMODE = 2;
 
     // Members
     BABYLON.Texture.prototype.uOffset = 0;
@@ -34,8 +39,8 @@
     BABYLON.Texture.prototype.uAng = 0;
     BABYLON.Texture.prototype.vAng = 0;
     BABYLON.Texture.prototype.wAng = 0;
-    BABYLON.Texture.prototype.wrapU = true;
-    BABYLON.Texture.prototype.wrapV = true;
+    BABYLON.Texture.prototype.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+    BABYLON.Texture.prototype.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
     BABYLON.Texture.prototype.coordinatesIndex = 0;
     BABYLON.Texture.prototype.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
 
