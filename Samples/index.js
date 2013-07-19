@@ -18,12 +18,13 @@
         { title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB" }];
 
     var tests = [
-        { title: "TEST SCENE #1", id: 0, screenshot: "testscene.jpg", size: "10 MB" },
-        { title: "TEST LIGHTS", id: 1, screenshot: "testlight.jpg", size: "0.1 MB" },
-        { title: "TEST BUMP", id: 2, screenshot: "bump.jpg", size: "0.1 MB" },
-        { title: "TEST FOG", id: 3, screenshot: "fog.jpg", size: "0.1 MB" },
-        { title: "TEST MULTIMATERIAL", id: 4, screenshot: "multimat.jpg", size: "0.1 MB" },
-        { title: "TEST BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB" }
+        { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
+        { title: "LIGHTS", id: 1, screenshot: "testlight.jpg", size: "0.1 MB" },
+        { title: "BUMP", id: 2, screenshot: "bump.jpg", size: "0.1 MB" },
+        { title: "FOG", id: 3, screenshot: "fog.jpg", size: "0.1 MB" },
+        { title: "MULTIMATERIAL", id: 4, screenshot: "multimat.jpg", size: "0.1 MB" },
+        { title: "BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB" },
+        { title: "SCENE #1", id: 0, screenshot: "testscene.jpg", size: "10 MB" }
     ];
 
     // UI
@@ -180,6 +181,9 @@
                         break;
                     case 4:
                         newScene = CreateMultiMaterialScene(engine);
+                        break;
+                    case 5:
+                        newScene = CreateHeightMapTestScene(engine);
                         break;
                 }
                 

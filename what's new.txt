@@ -2,6 +2,7 @@
  - Dynamic meshes
  - Skybox
  - Support for high-DPI displays
+ - Height maps
 1.0.5:
  - Adding color tint for sprites and layers
 1.0.4:
