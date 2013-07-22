@@ -18,6 +18,12 @@ uniform vec3 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
 #endif
 
+#ifdef LIGHT1
+uniform vec4 vLightData1;
+uniform vec3 vLightDiffuse1;
+uniform vec3 vLightSpecular1;
+#endif
+
 // Samplers
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
@@ -62,6 +68,44 @@ varying vec3 vNormalW;
 
 #ifdef CLIPPLANE
 varying float fClipDistance;
+#endif
+
+// Fog
+#ifdef FOG
+
+#define FOGMODE_NONE    0.
+#define FOGMODE_EXP     1.
+#define FOGMODE_EXP2    2.
+#define FOGMODE_LINEAR  3.
+#define E 2.71828
+
+uniform vec4 vFogInfos;
+uniform vec3 vFogColor;
+varying float fFogDistance;
+
+float CalcFogFactor()
+{
+	float fogCoeff = 1.0;
+	float fogStart = vFogInfos.y;
+	float fogEnd = vFogInfos.z;
+	float fogDensity = vFogInfos.w;
+
+	if (FOGMODE_LINEAR == vFogInfos.x)
+	{
+		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
+	}
+	else if (FOGMODE_EXP == vFogInfos.x)
+	{
+		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
+	}
+	else if (FOGMODE_EXP2 == vFogInfos.x)
+	{
+		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
+	}
+
+	return min(1., max(0., fogCoeff));
+}
+
 #endif
 
 void main(void) {
@@ -115,12 +159,34 @@ void main(void) {
 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
-	float specComp = dot(normalize(vNormalW), angleW);
+	float specComp = max(0., dot(vNormalW, angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
 	diffuseBase += ndl * vLightDiffuse0;
 	specularBase += specComp * vLightSpecular0;
 #endif
+#ifdef LIGHT1
+	if (vLightData1.w == 0.)
+	{
+		lightVectorW = normalize(vLightData1.xyz - vPositionW);
+	}
+	else
+	{
+		lightVectorW = normalize(-vLightData1.xyz);
+	}
+
+	// diffuse
+	ndl = max(0., dot(vNormalW, lightVectorW));
+
+	// Specular
+	angleW = normalize(viewDirectionW + lightVectorW);
+	specComp = max(0., dot(vNormalW, angleW));
+	specComp = pow(specComp, vSpecularColor.a);
+
+	diffuseBase += ndl * vLightDiffuse1;
+	specularBase += specComp * vLightSpecular1;
+#endif
+
 
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);
@@ -169,5 +235,12 @@ void main(void) {
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 	vec3 finalSpecular = specularBase * specularColor;
 
-	gl_FragColor = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+
+#ifdef FOG
+	float fog = CalcFogFactor();
+	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
+#endif
+
+	gl_FragColor = color;
 }

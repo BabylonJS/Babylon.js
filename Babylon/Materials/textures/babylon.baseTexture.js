@@ -60,17 +60,13 @@
         return null;
     };
 
-    BABYLON.BaseTexture.prototype.dispose = function () {
+    BABYLON.BaseTexture.prototype.releaseInternalTexture = function() {
         if (this._texture === undefined) {
             return;
         }
         var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
         this._texture.references--;
-        
-        // Remove from scene
-        var index = this._scene.textures.indexOf(this);
-        this._scene.textures.splice(index, 1);
-        
+
         // Final reference ?
         if (this._texture.references == 0) {
             var index = texturesCache.indexOf(this._texture);
@@ -80,6 +76,18 @@
 
             delete this._texture;
         }
+    };
+
+    BABYLON.BaseTexture.prototype.dispose = function () {
+        if (this._texture === undefined) {
+            return;
+        }
+
+        this.releaseInternalTexture();
+        
+        // Remove from scene
+        var index = this._scene.textures.indexOf(this);
+        this._scene.textures.splice(index, 1);
         
         // Callback
         if (this.onDispose) {

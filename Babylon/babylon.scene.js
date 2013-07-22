@@ -51,6 +51,7 @@
         this.textures = [];
 
         // Particles
+        this.particlesEnabled = true;
         this.particleSystems = [];
 
         // Sprites
@@ -355,12 +356,14 @@
 
         // Particle systems
         var beforeParticlesDate = new Date();
-        for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
-            var particleSystem = this.particleSystems[particleIndex];
+        if (this.particlesEnabled) {
+            for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
+                var particleSystem = this.particleSystems[particleIndex];
 
-            if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
-                this._activeParticleSystems.push(particleSystem);
-                particleSystem.animate();
+                if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
+                    this._activeParticleSystems.push(particleSystem);
+                    particleSystem.animate();
+                }
             }
         }
         this._particlesDuration += new Date() - beforeParticlesDate;
@@ -414,7 +417,7 @@
         for (var particleIndex = 0; particleIndex < this._activeParticleSystems.length; particleIndex++) {
             var particleSystem = this._activeParticleSystems[particleIndex];
 
-            if (!activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
+            if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
                 this._activeParticles += particleSystem.render();
             }
         }
@@ -626,7 +629,7 @@
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
         }
 
-        return BABYLON.Ray.CreateNew(x, y, engine.getRenderWidth(), engine.getRenderHeight(), world ? world : BABYLON.Matrix.Identity(), this._viewMatrix, this._projectionMatrix);
+        return BABYLON.Ray.CreateNew(x, y, engine.getRenderWidth() * engine.getHardwareScalingLevel(), engine.getRenderHeight() * engine.getHardwareScalingLevel(), world ? world : BABYLON.Matrix.Identity(), this._viewMatrix, this._projectionMatrix);
     };
 
     BABYLON.Scene.prototype.pick = function (x, y) {

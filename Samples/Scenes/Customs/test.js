@@ -63,7 +63,7 @@
     mirror.material.reflectionTexture.renderList = [box, box2, box3, sphere];
     mirror.material.reflectionTexture.level = 0.5;
     mirror.position = new BABYLON.Vector3(0, -5.0, 0);
-
+    
     // Sprites
     var spriteManager = new BABYLON.SpriteManager("MonsterA", "Assets/Player.png", 500, 64, scene);
     for (var index = 0; index < 500; index++) {

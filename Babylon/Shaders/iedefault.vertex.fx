@@ -3,6 +3,7 @@
 #define MAP_PLANAR		2.
 #define MAP_CUBIC		3.
 #define MAP_PROJECTION	4.
+#define MAP_SKYBOX		5.
 
 // Attributes
 attribute vec3 position;
@@ -16,6 +17,7 @@ attribute vec2 uv2;
 
 // Uniforms
 uniform mat4 world;
+uniform mat4 view;
 uniform mat4 worldViewProjection;
 
 #ifdef DIFFUSE
@@ -38,7 +40,6 @@ uniform vec2 vOpacityInfos;
 
 #ifdef REFLECTION
 uniform vec3 vEyePosition;
-uniform mat4 view;
 varying vec3 vReflectionUVW;
 
 uniform vec3 vReflectionInfos;
@@ -66,12 +67,16 @@ uniform vec4 vClipPlane;
 varying float fClipDistance;
 #endif
 
+#ifdef FOG
+varying float fFogDistance;
+#endif
+
 #ifdef REFLECTION
 vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
-{	
+{
 	if (mode == MAP_SPHERICAL)
 	{
-		vec3 coords = vec3(view * vec4(worldNormal, 0.0));	
+		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
 
 		return vec3(reflectionMatrix * vec4(coords, 1.0));
 	}
@@ -87,11 +92,15 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 		vec3 viewDir = worldPos.xyz - vEyePosition;
 		vec3 coords = reflect(viewDir, worldNormal);
 
-		return vec3(reflectionMatrix * vec4(coords, 0));	
+		return vec3(reflectionMatrix * vec4(coords, 0));
 	}
 	else if (mode == MAP_PROJECTION)
 	{
 		return vec3(reflectionMatrix * (view * worldPos));
+	}
+	else if (mode == MAP_SKYBOX)
+	{
+		return position;
 	}
 
 	return vec3(0, 0, 0);
@@ -99,7 +108,7 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 #endif
 
 void main(void) {
-	gl_Position = worldViewProjection * vec4(position, 1.0);   
+	gl_Position = worldViewProjection * vec4(position, 1.0);
 
 	vec4 worldPos = world * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
@@ -174,6 +183,11 @@ void main(void) {
 
 	// Clip plane
 #ifdef CLIPPLANE
-		fClipDistance = dot(worldPos, vClipPlane);
+	fClipDistance = dot(worldPos, vClipPlane);
+#endif
+
+	// Fog
+#ifdef FOG
+	fFogDistance = (view * worldPos).z;
 #endif
 }
