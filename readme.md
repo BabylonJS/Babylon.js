@@ -2,10 +2,17 @@
 ========
  
 
-Babylon.js is a webgl / javascript 3D engine. It supports the following features: 
 - Complete scene graph with lights, cameras, materials and meshes
-- Standard material is a per pixel material that supports:
- - Diffuse lightning and texture
+- Collisions engine
+- Scene picking
+- Antialiasing
+- Animations engine
+- Particles Systems
+- Sprites and 2D layers
+-  Optimizations engines:  - Frustum clipping
+ - Sub-meshes clipping
+ - Hardware scaling
+- Standard material is a per pixel material that supports:  - Diffuse lightning and texture
  - Ambient lightning and texture
  - Specular lightning
  - Opacity texture
@@ -13,38 +20,28 @@ Babylon.js is a webgl / javascript 3D engine. It supports the following features
  - Mirror texture
  - Emissive texture
  - Specular texture
- - Bump texture (Normal map)
+ - Bump texture
  - Up to 4 lights (points, directionals, spots, hemispherics)
-- Render target textures
-- Dynamic textures (canvas)
-- Video textures
-- Custom materials
-- Alpha blending
-- Alpha testing
-- Billboarding
-- Scene picking
-- Collisions engine
-- Cameras: 
- - Arc rotate camera
+ - Custom materials
+ - Skybox
+-  Special FX  - Fog
+ - Alpha blending
+ - Alpha testing
+ - Billboarding
+ - Fullscreen mode
+-  Textures:  - Render target textures
+ - Dynamic textures (canvas)
+ - Video textures
+-  Cameras:  - Arc rotate camera
  - Free camera
  - Touch camera
-- Frustum clipping
-- Sub-meshes clipping
-- Fullscreen mode
-- Babylon file format is a JSON file that can be produced from:
- - .OBJ
- - .FBX
- - .MXB
- - Blender
-- Hardware scaling
-- Antialiasing
-- Particles Systems
-- Mesh cloning
-- Animations engine
-- Sprites and 2D layers
-- Fog
-- Dynamic meshes
-- Skybox
+-  Meshes:  - Mesh cloning
+ - Dynamic meshes
+ - Height maps
+-  Import:  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
+ - Exporter for Blender
+
+
 
 ### License
 
