@@ -99,6 +99,10 @@
         this._hardwareScalingLevel = level;
         this.resize();
     };
+    
+    BABYLON.Engine.prototype.getHardwareScalingLevel = function () {
+        return this._hardwareScalingLevel;
+    };
 
     BABYLON.Engine.prototype.getLoadedTexturesCache = function () {
         return this._loadedTexturesCache;

@@ -321,7 +321,7 @@
     };
 
     BABYLON.SceneLoader = {
-        ImportMesh: function (meshName, rootUrl, sceneFilename, scene, then) {
+        ImportMesh: function (meshName, rootUrl, sceneFilename, scene, then, progressCallBack) {
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
 
@@ -377,7 +377,7 @@
                 if (then) {
                     then(meshes, particleSystems);
                 }
-            });
+            }, progressCallBack);
         },
         Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {

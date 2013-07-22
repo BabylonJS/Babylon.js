@@ -468,24 +468,50 @@ button {
 
 #aboutPanel {
     position: absolute;
-    height: 100%;
-    width: 460px;
-    left: 0;
-    top: 0;
+    height: 80%;
+    width: 80%;
+    left: 10%;
+    top: 10%;
     z-index: 50;
     transition: transform 0.25s ease-in-out;
     background-color: #EEEEEE;
+    border: 2px solid #DDDDDD;
     color: #888888;
     padding-left: 20px;
     padding-right: 20px;
-    transform: translateX(-500px);
+    transform: translateX(-120%);
     -webkit-transition: -webkit-transform 0.25s ease-in-out;
-    -webkit-transform: translateX(-500px);
+    -webkit-transform: translateX(-120%);
 }
 
 #aboutParagraph {
-    position: absolute;
-    height: 100%;
-    width: 480px;
+    text-align: center;
+}
+
+#features {
     overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    top: 320px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+}
+
+#engineFeatures {
+    column-count: 3;
+    column-gap: 20px;
+    column-rule-color: #ccc;
+    column-rule-style: dotted;
+    column-rule-width: 2px;
+    -webkit-column-count: 3;
+    -webkit-column-gap: 20px;
+    -webkit-column-rule-color: #ccc;
+    -webkit-column-rule-style: dotted;
+    -webkit-column-rule-width: 2px;
+    -moz-column-count: 3;
+    -moz-column-gap: 20px;
+    -moz-column-rule-color: #ccc;
+    -moz-column-rule-style: dotted;
+    -moz-column-rule-width: 2px;
 }

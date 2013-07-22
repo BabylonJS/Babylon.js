@@ -206,7 +206,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
-	float specComp = max(0., dot(normalize(vNormal), angleW));
+	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
 	result.diffuse = ndl * diffuseColor;
@@ -234,7 +234,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		// Specular
 		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
-		float specComp = max(0., dot(normalize(vNormal), angleW));
+		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, vSpecularColor.a);
 
 		result.diffuse = ndl * spotAtten * diffuseColor;
@@ -257,7 +257,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
-	float specComp = max(0., dot(normalize(vNormal), angleW));
+	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
 	result.diffuse = mix(groundColor, diffuseColor, ndl);

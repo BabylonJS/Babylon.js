@@ -20,6 +20,11 @@
     // Methods  
     BABYLON.RenderTargetTexture.prototype.onBeforeRender = null;
     BABYLON.RenderTargetTexture.prototype.onAfterRender = null;
+
+    BABYLON.RenderTargetTexture.prototype.resize = function(size, generateMipMaps) {
+        this.releaseInternalTexture();
+        this._texture = this._scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+    };
     
     BABYLON.RenderTargetTexture.prototype.render = function () {
         if (this.onBeforeRender) {

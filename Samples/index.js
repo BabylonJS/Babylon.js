@@ -3,11 +3,16 @@
 
     // Demos
     var demos = [
-        { title: "HEART", scene: "heart", screenshot: "heart.jpg", size: "14 MB", big:true },
+        { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB", big: true },
+        { title: "HEART", scene: "heart", screenshot: "heart.jpg", size: "14 MB", },
         { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB" },
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
         {
-            title: "FLAT 2009", scene: "Flat2009", screenshot: "flat2009.jpg", size: "44 MB", onload: function () {
+            title: "FLAT 2009",
+            scene: "Flat2009",
+            screenshot: "flat2009.jpg",
+            size: "44 MB",
+            onload: function () {
                 var ecran = scene.getMeshByName("Ecran");
                 ecran.material.diffuseTexture = new BABYLON.VideoTexture("video", ["Scenes/Flat2009/babylonjs.mp4", "Scenes/Flat2009/babylonjs.webm"], 256, scene, true);
             }
@@ -15,7 +20,11 @@
         { title: "THE CAR", scene: "theCar", screenshot: "thecar.jpg", size: "100 MB" },
         { title: "VIPER", scene: "Viper", screenshot: "viper.jpg", size: "18 MB" },
         { title: "SPACESHIP", scene: "spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
-        { title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB" }];
+        {
+            title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", onload: function () {
+                scene.collisionsEnabled = false;
+            }
+        }];
 
     var tests = [
         { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
@@ -53,6 +62,10 @@
                 document.getElementById("notSupported").className = "";
                 opacityMask.className = "";
             } else {
+                if (demo.url) {
+                    window.location = demo.url;
+                    return;
+                }
                 loadScene(demo.id !== undefined ? demo.id : demo.scene, function () {
                     if (demo.collisions !== undefined) {
                         scene.collisionsEnabled = demo.collisions;
@@ -165,7 +178,7 @@
 
             if (typeof name == "number") {
                 var newScene;
-                
+
                 switch (name) {
                     case 0:
                         newScene = CreateTestScene(engine);
@@ -186,7 +199,7 @@
                         newScene = CreateHeightMapTestScene(engine);
                         break;
                 }
-                
+
                 newScene.activeCamera.attachControl(canvas);
 
                 scene = newScene;
@@ -304,8 +317,8 @@
             aboutPanel.style.transform = "translateX(0px)";
         } else {
             aboutIsClosed = true;
-            aboutPanel.style.webkitTransform = "translateX(-500px)";
-            aboutPanel.style.transform = "translateX(-500px)";
+            aboutPanel.style.webkitTransform = "translateX(-120%)";
+            aboutPanel.style.transform = "translateX(-120%)";
         }
     });
 
@@ -326,8 +339,8 @@
     document.getElementById("menuPanel").addEventListener("click", function (evt) {
         if (!aboutIsClosed) {
             aboutIsClosed = true;
-            aboutPanel.style.webkitTransform = "translateX(-500px)";
-            aboutPanel.style.transform = "translateX(-500px)";
+            aboutPanel.style.webkitTransform = "translateX(-120%)";
+            aboutPanel.style.transform = "translateX(-120%)";
         }
     });
 
@@ -400,7 +413,7 @@
             engine.switchFullscreen(document.getElementById("rootDiv"));
         }
     });
-    
+
     touchCamera.addEventListener("click", function () {
         if (!scene) {
             return;
@@ -415,13 +428,13 @@
         camera.ellipsoid = scene.activeCamera.ellipsoid.clone();
         camera.checkCollisions = scene.activeCamera.checkCollisions;
         camera.applyGravity = scene.activeCamera.applyGravity;
-        
+
         camera.speed = scene.activeCamera.speed;
 
         scene.activeCamera.detachControl(canvas);
 
         scene.activeCamera = camera;
-        
+
         scene.activeCamera.attachControl(canvas);
     });
 
@@ -436,7 +449,7 @@
             scene.collisionsEnabled = collisions.checked;
         }
     });
-    
+
     // Query string
     var queryString = window.location.search;
 

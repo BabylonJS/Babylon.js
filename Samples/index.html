@@ -15,7 +15,7 @@
 
     </script>
     <link href="index.css" rel="stylesheet" />
-    <script src="hand.js"></script>
+    <script src="hand.minified-1.1.0.js"></script>
     <!--<script src="Babylon/Tools/babylon.math.js"></script>
     <script src="Babylon/Tools/babylon.tools.js"></script>
     <script src="Babylon/babylon.engine.js"></script>
@@ -74,11 +74,11 @@
                 </div>
                 <div id="itemsContainer">
                     <div class="header">
-                       DEMOS     
+                        DEMOS
                     </div>
                     <div id="items"></div>
                     <div class="header">
-                        <br/>                        
+                        <br />
                         FEATURES TESTS
                     </div>
                     <div id="testItems"></div>
@@ -99,79 +99,101 @@
             </a>
             <div id="aboutText">ABOUT</div>
             <img id="aboutLink" src="Assets/BtnAbout.png" class="button" />
-        </div>
-        <div id="aboutPanel">
-            <div id="aboutParagraph">
-                <h1>Credits</h1>
-                <p>
-                    <i>3D engine:</i> David <b>CATUHE</b> (<a href="http://www.twitter.com/@deltakosh">@deltakosh</a>)<br />
-                    <i>Scenes:</i> Michel <b>ROUSSEAU</b> (<a href="http://www.twitter.com/@rousseau_michel">@rousseau_michel</a>)<br />
-                    <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
-                    <i>Game FX:</i> Sébastien <b>PERTUS</b> (<a href="http://www.twitter.com/@sebastienpertus">@sebastienpertus</a>)<br />
-                    <i>Game FX:</i> David <b>ROUSSET</b> (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
-                </p>
-                <h1>About babylon.js</h1>
-                <p>
-                    Babylon.js is a <b>webgl</b> / <b>javascript</b> 3D engine.
+            <div id="aboutPanel">
+                <div id="aboutParagraph">
+                    <h1>Credits</h1>
+                    <p>
+                        <i>3D engine:</i> David <b>CATUHE</b> (<a href="http://www.twitter.com/@deltakosh">@deltakosh</a>)<br />
+                        <i>Scenes:</i> Michel <b>ROUSSEAU</b> (<a href="http://www.twitter.com/@rousseau_michel">@rousseau_michel</a>)<br />
+                        <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
+                        <i>Game FX:</i> Sébastien <b>PERTUS</b> (<a href="http://www.twitter.com/@sebastienpertus">@sebastienpertus</a>)<br />
+                        <i>Game FX:</i> David <b>ROUSSET</b> (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
+                    </p>
+                </div>
+                <div id="aboutParagraph">
+                    <h1>About babylon.js</h1>
+                    Babylon.js is a 3D engine based on <b>webgl</b> and <b>javascript</b>.
                     It supports the following features:
-                    <ul>
-                        <li>Complete scene graph with lights, cameras, materials and meshes</li>
-                        <li>
-                            Standard material is a <b>per pixel</b> material that supports:
-                            <ul>
-                                <li>Diffuse lightning and texture</li>
-                                <li>Ambient lightning and texture</li>
-                                <li>Specular lightning</li>
-                                <li>Opacity texture</li>
-                                <li>Reflection texture (Spheric, planar, cubic and projection)</li>
-                                <li><b>Mirror texture</b></li>
-                                <li><b>Emissive texture</b></li>
-                                <li><b>Specular texture</b></li>
-                                <li><b>Bump texture</b></li>
-                                <li>Up to 4 lights (points, directionals, spots, hemispherics)</li>
-                            </ul>
-                        </li>
-                        <li>Render target textures</li>
-                        <li>Dynamic textures (canvas)</li>
-                        <li>Video textures</li>
-                        <li>Custom materials</li>
-                        <li>Alpha blending</li>
-                        <li>Alpha testing</li>
-                        <li>Billboarding</li>
-                        <li>Scene picking</li>
-                        <li><b>Collisions engine</b></li>
-                        <li>
-                            Cameras:
-                            <ul>
-                                <li>Arc rotate camera</li>
-                                <li>Free camera</li>
-                                <li><b>Touch camera</b></li>
-                            </ul>
-                        </li>
-                        <li>Frustum clipping</li>
-                        <li>Sub-meshes clipping</li>
-                        <li><b>Fullscreen mode</b></li>
-                        <li>
-                            Babylon file format is a JSON file that can be produced from:
-                            <ul>
-                                <li>.OBJ</li>
-                                <li>.FBX</li>
-                                <li>.MXB</li>
-                                <li>Blender</li>
-                            </ul>
-                        </li>
-                        <li>Hardware scaling</li>
-                        <li>Antialiasing</li>
-                        <li><b>Particles Systems</b></li>
-                        <li>Mesh cloning</li>
-                        <li><b>Animations engine</b></li>
-                        <li>Sprites and 2D layers</li>
-                        <li>Fog</li>
-                        <li>Skybox</li>
-                        <li>Dynamic meshes</li>
-                        <li>Height maps</li>
-                    </ul>
-                </p>
+                </div>
+                <div id="features">
+                    <div id="engineFeatures">
+                        <ul>
+                            <li>Complete scene graph with lights, cameras, materials and meshes</li>
+                            <li><b>Collisions engine</b></li>
+                            <li>Scene picking</li>
+                            <li>Antialiasing</li>
+                            <li><b>Animations engine</b></li>
+                            <li><b>Particles Systems</b></li>
+                            <li>Sprites and 2D layers</li>
+                            <li>
+                                Optimizations engines:
+                                <ul>
+                                    <li>Frustum clipping</li>
+                                    <li>Sub-meshes clipping</li>
+                                    <li>Hardware scaling</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Standard material is a <b>per pixel</b> material that supports:
+                                <ul>
+                                    <li>Diffuse lightning and texture</li>
+                                    <li>Ambient lightning and texture</li>
+                                    <li>Specular lightning</li>
+                                    <li>Opacity texture</li>
+                                    <li>Reflection texture (Spheric, planar, cubic and projection)</li>
+                                    <li><b>Mirror texture</b></li>
+                                    <li><b>Emissive texture</b></li>
+                                    <li><b>Specular texture</b></li>
+                                    <li><b>Bump texture</b></li>
+                                    <li>Up to 4 lights (points, directionals, spots, hemispherics)</li>
+                                    <li>Custom materials</li>
+                                    <li>Skybox</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Special FX
+                                <ul>
+                                    <li>Fog</li>
+                                    <li>Alpha blending</li>
+                                    <li>Alpha testing</li>
+                                    <li>Billboarding</li>
+                                    <li>Fullscreen mode</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Textures:
+                                <ul>
+                                    <li>Render target textures</li>
+                                    <li>Dynamic textures (canvas)</li>
+                                    <li>Video textures</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Cameras:
+                                <ul>
+                                    <li>Arc rotate camera</li>
+                                    <li>Free camera</li>
+                                    <li><b>Touch camera</b></li>
+                                </ul>
+                            </li>
+                            <li>
+                                Meshes:
+                                <ul>
+                                    <li>Mesh cloning</li>
+                                    <li>Dynamic meshes</li>
+                                    <li><b>Height maps</b></li>                                    
+                                </ul>
+                            </li>
+                            <li>
+                                Import:
+                                <ul>
+                                    <li>Babylon scene file can be converted from <i>.OBJ</i>, <i>.FBX</i>, <i>.MXB</i></li>
+                                    <li>Exporter for Blender</li>                                    
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="opacityMask" class="hidden"></div>
@@ -184,13 +206,13 @@
                 <div id="controlsZone">
                     <div id="leftPart">
                         <p>
-                            <input type="checkbox" id="wireframe" />Wireframe
+                            <label><input type="checkbox" id="wireframe" />Wireframe</label>
                         </p>
                         <p>
-                            <input type="checkbox" id="enableStats" checked="true" />Statistics<br />
+                            <label><input type="checkbox" id="enableStats" checked="true" />Statistics</label>
                         </p>
                         <p>
-                            <input type="checkbox" id="collisions" checked="true" />Collisions<br />
+                            <label><input type="checkbox" id="collisions" checked="true" />Collisions</label>
                         </p>
                         <p>
                             <button id="fullscreen">Switch fullscreen mode</button>
