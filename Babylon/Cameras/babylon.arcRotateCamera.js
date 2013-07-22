@@ -8,6 +8,12 @@
         this.beta = beta;
         this.radius = radius;
         this.target = target;
+        
+        this._keys = [];
+        this.keysUp = [38];
+        this.keysDown = [40];
+        this.keysLeft = [37];
+        this.keysRight = [39];
 
         this._scene = scene;
 
@@ -81,12 +87,47 @@
             if (event.preventDefault)
                 event.preventDefault();
         };
+        
+        this._onKeyDown = function (evt) {
+            if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
+                that.keysDown.indexOf(evt.keyCode) !== -1 ||
+                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                that.keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = that._keys.indexOf(evt.keyCode);
+
+                if (index === -1) {
+                    that._keys.push(evt.keyCode);
+                }
+                evt.preventDefault();
+            }
+        };
+
+        this._onKeyUp = function (evt) {
+            if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
+                that.keysDown.indexOf(evt.keyCode) !== -1 ||
+                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                that.keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = that._keys.indexOf(evt.keyCode);
+
+                if (index >= 0) {
+                    that._keys.splice(index, 1);
+                }
+                evt.preventDefault();
+            }
+        };
+        
+        this._onLostFocus = function () {
+            that._keys = [];
+        };
 
         canvas.addEventListener("pointerdown", this._onPointerDown);
         canvas.addEventListener("pointerup", this._onPointerUp);
         canvas.addEventListener("pointerout", this._onPointerUp);
         canvas.addEventListener("pointermove", this._onPointerMove);
+        window.addEventListener("keydown", this._onKeyDown, true);
+        window.addEventListener("keyup", this._onKeyUp, true);
         window.addEventListener('mousewheel', this._wheel);
+        window.addEventListener("blur", this._onLostFocus, true);
     };
     
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
@@ -94,10 +135,28 @@
         canvas.removeEventListener("pointerup", this._onPointerUp);
         canvas.removeEventListener("pointerout", this._onPointerUp);
         canvas.removeEventListener("pointermove", this._onPointerMove);
+        window.removeEventListener("keydown", this._onKeyDown);
+        window.removeEventListener("keyup", this._onKeyUp);
         window.removeEventListener('mousewheel', this._wheel);
+        window.removeEventListener("blur", this._onLostFocus);
     };
 
-    BABYLON.ArcRotateCamera.prototype._update = function() {
+    BABYLON.ArcRotateCamera.prototype._update = function () {
+        // Keyboard
+        for (var index = 0; index < this._keys.length; index++) {
+            var keyCode = this._keys[index];
+
+            if (this.keysLeft.indexOf(keyCode) !== -1) {
+                this.inertialAlphaOffset -= 0.01;
+            } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                this.inertialBetaOffset -= 0.01;
+            } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                this.inertialAlphaOffset += 0.01;
+            } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                this.inertialBetaOffset += 0.01;
+            }
+        }
+        
         // Inertia
         if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0) {
 
