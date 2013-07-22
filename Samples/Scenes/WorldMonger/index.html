@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Babylon Engine for HTML5</title>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet" />
+    <script src="hand.minified-1.1.0.js"></script>
+    <script src="babylon.js"></script>
+    <script src="Shaders/Ground/groundMaterial.js"></script>
+    <script src="Shaders/Water/waterMaterial.js"></script>
+    <script src="index.js"></script>
+    <script src="elevationControl.js"></script>
+</head>
+<body onload="onload();">
+    <canvas id="renderCanvas"></canvas>
+    <div id="fps"></div>
+    <div id="sliders">
+        <p>
+            <div id="slider-vertical" class="slider"></div>
+            <div id="brushSizeText" class="sliderText">Brush size</div>
+            <br />
+        </p>
+        <p>
+            <div id="slider-range" class="slider"></div>
+            <div id="rangeText" class="sliderText">Height limits</div>
+        </p>
+        <p>
+            <div id="qualitySlider" class="slider"></div>
+            <div id="qualityText" class="sliderText">Quality</div>
+            <br />
+        </p>
+    </div>
+    <div id="help01" class="help">
+        <span class="helpText">Use these tools to sculpt the ground</span>
+        <img class="helpArrow" src="Assets/arrow.png" />
+    </div>
+    <div id="help02" class="help">
+        <span class="helpText">Use the camera tool to control the point of view</span>
+    </div>
+    <div id="footer">
+        <div id="footerLeft">
+            Powered by <a href="http://www.babylonjs.com/" target="_blank">Babylon.js</a><br />Gfx by <a href="http://blogs.msdn.com/b/designmichel" target="_blank">Michel Rousseau</a>  -  Music by <a href="http://aka.ms/davrous" target="_blank">David Rousset</a>
+        </div>
+        <div id="footerRight">
+            <img src="Assets/video.png" class="controlButton selected" id="cameraButton" alt="Control the camera" />
+            <img src="Assets/sep.png" class="sepButton" />
+            <img src="Assets/up.png" class="controlButton" id="elevationButton" alt="Elevate the ground" />
+            <img src="Assets/down.png" class="controlButton" id="digButton" alt="Dig the ground" />
+        </div>
+        <a href="http://apps.microsoft.com/windows/app/worldmonger/4a3fa8c4-5086-4b91-b63b-a878da33a28d" target="_blank" id="logo"><img src="Assets/widelogo.png" /></a>
+    </div>
+    <audio autoplay loop>
+        <source src="Assets/WorldMongerTheme.mp3" type="audio/mpeg">
+    </audio>
+</body>
+</html>
