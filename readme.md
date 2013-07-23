@@ -10,10 +10,12 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
 - Animations engine
 - Particles Systems
 - Sprites and 2D layers
--  Optimizations engines:  - Frustum clipping
+-  Optimizations engines: 
+ - Frustum clipping
  - Sub-meshes clipping
  - Hardware scaling
-- Standard material is a per pixel material that supports:  - Diffuse lightning and texture
+- Standard material is a per pixel material that supports:
+ - Diffuse lightning and texture
  - Ambient lightning and texture
  - Specular lightning
  - Opacity texture
@@ -25,21 +27,26 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Up to 4 lights (points, directionals, spots, hemispherics)
  - Custom materials
  - Skybox
--  Special FX  - Fog
+-  Special FX
+ - Fog
  - Alpha blending
  - Alpha testing
  - Billboarding
  - Fullscreen mode
--  Textures:  - Render target textures
+-  Textures:
+ - Render target textures
  - Dynamic textures (canvas)
  - Video textures
--  Cameras:  - Arc rotate camera
+-  Cameras (Perspective and orthographic):
+ - Arc rotate camera
  - Free camera
  - Touch camera
--  Meshes:  - Mesh cloning
+-  Meshes: 
+ - Mesh cloning
  - Dynamic meshes
  - Height maps
--  Import:  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
+-  Import: 
+ - Babylon scene file can be converted from .OBJ, .FBX, .MXB
  - Exporter for Blender
 
 
