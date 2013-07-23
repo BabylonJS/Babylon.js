@@ -1,3 +1,5 @@
+1.0.9:
+ - Orthographic camera
 1.0.8:
  - Adding keyboard support to ArcRotateCamera
  - Starting to use git tag

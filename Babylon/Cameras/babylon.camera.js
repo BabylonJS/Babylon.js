@@ -15,11 +15,21 @@
         }
     };
     
+    // Statics
+    BABYLON.Camera.PERSPECTIVE_CAMERA = 0;
+    BABYLON.Camera.ORTHOGRAPHIC_CAMERA = 1;
+    
     // Members
+    BABYLON.Camera.prototype.fov = 0.8;
+    BABYLON.Camera.prototype.orthoLeft = null;
+    BABYLON.Camera.prototype.orthoRight = null;
+    BABYLON.Camera.prototype.orthoBottom = null;
+    BABYLON.Camera.prototype.orthoTop = null;
     BABYLON.Camera.prototype.fov = 0.8;
     BABYLON.Camera.prototype.minZ = 0.1;
     BABYLON.Camera.prototype.maxZ = 1000.0;
     BABYLON.Camera.prototype.inertia = 0.9;
+    BABYLON.Camera.prototype.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
 
     // Methods
     BABYLON.Camera.prototype.attachControl = function (canvas) {
@@ -36,7 +46,13 @@
     };
 
     BABYLON.Camera.prototype.getProjectionMatrix = function () {
-        return new BABYLON.Matrix.PerspectiveFovLH(this.fov, this._scene.getEngine().getAspectRatio(), this.minZ, this.maxZ);
-    };
+        var engine = this._scene.getEngine();
+        if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            return new BABYLON.Matrix.PerspectiveFovLH(this.fov, engine.getAspectRatio(), this.minZ, this.maxZ);
+        }
 
+        var halfWidth = engine.getRenderWidth() / 2.0;
+        var halfHeight = engine.getRenderHeight() / 2.0;
+        return new BABYLON.Matrix.OrthoOffCenterLH(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ)
+    };
 })();
