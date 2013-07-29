@@ -18,11 +18,17 @@ uniform vec3 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
 #endif
 
-#ifdef LIGHT1
-uniform vec4 vLightData1;
-uniform vec3 vLightDiffuse1;
-uniform vec3 vLightSpecular1;
-#endif
+//#ifdef LIGHT1
+//uniform vec4 vLightData1;
+//uniform vec3 vLightDiffuse1;
+//uniform vec3 vLightSpecular1;
+//#endif
+
+//#ifdef LIGHT2
+//uniform vec4 vLightData2;
+//uniform vec3 vLightDiffuse2;
+//uniform vec3 vLightSpecular2;
+//#endif
 
 // Samplers
 #ifdef DIFFUSE
@@ -108,6 +114,42 @@ float CalcFogFactor()
 
 #endif
 
+vec3 computeDiffuseLighting(vec3 vNormal, vec4 lightData, vec3 diffuseColor) {
+	vec3 lightVectorW;
+	if (lightData.w == 0.)
+	{
+		lightVectorW = normalize(lightData.xyz - vPositionW);
+	}
+	else
+	{
+		lightVectorW = normalize(-lightData.xyz);
+	}
+
+	// diffuse
+	float ndl = max(0., dot(vNormal, lightVectorW));
+
+	return ndl * diffuseColor;
+}
+
+vec3 computeSpecularLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 specularColor) {
+	vec3 lightVectorW;
+	if (lightData.w == 0.)
+	{
+		lightVectorW = normalize(lightData.xyz - vPositionW);
+	}
+	else
+	{
+		lightVectorW = normalize(-lightData.xyz);
+	}
+
+	// Specular
+	vec3 angleW = normalize(viewDirectionW + lightVectorW);
+	float specComp = max(0., dot(vNormal, angleW));
+	specComp = pow(specComp, vSpecularColor.a);
+
+	return specComp * specularColor;
+}
+
 void main(void) {
 	// Clip plane
 #ifdef CLIPPLANE
@@ -132,6 +174,9 @@ void main(void) {
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
+	// Bump
+	vec3 normalW = vNormalW;
+
 	// Ambient color
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
 
@@ -144,48 +189,17 @@ void main(void) {
 	vec3 specularBase = vec3(0., 0., 0.);
 
 #ifdef LIGHT0
-	vec3 lightVectorW;
-	if (vLightData0.w == 0.)
-	{
-		lightVectorW = normalize(vLightData0.xyz - vPositionW);
-	}
-	else 
-	{
-		lightVectorW = normalize(-vLightData0.xyz);
-	}
-
-	// diffuse
-	float ndl = max(0., dot(vNormalW, lightVectorW));
-
-	// Specular
-	vec3 angleW = normalize(viewDirectionW + lightVectorW);
-	float specComp = max(0., dot(vNormalW, angleW));
-	specComp = pow(specComp, vSpecularColor.a);
-
-	diffuseBase += ndl * vLightDiffuse0;
-	specularBase += specComp * vLightSpecular0;
+	diffuseBase += computeDiffuseLighting(normalW, vLightData0, vLightDiffuse0);
+	specularBase += computeSpecularLighting(viewDirectionW, normalW, vLightData0, vLightSpecular0);
 #endif
-#ifdef LIGHT1
-	if (vLightData1.w == 0.)
-	{
-		lightVectorW = normalize(vLightData1.xyz - vPositionW);
-	}
-	else
-	{
-		lightVectorW = normalize(-vLightData1.xyz);
-	}
-
-	// diffuse
-	ndl = max(0., dot(vNormalW, lightVectorW));
-
-	// Specular
-	angleW = normalize(viewDirectionW + lightVectorW);
-	specComp = max(0., dot(vNormalW, angleW));
-	specComp = pow(specComp, vSpecularColor.a);
-
-	diffuseBase += ndl * vLightDiffuse1;
-	specularBase += specComp * vLightSpecular1;
-#endif
+//#ifdef LIGHT1
+//	diffuseBase += computeDiffuseLighting(normalW, vLightData1, vLightDiffuse1);
+//	specularBase += computeSpecularLighting(viewDirectionW, normalW, vLightData1, vLightSpecular1);
+//#endif
+//#ifdef LIGHT2
+//	diffuseBase += computeDiffuseLighting(normalW, vLightData2, vLightDiffuse2);
+//	specularBase += computeSpecularLighting(viewDirectionW, normalW, vLightData2, vLightSpecular2);
+//#endif
 
 
 	// Reflection

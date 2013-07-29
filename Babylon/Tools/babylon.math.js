@@ -719,9 +719,13 @@
     };
 
     ////////////////////////////////// Matrix //////////////////////////////////
+    
+    if(!MatrixType) {
+        var MatrixType = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+    }
 
     BABYLON.Matrix = function () {
-        this.m = new Array(16);
+        this.m = new MatrixType(16);
     };
 
     // Properties

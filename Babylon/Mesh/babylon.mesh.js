@@ -82,7 +82,7 @@
     BABYLON.Mesh.prototype.getVertices = function () {
         return this._vertices;
     };
-    
+
     BABYLON.Mesh.prototype.getTotalIndices = function () {
         return this._indices.length;
     };
@@ -125,13 +125,13 @@
 
         return true;
     };
-    
+
     BABYLON.Mesh.prototype.isReady = function () {
         return this._isReady;
     };
 
     BABYLON.Mesh.prototype.isEnabled = function () {
-        if (!this.isReady ()|| !this._isEnabled) {
+        if (!this.isReady() || !this._isEnabled) {
             return false;
         }
 
@@ -234,39 +234,38 @@
         this.subMeshes = [];
         return new BABYLON.SubMesh(0, 0, this._totalVertices, 0, this._indices.length, this);
     };
-    
 
-    BABYLON.Mesh.prototype.subdivide = function(count) {
+
+    BABYLON.Mesh.prototype.subdivide = function (count) {
         if (count < 1) {
             return;
         }
-        
+
         var subdivisionSize = this._indices.length / count;
         var offset = 0;
-        
+
         this.subMeshes = [];
-        for (var index = 0; index < count; index++)
-        {
+        for (var index = 0; index < count; index++) {
             BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, this._indices.length - offset), this);
 
             offset += subdivisionSize;
         }
     };
-    
+
     BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable) {
         if (this._vertexBuffer) {
             this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
         }
 
         this._uvCount = uvCount;
-        
+
         if (updatable) {
             this._vertexBuffer = this._scene.getEngine().createDynamicVertexBuffer(vertices.length * 4);
             this._scene.getEngine().updateDynamicVertexBuffer(this._vertexBuffer, vertices);
         } else {
             this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
         }
-        
+
         this._vertices = vertices;
 
         this._totalVertices = vertices.length / this.getFloatVertexStrideSize();
@@ -277,7 +276,7 @@
         this._positions = null;
     };
 
-    BABYLON.Mesh.prototype.updateVertices = function(vertices) {
+    BABYLON.Mesh.prototype.updateVertices = function (vertices) {
         var engine = this._scene.getEngine();
         engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
         this._vertices = vertices;
@@ -723,6 +722,170 @@
         return sphere;
     };
 
+    // Cylinder (Code from SharpDX.org)
+    BABYLON.Mesh.CreateCylinder = function (name, height, diameter, tessellation, scene, updatable) {
+        var radius = diameter / 2;
+        var indices = [];
+        var vertices = [];
+        var cylinder = new BABYLON.Mesh(name, [3, 3, 2], scene);
+
+
+        var getCircleVector = function (i) {
+            var angle = (i * 2.0 * Math.PI / tessellation);
+            var dx = Math.sin(angle);
+            var dz = Math.cos(angle);
+
+            return new BABYLON.Vector3(dx, 0, dz);
+        };
+
+        var createCylinderCap = function (isTop) {
+            // Create cap indices.
+            for (var i = 0; i < tessellation - 2; i++) {
+                var i1 = (i + 1) % tessellation;
+                var i2 = (i + 2) % tessellation;
+
+                if (isTop) {
+                    var tmp = i1;
+                    var i1 = i2;
+                    i2 = tmp;
+                }
+
+                var vbase = vertices.length / cylinder.getFloatVertexStrideSize();
+                indices.push(vbase);
+                indices.push(vbase + i1);
+                indices.push(vbase + i2);
+            }
+
+
+            // Which end of the cylinder is this?
+            var normal = new BABYLON.Vector3(0, 1, 0);
+            var textureScale = new BABYLON.Vector2(-0.5, -0.5);
+
+            if (!isTop) {
+                normal = normal.scale(-1);
+                textureScale.x = -textureScale.x;
+            }
+
+            // Create cap vertices.
+            for (var i = 0; i < tessellation; i++) {
+                var circleVector = getCircleVector(i);
+                var position = circleVector.scale(radius).add(normal.scale(height));
+                var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
+
+                vertices.push(
+                    position.x, position.y, position.z,
+                    normal.x, normal.y, normal.z,
+                    textureCoordinate.x, textureCoordinate.y
+                );
+            }
+        };
+
+        height /= 2;
+
+        var topOffset = new BABYLON.Vector3(0, 1, 0).scale(height);
+
+        var stride = tessellation + 1;
+
+        // Create a ring of triangles around the outside of the cylinder.
+        for (var i = 0; i <= tessellation; i++)
+        {
+            var normal = getCircleVector(i);
+            var sideOffset = normal.scale(radius);
+            var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
+
+            var position = sideOffset.add(topOffset);
+            vertices.push(
+                            position.x, position.y, position.z,
+                            normal.x, normal.y, normal.z,
+                            textureCoordinate.x, textureCoordinate.y
+                        );
+
+            position = sideOffset.subtract(topOffset);
+            textureCoordinate.y += 1;
+            vertices.push(
+                            position.x, position.y, position.z,
+                            normal.x, normal.y, normal.z,
+                            textureCoordinate.x, textureCoordinate.y
+                        );
+
+            indices.push(i * 2);
+            indices.push((i * 2 + 2) % (stride * 2));
+            indices.push(i * 2 + 1);
+
+            indices.push(i * 2 + 1);
+            indices.push((i * 2 + 2) % (stride * 2));
+            indices.push((i * 2 + 3) % (stride * 2));
+        }
+
+        // Create flat triangle fan caps to seal the top and bottom.
+        createCylinderCap(true);
+        createCylinderCap(false);
+        
+        cylinder.setVertices(vertices, 1, updatable);
+        cylinder.setIndices(indices);
+
+        return cylinder;
+    };
+
+    // Torus  (Code from SharpDX.org)
+    BABYLON.Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
+        var torus = new BABYLON.Mesh(name, [3, 3, 2], scene);
+
+        var indices = [];
+        var vertices = [];
+
+        var stride = tessellation + 1;
+
+        for (var i = 0; i <= tessellation; i++) {
+            var u = i / tessellation;
+
+            var outerAngle = i * Math.PI * 2.0 / tessellation - Math.PI / 2.0;
+
+            var transform = BABYLON.Matrix.Translation(diameter / 2.0, 0, 0).multiply(BABYLON.Matrix.RotationY(outerAngle));
+
+            for (var j = 0; j <= tessellation; j++) {
+                var v = 1 - j / tessellation;
+
+                var innerAngle = j * Math.PI * 2.0 / tessellation + Math.PI;
+                var dx = Math.cos(innerAngle);
+                var dy = Math.sin(innerAngle);
+
+                // Create a vertex.
+                var normal = new BABYLON.Vector3(dx, dy, 0);
+                var position = normal.scale(thickness / 2);
+                var textureCoordinate = new BABYLON.Vector2(u, v);
+
+                position = BABYLON.Vector3.TransformCoordinates(position, transform);
+                normal = BABYLON.Vector3.TransformNormal(normal, transform);
+
+                vertices.push(
+                    position.x, position.y, position.z,
+                    normal.x, normal.y, normal.z,
+                    textureCoordinate.x, textureCoordinate.y
+                );
+
+                // And create indices for two triangles.
+                var nextI = (i + 1) % stride;
+                var nextJ = (j + 1) % stride;
+
+                indices.push(i * stride + j);
+                indices.push(i * stride + nextJ);
+                indices.push(nextI * stride + j);
+
+
+                indices.push(i * stride + nextJ);
+                indices.push(nextI * stride + nextJ);
+                indices.push(nextI * stride + j);
+            }
+        }
+
+        torus.setVertices(vertices, 1, updatable);
+        torus.setIndices(indices);
+
+        return torus;
+    };
+
+
     // Plane
     BABYLON.Mesh.CreatePlane = function (name, size, scene, updatable) {
         var plane = new BABYLON.Mesh(name, [3, 3, 2], scene);
@@ -752,7 +915,7 @@
         return plane;
     };
 
-    BABYLON.Mesh.CreateGround = function(name, width, height, subdivisions, scene, updatable) {
+    BABYLON.Mesh.CreateGround = function (name, width, height, subdivisions, scene, updatable) {
         var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var indices = [];
@@ -788,11 +951,11 @@
         return ground;
     };
 
-    BABYLON.Mesh.CreateGroundFromHeightMap = function(name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
+    BABYLON.Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
         var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
 
         var img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             var indices = [];
             var vertices = [];
             var row, col;
@@ -863,9 +1026,9 @@
 
         return ground;
     };
-    
+
     // Tools
-    BABYLON.Mesh.ComputeNormal = function(vertices, indices, stride, normalOffset) {
+    BABYLON.Mesh.ComputeNormal = function (vertices, indices, stride, normalOffset) {
         var positions = [];
         var facesOfVertices = [];
         var index;

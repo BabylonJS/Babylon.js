@@ -4,7 +4,7 @@
     // Demos
     var demos = [
         { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB", big: true },
-        { title: "HEART", scene: "heart", screenshot: "heart.jpg", size: "14 MB", },
+        { title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", },
         { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB" },
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
         {
@@ -17,9 +17,9 @@
                 ecran.material.diffuseTexture = new BABYLON.VideoTexture("video", ["Scenes/Flat2009/babylonjs.mp4", "Scenes/Flat2009/babylonjs.webm"], 256, scene, true);
             }
         },
-        { title: "THE CAR", scene: "theCar", screenshot: "thecar.jpg", size: "100 MB" },
+        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB" },
         { title: "VIPER", scene: "Viper", screenshot: "viper.jpg", size: "18 MB" },
-        { title: "SPACESHIP", scene: "spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
+        { title: "SPACESHIP", scene: "Spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
         {
             title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", onload: function () {
                 scene.collisionsEnabled = false;
