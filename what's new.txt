@@ -1,3 +1,7 @@
+1.0.10:
+ - Using typed arrays for Matrix
+ - Improving IE11 support
+ - Support for new mesh primitives : Torus and cylinder
 1.0.9:
  - Orthographic camera
 1.0.8:

@@ -2,6 +2,11 @@
     var canvas = document.getElementById("renderCanvas");
     var divFps = document.getElementById("fps");
     var mode = "CAMERA";
+    
+    if (!BABYLON.Engine.isSupported()) {
+        document.getElementById("notSupported").className = "";
+        return;
+    }
 
     // Babylon
     BABYLON.Engine.ShadersRepository = "";

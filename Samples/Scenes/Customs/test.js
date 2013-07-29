@@ -3,12 +3,13 @@
     //var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 10, BABYLON.Vector3.Zero(), scene);
     var camera2 = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene);
     var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 100, 2), scene);
-    var material = new BABYLON.StandardMaterial("kosh", scene);
+    var material = new BABYLON.StandardMaterial("leaves", scene);
     var material2 = new BABYLON.StandardMaterial("kosh transparent", scene);
+    var material3 = new BABYLON.StandardMaterial("kosh", scene);
     var planeMaterial = new BABYLON.StandardMaterial("plane material", scene);
     var box = BABYLON.Mesh.CreateBox("Box", 1.0, scene);
-    var box2 = BABYLON.Mesh.CreateBox("Box2", 1.2, scene);
-    var box3 = BABYLON.Mesh.CreateBox("Box3", 0.8, scene);
+    var cylinder = BABYLON.Mesh.CreateCylinder("Cylinder", 2, 0.8, 16, scene);
+    var torus = BABYLON.Mesh.CreateTorus("Torus", 1.0, 0.5, 16, scene);
     var sphere = BABYLON.Mesh.CreateSphere("Sphere", 16, 3, scene);
     var plane = BABYLON.Mesh.CreatePlane("plane", 3, scene);
 
@@ -19,6 +20,7 @@
     material2.diffuseTexture = new BABYLON.Texture("Assets/kosh.jpg", scene);
     material2.alpha = 0.5;
     material2.backFaceCulling = false;
+    material3.diffuseTexture = new BABYLON.Texture("Assets/kosh.jpg", scene);
     planeMaterial.backFaceCulling = false;
     var planeTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene, true);
     planeTexture.hasAlpha = true;
@@ -26,13 +28,13 @@
     plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
     box.material = material;
-    box2.material = material;
-    box3.material = material2;
+    cylinder.material = material3;
+    torus.material = material2;
     sphere.material = material;
     plane.material = planeMaterial;
-    box2.position.x += 13;
-    box3.position.x -= 3;
-    box3.parent = sphere;
+    cylinder.position.x += 13;
+    torus.position.x -= 3;
+    torus.parent = sphere;
     sphere.position.z = 3;
     plane.position = new BABYLON.Vector3(0, 7, 0);
 
@@ -45,7 +47,7 @@
     particleSystem.maxSize = 1.0;
     particleSystem.minLifeTime = 0.5;
     particleSystem.maxLifeTime = 1.0;
-    particleSystem.emitter = box3;
+    particleSystem.emitter = torus;
     particleSystem.emitRate = 300;
     particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
     particleSystem.minEmitBox = new BABYLON.Vector3(0, 0.1, 0);
@@ -60,7 +62,7 @@
     mirror.material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
     mirror.material.reflectionTexture = new BABYLON.MirrorTexture("mirror", 512, scene, true);
     mirror.material.reflectionTexture.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, -5.0);
-    mirror.material.reflectionTexture.renderList = [box, box2, box3, sphere];
+    mirror.material.reflectionTexture.renderList = [box, cylinder, torus, sphere];
     mirror.material.reflectionTexture.level = 0.5;
     mirror.position = new BABYLON.Vector3(0, -5.0, 0);
     
@@ -129,10 +131,10 @@
     var count = 0;
     scene.registerBeforeRender(function () {
         box.rotation.y += 0.01;
-        box2.rotation.x += 0.01;
+        cylinder.rotation.x += 0.01;
         sphere.rotation.y += 0.02;
         //  box3.scaling.y = 1 + Math.cos(alpha);
-        box3.rotation.z += 0.01;
+        torus.rotation.z += 0.01;
         alpha += 0.01;
 
         if (spaceDek) {
@@ -147,12 +149,12 @@
             spaceDek3.rotation.y -= 0.01;
         }
         
-        if (box3.intersectsMesh(box)) {
+        if (torus.intersectsMesh(box)) {
             material2.alpha = 1;
-            box3.scaling = new BABYLON.Vector3(2, 2, 2);
+            torus.scaling = new BABYLON.Vector3(2, 2, 2);
         } else {
             material2.alpha = 0.5;
-            box3.scaling = new BABYLON.Vector3(1, 1, 1);
+            torus.scaling = new BABYLON.Vector3(1, 1, 1);
         }
 
         // Sprites

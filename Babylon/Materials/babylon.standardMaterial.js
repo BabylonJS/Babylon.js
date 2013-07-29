@@ -1,6 +1,11 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
+
+    var isIE = function() {
+        return window.ActiveXObject !== undefined;
+    };
+    
     BABYLON.StandardMaterial = function (name, scene) {
         this.name = name;
         this.id = name;
@@ -95,7 +100,7 @@
             defines.push("#define SPECULAR");
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
             defines.push("#define BUMP");
         }
 
@@ -157,7 +162,7 @@
             
             // IE patch
             var shaderName = "default";
-            if (window.ActiveXObject !== undefined) {
+            if (isIE()) {
                 shaderName = "iedefault";
             }
 
@@ -249,7 +254,7 @@
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
             this._effect.setTexture("bumpSampler", this.bumpTexture);
 
             this._effect.setVector2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);

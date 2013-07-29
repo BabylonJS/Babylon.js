@@ -11,6 +11,11 @@ uniform vec4 vDiffuseColor;
 uniform vec4 vSpecularColor;
 uniform vec3 vEmissiveColor;
 
+
+// Input
+varying vec3 vPositionW;
+varying vec3 vNormalW;
+
 // Lights
 #ifdef LIGHT0
 uniform vec4 vLightData0;
@@ -98,16 +103,41 @@ uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
 #endif
 
+// Bump
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 varying vec2 vBumpUV;
 uniform vec2 vBumpInfos;
 uniform sampler2D bumpSampler;
-#endif
 
-// Input
-varying vec3 vPositionW;
-varying vec3 vNormalW;
+// Thanks to http://www.thetenthplanet.de/archives/1180
+mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
+{
+	// get edge vectors of the pixel triangle
+	vec3 dp1 = dFdx(p);
+	vec3 dp2 = dFdy(p);
+	vec2 duv1 = dFdx(uv);
+	vec2 duv2 = dFdy(uv);
+
+	// solve the linear system
+	vec3 dp2perp = cross(dp2, normal);
+	vec3 dp1perp = cross(normal, dp1);
+	vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
+	vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
+
+	// construct a scale-invariant frame 
+	float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
+	return mat3(tangent * invmax, binormal * invmax, normal);
+}
+
+vec3 perturbNormal(vec3 viewDir)
+{
+	vec3 map = texture2D(bumpSampler, vBumpUV).xyz * vBumpInfos.y;
+	map = map * 255. / 127. - 128. / 127.;
+	mat3 TBN = cotangent_frame(vNormalW, -viewDir, vBumpUV);
+	return normalize(TBN * map);
+}
+#endif
 
 #ifdef CLIPPLANE
 varying float fClipDistance;
@@ -147,37 +177,6 @@ float CalcFogFactor()
 	}
 
 	return min(1., max(0., fogCoeff));
-}
-#endif
-
-#ifdef BUMP
-// Bump
-// Thanks to http://www.thetenthplanet.de/archives/1180
-mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
-{
-	// get edge vectors of the pixel triangle
-	vec3 dp1 = dFdx(p);
-	vec3 dp2 = dFdy(p);
-	vec2 duv1 = dFdx(uv);
-	vec2 duv2 = dFdy(uv);
-
-	// solve the linear system
-	vec3 dp2perp = cross(dp2, N);
-	vec3 dp1perp = cross(N, dp1);
-	vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-	vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-	// construct a scale-invariant frame 
-	float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
-	return mat3(T * invmax, B * invmax, N);
-}
-
-vec3 perturbNormal(vec3 viewDir)
-{
-	vec3 map = texture2D(bumpSampler, vBumpUV).xyz * vBumpInfos.y;
-	map = map * 255. / 127. - 128. / 127.;
-	mat3 TBN = cotangent_frame(vNormalW, -viewDir, vBumpUV);
-	return normalize(TBN * map);
 }
 #endif
 
