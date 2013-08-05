@@ -100,7 +100,7 @@
             defines.push("#define SPECULAR");
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
             defines.push("#define BUMP");
         }
 
@@ -254,7 +254,7 @@
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
             this._effect.setTexture("bumpSampler", this.bumpTexture);
 
             this._effect.setVector2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);

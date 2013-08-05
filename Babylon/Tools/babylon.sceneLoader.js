@@ -161,7 +161,6 @@
         particleSystem.color1 = BABYLON.Color4.FromArray(parsedParticleSystem.color1);
         particleSystem.color2 = BABYLON.Color4.FromArray(parsedParticleSystem.color2);
         particleSystem.colorDead = BABYLON.Color4.FromArray(parsedParticleSystem.colorDead);
-        particleSystem.deadAlpha = parsedParticleSystem.deadAlpha;
         particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
         particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
         particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
