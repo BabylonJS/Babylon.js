@@ -1,4 +1,8 @@
-﻿// Attributes
+﻿#ifdef GL_ES
+precision mediump float;
+#endif
+
+// Attributes
 attribute vec3 position;
 attribute vec4 options;
 attribute vec4 cellInfo;

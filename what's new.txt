@@ -1,3 +1,6 @@
+1.0.11:
+ - Fixing a bug with NOPT video texture
+ - Hand.js is no longer required for ArcRotateCamera
 1.0.10:
  - Using typed arrays for Matrix
  - Improving IE11 support

@@ -39,7 +39,7 @@
 
         // Extensions
         var derivatives = this._gl.getExtension('OES_standard_derivatives');
-        this._caps.standardDerivatives = (derivatives !== undefined);
+        this._caps.standardDerivatives = (derivatives !== null);
 
         // Cache
         this._loadedTexturesCache = [];
@@ -99,7 +99,7 @@
         this._hardwareScalingLevel = level;
         this.resize();
     };
-    
+
     BABYLON.Engine.prototype.getHardwareScalingLevel = function () {
         return this._hardwareScalingLevel;
     };
@@ -383,14 +383,14 @@
 
         this._gl.uniform3f(uniform, vector3.x, vector3.y, vector3.z);
     };
-    
+
     BABYLON.Engine.prototype.setFloat2 = function (uniform, x, y) {
         if (!uniform)
             return;
 
         this._gl.uniform2f(uniform, x, y);
     };
-    
+
     BABYLON.Engine.prototype.setFloat3 = function (uniform, x, y, z) {
         if (!uniform)
             return;
@@ -559,16 +559,16 @@
         return texture;
     };
 
-    BABYLON.Engine.prototype.createDynamicTexture = function (size, noMipmap) {
+    BABYLON.Engine.prototype.createDynamicTexture = function (size, generateMipMaps) {
         var texture = this._gl.createTexture();
 
         var width = getExponantOfTwo(size, this._caps.maxTextureSize);
-        var height = getExponantOfTwo(size, this._caps.maxTextureSize);
+        var height = width;
 
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
 
-        if (noMipmap) {
+        if (!generateMipMaps) {
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
         } else {
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR_MIPMAP_LINEAR);
@@ -581,7 +581,7 @@
         texture._width = width;
         texture._height = height;
         texture.isReady = false;
-        texture.noMipmap = noMipmap;
+        texture.generateMipMaps = generateMipMaps;
         texture.references = 1;
 
         this._loadedTexturesCache.push(texture);
@@ -593,7 +593,7 @@
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
-        if (!texture.noMipmap) {
+        if (texture.generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
         }
         this._gl.bindTexture(this._gl.TEXTURE_2D, null);
@@ -604,10 +604,27 @@
     BABYLON.Engine.prototype.updateVideoTexture = function (texture, video) {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, false);
-        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
-        if (!texture.noMipmap) {
+
+        // Scale the video if it is a NPOT
+        if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
+            if (!texture._workingCanvas) {
+                texture._workingCanvas = document.createElement("canvas");
+                texture._workingContext = texture._workingCanvas.getContext("2d");
+                texture._workingCanvas.width = texture._width;
+                texture._workingCanvas.height = texture._height;
+            }
+
+            texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture._width, texture._height);
+
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
+        } else {
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+        }
+        
+        if (texture.generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
         }
+        
         this._gl.bindTexture(this._gl.TEXTURE_2D, null);
         this._activeTexturesCache = [];
         texture.isReady = true;

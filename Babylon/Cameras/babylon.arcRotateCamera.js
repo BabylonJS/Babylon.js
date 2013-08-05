@@ -1,6 +1,8 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
+    var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+
     BABYLON.ArcRotateCamera = function (name, alpha, beta, radius, target, scene) {
         this.name = name;
         this.id = name;
@@ -119,11 +121,11 @@
         this._onLostFocus = function () {
             that._keys = [];
         };
-
-        canvas.addEventListener("pointerdown", this._onPointerDown);
-        canvas.addEventListener("pointerup", this._onPointerUp);
-        canvas.addEventListener("pointerout", this._onPointerUp);
-        canvas.addEventListener("pointermove", this._onPointerMove);
+        
+        canvas.addEventListener(eventPrefix + "down", this._onPointerDown);
+        canvas.addEventListener(eventPrefix + "up", this._onPointerUp);
+        canvas.addEventListener(eventPrefix + "out", this._onPointerUp);
+        canvas.addEventListener(eventPrefix + "move", this._onPointerMove);
         window.addEventListener("keydown", this._onKeyDown, true);
         window.addEventListener("keyup", this._onKeyUp, true);
         window.addEventListener('mousewheel', this._wheel);
@@ -131,10 +133,10 @@
     };
     
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
-        canvas.removeEventListener("pointerdown", this._onPointerDown);
-        canvas.removeEventListener("pointerup", this._onPointerUp);
-        canvas.removeEventListener("pointerout", this._onPointerUp);
-        canvas.removeEventListener("pointermove", this._onPointerMove);
+        canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
+        canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
+        canvas.removeEventListener(eventPrefix + "out", this._onPointerUp);
+        canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
         window.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("keyup", this._onKeyUp);
         window.removeEventListener('mousewheel', this._wheel);
