@@ -16,6 +16,10 @@ uniform vec3 vEmissiveColor;
 uniform vec4 vLightData0;
 uniform vec3 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
+#ifdef SHADOW0
+varying vec4 vPositionFromLight0;
+uniform sampler2D shadowSampler0;
+#endif
 #endif
 
 //#ifdef LIGHT1
@@ -74,6 +78,37 @@ varying vec3 vNormalW;
 
 #ifdef CLIPPLANE
 varying float fClipDistance;
+#endif
+
+// Shadows
+#ifdef SHADOWS
+
+float unpack(vec4 color)
+{
+	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);
+	return dot(color, bitShift);
+}
+
+float unpackHalf(vec2 color)
+{
+	return color.x + (color.y / 255.0);
+}
+
+// Thanks to http://devmaster.net/
+float ChebychevInequality(vec2 moments, float t)
+{
+	if (t <= moments.x)
+	{
+		return 1.0;
+	}
+
+	float variance = moments.y - (moments.x * moments.x);
+	variance = max(variance, 0);
+
+	float d = t - moments.x;
+	return variance / (variance + d * d);
+}
+
 #endif
 
 // Fog
@@ -187,10 +222,32 @@ void main(void) {
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
 	vec3 specularBase = vec3(0., 0., 0.);
+	float shadow = 1.0;
 
 #ifdef LIGHT0
-	diffuseBase += computeDiffuseLighting(normalW, vLightData0, vLightDiffuse0);
-	specularBase += computeSpecularLighting(viewDirectionW, normalW, vLightData0, vLightSpecular0);
+	#ifdef SHADOW0
+		vec3 depth = vPositionFromLight0.xyz / vPositionFromLight0.w;
+		vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
+	
+		if (uv.x >= 0. && uv.x <= 1.0 && uv.y >= 0. && uv.y <= 1.0)
+		{
+		#ifdef SHADOWVSM0
+			vec4 texel = texture2D(shadowSampler0, uv);
+
+			vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
+			shadow = clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);
+		#else
+			float shadowDepth = unpack(texture2D(shadowSampler0, uv));
+
+			if (depth.z > shadowDepth)
+			{
+				shadow = 0.;
+			}
+		#endif
+		}
+	#endif
+	diffuseBase += computeDiffuseLighting(normalW, vLightData0, vLightDiffuse0) * shadow;
+	specularBase += computeSpecularLighting(viewDirectionW, normalW, vLightData0, vLightSpecular0) * shadow;
 #endif
 //#ifdef LIGHT1
 //	diffuseBase += computeDiffuseLighting(normalW, vLightData1, vLightDiffuse1);

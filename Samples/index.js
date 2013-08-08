@@ -27,6 +27,7 @@
         }];
 
     var tests = [
+        { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
         { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
         { title: "LIGHTS", id: 1, screenshot: "testlight.jpg", size: "0.1 MB" },
         { title: "BUMP", id: 2, screenshot: "bump.jpg", size: "0.1 MB" },
@@ -198,6 +199,9 @@
                     case 5:
                         newScene = CreateHeightMapTestScene(engine);
                         break;
+                    case 6:
+                        newScene = CreateShadowsTestScene(engine);
+                        break;
                 }
 
                 newScene.activeCamera.attachControl(canvas);
@@ -217,6 +221,7 @@
 
             BABYLON.SceneLoader.Load("Scenes/" + name + "/", name + ".babylon", engine, function (newScene) {
                 scene = newScene;
+                scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
                 loadingText.innerHTML = "Streaming textures...";
                 scene.executeWhenReady(function () {
                     if (scene.activeCamera) {

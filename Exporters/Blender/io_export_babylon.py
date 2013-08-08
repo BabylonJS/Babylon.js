@@ -78,11 +78,16 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			file_handler.write(",")
 		file_handler.write("\""+name+"\":" + str(int))
 		
-	def write_bool(file_handler, name, bool):	
+	def write_bool(file_handler, name, bool, noComma=False):	
+		if noComma == False:
+			file_handler.write(",")	
 		if bool:
-			file_handler.write(",\""+name+"\":" + "true")
+			file_handler.write("\""+name+"\":" + "true")
 		else:
-			file_handler.write(",\""+name+"\":" + "false")
+			file_handler.write("\""+name+"\":" + "false")
+			
+	def getDirection(matrix):
+		return (matrix.to_3x3() * mathutils.Vector((0.0, 0.0, -1.0))).normalized()
 			
 	def export_camera(object, scene, file_handler):		
 		invWorld = object.matrix_world.copy()
@@ -114,17 +119,14 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		Export_babylon.write_string(file_handler, "id", object.name)		
 		Export_babylon.write_float(file_handler, "type", light_type)
 		if light_type == 0:
-			Export_babylon.write_vector(file_handler, "data", object.location)
+			Export_babylon.write_vector(file_handler, "position", object.location)
 		elif light_type == 1:
-			matrix_world = object.matrix_world.copy()
-			matrix_world.translation = mathutils.Vector((0, 0, 0))
-			direction = mathutils.Vector((0, 0, -1)) * matrix_world
-			Export_babylon.write_vector(file_handler, "data", direction)
+			direction = Export_babylon.getDirection(object.matrix_world)
+			Export_babylon.write_vector(file_handler, "position", object.location)
+			Export_babylon.write_vector(file_handler, "direction", direction)
 		elif light_type == 2:
-			Export_babylon.write_vector(file_handler, "data", object.location)
-			matrix_world = object.matrix_world.copy()
-			matrix_world.translation = mathutils.Vector((0, 0, 0))
-			direction = mathutils.Vector((0, 0, -1)) * matrix_world
+			Export_babylon.write_vector(file_handler, "position", object.location)
+			direction = Export_babylon.getDirection(object.matrix_world)
 			Export_babylon.write_vector(file_handler, "direction", direction)
 			Export_babylon.write_float(file_handler, "angle", object.data.spot_size)
 			Export_babylon.write_float(file_handler, "exponent", object.data.spot_blend * 2)
@@ -132,7 +134,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			matrix_world = object.matrix_world.copy()
 			matrix_world.translation = mathutils.Vector((0, 0, 0))
 			direction = mathutils.Vector((0, 0, -1)) * matrix_world
-			Export_babylon.write_vector(file_handler, "data", -direction)
+			Export_babylon.write_vector(file_handler, "direction", -direction)
 			Export_babylon.write_color(file_handler, "groundColor", mathutils.Color((0, 0, 0)))
 			
 		Export_babylon.write_float(file_handler, "intensity", object.data.energy)
@@ -248,7 +250,53 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			first = False
 		file_handler.write("]")
 		file_handler.write("}")
-	
+
+	def export_animation(object, scene, file_handler, typeBl, typeBa, coma):
+		if coma == True:
+			file_handler.write(",")
+		
+		file_handler.write("{")
+		Export_babylon.write_int(file_handler, "dataType", 1, True)
+		Export_babylon.write_int(file_handler, "framePerSecond", 30)
+		Export_babylon.write_int(file_handler, "loopBehavior", 1)
+		Export_babylon.write_string(file_handler, "name", typeBa+" animation")
+		Export_babylon.write_string(file_handler, "property", typeBa)
+		
+		file_handler.write(",\"keys\":[")
+			
+		frames = dict() 
+		for fcurve in object.animation_data.action.fcurves:
+			if fcurve.data_path == typeBl:
+				for key in fcurve.keyframe_points: 
+					frame = key.co.x 
+					frames[frame] = 1
+			
+		#for each frame (next step ==> set for key frames)
+		i = 0
+		for Frame in sorted(frames):
+			if i == 0 and Frame != 0.0:
+				file_handler.write("{")
+				Export_babylon.write_int(file_handler, "frame", 0, True)
+				bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
+				Export_babylon.write_vector(file_handler, "values", getattr(object,typeBl))
+				file_handler.write("},")
+			i = i + 1
+			file_handler.write("{")
+			Export_babylon.write_int(file_handler, "frame", Frame, True)
+			bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
+			Export_babylon.write_vector(file_handler, "values", getattr(object,typeBl))
+			file_handler.write("}")
+			if i != len(frames):
+				file_handler.write(",")
+			else:
+				file_handler.write(",{")
+				Export_babylon.write_int(file_handler, "frame", bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1, True)
+				bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
+				Export_babylon.write_vector(file_handler, "values", getattr(object,typeBl))
+				file_handler.write("}")
+		
+		file_handler.write("]}")
+
 	def export_mesh(object, scene, file_handler, multiMaterials):
 		# Get mesh	
 		mesh = object.to_mesh(scene, True, "PREVIEW")
@@ -412,6 +460,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		Export_babylon.write_bool(file_handler, "isEnabled", True)
 		Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
 		Export_babylon.write_int(file_handler, "billboardMode", billboardMode)
+		Export_babylon.write_bool(file_handler, "receiveShadows", object.data.receiveShadows)
 		
 		if hasUV and hasUV2:
 			Export_babylon.write_int(file_handler, "uvCount", 2)
@@ -439,9 +488,59 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			first = False
 		file_handler.write("]")
 		
+		#Export Animations
+		
+		rotAnim = False
+		locAnim = False
+		scaAnim = False
+		coma = False
+		
+		if object.animation_data:
+			if object.animation_data.action:
+				file_handler.write(",\"animations\":[")
+				for fcurve in object.animation_data.action.fcurves:
+					if fcurve.data_path == "rotation_euler" and rotAnim == False:
+						Export_babylon.export_animation(object, scene, file_handler, "rotation_euler", "rotation", coma)
+						rotAnim = coma = True
+					elif fcurve.data_path == "location" and locAnim == False:
+						Export_babylon.export_animation(object, scene, file_handler, "location", "position", coma)
+						locAnim = coma = True
+					elif fcurve.data_path == "scale" and scaAnim == False:
+						Export_babylon.export_animation(object, scene, file_handler, "scale", "scaling", coma)
+						locAnim = coma = True
+				file_handler.write("]")
+				#Set Animations
+				Export_babylon.write_bool(file_handler, "autoAnimate", True)
+				Export_babylon.write_int(file_handler, "autoAnimateFrom", 0)
+				Export_babylon.write_int(file_handler, "autoAnimateTo", bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1)
+				Export_babylon.write_bool(file_handler, "autoAnimateLoop", True)
+
+
 		# Closing
 		file_handler.write("}")
 		
+	def export_shadowGenerator(lamp, scene, file_handler):		
+		file_handler.write("{")
+		if lamp.data.shadowMap == 'VAR':
+			Export_babylon.write_bool(file_handler, "useVarianceShadowMap", True, True)
+		else:
+			Export_babylon.write_bool(file_handler, "useVarianceShadowMap", False, True)
+			
+		Export_babylon.write_int(file_handler, "mapSize", lamp.data.shadowMapSize)	
+		Export_babylon.write_string(file_handler, "lightId", lamp.name)		
+		
+		file_handler.write(",\"renderList\":[")
+		multiMaterials = []
+		first = True
+		for object in [object for object in scene.objects]:
+			if (object.type == 'MESH' and object.data.castShadows):
+				if first != True:
+					file_handler.write(",")
+
+				first = False
+				file_handler.write("\"" + object.name + "\"")
+		file_handler.write("]")			
+		file_handler.write("}")	
 
 	def save(operator, context, filepath="",
 		use_apply_modifiers=False,
@@ -468,6 +567,13 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		Export_babylon.write_color(file_handler, "clearColor", world_ambient)
 		Export_babylon.write_color(file_handler, "ambientColor", world_ambient)
 		Export_babylon.write_vector(file_handler, "gravity", scene.gravity)
+		
+		if world and world.mist_settings.use_mist:
+				Export_babylon.write_int(file_handler, "fogMode", 3)
+				Export_babylon.write_color(file_handler, "fogColor", world.horizon_color)
+				Export_babylon.write_float(file_handler, "fogStart", world.mist_settings.start)
+				Export_babylon.write_float(file_handler, "fogEnd", world.mist_settings.depth)
+				Export_babylon.write_float(file_handler, "fogDensity", 0.1)
 		
 		# Cameras
 		file_handler.write(",\"cameras\":[")
@@ -533,6 +639,19 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			data_string = Export_babylon.export_multimaterial(multimaterial, scene, file_handler)
 		file_handler.write("]")
 		
+		# Shadow generators
+		file_handler.write(",\"shadowGenerators\":[")
+		first = True
+		for object in [object for object in scene.objects if object.is_visible(scene)]:
+			if (object.type == 'LAMP' and object.data.shadowMap != 'NONE'):
+				if first != True:
+					file_handler.write(",")
+
+				first = False
+				data_string = Export_babylon.export_shadowGenerator(object, scene, file_handler)
+		file_handler.write("]")
+		
+		
 		# Closing
 		file_handler.write("}")
 		file_handler.close()
@@ -541,11 +660,19 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
 # UI
 bpy.types.Mesh.checkCollisions = BoolProperty(
-    name="Check collisions", 
+    name="Check Collisions", 
+    default = False)
+	
+bpy.types.Mesh.castShadows = BoolProperty(
+    name="Cast Shadows", 
+    default = False)
+	
+bpy.types.Mesh.receiveShadows = BoolProperty(
+    name="Receive Shadows", 
     default = False)
 	
 bpy.types.Camera.checkCollisions = BoolProperty(
-    name="Check collisions", 
+    name="Check Collisions", 
     default = False)
 	
 bpy.types.Camera.applyGravity = BoolProperty(
@@ -554,7 +681,16 @@ bpy.types.Camera.applyGravity = BoolProperty(
 	
 bpy.types.Camera.ellipsoid = FloatVectorProperty(
     name="Ellipsoid", 
-	default = mathutils.Vector((0.2, 0.9, 0.2)))		
+	default = mathutils.Vector((0.2, 0.9, 0.2)))
+
+bpy.types.Lamp.shadowMap = EnumProperty(
+    name="Shadow Map Type", 
+	items = (('NONE', "None", "No Shadow Maps"), ('STD', "Standard", "Use Standard Shadow Maps"), ('VAR', "Variance", "Use Variance Shadow Maps")),
+	default = 'NONE')
+	
+bpy.types.Lamp.shadowMapSize = IntProperty(
+    name="Shadow Map Size", 
+	default = 512)	
 
 class ObjectPanel(bpy.types.Panel):
 	bl_label = "Babylon.js"
@@ -570,13 +706,19 @@ class ObjectPanel(bpy.types.Panel):
 		layout = self.layout
 		isMesh = isinstance(ob.data, bpy.types.Mesh)
 		isCamera = isinstance(ob.data, bpy.types.Camera)
+		isLight = isinstance(ob.data, bpy.types.Lamp)
 		
 		if isMesh:
 			layout.prop(ob.data, 'checkCollisions')		
+			layout.prop(ob.data, 'castShadows')		
+			layout.prop(ob.data, 'receiveShadows')		
 		elif isCamera:
 			layout.prop(ob.data, 'checkCollisions')
 			layout.prop(ob.data, 'applyGravity')
 			layout.prop(ob.data, 'ellipsoid')
+		elif isLight:
+			layout.prop(ob.data, 'shadowMap')
+			layout.prop(ob.data, 'shadowMapSize')	
 			
 ### REGISTER ###
 

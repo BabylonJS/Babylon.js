@@ -8,12 +8,14 @@
         this.name = name;        
 
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+        
+        // Render list
+        this.renderList = [];
     };
 
     BABYLON.RenderTargetTexture.prototype = Object.create(BABYLON.Texture.prototype);
 
-    // Members
-    BABYLON.RenderTargetTexture.prototype.renderList = [];
+    // Members    
     BABYLON.RenderTargetTexture.prototype.isRenderTarget = true;
     BABYLON.RenderTargetTexture.prototype.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
 
@@ -62,7 +64,7 @@
         for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
             var mesh = this.renderList[meshIndex];
 
-            if (mesh.material && mesh.isEnabled() && mesh.isVisible) {
+            if (mesh.isEnabled() && mesh.isVisible) {
                 for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                     var subMesh = mesh.subMeshes[subIndex];
                     var material = subMesh.getMaterial();
@@ -81,7 +83,11 @@
         }
         
         // Render
-        scene._localRender(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this.renderList);
+        if (this.customRenderFunction) {
+            this.customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this.renderList);
+        } else {
+            scene._localRender(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this.renderList);
+        }
 
         // Unbind
         engine.unBindFramebuffer(this._texture);

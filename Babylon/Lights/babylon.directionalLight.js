@@ -4,6 +4,7 @@
     BABYLON.DirectionalLight = function (name, direction, scene) {
         this.name = name;
         this.id = name;
+        this.position = direction.scale(-1);
         this.direction = direction;
         this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
         this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);

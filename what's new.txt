@@ -1,3 +1,8 @@
+1.1.0:
+ - Shadow Maps and Variance Shadow Maps
+ - Shadows Maps and animations are now exported from Blender
+ - Hand.js is no longer required for ArcRotateCamera
+ - ArcRotateCamera support pinch/zoom gesture on IE
 1.0.10:
  - Using typed arrays for Matrix
  - Improving IE11 support

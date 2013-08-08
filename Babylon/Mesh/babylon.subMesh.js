@@ -18,6 +18,10 @@
     BABYLON.SubMesh.prototype.getBoundingInfo = function() {
         return this._boundingInfo;
     };
+    
+    BABYLON.SubMesh.prototype.getMesh = function () {
+        return this._mesh;
+    };
 
     BABYLON.SubMesh.prototype.getMaterial = function () {
         var rootMaterial = this._mesh.material;

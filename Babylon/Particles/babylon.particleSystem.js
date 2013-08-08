@@ -43,7 +43,6 @@
         this.color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
         this.color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
         this.colorDead = new BABYLON.Color4(0, 0, 0, 1.0);
-        this.deadAlpha = 0;
         this.textureMask = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
 
         // Particles
@@ -176,12 +175,9 @@
             var step = randomNumber(0, 1.0);
 
             var startColor = BABYLON.Color4.Lerp(this.color1, this.color2, step);
-            var deadColor = this.colorDead;
-            startColor.a = 1.0;
-            deadColor.a = this.deadAlpha;
 
             particle.color = startColor;
-            var diff = deadColor.subtract(startColor);
+            var diff = this.colorDead.subtract(startColor);
             particle.colorStep = diff.scale(1.0 / particle.lifeTime);
         }
     };

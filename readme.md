@@ -33,6 +33,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Alpha testing
  - Billboarding
  - Fullscreen mode
+ - Shadow Maps and Variance Shadow Maps
 -  Textures:
  - Render target textures
  - Dynamic textures (canvas)
