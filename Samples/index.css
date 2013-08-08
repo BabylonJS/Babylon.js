@@ -276,7 +276,7 @@ button {
     font-size: 20px;
     color: white;
     font-weight: bold;
-    background-color: #2F2F2F;
+    background-color: rgba(30, 30, 30, 0.9);
     padding: 10px 10px 10px 10px;
     margin-bottom: 4px;
 }

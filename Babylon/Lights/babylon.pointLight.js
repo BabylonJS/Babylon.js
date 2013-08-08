@@ -16,4 +16,8 @@
     };
     
     BABYLON.PointLight.prototype = Object.create(BABYLON.Light.prototype);
+    
+    BABYLON.PointLight.prototype.getShadowGenerator = function () {
+        return null;
+    };
 })();

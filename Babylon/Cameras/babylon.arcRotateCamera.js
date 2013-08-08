@@ -1,6 +1,8 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
+    var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+
     BABYLON.ArcRotateCamera = function (name, alpha, beta, radius, target, scene) {
         this.name = name;
         this.id = name;
@@ -39,8 +41,16 @@
     BABYLON.ArcRotateCamera.prototype.attachControl = function(canvas) {
         var previousPosition;
         var that = this;
+        var pointerId;
         
         this._onPointerDown = function (evt) {
+            
+            if (pointerId) {
+                return;
+            }
+
+            pointerId = evt.pointerId;
+
             previousPosition = {
                 x: evt.clientX,
                 y: evt.clientY
@@ -51,11 +61,16 @@
 
         this._onPointerUp = function (evt) {
             previousPosition = null;
+            pointerId = null;
             evt.preventDefault();
         };
 
         this._onPointerMove = function (evt) {
             if (!previousPosition) {
+                return;
+            }
+            
+            if (pointerId !== evt.pointerId) {
                 return;
             }
 
@@ -118,12 +133,28 @@
         
         this._onLostFocus = function () {
             that._keys = [];
+            pointerId = null;
         };
 
-        canvas.addEventListener("pointerdown", this._onPointerDown);
-        canvas.addEventListener("pointerup", this._onPointerUp);
-        canvas.addEventListener("pointerout", this._onPointerUp);
-        canvas.addEventListener("pointermove", this._onPointerMove);
+        this._onGestureStart = function (e) {
+            if (!that._MSGestureHandler) {
+                that._MSGestureHandler = new MSGesture();
+                that._MSGestureHandler.target = canvas;
+            }
+
+            that._MSGestureHandler.addPointer(e.pointerId);
+        };
+
+        this._onGesture = function(e) {
+            that.radius *= e.scale;
+        };
+        
+        canvas.addEventListener(eventPrefix + "down", this._onPointerDown);
+        canvas.addEventListener(eventPrefix + "up", this._onPointerUp);
+        canvas.addEventListener(eventPrefix + "out", this._onPointerUp);
+        canvas.addEventListener(eventPrefix + "move", this._onPointerMove);
+        canvas.addEventListener("MSPointerDown", this._onGestureStart);
+        canvas.addEventListener("MSGestureChange", this._onGesture, true);
         window.addEventListener("keydown", this._onKeyDown, true);
         window.addEventListener("keyup", this._onKeyUp, true);
         window.addEventListener('mousewheel', this._wheel);
@@ -131,14 +162,18 @@
     };
     
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
-        canvas.removeEventListener("pointerdown", this._onPointerDown);
-        canvas.removeEventListener("pointerup", this._onPointerUp);
-        canvas.removeEventListener("pointerout", this._onPointerUp);
-        canvas.removeEventListener("pointermove", this._onPointerMove);
+        canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
+        canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
+        canvas.removeEventListener(eventPrefix + "out", this._onPointerUp);
+        canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
+        canvas.removeEventListener("MSPointerDown", this._onGestureStart);
+        canvas.removeEventListener("MSGestureChange", this._onGesture);
         window.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("keyup", this._onKeyUp);
         window.removeEventListener('mousewheel', this._wheel);
         window.removeEventListener("blur", this._onLostFocus);
+
+        this._MSGestureHandler = null;
     };
 
     BABYLON.ArcRotateCamera.prototype._update = function () {

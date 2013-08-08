@@ -255,6 +255,16 @@
 
         return null;
     };
+    
+    BABYLON.Scene.prototype.getLightByID = function (id) {
+        for (var index = 0; index < this.lights.length; index++) {
+            if (this.lights[index].id == id) {
+                return this.lights[index];
+            }
+        }
+
+        return null;
+    };
 
     BABYLON.Scene.prototype.getMeshByID = function (id) {
         for (var index = 0; index < this.meshes.length; index++) {
@@ -454,6 +464,16 @@
         this._evaluateActiveMeshes();
         this._evaluateActiveMeshesDuration = new Date() - beforeEvaluateActiveMeshesDate;
 
+        // Shadows
+        for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
+            var light = this.lights[lightIndex];
+            var shadowGenerator = light.getShadowGenerator();
+
+            if (light.isEnabled && shadowGenerator && shadowGenerator.isReady()) {
+                this._renderTargets.push(shadowGenerator.getShadowMap());
+            }
+        }
+        
         // Render targets
         var beforeRenderTargetDate = new Date();
         for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
@@ -529,6 +549,11 @@
         var index;
         for (index = 0; index < this.cameras.length; index++) {
             this.cameras[index].detachControl(canvas);
+        }
+        
+        // Release lights
+        while (this.lights.length) {
+            this.lights[0].dispose(true);
         }
 
         // Release meshes

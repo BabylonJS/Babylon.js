@@ -58,6 +58,7 @@
     BABYLON.Mesh.prototype.visibility = 1.0;
     BABYLON.Mesh.prototype.billboardMode = BABYLON.Mesh.BILLBOARDMODE_NONE;
     BABYLON.Mesh.prototype.checkCollisions = false;
+    BABYLON.Mesh.prototype.receiveShadows = false;
 
     BABYLON.Mesh.prototype.onDispose = false;
 
@@ -294,12 +295,29 @@
         this._createGlobalSubMesh();
     };
 
+    BABYLON.Mesh.prototype.bindAndDraw = function (subMesh, effect, wireframe) {
+        var engine = this._scene.getEngine();
+        
+        // Wireframe
+        var indexToBind = this._indexBuffer;
+        var useTriangles = true;
+
+        if (wireframe) {
+            indexToBind = subMesh.getLinesIndexBuffer(this._indices, engine);
+            useTriangles = false;
+        }
+
+        // VBOs
+        engine.bindBuffers(this._vertexBuffer, indexToBind, this._vertexDeclaration, this._vertexStrideSize, effect);
+
+        // Draw order
+        engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
+    };
+
     BABYLON.Mesh.prototype.render = function (subMesh) {
         if (!this._vertexBuffer || !this._indexBuffer) {
             return;
         }
-
-        var engine = this._scene.getEngine();
 
         // World
         var world = this.getWorldMatrix();
@@ -314,20 +332,9 @@
         effectiveMaterial._preBind();
         effectiveMaterial.bind(world, this);
 
-        // Wireframe
-        var indexToBind = this._indexBuffer;
-        var useTriangles = true;
-
-        if (engine.forceWireframe || effectiveMaterial.wireframe) {
-            indexToBind = subMesh.getLinesIndexBuffer(this._indices, engine);
-            useTriangles = false;
-        }
-
-        // VBOs
-        engine.bindBuffers(this._vertexBuffer, indexToBind, this._vertexDeclaration, this._vertexStrideSize, effectiveMaterial.getEffect());
-
-        // Draw order
-        engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
+        // Bind and draw
+        var engine = this._scene.getEngine();
+        this.bindAndDraw(subMesh, effectiveMaterial.getEffect(), engine.forceWireframe || effectiveMaterial.wireframe);
 
         // Unbind
         effectiveMaterial.unbind();

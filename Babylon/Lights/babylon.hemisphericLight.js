@@ -17,4 +17,8 @@
     };
     
     BABYLON.HemisphericLight.prototype = Object.create(BABYLON.Light.prototype);
+    
+    BABYLON.HemisphericLight.prototype.getShadowGenerator = function () {
+        return null;
+    };
 })();

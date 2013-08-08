@@ -161,7 +161,6 @@
         particleSystem.color1 = BABYLON.Color4.FromArray(parsedParticleSystem.color1);
         particleSystem.color2 = BABYLON.Color4.FromArray(parsedParticleSystem.color2);
         particleSystem.colorDead = BABYLON.Color4.FromArray(parsedParticleSystem.colorDead);
-        particleSystem.deadAlpha = parsedParticleSystem.deadAlpha;
         particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
         particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
         particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
@@ -169,6 +168,21 @@
         particleSystem.start();
 
         return particleSystem;
+    };
+    
+    var parseShadowGenerator = function (parsedShadowGenerator, scene) {
+        var light = scene.getLightByID(parsedShadowGenerator.lightId);
+        var shadowGenerator = new BABYLON.ShadowGenerator(parsedShadowGenerator.mapSize, light);
+
+        for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
+            var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
+
+            shadowGenerator.getShadowMap().renderList.push(mesh);
+        }
+
+        shadowGenerator.useVarianceShadowMap = parsedShadowGenerator.useVarianceShadowMap;
+
+        return shadowGenerator;
     };
 
     var parseAnimation = function (parsedAnimation) {
@@ -210,16 +224,17 @@
 
         switch (parsedLight.type) {
             case 0:
-                light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), scene);
                 break;
             case 1:
-                light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
+                light.position = BABYLON.Vector3.FromArray(parsedLight.position);
                 break;
             case 2:
-                light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
+                light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
                 break;
             case 3:
-                light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.data), scene);
+                light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
                 light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
                 break;
         }
@@ -257,6 +272,8 @@
 
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
+
+        mesh.receiveShadows = parsedMesh.receiveShadows;
 
         mesh.billboardMode = parsedMesh.billboardMode;
 
@@ -461,6 +478,15 @@
                     for (var index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         parseParticleSystem(parsedParticleSystem, scene, rootUrl);
+                    }
+                }
+                
+                // Shadows
+                if (parsedData.shadowGenerators) {
+                    for (var index = 0; index < parsedData.shadowGenerators.length; index++) {
+                        var parsedShadowGenerator = parsedData.shadowGenerators[index];
+
+                        parseShadowGenerator(parsedShadowGenerator, scene);
                     }
                 }
 

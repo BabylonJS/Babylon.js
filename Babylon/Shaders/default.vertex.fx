@@ -1,4 +1,8 @@
-﻿#define MAP_EXPLICIT	0.
+﻿#ifdef GL_ES
+precision mediump float;
+#endif
+
+#define MAP_EXPLICIT	0.
 #define MAP_SPHERICAL	1.
 #define MAP_PLANAR		2.
 #define MAP_CUBIC		3.
@@ -74,6 +78,25 @@ varying float fClipDistance;
 
 #ifdef FOG
 varying float fFogDistance;
+#endif
+
+#ifdef SHADOWS
+#ifdef LIGHT0
+uniform mat4 lightMatrix0;
+varying vec4 vPositionFromLight0;
+#endif
+#ifdef LIGHT1
+uniform mat4 lightMatrix1;
+varying vec4 vPositionFromLight1;
+#endif
+#ifdef LIGHT2
+uniform mat4 lightMatrix2;
+varying vec4 vPositionFromLight2;
+#endif
+#ifdef LIGHT3
+uniform mat4 lightMatrix3;
+varying vec4 vPositionFromLight3;
+#endif
 #endif
 
 #ifdef REFLECTION
@@ -205,5 +228,21 @@ void main(void) {
 	// Fog
 #ifdef FOG
 		fFogDistance = (view * worldPos).z;
+#endif
+
+	// Shadows
+#ifdef SHADOWS
+#ifdef LIGHT0
+		vPositionFromLight0 = lightMatrix0 * vec4(position, 1.0);
+#endif
+#ifdef LIGHT1
+		vPositionFromLight1 = lightMatrix1 * vec4(position, 1.0);
+#endif
+#ifdef LIGHT2
+		vPositionFromLight2 = lightMatrix2 * vec4(position, 1.0);
+#endif
+#ifdef LIGHT3
+		vPositionFromLight3 = lightMatrix3 * vec4(position, 1.0);
+#endif
 #endif
 }

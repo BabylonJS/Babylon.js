@@ -1,4 +1,8 @@
-﻿// Attributes
+﻿#ifdef GL_ES
+precision mediump float;
+#endif
+
+// Attributes
 attribute vec2 position;
 
 // Uniforms

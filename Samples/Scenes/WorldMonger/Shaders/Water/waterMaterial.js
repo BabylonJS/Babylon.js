@@ -21,11 +21,11 @@
 
         this.refractionTexture.onBeforeRender = function() {
             BABYLON.clipPlane = new BABYLON.Plane(0, 1, 0, 0);
-        }
-        
-        this.refractionTexture.onAfterRender = function () {
+        };
+
+        this.refractionTexture.onAfterRender = function() {
             BABYLON.clipPlane = null;
-        }
+        };
 
         this.waterColor = new BABYLON.Color3(0.0, 0.3, 0.1);
         this.waterColorLevel = 0.2;

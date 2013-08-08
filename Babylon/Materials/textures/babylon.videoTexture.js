@@ -7,8 +7,8 @@
 
         this.name = name;
 
-        this.wrapU = BABYLON.Texture.REPEAT_CLAMPMODE;
-        this.wrapV = BABYLON.Texture.REPEAT_CLAMPMODE;
+        this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+        this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
 
         this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
         var textureSize = this.getSize();
@@ -18,7 +18,7 @@
         this.video.height = textureSize.height;
         this.video.autoplay = true;
         this.video.loop = true;
-
+        
         var that = this;
         this.video.addEventListener("canplaythrough", function () {
             that._texture.isReady = true;

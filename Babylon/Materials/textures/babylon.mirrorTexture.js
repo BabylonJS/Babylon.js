@@ -8,6 +8,9 @@
         this.name = name;        
 
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+        
+        // Render list
+        this.renderList = [];
     };
 
     BABYLON.MirrorTexture.prototype = Object.create(BABYLON.RenderTargetTexture.prototype);

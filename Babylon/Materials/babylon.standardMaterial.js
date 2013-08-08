@@ -100,7 +100,7 @@
             defines.push("#define SPECULAR");
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
             defines.push("#define BUMP");
         }
 
@@ -116,7 +116,8 @@
         if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
             defines.push("#define FOG");
         }
-        
+
+        var shadowsActivated = false;
         var lightIndex = 0;
         for (var index = 0; index < this._scene.lights.length; index++) {
             var light = this._scene.lights[index];
@@ -132,7 +133,22 @@
             } else if (light instanceof BABYLON.HemisphericLight) {
                 defines.push("#define HEMILIGHT" + lightIndex);
             } else {
-                defines.push("#define POINTDIRLIGHT" + lightIndex);
+                defines.push("#define POINTDIRLIGHT" + lightIndex);               
+            }
+            
+            // Shadows
+            var shadowGenerator = light.getShadowGenerator();
+            if (mesh && mesh.receiveShadows && shadowGenerator && shadowGenerator.isReady()) {
+                defines.push("#define SHADOW" + lightIndex);
+
+                if (!shadowsActivated) {
+                    defines.push("#define SHADOWS");
+                    shadowsActivated = true;
+                }
+
+                if (shadowGenerator.useVarianceShadowMap) {
+                    defines.push("#define SHADOWVSM" + lightIndex);
+                }
             }
 
             lightIndex++;
@@ -169,14 +185,16 @@
             this._effect = this._scene.getEngine().createEffect(shaderName,
                 attribs,
             ["world", "view", "worldViewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0",
-                "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1",
-                "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2",
-                "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3",
+                "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
+                "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
+                "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
+                "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                 "vFogInfos", "vFogColor",
                  "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                  "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix"],
-                ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler"],
+                ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
+                 "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
+                ],
                 join);
         }
         if (!this._effect.isReady()) {
@@ -254,7 +272,7 @@
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
         
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && !isIE()) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
             this._effect.setTexture("bumpSampler", this.bumpTexture);
 
             this._effect.setVector2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -282,7 +300,7 @@
                 this._effect.setFloat4("vLightData" + lightIndex, light.position.x, light.position.y, light.position.z, 0);
             } else if (light instanceof BABYLON.DirectionalLight) {
                 // Directional Light
-                this._effect.setFloat4("vLightData" + lightIndex, light.direction.x, light.direction.y, light.direction.z, 1);
+                this._effect.setFloat4("vLightData" + lightIndex, light.direction.x, light.direction.y, light.direction.z, 1);               
             } else if (light instanceof BABYLON.SpotLight) {
                 // Spot Light
                 this._effect.setFloat4("vLightData" + lightIndex, light.position.x, light.position.y, light.position.z, light.exponent);
@@ -296,6 +314,13 @@
             }
             this._effect.setColor3("vLightDiffuse" + lightIndex, light.diffuse.scale(light.intensity));
             this._effect.setColor3("vLightSpecular" + lightIndex, light.specular.scale(light.intensity));
+            
+            // Shadows
+            var shadowGenerator = light.getShadowGenerator();
+            if (mesh.receiveShadows && shadowGenerator && shadowGenerator.isReady()) {
+                this._effect.setMatrix("lightMatrix" + lightIndex, world.multiply(shadowGenerator.getTransformMatrix()));
+                this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
+            }
 
             lightIndex++;
 
