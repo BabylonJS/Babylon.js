@@ -4,16 +4,34 @@
     BABYLON.Collider = function () {
         this.radius = new BABYLON.Vector3(1, 1, 1);
         this.retry = 0;
+
+        this.basePointWorld = BABYLON.Vector3.Zero();
+        this.velocityWorld = BABYLON.Vector3.Zero();
+        this.normalizedVelocity = BABYLON.Vector3.Zero();
+        
+        // Internals
+        this._trianglePlane = new BABYLON.Plane(0, 0, 0, 0);
+        this._collisionPoint = BABYLON.Vector3.Zero();
+        this._planeIntersectionPoint = BABYLON.Vector3.Zero();
+        this._tempVector = BABYLON.Vector3.Zero();
+        this._tempVector2 = BABYLON.Vector3.Zero();
+        this._tempVector3 = BABYLON.Vector3.Zero();
+        this._tempVector4 = BABYLON.Vector3.Zero();
+        this._edge = BABYLON.Vector3.Zero();
+        this._baseToVertex = BABYLON.Vector3.Zero();
+        this._destinationPoint = BABYLON.Vector3.Zero();
+        this._slidePlaneNormal = BABYLON.Vector3.Zero();
+        this._displacementVector = BABYLON.Vector3.Zero();
     };
 
     // Methods
     BABYLON.Collider.prototype._initialize = function (source, dir, e) {
         this.velocity = dir;
-        this.normalizedVelocity = BABYLON.Vector3.Normalize(dir);
+        BABYLON.Vector3.NormalizeToRef(dir, this.normalizedVelocity);
         this.basePoint = source;
 
-        this.basePointWorld = source.multiply(this.radius);
-        this.velocityWorld = dir.multiply(this.radius);
+        source.multiplyToRef(this.radius, this.basePointWorld);
+        dir.multiplyToRef(this.radius, this.velocityWorld);
 
         this.velocityWorldLength = this.velocityWorld.length();
 
@@ -21,43 +39,43 @@
         this.collisionFound = false;
     };
 
-    var checkPointInTriangle = function (point, pa, pb, pc, n) {
-        var e0 = pa.subtract(point);
-        var e1 = pb.subtract(point);
+    BABYLON.Collider.prototype._checkPointInTriangle = function (point, pa, pb, pc, n) {
+        pa.subtractToRef(point, this._tempVector);
+        pb.subtractToRef(point, this._tempVector2);
 
-        var d = BABYLON.Vector3.Dot(BABYLON.Vector3.Cross(e0, e1), n);
+        BABYLON.Vector3.CrossToRef(this._tempVector, this._tempVector2, this._tempVector4);
+        var d = BABYLON.Vector3.Dot(this._tempVector4, n);
         if (d < 0)
             return false;
 
-        var e2 = pc.subtract(point);
-        d = BABYLON.Vector3.Dot(BABYLON.Vector3.Cross(e1, e2), n);
+        pc.subtractToRef(point, this._tempVector3);
+        BABYLON.Vector3.CrossToRef(this._tempVector2, this._tempVector3, this._tempVector4);
+        d = BABYLON.Vector3.Dot(this._tempVector4, n);
         if (d < 0)
             return false;
 
-        d = BABYLON.Vector3.Dot(BABYLON.Vector3.Cross(e2, e0), n);
+        BABYLON.Vector3.CrossToRef(this._tempVector3, this._tempVector, this._tempVector4);
+        d = BABYLON.Vector3.Dot(this._tempVector4, n);
         return d >= 0;
     };
 
     var intersectBoxAASphere = function (boxMin, boxMax, sphereCenter, sphereRadius) {
-        var boxMinSphere = new BABYLON.Vector3(sphereCenter.X - sphereRadius, sphereCenter.Y - sphereRadius, sphereCenter.Z - sphereRadius);
-        var boxMaxSphere = new BABYLON.Vector3(sphereCenter.X + sphereRadius, sphereCenter.Y + sphereRadius, sphereCenter.Z + sphereRadius);
-
-        if (boxMin.X > boxMaxSphere.X)
+        if (boxMin.x > sphereCenter.x + sphereRadius)
             return false;
 
-        if (boxMinSphere.X > boxMax.X)
+        if (sphereCenter.x - sphereRadius > boxMax.x)
             return false;
 
-        if (boxMin.Y > boxMaxSphere.Y)
+        if (boxMin.y > sphereCenter.y + sphereRadius)
             return false;
 
-        if (boxMinSphere.Y > boxMax.Y)
+        if (sphereCenter.y - sphereRadius > boxMax.y)
             return false;
 
-        if (boxMin.Z > boxMaxSphere.Z)
+        if (boxMin.z > sphereCenter.z + sphereRadius)
             return false;
 
-        if (boxMinSphere.Z > boxMax.Z)
+        if (sphereCenter.z - sphereRadius > boxMax.z)
             return false;
 
         return true;
@@ -96,8 +114,7 @@
     };
 
     BABYLON.Collider.prototype._canDoCollision = function (sphereCenter, sphereRadius, vecMin, vecMax) {
-        var vecTest = this.basePointWorld.subtract(sphereCenter);
-        var distance = vecTest.length();
+        var distance = BABYLON.Vector3.Distance(this.basePointWorld, sphereCenter);
 
         var max = Math.max(this.radius.x, this.radius.y);
         max = Math.max(max, this.radius.z);
@@ -116,13 +133,13 @@
         var t0;
         var embeddedInPlane = false;
 
-        var trianglePlane = BABYLON.CollisionPlane.CreateFromPoints(p1, p2, p3);
+        this._trianglePlane.copyFromPoints(p1, p2, p3);
 
-        if ((!subMesh.getMaterial()) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+        if ((!subMesh.getMaterial()) && !this._trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
             return;
 
-        var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
-        var normalDotVelocity = BABYLON.Vector3.Dot(trianglePlane.normal, this.velocity);
+        var signedDistToTrianglePlane = this._trianglePlane.signedDistanceTo(this.basePoint);
+        var normalDotVelocity = BABYLON.Vector3.Dot(this._trianglePlane.normal, this.velocity);
 
         if (normalDotVelocity == 0) {
             if (Math.abs(signedDistToTrianglePlane) >= 1.0)
@@ -149,18 +166,20 @@
                 t0 = 1.0;
         }
 
-        var collisionPoint = BABYLON.Vector3.Zero();
+        this._collisionPoint.copyFromFloats(0, 0, 0);
 
         var found = false;
         var t = 1.0;
 
         if (!embeddedInPlane) {
-            var planeIntersectionPoint = (this.basePoint.subtract(trianglePlane.normal)).add(this.velocity.scale(t0));
+            this.basePoint.subtractToRef(this._trianglePlane.normal, this._planeIntersectionPoint);
+            this.velocity.scaleToRef(t0, this._tempVector);
+            this._planeIntersectionPoint.addInPlace(this._tempVector);
 
-            if (checkPointInTriangle(planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
+            if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, this._trianglePlane.normal)) {
                 found = true;
                 t = t0;
-                collisionPoint = planeIntersectionPoint;
+                this._collisionPoint.copyFrom(this._planeIntersectionPoint);
             }
         }
 
@@ -169,45 +188,48 @@
 
             var a = velocitySquaredLength;
 
-            var b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this.basePoint.subtract(p1)));
-            var c = p1.subtract(this.basePoint).lengthSquared() - 1.0;
+            this.basePoint.subtractToRef(p1, this._tempVector);
+            var b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+            var c = this._tempVector.lengthSquared - 1.0;
 
             var lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
                 t = lowestRoot.root;
                 found = true;
-                collisionPoint = p1;
+                this._collisionPoint.copyFrom(p1);
             }
 
-            b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this.basePoint.subtract(p2)));
-            c = p2.subtract(this.basePoint).lengthSquared() - 1.0;
+            this.basePoint.subtractToRef(p2, this._tempVector);
+            b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+            c = this._tempVector.lengthSquared - 1.0;
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
                 t = lowestRoot.root;
                 found = true;
-                collisionPoint = p2;
+                this._collisionPoint.copyFrom(p2);
             }
 
-            b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this.basePoint.subtract(p3)));
-            c = p3.subtract(this.basePoint).lengthSquared() - 1.0;
+            this.basePoint.subtractToRef(p3, this._tempVector);
+            b = 2.0 * (BABYLON.Vector3.Dot(this.velocity, this._tempVector));
+            c = this._tempVector.lengthSquared - 1.0;
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
                 t = lowestRoot.root;
                 found = true;
-                collisionPoint = p3;
+                this._collisionPoint.copyFrom(p3);
             }
 
-            var edge = p2.subtract(p1);
-            var baseToVertex = p1.subtract(this.basePoint);
-            var edgeSquaredLength = edge.lengthSquared();
-            var edgeDotVelocity = BABYLON.Vector3.Dot(edge, this.velocity);
-            var edgeDotBaseToVertex = BABYLON.Vector3.Dot(edge, baseToVertex);
+            p2.subtractToRef(p1, this._edge);
+            p1.subtractToRef(this.basePoint, this._baseToVertex);
+            var edgeSquaredLength = this._edge.lengthSquared();
+            var edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+            var edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
-            c = edgeSquaredLength * (1.0 - baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
+            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
@@ -216,19 +238,20 @@
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;
                     found = true;
-                    collisionPoint = p1.add(edge.scale(f));
+                    this._edge.scaleInPlace(f);
+                    p1.addToRef(this._edge, this._collisionPoint);
                 }
             }
 
-            edge = p3.subtract(p2);
-            baseToVertex = p2.subtract(this.basePoint);
-            edgeSquaredLength = edge.lengthSquared();
-            edgeDotVelocity = BABYLON.Vector3.Dot(edge, this.velocity);
-            edgeDotBaseToVertex = BABYLON.Vector3.Dot(edge, baseToVertex);
+            p3.subtractToRef(p2, this._edge);
+            p2.subtractToRef(this.basePoint, this._baseToVertex);
+            edgeSquaredLength = this._edge.lengthSquared();
+            edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+            edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
-            c = edgeSquaredLength * (1.0 - baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
+            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
                 var f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
@@ -236,19 +259,20 @@
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;
                     found = true;
-                    collisionPoint = p2.add(edge.scale(f));
+                    this._edge.scaleInPlace(f);
+                    p2.addToRef(this._edge, this._collisionPoint);
                 }
             }
 
-            edge = p1.subtract(p3);
-            baseToVertex = p3.subtract(this.basePoint);
-            edgeSquaredLength = edge.lengthSquared();
-            edgeDotVelocity = BABYLON.Vector3.Dot(edge, this.velocity);
-            edgeDotBaseToVertex = BABYLON.Vector3.Dot(edge, baseToVertex);
+            p1.subtractToRef(p3, this._edge);
+            p3.subtractToRef(this.basePoint, this._baseToVertex);
+            edgeSquaredLength = this._edge.lengthSquared();
+            edgeDotVelocity = BABYLON.Vector3.Dot(this._edge, this.velocity);
+            edgeDotBaseToVertex = BABYLON.Vector3.Dot(this._edge, this._baseToVertex);
 
             a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
-            c = edgeSquaredLength * (1.0 - baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
+            b = edgeSquaredLength * (2.0 * BABYLON.Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
@@ -257,7 +281,8 @@
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;
                     found = true;
-                    collisionPoint = p3.add(edge.scale(f));
+                    this._edge.scaleInPlace(f);
+                    p3.addToRef(this._edge, this._collisionPoint);
                 }
             }
         }
@@ -266,8 +291,12 @@
             var distToCollision = t * this.velocity.length();
 
             if (!this.collisionFound || distToCollision < this.nearestDistance) {
-                this.nearestDistance = distToCollision;
-                this.intersectionPoint = collisionPoint;
+                if (!this.intersectionPoint) {
+                    this.intersectionPoint = this._collisionPoint.clone();
+                } else {
+                    this.intersectionPoint.copyFrom(this._collisionPoint);
+                }
+                this.nearestDistance = distToCollision;                
                 this.collisionFound = true;
             }
         }
@@ -282,26 +311,23 @@
             this._testTriangle(subMesh, p3, p2, p1);
         }
     };
-
+    
     BABYLON.Collider.prototype._getResponse = function(pos, vel) {
-        var destinationPoint = pos.add(vel);
-        var V = vel.scale((this.nearestDistance / vel.length()));
+        pos.addToRef(vel, this._destinationPoint);
+        vel.scaleInPlace((this.nearestDistance / vel.length()));
 
-        var newPos = this.basePoint.add(V);
-        var slidePlaneNormal = newPos.subtract(this.intersectionPoint);
-        slidePlaneNormal.normalize();
-        var displacementVector = slidePlaneNormal.scale(this.epsilon);
+        this.basePoint.addToRef(vel, pos);
+        pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);
+        this._slidePlaneNormal.normalize();
+        this._slidePlaneNormal.scaleToRef(this.epsilon, this._displacementVector);
 
-        newPos = newPos.add(displacementVector);
-        this.intersectionPoint = this.intersectionPoint.add(displacementVector);
+        pos.addInPlace(this._displacementVector);
+        this.intersectionPoint.addInPlace(this._displacementVector);
 
-        var slidePlaneOrigin = this.intersectionPoint;
-        var slidingPlane = new BABYLON.CollisionPlane(slidePlaneOrigin, slidePlaneNormal);
-        var newDestinationPoint = destinationPoint.subtract(slidePlaneNormal.scale(slidingPlane.signedDistanceTo(destinationPoint)));
+        this._slidePlaneNormal.scaleInPlace(BABYLON.Plane.SignedDistanceToPlaneFromPositionAndNormal(this.intersectionPoint, this._slidePlaneNormal, this._destinationPoint));
+        this._destinationPoint.subtractInPlace(this._slidePlaneNormal);
 
-        var newVel = newDestinationPoint.subtract(this.intersectionPoint);
-
-        return { position: newPos, velocity: newVel };
+        this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
     };
 
 })();

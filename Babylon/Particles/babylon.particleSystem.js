@@ -1,20 +1,6 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    var appendParticleVertex = function (particle, vertices, offsetX, offsetY) {
-        vertices.push(particle.position.x);
-        vertices.push(particle.position.y);
-        vertices.push(particle.position.z);
-        vertices.push(particle.color.r);
-        vertices.push(particle.color.g);
-        vertices.push(particle.color.b);
-        vertices.push(particle.color.a);
-        vertices.push(particle.angle);
-        vertices.push(particle.size);
-        vertices.push(offsetX);
-        vertices.push(offsetY);
-    };
-
     var randomNumber = function (min, max) {
         if (min == max) {
             return (min);
@@ -47,6 +33,7 @@
 
         // Particles
         this.particles = [];
+        this._stockParticles = [];
         this._newPartsExcess = 0;
 
         // VBO
@@ -67,6 +54,14 @@
         }
 
         this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+
+        this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+        
+        // Internals
+        this._scaledColorStep = new BABYLON.Color4(0, 0, 0, 0);
+        this._colorDiff = new BABYLON.Color4(0, 0, 0, 0);
+        this._scaledDirection = BABYLON.Vector3.Zero();
+        this._scaledGravity = BABYLON.Vector3.Zero();
     };
 
     // Members
@@ -108,7 +103,22 @@
     BABYLON.ParticleSystem.prototype.stop = function () {
         this._stopped = true;
     };
-
+    
+    BABYLON.ParticleSystem.prototype._appendParticleVertex = function (index, particle, offsetX, offsetY) {
+        var offset = index * 11;
+        this._vertices[offset] = particle.position.x;
+        this._vertices[offset + 1] = particle.position.y;
+        this._vertices[offset + 2] = particle.position.z;
+        this._vertices[offset + 3] = particle.color.r;
+        this._vertices[offset + 4] = particle.color.g;
+        this._vertices[offset + 5] = particle.color.b;
+        this._vertices[offset + 6] = particle.color.a;
+        this._vertices[offset + 7] = particle.angle;
+        this._vertices[offset + 8] = particle.size;
+        this._vertices[offset + 9] = offsetX;
+        this._vertices[offset + 10] = offsetY;
+    };
+    
     BABYLON.ParticleSystem.prototype._update = function (newParticles) {
         // Update current
         this._alive = this.particles.length > 0;
@@ -117,21 +127,24 @@
             particle.age += this._scaledUpdateSpeed;
 
             if (particle.age >= particle.lifeTime) {
-                this.particles.splice(index, 1);
+                this._stockParticles.push(this.particles.splice(index, 1)[0]);
                 index--;
                 continue;
             }
             else {
-                particle.color = particle.color.add(particle.colorStep.scale(this._scaledUpdateSpeed));
+                particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                particle.color.addInPlace(this._scaledColorStep);
 
                 if (particle.color.a < 0)
                     particle.color.a = 0;
 
-                particle.position = particle.position.add(particle.direction.scale(this._scaledUpdateSpeed));
+                particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                particle.position.addInPlace(this._scaledDirection);
 
                 particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                particle.direction = particle.direction.add(this.gravity.scale(this._scaledUpdateSpeed));
+                this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                particle.direction.addInPlace(this._scaledGravity);
             }
         }
         
@@ -149,7 +162,12 @@
                 break;
             }
 
-            var particle = new BABYLON.Particle();
+            if (this._stockParticles.length !== 0) {
+                particle = this._stockParticles.pop();
+                particle.age = 0;
+            } else {
+                particle = new BABYLON.Particle();
+            }
             this.particles.push(particle);
 
             var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
@@ -158,7 +176,7 @@
             var randY = randomNumber(this.direction1.y, this.direction2.y);
             var randZ = randomNumber(this.direction1.z, this.direction2.z);
 
-            particle.direction = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(randX, randY, randZ).scale(emitPower), worldMatrix);
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, particle.direction);
 
             particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
@@ -168,17 +186,15 @@
             randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
             randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
             randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-            var dispatch = new BABYLON.Vector3(randX, randY, randZ);
 
-            particle.position = BABYLON.Vector3.TransformCoordinates(dispatch, worldMatrix);
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, particle.position);
 
             var step = randomNumber(0, 1.0);
 
-            var startColor = BABYLON.Color4.Lerp(this.color1, this.color2, step);
+            BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
-            particle.color = startColor;
-            var diff = this.colorDead.subtract(startColor);
-            particle.colorStep = diff.scale(1.0 / particle.lifeTime);
+            this.colorDead.subtractToRef(particle.color, this._colorDiff);
+            this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         }
     };
 
@@ -256,17 +272,18 @@
         }
 
         // Update VBO
-        var vertices = [];
+        var offset = 0;
+        this._vertices.length = this.particles.length * this._vertexStrideSize;
         for (var index = 0; index < this.particles.length; index++) {
             var particle = this.particles[index];
 
-            appendParticleVertex(particle, vertices, 0, 0);
-            appendParticleVertex(particle, vertices, 1, 0);
-            appendParticleVertex(particle, vertices, 1, 1);
-            appendParticleVertex(particle, vertices, 0, 1);
+            this._appendParticleVertex(offset++, particle, 0, 0);
+            this._appendParticleVertex(offset++, particle, 1, 0);
+            this._appendParticleVertex(offset++, particle, 1, 1);
+            this._appendParticleVertex(offset++, particle, 0, 1);
         }
         var engine = this._scene.getEngine();
-        engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
+        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
     };
 
     BABYLON.ParticleSystem.prototype.render = function () {

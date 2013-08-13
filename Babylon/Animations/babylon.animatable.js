@@ -14,8 +14,8 @@
     BABYLON._Animatable.prototype.target = null;
     BABYLON._Animatable.prototype.animationStarted = false;
     BABYLON._Animatable.prototype.loopAnimation = false;
-    BABYLON._Animatable.prototype.fromFrame = false;
-    BABYLON._Animatable.prototype.toFrame = false;
+    BABYLON._Animatable.prototype.fromFrame = 0;
+    BABYLON._Animatable.prototype.toFrame = 100;
     BABYLON._Animatable.prototype.speedRatio = 1.0;
     
     // Methods

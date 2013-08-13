@@ -10,7 +10,7 @@
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
         
         // Render list
-        this.renderList = [];
+        this.renderList = [];       
     };
 
     BABYLON.RenderTargetTexture.prototype = Object.create(BABYLON.Texture.prototype);
@@ -50,6 +50,13 @@
             return;
         }
         
+        if (!this._opaqueSubMeshes) {
+            // Smart arrays
+            this._opaqueSubMeshes = new BABYLON.Tools.SmartArray(256);
+            this._transparentSubMeshes = new BABYLON.Tools.SmartArray(256);
+            this._alphaTestSubMeshes = new BABYLON.Tools.SmartArray(256);
+        }
+        
         // Bind
         engine.bindFramebuffer(this._texture);
 
@@ -57,9 +64,9 @@
         engine.clear(scene.clearColor, true, true);
         
         // Dispatch subMeshes
-        this._opaqueSubMeshes = [];
-        this._transparentSubMeshes = [];
-        this._alphaTestSubMeshes = [];
+        this._opaqueSubMeshes.reset();
+        this._transparentSubMeshes.reset();
+        this._alphaTestSubMeshes.reset();
         
         for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
             var mesh = this.renderList[meshIndex];

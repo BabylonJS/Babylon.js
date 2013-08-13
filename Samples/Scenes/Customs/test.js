@@ -149,7 +149,7 @@
             spaceDek3.rotation.y -= 0.01;
         }
         
-        if (torus.intersectsMesh(box)) {
+        if (torus.intersectsMesh(box, true)) {
             material2.alpha = 1;
             torus.scaling = new BABYLON.Vector3(2, 2, 2);
         } else {

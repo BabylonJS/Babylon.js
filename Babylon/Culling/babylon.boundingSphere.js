@@ -16,11 +16,13 @@
         
         this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);;
         this.radius = distance * 0.5;
+
+        this.centerWorld = BABYLON.Vector3.Zero();
     };
     
     // Methods
     BABYLON.BoundingSphere.prototype._update = function (world, scale) {
-        this.centerWorld = BABYLON.Vector3.TransformCoordinates(this.center, world);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
         this.radiusWorld = this.radius * scale;
     };
     

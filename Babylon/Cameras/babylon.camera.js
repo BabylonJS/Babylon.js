@@ -46,13 +46,19 @@
     };
 
     BABYLON.Camera.prototype.getProjectionMatrix = function () {
+        if (!this._projectionMatrix) {
+            this._projectionMatrix = new BABYLON.Matrix();
+        }
+
         var engine = this._scene.getEngine();
         if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-            return new BABYLON.Matrix.PerspectiveFovLH(this.fov, engine.getAspectRatio(), this.minZ, this.maxZ);
+            BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(), this.minZ, this.maxZ, this._projectionMatrix);
+            return this._projectionMatrix;
         }
 
         var halfWidth = engine.getRenderWidth() / 2.0;
         var halfHeight = engine.getRenderHeight() / 2.0;
-        return new BABYLON.Matrix.OrthoOffCenterLH(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ)
+        BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ);
+        return this._projectionMatrix;
     };
 })();

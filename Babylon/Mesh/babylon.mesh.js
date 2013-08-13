@@ -33,12 +33,22 @@
         // Cache
         this._positions = null;
         this._cache = {
-            position: null,
-            scaling: null,
-            rotation: null
+            position: BABYLON.Vector3.Zero(),
+            scaling: BABYLON.Vector3.Zero(),
+            rotation: BABYLON.Vector3.Zero()
         };
 
         this._childrenFlag = false;
+        this._localScaling = BABYLON.Matrix.Zero();
+        this._localRotation = BABYLON.Matrix.Zero();
+        this._localTranslation = BABYLON.Matrix.Zero();
+        this._localBillboard = BABYLON.Matrix.Zero();
+        this._localScalingRotation = BABYLON.Matrix.Zero();
+        this._localWorld = BABYLON.Matrix.Zero();
+        this._worldMatrix = BABYLON.Matrix.Zero();
+        
+        this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
+        this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
     };
 
     // Constants
@@ -159,22 +169,24 @@
         }
 
         this._childrenFlag = true;
-        this._cache.position = this.position.clone();
-        this._cache.rotation = this.rotation.clone();
-        this._cache.scaling = this.scaling.clone();
+        this._cache.position.copyFrom(this.position);
+        this._cache.rotation.copyFrom(this.rotation);
+        this._cache.scaling.copyFrom(this.scaling);
 
-        var localWorld = BABYLON.Matrix.Scaling(this.scaling.x, this.scaling.y, this.scaling.z).multiply(
-            BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
+        BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+        BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+
+        this._localScaling.multiplyToRef(this._localRotation, this._localScalingRotation);
 
         // Billboarding
-        var matTranslation = BABYLON.Matrix.Translation(this.position.x, this.position.y, this.position.z);
+        BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE) {
             var localPosition = this.position.clone();
             var zero = this._scene.activeCamera.position.clone();
 
             if (this.parent) {
-                localPosition = localPosition.add(this.parent.position);
-                matTranslation = BABYLON.Matrix.Translation(localPosition.x, localPosition.y, localPosition.z);
+                localPosition.addInPlace(this.parent.position);
+                BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
             }
 
             if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_ALL === BABYLON.Mesh.BILLBOARDMODE_ALL) {
@@ -188,24 +200,24 @@
                     zero.z = localPosition.z + BABYLON.Engine.epsilon;
             }
 
-            var matBillboard = BABYLON.Matrix.LookAtLH(localPosition, zero, BABYLON.Vector3.Up());
-            matBillboard.m[12] = matBillboard.m[13] = matBillboard.m[14] = 0;
+            BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
+            this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
 
-            matBillboard.invert();
+            this._localBillboard.invert();
 
-            localWorld = BABYLON.Matrix.RotationY(Math.PI).multiply(localWorld.multiply(matBillboard));
+            this._localScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
+            BABYLON.Matrix.RotationY(Math.PI).multiplyToRef(this._localWorld, this._localScalingRotation);
         }
-
-        localWorld = localWorld.multiply(matTranslation);
 
         // Parent
         if (this.parent && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
+            this._localScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             var parentWorld = this.parent.getWorldMatrix();
 
-            localWorld = localWorld.multiply(parentWorld);
+            this._localWorld.multiplyToRef(parentWorld, this._worldMatrix);
+        } else {
+            this._localScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
         }
-
-        this._worldMatrix = localWorld;
 
         // Bounding info
         if (this._boundingInfo) {
@@ -215,16 +227,16 @@
             if (this.parent)
                 this._scaleFactor = this._scaleFactor * this.parent._scaleFactor;
 
-            this._boundingInfo._update(localWorld, this._scaleFactor);
+            this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
 
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(localWorld, this._scaleFactor);
+                subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
             }
         }
 
-        return localWorld;
+        return this._worldMatrix;
     };
 
     BABYLON.Mesh.prototype._createGlobalSubMesh = function () {
@@ -484,9 +496,10 @@
             return;
 
         // Transformation matrix
-        var transformMatrix = this._worldMatrix.multiply(BABYLON.Matrix.Scaling(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z));
+        BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+        this._worldMatrix.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
 
-        this._processCollisionsForSubModels(collider, transformMatrix);
+        this._processCollisionsForSubModels(collider, this._collisionsTransformMatrix);
     };
 
     BABYLON.Mesh.prototype.intersectsMesh = function (mesh, precise) {
@@ -936,7 +949,7 @@
 
                 vertices.push(position.x, position.y, position.z,
                     normal.x, normal.y, normal.z,
-                    col / subdivisions, row / subdivisions);
+                    col / subdivisions, 1.0 - row / subdivisions);
             }
         }
 
@@ -986,7 +999,7 @@
 
                     // Compute height
                     var heightMapX = (((position.x + width / 2) / width) * (heightMapWidth - 1)) | 0;
-                    var heightMapY = (((position.z + height / 2) / height) * (heightMapHeight - 1)) | 0;
+                    var heightMapY = ((1.0 - (position.z + height / 2) / height) * (heightMapHeight - 1)) | 0;
 
                     var pos = (heightMapX + heightMapY * heightMapWidth) * 4;
                     var r = buffer[pos] / 255.0;
@@ -1000,7 +1013,7 @@
                     // Add  vertex
                     vertices.push(position.x, position.y, position.z,
                         0, 0, 0,
-                        col / subdivisions, row / subdivisions);
+                        col / subdivisions, 1.0 - row / subdivisions);
                 }
             }
 
@@ -1074,7 +1087,7 @@
 
             var normal = BABYLON.Vector3.Zero();
             for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
-                normal = normal.add(facesNormals[faces[faceIndex]]);
+                normal.addInPlace(facesNormals[faces[faceIndex]]);
             }
 
             normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));

@@ -114,29 +114,39 @@
 
     // Methods
     BABYLON.Engine.prototype.stopRenderLoop = function () {
+        this._renderFunction = null;
         this._runningLoop = false;
+    };
+    
+    BABYLON.Engine.prototype._renderLoop = function () {
+        // Start new frame
+        this.beginFrame();
+
+        if (this._renderFunction) {
+            this._renderFunction();
+        }
+
+        // Present
+        this.endFrame();
+
+        if (this._runningLoop) {
+            // Register new frame
+            var that = this;
+            BABYLON.Tools.QueueNewFrame(function () {
+                that._renderLoop();
+            });
+        }
     };
 
     BABYLON.Engine.prototype.runRenderLoop = function (renderFunction) {
         this._runningLoop = true;
+
+        this._renderFunction = renderFunction;
+
         var that = this;
-
-        var loop = function () {
-            // Start new frame
-            that.beginFrame();
-
-            renderFunction();
-
-            // Present
-            that.endFrame();
-
-            if (that._runningLoop) {
-                // Register new frame
-                BABYLON.Tools.QueueNewFrame(loop);
-            }
-        };
-
-        BABYLON.Tools.QueueNewFrame(loop);
+        BABYLON.Tools.QueueNewFrame(function() {
+            that._renderLoop();
+        });
     };
 
     BABYLON.Engine.prototype.switchFullscreen = function (element) {
@@ -311,7 +321,7 @@
         this._gl.attachShader(shaderProgram, fragmentShader);
 
         this._gl.linkProgram(shaderProgram);
-
+        
         this._gl.deleteShader(vertexShader);
         this._gl.deleteShader(fragmentShader);
 
@@ -589,9 +599,9 @@
         return texture;
     };
 
-    BABYLON.Engine.prototype.updateDynamicTexture = function (texture, canvas) {
+    BABYLON.Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, true);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY);
         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
         if (texture.generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);

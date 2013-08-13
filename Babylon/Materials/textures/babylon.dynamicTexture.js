@@ -20,13 +20,32 @@
     };
 
     BABYLON.DynamicTexture.prototype = Object.create(BABYLON.Texture.prototype);
-    
+
     // Methods
-    BABYLON.DynamicTexture.prototype.getContext = function() {
+    BABYLON.DynamicTexture.prototype.getContext = function () {
         return this._context;
     };
-    
-    BABYLON.DynamicTexture.prototype.update = function () {
-        this._scene.getEngine().updateDynamicTexture(this._texture, this._canvas);
+
+    BABYLON.DynamicTexture.prototype.update = function (invertY) {
+        this._scene.getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
+    };
+
+    BABYLON.DynamicTexture.prototype.drawText = function (text, x, y, font, color, clearColor, invertY) {
+        var size = this.getSize();
+        if (clearColor) {
+            this._context.fillStyle = clearColor;
+            this._context.fillRect(0, 0, size.width, size.height);
+        }
+        
+        this._context.font = font;
+        if (x === null) {
+            var textSize = this._context.measureText(text);
+            x = (size.width - textSize.width) / 2;
+        }
+
+        this._context.fillStyle = color;
+        this._context.fillText(text, x, y);
+
+        this.update(invertY);
     };
 })();

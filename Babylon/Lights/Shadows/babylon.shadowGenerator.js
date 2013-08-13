@@ -29,8 +29,10 @@
         var renderSubMesh = function (subMesh, effect) {
             var mesh = subMesh.getMesh();
             var world = mesh.getWorldMatrix();
+
+            world.multiplyToRef(that.getTransformMatrix(), that._worldViewProjection);
             
-            effect.setMatrix("worldViewProjection", world.multiply(that.getTransformMatrix()));
+            effect.setMatrix("worldViewProjection", that._worldViewProjection);
             
             // Bind and draw
             mesh.bindAndDraw(subMesh, effect, false);
@@ -44,13 +46,19 @@
             engine.enableEffect(effect);
             
             for (index = 0; index < opaqueSubMeshes.length; index++) {
-                renderSubMesh(opaqueSubMeshes[index], effect);
+                renderSubMesh(opaqueSubMeshes.data[index], effect);
             }
             
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                renderSubMesh(alphaTestSubMeshes[index], effect);
+                renderSubMesh(alphaTestSubMeshes.data[index], effect);
             }
         };
+        
+        // Internals
+        this._viewMatrix = BABYLON.Matrix.Zero();
+        this._projectionMatrix = BABYLON.Matrix.Zero();
+        this._transformMatrix = BABYLON.Matrix.Zero();
+        this._worldViewProjection = BABYLON.Matrix.Zero();
     };
     
     // Members
@@ -78,10 +86,10 @@
 
             var activeCamera = this._scene.activeCamera;
 
-            var view = new BABYLON.Matrix.LookAtLH(this._light.position, this._light.position.add(this._light.direction), BABYLON.Vector3.Up());
-            var projection = new BABYLON.Matrix.PerspectiveFovLH(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ);
+            BABYLON.Matrix.LookAtLHToRef(this._light.position, this._light.position.add(this._light.direction), BABYLON.Vector3.Up(), this._viewMatrix);
+            BABYLON.Matrix.PerspectiveFovLHToRef(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ, this._projectionMatrix);
 
-            this._transformMatrix = view.multiply(projection);
+            this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         }
 
         return this._transformMatrix;
