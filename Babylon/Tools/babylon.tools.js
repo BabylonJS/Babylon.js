@@ -3,6 +3,48 @@
 (function () {
     BABYLON.Tools = {};
 
+    // Smart array
+    BABYLON.Tools.SmartArray = function(capacity) {
+        this.data = new Array(capacity);
+        this.length = 0;
+    };
+
+    BABYLON.Tools.SmartArray.prototype.push = function(value) {
+        this.data[this.length++] = value;
+        
+        if (this.length > this.data.length) {
+            this.data.length *= 2;
+        }
+    };
+
+    BABYLON.Tools.SmartArray.prototype.reset = function() {
+        this.length = 0;
+    };
+    
+    BABYLON.Tools.SmartArray.prototype.concat = function (array) {
+        if (array.length === 0) {
+            return;
+        }
+        if (this.length + array.length > this.data.length) {
+            this.data.length = (this.length + array.length) * 2;
+        }
+
+        for (var index = 0; index < array.length; index++) {
+            this.data[this.length++] = (array.data || array)[index];
+        }
+    };
+    
+    BABYLON.Tools.SmartArray.prototype.indexOf = function (value) {
+        var position = this.data.indexOf(value);
+        
+        if (position >= this.length) {
+            return -1;
+        }
+
+        return position;
+    };
+
+    // Misc.
     BABYLON.Tools.GetPointerPrefix = function() {
         var eventPrefix = "pointer";
 

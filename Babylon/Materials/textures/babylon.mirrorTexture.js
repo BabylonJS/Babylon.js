@@ -11,6 +11,10 @@
         
         // Render list
         this.renderList = [];
+        
+        // Internals
+        this._transformMatrix = BABYLON.Matrix.Zero();
+        this._mirrorMatrix = BABYLON.Matrix.Zero();
     };
 
     BABYLON.MirrorTexture.prototype = Object.create(BABYLON.RenderTargetTexture.prototype);
@@ -22,10 +26,12 @@
     BABYLON.MirrorTexture.prototype.onBeforeRender = function () {
         var scene = this._scene;
 
-        var mirrorMatrix = BABYLON.Matrix.Reflection(this.mirrorPlane);
+        BABYLON.Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
         this._savedViewMatrix = scene.getViewMatrix();
 
-        scene.setTransformMatrix(mirrorMatrix.multiply(this._savedViewMatrix), scene.getProjectionMatrix());
+        this._mirrorMatrix.multiplyToRef(this._savedViewMatrix, this._transformMatrix);
+
+        scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
         BABYLON.clipPlane = this.mirrorPlane;
 

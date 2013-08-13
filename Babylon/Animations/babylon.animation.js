@@ -88,6 +88,16 @@
         if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
             return false;
         }
+        
+        // Adding a start key at frame 0 if missing
+        if (this._keys[0].frame != 0) {
+            var newKey = {
+                frame: 0,
+                value: this._keys[0].value
+            };
+
+            this._keys.splice(0, 0, newKey);
+        }
 
         // Check limits
         if (from < this._keys[0].frame || from > this._keys[this._keys.length - 1].frame) {

@@ -17,7 +17,14 @@
         if (BABYLON.Effect.ShadersStore[baseName + "VertexShader"]) {
             this._prepareEffect(BABYLON.Effect.ShadersStore[baseName + "VertexShader"], BABYLON.Effect.ShadersStore[baseName + "PixelShader"], attributesNames, defines);
         } else {
-            var shaderUrl = BABYLON.Engine.ShadersRepository + baseName;
+            var shaderUrl;
+
+            if (baseName[0] === ".") {
+                shaderUrl = baseName;
+            } else {
+                shaderUrl = BABYLON.Engine.ShadersRepository + baseName;
+            }
+
             // Vertex shader
             BABYLON.Tools.LoadFile(shaderUrl + ".vertex.fx",
                 function (vertexSourceCode) {
@@ -97,11 +104,65 @@
         this._engine.setTexture(this._samplers.indexOf(channel), texture);
     };
 
+    BABYLON.Effect.prototype._cacheMatrix = function (uniformName, matrix) {
+        if (!this._valueCache[uniformName]) {
+            this._valueCache[uniformName] = new BABYLON.Matrix();
+        }
+        
+        for (var index = 0; index < 16; index++) {
+            this._valueCache[uniformName].m[index] = matrix.m[index];
+        }
+    };
+    
+    BABYLON.Effect.prototype._cacheFloat2 = function (uniformName, x, y) {
+        if (!this._valueCache[uniformName]) {
+            this._valueCache[uniformName] = [x, y];
+            return;
+        }
+
+        this._valueCache[uniformName][0] = x;
+        this._valueCache[uniformName][1] = y;
+    };
+    
+    BABYLON.Effect.prototype._cacheFloat3 = function (uniformName, x, y, z) {
+        if (!this._valueCache[uniformName]) {
+            this._valueCache[uniformName] = [x, y, z];
+            return;
+        }
+
+        this._valueCache[uniformName][0] = x;
+        this._valueCache[uniformName][1] = y;
+        this._valueCache[uniformName][2] = z;
+    };
+    
+    BABYLON.Effect.prototype._cacheFloat4 = function (uniformName, x, y, z, w) {
+        if (!this._valueCache[uniformName]) {
+            this._valueCache[uniformName] = [x, y, z, w];
+            return;
+        }
+
+        this._valueCache[uniformName][0] = x;
+        this._valueCache[uniformName][1] = y;
+        this._valueCache[uniformName][2] = z;
+        this._valueCache[uniformName][3] = w;
+    };
+    
+    BABYLON.Effect.prototype._cacheVector3 = function (uniformName, vector) {
+        if (!this._valueCache[uniformName]) {
+            this._valueCache[uniformName] = [vector.x , vector.y, vector.z];
+            return;
+        }
+
+        this._valueCache[uniformName][0] = vector.x;
+        this._valueCache[uniformName][1] = vector.y;
+        this._valueCache[uniformName][2] = vector.z;
+    };
+
     BABYLON.Effect.prototype.setMatrix = function (uniformName, matrix) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
             return;
 
-        this._valueCache[uniformName] = matrix;
+        this._cacheMatrix(uniformName, matrix);
         this._engine.setMatrix(this.getUniform(uniformName), matrix);
     };
 
@@ -114,20 +175,11 @@
         this._engine.setBool(this.getUniform(uniformName), bool);
     };
 
-    BABYLON.Effect.prototype.setVector2 = function (uniformName, x, y) {
-        if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y)
-            return;
-
-        this._valueCache[uniformName] = [x, y];
-
-        this._engine.setVector2(this.getUniform(uniformName), x, y);
-    };
-
     BABYLON.Effect.prototype.setVector3 = function (uniformName, vector3) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
             return;
 
-        this._valueCache[uniformName] = [vector3.x, vector3.y, vector3.z];
+        this._cacheVector3(uniformName, vector3);
 
         this._engine.setVector3(this.getUniform(uniformName), vector3);
     };
@@ -136,7 +188,7 @@
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y)
             return;
 
-        this._valueCache[uniformName] = [x, y];
+        this._cacheFloat2(uniformName, x, y);
         this._engine.setFloat2(this.getUniform(uniformName), x, y);
     };
 
@@ -144,7 +196,7 @@
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z)
             return;
 
-        this._valueCache[uniformName] = [x, y, z];
+        this._cacheFloat3(uniformName, x, y, z);
         this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
     };
 
@@ -152,7 +204,7 @@
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z && this._valueCache[uniformName][3] == w)
             return;
 
-        this._valueCache[uniformName] = [x, y, z, w];
+        this._cacheFloat4(uniformName, x, y, z, w);
         this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
     };
 
@@ -160,7 +212,7 @@
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b)
             return;
 
-        this._valueCache[uniformName] = [color3.r, color3.g, color3.b];
+        this._cacheFloat3(uniformName, color3.r, color3.g, color3.b);
         this._engine.setColor3(this.getUniform(uniformName), color3);
     };
 
@@ -168,7 +220,7 @@
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b && this._valueCache[uniformName][3] == alpha)
             return;
 
-        this._valueCache[uniformName] = [color3.r, color3.g, color3.b, alpha];
+        this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
         this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
     };
 

@@ -28,6 +28,16 @@
         this.emissiveColor = new BABYLON.Color3(0, 0, 0);
 
         this._cachedDefines = null;
+
+        this._renderTargets = new BABYLON.Tools.SmartArray(16);
+        
+        // Internals
+        this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+        this._lightMatrix = BABYLON.Matrix.Zero();
+        this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
+        this._baseColor = new BABYLON.Color3();
+        this._scaledDiffuse = new BABYLON.Color3();
+        this._scaledSpecular = new BABYLON.Color3();
     };
 
     BABYLON.StandardMaterial.prototype = Object.create(BABYLON.Material.prototype);
@@ -205,13 +215,13 @@
     };
 
     BABYLON.StandardMaterial.prototype.getRenderTargetTextures = function () {
-        var results = [];
+        this._renderTargets.reset();
 
         if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
-            results.push(this.reflectionTexture);
+            this._renderTargets.push(this.reflectionTexture);
         }
 
-        return results;
+        return this._renderTargets;
     };
 
     BABYLON.StandardMaterial.prototype.unbind = function () {
@@ -221,29 +231,29 @@
     };
 
     BABYLON.StandardMaterial.prototype.bind = function (world, mesh) {
-        var baseColor = this.diffuseColor;
+        this._baseColor.copyFrom(this.diffuseColor);
 
         // Values
         if (this.diffuseTexture) {
             this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
-            this._effect.setVector2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+            this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
             this._effect.setMatrix("diffuseMatrix", this.diffuseTexture._computeTextureMatrix());
 
-            baseColor = new BABYLON.Color3(1, 1, 1);
+            this._baseColor.copyFromFloats(1, 1, 1);
         }
 
         if (this.ambientTexture) {
             this._effect.setTexture("ambientSampler", this.ambientTexture);
 
-            this._effect.setVector2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+            this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
             this._effect.setMatrix("ambientMatrix", this.ambientTexture._computeTextureMatrix());
         }
 
         if (this.opacityTexture) {
             this._effect.setTexture("opacitySampler", this.opacityTexture);
 
-            this._effect.setVector2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
+            this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
             this._effect.setMatrix("opacityMatrix", this.opacityTexture._computeTextureMatrix());
         }
 
@@ -261,29 +271,32 @@
         if (this.emissiveTexture) {
             this._effect.setTexture("emissiveSampler", this.emissiveTexture);
 
-            this._effect.setVector2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
+            this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
             this._effect.setMatrix("emissiveMatrix", this.emissiveTexture._computeTextureMatrix());
         }
 
         if (this.specularTexture) {
             this._effect.setTexture("specularSampler", this.specularTexture);
 
-            this._effect.setVector2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
+            this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
         
         if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
             this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-            this._effect.setVector2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
+            this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
             this._effect.setMatrix("bumpMatrix", this.bumpTexture._computeTextureMatrix());
         }
 
+        world.multiplyToRef(this._scene.getTransformMatrix(), this._worldViewProjectionMatrix);
+        this._scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+
         this._effect.setMatrix("world", world);
-        this._effect.setMatrix("worldViewProjection", world.multiply(this._scene.getTransformMatrix()));
+        this._effect.setMatrix("worldViewProjection", this._worldViewProjectionMatrix);
         this._effect.setVector3("vEyePosition", this._scene.activeCamera.position);
-        this._effect.setColor3("vAmbientColor", this._scene.ambientColor.multiply(this.ambientColor));
-        this._effect.setColor4("vDiffuseColor", baseColor, this.alpha * mesh.visibility);
+        this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
+        this._effect.setColor4("vDiffuseColor", this._baseColor, this.alpha * mesh.visibility);
         this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
         this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
@@ -312,13 +325,17 @@
                 this._effect.setFloat4("vLightData" + lightIndex, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
                 this._effect.setColor3("vLightGround" + lightIndex, light.groundColor.scale(light.intensity));
             }
-            this._effect.setColor3("vLightDiffuse" + lightIndex, light.diffuse.scale(light.intensity));
-            this._effect.setColor3("vLightSpecular" + lightIndex, light.specular.scale(light.intensity));
+
+            light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
+            light.specular.scaleToRef(light.intensity, this._scaledSpecular);
+            this._effect.setColor3("vLightDiffuse" + lightIndex, this._scaledDiffuse);
+            this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
             
             // Shadows
             var shadowGenerator = light.getShadowGenerator();
             if (mesh.receiveShadows && shadowGenerator && shadowGenerator.isReady()) {
-                this._effect.setMatrix("lightMatrix" + lightIndex, world.multiply(shadowGenerator.getTransformMatrix()));
+                world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
+                this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
                 this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
             }
 

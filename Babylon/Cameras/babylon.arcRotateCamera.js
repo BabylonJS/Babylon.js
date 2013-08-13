@@ -10,6 +10,7 @@
         this.beta = beta;
         this.radius = radius;
         this.target = target;
+        this.position = BABYLON.Vector3.Zero();
         
         this._keys = [];
         this.keysUp = [38];
@@ -25,6 +26,8 @@
             scene.activeCamera = this;
         }
 
+        this._viewMatrix = new BABYLON.Matrix();
+
         this.getViewMatrix();
         
         // Animations
@@ -36,6 +39,12 @@
     // Members
     BABYLON.ArcRotateCamera.prototype.inertialAlphaOffset = 0;
     BABYLON.ArcRotateCamera.prototype.inertialBetaOffset = 0;
+    BABYLON.ArcRotateCamera.prototype.lowerAlphaLimit = null;
+    BABYLON.ArcRotateCamera.prototype.upperAlphaLimit = null;
+    BABYLON.ArcRotateCamera.prototype.lowerBetaLimit = null;
+    BABYLON.ArcRotateCamera.prototype.upperBetaLimit = null;
+    BABYLON.ArcRotateCamera.prototype.lowerRadiusLimit = null;
+    BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
 
     // Methods
     BABYLON.ArcRotateCamera.prototype.attachControl = function(canvas) {
@@ -147,6 +156,9 @@
 
         this._onGesture = function(e) {
             that.radius *= e.scale;
+
+            e.preventDefault();
+            e.stopPropagation();
         };
         
         canvas.addEventListener(eventPrefix + "down", this._onPointerDown);
@@ -207,6 +219,26 @@
             if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.epsilon)
                 this.inertialBetaOffset = 0;
         }
+        
+        // Limits
+        if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
+            this.alpha = this.lowerAlphaLimit;
+        }
+        if (this.upperAlphaLimit && this.alpha > this.upperAlphaLimit) {
+            this.alpha = this.upperAlphaLimit;
+        }
+        if (this.lowerBetaLimit && this.beta < this.lowerBetaLimit) {
+            this.beta = this.lowerBetaLimit;
+        }
+        if (this.upperBetaLimit && this.beta > this.upperBetaLimit) {
+            this.beta = this.upperBetaLimit;
+        }
+        if (this.lowerRadiusLimit && this.radius < this.lowerRadiusLimit) {
+            this.radius = this.lowerRadiusLimit;
+        }
+        if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
+            this.radius = this.upperRadiusLimit;
+        }
     };
 
     BABYLON.ArcRotateCamera.prototype.setPosition = function(position) {
@@ -230,7 +262,9 @@
         var cosb = Math.cos(this.beta);
         var sinb = Math.sin(this.beta);
 
-        this.position = this.target.add(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb));
-        return new BABYLON.Matrix.LookAtLH(this.position, this.target, BABYLON.Vector3.Up());
+        this.target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+        BABYLON.Matrix.LookAtLHToRef(this.position, this.target, BABYLON.Vector3.Up(), this._viewMatrix);
+
+        return this._viewMatrix;
     };
 })();

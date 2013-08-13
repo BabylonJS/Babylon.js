@@ -27,6 +27,7 @@
         }];
 
     var tests = [
+        { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "1.0 MB" },
         { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
         { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
         { title: "LIGHTS", id: 1, screenshot: "testlight.jpg", size: "0.1 MB" },
@@ -202,6 +203,9 @@
                     case 6:
                         newScene = CreateShadowsTestScene(engine);
                         break;
+                    case 7:
+                        newScene = CreateChartingTestScene(engine);
+                        break;
                 }
 
                 newScene.activeCamera.attachControl(canvas);
@@ -222,7 +226,7 @@
             BABYLON.SceneLoader.Load("Scenes/" + name + "/", name + ".babylon", engine, function (newScene) {
                 scene = newScene;
                 scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
-                loadingText.innerHTML = "Streaming textures...";
+                loadingText.innerHTML = "Streaming textures..." + scene.getWaitingItemsCount() + " remaining";
                 scene.executeWhenReady(function () {
                     if (scene.activeCamera) {
                         scene.activeCamera.attachControl(canvas);
@@ -256,48 +260,51 @@
         loadingText.className = "";
         opacityMask.className = "";
         loadingText.innerHTML = "Loading, please wait...";
+    };
 
-        // Render loop
-        var renderFunction = function () {
-            // Fps
-            divFps.innerHTML = BABYLON.Tools.GetFps().toFixed() + " fps";
+    // Render loop
+    var renderFunction = function () {
+        // Fps
+        divFps.innerHTML = BABYLON.Tools.GetFps().toFixed() + " fps";
 
-            // Render scene
-            if (scene) {
-                scene.render();
-
-                // Stats
-                if (enableStats.checked) {
-                    stats.innerHTML = "Total vertices: " + scene.getTotalVertices() + "<br>"
-                        + "Active vertices: " + scene.getActiveVertices() + "<br>"
-                        + "Active particles: " + scene.getActiveParticles() + "<br><br><br>"
-                        + "Frame duration: " + scene.getLastFrameDuration() + " ms<br><br>"
-                        + "<i>Evaluate Active Meshes duration:</i> " + scene.getEvaluateActiveMeshesDuration() + " ms<br>"
-                        + "<i>Render Targets duration:</i> " + scene.getRenderTargetsDuration() + " ms<br>"
-                        + "<i>Particles duration:</i> " + scene.getParticlesDuration() + " ms<br>"
-                        + "<i>Sprites duration:</i> " + scene.getSpritesDuration() + " ms<br>"
-                        + "<i>Render duration:</i> " + scene.getRenderDuration() + " ms";
-                }
+        // Render scene
+        if (scene) {
+            if (!scene.isReady()) {
+                loadingText.innerHTML = "Streaming textures...(" + scene.getWaitingItemsCount() + " remaining)";
             }
-        };
 
-        // Launch render loop
-        engine.runRenderLoop(renderFunction);
+            scene.render();
 
-        // Resize
-        window.addEventListener("resize", function () {
-            engine.resize();
-        });
+            // Stats
+            if (enableStats.checked) {
+                stats.innerHTML = "Total vertices: " + scene.getTotalVertices() + "<br>"
+                    + "Active vertices: " + scene.getActiveVertices() + "<br>"
+                    + "Active particles: " + scene.getActiveParticles() + "<br><br><br>"
+                    + "Frame duration: " + scene.getLastFrameDuration() + " ms<br><br>"
+                    + "<i>Evaluate Active Meshes duration:</i> " + scene.getEvaluateActiveMeshesDuration() + " ms<br>"
+                    + "<i>Render Targets duration:</i> " + scene.getRenderTargetsDuration() + " ms<br>"
+                    + "<i>Particles duration:</i> " + scene.getParticlesDuration() + " ms<br>"
+                    + "<i>Sprites duration:</i> " + scene.getSpritesDuration() + " ms<br>"
+                    + "<i>Render duration:</i> " + scene.getRenderDuration() + " ms";
+            }
+        }
+    };
 
+    // Launch render loop
+    engine.runRenderLoop(renderFunction);
 
-        // Caps
-        var caps = engine.getCaps();
-        document.getElementById("extensions").innerHTML =
-                "Max textures image units: <b>" + caps.maxTexturesImageUnits + "</b><br>" +
-                "Max texture size: <b>" + caps.maxTextureSize + "</b><br>" +
-                "Max cubemap texture size: <b>" + caps.maxCubemapTextureSize + "</b><br>" +
-                "Max render texture size: <b>" + caps.maxRenderTextureSize + "</b><br>";
-    }
+    // Resize
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+
+    // Caps
+    var caps = engine.getCaps();
+    document.getElementById("extensions").innerHTML =
+            "Max textures image units: <b>" + caps.maxTexturesImageUnits + "</b><br>" +
+            "Max texture size: <b>" + caps.maxTextureSize + "</b><br>" +
+            "Max cubemap texture size: <b>" + caps.maxCubemapTextureSize + "</b><br>" +
+            "Max render texture size: <b>" + caps.maxRenderTextureSize + "</b><br>";
 
     // UI
 

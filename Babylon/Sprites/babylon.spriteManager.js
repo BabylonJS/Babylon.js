@@ -1,36 +1,6 @@
 ﻿var BABYLON = BABYLON || {};
 
-(function () {
-    var appendSpriteVertex = function (sprite, vertices, offsetX, offsetY, rowSize, epsilon) {
-        if (offsetX == 0)
-            offsetX = epsilon;
-        else if (offsetX == 1)
-            offsetX = 1 - epsilon;
-        
-        if (offsetY == 0)
-            offsetY = epsilon;
-        else if (offsetY == 1)
-            offsetY = 1 - epsilon;
-
-        vertices.push(sprite.position.x);
-        vertices.push(sprite.position.y);
-        vertices.push(sprite.position.z);
-        vertices.push(sprite.angle);
-        vertices.push(sprite.size);
-        vertices.push(offsetX);
-        vertices.push(offsetY);
-        vertices.push(sprite.invertU ? 1 : 0);
-        vertices.push(sprite.invertV ? 1 : 0);
-        var offset = (sprite.cellIndex / rowSize) >> 0;
-        vertices.push(sprite.cellIndex - offset * rowSize);
-        vertices.push(offset);
-        // Color
-        vertices.push(sprite.color.r);
-        vertices.push(sprite.color.g);
-        vertices.push(sprite.color.b);
-        vertices.push(sprite.color.a);
-    };
-
+(function () {   
     BABYLON.SpriteManager = function (name, imgUrl, capacity, cellSize, scene, epsilon) {
         this.name = name;
         this._capacity = capacity;
@@ -61,6 +31,7 @@
         }
 
         this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+        this._vertices = new Float32Array(capacity * this._vertexStrideSize);
         
         // Sprites
         this.sprites = [];
@@ -81,6 +52,38 @@
     BABYLON.SpriteManager.prototype.onDispose = null;
 
     // Methods
+    BABYLON.SpriteManager.prototype._appendSpriteVertex = function (index, sprite, offsetX, offsetY, rowSize) {
+        var arrayOffset = index * 15;
+
+        if (offsetX == 0)
+            offsetX = this._epsilon;
+        else if (offsetX == 1)
+            offsetX = 1 - this._epsilon;
+
+        if (offsetY == 0)
+            offsetY = this._epsilon;
+        else if (offsetY == 1)
+            offsetY = 1 - this._epsilon;
+
+        this._vertices[arrayOffset] = sprite.position.x;
+        this._vertices[arrayOffset + 1] = sprite.position.y;
+        this._vertices[arrayOffset + 2] = sprite.position.z;
+        this._vertices[arrayOffset + 3] = sprite.angle;
+        this._vertices[arrayOffset + 4] = sprite.size;
+        this._vertices[arrayOffset + 5] = offsetX;
+        this._vertices[arrayOffset + 6] = offsetY;
+        this._vertices[arrayOffset + 7] = sprite.invertU ? 1 : 0;
+        this._vertices[arrayOffset + 8] = sprite.invertV ? 1 : 0;
+        var offset = (sprite.cellIndex / rowSize) >> 0;
+        this._vertices[arrayOffset + 9] = sprite.cellIndex - offset * rowSize;
+        this._vertices[arrayOffset + 10] = offset;
+        // Color
+        this._vertices[arrayOffset + 11] = sprite.color.r;
+        this._vertices[arrayOffset + 12] = sprite.color.g;
+        this._vertices[arrayOffset + 13] = sprite.color.b;
+        this._vertices[arrayOffset + 14] = sprite.color.a;
+    };
+
     BABYLON.SpriteManager.prototype.render = function() {
         // Check
         if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady())
@@ -91,20 +94,22 @@
 
         // Sprites
         var deltaTime = BABYLON.Tools.GetDeltaTime();
-        var vertices = [];
         var max = Math.min(this._capacity, this.sprites.length);
         var rowSize = baseSize.width / this.cellSize;
+
+        var offset = 0;
+        this._vertices.length = max * this._vertexStrideSize;
         for (var index = 0; index < max; index++) {
             var sprite = this.sprites[index];
 
             sprite._animate(deltaTime);
 
-            appendSpriteVertex(sprite, vertices, 0, 0, rowSize, this._epsilon);
-            appendSpriteVertex(sprite, vertices, 1, 0, rowSize, this._epsilon);
-            appendSpriteVertex(sprite, vertices, 1, 1, rowSize, this._epsilon);
-            appendSpriteVertex(sprite, vertices, 0, 1, rowSize, this._epsilon);
+            this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
+            this._appendSpriteVertex(offset++, sprite, 1, 0, rowSize);
+            this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
+            this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
         }
-        engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
+        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
        
         // Render
         var effect = this._effectBase;
@@ -120,7 +125,7 @@
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-        effect.setVector2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+        effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
         
         // Fog
         if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {

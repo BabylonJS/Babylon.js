@@ -30,6 +30,9 @@
         
         // Animations
         this.animations = [];
+        
+        // Internals
+        this._cameraRotationMatrix = new BABYLON.Matrix();
     };
 
     BABYLON.TouchCamera.prototype = Object.create(BABYLON.FreeCamera.prototype);
@@ -121,8 +124,8 @@
             var speed = this._computeLocalCameraSpeed();
             var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
 
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            this.cameraDirection = this.cameraDirection.add(BABYLON.Vector3.TransformCoordinates(direction, cameraTransform));
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+            this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
         }
     };
 })();

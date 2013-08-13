@@ -40,17 +40,24 @@
         this.center = this.maximum.add(this.minimum).scale(0.5);
         this.extends = this.maximum.subtract(this.minimum).scale(0.5);
         this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+        
+        // World
+        this.vectorsWorld = [];
+        for (var index = 0; index < this.vectors.length; index++) {
+            this.vectorsWorld[index] = BABYLON.Vector3.Zero();
+        }
+        this.minimumWorld = BABYLON.Vector3.Zero();
+        this.maximumWorld = BABYLON.Vector3.Zero();
     };
     
     // Methods
     BABYLON.BoundingBox.prototype._update = function (world) {
-        this.vectorsWorld = [];
-        this.minimumWorld = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        this.maximumWorld = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
+        BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
 
         for (var index = 0; index < this.vectors.length; index++) {
-            var v = BABYLON.Vector3.TransformCoordinates(this.vectors[index], world);
-            this.vectorsWorld.push(v);
+            var v = this.vectorsWorld[index];
+            BABYLON.Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
 
             if (v.x < this.minimumWorld.x)
                 this.minimumWorld.x = v.x;
@@ -68,10 +75,12 @@
         }
 
         // OBB
-        this.center = this.maximumWorld.add(this.minimumWorld).scale(0.5);
-        this.directions[0] = BABYLON.Vector3.FromArray(world.m, 0);
-        this.directions[1] = BABYLON.Vector3.FromArray(world.m, 4);
-        this.directions[2] = BABYLON.Vector3.FromArray(world.m, 8);
+        this.maximumWorld.addToRef(this.minimumWorld, this.center);
+        this.center.scaleInPlace(0.5);
+        
+        BABYLON.Vector3.FromArrayToRef(world.m, 0, this.directions[0]);
+        BABYLON.Vector3.FromArrayToRef(world.m, 4, this.directions[1]);
+        BABYLON.Vector3.FromArrayToRef(world.m, 8, this.directions[2]);
     };
 
     BABYLON.BoundingBox.prototype.isInFrustrum = function (frustumPlanes) {
