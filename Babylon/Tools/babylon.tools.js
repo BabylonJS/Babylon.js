@@ -79,8 +79,8 @@
             element.msRequestFullscreen();
         else if (element.webkitRequestFullscreen)
             element.webkitRequestFullscreen();
-        else if (element.mozRequestFullscreen)
-            element.mozRequestFullscreen();
+        else if (element.mozRequestFullScreen)
+            element.mozRequestFullScreen();        
     };
 
     BABYLON.Tools.ExitFullscreen = function () {

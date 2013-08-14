@@ -265,12 +265,13 @@
         }
     };
 
-    BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable) {
+    BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable, hasVertexColor) {
         if (this._vertexBuffer) {
             this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
         }
 
         this._uvCount = uvCount;
+        this._hasVertexColor = hasVertexColor;
 
         if (updatable) {
             this._vertexBuffer = this._scene.getEngine().createDynamicVertexBuffer(vertices.length * 4);

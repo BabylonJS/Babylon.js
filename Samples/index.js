@@ -422,7 +422,7 @@
 
     fullscreen.addEventListener("click", function () {
         if (engine) {
-            engine.switchFullscreen(document.getElementById("rootDiv"));
+            engine.switchFullscreen(true);
         }
     });
 

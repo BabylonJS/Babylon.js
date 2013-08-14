@@ -76,7 +76,7 @@
         if (this._cachedDefines != join) {
             this._cachedDefines = join;
 
-            this._effect = engine.createEffect("Shaders/Ground/ground",
+            this._effect = engine.createEffect("./Shaders/Ground/ground",
                 ["position", "normal", "uv"],
                 ["worldViewProjection", "groundMatrix", "sandMatrix", "rockMatrix", "snowMatrix", "grassMatrix", "blendMatrix", "world", "vLightPosition", "vEyePosition", "vLimits", "vClipPlane"],
                 ["groundSampler", "sandSampler", "rockSampler", "snowSampler", "grassSampler", "blendSampler"],

@@ -18,6 +18,9 @@ attribute vec2 uv;
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+#ifdef VERTEXCOLOR
+attribute vec3 color;
+#endif
 
 // Uniforms
 uniform mat4 world;
@@ -71,6 +74,10 @@ uniform mat4 bumpMatrix;
 varying vec3 vPositionW;
 varying vec3 vNormalW;
 
+#ifdef VERTEXCOLOR
+varying vec3 vColor;
+#endif
+
 #ifdef CLIPPLANE
 uniform vec4 vClipPlane;
 varying float fClipDistance;
@@ -101,10 +108,10 @@ varying vec4 vPositionFromLight3;
 
 #ifdef REFLECTION
 vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
-{	
+{
 	if (mode == MAP_SPHERICAL)
 	{
-		vec3 coords = vec3(view * vec4(worldNormal, 0.0));	
+		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
 
 		return vec3(reflectionMatrix * vec4(coords, 1.0));
 	}
@@ -136,7 +143,7 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 #endif
 
 void main(void) {
-	gl_Position = worldViewProjection * vec4(position, 1.0);   
+	gl_Position = worldViewProjection * vec4(position, 1.0);
 
 	vec4 worldPos = world * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
@@ -222,27 +229,32 @@ void main(void) {
 
 	// Clip plane
 #ifdef CLIPPLANE
-		fClipDistance = dot(worldPos, vClipPlane);
+	fClipDistance = dot(worldPos, vClipPlane);
 #endif
 
 	// Fog
 #ifdef FOG
-		fFogDistance = (view * worldPos).z;
+	fFogDistance = (view * worldPos).z;
 #endif
 
 	// Shadows
 #ifdef SHADOWS
 #ifdef LIGHT0
-		vPositionFromLight0 = lightMatrix0 * vec4(position, 1.0);
+	vPositionFromLight0 = lightMatrix0 * vec4(position, 1.0);
 #endif
 #ifdef LIGHT1
-		vPositionFromLight1 = lightMatrix1 * vec4(position, 1.0);
+	vPositionFromLight1 = lightMatrix1 * vec4(position, 1.0);
 #endif
 #ifdef LIGHT2
-		vPositionFromLight2 = lightMatrix2 * vec4(position, 1.0);
+	vPositionFromLight2 = lightMatrix2 * vec4(position, 1.0);
 #endif
 #ifdef LIGHT3
-		vPositionFromLight3 = lightMatrix3 * vec4(position, 1.0);
+	vPositionFromLight3 = lightMatrix3 * vec4(position, 1.0);
 #endif
+#endif
+
+	// Vertex color
+#ifdef VERTEXCOLOR
+	vColor = color;
 #endif
 }

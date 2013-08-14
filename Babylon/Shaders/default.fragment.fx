@@ -15,6 +15,10 @@ uniform vec3 vEmissiveColor;
 varying vec3 vPositionW;
 varying vec3 vNormalW;
 
+#ifdef VERTEXCOLOR
+varying vec3 vColor;
+#endif
+
 // Lights
 #ifdef LIGHT0
 uniform vec4 vLightData0;
@@ -357,6 +361,10 @@ void main(void) {
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
+
+#ifdef VERTEXCOLOR
+	diffuseColor *= vColor;
+#endif
 
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV);

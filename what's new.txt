@@ -1,3 +1,7 @@
+1.2.1:
+ - Support for PointerLock ()
+ - StandardMaterial now supports per-vertex color
+ - Blender exporter supports per-vertex color
 1.2.0:
  - Major rework of the API to remove GC pressure.
  - FreeCamera: Support for QWERTY keyboards
