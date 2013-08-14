@@ -27,6 +27,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Up to 4 lights (points, directionals, spots, hemispherics)
  - Custom materials
  - Skybox
+ - Vertex color
 -  Special FX
  - Fog
  - Alpha blending
