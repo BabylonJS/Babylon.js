@@ -61,21 +61,51 @@
         // Fullscreen
         this.isFullscreen = false;
         var that = this;
-        document.addEventListener("fullscreenchange", function () {
-            that.isFullscreen = document.fullscreen;
-        }, false);
 
-        document.addEventListener("mozfullscreenchange", function () {
-            that.isFullscreen = document.mozFullScreen;
-        }, false);
+        var onFullscreenChange = function () {
+            if (document.fullscreen !== undefined) {
+                that.isFullscreen = document.fullscreen;
+            } else if (document.mozFullScreen !== undefined) {
+                that.isFullscreen = document.mozFullScreen;
+            } else if (document.webkitIsFullScreen !== undefined) {
+                that.isFullscreen = document.webkitIsFullScreen;
+            } else if (document.msIsFullScreen !== undefined) {
+                that.isFullscreen = document.msIsFullScreen;
+            }
+            
+            // Pointer lock
+            if (that.isFullscreen && that._pointerLockRequested) {
+                canvas.requestPointerLock = canvas.requestPointerLock ||
+                                            canvas.msRequestPointerLock ||
+                                            canvas.mozRequestPointerLock ||
+                                            canvas.webkitRequestPointerLock;
 
-        document.addEventListener("webkitfullscreenchange", function () {
-            that.isFullscreen = document.webkitIsFullScreen;
-        }, false);
+                if (canvas.requestPointerLock) {
+                    canvas.requestPointerLock();
+                }
+            }
+        };
 
-        document.addEventListener("msfullscreenchange", function () {
-            that.isFullscreen = document.msIsFullScreen;
-        }, false);
+        document.addEventListener("fullscreenchange", onFullscreenChange, false);
+        document.addEventListener("mozfullscreenchange", onFullscreenChange, false);
+        document.addEventListener("webkitfullscreenchange", onFullscreenChange, false);
+        document.addEventListener("msfullscreenchange", onFullscreenChange, false);
+        
+        // Pointer lock
+        this.isPointerLock = false;
+
+        var onPointerLockChange = function () {
+            that.isPointerLock = (document.mozPointerLockElement === canvas ||
+                                  document.webkitPointerLockElement === canvas ||
+                                  document.msPointerLockElement === canvas ||
+                                  document.pointerLockElement === canvas
+            );
+        };
+
+        document.addEventListener("pointerlockchange", onPointerLockChange, false);
+        document.addEventListener("mspointerlockchange", onPointerLockChange, false);
+        document.addEventListener("mozpointerlockchange", onPointerLockChange, false);
+        document.addEventListener("webkitpointerlockchange", onPointerLockChange, false);
     };
 
     // Properties
@@ -149,11 +179,12 @@
         });
     };
 
-    BABYLON.Engine.prototype.switchFullscreen = function (element) {
+    BABYLON.Engine.prototype.switchFullscreen = function (requestPointerLock) {
         if (this.isFullscreen) {
             BABYLON.Tools.ExitFullscreen();
         } else {
-            BABYLON.Tools.RequestFullscreen(element ? element : this._renderingCanvas);
+            this._pointerLockRequested = requestPointerLock;
+            BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
         }
     };
 

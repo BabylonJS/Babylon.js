@@ -9,7 +9,6 @@
     }
 
     // Babylon
-    BABYLON.Engine.ShadersRepository = "";
     var engine = new BABYLON.Engine(canvas, true);
     var scene = new BABYLON.Scene(engine);
     var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
@@ -32,7 +31,7 @@
     var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "Assets/heightMap.png", 100, 100, 100, 0, 12, scene, true);
     var groundMaterial = new WORLDMONGER.GroundMaterial("ground", scene, sun);
     ground.material = groundMaterial;
-    ground.position.y = -2.0;    
+    ground.position.y = -2.0;
 
     var extraGround = BABYLON.Mesh.CreateGround("extraGround", 1000, 1000, 1, scene, false);
     var extraGroundMaterial = new BABYLON.StandardMaterial("extraGround", scene);

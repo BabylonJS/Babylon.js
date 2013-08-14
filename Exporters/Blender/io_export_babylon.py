@@ -314,6 +314,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		indices=",\"indices\":["	
 		hasUV = True;
 		hasUV2 = True;
+		hasVertexColor = True
 		
 		if len(mesh.tessface_uv_textures) > 0:
 			UVmap=mesh.tessface_uv_textures[0].data	
@@ -324,10 +325,16 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			UV2map=mesh.tessface_uv_textures[1].data
 		else:
 			hasUV2 = False
+
+		if len(mesh.vertex_colors) > 0:
+			Colormap = mesh.tessface_vertex_colors.active.data
+		else:
+			hasVertexColor = False
 			
 		alreadySavedVertices = []
 		vertices_UVs=[]
 		vertices_UV2s=[]
+		vertices_Colors=[]
 		vertices_indices=[]
 		subMeshes = []
 				
@@ -335,9 +342,9 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			alreadySavedVertices.append(False)
 			vertices_UVs.append([])
 			vertices_UV2s.append([])
+			vertices_Colors.append([])
 			vertices_indices.append([])
-		
-		
+						
 		materialsCount = max(1, len(object.material_slots))
 		verticesCount = 0
 		indicesCount = 0
@@ -364,33 +371,44 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 						
 					if hasUV2:
 						vertex_UV2 = UV2map[face.index].uv[v]
+
+					if hasVertexColor:		
+						if v == 0:				
+							vertex_Color = Colormap[face.index].color1
+						if v == 1:				
+							vertex_Color = Colormap[face.index].color2
+						if v == 2:				
+							vertex_Color = Colormap[face.index].color3
 						
 					# Check if the current vertex is already saved					
 					alreadySaved = alreadySavedVertices[vertex_index]
-					index_UV = 0
 					if alreadySaved:
 						alreadySaved=False						
-						
-						if hasUV:
-							for vUV in vertices_UVs[vertex_index]:
-								if (vUV[0]==vertex_UV[0] and vUV[1]==vertex_UV[1]):
-									if hasUV2:
-										vUV2 = vertices_UV2s[vertex_index][index_UV]
-										if (vUV2[0]==vertex_UV2[0] and vUV2[1]==vertex_UV2[1]):
-											if vertices_indices[vertex_index][index_UV] >= subMeshes[materialIndex].verticesStart:
-												alreadySaved=True
-												break
-									else:
-										alreadySaved=True
-										break
-								index_UV+=1
-						else:
-							for savedIndex in vertices_indices[vertex_index]:
-								if savedIndex >= subMeshes[materialIndex].verticesStart:
-									alreadySaved=True
-									break
-								index_UV+=1
-					  
+					
+						# UV
+						index_UV = 0
+						for savedIndex in vertices_indices[vertex_index]:
+							if hasUV:												
+								vUV = vertices_UVs[vertex_index][index_UV]
+								if (vUV[0]!=vertex_UV[0] or vUV[1]!=vertex_UV[1]):
+									continue
+
+							if hasUV2:
+								vUV2 = vertices_UV2s[vertex_index][index_UV]
+								if (vUV2[0]!=vertex_UV2[0] or vUV2[1]!=vertex_UV2[1]):
+									continue
+
+							if hasVertexColor:
+								vColor = vertices_Colors[vertex_index][index_UV]
+								if (vColor.r!=vertex_Color.r or vColor.g!=vertex_Color.g or vColor.b!=vertex_Color.b):
+									continue
+
+							if vertices_indices[vertex_index][index_UV] >= subMeshes[materialIndex].verticesStart:
+								alreadySaved=True
+								break
+
+							index_UV+=1					
+
 					if (alreadySaved):
 						# Reuse vertex
 						index=vertices_indices[vertex_index][index_UV]
@@ -402,15 +420,22 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 							vertices_UVs[vertex_index].append(vertex_UV)
 						if hasUV2:
 							vertices_UV2s[vertex_index].append(vertex_UV2)
+						if hasVertexColor:	
+							vertices_Colors[vertex_index].append(vertex_Color)
+
 						vertices_indices[vertex_index].append(index)
 						
 						vertices+="%.4f,%.4f,%.4f,"%(position.x,position.z,position.y)				
 						vertices+="%.4f,%.4f,%.4f,"%(normal.x,normal.z,normal.y)
+
 						if hasUV:
 							vertices+="%.4f,%.4f,"%(vertex_UV[0], vertex_UV[1])
 							
 						if hasUV2:
 							vertices+="%.4f,%.4f,"%(vertex_UV2[0], vertex_UV2[1])
+
+						if hasVertexColor:	
+							vertices+="%.4f,%.4f,%.4f,"%(vertex_Color.r,vertex_Color.g,vertex_Color.b)
 						
 						verticesCount += 1
 					indices+="%i,"%(index)
@@ -468,7 +493,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			Export_babylon.write_int(file_handler, "uvCount", 1)
 		else:
 			Export_babylon.write_int(file_handler, "uvCount", 0)
-			
+		
+		Export_babylon.write_bool(file_handler, "hasVertexColor", hasVertexColor)
 		file_handler.write(vertices)	
 		file_handler.write(indices)	
 		

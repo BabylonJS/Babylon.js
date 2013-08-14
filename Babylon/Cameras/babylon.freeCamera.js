@@ -86,6 +86,7 @@
     BABYLON.FreeCamera.prototype.attachControl = function (canvas) {
         var previousPosition;
         var that = this;
+        var engine = this._scene.getEngine();
 
         this._onMouseDown = function (evt) {
             previousPosition = {
@@ -108,12 +109,20 @@
         };
 
         this._onMouseMove = function (evt) {
-            if (!previousPosition) {
+            if (!previousPosition && !engine.isPointerLock) {
                 return;
             }
 
-            var offsetX = evt.clientX - previousPosition.x;
-            var offsetY = evt.clientY - previousPosition.y;
+            var offsetX;
+            var offsetY;
+
+            if (!engine.isPointerLock) {
+                offsetX = evt.clientX - previousPosition.x;
+                offsetY = evt.clientY - previousPosition.y;
+            } else {
+                offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+            }            
 
             that.cameraRotation.y += offsetX / 2000.0;
             that.cameraRotation.x += offsetY / 2000.0;

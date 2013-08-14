@@ -69,7 +69,7 @@
             return false;
         }
 
-        this._effect = engine.createEffect("Shaders/Water/water",
+        this._effect = engine.createEffect("./Shaders/Water/water",
             ["position", "normal", "uv"],
             ["worldViewProjection", "world", "view", "vLightPosition", "vEyePosition", "waterColor", "vLevels", "waveData", "windMatrix"],
             ["reflectionSampler", "refractionSampler", "bumpSampler"],

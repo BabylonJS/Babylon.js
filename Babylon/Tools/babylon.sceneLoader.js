@@ -249,18 +249,22 @@
     };
 
     var parseMesh = function (parsedMesh, scene) {
-        var declaration = null;
+        var declaration =  [3, 3];
         
+        // Texture coordinates
         switch (parsedMesh.uvCount) {
-            case 0:
-                declaration = [3, 3];
-                break;
             case 1:
-                declaration = [3, 3, 2];
+                declaration.push(2);
                 break;
             case 2:
-                declaration = [3, 3, 2, 2];
+                declaration.push(2);
+                declaration.push(2);
                 break;
+        }
+
+        // Vertex color
+        if (parsedMesh.hasVertexColor) {
+            declaration.push(3);
         }
 
         var mesh = new BABYLON.Mesh(parsedMesh.name, declaration, scene);
@@ -284,7 +288,7 @@
         mesh.checkCollisions = parsedMesh.checkCollisions;
 
         if (parsedMesh.vertices && parsedMesh.indices) {
-            mesh.setVertices(parsedMesh.vertices, parsedMesh.uvCount);
+            mesh.setVertices(parsedMesh.vertices, parsedMesh.uvCount, false, parsedMesh.hasVertexColor);
             mesh.setIndices(parsedMesh.indices);
         }
 
