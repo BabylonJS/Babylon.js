@@ -249,25 +249,7 @@
     };
 
     var parseMesh = function (parsedMesh, scene) {
-        var declaration =  [3, 3];
-        
-        // Texture coordinates
-        switch (parsedMesh.uvCount) {
-            case 1:
-                declaration.push(2);
-                break;
-            case 2:
-                declaration.push(2);
-                declaration.push(2);
-                break;
-        }
-
-        // Vertex color
-        if (parsedMesh.hasVertexColor) {
-            declaration.push(3);
-        }
-
-        var mesh = new BABYLON.Mesh(parsedMesh.name, declaration, scene);
+        var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
@@ -287,8 +269,22 @@
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
 
-        if (parsedMesh.vertices && parsedMesh.indices) {
-            mesh.setVertices(parsedMesh.vertices, parsedMesh.uvCount, false, parsedMesh.hasVertexColor);
+        if (parsedMesh.positions && parsedMesh.normals && parsedMesh.indices) {
+            mesh.setVerticesData(parsedMesh.positions, BABYLON.VertexBuffer.PositionKind, false);
+            mesh.setVerticesData(parsedMesh.normals, BABYLON.VertexBuffer.NormalKind, false);
+            
+            if (parsedMesh.uvs) {
+                mesh.setVerticesData(parsedMesh.uvs, BABYLON.VertexBuffer.UVKind, false);
+            }
+            
+            if (parsedMesh.uvs2) {
+                mesh.setVerticesData(parsedMesh.uvs2, BABYLON.VertexBuffer.UV2Kind, false);
+            }
+            
+            if (parsedMesh.colors) {
+                mesh.setVerticesData(parsedMesh.colors, BABYLON.VertexBuffer.ColorKind, false);
+            }
+
             mesh.setIndices(parsedMesh.indices);
         }
 

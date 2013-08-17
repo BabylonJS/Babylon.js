@@ -1,17 +1,17 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.BoundingBox = function (vertices, stride, start, count) {
+    BABYLON.BoundingBox = function (positions, start, count) {
         this.minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         this.maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        for (var index = start; index < start + count; index += stride) {
-            var current = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
+        for (var index = start; index < start + count; index++) {
+            var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
 
             this.minimum = BABYLON.Vector3.Minimize(current, this.minimum);
             this.maximum = BABYLON.Vector3.Maximize(current, this.maximum);
         }
-        
+
         // Bounding vectors
         this.vectors = [];
 
@@ -35,12 +35,12 @@
 
         this.vectors.push(this.maximum.clone());
         this.vectors[7].y = this.minimum.y;
-        
+
         // OBB
         this.center = this.maximum.add(this.minimum).scale(0.5);
         this.extends = this.maximum.subtract(this.minimum).scale(0.5);
         this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
-        
+
         // World
         this.vectorsWorld = [];
         for (var index = 0; index < this.vectors.length; index++) {
@@ -49,7 +49,7 @@
         this.minimumWorld = BABYLON.Vector3.Zero();
         this.maximumWorld = BABYLON.Vector3.Zero();
     };
-    
+
     // Methods
     BABYLON.BoundingBox.prototype._update = function (world) {
         BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
@@ -77,29 +77,16 @@
         // OBB
         this.maximumWorld.addToRef(this.minimumWorld, this.center);
         this.center.scaleInPlace(0.5);
-        
+
         BABYLON.Vector3.FromArrayToRef(world.m, 0, this.directions[0]);
         BABYLON.Vector3.FromArrayToRef(world.m, 4, this.directions[1]);
         BABYLON.Vector3.FromArrayToRef(world.m, 8, this.directions[2]);
     };
 
     BABYLON.BoundingBox.prototype.isInFrustrum = function (frustumPlanes) {
-        for (var p = 0; p < 6; p++) {
-            var inCount = 8;
-
-            for (var i = 0; i < 8; i++) {
-                if (frustumPlanes[p].dotCoordinate(this.vectorsWorld[i]) < 0) {
-                    --inCount;
-                } else {
-                    break;
-                }
-            }
-            if (inCount == 0)
-                return false;
-        }
-        return true;
+        return BABYLON.BoundingBox.IsInFrustrum(this.vectorsWorld, frustumPlanes);
     };
-    
+
     BABYLON.BoundingBox.prototype.intersectsPoint = function (point) {
         if (this.maximumWorld.x < point.x || this.minimumWorld.x > point.x)
             return false;
@@ -112,11 +99,24 @@
 
         return true;
     };
-    
-    BABYLON.BoundingBox.prototype.intersectsSphere = function (sphere) {    
+
+    BABYLON.BoundingBox.prototype.intersectsSphere = function (sphere) {
         var vector = BABYLON.Vector3.Clamp(sphere.centerWorld, this.minimumWorld, this.maximumWorld);
         var num = BABYLON.Vector3.DistanceSquared(sphere.centerWorld, vector);
         return (num <= (sphere.radiusWorld * sphere.radiusWorld));
+    };
+
+    BABYLON.BoundingBox.prototype.intersectsMinMax = function (min, max) {
+        if (this.maximumWorld.x < min.x || this.minimumWorld.x > max.x)
+            return false;
+
+        if (this.maximumWorld.y < min.y || this.minimumWorld.y > max.y)
+            return false;
+
+        if (this.maximumWorld.z < min.z || this.minimumWorld.z > max.z)
+            return false;
+
+        return true;
     };
 
     // Statics
@@ -132,4 +132,22 @@
 
         return true;
     };
+    
+    BABYLON.BoundingBox.IsInFrustrum = function (boundingVectors, frustumPlanes) {
+        for (var p = 0; p < 6; p++) {
+            var inCount = 8;
+
+            for (var i = 0; i < 8; i++) {
+                if (frustumPlanes[p].dotCoordinate(boundingVectors[i]) < 0) {
+                    --inCount;
+                } else {
+                    break;
+                }
+            }
+            if (inCount == 0)
+                return false;
+        }
+        return true;
+    };
+
 })();

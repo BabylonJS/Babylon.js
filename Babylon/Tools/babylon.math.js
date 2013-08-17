@@ -576,6 +576,10 @@
         result.y = this.y * otherVector.y;
         result.z = this.z * otherVector.z;
     };
+    
+    BABYLON.Vector3.prototype.multiplyByFloats = function (x, y, z) {
+        return new BABYLON.Vector3(this.x * x, this.y * y, this.z * z);
+    };
 
     BABYLON.Vector3.prototype.divide = function (otherVector) {
         return new BABYLON.Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);

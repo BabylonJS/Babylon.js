@@ -310,24 +310,28 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		Export_babylon.mesh_triangulate(mesh)
 		
 		# Getting vertices and indices
-		vertices=",\"vertices\":["
+		positions=",\"positions\":["
+		normals=",\"normals\":["
 		indices=",\"indices\":["	
 		hasUV = True;
 		hasUV2 = True;
 		hasVertexColor = True
 		
 		if len(mesh.tessface_uv_textures) > 0:
-			UVmap=mesh.tessface_uv_textures[0].data	
+			UVmap=mesh.tessface_uv_textures[0].data
+			uvs=",\"uvs\":["	
 		else:
 			hasUV = False
 			
 		if len(mesh.tessface_uv_textures) > 1:
 			UV2map=mesh.tessface_uv_textures[1].data
+			uvs2=",\"uvs2\":["	
 		else:
 			hasUV2 = False
 
 		if len(mesh.vertex_colors) > 0:
 			Colormap = mesh.tessface_vertex_colors.active.data
+			colors=",\"colors\":["	
 		else:
 			hasVertexColor = False
 			
@@ -418,24 +422,18 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 						alreadySavedVertices[vertex_index]=True
 						if hasUV:
 							vertices_UVs[vertex_index].append(vertex_UV)
+							uvs+="%.4f,%.4f,"%(vertex_UV[0], vertex_UV[1])
 						if hasUV2:
 							vertices_UV2s[vertex_index].append(vertex_UV2)
+							uvs2+="%.4f,%.4f,"%(vertex_UV2[0], vertex_UV2[1])
 						if hasVertexColor:	
 							vertices_Colors[vertex_index].append(vertex_Color)
+							colors+="%.4f,%.4f,%.4f,"%(vertex_Color.r,vertex_Color.g,vertex_Color.b)
 
 						vertices_indices[vertex_index].append(index)
 						
-						vertices+="%.4f,%.4f,%.4f,"%(position.x,position.z,position.y)				
-						vertices+="%.4f,%.4f,%.4f,"%(normal.x,normal.z,normal.y)
-
-						if hasUV:
-							vertices+="%.4f,%.4f,"%(vertex_UV[0], vertex_UV[1])
-							
-						if hasUV2:
-							vertices+="%.4f,%.4f,"%(vertex_UV2[0], vertex_UV2[1])
-
-						if hasVertexColor:	
-							vertices+="%.4f,%.4f,%.4f,"%(vertex_Color.r,vertex_Color.g,vertex_Color.b)
+						positions+="%.4f,%.4f,%.4f,"%(position.x,position.z,position.y)				
+						normals+="%.4f,%.4f,%.4f,"%(normal.x,normal.z,normal.y)						
 						
 						verticesCount += 1
 					indices+="%i,"%(index)
@@ -444,11 +442,25 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 			subMeshes[materialIndex].verticesCount = verticesCount - subMeshes[materialIndex].verticesStart
 			subMeshes[materialIndex].indexCount = indicesCount - subMeshes[materialIndex].indexStart
 				
-		vertices=vertices.rstrip(',')
+		positions=positions.rstrip(',')
+		normals=normals.rstrip(',')
 		indices=indices.rstrip(',')
 			
-		vertices+="]\n"
+		positions+="]\n"
+		normals+="]\n"
 		indices+="]\n"	
+
+		if hasUV:
+			uvs=uvs.rstrip(',')
+			uvs+="]\n"
+
+		if hasUV2:
+			uvs2=uvs.rstrip(',')
+			uvs2+="]\n"
+
+		if hasVertexColor:
+			colors=uvs.rstrip(',')
+			colors+="]\n"
 				
 		# Writing mesh		
 		file_handler.write("{")
@@ -486,16 +498,19 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 		Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
 		Export_babylon.write_int(file_handler, "billboardMode", billboardMode)
 		Export_babylon.write_bool(file_handler, "receiveShadows", object.data.receiveShadows)
-		
-		if hasUV and hasUV2:
-			Export_babylon.write_int(file_handler, "uvCount", 2)
-		elif hasUV:
-			Export_babylon.write_int(file_handler, "uvCount", 1)
-		else:
-			Export_babylon.write_int(file_handler, "uvCount", 0)
-		
-		Export_babylon.write_bool(file_handler, "hasVertexColor", hasVertexColor)
-		file_handler.write(vertices)	
+				
+		file_handler.write(positions)
+		file_handler.write(normals)
+
+		if hasUV:
+			file_handler.write(uvs)
+
+		if hasUV2:
+			file_handler.write(uvs2)
+
+		if hasVertexColor:
+			file_handler.write(colors)
+
 		file_handler.write(indices)	
 		
 		# Sub meshes

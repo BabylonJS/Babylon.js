@@ -1,18 +1,10 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Mesh = function (name, vertexDeclaration, scene) {
+    BABYLON.Mesh = function (name, scene) {
         this.name = name;
         this.id = name;
         this._scene = scene;
-        this._vertexDeclaration = vertexDeclaration;
-
-        this._vertexStrideSize = 0;
-        for (var index = 0; index < vertexDeclaration.length; index++) {
-            this._vertexStrideSize += vertexDeclaration[index];
-        }
-
-        this._vertexStrideSize *= 4; // sizeof(float)
 
         this._totalVertices = 0;
         this._worldMatrix = BABYLON.Matrix.Identity();
@@ -26,6 +18,8 @@
         this._vertices = [];
         this._indices = [];
         this.subMeshes = [];
+
+        this._renderId = 0;
 
         // Animations
         this.animations = [];
@@ -46,7 +40,7 @@
         this._localScalingRotation = BABYLON.Matrix.Zero();
         this._localWorld = BABYLON.Matrix.Zero();
         this._worldMatrix = BABYLON.Matrix.Zero();
-        
+
         this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
         this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
     };
@@ -70,7 +64,8 @@
     BABYLON.Mesh.prototype.checkCollisions = false;
     BABYLON.Mesh.prototype.receiveShadows = false;
 
-    BABYLON.Mesh.prototype.onDispose = false;
+    BABYLON.Mesh.prototype._isDisposed = false;
+    BABYLON.Mesh.prototype.onDispose = null;
 
     // Properties
 
@@ -90,8 +85,12 @@
         return this._totalVertices;
     };
 
-    BABYLON.Mesh.prototype.getVertices = function () {
-        return this._vertices;
+    BABYLON.Mesh.prototype.getVerticesData = function (kind) {
+        return this._vertexBuffers[kind].getData();
+    };
+
+    BABYLON.Mesh.prototype.isVerticesDataPresent = function (kind) {
+        return this._vertexBuffers[kind] !== undefined;
     };
 
     BABYLON.Mesh.prototype.getTotalIndices = function () {
@@ -104,10 +103,6 @@
 
     BABYLON.Mesh.prototype.getVertexStrideSize = function () {
         return this._vertexStrideSize;
-    };
-
-    BABYLON.Mesh.prototype.getFloatVertexStrideSize = function () {
-        return this._vertexStrideSize / 4;
     };
 
     BABYLON.Mesh.prototype._needToSynchonizeChildren = function () {
@@ -161,6 +156,9 @@
         return this._animationStarted;
     };
 
+    BABYLON.Mesh.prototype.isDisposed = function () {
+        return this._isDisposed;
+    };
     // Methods
     BABYLON.Mesh.prototype.computeWorldMatrix = function () {
         if (this.isSynchronized()) {
@@ -265,36 +263,31 @@
         }
     };
 
-    BABYLON.Mesh.prototype.setVertices = function (vertices, uvCount, updatable, hasVertexColor) {
-        if (this._vertexBuffer) {
-            this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+    BABYLON.Mesh.prototype.setVerticesData = function (data, kind, updatable) {
+        if (!this._vertexBuffers) {
+            this._vertexBuffers = {};
         }
 
-        this._uvCount = uvCount;
-        this._hasVertexColor = hasVertexColor;
-
-        if (updatable) {
-            this._vertexBuffer = this._scene.getEngine().createDynamicVertexBuffer(vertices.length * 4);
-            this._scene.getEngine().updateDynamicVertexBuffer(this._vertexBuffer, vertices);
-        } else {
-            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
+        if (this._vertexBuffers[kind]) {
+            this._vertexBuffers[kind].dispose();
         }
 
-        this._vertices = vertices;
+        this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this, data, kind, updatable);
 
-        this._totalVertices = vertices.length / this.getFloatVertexStrideSize();
+        if (kind === BABYLON.VertexBuffer.PositionKind) {
+            var stride = this._vertexBuffers[kind].getStrideSize();
+            this._totalVertices = data.length / stride;
 
-        this._boundingInfo = new BABYLON.BoundingInfo(vertices, this.getFloatVertexStrideSize(), 0, vertices.length);
+            this._boundingInfo = new BABYLON.BoundingInfo(data, 0, this._totalVertices);
 
-        this._createGlobalSubMesh();
-        this._positions = null;
+            this._createGlobalSubMesh();
+        }
     };
 
-    BABYLON.Mesh.prototype.updateVertices = function (vertices) {
-        var engine = this._scene.getEngine();
-        engine.updateDynamicVertexBuffer(this._vertexBuffer, vertices);
-        this._vertices = vertices;
-        this._positions = null;
+    BABYLON.Mesh.prototype.updateVerticesData = function (kind, data) {
+        if (this._vertexBuffers[kind]) {
+            this._vertexBuffers[kind].update(data);
+        }
     };
 
     BABYLON.Mesh.prototype.setIndices = function (indices) {
@@ -310,7 +303,7 @@
 
     BABYLON.Mesh.prototype.bindAndDraw = function (subMesh, effect, wireframe) {
         var engine = this._scene.getEngine();
-        
+
         // Wireframe
         var indexToBind = this._indexBuffer;
         var useTriangles = true;
@@ -321,14 +314,14 @@
         }
 
         // VBOs
-        engine.bindBuffers(this._vertexBuffer, indexToBind, this._vertexDeclaration, this._vertexStrideSize, effect);
+        engine.bindMultiBuffers(this._vertexBuffers, indexToBind, effect);
 
         // Draw order
         engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
     };
 
     BABYLON.Mesh.prototype.render = function (subMesh) {
-        if (!this._vertexBuffer || !this._indexBuffer) {
+        if (!this._vertexBuffers || !this._indexBuffer) {
             return;
         }
 
@@ -449,16 +442,19 @@
     };
 
     // Cache
+    BABYLON.Mesh.prototype._resetPointsArrayCache = function () {
+        this._positions = null;
+    };
+
     BABYLON.Mesh.prototype._generatePointsArray = function () {
         if (this._positions)
             return;
 
         this._positions = [];
 
-        var stride = this.getFloatVertexStrideSize();
-
-        for (var index = 0; index < this._vertices.length; index += stride) {
-            this._positions.push(BABYLON.Vector3.FromArray(this._vertices, index));
+        var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
+        for (var index = 0; index < data.length; index += 3) {
+            this._positions.push(BABYLON.Vector3.FromArray(data, index));
         }
     };
 
@@ -553,22 +549,23 @@
 
     // Clone
     BABYLON.Mesh.prototype.clone = function (name, newParent) {
-        var result = new BABYLON.Mesh(name, this._vertexDeclaration, this._scene);
-
-        BABYLON.Tools.DeepCopy(this, result, ["name", "material"], ["_uvCount", "_vertices", "_indices", "_totalVertices"]);
-
-        // Bounding info
-        result._boundingInfo = new BABYLON.BoundingInfo(result._vertices, result.getFloatVertexStrideSize(), 0, result._vertices.length);
-
-        // Material
-        result.material = this.material;
+        var result = new BABYLON.Mesh(name, this._scene);
 
         // Buffers
-        result._vertexBuffer = this._vertexBuffer;
-        this._vertexBuffer.references++;
+        result._vertexBuffers = this._vertexBuffers;
+        this._vertexBuffers.references++;
 
         result._indexBuffer = this._indexBuffer;
         this._indexBuffer.references++;
+
+        // Deep copy
+        BABYLON.Tools.DeepCopy(this, result, ["name", "material"], ["_indices", "_totalVertices"]);
+
+        // Bounding info
+        result._boundingInfo = new BABYLON.BoundingInfo(this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData(), 0, this._totalVertices);
+
+        // Material
+        result.material = this.material;
 
         // Parent
         if (newParent) {
@@ -598,9 +595,9 @@
 
     // Dispose
     BABYLON.Mesh.prototype.dispose = function (doNotRecurse) {
-        if (this._vertexBuffer) {
+        if (this._vertexBuffers) {
             //this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-            this._vertexBuffer = null;
+            this._vertexBuffers = null;
         }
 
         if (this._indexBuffer) {
@@ -612,25 +609,25 @@
         var index = this._scene.meshes.indexOf(this);
         this._scene.meshes.splice(index, 1);
 
-        if (doNotRecurse) {
-            return;
-        }
+        if (!doNotRecurse) {
+            // Particles
+            for (var index = 0; index < this._scene.particleSystems.length; index++) {
+                if (this._scene.particleSystems[index].emitter == this) {
+                    this._scene.particleSystems[index].dispose();
+                    index--;
+                }
+            }
 
-        // Particles
-        for (var index = 0; index < this._scene.particleSystems.length; index++) {
-            if (this._scene.particleSystems[index].emitter == this) {
-                this._scene.particleSystems[index].dispose();
-                index--;
+            // Children
+            var objects = this._scene.meshes.slice(0);
+            for (var index = 0; index < objects.length; index++) {
+                if (objects[index].parent == this) {
+                    objects[index].dispose();
+                }
             }
         }
 
-        // Children
-        var objects = this._scene.meshes.slice(0);
-        for (var index = 0; index < objects.length; index++) {
-            if (objects[index].parent == this) {
-                objects[index].dispose();
-            }
-        }
+        this._isDisposed = true;
 
         // Callback
         if (this.onDispose) {
@@ -640,9 +637,9 @@
 
     // Statics
     BABYLON.Mesh.CreateBox = function (name, size, scene, updatable) {
-        var box = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var box = new BABYLON.Mesh(name, scene);
 
-        var normals = [
+        var normalsSource = [
             new BABYLON.Vector3(0, 0, 1),
             new BABYLON.Vector3(0, 0, -1),
             new BABYLON.Vector3(1, 0, 0),
@@ -652,18 +649,20 @@
         ];
 
         var indices = [];
-        var vertices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
 
         // Create each face in turn.
-        for (var index = 0; index < normals.length; index++) {
-            var normal = normals[index];
+        for (var index = 0; index < normalsSource.length; index++) {
+            var normal = normalsSource[index];
 
             // Get two vectors perpendicular to the face normal and to each other.
             var side1 = new BABYLON.Vector3(normal.y, normal.z, normal.x);
             var side2 = BABYLON.Vector3.Cross(normal, side1);
 
             // Six indices (two triangles) per face.
-            var verticesLength = vertices.length / 8;
+            var verticesLength = positions.length / 3;
             indices.push(verticesLength);
             indices.push(verticesLength + 1);
             indices.push(verticesLength + 2);
@@ -674,26 +673,36 @@
 
             // Four vertices per face.
             var vertex = normal.subtract(side1).subtract(side2).scale(size / 2);
-            vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, 1.0, 1.0);
+            positions.push(vertex.x, vertex.y, vertex.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(1.0, 1.0);
 
             vertex = normal.subtract(side1).add(side2).scale(size / 2);
-            vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, 0.0, 1.0);
+            positions.push(vertex.x, vertex.y, vertex.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(0.0, 1.0);
 
             vertex = normal.add(side1).add(side2).scale(size / 2);
-            vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, 0.0, 0.0);
+            positions.push(vertex.x, vertex.y, vertex.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(0.0, 0.0);
 
             vertex = normal.add(side1).subtract(side2).scale(size / 2);
-            vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, 1.0, 0.0);
+            positions.push(vertex.x, vertex.y, vertex.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(1.0, 0.0);
         }
 
-        box.setVertices(vertices, 1, updatable);
+        box.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        box.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        box.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         box.setIndices(indices);
 
         return box;
     };
 
     BABYLON.Mesh.CreateSphere = function (name, segments, diameter, scene, updatable) {
-        var sphere = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var sphere = new BABYLON.Mesh(name, scene);
 
         var radius = diameter / 2;
 
@@ -701,7 +710,9 @@
         var totalYRotationSteps = 2 * totalZRotationSteps;
 
         var indices = [];
-        var vertices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
 
         for (var zRotationStep = 0; zRotationStep <= totalZRotationSteps; zRotationStep++) {
             var normalizedZ = zRotationStep / totalZRotationSteps;
@@ -720,11 +731,13 @@
                 var vertex = complete.scale(radius);
                 var normal = BABYLON.Vector3.Normalize(vertex);
 
-                vertices.push(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z, normalizedZ, normalizedY);
+                positions.push(vertex.x, vertex.y, vertex.z);
+                normals.push(normal.x, normal.y, normal.z);
+                uvs.push(normalizedZ, normalizedY);
             }
 
             if (zRotationStep > 0) {
-                var verticesCount = vertices.length / 8;
+                var verticesCount = positions.length / 3;
                 for (var firstIndex = verticesCount - 2 * (totalYRotationSteps + 1) ; (firstIndex + totalYRotationSteps + 2) < verticesCount; firstIndex++) {
                     indices.push((firstIndex));
                     indices.push((firstIndex + 1));
@@ -737,7 +750,9 @@
             }
         }
 
-        sphere.setVertices(vertices, 1, updatable);
+        sphere.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        sphere.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        sphere.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         sphere.setIndices(indices);
 
         return sphere;
@@ -747,8 +762,10 @@
     BABYLON.Mesh.CreateCylinder = function (name, height, diameter, tessellation, scene, updatable) {
         var radius = diameter / 2;
         var indices = [];
-        var vertices = [];
-        var cylinder = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var positions = [];
+        var normals = [];
+        var uvs = [];
+        var cylinder = new BABYLON.Mesh(name, scene);
 
 
         var getCircleVector = function (i) {
@@ -771,7 +788,7 @@
                     i2 = tmp;
                 }
 
-                var vbase = vertices.length / cylinder.getFloatVertexStrideSize();
+                var vbase = positions.length / 3;
                 indices.push(vbase);
                 indices.push(vbase + i1);
                 indices.push(vbase + i2);
@@ -793,11 +810,9 @@
                 var position = circleVector.scale(radius).add(normal.scale(height));
                 var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
 
-                vertices.push(
-                    position.x, position.y, position.z,
-                    normal.x, normal.y, normal.z,
-                    textureCoordinate.x, textureCoordinate.y
-                );
+                positions.push(position.x, position.y, position.z);
+                normals.push(normal.x, normal.y, normal.z);
+                uvs.push(textureCoordinate.x, textureCoordinate.y);
             }
         };
 
@@ -808,26 +823,22 @@
         var stride = tessellation + 1;
 
         // Create a ring of triangles around the outside of the cylinder.
-        for (var i = 0; i <= tessellation; i++)
-        {
+        for (var i = 0; i <= tessellation; i++) {
             var normal = getCircleVector(i);
             var sideOffset = normal.scale(radius);
             var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
 
             var position = sideOffset.add(topOffset);
-            vertices.push(
-                            position.x, position.y, position.z,
-                            normal.x, normal.y, normal.z,
-                            textureCoordinate.x, textureCoordinate.y
-                        );
+            positions.push(position.x, position.y, position.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(textureCoordinate.x, textureCoordinate.y);
+
 
             position = sideOffset.subtract(topOffset);
             textureCoordinate.y += 1;
-            vertices.push(
-                            position.x, position.y, position.z,
-                            normal.x, normal.y, normal.z,
-                            textureCoordinate.x, textureCoordinate.y
-                        );
+            positions.push(position.x, position.y, position.z);
+            normals.push(normal.x, normal.y, normal.z);
+            uvs.push(textureCoordinate.x, textureCoordinate.y);
 
             indices.push(i * 2);
             indices.push((i * 2 + 2) % (stride * 2));
@@ -841,8 +852,10 @@
         // Create flat triangle fan caps to seal the top and bottom.
         createCylinderCap(true);
         createCylinderCap(false);
-        
-        cylinder.setVertices(vertices, 1, updatable);
+
+        cylinder.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        cylinder.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        cylinder.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         cylinder.setIndices(indices);
 
         return cylinder;
@@ -850,10 +863,12 @@
 
     // Torus  (Code from SharpDX.org)
     BABYLON.Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
-        var torus = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var torus = new BABYLON.Mesh(name, scene);
 
         var indices = [];
-        var vertices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
 
         var stride = tessellation + 1;
 
@@ -879,11 +894,9 @@
                 position = BABYLON.Vector3.TransformCoordinates(position, transform);
                 normal = BABYLON.Vector3.TransformNormal(normal, transform);
 
-                vertices.push(
-                    position.x, position.y, position.z,
-                    normal.x, normal.y, normal.z,
-                    textureCoordinate.x, textureCoordinate.y
-                );
+                positions.push(position.x, position.y, position.z);
+                normals.push(normal.x, normal.y, normal.z);
+                uvs.push(textureCoordinate.x, textureCoordinate.y);
 
                 // And create indices for two triangles.
                 var nextI = (i + 1) % stride;
@@ -893,14 +906,15 @@
                 indices.push(i * stride + nextJ);
                 indices.push(nextI * stride + j);
 
-
                 indices.push(i * stride + nextJ);
                 indices.push(nextI * stride + nextJ);
                 indices.push(nextI * stride + j);
             }
         }
 
-        torus.setVertices(vertices, 1, updatable);
+        torus.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        torus.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        torus.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         torus.setIndices(indices);
 
         return torus;
@@ -909,17 +923,30 @@
 
     // Plane
     BABYLON.Mesh.CreatePlane = function (name, size, scene, updatable) {
-        var plane = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var plane = new BABYLON.Mesh(name, scene);
 
         var indices = [];
-        var vertices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
 
         // Vertices
         var halfSize = size / 2.0;
-        vertices.push(-halfSize, -halfSize, 0, 0, 0, -1.0, 0.0, 0.0);
-        vertices.push(halfSize, -halfSize, 0, 0, 0, -1.0, 1.0, 0.0);
-        vertices.push(halfSize, halfSize, 0, 0, 0, -1.0, 1.0, 1.0);
-        vertices.push(-halfSize, halfSize, 0, 0, 0, -1.0, 0.0, 1.0);
+        positions.push(-halfSize, -halfSize, 0);
+        normals.push(0, 0, -1.0);
+        uvs.push(0.0, 0.0);
+
+        positions.push(halfSize, -halfSize, 0);
+        normals.push(0, 0, -1.0);
+        uvs.push(1.0, 0.0);
+        
+        positions.push(halfSize, halfSize, 0);
+        normals.push(0, 0, -1.0);
+        uvs.push(1.0, 1.0);
+        
+        positions.push(-halfSize, halfSize, 0);
+        normals.push(0, 0, -1.0);
+        uvs.push(0.0, 1.0);
 
         // Indices
         indices.push(0);
@@ -930,17 +957,21 @@
         indices.push(2);
         indices.push(3);
 
-        plane.setVertices(vertices, 1, updatable);
+        plane.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        plane.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        plane.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         plane.setIndices(indices);
 
         return plane;
     };
 
     BABYLON.Mesh.CreateGround = function (name, width, height, subdivisions, scene, updatable) {
-        var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var ground = new BABYLON.Mesh(name, scene);
 
         var indices = [];
-        var vertices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
         var row, col;
 
         for (row = 0; row <= subdivisions; row++) {
@@ -948,9 +979,9 @@
                 var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
                 var normal = new BABYLON.Vector3(0, 1.0, 0);
 
-                vertices.push(position.x, position.y, position.z,
-                    normal.x, normal.y, normal.z,
-                    col / subdivisions, 1.0 - row / subdivisions);
+                positions.push(position.x, position.y, position.z);
+                normals.push(normal.x, normal.y, normal.z);
+                uvs.push(col / subdivisions, 1.0 - row / subdivisions);
             }
         }
 
@@ -966,19 +997,23 @@
             }
         }
 
-        ground.setVertices(vertices, 1, updatable);
+        ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+        ground.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+        ground.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
         ground.setIndices(indices);
 
         return ground;
     };
 
     BABYLON.Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
-        var ground = new BABYLON.Mesh(name, [3, 3, 2], scene);
+        var ground = new BABYLON.Mesh(name, scene);
 
         var img = new Image();
         img.onload = function () {
             var indices = [];
-            var vertices = [];
+            var positions = [];
+            var normals = [];
+            var uvs = [];
             var row, col;
 
             // Getting height map data
@@ -1012,9 +1047,9 @@
                     position.y = minHeight + (maxHeight - minHeight) * gradient;
 
                     // Add  vertex
-                    vertices.push(position.x, position.y, position.z,
-                        0, 0, 0,
-                        col / subdivisions, 1.0 - row / subdivisions);
+                    positions.push(position.x, position.y, position.z);
+                    normals.push(0, 0, 0);
+                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
                 }
             }
 
@@ -1032,10 +1067,12 @@
             }
 
             // Normals
-            BABYLON.Mesh.ComputeNormal(vertices, indices, ground.getFloatVertexStrideSize());
+            BABYLON.Mesh.ComputeNormal(positions, normals, indices);
 
             // Transfer
-            ground.setVertices(vertices, 1, updatable);
+            ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+            ground.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+            ground.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
             ground.setIndices(indices);
 
             ground._isReady = true;
@@ -1049,18 +1086,14 @@
     };
 
     // Tools
-    BABYLON.Mesh.ComputeNormal = function (vertices, indices, stride, normalOffset) {
-        var positions = [];
+    BABYLON.Mesh.ComputeNormal = function (positions, normals, indices) {
+        var positionVectors = [];
         var facesOfVertices = [];
         var index;
 
-        if (normalOffset === undefined) {
-            normalOffset = 3;
-        }
-
-        for (index = 0; index < vertices.length; index += stride) {
-            var position = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
-            positions.push(position);
+        for (index = 0; index < positions.length; index += 3) {
+            var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
+            positionVectors.push(vector3);
             facesOfVertices.push([]);
         }
         // Compute normals
@@ -1070,9 +1103,9 @@
             var i2 = indices[index * 3 + 1];
             var i3 = indices[index * 3 + 2];
 
-            var p1 = positions[i1];
-            var p2 = positions[i2];
-            var p3 = positions[i3];
+            var p1 = positionVectors[i1];
+            var p2 = positionVectors[i2];
+            var p3 = positionVectors[i3];
 
             var p1p2 = p1.subtract(p2);
             var p3p2 = p3.subtract(p2);
@@ -1083,7 +1116,7 @@
             facesOfVertices[i3].push(index);
         }
 
-        for (index = 0; index < positions.length; index++) {
+        for (index = 0; index < positionVectors.length; index++) {
             var faces = facesOfVertices[index];
 
             var normal = BABYLON.Vector3.Zero();
@@ -1093,9 +1126,9 @@
 
             normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
 
-            vertices[index * stride + normalOffset] = normal.x;
-            vertices[index * stride + normalOffset + 1] = normal.y;
-            vertices[index * stride + normalOffset + 2] = normal.z;
+            normals[index * 3] = normal.x;
+            normals[index * 3 + 1] = normal.y;
+            normals[index * 3 + 2] = normal.z;
         }
     };
 })();

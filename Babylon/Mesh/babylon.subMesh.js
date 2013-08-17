@@ -9,9 +9,8 @@
         this.verticesCount = verticesCount;
         this.indexStart = indexStart;
         this.indexCount = indexCount;
-
-        var stride = this._mesh.getFloatVertexStrideSize();
-        this._boundingInfo = new BABYLON.BoundingInfo(this._mesh.getVertices(), stride, verticesStart * stride, verticesCount * stride);
+        
+        this._boundingInfo = new BABYLON.BoundingInfo(this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind), verticesStart, verticesCount);
     };
     
     //Properties

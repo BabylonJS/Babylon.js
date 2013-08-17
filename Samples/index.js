@@ -5,7 +5,9 @@
     var demos = [
         { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB", big: true },
         { title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", },
-        { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB" },
+        { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", onload: function() {
+            scene.createOrUpdateSelectionOctree();
+        } },
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
         {
             title: "FLAT 2009",
@@ -15,6 +17,7 @@
             onload: function () {
                 var ecran = scene.getMeshByName("Ecran");
                 ecran.material.diffuseTexture = new BABYLON.VideoTexture("video", ["Scenes/Flat2009/babylonjs.mp4", "Scenes/Flat2009/babylonjs.webm"], 256, scene, true);
+                scene.createOrUpdateSelectionOctree();
             }
         },
         { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB" },

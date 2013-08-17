@@ -17,13 +17,15 @@
         this._renderTargetsDuration = 0;
         this._renderDuration = 0;
 
+        this._renderId = 0;
+
         this._toBeDisposed = new BABYLON.Tools.SmartArray(256);
 
         this._onReadyCallbacks = [];
         this._pendingData = [];
 
         this._onBeforeRenderCallbacks = [];
-        
+
         // Fog
         this.fogMode = BABYLON.Scene.FOGMODE_NONE;
         this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -40,7 +42,7 @@
 
         // Meshes
         this.meshes = [];
-        
+
         // Internal smart arrays
         this._activeMeshes = new BABYLON.Tools.SmartArray(256);
         this._opaqueSubMeshes = new BABYLON.Tools.SmartArray(256);
@@ -74,10 +76,10 @@
 
         // Animations
         this._activeAnimatables = [];
-        
+
         // Matrices
         this._transformMatrix = BABYLON.Matrix.Zero();
-        
+
         // Internals
         this._scaledPosition = BABYLON.Vector3.Zero();
         this._scaledVelocity = BABYLON.Vector3.Zero();
@@ -144,7 +146,7 @@
         return true;
     };
 
-    BABYLON.Scene.prototype.getWaitingItemsCount = function() {
+    BABYLON.Scene.prototype.getWaitingItemsCount = function () {
         return this._pendingData.length;
     };
 
@@ -160,11 +162,11 @@
         }
         this._onReadyCallbacks.push(func);
     };
-    
+
     BABYLON.Scene.prototype.registerBeforeRender = function (func) {
         this._onBeforeRenderCallbacks.push(func);
     };
-    
+
     BABYLON.Scene.prototype.unregisterBeforeRender = function (func) {
         var index = this._onBeforeRenderCallbacks.indexOf(func);
 
@@ -274,7 +276,7 @@
 
         return null;
     };
-    
+
     BABYLON.Scene.prototype.getLightByID = function (id) {
         for (var index = 0; index < this.lights.length; index++) {
             if (this.lights[index].id == id) {
@@ -320,6 +322,34 @@
         return (this._activeMeshes.indexOf(mesh) !== -1);
     };
 
+    BABYLON.Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
+        if (mesh.subMeshes.length == 1 || subMesh.isInFrustrum(this._frustumPlanes)) {
+            var material = subMesh.getMaterial();
+
+            if (material) {
+                // Render targets
+                if (material.getRenderTargetTextures) {
+                    if (this._processedMaterials.indexOf(material) === -1) {
+                        this._processedMaterials.push(material);
+
+                        this._renderTargets.concat(material.getRenderTargetTextures());
+                    }
+                }
+
+                // Dispatch
+                if (material.needAlphaBlending() || mesh.visibility < 1.0) { // Transparent
+                    if (material.alpha > 0 || mesh.visibility < 1.0) {
+                        this._transparentSubMeshes.push(subMesh); // Opaque
+                    }
+                } else if (material.needAlphaTesting()) { // Alpha test
+                    this._alphaTestSubMeshes.push(subMesh);
+                } else {
+                    this._opaqueSubMeshes.push(subMesh);
+                }
+            }
+        }
+    };
+
     BABYLON.Scene.prototype._evaluateActiveMeshes = function () {
         this._activeMeshes.reset();
         this._opaqueSubMeshes.reset();
@@ -339,49 +369,68 @@
         this._activeVertices = 0;
 
         // meshes
-        for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-            var mesh = this.meshes[meshIndex];
+        if (this._selectionOctree) { // Octree
+            var selection = this._selectionOctree.select(this._frustumPlanes);
+            this._renderId++;
 
-            this._totalVertices += mesh.getTotalVertices();
-            
-            if (!mesh.isReady()) {
-                continue;
-            }
+            for (var blockIndex = 0; blockIndex < selection.length; blockIndex++) {
+                var block = selection.data[blockIndex];
 
-            mesh.computeWorldMatrix();
+                for (var meshIndex = 0; meshIndex < block.meshes.length; meshIndex++) {
+                    var mesh = block.meshes[meshIndex];
 
-            if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes)) {
-                for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                    var subMesh = mesh.subMeshes[subIndex];
+                    if (Math.abs(mesh._renderId) !== this._renderId) {                        
+                        this._totalVertices += mesh.getTotalVertices();
 
-                    if (mesh.subMeshes.length == 1 || subMesh.isInFrustrum(this._frustumPlanes)) {
-                        var material = subMesh.getMaterial();
+                        if (!mesh.isReady()) {
+                            continue;
+                        }
 
-                        if (this._activeMeshes.indexOf(mesh) === -1) {
+                        mesh.computeWorldMatrix();
+                        mesh._renderId = 0;
+                    }
+                    
+                    if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes))) {
+                        if (mesh._renderId === 0) {
                             this._activeMeshes.push(mesh);
                         }
+                        mesh._renderId = this._renderId;
 
-                        if (material) {
-                            // Render targets
-                            if (material.getRenderTargetTextures) {
-                                if (this._processedMaterials.indexOf(material) === -1) {
-                                    this._processedMaterials.push(material);
+                        var subMeshes = block.subMeshes[meshIndex];
+                        for (var subIndex = 0; subIndex < subMeshes.length; subIndex++) {
+                            var subMesh = subMeshes[subIndex];
 
-                                    this._renderTargets.concat(material.getRenderTargetTextures());
-                                }
+                            if (subMesh._renderId === this._renderId) {
+                                continue;
                             }
+                            subMesh._renderId = this._renderId;
 
-                            // Dispatch
-                            if (material.needAlphaBlending() || mesh.visibility < 1.0) { // Transparent
-                                if (material.alpha > 0 || mesh.visibility < 1.0) {
-                                    this._transparentSubMeshes.push(subMesh); // Opaque
-                                }
-                            } else if (material.needAlphaTesting()) { // Alpha test
-                                this._alphaTestSubMeshes.push(subMesh);
-                            } else {
-                                this._opaqueSubMeshes.push(subMesh);
-                            }
+                            this._evaluateSubMesh(subMesh, mesh);
                         }
+                    } else {
+                        mesh._renderId = -this._renderId;
+                    }
+                }
+            }
+        } else { // Full scene traversal
+            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+                var mesh = this.meshes[meshIndex];
+
+                this._totalVertices += mesh.getTotalVertices();
+
+                if (!mesh.isReady()) {
+                    continue;
+                }
+
+                mesh.computeWorldMatrix();
+
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes)) {
+                    this._activeMeshes.push(mesh);
+
+                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        var subMesh = mesh.subMeshes[subIndex];
+
+                        this._evaluateSubMesh(subMesh, mesh);
                     }
                 }
             }
@@ -467,7 +516,7 @@
         if (this.beforeRender) {
             this.beforeRender();
         }
-        
+
         for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
             this._onBeforeRenderCallbacks[callbackIndex]();
         }
@@ -496,7 +545,7 @@
                 this._renderTargets.push(shadowGenerator.getShadowMap());
             }
         }
-        
+
         // Render targets
         var beforeRenderTargetDate = new Date();
         for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
@@ -555,7 +604,7 @@
 
         // Cleaning
         for (var index = 0; index < this._toBeDisposed.length; index++) {
-            this._toBeDisposed[index].dispose();
+            this._toBeDisposed.data[index].dispose();
             this._toBeDisposed[index] = null;
         }
 
@@ -574,7 +623,7 @@
         for (index = 0; index < this.cameras.length; index++) {
             this.cameras[index].detachControl(canvas);
         }
-        
+
         // Release lights
         while (this.lights.length) {
             this.lights[0].dispose(true);
@@ -664,6 +713,46 @@
 
         collider.retry++;
         this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition);
+    };
+
+    // Octrees
+    BABYLON.Scene.prototype.createOrUpdateSelectionOctree = function () {
+        if (!this._selectionOctree) {
+            this._selectionOctree = new BABYLON.Octree();
+        }
+
+        // World limits
+        var checkExtends = function (v, min, max) {
+            if (v.x < min.x)
+                min.x = v.x;
+            if (v.y < min.y)
+                min.y = v.y;
+            if (v.z < min.z)
+                min.z = v.z;
+
+            if (v.x > max.x)
+                max.x = v.x;
+            if (v.y > max.y)
+                max.y = v.y;
+            if (v.z > max.z)
+                max.z = v.z;
+        };
+
+        var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        for (var index = 0; index < this.meshes.length; index++) {
+            var mesh = this.meshes[index];
+
+            mesh.computeWorldMatrix();
+            var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
+            var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
+
+            checkExtends(minBox, min, max);
+            checkExtends(maxBox, min, max);
+        }
+
+        // Update octree
+        this._selectionOctree.update(min, max, this.meshes);
     };
 
     // Picking

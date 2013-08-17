@@ -109,7 +109,7 @@
         if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture) {
             if (!this.bumpTexture.isReady()) {
                 return false;
-            } else {                
+            } else {
                 defines.push("#define BUMP");
             }
         }
@@ -169,20 +169,15 @@
 
         var attribs = ["position", "normal"];
         if (mesh) {
-            switch (mesh._uvCount) {
-                case 1:
-                    attribs.push("uv");
-                    defines.push("#define UV1");
-                    break;
-                case 2:
-                    attribs.push("uv");
-                    attribs.push("uv2");
-                    defines.push("#define UV1");
-                    defines.push("#define UV2");
-                    break;
+            if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                attribs.push("uv");
+                defines.push("#define UV1");
             }
-            
-            if (mesh._hasVertexColor){
+            if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                attribs.push("uv2");
+                defines.push("#define UV2");
+            }
+            if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                 attribs.push("color");
                 defines.push("#define VERTEXCOLOR");
             }
