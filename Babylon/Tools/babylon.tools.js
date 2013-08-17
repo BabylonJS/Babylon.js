@@ -34,6 +34,24 @@
         }
     };
     
+    BABYLON.Tools.SmartArray.prototype.concatWithNoDuplicate = function (array) {
+        if (array.length === 0) {
+            return;
+        }
+        if (this.length + array.length > this.data.length) {
+            this.data.length = (this.length + array.length) * 2;
+        }
+
+        for (var index = 0; index < array.length; index++) {
+            var item = (array.data || array)[index];
+            var pos = this.data.indexOf(item);
+
+            if (pos === -1 ||pos >= this.length) {
+                this.data[this.length++] = item;
+            }
+        }
+    };
+    
     BABYLON.Tools.SmartArray.prototype.indexOf = function (value) {
         var position = this.data.indexOf(value);
         

@@ -14,6 +14,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Frustum clipping
  - Sub-meshes clipping
  - Hardware scaling
+ - Selection octrees
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture

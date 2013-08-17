@@ -10,6 +10,7 @@
         this._samplers = samplers;
         this._isReady = false;
         this._compilationError = "";
+        this._attributesNames = attributesNames;
 
         var that = this;
 
@@ -48,6 +49,10 @@
 
     BABYLON.Effect.prototype.getProgram = function () {
         return this._program;
+    };
+
+    BABYLON.Effect.prototype.getAttributesNames = function () {
+        return this._attributesNames;
     };
 
     BABYLON.Effect.prototype.getAttribute = function (index) {

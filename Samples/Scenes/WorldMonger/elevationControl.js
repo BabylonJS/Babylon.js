@@ -119,13 +119,14 @@
         if (this._facesOfVertices == null) {
             this._facesOfVertices = [];
 
-            this._groundVertices = this._ground.getVertices();
+            this._groundVerticesPositions = this._ground.getVerticesData(BABYLON.VertexBuffer.PositionKind).getData();
+            this._groundVerticesNormals = this._ground.getVerticesData(BABYLON.VertexBuffer.NormalKind).getData();
             this._groundIndices = this._ground.getIndices();
 
             this._groundPositions = [];
             var index;
-            for (index = 0; index < this._groundVertices.length; index += this._ground.getFloatVertexStrideSize()) {
-                this._groundPositions.push(new BABYLON.Vector3(this._groundVertices[index], this._groundVertices[index + 1], this._groundVertices[index + 2]));
+            for (index = 0; index < this._groundVerticesPositions.length; index += 3) {
+                this._groundPositions.push(new BABYLON.Vector3(this._groundVerticesPositions[index], this._groundVerticesPositions[index + 1], this._groundVerticesPositions[index + 2]));
             }
 
             this._groundFacesNormals = [];
@@ -212,7 +213,6 @@
         }
 
         // Elevate vertices
-        var stride = this._ground.getFloatVertexStrideSize();
         for (var selectedVertice in this._selectedVertices) {
             var position = this._groundPositions[selectedVertice];
             var distance = this._selectedVertices[selectedVertice];
@@ -229,23 +229,24 @@
             else if (position.y < this.heightMin)
                 position.y = this.heightMin;
 
-            this._groundVertices[selectedVertice * stride + 1] = position.y;
+            this._groundVerticesPositions[selectedVertice * 3 + 1] = position.y;
 
             this._updateSubdivisions(selectedVertice);
         }
 
         // Normals
-        this._reComputeNormals()
+        this._reComputeNormals();
 
         // Update vertex buffer
-        this._ground.updateVertices(this._groundVertices);
+        this._ground.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._groundVerticesPositions);
+        this._ground.updateVerticesData(BABYLON.VertexBuffer.NormalKind,this._groundVerticesNormals);        
     };
 
     WORLDMONGER.ElevationControl.prototype._reComputeNormals = function () {
         var faces = [];
         var face;
 
-        for (selectedVertice in this._selectedVertices) {
+        for (var selectedVertice in this._selectedVertices) {
             var faceOfVertices = this._facesOfVertices[selectedVertice];
             for (var index = 0; index < faceOfVertices.length; index++) {
                 faces[faceOfVertices[index]] = true;
@@ -264,7 +265,7 @@
         }
     };
 
-    WORLDMONGER.ElevationControl.prototype._computeNormal = function (vertexIndex) {
+    WORLDMONGER.ElevationControl.prototype._computeNormal = function(vertexIndex) {
         var faces = this._facesOfVertices[vertexIndex];
 
         var normal = BABYLON.Vector3.Zero();
@@ -274,12 +275,10 @@
 
         normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
 
-        var stride = this._ground.getFloatVertexStrideSize();
-
-        this._groundVertices[vertexIndex * stride + 3] = normal.x;
-        this._groundVertices[vertexIndex * stride + 4] = normal.y;
-        this._groundVertices[vertexIndex * stride + 5] = normal.z;
-    }
+        this._groundVerticesNormals[vertexIndex * 3] = normal.x;
+        this._groundVerticesNormals[vertexIndex * 3 + 1] = normal.y;
+        this._groundVerticesNormals[vertexIndex * 3 + 2] = normal.z;
+    };
 
     WORLDMONGER.ElevationControl.prototype._updateSubdivisions = function (vertexIndex) {
         for (var index = 0; index < this._subdivisionsOfVertices[vertexIndex].length; index++) {

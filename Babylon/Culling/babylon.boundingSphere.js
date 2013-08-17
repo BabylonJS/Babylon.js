@@ -1,12 +1,12 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.BoundingSphere = function (vertices, stride, start, count) {
+    BABYLON.BoundingSphere = function (positions, start, count) {
         var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        for (var index = start; index < start + count; index += stride) {
-            var current = new BABYLON.Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
+        for (var index = start; index < start + count; index++) {
+            var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
 
             minimum = BABYLON.Vector3.Minimize(current, minimum);
             maximum = BABYLON.Vector3.Maximize(current, maximum);

@@ -44,10 +44,6 @@
         // Cache
         this._loadedTexturesCache = [];
         this._activeTexturesCache = [];
-        this._buffersCache = {
-            vertexBuffer: null,
-            indexBuffer: null
-        };
         this._currentEffect = null;
         this._currentState = {
             culling: null
@@ -252,7 +248,6 @@
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
-        this._buffersCache.vertexBuffer = null;
         vbo.references = 1;
         return vbo;
     };
@@ -262,7 +257,6 @@
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
-        this._buffersCache.vertexBuffer = null;
         vbo.references = 1;
         return vbo;
     };
@@ -278,32 +272,42 @@
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
         this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this._gl.STATIC_DRAW);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, null);
-        this._buffersCache.indexBuffer = null;
         vbo.references = 1;
         vbo.is32Bits = is32Bits;
         return vbo;
     };
 
     BABYLON.Engine.prototype.bindBuffers = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
-        if (this._buffersCache.vertexBuffer != vertexBuffer) {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-            this._buffersCache.vertexBuffer = vertexBuffer;
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
-            var offset = 0;
-            for (var index = 0; index < vertexDeclaration.length; index++) {
-                var order = effect.getAttribute(index);
+        var offset = 0;
+        for (var index = 0; index < vertexDeclaration.length; index++) {
+            var order = effect.getAttribute(index);
 
-                if (order >= 0) {
-                    this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
-                }
-                offset += vertexDeclaration[index] * 4;
+            if (order >= 0) {
+                this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+            }
+            offset += vertexDeclaration[index] * 4;
+        }
+
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    };
+    
+    BABYLON.Engine.prototype.bindMultiBuffers = function (vertexBuffers, indexBuffer, effect) {
+        var attributes = effect.getAttributesNames();
+        
+        for (var index = 0; index < attributes.length; index++) {
+            var order = effect.getAttribute(index);
+
+            if (order >= 0) {
+                var vertexBuffer = vertexBuffers[attributes[index]];
+                var stride = vertexBuffer.getStrideSize();
+                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer._buffer);
+                this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
             }
         }
 
-        if (this._buffersCache.indexBuffer != indexBuffer) {
-            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            this._buffersCache.indexBuffer = indexBuffer;
-        }
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     };
 
     BABYLON.Engine.prototype._releaseBuffer = function (buffer) {
@@ -387,8 +391,6 @@
         if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
             return;
         }
-        this._buffersCache.vertexBuffer = null;
-
         // Use program
         this._gl.useProgram(effect.getProgram());
 
@@ -532,10 +534,6 @@
         this._currentEffect = null;
         this._currentState = {
             culling: null
-        };
-        this._buffersCache = {
-            vertexBuffer: null,
-            indexBuffer: null
         };
     };
 
