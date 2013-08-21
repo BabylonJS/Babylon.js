@@ -52,7 +52,13 @@
     };
 
     // Methods   
-    BABYLON.StandardMaterial.prototype.isReady = function (mesh) {
+    BABYLON.StandardMaterial.prototype.isReady = function (mesh) {        
+        if (!this.checkReadyOnEveryCall) {
+            if (this._renderId === this._scene.getRenderId()) {
+                return true;
+            }
+        }
+
         var engine = this._scene.getEngine();
         var defines = [];
 
@@ -213,6 +219,7 @@
             return false;
         }
 
+        this._renderId = this._scene.getRenderId();
         return true;
     };
 
@@ -235,7 +242,12 @@
     BABYLON.StandardMaterial.prototype.bind = function (world, mesh) {
         this._baseColor.copyFrom(this.diffuseColor);
 
-        // Values
+        // Matrices        
+        world.multiplyToRef(this._scene.getTransformMatrix(), this._worldViewProjectionMatrix);
+        this._effect.setMatrix("world", world);
+        this._effect.setMatrix("worldViewProjection", this._worldViewProjectionMatrix);
+
+        // Textures        
         if (this.diffuseTexture) {
             this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
@@ -291,11 +303,9 @@
             this._effect.setMatrix("bumpMatrix", this.bumpTexture._computeTextureMatrix());
         }
 
-        world.multiplyToRef(this._scene.getTransformMatrix(), this._worldViewProjectionMatrix);
+        // Colors
         this._scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-        this._effect.setMatrix("world", world);
-        this._effect.setMatrix("worldViewProjection", this._worldViewProjectionMatrix);
         this._effect.setVector3("vEyePosition", this._scene.activeCamera.position);
         this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
         this._effect.setColor4("vDiffuseColor", this._baseColor, this.alpha * mesh.visibility);
@@ -360,7 +370,7 @@
         if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
             this._effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
             this._effect.setColor3("vFogColor", this._scene.fogColor);
-        }
+        }        
     };
 
     BABYLON.StandardMaterial.prototype.getAnimatables = function () {

@@ -134,6 +134,10 @@
     BABYLON.Scene.prototype.getAnimationRatio = function () {
         return this._animationRatio;
     };
+    
+    BABYLON.Scene.prototype.getRenderId = function () {
+        return this._renderId;
+    };
 
     // Ready
     BABYLON.Scene.prototype.isReady = function () {
@@ -368,10 +372,9 @@
         this._totalVertices = 0;
         this._activeVertices = 0;
 
-        // meshes
+        // Meshes
         if (this._selectionOctree) { // Octree
             var selection = this._selectionOctree.select(this._frustumPlanes);
-            this._renderId++;
 
             for (var blockIndex = 0; blockIndex < selection.length; blockIndex++) {
                 var block = selection.data[blockIndex];
@@ -532,6 +535,7 @@
         this._animate();
 
         // Meshes
+        this._renderId++;
         var beforeEvaluateActiveMeshesDate = new Date();
         this._evaluateActiveMeshes();
         this._evaluateActiveMeshesDuration = new Date() - beforeEvaluateActiveMeshesDate;
@@ -550,7 +554,7 @@
         var beforeRenderTargetDate = new Date();
         for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
             var renderTarget = this._renderTargets.data[renderIndex];
-
+            this._renderId++;
             renderTarget.render();
         }
 

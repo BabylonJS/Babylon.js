@@ -10,6 +10,7 @@
     };
     
     // Members
+    BABYLON.Material.prototype.checkReadyOnEveryCall = true;
     BABYLON.Material.prototype.alpha = 1.0;
     BABYLON.Material.prototype.wireframe = false;
     BABYLON.Material.prototype.backFaceCulling = true;
@@ -18,7 +19,7 @@
     BABYLON.Material.prototype.onDispose = null;
     
     // Properties
-    BABYLON.Material.prototype.isReady = function () {
+    BABYLON.Material.prototype.isReady = function (mesh) {
         return true;
     };
 

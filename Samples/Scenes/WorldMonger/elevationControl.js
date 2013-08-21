@@ -119,8 +119,8 @@
         if (this._facesOfVertices == null) {
             this._facesOfVertices = [];
 
-            this._groundVerticesPositions = this._ground.getVerticesData(BABYLON.VertexBuffer.PositionKind).getData();
-            this._groundVerticesNormals = this._ground.getVerticesData(BABYLON.VertexBuffer.NormalKind).getData();
+            this._groundVerticesPositions = this._ground.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            this._groundVerticesNormals = this._ground.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             this._groundIndices = this._ground.getIndices();
 
             this._groundPositions = [];
