@@ -14,10 +14,10 @@
         this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
 
         this._keys = [];
-        this.keysUp = [38, 87];
+        this.keysUp = [38];
         this.keysDown = [40];
-        this.keysLeft = [37, 81];
-        this.keysRight = [39, 68];
+        this.keysLeft = [37];
+        this.keysRight = [39];
 
         if (!scene.activeCamera) {
             scene.activeCamera = this;
@@ -88,91 +88,93 @@
         var that = this;
         var engine = this._scene.getEngine();
 
-        this._onMouseDown = function (evt) {
-            previousPosition = {
-                x: evt.clientX,
-                y: evt.clientY
+        if (this._onMouseDown === undefined) {
+            this._onMouseDown = function (evt) {
+                previousPosition = {
+                    x: evt.clientX,
+                    y: evt.clientY
+                };
+
+                evt.preventDefault();
             };
 
-            evt.preventDefault();
-        };
-
-        this._onMouseUp = function (evt) {
-            previousPosition = null;
-            evt.preventDefault();
-        };
-
-        this._onMouseOut = function (evt) {
-            previousPosition = null;
-            that._keys = [];
-            evt.preventDefault();
-        };
-
-        this._onMouseMove = function (evt) {
-            if (!previousPosition && !engine.isPointerLock) {
-                return;
-            }
-
-            var offsetX;
-            var offsetY;
-
-            if (!engine.isPointerLock) {
-                offsetX = evt.clientX - previousPosition.x;
-                offsetY = evt.clientY - previousPosition.y;
-            } else {
-                offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-            }            
-
-            that.cameraRotation.y += offsetX / 2000.0;
-            that.cameraRotation.x += offsetY / 2000.0;
-
-            previousPosition = {
-                x: evt.clientX,
-                y: evt.clientY
+            this._onMouseUp = function (evt) {
+                previousPosition = null;
+                evt.preventDefault();
             };
-            evt.preventDefault();
-        };
 
-        this._onKeyDown = function (evt) {
-            if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
-                that.keysDown.indexOf(evt.keyCode) !== -1 ||
-                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                that.keysRight.indexOf(evt.keyCode) !== -1) {
-                var index = that._keys.indexOf(evt.keyCode);
-
-                if (index === -1) {
-                    that._keys.push(evt.keyCode);
-                }
+            this._onMouseOut = function (evt) {
+                previousPosition = null;
+                that._keys = [];
                 evt.preventDefault();
-            }
-        };
+            };
 
-        this._onKeyUp = function (evt) {
-            if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
-                that.keysDown.indexOf(evt.keyCode) !== -1 ||
-                that.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                that.keysRight.indexOf(evt.keyCode) !== -1) {
-                var index = that._keys.indexOf(evt.keyCode);
-
-                if (index >= 0) {
-                    that._keys.splice(index, 1);
+            this._onMouseMove = function (evt) {
+                if (!previousPosition && !engine.isPointerLock) {
+                    return;
                 }
+
+                var offsetX;
+                var offsetY;
+
+                if (!engine.isPointerLock) {
+                    offsetX = evt.clientX - previousPosition.x;
+                    offsetY = evt.clientY - previousPosition.y;
+                } else {
+                    offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                    offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                }
+
+                that.cameraRotation.y += offsetX / 2000.0;
+                that.cameraRotation.x += offsetY / 2000.0;
+
+                previousPosition = {
+                    x: evt.clientX,
+                    y: evt.clientY
+                };
                 evt.preventDefault();
-            }
-        };
+            };
 
-        this._onLostFocus = function () {
-            that._keys = [];
-        };
+            this._onKeyDown = function (evt) {
+                if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
+                    that.keysDown.indexOf(evt.keyCode) !== -1 ||
+                    that.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                    that.keysRight.indexOf(evt.keyCode) !== -1) {
+                    var index = that._keys.indexOf(evt.keyCode);
 
-        canvas.addEventListener("mousedown", this._onMouseDown, true);
-        canvas.addEventListener("mouseup", this._onMouseUp, true);
-        canvas.addEventListener("mouseout", this._onMouseOut, true);
-        canvas.addEventListener("mousemove", this._onMouseMove, true);
-        window.addEventListener("keydown", this._onKeyDown, true);
-        window.addEventListener("keyup", this._onKeyUp, true);
-        window.addEventListener("blur", this._onLostFocus, true);
+                    if (index === -1) {
+                        that._keys.push(evt.keyCode);
+                    }
+                    evt.preventDefault();
+                }
+            };
+
+            this._onKeyUp = function (evt) {
+                if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
+                    that.keysDown.indexOf(evt.keyCode) !== -1 ||
+                    that.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                    that.keysRight.indexOf(evt.keyCode) !== -1) {
+                    var index = that._keys.indexOf(evt.keyCode);
+
+                    if (index >= 0) {
+                        that._keys.splice(index, 1);
+                    }
+                    evt.preventDefault();
+                }
+            };
+
+            this._onLostFocus = function () {
+                that._keys = [];
+            };
+        }
+
+        canvas.addEventListener("mousedown", this._onMouseDown, false);
+        canvas.addEventListener("mouseup", this._onMouseUp, false);
+        canvas.addEventListener("mouseout", this._onMouseOut, false);
+        canvas.addEventListener("mousemove", this._onMouseMove, false);
+        window.addEventListener("keydown", this._onKeyDown, false);
+        window.addEventListener("keyup", this._onKeyUp, false);
+        window.addEventListener("blur", this._onLostFocus, false);
     };
 
     BABYLON.FreeCamera.prototype.detachControl = function (canvas) {

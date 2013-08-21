@@ -30,7 +30,7 @@
                 this._strideSize = 2;
                 break;
             case BABYLON.VertexBuffer.ColorKind:
-                this._strideSize = 4;
+                this._strideSize = 3;
                 break;
         }
     };

@@ -51,6 +51,8 @@
         var previousPosition;
         var that = this;
         var pointerId;
+
+        var engine = this._scene.getEngine();
         
         this._onPointerDown = function (evt) {
             
@@ -93,6 +95,20 @@
                 x: evt.clientX,
                 y: evt.clientY
             };
+
+            evt.preventDefault();
+        };
+        
+        this._onMouseMove = function (evt) {
+            if (!engine.isPointerLock) {
+                return;
+            }
+
+            var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+            var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+
+            that.inertialAlphaOffset -= offsetX / 1000;
+            that.inertialBetaOffset -= offsetY / 1000;
 
             evt.preventDefault();
         };
@@ -165,12 +181,13 @@
         canvas.addEventListener(eventPrefix + "up", this._onPointerUp);
         canvas.addEventListener(eventPrefix + "out", this._onPointerUp);
         canvas.addEventListener(eventPrefix + "move", this._onPointerMove);
+        canvas.addEventListener("mousemove", this._onMouseMove);
         canvas.addEventListener("MSPointerDown", this._onGestureStart);
-        canvas.addEventListener("MSGestureChange", this._onGesture, true);
-        window.addEventListener("keydown", this._onKeyDown, true);
-        window.addEventListener("keyup", this._onKeyUp, true);
+        canvas.addEventListener("MSGestureChange", this._onGesture);
+        window.addEventListener("keydown", this._onKeyDown);
+        window.addEventListener("keyup", this._onKeyUp);
         window.addEventListener('mousewheel', this._wheel);
-        window.addEventListener("blur", this._onLostFocus, true);
+        window.addEventListener("blur", this._onLostFocus);
     };
     
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
@@ -178,6 +195,7 @@
         canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
         canvas.removeEventListener(eventPrefix + "out", this._onPointerUp);
         canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
+        canvas.removeEventListener("mousemove", this._onMouseMove);
         canvas.removeEventListener("MSPointerDown", this._onGestureStart);
         canvas.removeEventListener("MSGestureChange", this._onGesture);
         window.removeEventListener("keydown", this._onKeyDown);

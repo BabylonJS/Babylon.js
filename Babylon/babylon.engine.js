@@ -267,17 +267,17 @@
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
     };
 
-    BABYLON.Engine.prototype.createIndexBuffer = function (indices, is32Bits) {
+    BABYLON.Engine.prototype.createIndexBuffer = function (indices) {
         var vbo = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
         this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this._gl.STATIC_DRAW);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, null);
         vbo.references = 1;
-        vbo.is32Bits = is32Bits;
         return vbo;
     };
 
     BABYLON.Engine.prototype.bindBuffers = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
+        this._cachedVertexBuffers = null;
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
         var offset = 0;
@@ -290,24 +290,34 @@
             offset += vertexDeclaration[index] * 4;
         }
 
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        if (this._cachedIndexBuffer !== indexBuffer) {
+            this._cachedIndexBuffer = indexBuffer;
+            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        }
     };
     
     BABYLON.Engine.prototype.bindMultiBuffers = function (vertexBuffers, indexBuffer, effect) {
-        var attributes = effect.getAttributesNames();
-        
-        for (var index = 0; index < attributes.length; index++) {
-            var order = effect.getAttribute(index);
+        if (this._cachedVertexBuffers !== vertexBuffers) {
+            this._cachedVertexBuffers = vertexBuffers;
+            
+            var attributes = effect.getAttributesNames();
 
-            if (order >= 0) {
-                var vertexBuffer = vertexBuffers[attributes[index]];
-                var stride = vertexBuffer.getStrideSize();
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer._buffer);
-                this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
+            for (var index = 0; index < attributes.length; index++) {
+                var order = effect.getAttribute(index);
+
+                if (order >= 0) {
+                    var vertexBuffer = vertexBuffers[attributes[index]];
+                    var stride = vertexBuffer.getStrideSize();
+                    this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer._buffer);
+                    this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
+                }
             }
         }
 
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        if (this._cachedIndexBuffer !== indexBuffer) {
+            this._cachedIndexBuffer = indexBuffer;
+            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        }
     };
 
     BABYLON.Engine.prototype._releaseBuffer = function (buffer) {
@@ -356,6 +366,11 @@
         this._gl.attachShader(shaderProgram, fragmentShader);
 
         this._gl.linkProgram(shaderProgram);
+
+        var error = this._gl.getProgramInfoLog(shaderProgram);
+        if (error) {
+            throw new Error(error);
+        }
         
         this._gl.deleteShader(vertexShader);
         this._gl.deleteShader(fragmentShader);
@@ -535,6 +550,9 @@
         this._currentState = {
             culling: null
         };
+        
+        this._cachedVertexBuffers = null;
+        this._cachedVertexBuffers = null;
     };
 
     var getExponantOfTwo = function (value, max) {

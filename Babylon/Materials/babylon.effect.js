@@ -109,15 +109,15 @@
         this._engine.setTexture(this._samplers.indexOf(channel), texture);
     };
 
-    BABYLON.Effect.prototype._cacheMatrix = function (uniformName, matrix) {
-        if (!this._valueCache[uniformName]) {
-            this._valueCache[uniformName] = new BABYLON.Matrix();
-        }
+    //BABYLON.Effect.prototype._cacheMatrix = function (uniformName, matrix) {
+    //    if (!this._valueCache[uniformName]) {
+    //        this._valueCache[uniformName] = new BABYLON.Matrix();
+    //    }
         
-        for (var index = 0; index < 16; index++) {
-            this._valueCache[uniformName].m[index] = matrix.m[index];
-        }
-    };
+    //    for (var index = 0; index < 16; index++) {
+    //        this._valueCache[uniformName].m[index] = matrix.m[index];
+    //    }
+    //};
     
     BABYLON.Effect.prototype._cacheFloat2 = function (uniformName, x, y) {
         if (!this._valueCache[uniformName]) {
@@ -164,10 +164,10 @@
     };
 
     BABYLON.Effect.prototype.setMatrix = function (uniformName, matrix) {
-        if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            return;
+        //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+        //    return;
 
-        this._cacheMatrix(uniformName, matrix);
+        //this._cacheMatrix(uniformName, matrix);
         this._engine.setMatrix(this.getUniform(uniformName), matrix);
     };
 

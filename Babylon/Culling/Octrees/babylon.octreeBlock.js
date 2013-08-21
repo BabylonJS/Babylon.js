@@ -1,12 +1,10 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.OctreeBlock = function (x, y, z, minPoint, maxPoint) {
+    BABYLON.OctreeBlock = function (minPoint, maxPoint, capacity) {
         this.subMeshes = [];
         this.meshes = [];
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this._capacity = capacity;
 
         this._minPoint = minPoint;
         this._maxPoint = maxPoint;
@@ -53,13 +51,22 @@
                 }
             }
         }
+        
+        if (this.subMeshes.length > this._capacity) {
+            BABYLON.Octree._CreateBlocks(this._minPoint, this._maxPoint, this.meshes, this._capacity, this);
+        }
     };
 
-    BABYLON.OctreeBlock.prototype.intersects = function(frustumPlanes) {
-        if (BABYLON.BoundingBox.IsInFrustrum(this._boundingVectors, frustumPlanes)) {
-            return true;
+    BABYLON.OctreeBlock.prototype.select = function (frustumPlanes, selection) {
+        if (this.blocks) {
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.select(frustumPlanes, selection);
+            }
+            return;
         }
-
-        return false;
+        if (BABYLON.BoundingBox.IsInFrustrum(this._boundingVectors, frustumPlanes)) {
+            selection.push(this);
+        }
     };
 })();

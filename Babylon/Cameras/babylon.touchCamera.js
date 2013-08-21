@@ -97,11 +97,11 @@
             that._offsetY = null;
         };
         
-        canvas.addEventListener("pointerdown", this._onPointerDown, true);
-        canvas.addEventListener("pointerup", this._onPointerUp, true);
-        canvas.addEventListener("pointerout", this._onPointerUp, true);
-        canvas.addEventListener("pointermove", this._onPointerMove, true);
-        window.addEventListener("blur", this._onLostFocus, true);
+        canvas.addEventListener("pointerdown", this._onPointerDown);
+        canvas.addEventListener("pointerup", this._onPointerUp);
+        canvas.addEventListener("pointerout", this._onPointerUp);
+        canvas.addEventListener("pointermove", this._onPointerMove);
+        window.addEventListener("blur", this._onLostFocus);
     };
 
     BABYLON.TouchCamera.prototype.detachControl = function (canvas) {

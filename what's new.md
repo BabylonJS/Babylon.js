@@ -1,6 +1,7 @@
 Changes list
 ============
-
+- 1.3.2:
+ - Fixing a bug with camera.detachControl
 - 1.3.0:
  - Selection octrees
  - Breaking changes: Meshes now use multi vertex buffers (one for each attribute) instead of a big one. This is for more flexibility. The .babylon file format has changed accordingly (no more .vertices property on meshes but .positions, .normals, .colors, .uvs, .uvs2)

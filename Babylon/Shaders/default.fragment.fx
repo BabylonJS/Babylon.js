@@ -260,7 +260,7 @@ float CalcFogFactor()
 		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
 	}
 
-	return min(1., max(0., fogCoeff));
+	return clamp(fogCoeff, 0.0, 1.0);
 }
 #endif
 
