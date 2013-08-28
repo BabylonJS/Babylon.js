@@ -11,7 +11,7 @@
             throw new Error("WebGL not supported");
         }
 
-        if (this._gl === undefined) {
+        if (this._gl === undefined || this._gl === null) {
             throw new Error("WebGL not supported");
         }
 
