@@ -61,7 +61,7 @@
     };
 
     BABYLON.BaseTexture.prototype.releaseInternalTexture = function() {
-        if (this._texture === undefined) {
+        if (this._texture === undefined || this._texture === null) {
             return;
         }
         var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
