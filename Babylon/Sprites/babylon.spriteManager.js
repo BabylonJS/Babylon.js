@@ -100,7 +100,7 @@
         var offset = 0;
         this._vertices.length = max * this._vertexStrideSize;
         for (var index = 0; index < max; index++) {
-			if (this.sprites[index] == undefined) { return; }
+			if (this.sprites[index] == undefined) { continue; }
             var sprite = this.sprites[index];
             sprite._animate(deltaTime);
             this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
