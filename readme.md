@@ -61,7 +61,6 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
  - Exporter for Blender
 
-
 ## License
 
 Microsoft Public License (Ms-PL)
