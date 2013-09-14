@@ -22,7 +22,9 @@
 
         var that = this;
         this.video.addEventListener("canplaythrough", function () {
-            that._texture.isReady = true;
+            if (that._texture) {
+                that._texture.isReady = true;
+            }
         });
 
         urls.forEach(function (url) {
