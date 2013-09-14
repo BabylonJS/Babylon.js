@@ -1,0 +1,54 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.Xbox 360.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file defines the steps in the standard build process specific for XNA Game Studio
+projects targeting the Xbox 360 platform.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- AvailablePlatforms is the list of platform targets available. -->
+  <PropertyGroup>
+    <AvailablePlatforms>Xbox 360</AvailablePlatforms>
+  </PropertyGroup>
+
+  <!--
+        These are used to have the AssemblySearchPaths include the following registry location
+        when resolving assemblies:
+              
+            HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\XNA\AssemblyFolders\$(XnaFrameworkVersion)\$(XnaPlatform)\AssemblyFoldersEx
+
+    -->
+  <PropertyGroup>
+    <FrameworkRegistryBase>SOFTWARE\Microsoft\XNA\AssemblyFolders</FrameworkRegistryBase>
+    <AssemblyFoldersSuffix>$(XnaPlatform)\AssemblyFoldersEx</AssemblyFoldersSuffix>
+  </PropertyGroup>
+
+  <!--
+    In MSBuild 3.5, the ResolveAssemblyReference takes a new, redundant input
+    parameter to define the TargetFrameworkDirectory. We want this path defined
+    only for Windows platforms, because it allows resolution against Windows-only
+    assemblies.
+  -->
+  <Target
+    Name="GetFrameworkPaths"
+    DependsOnTargets="$(GetFrameworkPathsDependsOn)"
+    >
+
+    <PropertyGroup>
+      <TargetFrameworkDirectory Condition=" '$(XnaPlatform)' == 'Xbox 360' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\XNA\Game Studio\v4.0@InstallPath)References\Xbox360\</TargetFrameworkDirectory>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="Microsoft.Xna.GameStudio.Common.targets" />
+  <Import Project="Microsoft.Xna.GameStudio.Content.targets" />
+
+</Project>

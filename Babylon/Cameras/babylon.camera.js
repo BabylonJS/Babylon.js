@@ -58,7 +58,7 @@
 
         var halfWidth = engine.getRenderWidth() / 2.0;
         var halfHeight = engine.getRenderHeight() / 2.0;
-        BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ);
+        BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
         return this._projectionMatrix;
     };
 })();

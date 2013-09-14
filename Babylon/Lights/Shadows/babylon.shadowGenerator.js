@@ -11,46 +11,43 @@
         this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
         this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-        
-        // Effect
-        this._effect = this._scene.getEngine().createEffect("shadowMap",
-                    ["position"],
-                    ["worldViewProjection"],
-                    [], "");
-        
-        this._effectVSM = this._scene.getEngine().createEffect("shadowMap",
-                    ["position"],
-                    ["worldViewProjection"],
-                    [], "#define VSM");
-        
+                
         // Custom render function
         var that = this;
 
-        var renderSubMesh = function (subMesh, effect) {
+        var renderSubMesh = function (subMesh) {
             var mesh = subMesh.getMesh();
             var world = mesh.getWorldMatrix();
+            var engine = that._scene.getEngine();
 
-            world.multiplyToRef(that.getTransformMatrix(), that._worldViewProjection);
-            
-            effect.setMatrix("worldViewProjection", that._worldViewProjection);
-            
-            // Bind and draw
-            mesh.bindAndDraw(subMesh, effect, false);
+            if (that.isReady(mesh)) {
+                engine.enableEffect(that._effect);
+                
+                // Bones
+                if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                    that._effect.setMatrix("world", world);
+                    that._effect.setMatrix("viewProjection", that.getTransformMatrix());
+
+                    that._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                } else {
+                    world.multiplyToRef(that.getTransformMatrix(), that._worldViewProjection);
+                    that._effect.setMatrix("worldViewProjection", that._worldViewProjection);
+                }
+
+                // Bind and draw
+                mesh.bindAndDraw(subMesh, that._effect, false);
+            }
         };
 
         this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, activeMeshes) {
-            var engine = that._scene.getEngine();
             var index;
-            var effect = that.useVarianceShadowMap ? that._effectVSM : that._effect;
-
-            engine.enableEffect(effect);
             
             for (index = 0; index < opaqueSubMeshes.length; index++) {
-                renderSubMesh(opaqueSubMeshes.data[index], effect);
+                renderSubMesh(opaqueSubMeshes.data[index]);
             }
             
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                renderSubMesh(alphaTestSubMeshes.data[index], effect);
+                renderSubMesh(alphaTestSubMeshes.data[index]);
             }
         };
         
@@ -65,8 +62,36 @@
     BABYLON.ShadowGenerator.prototype.useVarianceShadowMap = true;
     
     // Properties
-    BABYLON.ShadowGenerator.prototype.isReady = function () {
-        return this._effect.isReady() && this._effectVSM.isReady();
+    BABYLON.ShadowGenerator.prototype.isReady = function (mesh) {
+        var defines = [];
+        
+        if (this.useVarianceShadowMap) {
+            defines.push("#define VSM");
+        }
+        
+        if (BABYLON.Tools.isIE()) {
+            defines.push("#define IE");
+        }
+
+        var attribs = [BABYLON.VertexBuffer.PositionKind];
+        if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+            attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+            defines.push("#define BONES");
+            defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
+        }
+
+        // Get correct effect      
+        var join = defines.join("\n");
+        if (this._cachedDefines != join) {
+            this._cachedDefines = join;
+            this._effect = this._scene.getEngine().createEffect("shadowMap",
+                attribs,
+                ["world", "mBones", "viewProjection", "worldViewProjection"],
+                [], join);
+        }
+
+        return this._effect.isReady();
     };
     
     BABYLON.ShadowGenerator.prototype.getShadowMap = function () {

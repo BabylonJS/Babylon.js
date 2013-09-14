@@ -20,7 +20,7 @@
     BABYLON.Sprite.prototype.cellIndex = 0;
     BABYLON.Sprite.prototype.invertU = 0;
     BABYLON.Sprite.prototype.invertV = 0;
-	BABYLON.Sprite.prototype.disposeWhenFinishedAnimating = false;
+    BABYLON.Sprite.prototype.disposeWhenFinishedAnimating = false;
 
     BABYLON.Sprite.prototype._animationStarted = false;
     BABYLON.Sprite.prototype._loopAnimation = false;
@@ -43,7 +43,7 @@
         this._time = 0;
     };
 
-    BABYLON.Sprite.prototype.stopAnimation = function() {
+    BABYLON.Sprite.prototype.stopAnimation = function () {
         this._animationStarted = false;
     };
 
@@ -60,19 +60,20 @@
                     this.cellIndex = this._fromIndex;
                 } else {
                     this._animationStarted = false;
-					if (this.disposeWhenFinishedAnimating) {
-						this.dispose();
-					}
+                    if (this.disposeWhenFinishedAnimating) {
+                        this.dispose();
+                    }
                 }
             }
         }
-    }
+    };
 
-	BABYLON.Sprite.prototype.dispose = function() {
-		for (var i = 0; i < this._manager.sprites.length; i++) {
-			if (this._manager.sprites[i] == this) {
-				this._manager.sprites.splice(i, 1);
-			}
-		}
-	}
+    BABYLON.Sprite.prototype.dispose = function () {
+        for (var i = 0; i < this._manager.sprites.length; i++) {
+            if (this._manager.sprites[i] == this) {
+                this._manager.sprites.splice(i, 1);
+            }
+        }
+    };
+
 })();

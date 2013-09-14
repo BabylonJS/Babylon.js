@@ -1,0 +1,42 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file imports the version- and platform-specific targets for the project importing
+this file. This file also defines targets to produce an error if the specified targets
+file does not exist, but the project is built anyway (command-line or IDE build).
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_XnaVersionSpecificImportPath>$(XnaFrameworkVersion)\</_XnaVersionSpecificImportPath>
+    <_XnaPlatformSpecificTargetsFile>Microsoft.Xna.GameStudio.$(XnaPlatform).targets</_XnaPlatformSpecificTargetsFile>
+    <_XnaPlatformSpecificTargetsPath>$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(_XnaVersionSpecificImportPath)$(_XnaPlatformSpecificTargetsFile)</_XnaPlatformSpecificTargetsPath>
+  </PropertyGroup>
+
+  <!--
+    If the appropriate targets file exists, it will be imported and will override
+    this target definition. If it does not exist, then this target will produce an
+    error for the user if the user attempts to build.
+  -->
+  <PropertyGroup>
+    <PrepareForBuildDependsOn Condition="!Exists('$(_XnaPlatformSpecificTargetsPath)')">UnsupportedXnaProject;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Target Name="UnsupportedXnaProject">
+    <Error Text="Your installation of XNA Game Studio does not support this project (XNA Platform = '$(XnaPlatform)', XNA Framework Version = '$(XnaFrameworkVersion)')." />
+  </Target>
+
+  <!--
+    Import the appropriate targets file, if it exists.
+  -->
+  <Import Condition="Exists('$(_XnaPlatformSpecificTargetsPath)')" Project="$(_XnaPlatformSpecificTargetsPath)" />
+
+</Project>

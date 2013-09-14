@@ -18,19 +18,19 @@
         this.video.height = textureSize.height;
         this.video.autoplay = true;
         this.video.loop = true;
-        
+        this.video.preload = true;
+
         var that = this;
         this.video.addEventListener("canplaythrough", function () {
             that._texture.isReady = true;
         });
 
-        this.video.preload = true;
         urls.forEach(function (url) {
             var source = document.createElement("source");
             source.src = url;
             that.video.appendChild(source);
         });
-       
+
         this._lastUpdate = new Date();
     };
 

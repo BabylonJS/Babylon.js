@@ -9,6 +9,7 @@
     }
 
     // Babylon
+    BABYLON.Engine.ShadersRepository = "/Babylon/Shaders/";
     var engine = new BABYLON.Engine(canvas, true);
     var scene = new BABYLON.Scene(engine);
     var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);

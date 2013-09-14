@@ -10,6 +10,8 @@
         this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
 
+        this._generateMipMaps = generateMipMaps;
+
         this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
         var textureSize = this.getSize();
 
@@ -47,5 +49,20 @@
         this._context.fillText(text, x, y);
 
         this.update(invertY);
+    };
+    
+    BABYLON.DynamicTexture.prototype.clone = function () {
+        var textureSize = this.getSize();
+        var newTexture = new BABYLON.DynamicTexture(this.name, textureSize.width, this._scene, this._generateMipMaps);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // Dynamic Texture
+        newTexture.wrapU = this.wrapU;
+        newTexture.wrapV = this.wrapV;
+
+        return newTexture;
     };
 })();

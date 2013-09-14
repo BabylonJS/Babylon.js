@@ -163,6 +163,10 @@
         this._valueCache[uniformName][2] = vector.z;
     };
 
+    BABYLON.Effect.prototype.setMatrices = function (uniformName, matrices) {
+        this._engine.setMatrices(this.getUniform(uniformName), matrices);
+    };
+
     BABYLON.Effect.prototype.setMatrix = function (uniformName, matrix) {
         //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
         //    return;

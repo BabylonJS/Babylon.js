@@ -6,6 +6,8 @@
         this._scene.textures.push(this);
 
         this.name = url;
+        this._noMipmap = noMipmap;
+        this._invertY = invertY;
 
         this._texture = this._getFromCache(url, noMipmap);
 
@@ -153,5 +155,28 @@
                 break;
         }
         return this._cachedTextureMatrix;
+    };
+
+    BABYLON.Texture.prototype.clone = function() {
+        var newTexture = new BABYLON.Texture(this._texture.url, this._scene, this._noMipmap, this._invertY);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // Texture
+        newTexture.uOffset = this.uOffset;
+        newTexture.vOffset = this.vOffset;
+        newTexture.uScale = this.uScale;
+        newTexture.vScale = this.vScale;
+        newTexture.uAng = this.uAng;
+        newTexture.vAng = this.vAng;
+        newTexture.wAng = this.wAng;
+        newTexture.wrapU = this.wrapU;
+        newTexture.wrapV = this.wrapV;
+        newTexture.coordinatesIndex = this.coordinatesIndex;
+        newTexture.coordinatesMode = this.coordinatesMode;
+
+        return newTexture;
     };
 })();

@@ -22,7 +22,7 @@
 
     BABYLON.CubeTexture.prototype = Object.create(BABYLON.BaseTexture.prototype);
 
-    BABYLON.CubeTexture.prototype._computeReflectionTextureMatrix = function () {
+    BABYLON.CubeTexture.prototype._computeReflectionTextureMatrix = function() {
         return this._textureMatrix;
-    }
+    };
 })();

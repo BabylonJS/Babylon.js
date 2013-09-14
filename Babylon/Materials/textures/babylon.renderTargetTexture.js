@@ -15,7 +15,7 @@
 
     BABYLON.RenderTargetTexture.prototype = Object.create(BABYLON.Texture.prototype);
 
-    // Members    
+    // Members        
     BABYLON.RenderTargetTexture.prototype.isRenderTarget = true;
     BABYLON.RenderTargetTexture.prototype.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
 
@@ -102,6 +102,21 @@
         if (this.onAfterRender) {
             this.onAfterRender();
         }
+    };
+    
+    BABYLON.RenderTargetTexture.prototype.clone = function () {
+        var textureSize = this.getSize();
+        var newTexture = new BABYLON.DynamicTexture(this.name, textureSize.width, this._scene, this._generateMipMaps);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // RenderTarget Texture
+        newTexture.coordinatesMode = this.coordinatesMode;
+        newTexture.renderList = this.renderList.slice(0);
+
+        return newTexture;
     };
 
 })();

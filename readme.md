@@ -15,6 +15,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Sub-meshes clipping
  - Hardware scaling
  - Selection octrees
+ - Offline mode (Assets are saved locally to prevent reloading them)
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture
@@ -29,6 +30,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Custom materials
  - Skybox
  - Vertex color
+ - Bones (Animations and shadows are supported)
 -  Special FX
  - Fog
  - Alpha blending

@@ -17,6 +17,13 @@
         }
     };
 
+    BABYLON.Tools.SmartArray.prototype.pushNoDuplicate = function(value) {
+        if (this.indexOf(value) > -1) {
+            return;
+        }
+        this.push(value);
+    };
+
     BABYLON.Tools.SmartArray.prototype.reset = function() {
         this.length = 0;
     };
@@ -118,28 +125,75 @@
 
     // External files
     BABYLON.Tools.BaseUrl = "";
-    
-    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack) {
-        var request = new XMLHttpRequest();
-        var loadUrl = BABYLON.Tools.BaseUrl + url;
-        request.open('GET', loadUrl, true);
 
-        request.onprogress = progressCallBack;
+    BABYLON.Tools.LoadImage = function (url, onload, onerror) {  
+        var img = new Image();
 
-        request.onreadystatechange = function () {
-            if (request.readyState == 4) {
-                if (request.status == 200) {
-                    callback(request.responseText);
-                } else { // Failed
-                    throw new Error(request.status, "Unable to load " + loadUrl);
-                }
-            }
+        img.onload = function () {
+            onload(img);
         };
 
-        request.send(null);
+        img.onerror = function (err) {
+            onerror(img, err);
+        };
+
+        var noIndexedDB = function () {
+            img.src = url;
+        };
+
+        var loadFromIndexedDB = function () {
+            BABYLON.Database.LoadImageFromDB(url, img);
+        };
+
+        if (BABYLON.Database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
+            BABYLON.Database.OpenAsync(loadFromIndexedDB, noIndexedDB);
+        }
+        else {
+            noIndexedDB();
+        }
+
+        return img;
+    };
+
+    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack) {
+        var noIndexedDB = function () {
+            var request = new XMLHttpRequest();
+            var loadUrl = BABYLON.Tools.BaseUrl + url;
+            request.open('GET', loadUrl, true);
+
+            request.onprogress = progressCallBack;
+
+            request.onreadystatechange = function () {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        callback(request.responseText);
+                    } else { // Failed
+                        throw new Error(request.status, "Unable to load " + loadUrl);
+                    }
+                }
+            };
+
+            request.send(null);
+        };
+
+        var loadFromIndexedDB = function () {
+            BABYLON.Database.LoadSceneFromDB(callback, progressCallBack);
+        };
+
+        // Caching only scenes files
+        if (url.indexOf(".babylon") !== -1 && (BABYLON.Database.enableSceneOffline)) {
+            BABYLON.Database.OpenAsync(loadFromIndexedDB, noIndexedDB);
+        }
+        else {
+            noIndexedDB();
+        }
     };
 
     // Misc.    
+    BABYLON.Tools.isIE = function () {
+        return window.ActiveXObject !== undefined;
+    };
+    
     BABYLON.Tools.WithinEpsilon = function (a, b) {
         var num = a - b;
         return -1.401298E-45 <= num && num <= 1.401298E-45;

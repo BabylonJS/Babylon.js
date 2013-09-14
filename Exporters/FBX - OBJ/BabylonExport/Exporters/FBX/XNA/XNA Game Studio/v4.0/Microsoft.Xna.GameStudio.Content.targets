@@ -1,0 +1,343 @@
+<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.Content.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file defines the steps in the standard build process specific for handling nested
+XNA Game Content projects. For example, it contains the step that builds the nested content
+and copies the built content to the output directory. The remainder of the build process is
+defined in Microsoft.Common.targets, which should be imported before importing this file.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Have our package build run after the user builds the project. -->
+  <PropertyGroup>
+    <CoreBuildDependsOn>
+      BuildContentProjects;
+      $(CoreBuildDependsOn)
+    </CoreBuildDependsOn>
+
+    <CoreCleanDependsOn>
+      CleanContentProjects;
+      $(CoreCleanDependsOn)
+    </CoreCleanDependsOn>
+  </PropertyGroup>
+
+  <!-- Specifies the platform and profile for which content will be built,
+       in case they are not the same as the code project. -->
+  <PropertyGroup>
+    <XnaContentPlatform Condition="'$(XnaContentPlatform)' == ''" >$(XnaPlatform)</XnaContentPlatform>
+    <XnaContentProfile Condition="'$(XnaContentProfile)' == ''" >$(XnaProfile)</XnaContentProfile>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+                                        _GetContentReferences
+
+    Creates ContentReference items for ProjectReference items which
+    are content project references. Also splits referenced projects
+    into two lists: those that exist on disk and those that don't.
+    ============================================================
+    -->
+  <Target
+    Name="_GetContentReferences">
+
+    <ItemGroup>
+      <ContentReference Include="@(ProjectReference)" Condition="'%(ProjectReference.XnaReferenceType)' == 'Content'" />
+      <!-- Break the project list into two lists: those that exist on disk and those that don't. -->
+      <_MSBuildContentProjectExistent Include="@(ContentReference)" Condition="Exists('%(Identity)')" />
+      <_MSBuildContentProjectReferenceNonexistent Include="@(ContentReference)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>   
+  </Target>
+
+  <!--
+    ============================================================
+                                BeforeAssignProjectConfiguration
+    
+    Removes content project references from the ProjectReference
+    item group. This is to opt out of the assembly resolution
+    and project reference configuration processes because content
+    projects do not produce DLLs.
+    ============================================================
+    -->
+  <PropertyGroup>
+    <BeforeAssignProjectConfigurationDependsOn>
+      _GetContentReferences
+    </BeforeAssignProjectConfigurationDependsOn>
+  </PropertyGroup>
+  
+  <Target
+    Name="BeforeAssignProjectConfiguration"
+    DependsOnTargets="$(BeforeAssignProjectConfigurationDependsOn)"
+    BeforeTargets="AssignProjectConfiguration">
+    
+    <ItemGroup>
+      <ProjectReference Remove="@(ContentReference)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                        SetParentOutputDir
+    ============================================================
+    -->  
+  <Target
+    Name="SetParentOutputDir">
+    
+    <CreateProperty Value="$(TargetDir)">
+      <Output TaskParameter="Value" PropertyName="ParentOutputDir"/>
+    </CreateProperty>
+    <CreateProperty Value="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)">
+      <Output TaskParameter="Value" PropertyName="ParentIntermediateDir"/>
+    </CreateProperty>
+  </Target>
+  
+  <!--
+    ============================================================
+                                        BuildContentProjects
+
+    Builds nested content projects to match the current platform
+    and configuration. Projects can skip this target by setting
+    SkipNestedContentBuild to true.
+    ============================================================
+    -->
+  <PropertyGroup>
+    <BuildContentProjectsDependsOn>
+      PrepareForBuild;
+      _GetContentReferences;
+      SetParentOutputDir
+    </BuildContentProjectsDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="BuildContentProjects"
+    DependsOnTargets="$(BuildContentProjectsDependsOn)"
+    Condition="'$(SkipNestedContentBuild)'!='true'" >
+
+    <!--
+        Always build nested content projects, because the IDE and/or solution does not build them.
+        
+        The $(ContentProjectBuildTargets) will normally be blank so that the project's
+        default target is used during a P2P reference. However if a custom build process requires
+        that the referenced project has a different target to build it can be specified.
+        -->
+
+    <MSBuild
+      Projects="@(_MSBuildContentProjectExistent)"
+      BuildInParallel="true"
+      Targets="$(ContentProjectBuildTargets)"
+      Properties="Configuration=$(Configuration); Platform=$(Platform); XnaPlatform=$(XnaContentPlatform); XnaProfile=$(XnaContentProfile); ParentOutputDir=$(ParentOutputDir); ParentIntermediateDir=$(ParentIntermediateDir); ParentProjectDir=$(ProjectDir); XnaCompressContent=$(XnaCompressContent)"
+      Condition="'@(_MSBuildContentProjectExistent)'!=''">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_BuiltNestedContentFiles"/>
+
+    </MSBuild>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        CleanContentProjects
+
+    Cleans nested content projects matching the current platform
+    and configuration.
+    ============================================================
+    -->
+  <PropertyGroup>
+    <CleanContentProjectsDependsOn>
+      _GetContentReferences;
+      SetParentOutputDir
+    </CleanContentProjectsDependsOn>
+  </PropertyGroup>
+  
+  <Target
+    Name="CleanContentProjects"
+    DependsOnTargets="$(CleanContentProjectsDependsOn)">
+
+    <MSBuild
+      Projects="@(_MSBuildContentProjectExistent)"
+      Targets="Clean"
+      Properties="Configuration=$(Configuration); Platform=$(Platform); XnaPlatform=$(XnaContentPlatform); XnaProfile=$(XnaContentProfile); ParentOutputDir=$(ParentOutputDir); ParentIntermediateDir=$(ParentIntermediateDir)"
+      Condition="'@(_MSBuildContentProjectExistent)'!=''" />
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        GetCopyToOutputDirectoryContentProjectItems
+
+    Creates an item group of all the most-recently-built outputs
+    from the nested projects. This target is meant to be chained
+    by GetCopyToOutputDirectoryItems, so that content can be added
+    to the list of files to copy from projects referencing this
+    one.
+    
+    Also hooking into MSBuild's preexisting GetCopyToOutputDirectoryItemDependsOn
+    (which now exists as a property in MSBuild3.5, where it didn't in MSBuild 2.0)
+    ============================================================
+    -->
+
+  <PropertyGroup>
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      $(GetCopyToOutputDirectoryItemsDependsOn);
+      GetCopyToOutputDirectoryContentProjectItems
+    </GetCopyToOutputDirectoryItemsDependsOn>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <GetCopyToOutputDirectoryContentProjectItemsDependsOn>
+      _GetContentReferences;
+      SetParentOutputDir
+    </GetCopyToOutputDirectoryContentProjectItemsDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="GetCopyToOutputDirectoryContentProjectItems"
+    DependsOnTargets="$(GetCopyToOutputDirectoryContentProjectItemsDependsOn)">
+
+    <!-- Get items from child projects first. -->
+    <MSBuild
+      Projects="@(_MSBuildContentProjectExistent)"
+      Targets="GetCopyToOutputDirectoryItems"
+      Properties="Configuration=$(Configuration); Platform=$(Platform); XnaPlatform=$(XnaContentPlatform); XnaProfile=$(XnaContentProfile); ParentOutputDir=$(ParentOutputDir); ParentIntermediateDir=$(ParentIntermediateDir)"
+      Condition="'@(_MSBuildContentProjectExistent)'!=''">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_AllNestedContentProjectItemsWithTargetPath"/>
+
+    </MSBuild>
+
+    <!-- Target outputs must be full paths because they will be consumed by a different project. -->
+    <CreateItem
+      Include="@(_AllNestedContentProjectItemsWithTargetPath->'%(FullPath)')"
+      Condition="'%(_AllNestedContentProjectItemsWithTargetPath.CopyToOutputDirectory)'=='Always' or '%(_AllNestedContentProjectItemsWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"
+                >
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_NestedContentItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(_AllNestedContentProjectItemsWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_NestedContentItemsToCopyToOutputDirectory"
+              Condition="'%(_AllNestedContentProjectItemsWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+  </Target>
+
+  <!--
+  ============================================================
+                                      _CopySourceItemsToOutputDirectory
+  ============================================================
+  -->
+  <Target
+      Name="_CopySourceItemsToOutputDirectory"
+      DependsOnTargets="
+            GetCopyToOutputDirectoryItems;
+            _CopyOutOfDateSourceItemsToOutputDirectory;
+            _CopyOutOfDateSourceItemsToOutputDirectoryAlways;
+            GetCopyToOutputDirectoryContentProjectItems;
+            _CopyOutOfDateNestedContentItemsToOutputDirectory;
+            _CopyOutOfDateNestedContentItemsToOutputDirectoryAlways;"/>
+
+  
+
+
+  
+  <!--
+  ============================================================
+                                      _CopyOutOfDateNestedContentItemsToOutputDirectory
+
+  Copy files that have the CopyToOutputDirectory attribute set to 'PreserveNewest'.
+  ============================================================
+  -->
+  <Target
+      Name="_CopyOutOfDateNestedContentItemsToOutputDirectory"
+      Condition=" '@(_NestedContentItemsToCopyToOutputDirectory)' != '' "
+      Inputs="@(_NestedContentItemsToCopyToOutputDirectory)"
+      Outputs="@(_NestedContentItemsToCopyToOutputDirectory->'$(OutDir)%(TargetPath)')">
+
+    <!--
+    Not using SkipUnchangedFiles="true" because the application may want to change
+    one of these files and not have an incremental build replace it.
+    -->
+    <Copy
+        SourceFiles = "@(_NestedContentItemsToCopyToOutputDirectory)"
+        DestinationFiles = "@(_NestedContentItemsToCopyToOutputDirectory->'$(OutDir)%(TargetPath)')">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <!--
+  ============================================================
+                                      _CopyOutOfDateNestedContentItemsToOutputDirectoryAlways
+
+  Copy files that have the CopyToOutputDirectory attribute set to 'Always'.
+  ============================================================
+  -->
+  <Target
+      Name="_CopyOutOfDateNestedContentItemsToOutputDirectoryAlways"
+      Condition=" '@(_NestedContentItemsToCopyToOutputDirectoryAlways)' != '' ">
+
+    <!--
+    Not using SkipUnchangedFiles="true" because the application may want to change
+    one of these files and not have an incremental build replace it.
+    -->
+    <Copy
+        SourceFiles = "@(_NestedContentItemsToCopyToOutputDirectoryAlways)"
+        DestinationFiles = "@(_NestedContentItemsToCopyToOutputDirectoryAlways->'$(OutDir)%(TargetPath)')">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+
+  <!--
+    ============================================================
+                                        XNAReadContentCacheFile
+
+    Reads all cache files that we output to the intermediate path during the 
+    content build process.  Cache files contain the Content files target path 
+    information, which we use to populate the manifest ItemGroup 
+    _DeploymentManifestFiles
+    ============================================================
+    -->
+
+  <PropertyGroup>
+    <GenerateManifestsDependsOn>
+      _GetContentReferences;
+      _CopySourceItemsToOutputDirectory;
+      XNAReadContentCacheFile;
+      $(GenerateManifestsDependsOn)
+    </GenerateManifestsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="XNAReadContentCacheFile">    
+    <XmlPeek XmlInputPath="%(ContentReference.Identity)" 
+             Namespaces="&lt;Namespace Prefix='msbuild' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
+             Query="/msbuild:Project/msbuild:PropertyGroup/msbuild:ProjectGuid/text()">
+      <Output TaskParameter="Result" ItemName="ContentProjectGuid" />
+    </XmlPeek>
+    <CreateItem Include="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)cachefile-%(ContentProjectGuid.Identity)-targetpath.txt">
+      <Output ItemName="XNAAllCacheFiles" TaskParameter="Include"/>
+    </CreateItem>
+    
+    <ReadLinesFromFile File="%(XNAAllCacheFiles.Identity)" 
+                       Condition="'@(XNAAllCacheFiles)' != ''">
+      <Output TaskParameter="Lines" ItemName="_FromBuiltContentTargetPath"/>
+    </ReadLinesFromFile>
+
+    <CreateItem Include="$(OutputPath)%(_FromBuiltContentTargetPath.Identity)" 
+                AdditionalMetadata="TargetPath=%(_FromBuiltContentTargetPath.Identity);IsDataFile=false"
+                Condition="'@(_FromBuiltContentTargetPath)' != ''">
+      <Output ItemName="_DeploymentManifestFiles" TaskParameter="Include" />
+    </CreateItem>
+  </Target>
+</Project>

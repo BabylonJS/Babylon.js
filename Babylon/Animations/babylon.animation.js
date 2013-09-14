@@ -34,7 +34,7 @@
         if (loopMode === BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
             return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
         }
-
+        
         for (var key = 0; key < this._keys.length; key++) {
             if (this._keys[key + 1].frame >= currentFrame) {
                 var startValue = this._keys[key].value;
@@ -65,7 +65,7 @@
                                 break;
                         }
 
-                        return quaternion.toEulerAngles();
+                        return quaternion;
                     // Vector3
                     case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
                         switch (loopMode) {
@@ -74,6 +74,14 @@
                                 return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
                             case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return BABYLON.Vector3.Lerp(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                        }
+                    // Matrix
+                    case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
+                        switch (loopMode) {
+                            case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
+                            case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
+                            case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                return startValue;
                         }
                     default:
                         break;
@@ -163,6 +171,11 @@
         } else {
             target[this.targetPropertyPath[0]] = currentValue;
         }
+        
+        if (target.markAsDirty) {
+            target.markAsDirty();
+        }
+
         return true;
     };
 
@@ -170,6 +183,7 @@
     BABYLON.Animation.ANIMATIONTYPE_FLOAT = 0;
     BABYLON.Animation.ANIMATIONTYPE_VECTOR3 = 1;
     BABYLON.Animation.ANIMATIONTYPE_QUATERNION = 2;
+    BABYLON.Animation.ANIMATIONTYPE_MATRIX = 3;
 
     BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE = 0;
     BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE = 1;

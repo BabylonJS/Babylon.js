@@ -50,7 +50,7 @@
 
         texture.wrapU = parsedTexture.wrapU;
         texture.wrapV = parsedTexture.wrapV;
-        
+
         // Animations
         if (parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
@@ -61,6 +61,27 @@
         }
 
         return texture;
+    };
+
+    var parseSkeleton = function (parsedSkeleton, scene) {
+        var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+
+        for (var index = 0; index < parsedSkeleton.bones.length; index++) {
+            var parsedBone = parsedSkeleton.bones[index];
+
+            var parentBone = null;
+            if (parsedBone.parentBoneIndex > -1) {
+                parentBone = skeleton.bones[parsedBone.parentBoneIndex];
+            }
+
+            var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+
+            if (parsedBone.animation) {
+                bone.animations.push(parseAnimation(parsedBone.animation));
+            }
+        }
+
+        return skeleton;
     };
 
     var parseMaterial = function (parsedMaterial, scene, rootUrl) {
@@ -93,15 +114,15 @@
         if (parsedMaterial.reflectionTexture) {
             material.reflectionTexture = loadTexture(rootUrl, parsedMaterial.reflectionTexture, scene);
         }
-        
+
         if (parsedMaterial.emissiveTexture) {
             material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
         }
-        
+
         if (parsedMaterial.specularTexture) {
             material.specularTexture = loadTexture(rootUrl, parsedMaterial.specularTexture, scene);
         }
-        
+
         if (parsedMaterial.bumpTexture) {
             material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
         }
@@ -137,7 +158,7 @@
 
         return multiMaterial;
     };
-    
+
     var parseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
         var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
 
@@ -169,7 +190,7 @@
 
         return particleSystem;
     };
-    
+
     var parseShadowGenerator = function (parsedShadowGenerator, scene) {
         var light = scene.getLightByID(parsedShadowGenerator.lightId);
         var shadowGenerator = new BABYLON.ShadowGenerator(parsedShadowGenerator.mapSize, light);
@@ -202,6 +223,9 @@
                 case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
                     data = BABYLON.Quaternion.FromArray(key.values);
                     break;
+                case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
+                    data = BABYLON.Matrix.FromArray(key.values);
+                    break;
                 case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
                 default:
                     data = BABYLON.Vector3.FromArray(key.values);
@@ -219,7 +243,7 @@
         return animation;
     };
 
-    var parseLight = function(parsedLight, scene) {
+    var parseLight = function (parsedLight, scene) {
         var light;
 
         switch (parsedLight.type) {
@@ -255,6 +279,10 @@
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
         mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
         mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
+        
+        if (parsedMesh.localMatrix) {
+            mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.localMatrix));
+        }
 
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
@@ -272,29 +300,56 @@
         if (parsedMesh.positions && parsedMesh.normals && parsedMesh.indices) {
             mesh.setVerticesData(parsedMesh.positions, BABYLON.VertexBuffer.PositionKind, false);
             mesh.setVerticesData(parsedMesh.normals, BABYLON.VertexBuffer.NormalKind, false);
-            
+
             if (parsedMesh.uvs) {
                 mesh.setVerticesData(parsedMesh.uvs, BABYLON.VertexBuffer.UVKind, false);
             }
-            
+
             if (parsedMesh.uvs2) {
                 mesh.setVerticesData(parsedMesh.uvs2, BABYLON.VertexBuffer.UV2Kind, false);
             }
-            
+
             if (parsedMesh.colors) {
                 mesh.setVerticesData(parsedMesh.colors, BABYLON.VertexBuffer.ColorKind, false);
+            }
+
+            if (parsedMesh.matricesIndices) {
+                var floatIndices = [];
+
+                for (var i = 0; i < parsedMesh.matricesIndices.length; i++) {
+                    var matricesIndex = parsedMesh.matricesIndices[i];
+
+                    floatIndices.push(matricesIndex & 0x000000FF);
+                    floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
+                    floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
+                    floatIndices.push(matricesIndex >> 24);
+                }
+
+                mesh.setVerticesData(floatIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
+            }
+
+            if (parsedMesh.matricesWeights) {
+                mesh.setVerticesData(parsedMesh.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, false);
             }
 
             mesh.setIndices(parsedMesh.indices);
         }
 
+        // Parent
         if (parsedMesh.parentId) {
             mesh.parent = scene.getLastMeshByID(parsedMesh.parentId);
         }
+
+        // Material
         if (parsedMesh.materialId) {
             mesh.setMaterialByID(parsedMesh.materialId);
         } else {
             mesh.material = null;
+        }
+
+        // Skeleton
+        if (parsedMesh.skeletonId > -1) {
+            mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
         }
 
         // SubMeshes
@@ -306,7 +361,7 @@
                 var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
             }
         }
-        
+
         // Animations
         if (parsedMesh.animations) {
             for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
@@ -315,7 +370,7 @@
                 mesh.animations.push(parseAnimation(parsedAnimation));
             }
         }
-        
+
         if (parsedMesh.autoAnimate) {
             scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
         }
@@ -328,7 +383,7 @@
             hierarchyIds.push(mesh.id);
             return true;
         }
-        
+
         if (mesh.parentId && hierarchyIds.indexOf(mesh.parentId) !== -1) {
             hierarchyIds.push(mesh.id);
             return true;
@@ -339,31 +394,38 @@
 
     BABYLON.SceneLoader = {
         ImportMesh: function (meshName, rootUrl, sceneFilename, scene, then, progressCallBack) {
+            // Checking if a manifest file has been set for this scene and if offline mode has been requested
+            BABYLON.Database.CheckManifestFile(rootUrl, sceneFilename);
+
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
 
                 // Meshes
                 var meshes = [];
                 var particleSystems = [];
-                var hierarchyIds = [];                
+                var skeletons = [];
+                var loadedSkeletonsIds = [];
+                var loadedMaterialsIds = [];
+                var hierarchyIds = [];
                 for (var index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
 
                     if (!meshName || isDescendantOf(parsedMesh, meshName, hierarchyIds)) {
                         // Material ?
                         if (parsedMesh.materialId) {
-                            var materialFound = (scene.getMaterialByID(parsedMesh.materialId) !== null);
-                            
+                            var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
+
                             if (!materialFound) {
                                 for (var multimatIndex = 0; multimatIndex < parsedData.multiMaterials.length; multimatIndex++) {
                                     var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
                                     if (parsedMultiMaterial.id == parsedMesh.materialId) {
                                         for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                                             var subMatId = parsedMultiMaterial.materials[matIndex];
-
+                                            loadedMaterialsIds.push(subMatId);
                                             parseMaterialById(subMatId, parsedData, scene, rootUrl);
                                         }
 
+                                        loadedMaterialsIds.push(parsedMultiMaterial.id);
                                         parseMultiMaterial(parsedMultiMaterial, scene);
                                         materialFound = true;
                                         break;
@@ -372,14 +434,32 @@
                             }
 
                             if (!materialFound) {
+                                loadedMaterialsIds.push(parsedMesh.materialId);
                                 parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
                             }
                         }
 
-                        meshes.push(parseMesh(parsedMesh, scene));
+                        // Skeleton ?
+                        if (parsedMesh.skeletonId > -1 && scene.skeletons) {
+                            var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
+
+                            if (!skeletonAlreadyLoaded) {
+                                for (var skeletonIndex = 0; skeletonIndex < parsedData.skeletons.length; skeletonIndex++) {
+                                    var parsedSkeleton = parsedData.skeletons[skeletonIndex];
+
+                                    if (parsedSkeleton.id === parsedMesh.skeletonId) {
+                                        skeletons.push(parseSkeleton(parsedSkeleton, scene));
+                                        loadedSkeletonsIds.push(parsedSkeleton.id);
+                                    }
+                                }
+                            }
+                        }
+
+                        var mesh = parseMesh(parsedMesh, scene);
+                        meshes.push(mesh);
                     }
                 }
-                
+
                 // Particles
                 if (parsedData.particleSystems) {
                     for (var index = 0; index < parsedData.particleSystems.length; index++) {
@@ -392,11 +472,14 @@
                 }
 
                 if (then) {
-                    then(meshes, particleSystems);
+                    then(meshes, particleSystems, skeletons);
                 }
             }, progressCallBack);
         },
         Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
+            // Checking if a manifest file has been set for this scene and if offline mode has been requested
+            BABYLON.Database.CheckManifestFile(rootUrl, sceneFilename);
+            
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
                 var scene = new BABYLON.Scene(engine);
@@ -467,6 +550,14 @@
                     }
                 }
 
+                // Skeletons
+                if (parsedData.skeletons) {
+                    for (var index = 0; index < parsedData.skeletons.length; index++) {
+                        var parsedSkeleton = parsedData.skeletons[index];
+                        parseSkeleton(parsedSkeleton, scene);
+                    }
+                }
+
                 // Meshes
                 for (var index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
@@ -480,7 +571,7 @@
                         parseParticleSystem(parsedParticleSystem, scene, rootUrl);
                     }
                 }
-                
+
                 // Shadows
                 if (parsedData.shadowGenerators) {
                     for (var index = 0; index < parsedData.shadowGenerators.length; index++) {
