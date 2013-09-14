@@ -1,7 +1,7 @@
 Changes list
 ============
 - 1.4.0:
- - Major updates:
+ - **Major updates**
   - Bones support ([deltakosh](http://www.github.com/deltakosh)): 
    - Bones and animated bones are now supported.
    - They can cast shadows
@@ -10,13 +10,13 @@ Changes list
    - You can specify to offline assets (scene and textures) to a local IndexedDB
    - Assets are then loaded once until you change the version on a server-side manifest
   - N-Level octrees ([deltakosh](http://www.github.com/deltakosh)):
- - Updates:
+ - **Updates**
   - Adding ```dispose()``` function and a ```disposeWhenFinishedAnimating``` property to sprites ([Cyle](http://github.com/CYle/))
   - Adding a ```applyTransform()``` function to meshes in order to bake a specific transformation into vertices ([deltakosh](http://www.github.com/deltakosh))
   - Adding ```setPivotMatrix()``` and ```getPivotMatrix()``` to meshes to define pivot matrix ([deltakosh](http://www.github.com/deltakosh))
   - ```Mesh.CreateCylinder``` now takes two diameters as parameters to be able to create cone ([deltakosh](http://www.github.com/deltakosh)) 
   - New ```material.Clone``` function ([deltakosh](http://www.github.com/deltakosh)) 
- - Bugfixes:
+ - **Bugfixes**
   - ```scene.IsReady()``` is more robust now and can be used to detect when the scene is EFFECTIVELY ready :) ([deltakosh](http://www.github.com/deltakosh))
   - Fixing animations timing. Animations should be in sync now ([deltakosh](http://www.github.com/deltakosh))
   - Fixing a bug with orthographic camera ([deltakosh](http://www.github.com/deltakosh))
