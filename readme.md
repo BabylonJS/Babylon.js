@@ -3,13 +3,13 @@ Babylon.js
 
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
 
-# Documentation
+## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
 - [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
 - [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
 
-# Features
+## Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
 - Scene picking
@@ -62,7 +62,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
  - Exporter for Blender
 
 
-# License
+## License
 
 Microsoft Public License (Ms-PL)
 
@@ -96,7 +96,7 @@ A "contributor" is any person that distributes its contribution under this licen
 
 (E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
 
-# External dependencies
+## External dependencies
 - hand.js: http://handjs.codeplex.com
 
 
