@@ -8,7 +8,7 @@
     var material3 = new BABYLON.StandardMaterial("kosh", scene);
     var planeMaterial = new BABYLON.StandardMaterial("plane material", scene);
     var box = BABYLON.Mesh.CreateBox("Box", 1.0, scene);
-    var cylinder = BABYLON.Mesh.CreateCylinder("Cylinder", 2, 0.8, 16, scene);
+    var cylinder = BABYLON.Mesh.CreateCylinder("Cylinder", 2, 0.8, 0, 32, scene);
     var torus = BABYLON.Mesh.CreateTorus("Torus", 1.0, 0.5, 16, scene);
     var sphere = BABYLON.Mesh.CreateSphere("Sphere", 16, 3, scene);
     var plane = BABYLON.Mesh.CreatePlane("plane", 3, scene);
@@ -119,6 +119,10 @@
         for (var index = 0; index < children.length; index++) {
             mirror.material.reflectionTexture.renderList.push(children[index]);
         }
+
+        spaceDek3.material = spaceDek2.material.clone("Vaisseau 3 mat");
+        
+        spaceDek3.material.emissiveColor = new BABYLON.Color3(1.0, 0, 0);
 
         scene.beginAnimation(spaceDek3, 0, 100, true, 1.0);
     });

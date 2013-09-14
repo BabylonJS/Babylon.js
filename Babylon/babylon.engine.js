@@ -11,7 +11,7 @@
             throw new Error("WebGL not supported");
         }
 
-        if (this._gl === undefined || this._gl === null) {
+        if (!this._gl) {
             throw new Error("WebGL not supported");
         }
 
@@ -68,7 +68,7 @@
             } else if (document.msIsFullScreen !== undefined) {
                 that.isFullscreen = document.msIsFullScreen;
             }
-            
+
             // Pointer lock
             if (that.isFullscreen && that._pointerLockRequested) {
                 canvas.requestPointerLock = canvas.requestPointerLock ||
@@ -86,7 +86,7 @@
         document.addEventListener("mozfullscreenchange", onFullscreenChange, false);
         document.addEventListener("webkitfullscreenchange", onFullscreenChange, false);
         document.addEventListener("msfullscreenchange", onFullscreenChange, false);
-        
+
         // Pointer lock
         this.isPointerLock = false;
 
@@ -143,7 +143,7 @@
         this._renderFunction = null;
         this._runningLoop = false;
     };
-    
+
     BABYLON.Engine.prototype._renderLoop = function () {
         // Start new frame
         this.beginFrame();
@@ -170,7 +170,7 @@
         this._renderFunction = renderFunction;
 
         var that = this;
-        BABYLON.Tools.QueueNewFrame(function() {
+        BABYLON.Tools.QueueNewFrame(function () {
             that._renderLoop();
         });
     };
@@ -263,6 +263,7 @@
 
     BABYLON.Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices) {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+        // Should be (vertices instanceof Float32Array ? vertices : new Float32Array(vertices)) but Chrome raises an Exception in this case :(
         this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
     };
@@ -277,17 +278,21 @@
     };
 
     BABYLON.Engine.prototype.bindBuffers = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
-        this._cachedVertexBuffers = null;
-        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+        if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
+            this._cachedVertexBuffers = vertexBuffer;
+            this._cachedEffectForVertexBuffers = effect;
 
-        var offset = 0;
-        for (var index = 0; index < vertexDeclaration.length; index++) {
-            var order = effect.getAttribute(index);
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
-            if (order >= 0) {
-                this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+            var offset = 0;
+            for (var index = 0; index < vertexDeclaration.length; index++) {
+                var order = effect.getAttribute(index);
+
+                if (order >= 0) {
+                    this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                }
+                offset += vertexDeclaration[index] * 4;
             }
-            offset += vertexDeclaration[index] * 4;
         }
 
         if (this._cachedIndexBuffer !== indexBuffer) {
@@ -295,11 +300,12 @@
             this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         }
     };
-    
+
     BABYLON.Engine.prototype.bindMultiBuffers = function (vertexBuffers, indexBuffer, effect) {
-        if (this._cachedVertexBuffers !== vertexBuffers) {
+        if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
             this._cachedVertexBuffers = vertexBuffers;
-            
+            this._cachedEffectForVertexBuffers = effect;
+
             var attributes = effect.getAttributesNames();
 
             for (var index = 0; index < attributes.length; index++) {
@@ -371,7 +377,7 @@
         if (error) {
             throw new Error(error);
         }
-        
+
         this._gl.deleteShader(vertexShader);
         this._gl.deleteShader(fragmentShader);
 
@@ -419,6 +425,13 @@
         }
 
         this._currentEffect = effect;
+    };
+
+    BABYLON.Engine.prototype.setMatrices = function (uniform, matrices) {
+        if (!uniform)
+            return;
+
+        this._gl.uniformMatrix4fv(uniform, false, matrices);
     };
 
     BABYLON.Engine.prototype.setMatrix = function (uniform, matrix) {
@@ -550,9 +563,10 @@
         this._currentState = {
             culling: null
         };
-        
+
         this._cachedVertexBuffers = null;
         this._cachedVertexBuffers = null;
+        _cachedEffectForVertexBuffers = null;
     };
 
     var getExponantOfTwo = function (value, max) {
@@ -571,17 +585,22 @@
     BABYLON.Engine.prototype.createTexture = function (url, noMipmap, invertY, scene) {
         var texture = this._gl.createTexture();
         var that = this;
-        var img = new Image();
+        
+        var onload = function (img) {
+            var potWidth = getExponantOfTwo(img.width, that._caps.maxTextureSize);
+            var potHeight = getExponantOfTwo(img.height, that._caps.maxTextureSize);
+            var isPot = (img.width == potWidth && img.height == potHeight);
 
-        img.onload = function () {
-            that._workingCanvas.width = getExponantOfTwo(img.width, that._caps.maxTextureSize);
-            that._workingCanvas.height = getExponantOfTwo(img.height, that._caps.maxTextureSize);
+            if (!isPot) {
+                that._workingCanvas.width = potWidth;
+                that._workingCanvas.height = potHeight;
 
-            that._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, that._workingCanvas.width, that._workingCanvas.height);
-
+                that._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+            };
+            
             that._gl.bindTexture(that._gl.TEXTURE_2D, texture);
             that._gl.pixelStorei(that._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? true : invertY);
-            that._gl.texImage2D(that._gl.TEXTURE_2D, 0, that._gl.RGBA, that._gl.RGBA, that._gl.UNSIGNED_BYTE, that._workingCanvas);
+            that._gl.texImage2D(that._gl.TEXTURE_2D, 0, that._gl.RGBA, that._gl.RGBA, that._gl.UNSIGNED_BYTE, isPot ? img : that._workingCanvas);
             that._gl.texParameteri(that._gl.TEXTURE_2D, that._gl.TEXTURE_MAG_FILTER, that._gl.LINEAR);
 
             if (noMipmap) {
@@ -595,18 +614,18 @@
             that._activeTexturesCache = [];
             texture._baseWidth = img.width;
             texture._baseHeight = img.height;
-            texture._width = that._workingCanvas.width;
-            texture._height = that._workingCanvas.height;
+            texture._width = potWidth;
+            texture._height = potHeight;
             texture.isReady = true;
-            scene._removePendingData(img);
+            scene._removePendingData(texture);
         };
 
-        img.onerror = function () {
-            scene._removePendingData(img);
+        var onerror = function () {
+            scene._removePendingData(texture);
         };
 
-        scene._addPendingData(img);
-        img.src = url;
+        scene._addPendingData(texture);
+        BABYLON.Tools.LoadImage(url, onload, onerror);
 
         texture.url = url;
         texture.noMipmap = noMipmap;
@@ -677,11 +696,11 @@
         } else {
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
         }
-        
+
         if (texture.generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
         }
-        
+
         this._gl.bindTexture(this._gl.TEXTURE_2D, null);
         this._activeTexturesCache = [];
         texture.isReady = true;
@@ -731,9 +750,10 @@
     var extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
 
     var cascadeLoad = function (rootUrl, index, loadedImages, scene, onfinish) {
-        var img = new Image();
-        img.onload = function () {
-            loadedImages.push(this);
+        var img;
+        
+        var onload = function () {
+            loadedImages.push(img);
 
             scene._removePendingData(img);
 
@@ -744,12 +764,12 @@
             }
         };
 
-        img.onerrror = function () {
+        var onerror = function () {
             scene._removePendingData(img);
         };
-
+        
+        img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror);
         scene._addPendingData(img);
-        img.src = rootUrl + extensions[index];
     };
 
     BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene) {

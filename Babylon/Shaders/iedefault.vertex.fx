@@ -18,11 +18,14 @@ attribute vec2 uv;
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+#ifdef BONES
+attribute vec4 matricesIndices;
+attribute vec4 matricesWeights;
+#endif
 
 // Uniforms
 uniform mat4 world;
 uniform mat4 view;
-uniform mat4 worldViewProjection;
 
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
@@ -60,6 +63,13 @@ uniform mat4 emissiveMatrix;
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
 uniform mat4 specularMatrix;
+#endif
+
+#ifdef BONES
+uniform mat4 mBones[BonesPerMesh];
+uniform mat4 viewProjection; 
+#else
+uniform mat4 worldViewProjection;
 #endif
 
 // Output
@@ -119,11 +129,23 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 #endif
 
 void main(void) {
-	gl_Position = worldViewProjection * vec4(position, 1.0);
+	mat4 finalWorld;
 
-	vec4 worldPos = world * vec4(position, 1.0);
+#ifdef BONES
+	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
+	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
+	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
+
+	finalWorld = world * (m0 + m1 + m2);
+	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+#else
+	finalWorld = world;
+	gl_Position = worldViewProjection * vec4(position, 1.0);
+#endif
+
+	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
-	vNormalW = normalize(vec3(world * vec4(normal, 0.0)));
+	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 
 	// Texture coordinates
 #ifndef UV1

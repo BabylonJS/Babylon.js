@@ -1,11 +1,6 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-
-    var isIE = function () {
-        return window.ActiveXObject !== undefined;
-    };
-
     BABYLON.StandardMaterial = function (name, scene) {
         this.name = name;
         this.id = name;
@@ -52,7 +47,7 @@
     };
 
     // Methods   
-    BABYLON.StandardMaterial.prototype.isReady = function (mesh) {        
+    BABYLON.StandardMaterial.prototype.isReady = function (mesh) {
         if (!this.checkReadyOnEveryCall) {
             if (this._renderId === this._scene.getRenderId()) {
                 return true;
@@ -155,7 +150,7 @@
 
             // Shadows
             var shadowGenerator = light.getShadowGenerator();
-            if (mesh && mesh.receiveShadows && shadowGenerator && shadowGenerator.isReady()) {
+            if (mesh && mesh.receiveShadows && shadowGenerator) {
                 defines.push("#define SHADOW" + lightIndex);
 
                 if (!shadowsActivated) {
@@ -173,19 +168,25 @@
                 break;
         }
 
-        var attribs = ["position", "normal"];
+        var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
         if (mesh) {
             if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                attribs.push("uv");
+                attribs.push(BABYLON.VertexBuffer.UVKind);
                 defines.push("#define UV1");
             }
             if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                attribs.push("uv2");
+                attribs.push(BABYLON.VertexBuffer.UV2Kind);
                 defines.push("#define UV2");
             }
             if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                attribs.push("color");
+                attribs.push(BABYLON.VertexBuffer.ColorKind);
                 defines.push("#define VERTEXCOLOR");
+            }
+            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                defines.push("#define BONES");
+                defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
             }
         }
 
@@ -196,19 +197,20 @@
 
             // IE patch
             var shaderName = "default";
-            if (isIE()) {
+            if (BABYLON.Tools.isIE()) {
                 shaderName = "iedefault";
             }
 
             this._effect = this._scene.getEngine().createEffect(shaderName,
                 attribs,
-            ["world", "view", "worldViewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
+                ["world", "view", "worldViewProjection", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                 "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
                 "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                 "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                 "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                 "vFogInfos", "vFogColor",
                  "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
+                 "mBones",
                  "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix"],
                 ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                  "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -243,9 +245,17 @@
         this._baseColor.copyFrom(this.diffuseColor);
 
         // Matrices        
-        world.multiplyToRef(this._scene.getTransformMatrix(), this._worldViewProjectionMatrix);
         this._effect.setMatrix("world", world);
-        this._effect.setMatrix("worldViewProjection", this._worldViewProjectionMatrix);
+
+        // Bones
+        if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            this._effect.setMatrix("viewProjection", this._scene.getTransformMatrix());
+
+            this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+        } else {
+            world.multiplyToRef(this._scene.getTransformMatrix(), this._worldViewProjectionMatrix);
+            this._effect.setMatrix("worldViewProjection", this._worldViewProjectionMatrix);
+        }
 
         // Textures        
         if (this.diffuseTexture) {
@@ -345,7 +355,7 @@
 
             // Shadows
             var shadowGenerator = light.getShadowGenerator();
-            if (mesh.receiveShadows && shadowGenerator && shadowGenerator.isReady()) {
+            if (mesh.receiveShadows && shadowGenerator) {
                 world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
                 this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
                 this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
@@ -370,7 +380,7 @@
         if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
             this._effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
             this._effect.setColor3("vFogColor", this._scene.fogColor);
-        }        
+        }
     };
 
     BABYLON.StandardMaterial.prototype.getAnimatables = function () {
@@ -438,4 +448,46 @@
 
         this.baseDispose();
     };
+
+    BABYLON.StandardMaterial.prototype.clone = function (name) {
+        var newStandardMaterial = new BABYLON.StandardMaterial(name, this._scene);
+
+        // Base material
+        newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
+        newStandardMaterial.alpha = this.alpha;
+        newStandardMaterial.wireframe = this.wireframe;
+        newStandardMaterial.backFaceCulling = this.backFaceCulling;
+
+        // Standard material
+        if (this.diffuseTexture && this.diffuseTexture.clone) {
+            newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
+        }
+        if (this.ambientTexture && this.ambientTexture.clone) {
+            newStandardMaterial.ambientTexture = this.ambientTexture.clone();
+        }
+        if (this.opacityTexture && this.opacityTexture.clone) {
+            newStandardMaterial.opacityTexture = this.opacityTexture.clone();
+        }
+        if (this.reflectionTexture && this.reflectionTexture.clone) {
+            newStandardMaterial.reflectionTexture = this.reflectionTexture.clone();
+        }
+        if (this.emissiveTexture && this.emissiveTexture.clone) {
+            newStandardMaterial.emissiveTexture = this.emissiveTexture.clone();
+        }
+        if (this.specularTexture && this.specularTexture.clone) {
+            newStandardMaterial.specularTexture = this.specularTexture.clone();
+        }
+        if (this.bumpTexture && this.bumpTexture.clone) {
+            newStandardMaterial.bumpTexture = this.bumpTexture.clone();
+        }
+
+        newStandardMaterial.ambientColor = this.ambientColor.clone();
+        newStandardMaterial.diffuseColor = this.diffuseColor.clone();
+        newStandardMaterial.specularColor = this.specularColor.clone();
+        newStandardMaterial.specularPower = this.specularPower;
+        newStandardMaterial.emissiveColor = this.emissiveColor.clone();
+
+        return newStandardMaterial;
+    };
+
 })();

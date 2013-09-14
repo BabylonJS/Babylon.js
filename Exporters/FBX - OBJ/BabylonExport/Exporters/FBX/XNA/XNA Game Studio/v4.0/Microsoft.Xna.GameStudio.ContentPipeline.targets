@@ -1,0 +1,493 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.ContentPipeline.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file defines the steps in the standard content build process for XNA Game Studio projects.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- These tasks are specific to the build process defined in this file, and are not considered general-purpose build tasks. -->
+  <UsingTask TaskName="BuildContent"      AssemblyName="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553"/>
+  <UsingTask TaskName="BuildXact"         AssemblyName="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553"/>
+  <UsingTask TaskName="CleanContent"      AssemblyName="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553"/>
+  <UsingTask TaskName="GetLastOutputs"    AssemblyName="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553"/>
+  
+  <!--
+    ============================================================
+                                        _BuildXNAContentLists
+
+    Build the ItemGroups of content we want to process with the
+    XNA Content Pipeline.
+    ============================================================
+    -->
+  <Target 
+    Name="_BuildXNAContentLists" 
+    Condition="'$(BuildingProject)'=='true' or '$(BuildXnaContent)' == 'true'">
+
+    <CreateItem
+      Include="@(Compile)"
+      Condition="'%(Compile.Importer)' != 'XactImporter'">
+      <Output ItemName="XNAContent" TaskParameter="Include"/>
+    </CreateItem>
+
+    <CreateItem
+      Include="@(Compile)"
+      Condition="'%(Compile.Importer)' == 'XactImporter'">
+      <Output ItemName="XACTContent" TaskParameter="Include"/>
+    </CreateItem>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        CreateManifestResourceNames
+
+    This target is required by Microsoft.Common.targets.
+    ============================================================
+    -->
+  <Target
+    Name="CreateManifestResourceNames"
+    Condition="false"
+    DependsOnTargets="$(CreateManifestResourceNamesDependsOn)"/>
+
+  <!--
+    ============================================================
+                                        CoreCompile
+
+    This target is required by Microsoft.Common.targets. It compiles
+    content using the XNA Framework Content Pipeline.
+    ============================================================
+    -->
+  <Target 
+    Name="CoreCompile"
+    DependsOnTargets="$(CoreCompileDependsOn)" 
+    Condition="'$(BuildingProject)'=='true' or '$(BuildXnaContent)' == 'true'">
+
+    <Error Condition="'$(XNAContentPipelineTargetPlatform)' == ''" Text="The XNAContentPipelineTargetPlatform property is required to build content." />
+    <Error Condition="'$(XNAContentPipelineTargetProfile)' == ''"  Text="The XNAContentPipelineTargetProfile property is required to build content." />
+    
+    <!-- Build the non-XACT content. -->
+    <BuildContent
+      BuildConfiguration="$(Configuration)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
+      OutputDirectory="$(ParentOutputDir)$(ContentRootDirectory)"
+      PipelineAssemblies="@(ReferencePath)"
+      PipelineAssemblyDependencies="@(ReferenceDependencyPaths)"
+      RebuildAll="$(XNARebuildContent)"
+      RootDirectory="$(ProjectDir)"
+      LoggerRootDirectory="$(ParentProjectDir)"
+      SourceAssets="@(XNAContent)"
+      TargetPlatform="$(XNAContentPipelineTargetPlatform)"
+      TargetProfile="$(XNAContentPipelineTargetProfile)"
+      CompressContent="$(XNACompressContent)">
+      <Output ItemName="XNAIntermediateContentFiles" TaskParameter="IntermediateFiles"/>
+      <Output ItemName="XNAOutputContentFiles" TaskParameter="OutputContentFiles"/>
+      <Output ItemName="XNARebuiltContentFiles" TaskParameter="RebuiltContentFiles"/>
+    </BuildContent>
+
+    <!-- Build the XACT content.
+    <BuildXact
+      BuildConfiguration="$(Configuration)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
+      OutputDirectory="$(ParentOutputDir)$(ContentRootDirectory)"
+      RebuildAll="$(XNARebuildContent)"
+      RootDirectory="$(ProjectDir)"
+      LoggerRootDirectory="$(ParentProjectDir)"
+      TargetPlatform="$(XNAContentPipelineTargetPlatform)"
+      TargetProfile="$(XNAContentPipelineTargetProfile)"
+      XactProjects="@(XACTContent)"
+      XnaFrameworkVersion="$(XnaFrameworkVersion)">
+      <Output ItemName="_XNAIntermediateXactFiles" TaskParameter="IntermediateFiles"/>
+      <Output ItemName="XNAIntermediateContentFiles" TaskParameter="IntermediateFiles"/>
+      <Output ItemName="XNAOutputContentFiles" TaskParameter="OutputXactFiles"/>
+      <Output ItemName="XNARebuiltContentFiles" TaskParameter="RebuiltXactFiles"/>
+      <Output ItemName="_AllBuiltXactFiles" TaskParameter="OutputXactFiles"/>
+      <Output ItemName="_AddBuiltXactFiles" TaskParameter="RebuiltXactFiles"/>
+    </BuildXact>
+
+    <AssignTargetPath
+      Files="@(_XNAIntermediateXactFiles)"
+      RootFolder="$(ProjectDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="_XNAIntermediateXactFilesWithTargetPath"/>
+    </AssignTargetPath>
+
+    <CreateItem
+      Include="@(_XNAIntermediateXactFilesWithTargetPath->'%(TargetPath)')">
+      <Output TaskParameter="Include" ItemName="FileWrites"/>
+    </CreateItem>
+
+    <AssignTargetPath
+      Files="@(_AllBuiltXactFiles)"
+      RootFolder="$(ParentOutputDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="_AllBuiltXactFilesWithTargetPath"/>
+    </AssignTargetPath>
+    
+    <RemoveDuplicates
+      Inputs="@(_AllBuiltXactFilesWithTargetPath->'%(TargetPath)')">
+      <Output TaskParameter="Filtered" ItemName="_AllBuiltXactFilesNoDuplicates"/>
+    </RemoveDuplicates>
+    
+    <WriteLinesToFile
+      File="$(BaseIntermediateOutputPath)$(XactOutputCacheFile)"
+      Lines="@(_AllBuiltXactFilesNoDuplicates)"
+      Overwrite="true"/>
+
+    <CreateItem
+      Include="$(BaseIntermediateOutputPath)$(XactOutputCacheFile)">
+      <Output TaskParameter="Include" ItemName="FileWrites"/>
+    </CreateItem>
+     -->
+    <!-- Items in the Content item group are not built by the XNA Framework
+         Content Pipeline. This warning is for informational purposes only,
+         but can be disabled by advanced users if custom targets have been
+         defined.
+     -->
+    <Warning
+      Condition="'@(Content)'!='' and '$(DisableContentItemWarning)'!='true'"
+      Text="Project item '%(Content.Identity)' was not built with the XNA Framework Content Pipeline. Set its Build Action property to Compile to build it."/>
+
+    <!-- Items in the EmbeddedResource item group are not supported in nested
+         content projects. This error can be disabled by advanced users if custom
+         targets have been defined.
+     -->
+    <Error
+      Condition="'@(EmbeddedResource)'!='' and '$(DisableEmbeddedResourceItemError)'!='true'"
+      Text="Project item '%(EmbeddedResource.Identity)' could not be built. Embedded Resource is not a supported Build Action for items in the Content subproject."/>
+
+
+    <!-- Begin figuring out files that should go into cache file -->
+
+    <AssignTargetPath
+      Files="@(XNAOutputContentFiles)"
+      RootFolder="$(ParentOutputDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="_XNAOutputCacheFilesWithTargetPath"/>
+    </AssignTargetPath>
+
+    <!-- Grab everything marked as 'Copy always' or 'Copy if newer' 
+         Do this for files marked with build action 'None', 'Compile', and 'Content'-->
+    <CreateItem
+      Include="@(ContentWithTargetPath->'%(FullPath)')"
+      Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always' or '%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'">
+      <Output TaskParameter="Include" ItemName="_XNAOutputCacheFilesWithTargetPath"/>
+    </CreateItem>
+
+    <CreateItem
+      Include="@(Compile->'%(FullPath)')"
+      Condition="'%(Compile.CopyToOutputDirectory)'=='Always' or '%(Compile.CopyToOutputDirectory)'=='PreserveNewest'">
+      <Output TaskParameter="Include" ItemName="_CacheCompileItemsToCopy"/>
+    </CreateItem>
+    <AssignTargetPath Files="@(_CacheCompileItemsToCopy)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_CacheCompileItemsToCopyWithTargetPathTemp" />
+    </AssignTargetPath>
+    <CreateItem
+      Include="@(_CacheCompileItemsToCopyWithTargetPathTemp)"
+      AdditionalMetadata="TargetPath=$(ContentRootDirectoryDir)%(_CacheCompileItemsToCopyWithTargetPathTemp.TargetPath)">
+      <Output TaskParameter="Include" ItemName="_CacheCompileItemsToCopyWithTargetPath"/>
+    </CreateItem>
+    <CreateItem Include="@(_CacheCompileItemsToCopyWithTargetPath)">
+      <Output TaskParameter="Include" ItemName="_XNAOutputCacheFilesWithTargetPath"/>
+    </CreateItem>
+
+    <CreateItem
+        Include="@(_NoneWithTargetPath->'%(FullPath)')"
+        Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' or '%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'">
+      <Output TaskParameter="Include" ItemName="_XNAOutputCacheFilesWithTargetPath"/>
+    </CreateItem>
+
+    <WriteLinesToFile
+      File="$(ParentIntermediateDir)cachefile-$(ProjectGuid)-targetpath.txt"
+      Lines="@(_XNAOutputCacheFilesWithTargetPath->'%(TargetPath)')"
+      Overwrite="true" />
+  </Target>
+
+  <!--
+    ============================================================
+                                        XNAContentClean
+
+    Clean the XNA content from the project.
+    ============================================================
+    -->
+  <Target Name="XNAContentClean">
+
+    <CleanContent
+      BuildConfiguration="$(Configuration)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
+      OutputDirectory="$(ParentOutputDir)$(ContentRootDirectory)"
+      RootDirectory="$(ProjectDir)"
+      TargetPlatform="$(XNAContentPipelineTargetPlatform)"
+      TargetProfile="$(XNAContentPipelineTargetProfile)">
+    </CleanContent>
+
+    <Delete
+      Files="$(BaseIntermediateOutputPath)$(XactOutputCacheFile)"
+      Condition="Exists('$(BaseIntermediateOutputPath)$(XactOutputCacheFile)')"
+      TreatErrorsAsWarnings="true"/>
+
+    <CreateItem Include="$(ParentIntermediateDir)cachefile-*-targetpath.txt">
+      <Output TaskParameter="Include" ItemName="_XNAContentCleanCacheFiles"/>
+    </CreateItem>
+    
+    <Delete
+      Files="@(_XNAContentCleanCacheFiles)"
+      Condition="'@(_XNAContentCleanCacheFiles)' != ''"
+      TreatErrorsAsWarnings="true" />
+  </Target>
+
+  <!--
+    ============================================================
+                                        GetBuiltContentWithTargetPaths
+
+    Gathers the built content so that it can be copied by parent
+    projects.
+    ============================================================
+    -->
+  <Target
+    Name="GetBuiltContentWithTargetPaths"
+    Outputs="@(BuiltContentWithTargetPaths)">
+
+    <GetLastOutputs
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)">
+      <Output TaskParameter="OutputContentFiles" ItemName="LastBuiltContentFiles" />
+    </GetLastOutputs>
+
+    <!-- Add metadata so only new built content is copied to the output directory. -->
+    <CreateItem
+      Include="@(LastBuiltContentFiles)"
+      AdditionalMetadata="CopyToOutputDirectory=PreserveNewest">
+      <Output TaskParameter="Include" ItemName="LastBuiltContentFilesPreserveNewest"/>
+    </CreateItem>
+    
+    <AssignTargetPath
+      Files="@(LastBuiltContentFilesPreserveNewest)"
+      RootFolder="$(ParentOutputDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="BuiltContentWithTargetPaths" />
+    </AssignTargetPath>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        GetBuiltXactContentWithTargetPaths
+
+    Gathers the built XACT content so that it can be copied by
+    parent projects.
+    ============================================================
+    -->
+  <Target
+    Name="GetBuiltXactContentWithTargetPaths"
+    Outputs="@(BuiltXactContentWithTargetPaths">
+
+    <ReadLinesFromFile
+      File="$(BaseIntermediateOutputPath)$(XactOutputCacheFile)"
+      Condition="Exists('$(BaseIntermediateOutputPath)$(XactOutputCacheFile)')">
+      <Output TaskParameter="Lines" ItemName="LastBuiltXactContent"/>
+    </ReadLinesFromFile>
+
+    <!-- Add metadata so only new built content is copied to the output directory. -->
+    <CreateItem
+      Include="@(LastBuiltXactContent->'$(ParentOutputDir)%(Identity)')"
+      AdditionalMetadata="CopyToOutputDirectory=PreserveNewest">
+      <Output TaskParameter="Include" ItemName="LastBuiltXactContentPreserveNewest"/>
+    </CreateItem>
+    
+    <AssignTargetPath
+      Files="@(LastBuiltXactContentPreserveNewest)"
+      RootFolder="$(ParentOutputDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="BuiltXactContentWithTargetPaths" />
+    </AssignTargetPath>
+    
+  </Target>
+  
+  <!-- Microsoft.Common.targets must be imported *before* overriding anything in it. -->
+  
+  <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+  
+  <PropertyGroup>
+    <!-- This is specified as an input to CoreCompile so that msbuild recognizes a project is dirty when the targets file changes. -->
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.ContentPipeline.targets</MSBuildAllProjects>
+    <!-- This is normally specified by the parent code project, but we'll define it when content is being built stand-alone. -->
+    <ParentOutputDir Condition="'$(ParentOutputDir)'==''">$(TargetDir)</ParentOutputDir>
+
+    <!-- Have our content build run when the user builds the project. -->
+    <CoreCompileDependsOn>_BuildXNAContentLists</CoreCompileDependsOn>
+
+    <!-- Have our clean targets run when the user cleans the project (also invoked by Rebuild). -->
+    <CleanDependsOn>
+      XNAContentClean;
+      $(CleanDependsOn)
+    </CleanDependsOn>
+
+    <!-- Create a property with the correct target platform for the XNA Content Pipeline BuildContent task. -->
+    <XNAContentPipelineTargetPlatform Condition="'$(XNAContentPipelineTargetPlatform)' == ''">$(XnaPlatform)</XNAContentPipelineTargetPlatform>
+    <XNAContentPipelineTargetPlatform Condition="'$(XNAContentPipelineTargetPlatform)' == 'Xbox 360'">Xbox360</XNAContentPipelineTargetPlatform>
+    <XNAContentPipelineTargetPlatform Condition="'$(XNAContentPipelineTargetPlatform)' == 'Windows Phone'">WindowsPhone</XNAContentPipelineTargetPlatform>
+
+
+    <XNAContentPipelineTargetProfile Condition="'$(XNAContentPipelineTargetProfile)' == ''">$(XnaProfile)</XNAContentPipelineTargetProfile>
+
+    <ContentRootDirectory Condition="'$(ContentRootDirectory)' == ''">$(ProjectName)</ContentRootDirectory>  <!-- Example, Content\ -->
+    <!-- Make sure this is set to String.Empty for our special case as some tasks we don't own don't like /./ in paths -->
+    <ContentRootDirectoryDir Condition="'$(ContentRootDirectoryDir)' == '' and '$(ContentRootDirectory)' != '.'">$(ContentRootDirectory)</ContentRootDirectoryDir>
+    <!-- Ensure ContentDir has a trailing slash, so it can be concatenated -->
+    <ContentRootDirectoryDir Condition="'$(ContentRootDirectoryDir)' != '' and !HasTrailingSlash('$(ContentRootDirectoryDir)')">$(ContentRootDirectory)\</ContentRootDirectoryDir>
+
+    <XactOutputCacheFile Condition="'$(XactOutputCacheFile)'==''">$(MSBuildProjectFile).XactOutput.FileList.txt</XactOutputCacheFile>
+
+    <!-- AvailablePlatforms is the list of platform targets available. -->
+    <AvailablePlatforms>Xbox 360,x86,Windows Phone</AvailablePlatforms>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+                                        AssignTargetPaths
+
+    This target creates <TargetPath> tags for items. <TargetPath> is a relative folder plus filename
+    for the destination of this item. Overridden so that the nested project's source items can be
+    copied to the output directory.
+    ============================================================
+    -->
+  <Target
+      Name="AssignTargetPaths">
+
+    <AssignTargetPath Files="@(Content)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="ContentWithTargetPathTemp" />
+    </AssignTargetPath>
+
+    <CreateItem
+      Include="@(ContentWithTargetPathTemp)"
+      AdditionalMetadata="TargetPath=$(ContentRootDirectoryDir)%(ContentWithTargetPathTemp.TargetPath)">
+      <Output TaskParameter="Include" ItemName="ContentWithTargetPath"/>
+    </CreateItem>
+
+    <AssignTargetPath Files="@(None)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_NoneWithTargetPathTemp" />
+    </AssignTargetPath>
+
+    <CreateItem
+      Include="@(_NoneWithTargetPathTemp)"
+      AdditionalMetadata="TargetPath=$(ContentRootDirectoryDir)%(_NoneWithTargetPathTemp.TargetPath)">
+      <Output TaskParameter="Include" ItemName="_NoneWithTargetPath"/>
+    </CreateItem>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        GetCopyToOutputDirectoryItems
+
+    Override the standard Microsoft.Common.targets' definition of
+    GetCopyToOutputDirectoryItems in order to add our built content
+    to @(AllItemsFullPathWithTargetPath).
+    ============================================================
+    -->
+  <PropertyGroup>
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      GetBuiltContentWithTargetPaths;
+      GetBuiltXactContentWithTargetPaths;
+      AssignTargetPaths
+    </GetCopyToOutputDirectoryItemsDependsOn>
+  </PropertyGroup>
+
+  <Target
+      Name="GetCopyToOutputDirectoryItems"
+      Outputs="@(AllItemsFullPathWithTargetPath)"
+      DependsOnTargets="$(GetCopyToOutputDirectoryItemsDependsOn)">
+
+    <!-- Do not get items from child projects. Referenced projects are used by the Content Pipeline,
+         and we do not want to pass build-related assemblies to projects that reference this one. This
+         also means a Content project cannot reference another Content project. -->
+
+    <!-- Get built content items from this project. -->
+    <CreateItem
+        Include="@(BuiltContentWithTargetPaths->'%(FullPath)')"
+        Condition="'%(BuiltContentWithTargetPaths.CopyToOutputDirectory)'=='Always' or '%(BuiltContentWithTargetPaths.CopyToOutputDirectory)'=='PreserveNewest'"
+                >
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(BuiltContentWithTargetPaths.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectory"
+              Condition="'%(BuiltContentWithTargetPaths.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+    <!-- Get built XACT content items from this project. -->
+    <CreateItem
+        Include="@(BuiltXactContentWithTargetPaths->'%(FullPath)')"
+        Condition="'%(BuiltXactContentWithTargetPaths.CopyToOutputDirectory)'=='Always' or '%(BuiltXactContentWithTargetPaths.CopyToOutputDirectory)'=='PreserveNewest'"
+                >
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(BuiltXactContentWithTargetPaths.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectory"
+              Condition="'%(BuiltXactContentWithTargetPaths.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+    <!-- Get source items from this project. -->
+    <CreateItem
+        Include="@(ContentWithTargetPath->'%(FullPath)')"
+        Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always' or '%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"
+                >
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectory"
+              Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+    <!-- Content projects do not have Embedded Resource build actions. -->
+
+    <CreateItem
+        Include="@(Compile->'%(FullPath)')"
+        Condition="'%(Compile.CopyToOutputDirectory)'=='Always' or '%(Compile.CopyToOutputDirectory)'=='PreserveNewest'">
+      <Output TaskParameter="Include" ItemName="_CompileItemsToCopy"/>
+    </CreateItem>
+    <AssignTargetPath Files="@(_CompileItemsToCopy)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_CompileItemsToCopyWithTargetPathTemp" />
+    </AssignTargetPath>
+    <CreateItem
+      Include="@(_CompileItemsToCopyWithTargetPathTemp)"
+      AdditionalMetadata="TargetPath=$(ContentRootDirectoryDir)%(_CompileItemsToCopyWithTargetPathTemp.TargetPath)">
+      <Output TaskParameter="Include" ItemName="_CompileItemsToCopyWithTargetPath"/>
+    </CreateItem>
+    <CreateItem Include="@(_CompileItemsToCopyWithTargetPath)">
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectory"
+              Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+    <CreateItem
+        Include="@(_NoneWithTargetPath->'%(FullPath)')"
+        Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' or '%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"
+                >
+      <Output TaskParameter="Include" ItemName="AllItemsFullPathWithTargetPath"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectoryAlways"
+              Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <Output TaskParameter="Include" ItemName="_SourceItemsToCopyToOutputDirectory"
+              Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </CreateItem>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        CopyFilesToOutputDirectory
+
+    Override the standard Microsoft.Common.targets CopyFilesToOutputDirectory, since our content
+    project type doesn't build most of the regular code build outputs. We also don't copy references
+    that were copy local into the output directory, since references are for use during build only,
+    not runtime. Finally, we leave it up to the parent project to copy any of our source items to
+    its own output directory.
+    ============================================================
+    -->
+  <Target Name="CopyFilesToOutputDirectory"/>
+  
+</Project>

@@ -1,0 +1,286 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.Common.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file defines the steps in the standard build process specific for C# .NET projects.
+For example, it contains the step that actually calls the C# compiler.  The remainder
+of the build process is defined in Microsoft.Common.targets, which is imported by 
+this file.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- These tasks are specific to the build process defined in this file, and are not considered general-purpose build tasks. -->
+  <UsingTask TaskName="XnaClubPackageTask" AssemblyFile="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\v4.0\Microsoft.Xna.Framework.Tools.Packaging.Tasks.dll"/>
+
+  <!--
+    If the appropriate targets file exists, it will be imported and will override
+    this target definition. If it does not exist, then this target will produce an
+    error for the user if the user attempts to build.
+  -->
+  <PropertyGroup>
+    <PrepareForBuildDependsOn Condition="'$(_XnaPlatformSpecificTargetsPath)' == ''">XnaProjectFileNeedsUpgrade;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Target Name="XnaProjectFileNeedsUpgrade">
+    <Error Text="The project file '$(ProjectFileName)' appears to have been created with XNA Game Studio 3.0 CTP. For instructions on how to upgrade this project to work with the current version, copy and paste this link into your browser: http://go.microsoft.com/fwlink/?LinkId=121512." />
+  </Target>
+
+  <!-- Have our package build run after the user builds the project. -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      XNAPackageBuild;
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Windows platform supports C# 4.0, while non-Windows platforms currently support up to C# 3.0.
+    For Windows platform, do not alter the setting.
+    For non-Windows platforms, set it to C# 3.0 if the user has not explicitly set it to something else.
+  -->
+  <PropertyGroup Condition=" '$(XnaPlatform)' != 'Windows' ">
+    <LangVersion Condition=" '$(LangVersion)' == '' ">3</LangVersion>
+  </PropertyGroup>
+
+  <!--
+        We will not look in the TargetFrameworkDirectory for Xbox 360, nor in the GAC.
+    -->
+  <PropertyGroup>
+    <!--
+        The SearchPaths property is set to find assemblies in the following order:
+
+            (1) Files from current project - indicated by {CandidateAssemblyFiles}
+            (2) $(ReferencePath) - the reference path property, which comes from the .USER file.
+            (3) The hintpath from the referenced item itself, indicated by {HintPathFromItem}.
+            (4) The directory of MSBuild's "target" runtime from GetFrameworkPath.
+                The "target" runtime folder is the folder of the runtime that MSBuild is a part of.
+            (5) Registered assembly folders, indicated by {Registry:*,*,*}
+            (6) Legacy registered assembly folders, indicated by {AssemblyFolders}
+            (7) Look in the application's output folder (like bin\debug)
+            (8) Resolve to the GAC.
+            (9) Treat the reference's Include as if it were a real file name.
+        -->
+    <AssemblySearchPaths Condition=" '$(XnaPlatform)' != 'Windows' ">
+      {CandidateAssemblyFiles};
+      $(ReferencePath);
+      {HintPathFromItem};
+      ;
+      {Registry:$(FrameworkRegistryBase),$(XnaFrameworkVersion),$(AssemblyFoldersSuffix)};
+      ;
+      ;
+      {RawFileName};
+      $(OutputPath)
+    </AssemblySearchPaths>
+  </PropertyGroup>
+
+  <!--
+    In VS 2008, a new feature was introduced to speed up the "F5" scenario when
+    no changes have occurred. It does this by skipping the build entirely if the
+    IDE believes there are no changes. This is fast, but unreliable because it
+    does not check all the same files as msbuild does. In XNA game projects, for
+    example, the IDE does not check if any content needs to be rebuilt. As a
+    result, F5 is way faster, but you may start debugging a project that is out
+    of date. To disable the new feature, we set DisableFastUpToDateCheck to true.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <!--
+    The TargetFrameworkAttribute is not available in the Compact Framework.
+  -->
+  <PropertyGroup>
+    <GenerateTargetFrameworkAttribute Condition="'$(XnaPlatform)' != 'Windows'">false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+
+  <!--  Build the Package if the Create XNA Club Package menu was selected.  -->
+  <Target Name="XnaPackageBuild">
+
+    <XnaClubPackageTask XnaFrameworkVersion="$(XnaFrameworkVersion)" XnaPlatform="$(XnaPlatform)" ProjectPath="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" TargetExt="$(TargetExt)" ArchiveName="$(XnaArchiveName)">
+      <Output PropertyName="XnaPackageVersion" TaskParameter="XnaFrameworkVersion" />
+      <Output PropertyName="XnaPackagePlatform" TaskParameter="XnaPlatform" />
+      <Output PropertyName="XnaPackageToolPath" TaskParameter="ToolPath" />
+      <Output PropertyName="DoPackageBuild" TaskParameter="ShouldPackage" />
+      <Output PropertyName="XnaPackageThumbnail" TaskParameter="Thumbnail" />
+      <Output PropertyName="XnaPackageOutputPath" TaskParameter="OutputPath" />
+    </XnaClubPackageTask>
+
+  </Target>
+
+  <PropertyGroup>
+    <!-- Default the runtime profile to the XNA Framework version being targeted. -->
+    <XnaFrameworkRuntimeProfile Condition="'$(XnaFrameworkRuntimeProfile)'==''">$(XnaPlatform).$(XnaFrameworkVersion).$(XnaProfile)</XnaFrameworkRuntimeProfile>
+
+    <!-- Define the intermediate file into which we write the runtime profile token. -->
+    <XnaFrameworkRuntimeProfileFile Condition="'$(XnaFrameworkRuntimeProfileFile)'==''">Microsoft.Xna.Framework.RuntimeProfile.txt</XnaFrameworkRuntimeProfileFile>
+
+    <!-- Make sure our target runs before the EmbeddedResource items are processed. -->
+    <PrepareResourceNamesDependsOn>
+      EmbedXnaFrameworkRuntimeProfile;
+      $(PrepareResourceNamesDependsOn)
+    </PrepareResourceNamesDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ToBeEmbeddedResource Include="$(IntermediateOutputPath)$(XnaFrameworkRuntimeProfileFile)">
+      <LogicalName>Microsoft.Xna.Framework.RuntimeProfile</LogicalName>
+    </ToBeEmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="EmbedXnaFrameworkRuntimeProfile"
+          Condition="'$(XnaFrameworkRuntimeProfile)' != '' and '$(BuildingProject)'=='true'"
+          Inputs="$(MSBuildProjectFile)"
+          Outputs="$(IntermediateOutputPath)$(XnaFrameworkRuntimeProfileFile)" >
+
+    <CreateItem Include="$(XnaFrameworkRuntimeProfile)">
+      <Output TaskParameter="Include" ItemName="_XnaFrameworkRuntimeProfile"/>
+    </CreateItem>
+
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)$(XnaFrameworkRuntimeProfileFile)"
+      Lines="@(_XnaFrameworkRuntimeProfile)"
+      Overwrite="true"/>
+
+    <CreateItem Include="$(IntermediateOutputPath)$(XnaFrameworkRuntimeProfileFile)">
+      <Output TaskParameter="Include" ItemName="FileWrites"/>
+    </CreateItem>
+
+    <CreateItem Include="@(ToBeEmbeddedResource)">
+      <Output TaskParameter="Include" ItemName="EmbeddedResource"/>
+    </CreateItem>
+
+  </Target>
+
+
+
+  <!-- Write the cache file listing all items to be copied to the output directory. -->
+  <Target
+      Name="XnaWriteCacheFile"
+      Inputs="@(AllItemsFullPathWithTargetPath)"
+      Outputs="$(MSBuildProjectFullPath).$(Configuration).cachefile"
+      AfterTargets="GetCopyToOutputDirectoryItems">
+
+    <WriteLinesToFile File="$(MSBuildProjectFullPath).$(Configuration).cachefile"
+                      Lines="@(AllItemsFullPathWithTargetPath->'%(TargetPath)')"
+                      Overwrite="true"/>
+  </Target>
+
+
+  <!--
+    ============================================================
+                                        XNAReadDependenciesCacheFile
+
+    Reads all cache files that we output from referenced XNA projects.  
+    Cache files contain the Content files target path information, which 
+    we use to populate the manifest ItemGroup _DeploymentManifestFiles
+    ============================================================
+    -->
+
+  <PropertyGroup>
+    <GenerateManifestsDependsOn>
+      _SplitProjectReferencesByFileExistence;
+      _CopySourceItemsToOutputDirectory;
+      XNAReadDependenciesCacheFile;
+      $(GenerateManifestsDependsOn)
+    </GenerateManifestsDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="XNAReadDependenciesCacheFile">
+
+    <CreateItem Include="%(_MSBuildProjectReferenceExistent.Identity).$(Configuration).cachefile">
+      <Output ItemName="XNADependenciesCacheFiles" TaskParameter="Include"/>
+    </CreateItem>
+
+    <ReadLinesFromFile File="%(XNADependenciesCacheFiles.Identity)"
+                       Condition="'@(XNADependenciesCacheFiles)' != ''">
+      <Output TaskParameter="Lines" ItemName="_FromBuiltDependencyContentTargetPath"/>
+    </ReadLinesFromFile>
+
+    <CreateItem Include="$(OutputPath)%(_FromBuiltDependencyContentTargetPath.Identity)"
+                AdditionalMetadata="TargetPath=%(_FromBuiltDependencyContentTargetPath.Identity);IsDataFile=false"
+                Condition="'@(_FromBuiltDependencyContentTargetPath)' != ''">
+      <Output ItemName="_DeploymentManifestFiles" TaskParameter="Include" />
+    </CreateItem>
+  </Target>
+
+  <!--
+      ============================================================
+                                          GetReferenceAssemblyPaths
+
+      Redefines the standard GetReferenceAssemblyPaths to make the original
+      target conditional on the XnaPlatform property. The original target is
+      defined below as "RealGetReferenceAssemblyPaths".
+      
+      The additional paths are specific to the desktop framework, and we do not
+      want those appended to our reference paths in non-Windows projects.
+      ============================================================
+      -->
+  <Target
+      Name="GetReferenceAssemblyPaths"
+      DependsOnTargets="RealGetReferenceAssemblyPaths">
+  </Target>
+
+  <!--
+      ============================================================
+                                          RealGetReferenceAssemblyPaths
+
+      Get the paths for the Reference Assemblies for the known versions of the
+      .NET Framework.
+
+      These paths are used by the build process in order to resolve the correct
+      assemblies from the various directories, and to support multi-targeting
+      ============================================================
+      -->
+  <Target
+      Name="RealGetReferenceAssemblyPaths"
+      DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)"
+      Condition="'$(XnaPlatform)' == 'Windows'">
+
+    <!-- if TargetFrameworkDirectory doesn't have a custom value, clear it out; that way we can get reference paths and target framework directories all in the right order -->
+    <PropertyGroup>
+      <TargetFrameworkDirectory Condition="'@(_CombinedTargetFrameworkDirectoriesItem)' == '$(TargetFrameworkDirectory)'"/>
+    </PropertyGroup>
+
+    <!-- By default if there is no root path set then the task will assume it is Program Files\Reference Assemblies\Microsoft\Framework-->
+    <GetReferenceAssemblyPaths
+        Condition="'$(TargetFrameworkMoniker)' != '' and ('$(_TargetFrameworkDirectories)' == '' or '$(_FullFrameworkReferenceAssemblyPaths)' == '')"
+        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+        RootPath="$(TargetFrameworkRootPath)"
+        BypassFrameworkInstallChecks="$(BypassFrameworkInstallChecks)"
+          >
+      <Output TaskParameter="ReferenceAssemblyPaths" PropertyName="_TargetFrameworkDirectories"/>
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
+      <Output TaskParameter="TargetFrameworkMonikerDisplayName" PropertyName="TargetFrameworkMonikerDisplayName" Condition="'$(TargetFrameworkMonikerDisplayName)' == ''"/>
+    </GetReferenceAssemblyPaths>
+
+    <PropertyGroup>
+      <TargetFrameworkDirectory>$(_TargetFrameworkDirectories);$(TargetFrameworkDirectory);$(WinFXAssemblyDirectory)</TargetFrameworkDirectory>
+    </PropertyGroup>
+
+    <!-- Remove the AssemblyFolders if no target framework directories could be found. This is to prevent us from
+               resolving from the assemblyfolders global location if we are not acutally targeting a framework-->
+
+    <PropertyGroup>
+      <RemoveAssemblyFoldersIfNoTargetFramework Condition="'$(RemoveAssemblyFoldersIfNoTargetFramework)' == ''">true</RemoveAssemblyFoldersIfNoTargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_TargetFrameworkDirectories)' == '' and '$(AssemblySearchPaths)' != '' and '$(RemoveAssemblyFoldersIfNoTargetFramework)' == 'true'">
+      <AssemblySearchPaths>$(AssemblySearchPaths.Replace('{AssemblyFolders}', '').Split(';'))</AssemblySearchPaths>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_TargetFrameworkDirectories)' == ''">
+      <TargetFrameworkProfile/>
+    </PropertyGroup>
+  </Target>
+
+
+</Project>
+

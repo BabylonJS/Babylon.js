@@ -1,0 +1,26 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Xna.GameStudio.Windows.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+This file defines the steps in the standard build process specific for XNA Game Studio
+projects targeting the Windows platform.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- AvailablePlatforms is the list of platform targets available. -->
+  <PropertyGroup>
+    <AvailablePlatforms>x86</AvailablePlatforms>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.Xna.GameStudio.Common.targets" />
+  <Import Project="Microsoft.Xna.GameStudio.Content.targets" />
+
+</Project>

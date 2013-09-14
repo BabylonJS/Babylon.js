@@ -396,7 +396,7 @@ button {
     left: 0;
     top: 50%;
     margin-top: -30px;
-    background-color: #EEEEEE;
+    background-color: white;
     border: 1px solid #888888;
     transition: transform 0.25s ease-in-out;
     -webkit-transition: -webkit-transform 0.25s ease-in-out;

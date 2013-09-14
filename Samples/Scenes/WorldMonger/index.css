@@ -19,17 +19,6 @@ a {
     display: none;
 }
 
-#warning {
-    text-align: center;
-    color: white;
-    opacity: 0.8;
-    font-size: 12px;
-    position: absolute;
-    width: 100%;
-    bottom: 60px;
-    cursor: default;
-}
-
 #notSupported {
     text-align: center;
     color: white;

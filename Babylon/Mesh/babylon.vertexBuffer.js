@@ -4,6 +4,7 @@
     BABYLON.VertexBuffer = function (mesh, data, kind, updatable) {
         this._mesh = mesh;
         this._engine = mesh.getScene().getEngine();
+        this._updatable = updatable;
         
         if (updatable) {
             this._buffer = this._engine.createDynamicVertexBuffer(data.length * 4);
@@ -32,10 +33,20 @@
             case BABYLON.VertexBuffer.ColorKind:
                 this._strideSize = 3;
                 break;
+            case BABYLON.VertexBuffer.MatricesIndicesKind:
+                this._strideSize = 4;
+                break;
+            case BABYLON.VertexBuffer.MatricesWeightsKind:
+                this._strideSize = 4;
+                break;
         }
     };
     
     // Properties
+    BABYLON.VertexBuffer.prototype.isUpdatable = function () {
+        return this._updatable;
+    };
+
     BABYLON.VertexBuffer.prototype.getData = function() {
         return this._data;
     };
@@ -59,9 +70,11 @@
     }; 
         
     // Enums
-    BABYLON.VertexBuffer.PositionKind   = "position";
-    BABYLON.VertexBuffer.NormalKind     = "normal";
-    BABYLON.VertexBuffer.UVKind         = "uv";
-    BABYLON.VertexBuffer.UV2Kind        = "uv2";
-    BABYLON.VertexBuffer.ColorKind      = "color";
+    BABYLON.VertexBuffer.PositionKind           = "position";
+    BABYLON.VertexBuffer.NormalKind             = "normal";
+    BABYLON.VertexBuffer.UVKind                 = "uv";
+    BABYLON.VertexBuffer.UV2Kind                = "uv2";
+    BABYLON.VertexBuffer.ColorKind              = "color";
+    BABYLON.VertexBuffer.MatricesIndicesKind    = "matricesIndices";
+    BABYLON.VertexBuffer.MatricesWeightsKind    = "matricesWeights";
 })();

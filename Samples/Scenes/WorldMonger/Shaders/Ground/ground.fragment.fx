@@ -52,6 +52,11 @@ void main(void) {
 	// diffuse
 	float ndl = max(0., dot(vNormalW, lightVectorW));
 
+	//// Specular
+	//vec3 angleW = normalize(viewDirectionW + lightVectorW);
+	//float specComp = dot(normalize(vNormalW), angleW);
+	//specComp = pow(specComp, 256.) * 0.8;
+
 	// Final composition
 	vec3 finalColor = vec3(0., 0., 0.);
 	vec2 uvOffset = vec2(1.0 / 512.0, 1.0 / 512.0);
@@ -81,21 +86,11 @@ void main(void) {
 		float lowLimit = vLimits.z - 1.;
 		float gradient = clamp((vPositionW.y - lowLimit) / (vLimits.z - lowLimit), 0., 1.);
 
-		// Specular
-		vec3 angleW = normalize(viewDirectionW + lightVectorW);
-		float specComp = dot(normalize(vNormalW), angleW);
-		specComp = pow(specComp, 256.);
-
-		finalColor = ndl * (texture2D(rockSampler, vRockSandUV.xy + uvOffset).rgb * (1.0 - gradient)) + gradient *(ndl * texture2D(snowSampler, vGroundSnowUV.zw).rgb + specComp);
+		finalColor = ndl * (texture2D(rockSampler, vRockSandUV.xy + uvOffset).rgb * (1.0 - gradient)) + gradient *(ndl * texture2D(snowSampler, vGroundSnowUV.zw).rgb);
 	}
 	else
 	{
-		// Specular
-		vec3 angleW = normalize(viewDirectionW + lightVectorW);
-		float specComp = dot(normalize(vNormalW), angleW);
-		specComp = pow(specComp, 256.) * 0.8;
-
-		finalColor = texture2D(snowSampler, vGroundSnowUV.zw).rgb * ndl + specComp;
+		finalColor = texture2D(snowSampler, vGroundSnowUV.zw).rgb * ndl;
 	}
 
 	gl_FragColor = vec4(finalColor, 1.);

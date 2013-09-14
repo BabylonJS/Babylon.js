@@ -4,6 +4,11 @@
     // Demos
     var demos = [
         { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB", big: true },
+        //{
+        //    title: "ROBOT", scene: "Robot", screenshot: "heart.jpg", size: "8.5 MB", onload: function () {
+        //        scene.collisionsEnabled = false;
+        //    }
+        //},
         { title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", },
         { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", onload: function() {
             scene.createOrUpdateSelectionOctree();
@@ -30,14 +35,16 @@
         }];
 
     var tests = [
-        { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "1.0 MB" },
+        { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB" },
+        { title: "BONES", id: 9, screenshot: "bones.jpg", size: "10 MB" },
+        { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "0.1 MB" },
         { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
         { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
         { title: "LIGHTS", id: 1, screenshot: "testlight.jpg", size: "0.1 MB" },
         { title: "BUMP", id: 2, screenshot: "bump.jpg", size: "0.1 MB" },
         { title: "FOG", id: 3, screenshot: "fog.jpg", size: "0.1 MB" },
         { title: "MULTIMATERIAL", id: 4, screenshot: "multimat.jpg", size: "0.1 MB" },
-        { title: "BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB" },
+        { title: "BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB"},
         { title: "SCENE #1", id: 0, screenshot: "testscene.jpg", size: "10 MB" }
     ];
 
@@ -59,6 +66,8 @@
     var status = document.getElementById("status");
     var fullscreen = document.getElementById("fullscreen");
     var touchCamera = document.getElementById("touchCamera");
+
+    var sceneChecked;
 
     var itemClick = function (demo) {
         return function () {
@@ -168,6 +177,8 @@
             scene.dispose();
             scene = null;
         }
+        
+        sceneChecked = false;
 
         // History
         if (history.pushState) {
@@ -209,23 +220,31 @@
                     case 7:
                         newScene = CreateChartingTestScene(engine);
                         break;
+                    case 8:
+                        newScene = CreateOctreeTestScene(engine);
+                        break;
+                    case 9:
+                        newScene = CreateBonesTestScene(engine);
+                        break;
                 }
-
-                newScene.activeCamera.attachControl(canvas);
-
                 scene = newScene;
 
-                if (then) {
-                    then();
-                }
+                scene.executeWhenReady(function() {
+                    if (scene.activeCamera) {
+                        scene.activeCamera.attachControl(canvas);
+                        if (then) {
+                            then();
+                        }
+                    }
 
-                // UI
-                restoreUI();
+                    // UI
+                    restoreUI();
+                });
 
                 return;
-            }
+            };
 
-
+            var dlCount = 0;
             BABYLON.SceneLoader.Load("Scenes/" + name + "/", name + ".babylon", engine, function (newScene) {
                 scene = newScene;
                 scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -236,9 +255,12 @@
 
                         if (newScene.activeCamera.keysUp) {
                             newScene.activeCamera.keysUp.push(90); // Z
+                            newScene.activeCamera.keysUp.push(87); // W
                             newScene.activeCamera.keysDown.push(83); // S
                             newScene.activeCamera.keysLeft.push(65); // A
+                            newScene.activeCamera.keysLeft.push(81); // Q
                             newScene.activeCamera.keysRight.push(69); // E
+                            newScene.activeCamera.keysRight.push(68); // D
                         }
                     }
 
@@ -252,7 +274,12 @@
                 });
 
             }, function (evt) {
-                loadingText.innerHTML = "Loading, please wait..." + (evt.loaded * 100 / evt.total).toFixed() + "%";
+                if (evt.lengthComputable) {
+                    loadingText.innerHTML = "Loading, please wait..." + (evt.loaded * 100 / evt.total).toFixed() + "%";
+                } else {
+                    dlCount = evt.loaded / (1024 * 1024);
+                    loadingText.innerHTML = "Loading, please wait..." + Math.floor(dlCount * 100.0) / 100.0 + " MB already loaded.";
+                }
             });
         };
 
@@ -272,8 +299,10 @@
 
         // Render scene
         if (scene) {
-            if (!scene.isReady()) {
-                loadingText.innerHTML = "Streaming textures...(" + scene.getWaitingItemsCount() + " remaining)";
+            if (!sceneChecked && !scene.isReady()) {
+                loadingText.innerHTML = "Streaming textures..." + scene.getWaitingItemsCount() + " remaining";
+            } else {
+                sceneChecked = true;
             }
 
             scene.render();

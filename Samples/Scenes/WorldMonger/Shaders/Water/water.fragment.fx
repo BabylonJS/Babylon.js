@@ -35,7 +35,7 @@ void main(void) {
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
 	float specComp = dot(normalize(vNormalW), angleW);
-	specComp = pow(specComp, 256.);
+	specComp = pow(abs(specComp), 256.);
 
 	// Refraction
 	vec2 texCoords;

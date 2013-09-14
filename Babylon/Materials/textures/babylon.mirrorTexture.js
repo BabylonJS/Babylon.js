@@ -5,7 +5,8 @@
         this._scene = scene;
         this._scene.textures.push(this);
 
-        this.name = name;        
+        this.name = name;
+        this._generateMipMaps = generateMipMaps;
 
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
         
@@ -45,5 +46,20 @@
         scene.getEngine().cullBackFaces = true;
 
         delete BABYLON.clipPlane;
+    };
+    
+    BABYLON.MirrorTexture.prototype.clone = function () {
+        var textureSize = this.getSize();
+        var newTexture = new BABYLON.DynamicTexture(this.name, textureSize.width, this._scene, this._generateMipMaps);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // Mirror Texture
+        newTexture.mirrorPlane = this.mirrorPlane.clone();
+        newTexture.renderList = this.renderList.slice(0);
+
+        return newTexture;
     };
 })();

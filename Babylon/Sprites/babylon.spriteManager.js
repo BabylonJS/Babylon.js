@@ -100,9 +100,13 @@
         var offset = 0;
         this._vertices.length = max * this._vertexStrideSize;
         for (var index = 0; index < max; index++) {
-			if (this.sprites[index] == undefined) { continue; }
             var sprite = this.sprites[index];
+            if (!sprite) {
+                 continue;
+            }
+            
             sprite._animate(deltaTime);
+
             this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
             this._appendSpriteVertex(offset++, sprite, 1, 0, rowSize);
             this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
@@ -149,7 +153,7 @@
     
     BABYLON.SpriteManager.prototype.dispose = function () {
         if (this._vertexBuffer) {
-            //this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+            this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
             this._vertexBuffer = null;
         }
 

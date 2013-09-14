@@ -15,6 +15,8 @@
         this.rotation = new BABYLON.Vector3(0, 0, 0);
         this.scaling = new BABYLON.Vector3(1, 1, 1);
 
+        this._pivotMatrix = BABYLON.Matrix.Identity();
+
         this._indices = [];
         this.subMeshes = [];
 
@@ -26,9 +28,11 @@
         // Cache
         this._positions = null;
         this._cache = {
+            localMatrixUpdated: false,
             position: BABYLON.Vector3.Zero(),
             scaling: BABYLON.Vector3.Zero(),
-            rotation: BABYLON.Vector3.Zero()
+            rotation: BABYLON.Vector3.Zero(),
+            rotationQuaternion: new BABYLON.Quaternion(0, 0, 0, 0)
         };
 
         this._childrenFlag = false;
@@ -36,9 +40,11 @@
         this._localRotation = BABYLON.Matrix.Zero();
         this._localTranslation = BABYLON.Matrix.Zero();
         this._localBillboard = BABYLON.Matrix.Zero();
-        this._localScalingRotation = BABYLON.Matrix.Zero();
+        this._localPivotScaling = BABYLON.Matrix.Zero();
+        this._localPivotScalingRotation = BABYLON.Matrix.Zero();
         this._localWorld = BABYLON.Matrix.Zero();
         this._worldMatrix = BABYLON.Matrix.Zero();
+        this._rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
 
         this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
         this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
@@ -65,6 +71,8 @@
 
     BABYLON.Mesh.prototype._isDisposed = false;
     BABYLON.Mesh.prototype.onDispose = null;
+
+    BABYLON.Mesh.prototype.skeleton = null;
 
     // Properties
 
@@ -108,19 +116,33 @@
         return this._childrenFlag;
     };
 
+    BABYLON.Mesh.prototype.setPivotMatrix = function (matrix) {
+        this._pivotMatrix = matrix;
+        this._cache.pivotMatrixUpdated = true;
+    };
+
+    BABYLON.Mesh.prototype.getPivotMatrix = function () {
+        return this._localMatrix;
+    };
+
     BABYLON.Mesh.prototype.isSynchronized = function () {
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE)
             return false;
 
-        if (!this._cache.position || !this._cache.rotation || !this._cache.scaling) {
+        if (this._cache.pivotMatrixUpdated) {
             return false;
         }
 
         if (!this._cache.position.equals(this.position))
             return false;
 
-        if (!this._cache.rotation.equals(this.rotation))
-            return false;
+        if (this.rotation instanceof BABYLON.Quaternion) {
+            if (!this._cache.rotationQuaternion.equals(this.rotation))
+                return false;
+        } else {
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
+        }
 
         if (!this._cache.scaling.equals(this.scaling))
             return false;
@@ -167,16 +189,29 @@
 
         this._childrenFlag = true;
         this._cache.position.copyFrom(this.position);
-        this._cache.rotation.copyFrom(this.rotation);
         this._cache.scaling.copyFrom(this.scaling);
+        this._cache.pivotMatrixUpdated = false;
 
+        // Scaling
         BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
-        BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
 
-        this._localScaling.multiplyToRef(this._localRotation, this._localScalingRotation);
+        // Rotation
+        if (this.rotation instanceof BABYLON.Quaternion) {
+            this.rotation.toRotationMatrix(this._localRotation);
+            this._cache.rotationQuaternion.copyFrom(this.rotation);
+        } else {
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+            this._cache.rotation.copyFrom(this.rotation);
+        }
+
+        // Translation
+        BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+
+        // Composing transformations
+        this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
+        this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
 
         // Billboarding
-        BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE) {
             var localPosition = this.position.clone();
             var zero = this._scene.activeCamera.position.clone();
@@ -202,18 +237,18 @@
 
             this._localBillboard.invert();
 
-            this._localScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
-            BABYLON.Matrix.RotationY(Math.PI).multiplyToRef(this._localWorld, this._localScalingRotation);
+            this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
+            this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
         }
 
         // Parent
         if (this.parent && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
-            this._localScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             var parentWorld = this.parent.getWorldMatrix();
 
             this._localWorld.multiplyToRef(parentWorld, this._worldMatrix);
         } else {
-            this._localScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
+            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
         }
 
         // Bounding info
@@ -440,6 +475,36 @@
         return results;
     };
 
+    // Geometry
+    BABYLON.Mesh.prototype.applyTransform = function (transform) {
+        // Position
+        if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+            return;
+        }
+
+        this._resetPointsArrayCache();
+
+        var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
+        var temp = new BABYLON.MatrixType(data.length);
+        for (var index = 0; index < data.length; index += 3) {
+            BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+        }
+
+        this.setVerticesData(temp, BABYLON.VertexBuffer.PositionKind, this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].isUpdatable());
+
+        // Normals
+        if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+            return;
+        }
+
+        data = this._vertexBuffers[BABYLON.VertexBuffer.NormalKind].getData();
+        for (var index = 0; index < data.length; index += 3) {
+            BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+        }
+
+        this.setVerticesData(temp, BABYLON.VertexBuffer.NormalKind, this._vertexBuffers[BABYLON.VertexBuffer.NormalKind].isUpdatable());
+    };
+
     // Cache
     BABYLON.Mesh.prototype._resetPointsArrayCache = function () {
         this._positions = null;
@@ -540,8 +605,20 @@
             }
         }
 
-        if (distance >= 0)
-            return { hit: true, distance: distance };
+        if (distance >= 0) {
+            // Get picked point
+            var world = this.getWorldMatrix();
+            var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
+            var direction = ray.direction.clone();
+            direction.normalize();
+            direction = direction.scale(distance);
+            var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
+
+            var pickedPoint = worldOrigin.add(worldDirection);
+
+            // Return result
+            return { hit: true, distance: BABYLON.Vector3.Distance(worldOrigin, pickedPoint), pickedPoint: pickedPoint };
+        }
 
         return { hit: false, distance: 0 };
     };
@@ -560,7 +637,7 @@
         this._indexBuffer.references++;
 
         // Deep copy
-        BABYLON.Tools.DeepCopy(this, result, ["name", "material"], ["_indices", "_totalVertices"]);
+        BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], ["_indices", "_totalVertices"]);
 
         // Bounding info
         result._boundingInfo = new BABYLON.BoundingInfo(this.getVerticesData(BABYLON.VertexBuffer.PositionKind), 0, this._totalVertices);
@@ -599,7 +676,9 @@
     // Dispose
     BABYLON.Mesh.prototype.dispose = function (doNotRecurse) {
         if (this._vertexBuffers) {
-            //this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+            for (var index = 0; index < this._vertexBuffers.length; index++) {
+                this._vertexBuffers[index].dispose();
+            }
             this._vertexBuffers = null;
         }
 
@@ -762,14 +841,14 @@
     };
 
     // Cylinder (Code from SharpDX.org)
-    BABYLON.Mesh.CreateCylinder = function (name, height, diameter, tessellation, scene, updatable) {
-        var radius = diameter / 2;
+    BABYLON.Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
+        var radiusTop = diameterTop / 2;
+        var radiusBottom = diameterBottom / 2;
         var indices = [];
         var positions = [];
         var normals = [];
         var uvs = [];
         var cylinder = new BABYLON.Mesh(name, scene);
-
 
         var getCircleVector = function (i) {
             var angle = (i * 2.0 * Math.PI / tessellation);
@@ -780,12 +859,18 @@
         };
 
         var createCylinderCap = function (isTop) {
+            var radius = isTop ? radiusTop : radiusBottom;
+            
+            if (radius == 0) {
+                return
+            }
+
             // Create cap indices.
             for (var i = 0; i < tessellation - 2; i++) {
                 var i1 = (i + 1) % tessellation;
                 var i2 = (i + 2) % tessellation;
 
-                if (isTop) {
+                if (!isTop) {
                     var tmp = i1;
                     var i1 = i2;
                     i2 = tmp;
@@ -799,7 +884,7 @@
 
 
             // Which end of the cylinder is this?
-            var normal = new BABYLON.Vector3(0, 1, 0);
+            var normal = new BABYLON.Vector3(0, -1, 0);
             var textureScale = new BABYLON.Vector2(-0.5, -0.5);
 
             if (!isTop) {
@@ -828,16 +913,16 @@
         // Create a ring of triangles around the outside of the cylinder.
         for (var i = 0; i <= tessellation; i++) {
             var normal = getCircleVector(i);
-            var sideOffset = normal.scale(radius);
+            var sideOffsetBottom = normal.scale(radiusBottom);
+            var sideOffsetTop = normal.scale(radiusTop);
             var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
 
-            var position = sideOffset.add(topOffset);
+            var position = sideOffsetBottom.add(topOffset);
             positions.push(position.x, position.y, position.z);
             normals.push(normal.x, normal.y, normal.z);
             uvs.push(textureCoordinate.x, textureCoordinate.y);
 
-
-            position = sideOffset.subtract(topOffset);
+            position = sideOffsetTop.subtract(topOffset);
             textureCoordinate.y += 1;
             positions.push(position.x, position.y, position.z);
             normals.push(normal.x, normal.y, normal.z);
@@ -863,6 +948,8 @@
 
         return cylinder;
     };
+    
+    // Cone
 
     // Torus  (Code from SharpDX.org)
     BABYLON.Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
@@ -923,7 +1010,6 @@
         return torus;
     };
 
-
     // Plane
     BABYLON.Mesh.CreatePlane = function (name, size, scene, updatable) {
         var plane = new BABYLON.Mesh(name, scene);
@@ -942,11 +1028,11 @@
         positions.push(halfSize, -halfSize, 0);
         normals.push(0, 0, -1.0);
         uvs.push(1.0, 0.0);
-        
+
         positions.push(halfSize, halfSize, 0);
         normals.push(0, 0, -1.0);
         uvs.push(1.0, 1.0);
-        
+
         positions.push(-halfSize, halfSize, 0);
         normals.push(0, 0, -1.0);
         uvs.push(0.0, 1.0);
@@ -1011,8 +1097,7 @@
     BABYLON.Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
         var ground = new BABYLON.Mesh(name, scene);
 
-        var img = new Image();
-        img.onload = function () {
+        var onload = function (img) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1081,7 +1166,7 @@
             ground._isReady = true;
         };
 
-        img.src = url;
+        BABYLON.Tools.LoadImage(url, onload);
 
         ground._isReady = false;
 

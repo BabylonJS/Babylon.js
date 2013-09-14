@@ -83,10 +83,15 @@
     };
 
     // Controls
-    BABYLON.FreeCamera.prototype.attachControl = function (canvas) {
+    BABYLON.FreeCamera.prototype.attachControl = function (canvas, noPreventDefault) {
         var previousPosition;
         var that = this;
         var engine = this._scene.getEngine();
+        
+        if (this._attachedCanvas) {
+            return;
+        }
+        this._attachedCanvas = canvas;
 
         if (this._onMouseDown === undefined) {
             this._onMouseDown = function (evt) {
@@ -95,18 +100,24 @@
                     y: evt.clientY
                 };
 
-                evt.preventDefault();
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
             };
 
             this._onMouseUp = function (evt) {
                 previousPosition = null;
-                evt.preventDefault();
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
             };
 
             this._onMouseOut = function (evt) {
                 previousPosition = null;
                 that._keys = [];
-                evt.preventDefault();
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
             };
 
             this._onMouseMove = function (evt) {
@@ -132,7 +143,9 @@
                     x: evt.clientX,
                     y: evt.clientY
                 };
-                evt.preventDefault();
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
             };
 
             this._onKeyDown = function (evt) {
@@ -145,7 +158,9 @@
                     if (index === -1) {
                         that._keys.push(evt.keyCode);
                     }
-                    evt.preventDefault();
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
                 }
             };
 
@@ -159,7 +174,9 @@
                     if (index >= 0) {
                         that._keys.splice(index, 1);
                     }
-                    evt.preventDefault();
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
                 }
             };
 
@@ -178,6 +195,10 @@
     };
 
     BABYLON.FreeCamera.prototype.detachControl = function (canvas) {
+        if (this._attachedCanvas != canvas) {
+            return;
+        }
+
         canvas.removeEventListener("mousedown", this._onMouseDown);
         canvas.removeEventListener("mouseup", this._onMouseUp);
         canvas.removeEventListener("mouseout", this._onMouseOut);
@@ -185,6 +206,8 @@
         window.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("keyup", this._onKeyUp);
         window.removeEventListener("blur", this._onLostFocus);
+        
+        this._attachedCanvas = null;
     };
 
     BABYLON.FreeCamera.prototype._collideWithWorld = function (velocity) {
