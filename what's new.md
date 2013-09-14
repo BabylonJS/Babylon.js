@@ -1,27 +1,22 @@
 Changes list
 ============
 - 1.4.0:
- - Major updates:
-  - Bones support ([deltakosh](http://www.github.com/deltakosh)): 
-   - Bones and animated bones are now supported.
-   - They can cast shadows
-   - Bones can b exported from Blender or from FBX
-  - Offline support ([davrous](https://github.com/davrous)):
-   - You can specify to offline assets (scene and textures) to a local IndexedDB
-   - Assets are then loaded once until you change the version on a server-side manifest
-  - N-Level octrees ([deltakosh](http://www.github.com/deltakosh)):
- - Updates:
-  - Adding ```dispose()``` function and a ```disposeWhenFinishedAnimating``` property to sprites ([Cyle](http://github.com/CYle/))
-  - Adding a ```applyTransform()``` function to meshes in order to bake a specific transformation into vertices ([deltakosh](http://www.github.com/deltakosh))
-  - Adding ```setPivotMatrix()``` and ```getPivotMatrix()``` to meshes to define pivot matrix ([deltakosh](http://www.github.com/deltakosh))
-  - ```Mesh.CreateCylinder``` now takes two diameters as parameters to be able to create cone ([deltakosh](http://www.github.com/deltakosh)) 
-  - New ```material.Clone``` function ([deltakosh](http://www.github.com/deltakosh)) 
- - Bugfixes:
-  - ```scene.IsReady()``` is more robust now and can be used to detect when the scene is EFFECTIVELY ready :) ([deltakosh](http://www.github.com/deltakosh))
-  - Fixing animations timing. Animations should be in sync now ([deltakosh](http://www.github.com/deltakosh))
-  - Fixing a bug with orthographic camera ([deltakosh](http://www.github.com/deltakosh))
-  - Fixing a bug with ```attachControl()``` function ([deltakosh](http://www.github.com/deltakosh))
-  - Fixing a bug with ```scene.pick()``` function ([deltakosh](http://www.github.com/deltakosh))
+ - **Major features** 
+ - Bones support ([deltakosh](http://www.github.com/deltakosh)). Bones and animated bones are now supported. They can cast shadows. Bones can be exported from Blender or from FBX
+ - Offline support ([davrous](https://github.com/davrous). You can specify to offline assets (scene and textures) to a local IndexedDB. Assets are then loaded once until you change the version on a server-side manifest
+ - N-Level octrees ([deltakosh](http://www.github.com/deltakosh)):
+ - **Updates**
+ - Adding ```dispose()``` function and a ```disposeWhenFinishedAnimating``` property to sprites ([Cyle](http://github.com/CYle/))
+ - Adding a ```applyTransform()``` function to meshes in order to bake a specific transformation into vertices ([deltakosh](http://www.github.com/deltakosh))
+ - Adding ```setPivotMatrix()``` and ```getPivotMatrix()``` to meshes to define pivot matrix ([deltakosh](http://www.github.com/deltakosh))
+ - ```Mesh.CreateCylinder``` now takes two diameters as parameters to be able to create cone ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```material.Clone``` function ([deltakosh](http://www.github.com/deltakosh)) 
+ - **Bugfixes**
+ - ```scene.IsReady()``` is more robust now and can be used to detect when the scene is EFFECTIVELY ready :) ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing animations timing. Animations should be in sync now ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing a bug with orthographic camera ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing a bug with ```attachControl()``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing a bug with ```scene.pick()``` function ([deltakosh](http://www.github.com/deltakosh))
 - 1.3.2:
  - Fixing a bug with camera.detachControl
 - 1.3.0:
