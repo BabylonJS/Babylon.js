@@ -1,8 +1,15 @@
-﻿Babylon.js
-========
+Babylon.js
+==========
 
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
 
+# Documentation
+- [Wiki](https://github.com/babylonjs/babylon.js/wiki)
+- [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
+- [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
+- [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
+
+# Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
 - Scene picking
