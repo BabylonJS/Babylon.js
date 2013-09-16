@@ -27,7 +27,7 @@
         this._workingContext = this._workingCanvas.getContext("2d");
 
         // Viewport
-        this._hardwareScalingLevel = 1.0 / window.devicePixelRatio || 1.0;
+        this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
         this.resize();
 
         // Caps
