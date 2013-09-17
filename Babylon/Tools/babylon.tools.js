@@ -126,7 +126,7 @@
     // External files
     BABYLON.Tools.BaseUrl = "";
 
-    BABYLON.Tools.LoadImage = function (url, onload, onerror) {  
+    BABYLON.Tools.LoadImage = function (url, onload, onerror, database) {  
         var img = new Image();
 
         img.onload = function () {
@@ -142,11 +142,11 @@
         };
 
         var loadFromIndexedDB = function () {
-            BABYLON.Database.LoadImageFromDB(url, img);
+            database.loadImageFromDB(url, img);
         };
 
-        if (BABYLON.Database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
-            BABYLON.Database.OpenAsync(loadFromIndexedDB, noIndexedDB);
+        if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
+            database.openAsync(loadFromIndexedDB, noIndexedDB);
         }
         else {
             noIndexedDB();
@@ -155,7 +155,7 @@
         return img;
     };
 
-    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack) {
+    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack, database) {
         var noIndexedDB = function () {
             var request = new XMLHttpRequest();
             var loadUrl = BABYLON.Tools.BaseUrl + url;
@@ -177,12 +177,12 @@
         };
 
         var loadFromIndexedDB = function () {
-            BABYLON.Database.LoadSceneFromDB(callback, progressCallBack);
+            database.loadSceneFromDB(url, callback, progressCallBack);
         };
 
         // Caching only scenes files
-        if (url.indexOf(".babylon") !== -1 && (BABYLON.Database.enableSceneOffline)) {
-            BABYLON.Database.OpenAsync(loadFromIndexedDB, noIndexedDB);
+        if (database && url.indexOf(".babylon") !== -1 && (database.enableSceneOffline)) {
+            database.openAsync(loadFromIndexedDB, noIndexedDB);
         }
         else {
             noIndexedDB();

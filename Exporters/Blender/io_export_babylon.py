@@ -86,6 +86,9 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
     def write_vector(file_handler, name, vector):
         file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f"%(vector.x,vector.z,vector.y) + "]")
 
+    def write_quaternion(file_handler, name, quaternion):
+        file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f,%.4f"%(quaternion.x,quaternion.z,quaternion.y, -quaternion.w) + "]")
+
     def write_vectorScaled(file_handler, name, vector, mult):
         file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f"%(vector.x * mult, vector.z * mult, vector.y * mult) + "]")
     
@@ -326,16 +329,21 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         mesh = object.to_mesh(scene, True, "PREVIEW")
         
         # Transform
-        matrix_world = object.matrix_world.copy()
+        loc = mathutils.Vector((0, 0, 0))
+        rot = mathutils.Quaternion((0, 0, 0, 1))
+        scale = mathutils.Vector((1, 1, 1))
+        
         if object.parent and object.parent.type == "ARMATURE" and len(object.vertex_groups) > 0:
+            mesh.transform(object.matrix_world)
             hasSkeleton = True
-            print("skeleton", object.name)
         else:
             hasSkeleton = False
-            matrix_world.translation = mathutils.Vector((0, 0, 0))
+            world = object.matrix_world
+            if (object.parent):
+                world = object.parent.matrix_world.inverted() * object.matrix_world
 
-        mesh.transform(matrix_world)        
-                                
+            loc, rot, scale = world.decompose()
+                                                
         # Triangulate mesh if required
         Export_babylon.mesh_triangulate(mesh)
         
@@ -565,12 +573,9 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         else:
             billboardMode = 0
             
-        if hasSkeleton:
-            Export_babylon.write_vector(file_handler, "position", mathutils.Vector((0, 0, 0)))
-        else:
-            Export_babylon.write_vector(file_handler, "position", object.location)
-        Export_babylon.write_vector(file_handler, "rotation", mathutils.Vector((0, 0, 0)))
-        Export_babylon.write_vector(file_handler, "scaling", mathutils.Vector((1, 1, 1)))
+        Export_babylon.write_vector(file_handler, "position", loc)
+        Export_babylon.write_quaternion(file_handler, "rotation", rot)
+        Export_babylon.write_vector(file_handler, "scaling", scale)
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)

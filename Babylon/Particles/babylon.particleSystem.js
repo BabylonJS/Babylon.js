@@ -273,7 +273,6 @@
 
         // Update VBO
         var offset = 0;
-        this._vertices.length = this.particles.length * this._vertexStrideSize;
         for (var index = 0; index < this.particles.length; index++) {
             var particle = this.particles[index];
 
@@ -283,7 +282,7 @@
             this._appendParticleVertex(offset++, particle, 0, 1);
         }
         var engine = this._scene.getEngine();
-        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
+        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, this.particles.length * this._vertexStrideSize);
     };
 
     BABYLON.ParticleSystem.prototype.render = function () {

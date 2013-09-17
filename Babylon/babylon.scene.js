@@ -575,7 +575,6 @@
                 });
 
                 this._onReadyCallbacks = [];
-                BABYLON.Database.Release();
             }
         }
 

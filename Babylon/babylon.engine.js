@@ -27,7 +27,7 @@
         this._workingContext = this._workingCanvas.getContext("2d");
 
         // Viewport
-        this._hardwareScalingLevel = 1.0 / window.devicePixelRatio || 1.0;
+        this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
         this.resize();
 
         // Caps
@@ -261,10 +261,15 @@
         return vbo;
     };
 
-    BABYLON.Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices) {
+    BABYLON.Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
         // Should be (vertices instanceof Float32Array ? vertices : new Float32Array(vertices)) but Chrome raises an Exception in this case :(
-        this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+        if (length) {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
+        } else {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+        }
+        
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
     };
 
@@ -625,7 +630,7 @@
         };
 
         scene._addPendingData(texture);
-        BABYLON.Tools.LoadImage(url, onload, onerror);
+        BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
 
         texture.url = url;
         texture.noMipmap = noMipmap;
@@ -768,7 +773,7 @@
             scene._removePendingData(img);
         };
         
-        img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror);
+        img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror, scene.database);
         scene._addPendingData(img);
     };
 
