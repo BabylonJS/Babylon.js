@@ -1166,7 +1166,7 @@
             ground._isReady = true;
         };
 
-        BABYLON.Tools.LoadImage(url, onload);
+        BABYLON.Tools.LoadImage(url, onload, scene.database);
 
         ground._isReady = false;
 

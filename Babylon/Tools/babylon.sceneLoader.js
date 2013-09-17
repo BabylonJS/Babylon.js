@@ -277,7 +277,7 @@
         mesh.id = parsedMesh.id;
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
-        mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
+        mesh.rotation = (parsedMesh.rotation.length == 3) ? BABYLON.Vector3.FromArray(parsedMesh.rotation) : BABYLON.Quaternion.FromArray(parsedMesh.rotation);
         mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
         
         if (parsedMesh.localMatrix) {
@@ -395,7 +395,8 @@
     BABYLON.SceneLoader = {
         ImportMesh: function (meshName, rootUrl, sceneFilename, scene, then, progressCallBack) {
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            BABYLON.Database.CheckManifestFile(rootUrl, sceneFilename);
+            var database = new BABYLON.Database(rootUrl + sceneFilename);
+            scene.database = database;
 
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
@@ -474,15 +475,16 @@
                 if (then) {
                     then(meshes, particleSystems, skeletons);
                 }
-            }, progressCallBack);
+            }, progressCallBack, database);
         },
         Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            BABYLON.Database.CheckManifestFile(rootUrl, sceneFilename);
+            var database = new BABYLON.Database(rootUrl + sceneFilename);
             
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
                 var scene = new BABYLON.Scene(engine);
+                scene.database = database;
 
                 // Scene
                 scene.autoClear = parsedData.autoClear;
@@ -585,7 +587,7 @@
                 if (then) {
                     then(scene);
                 }
-            }, progressCallBack);
+            }, progressCallBack, database);
         }
     };
 })();

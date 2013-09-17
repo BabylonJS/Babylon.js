@@ -98,7 +98,6 @@
         var rowSize = baseSize.width / this.cellSize;
 
         var offset = 0;
-        this._vertices.length = max * this._vertexStrideSize;
         for (var index = 0; index < max; index++) {
             var sprite = this.sprites[index];
             if (!sprite) {
@@ -112,7 +111,7 @@
             this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
             this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
         }
-        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
+        engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, max * this._vertexStrideSize);
        
         // Render
         var effect = this._effectBase;

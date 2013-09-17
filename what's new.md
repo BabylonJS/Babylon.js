@@ -1,5 +1,12 @@
 Changes list
 ============
+- 1.4.1:
+ - **Bugfixes**
+ - Support for Safari ([deltakosh](http://www.github.com/deltakosh))
+ - Adding local transformations to Blender exporter ([deltakosh](http://www.github.com/deltakosh))
+ - IndexedDB code refactoring to support simultaneous calls ([davrous](https://github.com/davrous))
+ - Hardware scaling fix ([Gwenaël Hagenmuller](https://github.com/gwenael-hagenmuller))
+ - Fixing a bug with sprites dynamic buffers ([deltakosh](http://www.github.com/deltakosh))
 - 1.4.0:
  - **Major features** 
  - Bones support ([deltakosh](http://www.github.com/deltakosh)). Bones and animated bones are now supported. They can cast shadows. Bones can be exported from Blender or from FBX

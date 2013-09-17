@@ -1,16 +1,6 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Database = {};
-    var db = null;
-
-    BABYLON.Database.enableSceneOffline = false;
-    BABYLON.Database.enableTexturesOffline = false;
-    BABYLON.Database.sceneToLoad = "";
-    BABYLON.Database.currentSceneVersion = 0;
-    BABYLON.Database.isUASupportingBlobStorage = true;
-    BABYLON.Database.mustUpdateRessources = false;
-
     // Handling various flavors of prefixed version of IndexedDB
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||
         window.msIndexedDB;
@@ -18,18 +8,39 @@
         window.msIDBTransaction;
     window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
 
+    BABYLON.Database = function (urlToScene) {
+        this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
+        this.db = null;
+        this.enableSceneOffline = false;
+        this.enableTexturesOffline = false;
+        this.manifestVersionFound = 0;
+        this.mustUpdateRessources = false;
+        this.hasReachedQuota = false;
+        this.checkManifestFile();
+    };
+
+    BABYLON.Database.isUASupportingBlobStorage = true;
+
     function parseURL(url) {
         var a = document.createElement('a');
         a.href = url;
         var fileName = url.substring(url.lastIndexOf("/") + 1, url.length);
         var absLocation = url.substring(0, url.indexOf(fileName, 0));
         return absLocation;
-    }
+    };
 
-    BABYLON.Database.CheckManifestFile = function (rootUrl, sceneFilename) {
-        var absLocation = parseURL(window.location.href);
-        BABYLON.Database.sceneToLoad = absLocation + rootUrl + sceneFilename;
-        var manifestURL = BABYLON.Database.sceneToLoad + ".manifest";
+    BABYLON.Database.ReturnFullUrlLocation = function (url) {
+        if (url.indexOf("http://") === -1) {
+            return (parseURL(window.location.href) + url);
+        }
+        else {
+            return url;
+        }
+    };
+
+    BABYLON.Database.prototype.checkManifestFile = function () {
+        var that = this;
+        var manifestURL = this.currentSceneUrl + ".manifest";
 
         var xhr = new XMLHttpRequest();
 
@@ -39,48 +50,49 @@
             if (xhr.status === 200) {
                 try {
                     manifestFile = JSON.parse(xhr.response);
-                    BABYLON.Database.enableSceneOffline = manifestFile.enableSceneOffline;
-                    BABYLON.Database.enableTexturesOffline = manifestFile.enableTexturesOffline;
+                    that.enableSceneOffline = manifestFile.enableSceneOffline;
+                    that.enableTexturesOffline = manifestFile.enableTexturesOffline;
                     if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
-                        BABYLON.Database.currentSceneVersion = manifestFile.version;
+                        that.manifestVersionFound = manifestFile.version;
                     }
                 }
                 catch (ex) {
-                    BABYLON.Database.enableSceneOffline = false;
-                    BABYLON.Database.enableTexturesOffline = false;
+                    that.enableSceneOffline = false;
+                    that.enableTexturesOffline = false;
                 }
             }
             else {
-                BABYLON.Database.enableSceneOffline = false;
-                BABYLON.Database.enableTexturesOffline = false;
+                that.enableSceneOffline = false;
+                that.enableTexturesOffline = false;
             }
         }, false);
 
         xhr.addEventListener("error", function (event) {
-            BABYLON.Database.enableSceneOffline = false;
-            BABYLON.Database.enableTexturesOffline = false;
+            that.enableSceneOffline = false;
+            that.enableTexturesOffline = false;
         }, false);
 
         xhr.send();
     };
 
-    BABYLON.Database.OpenAsync = function (successCallback, errorCallback) {
-        if (!window.indexedDB || !(BABYLON.Database.enableSceneOffline || BABYLON.Database.enableTexturesOffline)) {
+    BABYLON.Database.prototype.openAsync = function (successCallback, errorCallback) {
+        var that = this;
+        if (!window.indexedDB || !(this.enableSceneOffline || this.enableTexturesOffline)) {
             // Your browser doesn't support IndexedDB
-            BABYLON.Database.isSupported = false;
+            this.isSupported = false;
             if (errorCallback) errorCallback();
         }
         else {
             // If the DB hasn't been opened or created yet
-            if (!db) {
-                BABYLON.Database.hasReachedQuota = false;
-                BABYLON.Database.isSupported = true;
+            if (!this.db) {
+                this.hasReachedQuota = false;
+                this.isSupported = true;
 
                 var request = window.indexedDB.open("babylonjs", 1.0);
 
                 // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
                 request.onerror = function (event) {
-                    BABYLON.Database.isSupported = false;
+                    that.isSupported = false;
                     if (errorCallback) errorCallback();
                 };
 
@@ -92,18 +104,16 @@
 
                 // DB has been opened successfully
                 request.onsuccess = function (event) {
-                    db = request.result;
-                    isOpeningDB = false;
-                    console.log("DB opened.");
+                    that.db = request.result;
                     successCallback();
                 };
 
                 // Initialization of the DB. Creating Scenes & Textures stores
                 request.onupgradeneeded = function (event) {
-                    db = event.target.result;
-                    var scenesStore = db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                    var scenesStore = db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                    var texturesStore = db.createObjectStore("textures", { keyPath: "textureUrl" });
+                    that.db = event.target.result;
+                    var scenesStore = that.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                    var scenesStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                    var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
                 };
             }
             // DB has already been created and opened
@@ -113,35 +123,35 @@
         }
     };
 
-    BABYLON.Database.LoadImageFromDB = function (url, image) {
+    BABYLON.Database.prototype.loadImageFromDB = function (url, image) {
+        var that = this;
+        var completeURL = BABYLON.Database.ReturnFullUrlLocation(url);
+
         var saveAndLoadImage = function (event) {
-            if (!BABYLON.Database.hasReachedQuota && db !== null) {
-                console.log("Saving into DB: " + url);
+            if (!that.hasReachedQuota && that.db !== null) {
                 // the texture is not yet in the DB, let's try to save it
-                BABYLON.Database._saveImageIntoDBAsync(url, image);
+                that._saveImageIntoDBAsync(completeURL, image);
             }
             // If the texture is not in the DB and we've reached the DB quota limit
             // let's load it directly from the web
             else {
-                console.log("Image loaded directly from the web: " + url);
                 image.src = url;
             }
         };
-        console.log("Currently working on: " + url);
 
-        if (!BABYLON.Database.mustUpdateRessources) {
-            BABYLON.Database._loadImageFromDBAsync(url, image, saveAndLoadImage);
+        if (!this.mustUpdateRessources) {
+            this._loadImageFromDBAsync(completeURL, image, saveAndLoadImage);
         }
+        // First time we're download the images or update requested in the manifest file by a version change
         else {
             saveAndLoadImage();
         }
     };
 
-    BABYLON.Database._loadImageFromDBAsync = function (url, image, notInDBCallback) {
-        if (BABYLON.Database.isSupported && db !== null) {
-            var indexeddbUrl = BABYLON.Database.sceneToLoad + "/" + url;
+    BABYLON.Database.prototype._loadImageFromDBAsync = function (url, image, notInDBCallback) {
+        if (this.isSupported && this.db !== null) {
             var texture;
-            var transaction = db.transaction(["textures"]);
+            var transaction = this.db.transaction(["textures"]);
 
             transaction.onabort = function (event) {
                 image.src = url;
@@ -159,13 +169,13 @@
                 }
             };
 
-            var getRequest = transaction.objectStore("textures").get(indexeddbUrl);
+            var getRequest = transaction.objectStore("textures").get(url);
 
             getRequest.onsuccess = function (event) {
                 texture = event.target.result;
             };
             getRequest.onerror = function (event) {
-                console.log("error loading texture " + indexeddbUrl + " from DB.");
+                console.log("Error loading texture " + url + " from DB.");
                 image.src = url;
             };
         }
@@ -175,10 +185,8 @@
         }
     };
 
-    BABYLON.Database._saveImageIntoDBAsync = function (url, image) {
-        if (BABYLON.Database.isSupported) {
-            var indexeddbUrl = BABYLON.Database.sceneToLoad + "/" + url;
-
+    BABYLON.Database.prototype._saveImageIntoDBAsync = function (url, image) {
+        if (this.isSupported) {
             // In case of error (type not supported or quota exceeded), we're at least sending back XHR data to allow texture loading later on
             var generateBlobUrl = function () {
                 var blobTextureURL;
@@ -198,6 +206,7 @@
             };
 
             if (BABYLON.Database.isUASupportingBlobStorage) {
+                var that = this;
                 // Create XHR
                 var xhr = new XMLHttpRequest(),
                     blob;
@@ -210,15 +219,13 @@
                         // Blob as response (XHR2)
                         blob = xhr.response;
 
-                        // Open a transaction to the database
-                        var transaction = db.transaction(["textures"], "readwrite");
+                        var transaction = that.db.transaction(["textures"], "readwrite");
 
                         // the transaction could abort because of a QuotaExceededError error
                         transaction.onabort = function (event) {
                             try {
                                 if (event.srcElement.error.name === "QuotaExceededError") {
-                                    console.log("QUOTA EXCEEDED ERROR.");
-                                    BABYLON.Database.hasReachedQuota = true;
+                                    that.hasReachedQuota = true;
                                 }
                             }
                             catch (ex) { }
@@ -227,11 +234,10 @@
 
                         transaction.oncomplete = function (event) {
                             generateBlobUrl();
-                            console.log("Saved into DB successfully.");
                         };
 
                         var newTexture = {};
-                        newTexture.textureUrl = indexeddbUrl;
+                        newTexture.textureUrl = url;
                         newTexture.data = blob;
 
                         try {
@@ -248,7 +254,6 @@
                             // "DataCloneError" generated by Chrome when you try to inject blob into IndexedDB
                             if (ex.code === 25) {
                                 BABYLON.Database.isUASupportingBlobStorage = false;
-                                console.log("Exception. Returning URL because UA doesn't support Blob in IDB.");
                             }
                             image.src = url;
                         }
@@ -259,14 +264,13 @@
                 }, false);
 
                 xhr.addEventListener("error", function (event) {
-                    console.log("error on XHR request.");
+                    console.log("Error in XHR request in BABYLON.Database.");
                     image.src = url;
                 }, false);
 
                 xhr.send();
             }
             else {
-                console.log("Directly returning URL because UA doesn't support Blob in IDB.");
                 image.src = url;
             }
         }
@@ -276,25 +280,27 @@
         }
     };
 
-    BABYLON.Database._checkVersionFromDB = function (versionLoaded) {
+    BABYLON.Database.prototype._checkVersionFromDB = function (url, versionLoaded) {
+        var that = this;
+
         var updateVersion = function (event) {
             // the version is not yet in the DB or we need to update it
-            BABYLON.Database._saveVersionIntoDBAsync(versionLoaded);
+            that._saveVersionIntoDBAsync(url, versionLoaded);
         };
-        BABYLON.Database._loadVersionFromDBAsync(versionLoaded, updateVersion);
+        this._loadVersionFromDBAsync(url, versionLoaded, updateVersion);
     };
 
-    BABYLON.Database._loadVersionFromDBAsync = function (callback, updateInDBCallback) {
-        if (BABYLON.Database.isSupported) {
+    BABYLON.Database.prototype._loadVersionFromDBAsync = function (url, callback, updateInDBCallback) {
+        if (this.isSupported) {
             var version;
-            var transaction = db.transaction(["versions"]);
+            var that = this;
+            var transaction = this.db.transaction(["versions"]);
 
             transaction.oncomplete = function (event) {
                 if (version) {
                     // If the version in the JSON file is > than the version in DB
-                    if (BABYLON.Database.currentSceneVersion > version.data) {
-                        console.log("Version change detected. Need to update DB with new ressources.");
-                        BABYLON.Database.mustUpdateRessources = true;
+                    if (that.manifestVersionFound > version.data) {
+                        that.mustUpdateRessources = true;
                         updateInDBCallback();
                     }
                     else {
@@ -303,7 +309,7 @@
                 }
                 // version was not found in DB
                 else {
-                    BABYLON.Database.mustUpdateRessources = true;
+                    that.mustUpdateRessources = true;
                     updateInDBCallback();
                 }
             };
@@ -312,13 +318,13 @@
                 callback(-1);
             };
 
-            var getRequest = transaction.objectStore("versions").get(BABYLON.Database.sceneToLoad);
+            var getRequest = transaction.objectStore("versions").get(url);
 
             getRequest.onsuccess = function (event) {
                 version = event.target.result;
             };
             getRequest.onerror = function (event) {
-                console.log("error loading version for scene " + BABYLON.Database.sceneToLoad + " from DB.");
+                console.log("Error loading version for scene " + url + " from DB.");
                 callback(-1);
             };
         }
@@ -328,16 +334,17 @@
         }
     };
 
-    BABYLON.Database._saveVersionIntoDBAsync = function (callback) {
-        if (BABYLON.Database.isSupported && !BABYLON.Database.hasReachedQuota) {
+    BABYLON.Database.prototype._saveVersionIntoDBAsync = function (url, callback) {
+        if (this.isSupported && !this.hasReachedQuota) {
+            var that = this;
             // Open a transaction to the database
-            var transaction = db.transaction(["versions"], "readwrite");
+            var transaction = this.db.transaction(["versions"], "readwrite");
 
             // the transaction could abort because of a QuotaExceededError error
             transaction.onabort = function (event) {
                 try {
                     if (event.srcElement.error.name === "QuotaExceededError") {
-                        BABYLON.Database.hasReachedQuota = true;
+                        that.hasReachedQuota = true;
                     }
                 }
                 catch (ex) { }
@@ -345,12 +352,12 @@
             };
 
             transaction.oncomplete = function (event) {
-                callback(BABYLON.Database.currentSceneVersion);
+                callback(that.manifestVersionFound);
             };
 
             var newVersion = {};
-            newVersion.sceneUrl = BABYLON.Database.sceneToLoad;
-            newVersion.data = BABYLON.Database.currentSceneVersion;
+            newVersion.sceneUrl = url;
+            newVersion.data = this.manifestVersionFound;
 
             try {
                 // Put the scene into the database
@@ -359,7 +366,7 @@
 
                 };
                 addRequest.onerror = function (event) {
-                    console.log("error add request");
+                    console.log("Error in DB add version request in BABYLON.Database.");
                 };
             }
             catch (ex) {
@@ -371,27 +378,29 @@
         }
     };
 
-    BABYLON.Database.LoadSceneFromDB = function (sceneLoaded, progressCallBack) {
+    BABYLON.Database.prototype.loadSceneFromDB = function (url, sceneLoaded, progressCallBack) {
+        var that = this;
+        var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
+        
         var saveAndLoadScene = function (event) {
             // the scene is not yet in the DB, let's try to save it
-            BABYLON.Database._saveSceneIntoDBAsync(sceneLoaded, progressCallBack);
+            that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
         };
 
-        BABYLON.Database._checkVersionFromDB(function (version) {
-            console.log("Version: " + version);
-            if (!BABYLON.Database.mustUpdateRessources) {
-                BABYLON.Database._loadSceneFromDBAsync(sceneLoaded, saveAndLoadScene);
+        this._checkVersionFromDB(completeUrl, function (version) {
+            if (!that.mustUpdateRessources) {
+                that._loadSceneFromDBAsync(completeUrl, sceneLoaded, saveAndLoadScene);
             }
             else {
-                BABYLON.Database._saveSceneIntoDBAsync(sceneLoaded, progressCallBack);
+                that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
             }
         });
     };
 
-    BABYLON.Database._loadSceneFromDBAsync = function (callback, notInDBCallback) {
-        if (BABYLON.Database.isSupported) {
+    BABYLON.Database.prototype._loadSceneFromDBAsync = function (url, callback, notInDBCallback) {
+        if (this.isSupported) {
             var scene;
-            var transaction = db.transaction(["scenes"]);
+            var transaction = this.db.transaction(["scenes"]);
 
             transaction.oncomplete = function (event) {
                 if (scene) {
@@ -407,13 +416,13 @@
                 notInDBCallback();
             };
 
-            var getRequest = transaction.objectStore("scenes").get(BABYLON.Database.sceneToLoad);
+            var getRequest = transaction.objectStore("scenes").get(url);
 
             getRequest.onsuccess = function (event) {
                 scene = event.target.result;
             };
             getRequest.onerror = function (event) {
-                console.log("error loading scene " + BABYLON.Database.sceneToLoad + " from DB.");
+                console.log("Error loading scene " + url + " from DB.");
                 notInDBCallback();
             };
         }
@@ -423,12 +432,13 @@
         }
     };
 
-    BABYLON.Database._saveSceneIntoDBAsync = function (callback, progressCallback) {
-        if (BABYLON.Database.isSupported) {
+    BABYLON.Database.prototype._saveSceneIntoDBAsync = function (url, callback, progressCallback) {
+        if (this.isSupported) {
             // Create XHR
             var xhr = new XMLHttpRequest(), sceneText;
+            var that = this;
 
-            xhr.open("GET", BABYLON.Database.sceneToLoad, true);
+            xhr.open("GET", url, true);
 
             xhr.onprogress = progressCallback;
 
@@ -437,15 +447,15 @@
                     // Blob as response (XHR2)
                     sceneText = xhr.responseText;
 
-                    if (!BABYLON.Database.hasReachedQuota) {
+                    if (!that.hasReachedQuota) {
                         // Open a transaction to the database
-                        var transaction = db.transaction(["scenes"], "readwrite");
+                        var transaction = that.db.transaction(["scenes"], "readwrite");
 
                         // the transaction could abort because of a QuotaExceededError error
                         transaction.onabort = function (event) {
                             try {
                                 if (event.srcElement.error.name === "QuotaExceededError") {
-                                    BABYLON.Database.hasReachedQuota = true;
+                                    that.hasReachedQuota = true;
                                 }
                             }
                             catch (ex) { }
@@ -457,9 +467,9 @@
                         };
 
                         var newScene = {};
-                        newScene.sceneUrl = BABYLON.Database.sceneToLoad;
+                        newScene.sceneUrl = url;
                         newScene.data = sceneText;
-                        newScene.version = BABYLON.Database.currentSceneVersion;
+                        newScene.version = that.manifestVersionFound;
 
                         try {
                             // Put the scene into the database
@@ -468,7 +478,7 @@
 
                             };
                             addRequest.onerror = function (event) {
-                                console.log("error add request");
+                                console.log("Error in DB add scene request in BABYLON.Database.");
                             };
                         }
                         catch (ex) {
@@ -494,21 +504,6 @@
         else {
             console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             callback();
-        }
-    };
-
-    // Called to close the db and reset the objects
-    BABYLON.Database.Release = function () {
-        if (db) {
-            db.close();
-            db = null;
-            console.log("DB closed.");
-            BABYLON.Database.hasReachedQuota = false;
-            BABYLON.Database.mustUpdateRessources = false;
-            BABYLON.Database.enableSceneOffline = false;
-            BABYLON.Database.enableTexturesOffline = false;
-            BABYLON.Database.sceneToLoad = "";
-            BABYLON.Database.currentSceneVersion = 0;
         }
     };
 })();
