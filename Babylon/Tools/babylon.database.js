@@ -30,7 +30,7 @@
     };
 
     BABYLON.Database.ReturnFullUrlLocation = function (url) {
-        if (url.indexOf("http://") === -1) {
+        if (url.indexOf("http:/") === -1) {
             return (parseURL(window.location.href) + url);
         }
         else {

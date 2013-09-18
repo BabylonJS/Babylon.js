@@ -26,8 +26,6 @@
 
         this._onBeforeRenderCallbacks = [];
 
-        this._mustCheckIsReady = false;
-
         // Fog
         this.fogMode = BABYLON.Scene.FOGMODE_NONE;
         this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -72,7 +70,7 @@
 
         // Layers
         this.layers = [];
-        
+
         // Skeletons
         this.skeletons = [];
 
@@ -143,7 +141,7 @@
     BABYLON.Scene.prototype.getAnimationRatio = function () {
         return this._animationRatio;
     };
-    
+
     BABYLON.Scene.prototype.getRenderId = function () {
         return this._renderId;
     };
@@ -151,7 +149,7 @@
     // Ready
     BABYLON.Scene.prototype.isReady = function () {
         for (var index = 0; index < this.meshes.length; index++) {
-            var mesh = this.meshes[index]; 
+            var mesh = this.meshes[index];
             var mat = mesh.material;
             if (mat && !mat.isReady(mesh)) {
                 return false;
@@ -201,9 +199,27 @@
             this._pendingData.splice(index, 1);
 
             if (this._pendingData.length === 0) {
-                this._mustCheckIsReady = true;
+                var that = this;
+                setTimeout(function () {
+                    that._checkIsReady();
+                }, 150);
             }
         }
+    };
+
+    BABYLON.Scene.prototype._checkIsReady = function () {
+        if (this.isReady()) {
+            this._onReadyCallbacks.forEach(function (func) {
+                func();
+            });
+
+            this._onReadyCallbacks = [];
+            return;
+        }
+        var that = this;
+        setTimeout(function () {
+            that._checkIsReady();
+        }, 150);
     };
 
     // Animations
@@ -238,7 +254,7 @@
             }
         }
     };
-    
+
     BABYLON.Scene.prototype._animate = function () {
         if (!this._animationStartDate) {
             this._animationStartDate = new Date();
@@ -246,7 +262,7 @@
         // Getting time
         var now = new Date();
         var delay = now - this._animationStartDate;
-        
+
         for (var index = 0; index < this._activeAnimatables.length; index++) {
             if (!this._activeAnimatables[index]._animate(delay)) {
                 this._activeAnimatables.splice(index, 1);
@@ -334,7 +350,7 @@
 
         return null;
     };
-    
+
     BABYLON.Scene.prototype.getLastSkeletonByID = function (id) {
         for (var index = this.skeletons.length - 1; index >= 0 ; index--) {
             if (this.skeletons[index].id === id) {
@@ -344,7 +360,7 @@
 
         return null;
     };
-    
+
     BABYLON.Scene.prototype.getSkeletonById = function (id) {
         for (var index = 0; index < this.skeletons.length; index++) {
             if (this.skeletons[index].id === id) {
@@ -354,7 +370,7 @@
 
         return null;
     };
-    
+
     BABYLON.Scene.prototype.getSkeletonByName = function (name) {
         for (var index = 0; index < this.skeleton.length; index++) {
             if (this.skeletons[index].name === name) {
@@ -426,7 +442,7 @@
                 for (var meshIndex = 0; meshIndex < block.meshes.length; meshIndex++) {
                     var mesh = block.meshes[meshIndex];
 
-                    if (Math.abs(mesh._renderId) !== this._renderId) {                        
+                    if (Math.abs(mesh._renderId) !== this._renderId) {
                         this._totalVertices += mesh.getTotalVertices();
 
                         if (!mesh.isReady()) {
@@ -436,7 +452,7 @@
                         mesh.computeWorldMatrix();
                         mesh._renderId = 0;
                     }
-                    
+
                     if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes))) {
                         if (mesh._renderId === 0) {
                             this._activeMeshes.push(mesh);
@@ -477,7 +493,7 @@
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
-                    
+
                     if (mesh.skeleton) {
                         this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
                     }
@@ -566,17 +582,6 @@
         this._particlesDuration = 0;
         this._activeParticles = 0;
         var engine = this._engine;
-        
-        if (this._mustCheckIsReady) {
-            if (this.isReady()) {
-                this._mustCheckIsReady = false;
-                this._onReadyCallbacks.forEach(function(func) {
-                    func();
-                });
-
-                this._onReadyCallbacks = [];
-            }
-        }
 
         // Before render
         if (this.beforeRender) {
@@ -602,7 +607,7 @@
         var beforeEvaluateActiveMeshesDate = new Date();
         this._evaluateActiveMeshes();
         this._evaluateActiveMeshesDuration = new Date() - beforeEvaluateActiveMeshesDate;
-        
+
         // Skeletons
         for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
             var skeleton = this._activeSkeletons.data[skeletonIndex];
