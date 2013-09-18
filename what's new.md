@@ -1,5 +1,8 @@
 Changes list
 ============
+- 1.4.2:
+ - **Bugfixes**
+ - Fixing an issue with scene.executeWhenReady ([deltakosh](http://www.github.com/deltakosh))
 - 1.4.1:
  - **Bugfixes**
  - Support for Safari ([deltakosh](http://www.github.com/deltakosh))
