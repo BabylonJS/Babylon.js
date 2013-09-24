@@ -1,9 +1,9 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.BoundingInfo = function (positions, verticesStart, verticesCount) {
-        this.boundingBox = new BABYLON.BoundingBox(positions, verticesStart, verticesCount);
-        this.boundingSphere = new BABYLON.BoundingSphere(positions, verticesStart, verticesCount);
+    BABYLON.BoundingInfo = function (minimum, maximum) {
+        this.boundingBox = new BABYLON.BoundingBox(minimum, maximum);
+        this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
     };
 
     // Methods

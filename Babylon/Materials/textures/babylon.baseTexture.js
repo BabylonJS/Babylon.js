@@ -5,36 +5,46 @@
         this._scene = scene;
         this._scene.textures.push(this);
     };
-    
+
     // Members
+    BABYLON.BaseTexture.prototype.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+    BABYLON.BaseTexture.prototype.hasAlpha = false;
     BABYLON.BaseTexture.prototype.hasAlpha = false;
     BABYLON.BaseTexture.prototype.level = 1;
     BABYLON.BaseTexture.prototype._texture = null;
-    
+
     BABYLON.BaseTexture.prototype.onDispose = null;
 
     // Properties
     BABYLON.BaseTexture.prototype.getInternalTexture = function () {
         return this._texture;
     };
-    
-    BABYLON.BaseTexture.prototype.isReady = function () {
-        return (this._texture !== undefined && this._texture.isReady);
+
+    BABYLON.BaseTexture.prototype.isReady = function (required) {
+        if (!required && this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            return true;
+        }
+
+        if (this._texture) {
+            return this._texture.isReady;
+        }
+
+        return false;
     };
 
     // Methods
-    BABYLON.BaseTexture.prototype.getSize = function() {
+    BABYLON.BaseTexture.prototype.getSize = function () {
         if (this._texture._width) {
             return { width: this._texture._width, height: this._texture._height };
         }
-                    
+
         if (this._texture._size) {
             return { width: this._texture._size, height: this._texture._size };
         }
-                        
+
         return { width: 0, height: 0 };
     };
-    
+
     BABYLON.BaseTexture.prototype.getBaseSize = function () {
         if (!this.isReady())
             return { width: 0, height: 0 };
@@ -45,7 +55,7 @@
 
         return { width: this._texture._baseWidth, height: this._texture._baseHeight };
     };
-    
+
     BABYLON.BaseTexture.prototype._getFromCache = function (url, noMipmap) {
         var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
@@ -60,7 +70,10 @@
         return null;
     };
 
-    BABYLON.BaseTexture.prototype.releaseInternalTexture = function() {
+    BABYLON.BaseTexture.prototype.delayLoad = function () {
+    };
+
+    BABYLON.BaseTexture.prototype.releaseInternalTexture = function () {
         if (!this._texture) {
             return;
         }
@@ -84,11 +97,11 @@
         }
 
         this.releaseInternalTexture();
-        
+
         // Remove from scene
         var index = this._scene.textures.indexOf(this);
         this._scene.textures.splice(index, 1);
-        
+
         // Callback
         if (this.onDispose) {
             this.onDispose();

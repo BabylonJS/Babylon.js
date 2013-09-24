@@ -18,6 +18,7 @@
         this._renderDuration = 0;
 
         this._renderId = 0;
+        this._executeWhenReadyTimeoutId = -1;
 
         this._toBeDisposed = new BABYLON.Tools.SmartArray(256);
 
@@ -148,32 +149,26 @@
 
     // Ready
     BABYLON.Scene.prototype.isReady = function () {
+        if (this._pendingData.length > 0) {
+            return false;
+        }
+
         for (var index = 0; index < this.meshes.length; index++) {
             var mesh = this.meshes[index];
             var mat = mesh.material;
-            if (mat && !mat.isReady(mesh)) {
+
+            if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
+            }
+
+            if (mat) {
+                if (!mat.isReady(mesh, mesh.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED)) {
+                    return false;
+                }
             }
         }
 
         return true;
-    };
-
-    BABYLON.Scene.prototype.getWaitingItemsCount = function () {
-        return this._pendingData.length;
-    };
-
-    BABYLON.Scene.prototype.executeWhenReady = function (func) {
-        if (this.isReady()) {
-            func();
-            return;
-        }
-
-        if (this._pendingData.length === 0) {
-            func();
-            return;
-        }
-        this._onReadyCallbacks.push(func);
     };
 
     BABYLON.Scene.prototype.registerBeforeRender = function (func) {
@@ -197,14 +192,24 @@
 
         if (index !== -1) {
             this._pendingData.splice(index, 1);
-
-            if (this._pendingData.length === 0) {
-                var that = this;
-                setTimeout(function () {
-                    that._checkIsReady();
-                }, 150);
-            }
         }
+    };
+    
+    BABYLON.Scene.prototype.getWaitingItemsCount = function () {
+        return this._pendingData.length;
+    };
+
+    BABYLON.Scene.prototype.executeWhenReady = function (func) {
+        this._onReadyCallbacks.push(func);
+
+        if (this._executeWhenReadyTimeoutId !== -1) {
+            return;
+        }
+        
+        var that = this;
+        this._executeWhenReadyTimeoutId = setTimeout(function () {
+            that._checkIsReady();
+        }, 150);
     };
 
     BABYLON.Scene.prototype._checkIsReady = function () {
@@ -214,10 +219,12 @@
             });
 
             this._onReadyCallbacks = [];
+            this._executeWhenReadyTimeoutId = -1;
             return;
         }
+        
         var that = this;
-        setTimeout(function () {
+        this._executeWhenReadyTimeoutId = setTimeout(function () {
             that._checkIsReady();
         }, 150);
     };

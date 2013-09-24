@@ -11,6 +11,13 @@
     BABYLON.Octree.prototype.update = function(worldMin, worldMax, meshes) {
         BABYLON.Octree._CreateBlocks(worldMin, worldMax, meshes, this._maxBlockCapacity, this);
     };
+    
+    BABYLON.Octree.prototype.addMesh = function (mesh) {
+        for (var index = 0; index < this.blocks.length; index++) {
+            var block = this.blocks[index];
+            block.addMesh(mesh);
+        }
+    };
 
     BABYLON.Octree.prototype.select = function(frustumPlanes) {
         this._selection.reset();

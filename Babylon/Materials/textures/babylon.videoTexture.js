@@ -16,9 +16,10 @@
         this.video = document.createElement("video");
         this.video.width = textureSize.width;
         this.video.height = textureSize.height;
-        this.video.autoplay = true;
+        this.video.autoplay = false;
         this.video.loop = true;
         this.video.preload = true;
+        this._autoLaunch = true;
 
         var that = this;
         this.video.addEventListener("canplaythrough", function () {
@@ -39,6 +40,11 @@
     BABYLON.VideoTexture.prototype = Object.create(BABYLON.Texture.prototype);
 
     BABYLON.VideoTexture.prototype._update = function () {
+        if (this._autoLaunch) {
+            this._autoLaunch = false;
+            this.video.play();
+        }
+        
         var now = new Date();
 
         if (now - this._lastUpdate < 15) {

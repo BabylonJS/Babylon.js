@@ -6,17 +6,22 @@
         this._scene.textures.push(this);
 
         this.name = url;
+        this.url = url;
         this._noMipmap = noMipmap;
         this._invertY = invertY;
 
         this._texture = this._getFromCache(url, noMipmap);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
+            if (!scene.useDelayedTextureLoading) {
+                this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
+            } else {
+                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+            }
         }
 
         // Animations
-        this.animations = [];        
+        this.animations = [];
     };
 
     BABYLON.Texture.prototype = Object.create(BABYLON.BaseTexture.prototype);
@@ -47,6 +52,19 @@
     BABYLON.Texture.prototype.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
 
     // Methods    
+    BABYLON.Texture.prototype.delayLoad = function () {
+        if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            return;
+        }
+        
+        this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+        this._texture = this._getFromCache(this.url, this._noMipmap);
+
+        if (!this._texture) {
+            this._texture = this._scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, this._scene);
+        }
+    };
+
     BABYLON.Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
         x -= this.uOffset + 0.5;
         y -= this.vOffset + 0.5;
@@ -89,7 +107,7 @@
             this._t1 = BABYLON.Vector3.Zero();
             this._t2 = BABYLON.Vector3.Zero();
         }
-        
+
         BABYLON.Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix);
 
         this._prepareRowForTextureGeneration(0, 0, 0, this._t0);
@@ -157,7 +175,7 @@
         return this._cachedTextureMatrix;
     };
 
-    BABYLON.Texture.prototype.clone = function() {
+    BABYLON.Texture.prototype.clone = function () {
         var newTexture = new BABYLON.Texture(this._texture.url, this._scene, this._noMipmap, this._invertY);
 
         // Base texture

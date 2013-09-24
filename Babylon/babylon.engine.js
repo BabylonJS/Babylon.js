@@ -571,7 +571,7 @@
 
         this._cachedVertexBuffers = null;
         this._cachedVertexBuffers = null;
-        _cachedEffectForVertexBuffers = null;
+        this._cachedEffectForVertexBuffers = null;
     };
 
     var getExponantOfTwo = function (value, max) {
@@ -861,6 +861,7 @@
         if (channel < 0) {
             return;
         }
+        // Not ready?
         if (!texture || !texture.isReady()) {
             if (this._activeTexturesCache[channel] != null) {
                 this._gl.activeTexture(this._gl["TEXTURE" + channel]);
@@ -871,10 +872,14 @@
             return;
         }
 
+        // Video
         if (texture instanceof BABYLON.VideoTexture) {
             if (texture._update()) {
                 this._activeTexturesCache[channel] = null;
             }
+        } else if (texture.delayLoadState == BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+            texture.delayLoad();
+            return;
         }
 
         if (this._activeTexturesCache[channel] == texture) {
@@ -948,6 +953,12 @@
     BABYLON.Engine.ALPHA_DISABLE = 0;
     BABYLON.Engine.ALPHA_ADD = 1;
     BABYLON.Engine.ALPHA_COMBINE = 2;
+    
+    // Statics
+    BABYLON.Engine.DELAYLOADSTATE_NONE = 0;
+    BABYLON.Engine.DELAYLOADSTATE_LOADED = 1;
+    BABYLON.Engine.DELAYLOADSTATE_LOADING = 2;
+    BABYLON.Engine.DELAYLOADSTATE_NOTLOADED = 4;
 
     BABYLON.Engine.epsilon = 0.001;
     BABYLON.Engine.collisionsEpsilon = 0.001;
