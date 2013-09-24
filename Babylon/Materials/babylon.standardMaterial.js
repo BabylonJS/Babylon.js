@@ -47,7 +47,7 @@
     };
 
     // Methods   
-    BABYLON.StandardMaterial.prototype.isReady = function (mesh) {
+    BABYLON.StandardMaterial.prototype.isReady = function (mesh, required) {
         if (!this.checkReadyOnEveryCall) {
             if (this._renderId === this._scene.getRenderId()) {
                 return true;
@@ -59,8 +59,7 @@
 
         // Textures
         if (this.diffuseTexture) {
-
-            if (!this.diffuseTexture.isReady()) {
+            if (!this.diffuseTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define DIFFUSE");
@@ -68,7 +67,7 @@
         }
 
         if (this.ambientTexture) {
-            if (!this.ambientTexture.isReady()) {
+            if (!this.ambientTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define AMBIENT");
@@ -76,7 +75,7 @@
         }
 
         if (this.opacityTexture) {
-            if (!this.opacityTexture.isReady()) {
+            if (!this.opacityTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define OPACITY");
@@ -84,7 +83,7 @@
         }
 
         if (this.reflectionTexture) {
-            if (!this.reflectionTexture.isReady()) {
+            if (!this.reflectionTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define REFLECTION");
@@ -92,7 +91,7 @@
         }
 
         if (this.emissiveTexture) {
-            if (!this.emissiveTexture.isReady()) {
+            if (!this.emissiveTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define EMISSIVE");
@@ -100,7 +99,7 @@
         }
 
         if (this.specularTexture) {
-            if (!this.specularTexture.isReady()) {
+            if (!this.specularTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define SPECULAR");
@@ -108,7 +107,7 @@
         }
 
         if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture) {
-            if (!this.bumpTexture.isReady()) {
+            if (!this.bumpTexture.isReady(required)) {
                 return false;
             } else {
                 defines.push("#define BUMP");

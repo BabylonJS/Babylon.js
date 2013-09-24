@@ -1,17 +1,10 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.BoundingBox = function (positions, start, count) {
-        this.minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        this.maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-
-        for (var index = start; index < start + count; index++) {
-            var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
-
-            this.minimum = BABYLON.Vector3.Minimize(current, this.minimum);
-            this.maximum = BABYLON.Vector3.Maximize(current, this.maximum);
-        }
-
+    BABYLON.BoundingBox = function (minimum, maximum) {
+        this.minimum = minimum;
+        this.maximum = maximum;
+        
         // Bounding vectors
         this.vectors = [];
 

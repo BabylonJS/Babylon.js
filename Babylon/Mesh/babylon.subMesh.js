@@ -10,7 +10,8 @@
         this.indexStart = indexStart;
         this.indexCount = indexCount;
         
-        this._boundingInfo = new BABYLON.BoundingInfo(this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind), verticesStart, verticesCount);
+        var extend = BABYLON.Tools.ExtractMinAndMax(this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind), verticesStart, verticesCount);
+        this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
     };
     
     //Properties

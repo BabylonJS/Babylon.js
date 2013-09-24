@@ -1101,6 +1101,12 @@
         other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
         other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
     };
+    
+    BABYLON.Matrix.prototype.setTranslation = function (vector3) {
+        this.m[12] = vector3.x;
+        this.m[13] = vector3.y;
+        this.m[14] = vector3.z;
+    };
 
     BABYLON.Matrix.prototype.multiply = function (other) {
         var result = new BABYLON.Matrix();

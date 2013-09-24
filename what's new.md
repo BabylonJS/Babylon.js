@@ -1,5 +1,10 @@
 Changes list
 ============
+- 1.4.3:
+ - **Updates**
+ - New ```mesh.setLocalTranslation``` and ```mesh.getLocalTranslation``` functions ([deltakosh](http://www.github.com/deltakosh))
+ - New ```matrix.setTranslation``` function ([deltakosh](http://www.github.com/deltakosh))
+ - ```mesh.rotation``` and ```mesh.rotationQuaternion``` are now two separated functions ([deltakosh](http://www.github.com/deltakosh)) 
 - 1.4.2:
  - **Bugfixes**
  - Fixing an issue with scene.executeWhenReady ([deltakosh](http://www.github.com/deltakosh))

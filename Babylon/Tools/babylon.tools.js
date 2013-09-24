@@ -3,6 +3,23 @@
 (function () {
     BABYLON.Tools = {};
 
+    BABYLON.Tools.ExtractMinAndMax = function (positions, start, count) {
+        var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        for (var index = start; index < start + count; index++) {
+            var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+
+            minimum = BABYLON.Vector3.Minimize(current, minimum);
+            maximum = BABYLON.Vector3.Maximize(current, maximum);
+        }
+
+        return {
+            minimum: minimum,
+            maximum: maximum
+        };
+    };
+
     // Smart array
     BABYLON.Tools.SmartArray = function(capacity) {
         this.data = new Array(capacity);

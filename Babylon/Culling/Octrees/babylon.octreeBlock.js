@@ -34,20 +34,24 @@
     };
 
     // Methods
-    BABYLON.OctreeBlock.prototype.addEntries = function (meshes) {
-        for (var index = 0; index < meshes.length; index++) {
-            var mesh = meshes[index];
+    BABYLON.OctreeBlock.prototype.addMesh = function (mesh) {
+        if (this.blocks) {
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.addMesh(mesh);
+            }
+            return;
+        }
 
-            if (mesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
-                var localMeshIndex = this.meshes.length;
-                this.meshes.push(mesh);
+        if (mesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
+            var localMeshIndex = this.meshes.length;
+            this.meshes.push(mesh);
 
-                this.subMeshes[localMeshIndex] = [];
-                for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                    var subMesh = mesh.subMeshes[subIndex];
-                    if (mesh.subMeshes.length === 1 || subMesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
-                        this.subMeshes[localMeshIndex].push(subMesh);
-                    }
+            this.subMeshes[localMeshIndex] = [];
+            for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                var subMesh = mesh.subMeshes[subIndex];
+                if (mesh.subMeshes.length === 1 || subMesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
+                    this.subMeshes[localMeshIndex].push(subMesh);
                 }
             }
         }
@@ -55,6 +59,13 @@
         if (this.subMeshes.length > this._capacity) {
             BABYLON.Octree._CreateBlocks(this._minPoint, this._maxPoint, this.meshes, this._capacity, this);
         }
+    };
+
+    BABYLON.OctreeBlock.prototype.addEntries = function (meshes) {
+        for (var index = 0; index < meshes.length; index++) {
+            var mesh = meshes[index];
+            this.addMesh(mesh);
+        }       
     };
 
     BABYLON.OctreeBlock.prototype.select = function (frustumPlanes, selection) {
