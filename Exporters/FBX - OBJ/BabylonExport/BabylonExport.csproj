@@ -200,9 +200,6 @@
     <Compile Include="Tools.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="generateAll.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Include="Exporters\Blender\io_export_babylon.py" />
     <None Include="Refs\xnafx40_redist.msi" />
     <None Include="Test scenes\Chimie\BalanceDM.dds" />
