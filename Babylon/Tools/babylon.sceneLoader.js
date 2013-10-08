@@ -500,7 +500,7 @@
                             }
                         }
 
-                        var mesh = parseMesh(parsedMesh, scene);
+                        var mesh = parseMesh(parsedMesh, scene, rootUrl);
                         meshes.push(mesh);
                     }
                 }
