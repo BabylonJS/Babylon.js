@@ -12,6 +12,8 @@ declare module BABYLON {
 
         constructor(target: Object, from: number, to: number, loop: boolean, speedRatio: number, onAnimationEnd: Function);
 
+        animationStarted: boolean;
+
         _animate(delay: number): boolean;
     }
 }
