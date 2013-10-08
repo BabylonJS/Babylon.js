@@ -3,6 +3,12 @@
 declare module BABYLON {
     class Bone {
         name: string;
+        _skeleton: Skeleton;
+        _matrix: Matrix;
+        _baseMatrix: Matrix;
+        _worldTransform: Matrix;
+        _absoluteTransform: Matrix;
+        _invertedAbsoluteTransform: Matrix;
         children: Bone[];
         animation: Animation[];
 
@@ -11,6 +17,7 @@ declare module BABYLON {
         getParent(): Bone;
         getLocalMatrix: Matrix;
         getAbsoluteMatrix: Matrix;
+        _updateDifferenceMatrix(): void ;
         updateMatrix(matrix: Matrix): void;
         markAsDirty(): void;
     }

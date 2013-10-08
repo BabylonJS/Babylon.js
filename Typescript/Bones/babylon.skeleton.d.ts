@@ -5,6 +5,8 @@ declare module BABYLON {
         id: number;
         name: string;
         bones: Bone[];
+        _scene: Scene;
+        _isDirty: boolean;
 
         constructor(name: string, id: number, scene: Scene);
 
