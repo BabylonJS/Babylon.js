@@ -112,7 +112,7 @@
                 request.onupgradeneeded = function (event) {
                     that.db = event.target.result;
                     var scenesStore = that.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                    var scenesStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                    var versionsStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
                     var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
                 };
             }
@@ -244,7 +244,7 @@
                             // Put the blob into the dabase
                             var addRequest = transaction.objectStore("textures").put(newTexture);
                             addRequest.onsuccess = function (event) {
-
+                                console.log("");
                             };
                             addRequest.onerror = function (event) {
                                 generateBlobUrl();
@@ -363,7 +363,7 @@
                 // Put the scene into the database
                 var addRequest = transaction.objectStore("versions").put(newVersion);
                 addRequest.onsuccess = function (event) {
-
+                    console.log("");
                 };
                 addRequest.onerror = function (event) {
                     console.log("Error in DB add version request in BABYLON.Database.");
@@ -475,7 +475,7 @@
                             // Put the scene into the database
                             var addRequest = transaction.objectStore("scenes").put(newScene);
                             addRequest.onsuccess = function (event) {
-
+                                console.log("");
                             };
                             addRequest.onerror = function (event) {
                                 console.log("Error in DB add scene request in BABYLON.Database.");

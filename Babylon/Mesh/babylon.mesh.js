@@ -22,6 +22,8 @@
         this.subMeshes = [];
 
         this._renderId = 0;
+
+        this._onBeforeRenderCallbacks = [];
         
         // Animations
         this.animations = [];
@@ -75,6 +77,8 @@
     BABYLON.Mesh.prototype.onDispose = null;
 
     BABYLON.Mesh.prototype.skeleton = null;
+    
+    BABYLON.Mesh.prototype.renderingGroupId = 0;
 
     // Properties
 
@@ -188,6 +192,29 @@
     };
     
     // Methods
+    BABYLON.Mesh.prototype.markAsDirty = function (property) {
+        if (property === "rotation") {
+            this.rotationQuaternion = null;
+        }
+    };
+    
+    BABYLON.Mesh.prototype.refreshBoundingInfo = function () {
+        var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+        if (!data) {
+            return;
+        }
+
+        var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+        this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+
+        for (var index = 0; index < this.subMeshes.length; index++) {
+            this.subMeshes[index].refreshBoundingInfo();
+        }
+        
+        this._updateBoundingInfo();
+    };
+
     BABYLON.Mesh.prototype._updateBoundingInfo = function() {
         if (this._boundingInfo) {
             this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
@@ -365,12 +392,28 @@
         // Draw order
         engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
     };
+    
+    BABYLON.Mesh.prototype.registerBeforeRender = function (func) {
+        this._onBeforeRenderCallbacks.push(func);
+    };
+
+    BABYLON.Mesh.prototype.unregisterBeforeRender = function (func) {
+        var index = this._onBeforeRenderCallbacks.indexOf(func);
+
+        if (index > -1) {
+            this._onBeforeRenderCallbacks.splice(index, 1);
+        }
+    };
 
     BABYLON.Mesh.prototype.render = function (subMesh) {
         if (!this._vertexBuffers || !this._indexBuffer) {
             return;
         }
-
+        
+        for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            this._onBeforeRenderCallbacks[callbackIndex]();
+        }
+        
         // World
         var world = this.getWorldMatrix();
 
@@ -471,7 +514,7 @@
                 BABYLON.SceneLoader._ImportGeometry(JSON.parse(data), that);
                 that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                 that._scene._removePendingData(that);
-            });
+            }, function () { }, this._scene.database);
         }
 
         return result;
@@ -507,7 +550,7 @@
     };
 
     // Geometry
-    BABYLON.Mesh.prototype.setLocalTransation = function(vector3) {
+    BABYLON.Mesh.prototype.setLocalTranslation = function(vector3) {
         this.computeWorldMatrix();
         var worldMatrix = this._worldMatrix.clone();
         worldMatrix.setTranslation(BABYLON.Vector3.Zero());
@@ -515,7 +558,7 @@
         this.position = BABYLON.Vector3.TransformCoordinates(vector3, worldMatrix);
     };
     
-    BABYLON.Mesh.prototype.getLocalTransation = function () {
+    BABYLON.Mesh.prototype.getLocalTranslation = function () {
         this.computeWorldMatrix();
         var invWorldMatrix = this._worldMatrix.clone();
         invWorldMatrix.setTranslation(BABYLON.Vector3.Zero());

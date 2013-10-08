@@ -277,10 +277,10 @@
         mesh.id = parsedMesh.id;
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
-        if (parsedMesh.rotation.length == 3) {
+        if (parsedMesh.rotation) {
             mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
-        } else {
-            mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotation);
+        } else if (parsedMesh.rotationQuaternion) {
+            mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
         }
         mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
         

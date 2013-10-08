@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Babylon Engine for HTML5</title>
+    <title>Babylon.js</title>
     <script>
         (function (i, s, o, g, r, a, m) {
             i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
@@ -34,6 +34,9 @@
     <script src="Babylon/Cameras/babylon.freeCamera.js"></script>
     <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
     <script src="Babylon/Cameras/babylon.arcRotateCamera.js"></script>
+    <script src="Babylon/Cameras/babylon.deviceOrientationCamera.js"></script>
+    <script src="Babylon/Rendering/babylon.renderingManager.js"></script>
+    <script src="Babylon/Rendering/babylon.renderingGroup.js"></script>
     <script src="Babylon/babylon.scene.js"></script>
     <script src="Babylon/Mesh/babylon.vertexBuffer.js"></script>
     <script src="Babylon/Mesh/babylon.mesh.js"></script>
@@ -78,7 +81,7 @@
     <script src="Scenes/Customs/bones.js"></script>
     <script src="index.js"></script>
 </head>
-<body onload="onload();">
+<body>
     <div id="rootDiv">
         <div id="screen1">
             <div id="menuPanel">
@@ -93,6 +96,11 @@
                         FEATURES TESTS
                     </div>
                     <div id="testItems"></div>
+                    <div class="header">
+                        <br />
+                        THIRD-PARTY
+                    </div>
+                    <div id="3rdItems"></div>
                 </div>
             </div>
             <img id="back" src="Assets/BandeauEmbleme.png" />
@@ -144,6 +152,7 @@
                                     <li>Hardware scaling</li>
                                     <li>Selection octrees</li>
                                     <li><b>Offline mode (Assets are saved locally to prevent reloading them)</b></li>
+                                    <li><b>Incremental loading</b></li>
                                 </ul>
                             </li>
                             <li>
@@ -174,6 +183,7 @@
                                     <li>Billboarding</li>
                                     <li>Fullscreen mode</li>
                                     <li>Shadow Maps and Variance Shadow Maps</li>
+                                    <li>Rendering layers</li>
                                 </ul>
                             </li>
                             <li>
@@ -197,15 +207,15 @@
                                 <ul>
                                     <li>Mesh cloning</li>
                                     <li>Dynamic meshes</li>
-                                    <li><b>Height maps</b></li>       
-                                    <li>Bones</li>                             
+                                    <li><b>Height maps</b></li>
+                                    <li>Bones</li>
                                 </ul>
                             </li>
                             <li>
                                 Import:
                                 <ul>
                                     <li>Babylon scene file can be converted from <i>.OBJ</i>, <i>.FBX</i>, <i>.MXB</i></li>
-                                    <li>Exporter for Blender</li>                                    
+                                    <li>Exporter for Blender</li>
                                 </ul>
                             </li>
                         </ul>
@@ -247,6 +257,7 @@
                         </p>
                         <p>
                             <button id="touchCamera">Switch to touch camera</button>
+                            <button id="deviceOrientationCamera">Switch to device orientation camera</button>
                         </p>
                         <p id="extensions"></p>
                     </div>
@@ -260,4 +271,7 @@
         <div id="loadingText" class="loadingText"></div>
     </div>
 </body>
+<script language="javascript">
+    onload();
+</script>
 </html>

@@ -46,13 +46,13 @@
 
         // Internal smart arrays
         this._activeMeshes = new BABYLON.Tools.SmartArray(256);
-        this._opaqueSubMeshes = new BABYLON.Tools.SmartArray(256);
-        this._transparentSubMeshes = new BABYLON.Tools.SmartArray(256);
-        this._alphaTestSubMeshes = new BABYLON.Tools.SmartArray(256);
         this._processedMaterials = new BABYLON.Tools.SmartArray(256);
         this._renderTargets = new BABYLON.Tools.SmartArray(256);
         this._activeParticleSystems = new BABYLON.Tools.SmartArray(256);
         this._activeSkeletons = new BABYLON.Tools.SmartArray(32);
+        
+        // Rendering groups
+        this._renderingManager = new BABYLON.RenderingManager(this);
 
         // Materials
         this.materials = [];
@@ -230,16 +230,15 @@
     };
 
     // Animations
-    BABYLON.Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio) {
+    BABYLON.Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd) {
         if (speedRatio === undefined) {
             speedRatio = 1.0;
         }
-
         // Local animations
         if (target.animations) {
             this.stopAnimation(target);
 
-            var animatable = new BABYLON._Animatable(target, from, to, loop, speedRatio);
+            var animatable = new BABYLON._Animatable(target, from, to, loop, speedRatio, onAnimationEnd);
 
             this._activeAnimatables.push(animatable);
         }
@@ -248,9 +247,10 @@
         if (target.getAnimatables) {
             var animatables = target.getAnimatables();
             for (var index = 0; index < animatables.length; index++) {
-                this.beginAnimation(animatables[index], from, to, loop, speedRatio);
+                this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd);
             }
         }
+
     };
 
     BABYLON.Scene.prototype.stopAnimation = function (target) {
@@ -407,24 +407,15 @@
                 }
 
                 // Dispatch
-                if (material.needAlphaBlending() || mesh.visibility < 1.0) { // Transparent
-                    if (material.alpha > 0 || mesh.visibility < 1.0) {
-                        this._transparentSubMeshes.push(subMesh); // Opaque
-                    }
-                } else if (material.needAlphaTesting()) { // Alpha test
-                    this._alphaTestSubMeshes.push(subMesh);
-                } else {
-                    this._opaqueSubMeshes.push(subMesh);
-                }
+                this._activeVertices += subMesh.verticesCount;
+                this._renderingManager.dispatch(subMesh);
             }
         }
     };
 
     BABYLON.Scene.prototype._evaluateActiveMeshes = function () {
         this._activeMeshes.reset();
-        this._opaqueSubMeshes.reset();
-        this._transparentSubMeshes.reset();
-        this._alphaTestSubMeshes.reset();
+        this._renderingManager.reset();
         this._processedMaterials.reset();
         this._renderTargets.reset();
         this._activeParticleSystems.reset();
@@ -529,61 +520,6 @@
         this._particlesDuration += new Date() - beforeParticlesDate;
     };
 
-    BABYLON.Scene.prototype._localRender = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, activeMeshes) {
-        var engine = this._engine;
-        // Opaque
-        var subIndex;
-        var submesh;
-        for (subIndex = 0; subIndex < opaqueSubMeshes.length; subIndex++) {
-            submesh = opaqueSubMeshes.data[subIndex];
-            this._activeVertices += submesh.verticesCount;
-
-            submesh.render();
-        }
-
-        // Alpha test
-        engine.setAlphaTesting(true);
-        for (subIndex = 0; subIndex < alphaTestSubMeshes.length; subIndex++) {
-            submesh = alphaTestSubMeshes.data[subIndex];
-            this._activeVertices += submesh.verticesCount;
-
-            submesh.render();
-        }
-        engine.setAlphaTesting(false);
-
-        if (!activeMeshes) {
-            // Sprites
-            var beforeSpritessDate = new Date();
-            for (var index = 0; index < this.spriteManagers.length; index++) {
-                var spriteManager = this.spriteManagers[index];
-
-                spriteManager.render();
-            }
-            this._spritesDuration = new Date() - beforeSpritessDate;
-        }
-
-        // Transparent
-        engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-        for (subIndex = 0; subIndex < transparentSubMeshes.length; subIndex++) {
-            submesh = transparentSubMeshes.data[subIndex];
-            this._activeVertices += submesh.verticesCount;
-
-            submesh.render();
-        }
-        engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
-
-        // Particles
-        var beforeParticlesDate = new Date();
-        for (var particleIndex = 0; particleIndex < this._activeParticleSystems.length; particleIndex++) {
-            var particleSystem = this._activeParticleSystems.data[particleIndex];
-
-            if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                this._activeParticles += particleSystem.render();
-            }
-        }
-        this._particlesDuration += new Date() - beforeParticlesDate;
-    };
-
     BABYLON.Scene.prototype.render = function () {
         var startDate = new Date();
         this._particlesDuration = 0;
@@ -667,7 +603,17 @@
         }
 
         // Render
-        this._localRender(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
+        var that = this;
+        this._renderingManager.render(null, function() {
+            // Sprites
+            var beforeSpritessDate = new Date();
+            for (var index = 0; index < that.spriteManagers.length; index++) {
+                var spriteManager = that.spriteManagers[index];
+
+                spriteManager.render();
+            }
+            that._spritesDuration = new Date() - beforeSpritessDate;
+        }, null, true);
 
         // Foregrounds
         if (this.layers.length) {
@@ -863,7 +809,7 @@
         return BABYLON.Ray.CreateNew(x, y, engine.getRenderWidth() * engine.getHardwareScalingLevel(), engine.getRenderHeight() * engine.getHardwareScalingLevel(), world ? world : BABYLON.Matrix.Identity(), this._viewMatrix, this._projectionMatrix);
     };
 
-    BABYLON.Scene.prototype.pick = function (x, y) {
+    BABYLON.Scene.prototype.pick = function (x, y, predicate) {
         var distance = Number.MAX_VALUE;
         var pickedPoint = null;
         var pickedMesh = null;
@@ -871,9 +817,14 @@
         for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
             var mesh = this.meshes[meshIndex];
 
-            if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
-                continue;
+            if (predicate) {
+                if (!predicate(mesh)) {
+                    continue;
+                }
             }
+            else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+                continue;
+            }                        
 
             var world = mesh.getWorldMatrix();
             var ray = this.createPickingRay(x, y, world);

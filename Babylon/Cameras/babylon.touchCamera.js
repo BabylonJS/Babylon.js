@@ -35,6 +35,7 @@
         this._cameraRotationMatrix = new BABYLON.Matrix();
         this._referencePoint = BABYLON.Vector3.Zero();
         this._currentTarget = BABYLON.Vector3.Zero();
+        this._camMatrix = BABYLON.Matrix.Zero();
         this._transformedReferencePoint = BABYLON.Vector3.Zero();
         this._viewMatrix = BABYLON.Matrix.Zero();
         this._upVector = BABYLON.Vector3.Up();
