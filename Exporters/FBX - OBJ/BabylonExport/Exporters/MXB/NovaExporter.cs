@@ -331,7 +331,7 @@ namespace BabylonExport.Exporters
             }
 
             // Rotation
-            if (!DumpInterpolator("Rotation animation", "rotation", novaObject.RotationInterpolator, scene, animations))
+            if (!DumpInterpolator("Rotation animation", "rotationQuaternion", novaObject.RotationInterpolator, scene, animations))
             {
                 DumpInterpolator("RotationX animation", "rotation.x", novaObject.RotationXInterpolator, scene,
                     animations, -novaObject.Determinant);

@@ -12,6 +12,9 @@
         
         // Render list
         this.renderList = [];
+
+        // Rendering groups
+        this._renderingManager = new BABYLON.RenderingManager(scene);
         
         // Internals
         this._transformMatrix = BABYLON.Matrix.Zero();

@@ -65,6 +65,7 @@
     };
 
     // Members
+    BABYLON.ParticleSystem.prototype.renderingGroupId = 0;
     BABYLON.ParticleSystem.prototype.emitter = null;
     BABYLON.ParticleSystem.prototype.emitRate = 10;
     BABYLON.ParticleSystem.prototype.manualEmitCount = -1;

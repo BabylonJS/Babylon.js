@@ -868,6 +868,21 @@
         return new BABYLON.Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
     };
 
+    BABYLON.Quaternion.prototype.multiply = function (q1) {
+        var result = new BABYLON.Quaternion(0, 0, 0, 1.0);
+
+        this.multiplyToRef(q1, result);
+
+        return result;
+    };
+
+    BABYLON.Quaternion.prototype.multiplyToRef = function(q1, result) {
+        result.x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
+        result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
+        result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
+        result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+    };
+
     BABYLON.Quaternion.prototype.length = function () {
         return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
     };

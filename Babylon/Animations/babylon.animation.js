@@ -3,6 +3,7 @@
 (function () {
     BABYLON.Animation = function (name, targetProperty, framePerSecond, dataType, loopMode) {
         this.name = name;
+        this.targetProperty = targetProperty;
         this.targetPropertyPath = targetProperty.split(".");
         this.framePerSecond = framePerSecond;
         this.dataType = dataType;
@@ -96,7 +97,8 @@
         if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
             return false;
         }
-        
+
+        var returnValue = true;
         // Adding a start key at frame 0 if missing
         if (this._keys[0].frame != 0) {
             var newKey = {
@@ -120,18 +122,17 @@
         var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
         if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
-            return false;
-        }
-        
-        // Get max value if required
-        var offsetValue = 0;
-        var highLimitValue = 0;
-        if (this.loopMode != BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE) {
-            var keyOffset = to.toString() + from.toString();
-            if (!this._offsetsCache[keyOffset]) {
-                var fromValue = this._interpolate(from, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                var toValue = this._interpolate(to, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                switch (this.dataType) {
+            returnValue = false;
+        } else {
+            // Get max value if required
+            var offsetValue = 0;
+            var highLimitValue = 0;
+            if (this.loopMode != BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE) {
+                var keyOffset = to.toString() + from.toString();
+                if (!this._offsetsCache[keyOffset]) {
+                    var fromValue = this._interpolate(from, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    var toValue = this._interpolate(to, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    switch (this.dataType) {
                     // Float
                     case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
                         this._offsetsCache[keyOffset] = toValue - fromValue;
@@ -145,18 +146,19 @@
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                     default:
                         break;
+                    }
+
+                    this._highLimitsCache[keyOffset] = toValue;
                 }
 
-                this._highLimitsCache[keyOffset] = toValue;
+                highLimitValue = this._highLimitsCache[keyOffset];
+                offsetValue = this._offsetsCache[keyOffset];
             }
-
-            highLimitValue = this._highLimitsCache[keyOffset];
-            offsetValue = this._offsetsCache[keyOffset];
         }
 
         // Compute value
         var repeatCount = (ratio / range) >> 0;
-        var currentFrame = from + ratio % range;
+        var currentFrame = returnValue ? from + ratio % range : to;
         var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
 
         // Set value
@@ -173,10 +175,10 @@
         }
         
         if (target.markAsDirty) {
-            target.markAsDirty();
+            target.markAsDirty(this.targetProperty);
         }
 
-        return true;
+        return returnValue;
     };
 
     // Statics

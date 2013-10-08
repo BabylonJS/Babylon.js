@@ -574,7 +574,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             billboardMode = 0
             
         Export_babylon.write_vector(file_handler, "position", loc)
-        Export_babylon.write_quaternion(file_handler, "rotation", rot)
+        Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
         Export_babylon.write_vector(file_handler, "scaling", scale)
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)

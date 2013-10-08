@@ -9,9 +9,8 @@
         this.verticesCount = verticesCount;
         this.indexStart = indexStart;
         this.indexCount = indexCount;
-        
-        var extend = BABYLON.Tools.ExtractMinAndMax(this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind), verticesStart, verticesCount);
-        this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+
+        this.refreshBoundingInfo();
     };
     
     //Properties
@@ -38,6 +37,17 @@
     };
 
     // Methods
+    BABYLON.SubMesh.prototype.refreshBoundingInfo = function () {
+        var data = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+        if (!data) {
+            return;
+        }
+
+        var extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+        this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+    };
+
     BABYLON.SubMesh.prototype._checkCollision = function (collider) {
         return this._boundingInfo._checkCollision(collider);
     };

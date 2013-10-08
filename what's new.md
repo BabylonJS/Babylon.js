@@ -1,5 +1,15 @@
 Changes list
 ============
+- 1.5.0:
+ - **Major updates**
+ - New ```DeviceOrientationCamera``` that supports W3C DeviceOrientations events ([deltakosh](http://www.github.com/deltakosh))
+ - Incremental loading support for meshes and textures ([deltakosh](http://www.github.com/deltakosh))
+ - New API online page to convert .babylon files to .incremental.babylon files ([pierlag](https://github.com/pierlag))
+ - New ```mesh.renderingGroupId``` and ```particleSystem.renderingGroupId``` properties to support rendering layers ([deltakosh](http://www.github.com/deltakosh))
+ - **Updates**
+ - New ```predicate``` parameter for ```scene.pick``` function in order to be able to select pickable meshes ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```mesh.refreshBoundingInfo()``` method ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```onAnimationEnd``` parameter for animations ([deltakosh](http://www.github.com/deltakosh)) 
 - 1.4.3:
  - **Updates**
  - New ```mesh.setLocalTranslation``` and ```mesh.getLocalTranslation``` functions ([deltakosh](http://www.github.com/deltakosh))

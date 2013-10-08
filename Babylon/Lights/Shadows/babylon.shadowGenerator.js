@@ -11,6 +11,7 @@
         this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
         this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+        this._shadowMap.renderParticles = false;
                 
         // Custom render function
         var that = this;
@@ -39,7 +40,7 @@
             }
         };
 
-        this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, activeMeshes) {
+        this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
             var index;
             
             for (index = 0; index < opaqueSubMeshes.length; index++) {

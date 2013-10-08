@@ -1,12 +1,13 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON._Animatable = function (target, from, to, loop, speedRatio) {
+    BABYLON._Animatable = function (target, from, to, loop, speedRatio, onAnimationEnd) {
         this.target = target;
         this.fromFrame = from;
         this.toFrame = to;
         this.loopAnimation = loop;
         this.speedRatio = speedRatio ? speedRatio : 1.0;
+        this.onAnimationEnd = onAnimationEnd;
     };
     
     // Members
@@ -29,6 +30,10 @@
         for (var index = 0; index < animations.length; index++) {
             var isRunning = animations[index].animate(this.target, delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
             running = running || isRunning;            
+        }
+
+        if (!running && this.onAnimationEnd) {
+            this.onAnimationEnd();
         }
 
         return running;
