@@ -8,42 +8,19 @@ declare module BABYLON {
         center: Vector3;
         extends: Vector3;
         directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
 
-        constructor(vertices: VertexBuffer, stride: number, start: number, count: number);
+        constructor(minimum: Vector3, maximum: Vector3);
 
         _update(world: Matrix): void;
-        isInFrustrum(frustrumPlanes: Plane[]): bool;
-        intersectsPoint(point: Vector3): bool;
-        
-        static intersects(box0: BoundingBox, box1: BoundingBox): bool;
-    }
+        isInFrustrum(frustrumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: Sphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        IsInFrustrum(boundingVectors: Vector3[], frustrumPlanes: Plane[]): boolean;
 
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-
-        constructor(vertices: VertexBuffer, stride: number, start: number, count: number);
-
-        _update(world: Matrix, scale: number): void;
-        isInFrustrum(frustrumPlanes: Plane[]): bool;
-        intersectsPoint(point: Vector3): bool;
-
-        static intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): bool;
-    }
-
-    class BoundingInfo {
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-
-        constructor(vertices: VertexBuffer, stride: number, start: number, count: number);
-
-        _update(world: Matrix, scale: number): void;
-        isInFrustrum(frustrumPlanes: Plane[]): bool;
-        _checkCollision(collider: Collider): bool;
-        intersectsPoint(point: Vector3): bool;
-        intersects(boundingInfo: BoundingInfo, precise: bool): bool;
-
+        static intersects(box0: BoundingBox, box1: BoundingBox): boolean;
     }
 }

@@ -12,7 +12,7 @@ declare module BABYLON {
         children: Bone[];
         animation: Animation[];
 
-        constructor(name: string, skeleton: Skeleton; parentBone: Bone, matrix: Matrix);
+        constructor(name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix);
 
         getParent(): Bone;
         getLocalMatrix: Matrix;
