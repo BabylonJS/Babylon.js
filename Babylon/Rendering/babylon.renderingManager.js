@@ -31,8 +31,12 @@
                 this._scene.getEngine().clear(0, false, true);
             }
 
-            if (renderingGroup && !renderingGroup.render(customRenderFunction, index == 0 ? beforeTransparents  : null)) {
-                this._renderingGroups.splice(index, 1);
+            if (renderingGroup) {
+                if (!renderingGroup.render(customRenderFunction, index == 0 ? beforeTransparents : null)) {
+                    this._renderingGroups.splice(index, 1);
+                }
+            } else if (beforeTransparents && index == 0) {
+                beforeTransparents();
             }
 
             if (renderParticles) {

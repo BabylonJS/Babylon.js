@@ -1,5 +1,11 @@
 Changes list
 ============
+- 1.5.1:
+ - **Updates**
+ - Massive update of typescript files ([jroblak](http://www.github.com/jroblak))
+ - **Bugfixes**
+ - Fixing an issue with ```SceneLoader.ImportMesh``` ([nicolas-obre](http://www.github.com/nicolas-obre))
+ - Fixing an issue with sprites rendering when no mesh is present ([deltakosh](http://www.github.com/deltakosh))
 - 1.5.0:
  - **Major updates**
  - New ```DeviceOrientationCamera``` that supports W3C DeviceOrientations events ([deltakosh](http://www.github.com/deltakosh))
