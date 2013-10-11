@@ -586,7 +586,7 @@
 
         // Clear
         var beforeRenderDate = new Date();
-        engine.clear(this.clearColor, this.autoClear, true);
+        engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
         // Backgrounds
         if (this.layers.length) {
@@ -603,17 +603,7 @@
         }
 
         // Render
-        var that = this;
-        this._renderingManager.render(null, function() {
-            // Sprites
-            var beforeSpritessDate = new Date();
-            for (var index = 0; index < that.spriteManagers.length; index++) {
-                var spriteManager = that.spriteManagers[index];
-
-                spriteManager.render();
-            }
-            that._spritesDuration = new Date() - beforeSpritessDate;
-        }, null, true);
+        this._renderingManager.render(null, null, true, true);
 
         // Foregrounds
         if (this.layers.length) {

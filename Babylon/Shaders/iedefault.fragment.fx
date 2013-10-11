@@ -103,7 +103,7 @@ float ChebychevInequality(vec2 moments, float t)
 	}
 
 	float variance = moments.y - (moments.x * moments.x);
-	variance = max(variance, 0);
+	variance = max(variance, 0.);
 
 	float d = t - moments.x;
 	return variance / (variance + d * d);

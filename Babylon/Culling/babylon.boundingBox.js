@@ -41,6 +41,8 @@
         }
         this.minimumWorld = BABYLON.Vector3.Zero();
         this.maximumWorld = BABYLON.Vector3.Zero();
+
+        this._update(BABYLON.Matrix.Identity());
     };
 
     // Methods
