@@ -49,6 +49,7 @@
     };
     
     // Members
+    BABYLON.SpriteManager.prototype.renderingGroupId = 0;
     BABYLON.SpriteManager.prototype.onDispose = null;
 
     // Methods

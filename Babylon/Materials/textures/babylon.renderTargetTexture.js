@@ -20,6 +20,7 @@
 
     // Members        
     BABYLON.RenderTargetTexture.prototype.renderParticles = true;
+    BABYLON.RenderTargetTexture.prototype.renderSprites = false;
     BABYLON.RenderTargetTexture.prototype.isRenderTarget = true;
     BABYLON.RenderTargetTexture.prototype.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
 
@@ -75,7 +76,7 @@
         }
 
         // Render
-        this._renderingManager.render(this.customRenderFunction, null, this.renderList, this.renderParticles);
+        this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
         // Unbind
         engine.unBindFramebuffer(this._texture);

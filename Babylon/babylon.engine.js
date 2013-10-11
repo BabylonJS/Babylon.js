@@ -189,7 +189,7 @@
         this._gl.clearDepth(1.0);
         var mode = 0;
 
-        if (backBuffer || this.forceWireframe)
+        if (backBuffer)
             mode |= this._gl.COLOR_BUFFER_BIT;
 
         if (depthStencil)

@@ -11,6 +11,7 @@
         this.radius = distance * 0.5;
 
         this.centerWorld = BABYLON.Vector3.Zero();
+        this._update(BABYLON.Matrix.Identity());
     };
     
     // Methods
