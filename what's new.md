@@ -1,5 +1,12 @@
 Changes list
 ============
+- 1.5.2:
+ - **Updates**
+ - New ```renderingGroupId``` for SpriteManager ([deltakosh](http://www.github.com/deltakosh))
+ - ```BoundingBox``` and ```BoundingSphere``` are prepared with an identity matrix during construction ([deltakosh](http://www.github.com/deltakosh)) 
+ - **Bugfixes**
+ - Fixing a bug preventing wireframe to be displayed ([deltakosh](http://www.github.com/deltakosh)) 
+ - Fixing an issue with last IE update ([deltakosh](http://www.github.com/deltakosh))
 - 1.5.1:
  - **Updates**
  - Massive update of typescript files ([jroblak](http://www.github.com/jroblak))
