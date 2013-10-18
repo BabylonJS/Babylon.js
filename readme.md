@@ -2,6 +2,7 @@ Babylon.js
 ==========
 
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
+Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/)
 
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
