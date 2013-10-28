@@ -75,7 +75,12 @@
             noManifestFile();
         }, false);
 
-        xhr.send();
+        try {
+            xhr.send();
+        }
+        catch (ex) {
+            console.log("Error on XHR send request.");
+        }
     };
 
     BABYLON.Database.prototype.openAsync = function (successCallback, errorCallback) {
