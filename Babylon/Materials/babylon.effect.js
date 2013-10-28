@@ -2,7 +2,7 @@
 
 (function () {
 
-    BABYLON.Effect = function (baseName, attributesNames, uniformsNames, samplers, engine, defines) {
+    BABYLON.Effect = function (baseName, attributesNames, uniformsNames, samplers, engine, defines, optionalDefines) {
         this._engine = engine;
         this.name = baseName;
         this.defines = defines;
@@ -16,7 +16,7 @@
 
         // Is in local store ?
         if (BABYLON.Effect.ShadersStore[baseName + "VertexShader"]) {
-            this._prepareEffect(BABYLON.Effect.ShadersStore[baseName + "VertexShader"], BABYLON.Effect.ShadersStore[baseName + "PixelShader"], attributesNames, defines);
+            this._prepareEffect(BABYLON.Effect.ShadersStore[baseName + "VertexShader"], BABYLON.Effect.ShadersStore[baseName + "PixelShader"], attributesNames, defines, optionalDefines);
         } else {
             var shaderUrl;
 
@@ -32,7 +32,7 @@
                     // Fragment shader
                     BABYLON.Tools.LoadFile(shaderUrl + ".fragment.fx",
                         function (fragmentSourceCode) {
-                            that._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines);
+                            that._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines);
                         });
                 }
             );
@@ -80,7 +80,7 @@
     };
 
     // Methods
-    BABYLON.Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines) {
+    BABYLON.Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, useFallback) {
         try {
             var engine = this._engine;
             this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
@@ -101,7 +101,14 @@
 
             this._isReady = true;
         } catch (e) {
-            this._compilationError = e.message;
+            if (!useFallback && optionalDefines) {
+                for (var index = 0; index < optionalDefines.length; index++) {
+                    defines = defines.replace(optionalDefines[index], "");
+                }
+                this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, true);
+            } else {
+                this._compilationError = e.message;
+            }
         }
     };
 

@@ -185,7 +185,7 @@
     };
 
     BABYLON.Engine.prototype.clear = function (color, backBuffer, depthStencil) {
-        this._gl.clearColor(color.r, color.g, color.b, 1.0);
+        this._gl.clearColor(color.r, color.g, color.b, color.a || 1.0);
         this._gl.clearDepth(1.0);
         var mode = 0;
 
@@ -344,13 +344,13 @@
     };
 
     // Shaders
-    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines) {
+    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines) {
         var name = baseName + "@" + defines;
         if (this._compiledEffects[name]) {
             return this._compiledEffects[name];
         }
 
-        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines);
+        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, optionalDefines);
         this._compiledEffects[name] = effect;
 
         return effect;
@@ -363,6 +363,8 @@
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error("Error while compiling shader: " + gl.getShaderInfoLog(shader));
+            console.error("Defines: " + defines);
             throw new Error(gl.getShaderInfoLog(shader));
         }
         return shader;

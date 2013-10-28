@@ -1,0 +1,247 @@
+﻿html, body {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: "Segoe WP", "Segoe UI", "Verdana", "Arial";
+}
+
+a {
+    color: white;
+}
+
+    a:visited {
+        color: white;
+    }
+
+.hidden {
+    display: none;
+}
+
+#notSupported {
+    text-align: center;
+    color: white;
+    opacity: 0.8;
+    background-color: #0077DB;
+    font-size: 40px;
+    padding-top: 20%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    cursor: default;
+}
+
+
+#loadingBack {
+    width: 100%;
+    height: 60px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    margin-top: -30px;
+    background-color: white;
+    border: 1px solid #888888;
+    transition: transform 0.25s ease-in-out;
+    -webkit-transition: -webkit-transform 0.25s ease-in-out;
+    z-index: 3;
+    cursor: default;
+}
+
+#loadingText {
+    width: 100%;
+    height: 60px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-top: -30px;
+    color: #888888;
+    text-align: center;
+    padding-top: 10px;
+    font-size: 30px;
+    transition: transform 0.25s ease-in-out;
+    -webkit-transition: -webkit-transform 0.25s ease-in-out;
+    z-index: 3;
+    cursor: default;
+}
+
+.loadingBack {
+    transform: translateX(-100%);
+    -webkit-transform: translateX(-100%);
+}
+
+.loadingText {
+    transform: translateX(100%);
+    -webkit-transform: translateX(100%);
+}
+
+
+#renderCanvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    margin-bottom: 70px;
+    touch-action: none;
+    -ms-touch-action: none;
+}
+
+.help {
+    position: absolute;
+    background-color: #0077DB;
+    right: 0;
+    bottom: 70px;
+    color: white;
+    padding-right: 10px;
+    width: 360px;
+    height: 50px;
+    transition: all 0.5s ease;
+    -webkit-transition: all 0.5s ease;
+    transform: translateX(400px);
+    -webkit-transform: translateX(400px);
+}
+
+    .help.shown {
+        transform: translateX(0px);
+        -webkit-transform: translateX(0px);
+    }
+
+.helpText {
+    cursor: default;
+    position: absolute;
+    margin: 10px;
+    bottom: 5px;
+}
+
+.helpArrow {
+    position: absolute;
+    margin: 5px;
+    margin-right: 10px;
+    right: 0px;
+}
+
+#sliders {
+    position: absolute;
+    top: 25%;
+    right: 10px;
+    height: 50%;
+    width: 150px;
+    text-align: center;
+}
+
+
+.sliderText {
+    color: white;
+    font-size: 20px;
+    cursor: default;
+}
+
+#message {
+    position: absolute;
+    right: 20px;
+    top: 0px;
+    font-size: 20px;
+    color: white;
+    text-shadow: 2px 2px 0 black;
+}
+
+#fps {
+    position: absolute;
+    right: 20px;
+    top: 25px;
+    font-size: 20px;
+    color: white;
+    text-shadow: 2px 2px 0 black;
+}
+
+#nbAttendes {
+    position: absolute;
+    right: 20px;
+    top: 50px;
+    font-size: 20px;
+    color: white;
+    text-shadow: 2px 2px 0 black;
+}
+
+
+
+#babylonLogo {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+}
+
+#footer {
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    bottom: 0;
+    background-color: #0077DB;
+    padding-top: 5px;
+    padding-left: 15px;
+}
+
+#footerRight {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
+
+#footerLeft {
+    position: absolute;
+    top: 5px;
+    left: 15px;
+    width:60px;
+}
+
+#footerMiddle {
+    position: absolute;
+    top:5px;
+    right:90px;
+    left:80px;
+}
+
+#slider {
+    position:absolute;
+    width:100%;
+}
+
+
+#logo {
+    position: absolute;
+    width: 194px;
+    bottom: 0;
+    left: 50%;
+    margin-left: -97px;
+}
+
+.sepButton {
+    width: 24px;
+    height: 40px;
+    margin-right: 20px;
+}
+
+.controlButton {
+    border-radius: 25px;
+    border: 2px solid white;
+    width: 40px;
+    height: 40px;
+    margin-right: 20px;
+}
+
+    .controlButton.selected {
+        background-color: orange;
+    }
+
+    .controlButton:hover {
+        transform: scale(0.95);
+        -webkit-transform: scale(0.95);
+    }
+
+    .controlButton:active {
+        transform: scale(0.9);
+        -webkit-transform: scale(0.9);
+        background-color: orange;
+    }

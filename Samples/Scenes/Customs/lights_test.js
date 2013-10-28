@@ -9,6 +9,8 @@
     var sphere = BABYLON.Mesh.CreateSphere("Sphere", 16, 3, scene);
 
     camera.setPosition(new BABYLON.Vector3(-10, 10, 0));
+
+    light3.parent = camera;
     
     // Creating light sphere
     var lightSphere0 = BABYLON.Mesh.CreateSphere("Sphere0", 16, 0.5, scene);

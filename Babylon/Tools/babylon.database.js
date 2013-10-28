@@ -46,6 +46,12 @@
 
         xhr.open("GET", manifestURL, false);
 
+        function noManifestFile() {
+            console.log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
+            that.enableSceneOffline = false;
+            that.enableTexturesOffline = false;
+        };
+
         xhr.addEventListener("load", function () {
             if (xhr.status === 200) {
                 try {
@@ -57,19 +63,16 @@
                     }
                 }
                 catch (ex) {
-                    that.enableSceneOffline = false;
-                    that.enableTexturesOffline = false;
+                    noManifestFile();
                 }
             }
             else {
-                that.enableSceneOffline = false;
-                that.enableTexturesOffline = false;
+                noManifestFile();
             }
         }, false);
 
         xhr.addEventListener("error", function (event) {
-            that.enableSceneOffline = false;
-            that.enableTexturesOffline = false;
+            noManifestFile();
         }, false);
 
         xhr.send();
@@ -90,16 +93,20 @@
 
                 var request = window.indexedDB.open("babylonjs", 1.0);
 
-                // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
-                request.onerror = function (event) {
+                function handleError() {
                     that.isSupported = false;
                     if (errorCallback) errorCallback();
+                }
+
+                // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
+                request.onerror = function (event) {
+                    handleError();
                 };
 
                 // executes when a version change transaction cannot complete due to other active transactions
                 request.onblocked = function (event) {
                     console.log("IDB request blocked. Please reload the page.");
-                    if (errorCallback) errorCallback();
+                    handleError();
                 };
 
                 // DB has been opened successfully
@@ -111,9 +118,15 @@
                 // Initialization of the DB. Creating Scenes & Textures stores
                 request.onupgradeneeded = function (event) {
                     that.db = event.target.result;
-                    var scenesStore = that.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                    var versionsStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                    var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                    try {
+                        var scenesStore = that.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                        var versionsStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                        var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                    }
+                    catch (ex) {
+                        console.log("Error while creating object stores. Exception: " + ex.message);
+                        handleError();
+                    }
                 };
             }
             // DB has already been created and opened
@@ -294,39 +307,45 @@
         if (this.isSupported) {
             var version;
             var that = this;
-            var transaction = this.db.transaction(["versions"]);
+            try {
+                var transaction = this.db.transaction(["versions"]);
 
-            transaction.oncomplete = function (event) {
-                if (version) {
-                    // If the version in the JSON file is > than the version in DB
-                    if (that.manifestVersionFound > version.data) {
+                transaction.oncomplete = function (event) {
+                    if (version) {
+                        // If the version in the JSON file is > than the version in DB
+                        if (that.manifestVersionFound > version.data) {
+                            that.mustUpdateRessources = true;
+                            updateInDBCallback();
+                        }
+                        else {
+                            callback(version.data);
+                        }
+                    }
+                        // version was not found in DB
+                    else {
                         that.mustUpdateRessources = true;
                         updateInDBCallback();
                     }
-                    else {
-                        callback(version.data);
-                    }
-                }
-                // version was not found in DB
-                else {
-                    that.mustUpdateRessources = true;
-                    updateInDBCallback();
-                }
-            };
+                };
 
-            transaction.onabort = function (event) {
+                transaction.onabort = function (event) {
+                    callback(-1);
+                };
+
+                var getRequest = transaction.objectStore("versions").get(url);
+
+                getRequest.onsuccess = function (event) {
+                    version = event.target.result;
+                };
+                getRequest.onerror = function (event) {
+                    console.log("Error loading version for scene " + url + " from DB.");
+                    callback(-1);
+                };
+            }
+            catch (ex) {
+                console.log("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
                 callback(-1);
-            };
-
-            var getRequest = transaction.objectStore("versions").get(url);
-
-            getRequest.onsuccess = function (event) {
-                version = event.target.result;
-            };
-            getRequest.onerror = function (event) {
-                console.log("Error loading version for scene " + url + " from DB.");
-                callback(-1);
-            };
+            }
         }
         else {
             console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
@@ -337,29 +356,29 @@
     BABYLON.Database.prototype._saveVersionIntoDBAsync = function (url, callback) {
         if (this.isSupported && !this.hasReachedQuota) {
             var that = this;
-            // Open a transaction to the database
-            var transaction = this.db.transaction(["versions"], "readwrite");
-
-            // the transaction could abort because of a QuotaExceededError error
-            transaction.onabort = function (event) {
-                try {
-                    if (event.srcElement.error.name === "QuotaExceededError") {
-                        that.hasReachedQuota = true;
-                    }
-                }
-                catch (ex) { }
-                callback(-1);
-            };
-
-            transaction.oncomplete = function (event) {
-                callback(that.manifestVersionFound);
-            };
-
-            var newVersion = {};
-            newVersion.sceneUrl = url;
-            newVersion.data = this.manifestVersionFound;
-
             try {
+                // Open a transaction to the database
+                var transaction = this.db.transaction(["versions"], "readwrite");
+
+                // the transaction could abort because of a QuotaExceededError error
+                transaction.onabort = function (event) {
+                    try {
+                        if (event.srcElement.error.name === "QuotaExceededError") {
+                            that.hasReachedQuota = true;
+                        }
+                    }
+                    catch (ex) { }
+                    callback(-1);
+                };
+
+                transaction.oncomplete = function (event) {
+                    callback(that.manifestVersionFound);
+                };
+
+                var newVersion = {};
+                newVersion.sceneUrl = url;
+                newVersion.data = this.manifestVersionFound;
+
                 // Put the scene into the database
                 var addRequest = transaction.objectStore("versions").put(newVersion);
                 addRequest.onsuccess = function (event) {
@@ -370,6 +389,7 @@
                 };
             }
             catch (ex) {
+                console.log("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
                 callback(-1);
             }
         }
@@ -378,7 +398,7 @@
         }
     };
 
-    BABYLON.Database.prototype.loadSceneFromDB = function (url, sceneLoaded, progressCallBack) {
+    BABYLON.Database.prototype.loadSceneFromDB = function (url, sceneLoaded, progressCallBack, errorCallback) {
         var that = this;
         var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
         
@@ -388,11 +408,16 @@
         };
 
         this._checkVersionFromDB(completeUrl, function (version) {
-            if (!that.mustUpdateRessources) {
-                that._loadSceneFromDBAsync(completeUrl, sceneLoaded, saveAndLoadScene);
+            if (version !== -1) {
+                if (!that.mustUpdateRessources) {
+                    that._loadSceneFromDBAsync(completeUrl, sceneLoaded, saveAndLoadScene);
+                }
+                else {
+                    that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                }
             }
             else {
-                that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                errorCallback();
             }
         });
     };

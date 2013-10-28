@@ -52,6 +52,8 @@
         this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
         this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
     };
+    
+    BABYLON.Mesh.prototype = Object.create(BABYLON.Node.prototype);
 
     // Constants
     BABYLON.Mesh.BILLBOARDMODE_NONE = 0;
@@ -63,9 +65,6 @@
     // Members    
     BABYLON.Mesh.prototype.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
     BABYLON.Mesh.prototype.material = null;
-    BABYLON.Mesh.prototype.parent = null;
-    BABYLON.Mesh.prototype._isReady = true;
-    BABYLON.Mesh.prototype._isEnabled = true;
     BABYLON.Mesh.prototype.isVisible = true;
     BABYLON.Mesh.prototype.isPickable = true;
     BABYLON.Mesh.prototype.visibility = 1.0;
@@ -122,10 +121,6 @@
         return this._vertexStrideSize;
     };
 
-    BABYLON.Mesh.prototype._needToSynchonizeChildren = function () {
-        return this._childrenFlag;
-    };
-
     BABYLON.Mesh.prototype.setPivotMatrix = function (matrix) {
         this._pivotMatrix = matrix;
         this._cache.pivotMatrixUpdated = true;
@@ -167,22 +162,6 @@
         return this._isReady;
     };
 
-    BABYLON.Mesh.prototype.isEnabled = function () {
-        if (!this.isReady() || !this._isEnabled) {
-            return false;
-        }
-
-        if (this.parent) {
-            return this.parent.isEnabled();
-        }
-
-        return true;
-    };
-
-    BABYLON.Mesh.prototype.setEnabled = function (value) {
-        this._isEnabled = value;
-    };
-
     BABYLON.Mesh.prototype.isAnimated = function () {
         return this._animationStarted;
     };
@@ -220,7 +199,7 @@
             this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
             this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
 
-            if (this.parent)
+            if (this.parent && this.parent._scaleFactor)
                 this._scaleFactor = this._scaleFactor * this.parent._scaleFactor;
 
             this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
@@ -234,7 +213,7 @@
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
-        if (!force && this.isSynchronized()) {
+        if (this._currentRenderId == this._scene.getRenderId() || !force && this.isSynchronized()) {
             this._childrenFlag = false;
             return this._worldMatrix;
         }
@@ -243,6 +222,7 @@
         this._cache.position.copyFrom(this.position);
         this._cache.scaling.copyFrom(this.scaling);
         this._cache.pivotMatrixUpdated = false;
+        this._currentRenderId = this._scene.getRenderId();
 
         // Scaling
         BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
@@ -268,7 +248,7 @@
             var localPosition = this.position.clone();
             var zero = this._scene.activeCamera.position.clone();
 
-            if (this.parent) {
+            if (this.parent && this.parent.position) {
                 localPosition.addInPlace(this.parent.position);
                 BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
             }
@@ -294,7 +274,7 @@
         }
 
         // Parent
-        if (this.parent && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
+        if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             var parentWorld = this.parent.getWorldMatrix();
 
@@ -433,29 +413,6 @@
 
         // Unbind
         effectiveMaterial.unbind();
-    };
-
-    BABYLON.Mesh.prototype.isDescendantOf = function (ancestor) {
-        if (this.parent) {
-            if (this.parent === ancestor) {
-                return true;
-            }
-
-            return this.parent.isDescendantOf(ancestor);
-        }
-        return false;
-    };
-
-    BABYLON.Mesh.prototype.getDescendants = function () {
-        var results = [];
-        for (var index = 0; index < this._scene.meshes.length; index++) {
-            var mesh = this._scene.meshes[index];
-            if (mesh.isDescendantOf(this)) {
-                results.push(mesh);
-            }
-        }
-
-        return results;
     };
 
     BABYLON.Mesh.prototype.getEmittedParticleSystems = function () {
@@ -671,8 +628,8 @@
     };
 
     // Picking
-    BABYLON.Mesh.prototype.intersects = function (ray) {
-        if (!this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere)) {
+    BABYLON.Mesh.prototype.intersects = function (ray, fastCheck) {
+        if (!this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
             return { hit: false, distance: 0 };
         }
 
@@ -687,11 +644,15 @@
             if (this.subMeshes.length > 1 && !subMesh.canIntersects(ray))
                 continue;
 
-            var result = subMesh.intersects(ray, this._positions, this._indices);
+            var result = subMesh.intersects(ray, this._positions, this._indices, fastCheck);
 
             if (result.hit) {
-                if (result.distance < distance && result.distance >= 0) {
+                if ((fastCheck || result.distance < distance) && result.distance >= 0) {
                     distance = result.distance;
+
+                    if (fastCheck) {
+                        break;
+                    }
                 }
             }
         }

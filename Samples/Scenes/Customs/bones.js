@@ -4,6 +4,7 @@
     var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 30, 0), scene);
     camera.setPosition(new BABYLON.Vector3(20, 70, 120));
     light.position = new BABYLON.Vector3(20, 150, 70);
+    camera.minZ = 10.0;
 
     scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 

@@ -3,16 +3,32 @@
 
     // Demos
     var demos = [
-        { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB", big: true },
-        //{
-        //    title: "ROBOT", scene: "Robot", screenshot: "heart.jpg", size: "8.5 MB", onload: function () {
-        //        scene.collisionsEnabled = false;
-        //    }
-        //},
+        {
+            title: "TRAIN", scene: "Train", screenshot: "train.jpg", size: "70 MB", big: true, onload: function () {
+                scene.collisionsEnabled = false;
+                for (var index = 0; index < scene.cameras.length; index++) {
+                    scene.cameras[index].minZ = 10;
+                }
+
+                scene.activeCamera.detachControl(canvas);
+                scene.activeCamera = scene.cameras[4];
+                scene.activeCamera.attachControl(canvas);
+                scene.getMaterialByName("terrain_eau").bumpTexture = null;
+            }
+        },
+        {
+            title: "ROBOT", url: "Scenes/Robot/index.html", screenshot: "robot.jpg", size: "8.5 MB", onload: function () {
+                scene.collisionsEnabled = false;
+            }
+        },
+        { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB" },
         { title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", },
-        { title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", onload: function() {
-            scene.createOrUpdateSelectionOctree();
-        } },
+        {
+            title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", incremental: true, onload: function () {
+                scene.autoClear = true;
+                scene.createOrUpdateSelectionOctree();
+            }
+        },
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
         {
             title: "FLAT 2009",
@@ -25,7 +41,7 @@
                 scene.createOrUpdateSelectionOctree();
             }
         },
-        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB" },
+        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB", incremental: true },
         { title: "VIPER", scene: "Viper", screenshot: "viper.jpg", size: "18 MB" },
         { title: "SPACESHIP", scene: "Spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
         {
@@ -44,8 +60,14 @@
         { title: "BUMP", id: 2, screenshot: "bump.jpg", size: "0.1 MB" },
         { title: "FOG", id: 3, screenshot: "fog.jpg", size: "0.1 MB" },
         { title: "MULTIMATERIAL", id: 4, screenshot: "multimat.jpg", size: "0.1 MB" },
-        { title: "BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB"},
+        { title: "BLENDER", scene: "blender", screenshot: "blender.jpg", size: "0.2 MB" },
         { title: "SCENE #1", id: 0, screenshot: "testscene.jpg", size: "10 MB" }
+    ];
+
+    var thirdParties = [
+    { title: "CAR GAME", url: "http://babylon.azurewebsites.net", screenshot: "car.jpg", size: "by G. Carlander" },
+    { title: "CYCLE GAME", url: "http://tronbabylon.azurewebsites.net/", screenshot: "tron.jpg", size: "by G. Carlander" },
+    { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" }
     ];
 
     // UI
@@ -53,8 +75,10 @@
     var menuPanel = document.getElementById("screen1");
     var items = document.getElementById("items");
     var testItems = document.getElementById("testItems");
+    var _3rdItems = document.getElementById("3rdItems");
     var renderZone = document.getElementById("renderZone");
     var controlPanel = document.getElementById("controlPanel");
+    var cameraPanel = document.getElementById("cameraPanel");
     var wireframe = document.getElementById("wireframe");
     var divFps = document.getElementById("fps");
     var stats = document.getElementById("stats");
@@ -66,6 +90,8 @@
     var status = document.getElementById("status");
     var fullscreen = document.getElementById("fullscreen");
     var touchCamera = document.getElementById("touchCamera");
+    var deviceOrientationCamera = document.getElementById("deviceOrientationCamera");
+    var camerasList = document.getElementById("camerasList");
 
     var sceneChecked;
 
@@ -80,7 +106,7 @@
                     window.location = demo.url;
                     return;
                 }
-                loadScene(demo.id !== undefined ? demo.id : demo.scene, function () {
+                loadScene(demo.id !== undefined ? demo.id : demo.scene, demo.incremental ? ".incremental" : "", function () {
                     if (demo.collisions !== undefined) {
                         scene.collisionsEnabled = demo.collisions;
                     }
@@ -137,9 +163,15 @@
     }
 
     // Tests
-    for (var index = 0; index < tests.length; index++) {
+    for (index = 0; index < tests.length; index++) {
         var test = tests[index];
         createItem(test, testItems);
+    }
+
+    // 3rd party
+    for (index = 0; index < thirdParties.length; index++) {
+        var thirdParty = thirdParties[index];
+        createItem(thirdParty, _3rdItems);
     }
 
     // Go Back
@@ -169,20 +201,36 @@
         menuPanel.className = "movedLeft";
         renderZone.className = "";
         opacityMask.className = "hidden";
+        sceneChecked = true;
+
+        camerasList.options.length = 0;
+
+        for (var index = 0; index < scene.cameras.length; index++) {
+            var camera = scene.cameras[index];
+            var option = new Option();
+            option.text = camera.name;
+            option.value = camera;
+
+            if (camera == scene.activeCamera) {
+                option.selected = true;
+            }
+
+            camerasList.appendChild(option);
+        }
     };
 
-    var loadScene = function (name, then) {
+    var loadScene = function (name, incremental, then) {
         // Cleaning
         if (scene) {
             scene.dispose();
             scene = null;
         }
-        
+
         sceneChecked = false;
 
         // History
         if (history.pushState) {
-            history.pushState({}, name, "index.html");
+            history.pushState({}, name, window.location.pathname + window.location.search);
         }
 
         // Loading
@@ -229,7 +277,7 @@
                 }
                 scene = newScene;
 
-                scene.executeWhenReady(function() {
+                scene.executeWhenReady(function () {
                     if (scene.activeCamera) {
                         scene.activeCamera.attachControl(canvas);
                         if (then) {
@@ -245,10 +293,8 @@
             };
 
             var dlCount = 0;
-            BABYLON.SceneLoader.Load("Scenes/" + name + "/", name + ".babylon", engine, function (newScene) {
+            BABYLON.SceneLoader.Load("Scenes/" + name + "/", name + incremental + ".babylon", engine, function (newScene) {
                 scene = newScene;
-                scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
-                loadingText.innerHTML = "Streaming textures..." + scene.getWaitingItemsCount() + " remaining";
                 scene.executeWhenReady(function () {
                     if (scene.activeCamera) {
                         scene.activeCamera.attachControl(canvas);
@@ -299,10 +345,9 @@
 
         // Render scene
         if (scene) {
-            if (!sceneChecked && !scene.isReady()) {
-                loadingText.innerHTML = "Streaming textures..." + scene.getWaitingItemsCount() + " remaining";
-            } else {
-                sceneChecked = true;
+            if (!sceneChecked) {
+                var remaining = scene.getWaitingItemsCount();
+                loadingText.innerHTML = "Streaming items..." + (remaining ? (remaining + " remaining") : "");
             }
 
             scene.render();
@@ -318,6 +363,16 @@
                     + "<i>Particles duration:</i> " + scene.getParticlesDuration() + " ms<br>"
                     + "<i>Sprites duration:</i> " + scene.getSpritesDuration() + " ms<br>"
                     + "<i>Render duration:</i> " + scene.getRenderDuration() + " ms";
+            }
+
+            // Streams
+            if (scene.useDelayedTextureLoading) {
+                var waiting = scene.getWaitingItemsCount();
+                if (waiting > 0) {
+                    status.innerHTML = "Streaming items..." + waiting + " remaining";
+                } else {
+                    status.innerHTML = "";
+                }
             }
         }
     };
@@ -341,6 +396,7 @@
     // UI
 
     var panelIsClosed = true;
+    var cameraPanelIsClosed = true;
     var aboutIsClosed = true;
     document.getElementById("clickableTag").addEventListener("click", function () {
         if (panelIsClosed) {
@@ -349,8 +405,20 @@
             controlPanel.style.transform = "translateY(0px)";
         } else {
             panelIsClosed = true;
-            controlPanel.style.webkitTransform = "translateY(250px)";
-            controlPanel.style.transform = "translateY(250px)";
+            controlPanel.style.webkitTransform = "translateY(200px)";
+            controlPanel.style.transform = "translateY(200px)";
+        }
+    });
+
+    document.getElementById("cameraClickableTag").addEventListener("click", function () {
+        if (cameraPanelIsClosed) {
+            cameraPanelIsClosed = false;
+            cameraPanel.style.webkitTransform = "translateX(0px)";
+            cameraPanel.style.transform = "translateX(0px)";
+        } else {
+            cameraPanelIsClosed = true;
+            cameraPanel.style.webkitTransform = "translateX(300px)";
+            cameraPanel.style.transform = "translateX(300px)";
         }
     });
 
@@ -391,8 +459,11 @@
     canvas.addEventListener("click", function (evt) {
         if (!panelIsClosed) {
             panelIsClosed = true;
-            controlPanel.style.webkitTransform = "translateY(250px)";
-            controlPanel.style.transform = "translateY(250px)";
+            cameraPanelIsClosed = true;
+            controlPanel.style.webkitTransform = "translateY(200px)";
+            controlPanel.style.transform = "translateY(200px)";
+            cameraPanel.style.webkitTransform = "translateX(300px)";
+            cameraPanel.style.transform = "translateX(300px)";
         }
 
         if (evt.ctrlKey) {
@@ -482,6 +553,30 @@
         scene.activeCamera.attachControl(canvas);
     });
 
+    deviceOrientationCamera.addEventListener("click", function () {
+        if (!scene) {
+            return;
+        }
+
+        var camera = new BABYLON.DeviceOrientationCamera("deviceOrientationCamera", scene.activeCamera.position, scene);
+        camera.rotation = scene.activeCamera.rotation.clone();
+        camera.fov = scene.activeCamera.fov;
+        camera.minZ = scene.activeCamera.minZ;
+        camera.maxZ = scene.activeCamera.maxZ;
+
+        camera.ellipsoid = scene.activeCamera.ellipsoid.clone();
+        camera.checkCollisions = scene.activeCamera.checkCollisions;
+        camera.applyGravity = scene.activeCamera.applyGravity;
+
+        camera.speed = scene.activeCamera.speed;
+
+        scene.activeCamera.detachControl(canvas);
+
+        scene.activeCamera = camera;
+
+        scene.activeCamera.attachControl(canvas);
+    });
+
     hardwareScalingLevel.addEventListener("change", function () {
         if (!engine)
             return;
@@ -494,17 +589,41 @@
         }
     });
 
+    // Cameras
+    camerasList.addEventListener("change", function (ev) {
+        scene.activeCamera.detachControl(canvas);
+        scene.activeCamera = scene.cameras[camerasList.selectedIndex];
+        scene.activeCamera.attachControl(canvas);
+    });
+
     // Query string
     var queryString = window.location.search;
 
     if (queryString) {
-        var index = parseInt(queryString.replace("?", ""));
+        var query = queryString.replace("?", "");
+        var index = parseInt(query);
 
-        if (index >= demos.length) {
-            itemClick(tests[index - demos.length])();
+        if (!isNaN(index)) {
+            if (index >= demos.length) {
+                itemClick(tests[index - demos.length])();
+            } else {
+                itemClick(demos[index])();
+            }
         } else {
-            itemClick(demos[index])();
+            for (index = 0; index < demos.length; index++) {
+                if (demos[index].title === query) {
+                    itemClick(demos[index])();
+                    return;
+                }
+            }
+            for (index = 0; index < tests.length; index++) {
+                if (tests[index].title === query) {
+                    itemClick(tests[index])();
+                    return;
+                }
+            }
         }
+
     }
 
 };

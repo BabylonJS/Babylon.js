@@ -25,6 +25,12 @@ a {
         -webkit-transform: scale3d(0.9, 0.9, 0.9);
     }
 
+.buttonControlPanel {
+    height: 40px;
+    width: 200px;
+    margin: 10px 0px 10px 0px;
+}
+
 button {
     border: 1px solid #888888;
     background-color: #DEDEDE;
@@ -347,16 +353,16 @@ button {
 
 #controlPanel {
     position: absolute;
-    height: 250px;
+    height: 200px;
     bottom: 0px;
     width: 500px;
     left: 50%;
     margin-left: -250px;
     z-index: 1;
     transition: transform 0.25s ease-in-out;
-    transform: translateY(250px);
+    transform: translateY(200px);
     -webkit-transition: -webkit-transform 0.25s ease-in-out;
-    -webkit-transform: translateY(250px);
+    -webkit-transform: translateY(200px);
 }
 
 .tag {
@@ -375,10 +381,6 @@ button {
     border-top-right-radius: 10px 10px;
 }
 
-#clickableTag {
-    background-color: transparent;
-}
-
 #controlsZone {
     width: 100%;
     height: 100%;
@@ -387,6 +389,49 @@ button {
     padding: 20px;
     border-top-left-radius: 10px 10px;
     border-top-right-radius: 10px 10px;
+}
+
+#cameraPanel {
+    position: absolute;
+    height: 350px;
+    right: 0px;
+    width: 300px;
+    top: 350px;
+    z-index: 1;
+    transition: transform 0.25s ease-in-out;
+    transform: translateX(300px);
+    -webkit-transition: -webkit-transform 0.25s ease-in-out;
+    -webkit-transform: translateX(300px);
+}
+
+.cameraTag {
+    position: absolute;
+    background-color: #EEEEEE;
+    height: 50px;
+    width: 50px;
+    top: 0px;
+    left: -50px;
+    border-top-left-radius: 10px 10px;
+    border-bottom-left-radius: 10px 10px;
+}
+
+#clickableTag {
+    cursor: hand;
+    background-color: transparent;
+}
+
+#cameraClickableTag {
+    cursor: hand;
+    background-color: transparent;
+}
+
+#cameraControlsZone {
+    width: 100%;
+    height: 100%;
+    background-color: #EEEEEE;
+    color: #888888;
+    padding: 20px;
+    border-bottom-left-radius: 10px 10px;
 }
 
 #loadingBack {
@@ -422,13 +467,13 @@ button {
 }
 
 .loadingBack {
-    transform: translateX(-100%);
-    -webkit-transform: translateX(-100%);
+    transform: translateX(-120%);
+    -webkit-transform: translateX(-120%);
 }
 
 .loadingText {
-    transform: translateX(100%);
-    -webkit-transform: translateX(100%);
+    transform: translateX(120%);
+    -webkit-transform: translateX(120%);
 }
 
 #leftPart {

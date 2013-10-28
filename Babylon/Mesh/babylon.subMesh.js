@@ -84,7 +84,7 @@
         return ray.intersectsBox(this._boundingInfo.boundingBox);
     };
 
-    BABYLON.SubMesh.prototype.intersects = function (ray, positions, indices) {
+    BABYLON.SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
         var distance = Number.MAX_VALUE;
         
         // Triangles test
@@ -96,8 +96,12 @@
             var result = ray.intersectsTriangle(p0, p1, p2);
 
             if (result.hit) {
-                if (result.distance < distance && result.distance >= 0) {
+                if ((fastCheck || result.distance < distance) && result.distance >= 0) {
                     distance = result.distance;
+
+                    if (fastCheck) {
+                        break;
+                    }
                 }
             }
         }

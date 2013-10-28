@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,7 +19,6 @@ namespace MakeIncremental
 
             // Parsing arguments
             string input = "";
-            bool extractTextures = false;
             foreach (var arg in args)
             {
                 var order = arg.Substring(0, 3);
@@ -27,9 +27,6 @@ namespace MakeIncremental
                 {
                     case "/i:":
                         input = arg.Substring(3);
-                        break;
-                    case "/textures":
-                        extractTextures = true;
                         break;
                     default:
                         DisplayUsage();
@@ -43,12 +40,13 @@ namespace MakeIncremental
                 return;
             }
 
-            ProcessSourceFile(input, extractTextures);
+            ProcessSourceFile(input);
         }
 
         static string CreateDelayLoadingFile(dynamic mesh, string outputDir, string rootFilename)
         {
-            var outputPath = Path.Combine(outputDir, rootFilename + "." + mesh.name + ".babylonmeshdata");
+            var encodedMeshName = mesh.name.ToString().Replace("+", "_").Replace(" ", "_");
+            var outputPath = Path.Combine(outputDir, rootFilename + "." + encodedMeshName + ".babylonmeshdata");
 
             var result = new JObject();
             result["positions"] = mesh.positions;
@@ -92,10 +90,10 @@ namespace MakeIncremental
                 writer.Write(json);
             }
 
-            return Path.GetFileName(outputPath);
+            return HttpUtility.UrlEncode(Path.GetFileName(outputPath));
         }
 
-        static void ProcessSourceFile(string input, bool extractTextures)
+        static void ProcessSourceFile(string input)
         {
             try
             {
@@ -134,6 +132,7 @@ namespace MakeIncremental
                     if (mesh.positions != null && mesh.normals != null && mesh.indices != null)
                     {
                         mesh.delayLoadingFile = CreateDelayLoadingFile(mesh, outputDir, rootFilename);
+                        Console.WriteLine("Delay loading file: " + mesh.delayLoadingFile);
 
                         // Compute bounding boxes
                         var positions = ((JArray) mesh.positions).Select(v=>v.Value<float>()).ToArray();

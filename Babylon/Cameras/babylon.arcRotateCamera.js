@@ -4,13 +4,12 @@
     var eventPrefix = BABYLON.Tools.GetPointerPrefix();
 
     BABYLON.ArcRotateCamera = function (name, alpha, beta, radius, target, scene) {
-        this.name = name;
-        this.id = name;
+        BABYLON.Camera.call(this, name, BABYLON.Vector3.Zero(), scene);
+        
         this.alpha = alpha;
         this.beta = beta;
         this.radius = radius;
         this.target = target;
-        this.position = BABYLON.Vector3.Zero();
         
         this._keys = [];
         this.keysUp = [38];
@@ -18,20 +17,9 @@
         this.keysLeft = [37];
         this.keysRight = [39];
 
-        this._scene = scene;
-
-        scene.cameras.push(this);
-        
-        if (!scene.activeCamera) {
-            scene.activeCamera = this;
-        }
-
         this._viewMatrix = new BABYLON.Matrix();
 
         this.getViewMatrix();
-        
-        // Animations
-        this.animations = [];
     };
     
     BABYLON.ArcRotateCamera.prototype = Object.create(BABYLON.Camera.prototype);
@@ -45,6 +33,7 @@
     BABYLON.ArcRotateCamera.prototype.upperBetaLimit = null;
     BABYLON.ArcRotateCamera.prototype.lowerRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
+    BABYLON.ArcRotateCamera.prototype.angularSensibility = 1000.0;
 
     // Methods
     BABYLON.ArcRotateCamera.prototype.attachControl = function(canvas, noPreventDefault) {
@@ -98,8 +87,8 @@
                 var offsetX = evt.clientX - previousPosition.x;
                 var offsetY = evt.clientY - previousPosition.y;
 
-                that.inertialAlphaOffset -= offsetX / 1000;
-                that.inertialBetaOffset -= offsetY / 1000;
+                that.inertialAlphaOffset -= offsetX / that.angularSensibility;
+                that.inertialBetaOffset -= offsetY / that.angularSensibility;
 
                 previousPosition = {
                     x: evt.clientX,
@@ -119,8 +108,8 @@
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
-                that.inertialAlphaOffset -= offsetX / 1000;
-                that.inertialBetaOffset -= offsetY / 1000;
+                that.inertialAlphaOffset -= offsetX / that.angularSensibility;
+                that.inertialBetaOffset -= offsetY / that.angularSensibility;
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
@@ -207,19 +196,27 @@
                     }
                 }
             };
+
+            this._reset = function() {
+                that._keys = [];
+                that.inertialAlphaOffset = 0;
+                that.inertialBetaOffset = 0;
+                previousPosition = null;
+                pointerId = null;
+            };
         }
 
-        canvas.addEventListener(eventPrefix + "down", this._onPointerDown);
-        canvas.addEventListener(eventPrefix + "up", this._onPointerUp);
-        canvas.addEventListener(eventPrefix + "out", this._onPointerUp);
-        canvas.addEventListener(eventPrefix + "move", this._onPointerMove);
-        canvas.addEventListener("mousemove", this._onMouseMove);
-        canvas.addEventListener("MSPointerDown", this._onGestureStart);
-        canvas.addEventListener("MSGestureChange", this._onGesture);
-        window.addEventListener("keydown", this._onKeyDown);
-        window.addEventListener("keyup", this._onKeyUp);
-        window.addEventListener('mousewheel', this._wheel);
-        window.addEventListener("blur", this._onLostFocus);
+        canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
+        canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+        canvas.addEventListener(eventPrefix + "out", this._onPointerUp, false);
+        canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
+        canvas.addEventListener("mousemove", this._onMouseMove, false);
+        canvas.addEventListener("MSPointerDown", this._onGestureStart, false);
+        canvas.addEventListener("MSGestureChange", this._onGesture, false);
+        window.addEventListener("keydown", this._onKeyDown, false);
+        window.addEventListener("keyup", this._onKeyUp, false);
+        window.addEventListener('mousewheel', this._wheel, false);
+        window.addEventListener("blur", this._onLostFocus, false);
     };
     
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
@@ -241,6 +238,10 @@
 
         this._MSGestureHandler = null;
         this._attachedCanvas = null;
+
+        if (this._reset) {
+            this._reset();
+        }
     };
 
     BABYLON.ArcRotateCamera.prototype._update = function () {
@@ -304,7 +305,7 @@
         this.beta = Math.acos(radiusv3.y / this.radius);
     };
 
-    BABYLON.ArcRotateCamera.prototype.getViewMatrix = function () {
+    BABYLON.ArcRotateCamera.prototype._getViewMatrix = function () {
         // Compute
         if (this.beta > Math.PI)
             this.beta = Math.PI;
@@ -318,7 +319,7 @@
         var sinb = Math.sin(this.beta);
 
         this.target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-        BABYLON.Matrix.LookAtLHToRef(this.position, this.target, BABYLON.Vector3.Up(), this._viewMatrix);
+        BABYLON.Matrix.LookAtLHToRef(this.position, this.target, this.upVector, this._viewMatrix);
 
         return this._viewMatrix;
     };

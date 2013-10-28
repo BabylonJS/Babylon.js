@@ -162,7 +162,7 @@
             }
 
             if (mat) {
-                if (!mat.isReady(mesh, mesh.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED)) {
+                if (!mat.isReady(mesh)) {
                     return false;
                 }
             }
@@ -317,6 +317,26 @@
 
         return null;
     };
+    
+    BABYLON.Scene.prototype.getMaterialByName = function (name) {
+        for (var index = 0; index < this.materials.length; index++) {
+            if (this.materials[index].name === name) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    };
+    
+    BABYLON.Scene.prototype.getCameraByName = function (name) {
+        for (var index = 0; index < this.cameras.length; index++) {
+            if (this.cameras[index].name === name) {
+                return this.cameras[index];
+            }
+        }
+
+        return null;
+    };
 
     BABYLON.Scene.prototype.getLightByID = function (id) {
         for (var index = 0; index < this.lights.length; index++) {
@@ -342,6 +362,22 @@
         for (var index = this.meshes.length - 1; index >= 0 ; index--) {
             if (this.meshes[index].id === id) {
                 return this.meshes[index];
+            }
+        }
+
+        return null;
+    };
+    
+    BABYLON.Scene.prototype.getLastEntryByID = function (id) {
+        for (var index = this.meshes.length - 1; index >= 0 ; index--) {
+            if (this.meshes[index].id === id) {
+                return this.meshes[index];
+            }
+        }
+        
+        for (var index = this.cameras.length - 1; index >= 0 ; index--) {
+            if (this.cameras[index].id === id) {
+                return this.cameras[index];
             }
         }
 
@@ -523,6 +559,7 @@
     BABYLON.Scene.prototype.render = function () {
         var startDate = new Date();
         this._particlesDuration = 0;
+        this._spritesDuration = 0;
         this._activeParticles = 0;
         var engine = this._engine;
 
@@ -535,11 +572,8 @@
             this._onBeforeRenderCallbacks[callbackIndex]();
         }
 
-        // Camera
         if (!this.activeCamera)
             throw new Error("Active camera not set");
-
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
 
         // Animations
         this._animationRatio = BABYLON.Tools.GetDeltaTime() * (60.0 / 1000.0);
@@ -550,6 +584,9 @@
         var beforeEvaluateActiveMeshesDate = new Date();
         this._evaluateActiveMeshes();
         this._evaluateActiveMeshesDuration = new Date() - beforeEvaluateActiveMeshesDate;
+
+        // Camera
+        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
 
         // Skeletons
         for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
@@ -563,7 +600,7 @@
             var light = this.lights[lightIndex];
             var shadowGenerator = light.getShadowGenerator();
 
-            if (light.isEnabled && shadowGenerator) {
+            if (light.isEnabled() && shadowGenerator) {
                 this._renderTargets.push(shadowGenerator.getShadowMap());
             }
         }
@@ -799,7 +836,7 @@
         return BABYLON.Ray.CreateNew(x, y, engine.getRenderWidth() * engine.getHardwareScalingLevel(), engine.getRenderHeight() * engine.getHardwareScalingLevel(), world ? world : BABYLON.Matrix.Identity(), this._viewMatrix, this._projectionMatrix);
     };
 
-    BABYLON.Scene.prototype.pick = function (x, y, predicate) {
+    BABYLON.Scene.prototype.pick = function (x, y, predicate, fastCheck) {
         var distance = Number.MAX_VALUE;
         var pickedPoint = null;
         var pickedMesh = null;
@@ -819,16 +856,20 @@
             var world = mesh.getWorldMatrix();
             var ray = this.createPickingRay(x, y, world);
 
-            var result = mesh.intersects(ray);
+            var result = mesh.intersects(ray, fastCheck);
             if (!result.hit)
                 continue;
 
-            if (result.distance >= distance)
+            if (!fastCheck && result.distance >= distance)
                 continue;
 
             distance = result.distance;
             pickedMesh = mesh;
             pickedPoint = result.pickedPoint;
+            
+            if (fastCheck) {
+                break;
+            }
         }
 
         return { hit: distance != Number.MAX_VALUE, distance: distance, pickedMesh: pickedMesh, pickedPoint: pickedPoint };
