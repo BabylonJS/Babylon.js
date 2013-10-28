@@ -20,8 +20,8 @@
         return this._texture;
     };
 
-    BABYLON.BaseTexture.prototype.isReady = function (required) {
-        if (!required && this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+    BABYLON.BaseTexture.prototype.isReady = function () {
+        if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
             return true;
         }
 

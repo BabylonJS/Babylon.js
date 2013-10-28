@@ -122,6 +122,7 @@
         var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
         if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
+            offsetValue = 0;
             returnValue = false;
         } else {
             // Get max value if required

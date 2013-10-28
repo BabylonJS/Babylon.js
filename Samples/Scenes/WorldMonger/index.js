@@ -86,7 +86,9 @@
     };
 
     // Launch render loop
-    engine.runRenderLoop(renderFunction);
+    scene.executeWhenReady(function() {
+        engine.runRenderLoop(renderFunction);
+    });
 
     // Resize
     window.addEventListener("resize", function () {

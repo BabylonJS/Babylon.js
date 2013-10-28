@@ -2,49 +2,20 @@
 
 (function () {
     BABYLON.TouchCamera = function (name, position, scene) {
-        this.name = name;
-        this.id = name;
-
-        this._scene = scene;
-        this.position = position;
-        scene.cameras.push(this);
-        this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-        this.cameraRotation = new BABYLON.Vector2(0, 0);
-        this.rotation = new BABYLON.Vector3(0, 0, 0);
-        this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
-        this.angularSensibility = 200000.0;
-        this.moveSensibility = 500.0;
-
-        if (!scene.activeCamera) {
-            scene.activeCamera = this;
-        }
-        // Collisions
-        this._collider = new BABYLON.Collider();
-        this._needMoveForGravity = true;
-        
+        BABYLON.FreeCamera.call(this, name, position, scene);
+            
         // Offset
         this._offsetX = null;
         this._offsetY = null;
         this._pointerCount = 0;
         this._pointerPressed = [];
-        
-        // Animations
-        this.animations = [];
-        
-        // Internals
-        this._cameraRotationMatrix = new BABYLON.Matrix();
-        this._referencePoint = BABYLON.Vector3.Zero();
-        this._currentTarget = BABYLON.Vector3.Zero();
-        this._camMatrix = BABYLON.Matrix.Zero();
-        this._transformedReferencePoint = BABYLON.Vector3.Zero();
-        this._viewMatrix = BABYLON.Matrix.Zero();
-        this._upVector = BABYLON.Vector3.Up();
-        this._oldPosition = BABYLON.Vector3.Zero();
-        this._diffPosition = BABYLON.Vector3.Zero();
-        this._newPosition = BABYLON.Vector3.Zero();
     };
 
     BABYLON.TouchCamera.prototype = Object.create(BABYLON.FreeCamera.prototype);
+
+    BABYLON.TouchCamera.prototype.angularSensibility = 200000.0;
+    BABYLON.TouchCamera.prototype.moveSensibility = 500.0;
+
 
     // Controls
     BABYLON.TouchCamera.prototype.attachControl = function (canvas, noPreventDefault) {

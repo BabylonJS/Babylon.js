@@ -20,6 +20,7 @@
     <script src="Babylon/Tools/babylon.database.js"></script>
     <script src="Babylon/Tools/babylon.tools.js"></script>
     <script src="Babylon/babylon.engine.js"></script>
+    <script src="Babylon/babylon.node.js"></script>
     <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
     <script src="Babylon/Culling/babylon.boundingBox.js"></script>
     <script src="Babylon/Culling/babylon.boundingInfo.js"></script>
@@ -127,6 +128,8 @@
                         <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
                         <i>Game FX:</i> Sébastien <b>PERTUS</b> (<a href="http://www.twitter.com/@sebastienpertus">@sebastienpertus</a>)<br />
                         <i>Game FX:</i> David <b>ROUSSET</b> (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
+                        <br />
+                        <i>Train scene:</i> Romuald <b>ROUHIER</b> and <a href="http://www.progiss.com/">Progiss</a><br />
                     </p>
                 </div>
                 <div id="aboutParagraph">
@@ -255,15 +258,24 @@
                                 <option>4</option>
                             </select>
                         </p>
-                        <p>
-                            <button id="touchCamera">Switch to touch camera</button>
-                            <button id="deviceOrientationCamera">Switch to device orientation camera</button>
-                        </p>
                         <p id="extensions"></p>
                     </div>
                 </div>
                 <div class="tag">Control panel</div>
                 <div class="tag" id="clickableTag"></div>
+            </div>
+            <div id="cameraPanel">
+                <div id="cameraControlsZone">
+                    Active camera:<br>
+                    <select id="camerasList"></select>
+                    <p>
+                        Change control method:
+                        <button class="buttonControlPanel" id="touchCamera">Switch to touch camera</button>
+                        <button class="buttonControlPanel" id="deviceOrientationCamera">Switch to device orientation camera</button>
+                    </p>
+                </div>
+                <div class="cameraTag"><img src="Assets/camera.png" /></div>
+                <div class="cameraTag" id="cameraClickableTag"></div>
             </div>
         </div>
         <div id="notSupported" class="hidden">Sorry but your browser does not support WebGL...</div>

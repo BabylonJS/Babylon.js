@@ -2,12 +2,8 @@
 
 (function () {
     BABYLON.FreeCamera = function (name, position, scene) {
-        this.name = name;
-        this.id = name;
-
-        this._scene = scene;
-        this.position = position;
-        scene.cameras.push(this);
+        BABYLON.Camera.call(this, name, position, scene);
+        
         this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
         this.cameraRotation = new BABYLON.Vector2(0, 0);
         this.rotation = new BABYLON.Vector3(0, 0, 0);
@@ -19,19 +15,12 @@
         this.keysLeft = [37];
         this.keysRight = [39];
 
-        if (!scene.activeCamera) {
-            scene.activeCamera = this;
-        }
         // Collisions
         this._collider = new BABYLON.Collider();
         this._needMoveForGravity = true;
 
-        // Animations
-        this.animations = [];
-
         // Internals
         this._currentTarget = BABYLON.Vector3.Zero();
-        this._upVector = BABYLON.Vector3.Up();
         this._viewMatrix = BABYLON.Matrix.Zero();
         this._camMatrix = BABYLON.Matrix.Zero();
         this._cameraTransformMatrix = BABYLON.Matrix.Zero();
@@ -41,6 +30,8 @@
         this._oldPosition = BABYLON.Vector3.Zero();
         this._diffPosition = BABYLON.Vector3.Zero();
         this._newPosition = BABYLON.Vector3.Zero();
+        this._lookAtTemp = BABYLON.Matrix.Zero();
+        this._tempMatrix = BABYLON.Matrix.Zero();
     };
 
     BABYLON.FreeCamera.prototype = Object.create(BABYLON.Camera.prototype);
@@ -49,6 +40,10 @@
     BABYLON.FreeCamera.prototype.speed = 2.0;
     BABYLON.FreeCamera.prototype.checkCollisions = false;
     BABYLON.FreeCamera.prototype.applyGravity = false;
+    BABYLON.FreeCamera.prototype.noRotationConstraint = false;
+    BABYLON.FreeCamera.prototype.angularSensibility = 2000.0;
+    BABYLON.FreeCamera.prototype.lockedTarget = null;
+
 
     // Methods
     BABYLON.FreeCamera.prototype._computeLocalCameraSpeed = function () {
@@ -57,7 +52,9 @@
 
     // Target
     BABYLON.FreeCamera.prototype.setTarget = function (target) {
-        BABYLON.Matrix.LookAtLHToRef(this.position, target, BABYLON.Vector3.Up(), this._camMatrix);
+        this.upVector.normalize();
+        
+        BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
         this._camMatrix.invert();
 
         this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -70,7 +67,7 @@
             this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
         }
 
-        this.rotation.z = -Math.acos(BABYLON.Vector3.Dot(new BABYLON.Vector3(0, 1.0, 0), BABYLON.Vector3.Up()));
+        this.rotation.z = -Math.acos(BABYLON.Vector3.Dot(new BABYLON.Vector3(0, 1.0, 0), this.upVector));
 
         if (isNaN(this.rotation.x))
             this.rotation.x = 0;
@@ -136,8 +133,8 @@
                     offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
                 }
 
-                that.cameraRotation.y += offsetX / 2000.0;
-                that.cameraRotation.x += offsetY / 2000.0;
+                that.cameraRotation.y += offsetX / that.angularSensibility;
+                that.cameraRotation.x += offsetY / that.angularSensibility;
 
                 previousPosition = {
                     x: evt.clientX,
@@ -183,6 +180,13 @@
             this._onLostFocus = function () {
                 that._keys = [];
             };
+
+            this._reset = function() {
+                that._keys = [];
+                previousPosition = null;
+                that.cameraDirection = new BABYLON.Vector3(0, 0, 0);
+                that.cameraRotation = new BABYLON.Vector2(0, 0);
+            };
         }
 
         canvas.addEventListener("mousedown", this._onMouseDown, false);
@@ -208,6 +212,9 @@
         window.removeEventListener("blur", this._onLostFocus);
         
         this._attachedCanvas = null;
+        if (this._reset) {
+            this._reset();
+        }
     };
 
     BABYLON.FreeCamera.prototype._collideWithWorld = function (velocity) {
@@ -243,8 +250,8 @@
                 this._localDirection.copyFromFloats(0, 0, -speed);
             }
 
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraTransformMatrix);
-            BABYLON.Vector3.TransformCoordinatesToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+            this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
+            BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
             this.cameraDirection.addInPlace(this._transformedDirection);
         }
     };
@@ -275,12 +282,14 @@
             this.rotation.x += this.cameraRotation.x;
             this.rotation.y += this.cameraRotation.y;
 
-            var limit = (Math.PI / 2) * 0.95;
+            if (!this.noRotationConstraint) {
+                var limit = (Math.PI / 2) * 0.95;
 
-            if (this.rotation.x > limit)
-                this.rotation.x = limit;
-            if (this.rotation.x < -limit)
-                this.rotation.x = -limit;
+                if (this.rotation.x > limit)
+                    this.rotation.x = limit;
+                if (this.rotation.x < -limit)
+                    this.rotation.x = -limit;
+            }
         }
 
         // Inertia
@@ -292,17 +301,35 @@
         }
     };
 
-    BABYLON.FreeCamera.prototype.getViewMatrix = function () {
+    BABYLON.FreeCamera.prototype._getViewMatrix = function () {
         BABYLON.Vector3.FromFloatsToRef(0, 0, 1, this._referencePoint);
-        // Compute
-        BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
 
-        BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+        if (!this.lockedTarget) {
+            // Compute
+            if (this.upVector.x != 0 || this.upVector.y != 1.0 || this.upVector.z != 0) {
+                BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
 
-        this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+                this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
+                this._lookAtTemp.invert();
+                this._tempMatrix.multiplyToRef(this._lookAtTemp, this._cameraRotationMatrix);
+            } else {
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            }
 
-        BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._upVector, this._viewMatrix);
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+        } else {
+            if (this.lockedTarget.position) {
+                this._currentTarget.copyFrom(this.lockedTarget.position);
+            } else {
+                this._currentTarget.copyFrom(this.lockedTarget);
+            }
+        }
+        
+        BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
         return this._viewMatrix;
     };
 })();

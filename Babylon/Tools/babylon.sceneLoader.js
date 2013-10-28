@@ -272,6 +272,56 @@
         light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
     };
 
+    var parseCamera = function (parsedCamera, scene) {
+        var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
+        camera.id = parsedCamera.id;
+
+        // Parent
+        if (parsedCamera.parentId) {
+            camera._waitingParentId = parsedCamera.parentId;
+        }
+
+        // Target
+        if (parsedCamera.target) {
+            camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+        } else {
+            camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
+        }
+        
+        // Locked target
+        if (parsedCamera.lockedTargetId) {
+            camera._waitingLockedTargetId = parsedCamera.lockedTargetId;
+        }
+
+        camera.fov = parsedCamera.fov;
+        camera.minZ = parsedCamera.minZ;
+        camera.maxZ = parsedCamera.maxZ;
+
+        camera.speed = parsedCamera.speed;
+        camera.inertia = parsedCamera.inertia;
+
+        camera.checkCollisions = parsedCamera.checkCollisions;
+        camera.applyGravity = parsedCamera.applyGravity;
+        if (parsedCamera.ellipsoid) {
+            camera.ellipsoid = BABYLON.Vector3.FromArray(parsedCamera.ellipsoid);
+        }
+
+        // Animations
+        if (parsedCamera.animations) {
+            for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
+                var parsedAnimation = parsedCamera.animations[animationIndex];
+
+                camera.animations.push(parseAnimation(parsedAnimation));
+            }
+        }
+
+        if (parsedCamera.autoAnimate) {
+            scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
+        }
+
+        return camera;
+    };
+
     var parseMesh = function (parsedMesh, scene, rootUrl) {
         var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
@@ -283,7 +333,7 @@
             mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
         }
         mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
-        
+
         if (parsedMesh.localMatrix) {
             mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.localMatrix));
         }
@@ -322,7 +372,7 @@
             if (parsedMesh.hasMatricesIndices) {
                 mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesIndicesKind);
             }
-            
+
             if (parsedMesh.hasMatricesWeights) {
                 mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesWeightsKind);
             }
@@ -333,7 +383,7 @@
 
         // Parent
         if (parsedMesh.parentId) {
-            mesh.parent = scene.getLastMeshByID(parsedMesh.parentId);
+            mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
         }
 
         // Material
@@ -418,7 +468,7 @@
 
                 mesh.setIndices(parsedGeometry.indices);
             }
-            
+
             // SubMeshes
             if (parsedGeometry.subMeshes) {
                 mesh.subMeshes = [];
@@ -428,7 +478,7 @@
                     var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
                 }
             }
-            
+
             // Update
             mesh.computeWorldMatrix(true);
 
@@ -524,7 +574,7 @@
         Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
             var database = new BABYLON.Database(rootUrl + sceneFilename);
-            
+
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                 var parsedData = JSON.parse(data);
                 var scene = new BABYLON.Scene(engine);
@@ -555,27 +605,7 @@
                 // Cameras
                 for (var index = 0; index < parsedData.cameras.length; index++) {
                     var parsedCamera = parsedData.cameras[index];
-                    var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
-                    camera.id = parsedCamera.id;
-
-                    if (parsedCamera.target) {
-                        camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
-                    } else {
-                        camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-                    }
-
-                    camera.fov = parsedCamera.fov;
-                    camera.minZ = parsedCamera.minZ;
-                    camera.maxZ = parsedCamera.maxZ;
-
-                    camera.speed = parsedCamera.speed;
-                    camera.inertia = parsedCamera.inertia;
-
-                    camera.checkCollisions = parsedCamera.checkCollisions;
-                    camera.applyGravity = parsedCamera.applyGravity;
-                    if (parsedCamera.ellipsoid) {
-                        camera.ellipsoid = BABYLON.Vector3.FromArray(parsedCamera.ellipsoid);
-                    }
+                    parseCamera(parsedCamera, scene);
                 }
 
                 if (parsedData.activeCameraID) {
@@ -609,6 +639,20 @@
                 for (var index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     parseMesh(parsedMesh, scene, rootUrl);
+                }
+
+                // Connecting cameras parents and locked target
+                for (var index = 0; index < scene.cameras.length; index++) {
+                    var camera = scene.cameras[index];
+                    if (camera._waitingParentId) {
+                        camera.parent = scene.getLastEntryByID(camera._waitingParentId);
+                        delete camera._waitingParentId;
+                    }
+                    
+                    if (camera._waitingLockedTargetId) {
+                        camera.lockedTarget = scene.getLastEntryByID(camera._waitingLockedTargetId);
+                        delete camera._waitingLockedTargetId;
+                    }
                 }
 
                 // Particles Systems

@@ -194,7 +194,7 @@
         };
 
         var loadFromIndexedDB = function () {
-            database.loadSceneFromDB(url, callback, progressCallBack);
+            database.loadSceneFromDB(url, callback, progressCallBack, noIndexedDB);
         };
 
         // Caching only scenes files

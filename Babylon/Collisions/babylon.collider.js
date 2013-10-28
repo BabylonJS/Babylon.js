@@ -10,7 +10,6 @@
         this.normalizedVelocity = BABYLON.Vector3.Zero();
         
         // Internals
-        this._trianglePlane = new BABYLON.Plane(0, 0, 0, 0);
         this._collisionPoint = BABYLON.Vector3.Zero();
         this._planeIntersectionPoint = BABYLON.Vector3.Zero();
         this._tempVector = BABYLON.Vector3.Zero();
@@ -129,17 +128,26 @@
         return true;
     };
 
-    BABYLON.Collider.prototype._testTriangle = function (subMesh, p1, p2, p3) {
+    BABYLON.Collider.prototype._testTriangle = function (faceIndex, subMesh, p1, p2, p3) {
         var t0;
         var embeddedInPlane = false;
 
-        this._trianglePlane.copyFromPoints(p1, p2, p3);
+        if (!subMesh._trianglePlanes) {
+            subMesh._trianglePlanes = [];
+        }
+        
+        if (!subMesh._trianglePlanes[faceIndex]) {
+            subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
+            subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
+        }
 
-        if ((!subMesh.getMaterial()) && !this._trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+        var trianglePlane = subMesh._trianglePlanes[faceIndex];
+
+        if ((!subMesh.getMaterial()) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
             return;
 
-        var signedDistToTrianglePlane = this._trianglePlane.signedDistanceTo(this.basePoint);
-        var normalDotVelocity = BABYLON.Vector3.Dot(this._trianglePlane.normal, this.velocity);
+        var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
+        var normalDotVelocity = BABYLON.Vector3.Dot(trianglePlane.normal, this.velocity);
 
         if (normalDotVelocity == 0) {
             if (Math.abs(signedDistToTrianglePlane) >= 1.0)
@@ -172,11 +180,11 @@
         var t = 1.0;
 
         if (!embeddedInPlane) {
-            this.basePoint.subtractToRef(this._trianglePlane.normal, this._planeIntersectionPoint);
+            this.basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
             this.velocity.scaleToRef(t0, this._tempVector);
             this._planeIntersectionPoint.addInPlace(this._tempVector);
 
-            if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, this._trianglePlane.normal)) {
+            if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
                 found = true;
                 t = t0;
                 this._collisionPoint.copyFrom(this._planeIntersectionPoint);
@@ -308,7 +316,7 @@
             var p2 = pts[indices[i + 1] - decal];
             var p3 = pts[indices[i + 2] - decal];
 
-            this._testTriangle(subMesh, p3, p2, p1);
+            this._testTriangle(i, subMesh, p3, p2, p1);
         }
     };
     

@@ -9,13 +9,16 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BabylonExport</RootNamespace>
     <AssemblyName>BabylonExport</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -28,11 +31,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -43,6 +43,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,159 +53,73 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Engine" />
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="Microsoft.Xna.Framework">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.AudioImporters">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.AudioImporters.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.EffectImporter">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.FBXImporter">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.TextureImporter">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.TextureImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.VideoImporters">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.VideoImporters.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.XImporter">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Game">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Game.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Graphics">
-      <HintPath>..\Ref\XNA\Microsoft.Xna.Framework.Graphics.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D9, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\SharpDX.Direct3D9.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\SharpDX.DXGI.dll</HintPath>
-    </Reference>
-    <Reference Include="SkinnedModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\SkinnedModel.dll</HintPath>
-    </Reference>
-    <Reference Include="SkinnedModelPipeline, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\SkinnedModelPipeline.dll</HintPath>
-    </Reference>
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Vertice.Core, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Vertice.Nova, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Nova.dll</HintPath>
-    </Reference>
-    <Reference Include="Vertice.Nova.Core.DirectX10, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Nova.Core.DirectX10.dll</HintPath>
-    </Reference>
-    <Reference Include="Vertice.Nova.Core.DirectX9, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Nova.Core.DirectX9.dll</HintPath>
-    </Reference>
-    <Reference Include="Vertice.Nova.Interop, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Nova.Interop.dll</HintPath>
-    </Reference>
-    <Reference Include="Vertice.Wrappers.DirectX, Version=6.0.0.17, Culture=neutral, PublicKeyToken=4b8661552b78caf7, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\Vertice.Wrappers.DirectX.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Export\BabylonAnimationKey.cs" />
-    <Compile Include="Entities\Export\BabylonParticleSystem.cs" />
-    <Compile Include="Entities\Export\BabylonAnimation.cs" />
-    <Compile Include="Entities\Export\BabylonShadowGenerator.cs" />
-    <Compile Include="Entities\Export\BabylonSkeleton.cs" />
-    <Compile Include="Entities\Export\BabylonBone.cs" />
-    <Compile Include="Entities\IQueryable.cs" />
-    <Compile Include="Entities\IDumpable.cs" />
-    <Compile Include="Entities\PositionNormalTexturedWeights.cs" />
-    <Compile Include="Entities\PositionNormalTextured.cs" />
-    <Compile Include="Entities\StandardMaterial.cs" />
-    <Compile Include="Entities\Export\BabylonCamera.cs" />
-    <Compile Include="Entities\Export\BabylonScene.cs" />
-    <Compile Include="Entities\Export\BabylonLight.cs" />
-    <Compile Include="Entities\Export\BabylonMesh.cs" />
-    <Compile Include="Entities\Export\BabylonMaterial.cs" />
-    <Compile Include="Entities\Export\BabylonMultiMaterial.cs" />
-    <Compile Include="Entities\Export\BabylonTexture.cs" />
-    <Compile Include="Entities\Export\BabylonSubMesh.cs" />
-    <Compile Include="Exporters\FBX\XNA\ContentBuilder.cs" />
-    <Compile Include="Exporters\FBX\XNA\ErrorLogger.cs" />
-    <Compile Include="Exporters\FBX\FBXExporter.cs" />
-    <Compile Include="Exporters\FBX\XNA\GraphicsDeviceService.cs" />
-    <Compile Include="Exporters\FBX\XNA\ServiceContainer.cs" />
-    <Compile Include="Exporters\IExporter.cs" />
-    <Compile Include="Entities\Mesh.cs" />
-    <Compile Include="Entities\ProxyMesh.cs" />
-    <Compile Include="Exporters\MXB\NovaExporter.cs" />
-    <Compile Include="Exporters\MXB\NovaExporter.Materials.cs" />
-    <Compile Include="Exporters\OBJ\Document.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\Line.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\MtlHeader.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\MtlLine.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\ObjHeader.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\ObjExporter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\ObjExporter.Material.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Exporters\OBJ\ObjLine.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Tools.cs" />
+    <Compile Include="Service.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="generateAll.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="Exporters\Blender\io_export_babylon.py" />
-    <None Include="Refs\xnafx40_redist.msi" />
     <None Include="Test scenes\Chimie\BalanceDM.dds" />
     <None Include="Test scenes\Chimie\BalanceLightingMap.dds" />
     <None Include="Test scenes\Chimie\BoisLightingMap.dds" />
@@ -532,33 +447,10 @@
     <None Include="Test scenes\TheCar\volant.dds" />
     <None Include="Test scenes\TheCar\wood.dds" />
     <None Include="Test scenes\TheCar\WOODlm.dds" />
+    <None Include="Test scenes\Train\train.mxb" />
     <None Include="Test scenes\Viper\Viper.mtl" />
     <None Include="Test scenes\Viper\Viper.obj" />
     <None Include="App.config" />
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.ContentPipelineExtensions.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.AvailablePlatforms.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Common.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Content.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.ContentPipeline.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Windows.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Xbox 360.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
     <None Include="Test scenes\Wcafe\Affiches.dds" />
     <None Include="Test scenes\Wcafe\Affiches2.dds" />
@@ -650,27 +542,9 @@
     <None Include="Test scenes\Wcafe\ZincLightingMap.dds" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.Framework.Tools.Packaging.Tasks.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="DirectShow.Net.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.AudioImporters.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.TextureImporter.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.VideoImporters.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll" />
-    <Content Include="Refs\Microsoft.Xna.Framework.Tools.Packaging.Tasks.dll" />
-    <Content Include="Refs\SharpDX.Direct3D9.dll" />
-    <Content Include="Refs\SharpDX.DXGI.dll" />
-    <Content Include="Refs\SkinnedModel.dll" />
-    <Content Include="Refs\SkinnedModelPipeline.dll" />
-    <Content Include="Refs\Vertice.Nova.Core.DirectX10.dll" />
     <Content Include="Test scenes\Chimie\Coeur.jpg" />
     <Content Include="Test scenes\Chimie\heartSpecjpg.jpg" />
     <Content Include="Test scenes\Chimie\Labels.png" />
@@ -697,6 +571,134 @@
     <Content Include="Test scenes\SpaceDeK\VaisseauDiffuseMap.jpg" />
     <Content Include="Test scenes\SpaceDeK\VaisseauSpecularMap.jpg" />
     <Content Include="Test scenes\Spaceship\wedge_p2_diff_v1.tga" />
+    <Content Include="Test scenes\Train\barrieres_bois.dds" />
+    <Content Include="Test scenes\Train\barrieres_bois_n.dds" />
+    <Content Include="Test scenes\Train\bat_console_murs_ext_lm.dds" />
+    <Content Include="Test scenes\Train\bat_console_murs_lm.dds" />
+    <Content Include="Test scenes\Train\bat_lm.dds" />
+    <Content Include="Test scenes\Train\bg.dds" />
+    <Content Include="Test scenes\Train\bg_credits.dds" />
+    <Content Include="Test scenes\Train\bg_help.dds" />
+    <Content Include="Test scenes\Train\bosquet_grass.dds" />
+    <Content Include="Test scenes\Train\bottes_paille.dds" />
+    <Content Include="Test scenes\Train\bottes_paille_face.dds" />
+    <Content Include="Test scenes\Train\champ_ble.dds" />
+    <Content Include="Test scenes\Train\chariot_planche.dds" />
+    <Content Include="Test scenes\Train\chariot_planche_n.dds" />
+    <Content Include="Test scenes\Train\chariot_roue.dds" />
+    <Content Include="Test scenes\Train\chariot_roue_n.dds" />
+    <Content Include="Test scenes\Train\console.dds" />
+    <Content Include="Test scenes\Train\console_n.dds" />
+    <Content Include="Test scenes\Train\cubemap.dds" />
+    <Content Include="Test scenes\Train\cubemap5.dds" />
+    <Content Include="Test scenes\Train\cubemap_vitres.dds" />
+    <Content Include="Test scenes\Train\cuir.dds" />
+    <Content Include="Test scenes\Train\cuir_n.dds" />
+    <Content Include="Test scenes\Train\cur_default.cur" />
+    <Content Include="Test scenes\Train\cur_link.cur" />
+    <Content Include="Test scenes\Train\disneyland_paris.dds" />
+    <Content Include="Test scenes\Train\flechage.dds" />
+    <Content Include="Test scenes\Train\flechage2.dds" />
+    <Content Include="Test scenes\Train\grass.dds" />
+    <Content Include="Test scenes\Train\grillage.dds" />
+    <Content Include="Test scenes\Train\lens2.dds" />
+    <Content Include="Test scenes\Train\lens3.dds" />
+    <Content Include="Test scenes\Train\lens4.dds" />
+    <Content Include="Test scenes\Train\lens5.dds" />
+    <Content Include="Test scenes\Train\lens6.dds" />
+    <Content Include="Test scenes\Train\lens_sun.dds" />
+    <Content Include="Test scenes\Train\light_blanche.dds" />
+    <Content Include="Test scenes\Train\light_jaune.dds" />
+    <Content Include="Test scenes\Train\light_rouge.dds" />
+    <Content Include="Test scenes\Train\light_verte.dds" />
+    <Content Include="Test scenes\Train\metal_rouille.dds" />
+    <Content Include="Test scenes\Train\metal_rouille_n.dds" />
+    <Content Include="Test scenes\Train\metal_tache.dds" />
+    <Content Include="Test scenes\Train\metal_tache_n.dds" />
+    <Content Include="Test scenes\Train\murs_wood.dds" />
+    <Content Include="Test scenes\Train\murs_wood_n.dds" />
+    <Content Include="Test scenes\Train\no_signal.dds" />
+    <Content Include="Test scenes\Train\OSVCenter.dds" />
+    <Content Include="Test scenes\Train\OSVCenterb.dds" />
+    <Content Include="Test scenes\Train\OSVFps.dds" />
+    <Content Include="Test scenes\Train\OSVFpsb.dds" />
+    <Content Include="Test scenes\Train\OSVFullScreen.dds" />
+    <Content Include="Test scenes\Train\OSVFullScreenb.dds" />
+    <Content Include="Test scenes\Train\OSVPan.dds" />
+    <Content Include="Test scenes\Train\OSVPanb.dds" />
+    <Content Include="Test scenes\Train\OSVRotation.dds" />
+    <Content Include="Test scenes\Train\OSVRotationb.dds" />
+    <Content Include="Test scenes\Train\OSVSound.dds" />
+    <Content Include="Test scenes\Train\OSVSoundb.dds" />
+    <Content Include="Test scenes\Train\OSVTemp.dds" />
+    <Content Include="Test scenes\Train\OSVTempb.dds" />
+    <Content Include="Test scenes\Train\OSVZoom.dds" />
+    <Content Include="Test scenes\Train\OSVZoomb.dds" />
+    <Content Include="Test scenes\Train\paille_alpha.dds" />
+    <Content Include="Test scenes\Train\pile_bois.dds" />
+    <Content Include="Test scenes\Train\pile_bois_n.dds" />
+    <Content Include="Test scenes\Train\planches.dds" />
+    <Content Include="Test scenes\Train\planches_n.dds" />
+    <Content Include="Test scenes\Train\poteaux.dds" />
+    <Content Include="Test scenes\Train\poteaux_n.dds" />
+    <Content Include="Test scenes\Train\poubelle.dds" />
+    <Content Include="Test scenes\Train\poubelle_n.dds" />
+    <Content Include="Test scenes\Train\rochers_big.dds" />
+    <Content Include="Test scenes\Train\rochers_big_n.dds" />
+    <Content Include="Test scenes\Train\rock_tunnel.dds" />
+    <Content Include="Test scenes\Train\rock_tunnel_n.dds" />
+    <Content Include="Test scenes\Train\sacs_sable.dds" />
+    <Content Include="Test scenes\Train\sacs_sable_n.dds" />
+    <Content Include="Test scenes\Train\sapin_leaves.dds" />
+    <Content Include="Test scenes\Train\sapin_trunk_up.dds" />
+    <Content Include="Test scenes\Train\sapin_trunk_up_n.dds" />
+    <Content Include="Test scenes\Train\skydome.dds" />
+    <Content Include="Test scenes\Train\smoke.dds" />
+    <Content Include="Test scenes\Train\snd_bg.mp3" />
+    <Content Include="Test scenes\Train\snd_bt_clic.mp3" />
+    <Content Include="Test scenes\Train\snd_bt_clic_ui.wma" />
+    <Content Include="Test scenes\Train\snd_bt_roll.mp3" />
+    <Content Include="Test scenes\Train\snd_coaster_cry.mp3" />
+    <Content Include="Test scenes\Train\snd_roller_coaster.mp3" />
+    <Content Include="Test scenes\Train\snd_roller_coaster_loop.mp3" />
+    <Content Include="Test scenes\Train\snd_siren.mp3" />
+    <Content Include="Test scenes\Train\sol_metal.dds" />
+    <Content Include="Test scenes\Train\sol_metal_n.dds" />
+    <Content Include="Test scenes\Train\terrain1.dds" />
+    <Content Include="Test scenes\Train\terrain1_lm.dds" />
+    <Content Include="Test scenes\Train\terrain1_n.dds" />
+    <Content Include="Test scenes\Train\terrain2.dds" />
+    <Content Include="Test scenes\Train\terrain2_lm.dds" />
+    <Content Include="Test scenes\Train\terrain2_n.dds" />
+    <Content Include="Test scenes\Train\terrain3.dds" />
+    <Content Include="Test scenes\Train\terrain3_lm.dds" />
+    <Content Include="Test scenes\Train\terrain3_n.dds" />
+    <Content Include="Test scenes\Train\terrain4.dds" />
+    <Content Include="Test scenes\Train\terrain4_lm.dds" />
+    <Content Include="Test scenes\Train\terrain4_n.dds" />
+    <Content Include="Test scenes\Train\terrain_clotures_lm.dds" />
+    <Content Include="Test scenes\Train\terrain_escalier_lm.dds" />
+    <Content Include="Test scenes\Train\terrain_tunnel_lm.dds" />
+    <Content Include="Test scenes\Train\toit_bois.dds" />
+    <Content Include="Test scenes\Train\toit_bois_n.dds" />
+    <Content Include="Test scenes\Train\tole.dds" />
+    <Content Include="Test scenes\Train\tole_n.dds" />
+    <Content Include="Test scenes\Train\tonneau.dds" />
+    <Content Include="Test scenes\Train\tonneau_n.dds" />
+    <Content Include="Test scenes\Train\tracteur.dds" />
+    <Content Include="Test scenes\Train\tracteur_n.dds" />
+    <Content Include="Test scenes\Train\train_4.dds" />
+    <Content Include="Test scenes\Train\train_4_n.dds" />
+    <Content Include="Test scenes\Train\train_cote.dds" />
+    <Content Include="Test scenes\Train\train_cote_n.dds" />
+    <Content Include="Test scenes\Train\train_loco_lm.dds" />
+    <Content Include="Test scenes\Train\train_wagon_lm.dds" />
+    <Content Include="Test scenes\Train\tronc.dds" />
+    <Content Include="Test scenes\Train\tronc_face.dds" />
+    <Content Include="Test scenes\Train\tronc_face_n.dds" />
+    <Content Include="Test scenes\Train\tronc_n.dds" />
+    <Content Include="Test scenes\Train\verre_lampes.dds" />
+    <Content Include="Test scenes\Train\water_n.jpg" />
     <Content Include="Test scenes\Viper\aripa-buna.jpg" />
     <Content Include="Test scenes\Viper\carlinga-specular.jpg" />
     <Content Include="Test scenes\Viper\carlinga.jpg" />
@@ -717,12 +719,6 @@
     <Content Include="Test scenes\Viper\wing-up-bump.jpg" />
     <Content Include="Test scenes\Viper\wing-up-specular.jpg" />
     <Content Include="Test scenes\Viper\wing-up.jpg" />
-    <Content Include="Refs\SharpDX.dll" />
-    <Content Include="Refs\Vertice.Core.dll" />
-    <Content Include="Refs\Vertice.Nova.Core.DirectX9.dll" />
-    <Content Include="Refs\Vertice.Nova.dll" />
-    <Content Include="Refs\Vertice.Nova.Interop.dll" />
-    <Content Include="Refs\Vertice.Wrappers.DirectX.dll" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
@@ -748,6 +744,16 @@
       <ProductName>Windows Installer 4.5</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BabylonExport.Core\BabylonExport.Core.csproj">
+      <Project>{ce70b051-fb63-420d-80c0-51cc03a214ba}</Project>
+      <Name>BabylonExport.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BabylonExport.Interface\BabylonExport.Interface.csproj">
+      <Project>{dec52846-ffcb-4a66-9f13-64f65b61edba}</Project>
+      <Name>BabylonExport.Interface</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

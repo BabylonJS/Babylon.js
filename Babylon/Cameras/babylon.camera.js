@@ -5,6 +5,7 @@
         this.name = name;
         this.id = name;
         this.position = position;
+        this.upVector = BABYLON.Vector3.Up();
        
         this._scene = scene;
 
@@ -13,7 +14,15 @@
         if (!scene.activeCamera) {
             scene.activeCamera = this;
         }
+
+        this._computedViewMatrix = BABYLON.Matrix.Identity();
+        this._currentRenderId = -1;
+        
+        // Animations
+        this.animations = [];
     };
+    
+    BABYLON.Camera.prototype = Object.create(BABYLON.Node.prototype);
     
     // Statics
     BABYLON.Camera.PERSPECTIVE_CAMERA = 0;
@@ -40,9 +49,46 @@
 
     BABYLON.Camera.prototype._update = function () {
     };
+    
+    BABYLON.Camera.prototype.getWorldMatrix = function () {
+        var viewMatrix = this.getViewMatrix();
+
+        if (!this._worldMatrix) {
+            this._worldMatrix = BABYLON.Matrix.Identity();
+        }
+
+        viewMatrix.invertToRef(this._worldMatrix);
+
+        return this._worldMatrix;
+    };
+
+    BABYLON.Camera.prototype._getViewMatrix = function() {
+        return BABYLON.Matrix.Identity();
+    };
 
     BABYLON.Camera.prototype.getViewMatrix = function () {
-        return BABYLON.Matrix.Identity();
+        if (this._currentRenderId == this._scene.getRenderId()) {
+            return this._computedViewMatrix;
+        }
+
+        this._computedViewMatrix = this._getViewMatrix();
+        this._currentRenderId = this._scene.getRenderId();
+        
+        if (this.parent && this.parent.getWorldMatrix) {
+            if (!this._worldMatrix) {
+                this._worldMatrix = BABYLON.Matrix.Identity();
+            }
+
+            this._computedViewMatrix.invertToRef(this._worldMatrix);
+
+            this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+
+            this._computedViewMatrix.invert();
+
+            return this._computedViewMatrix;
+        }
+
+        return this._computedViewMatrix;
     };
 
     BABYLON.Camera.prototype.getProjectionMatrix = function () {

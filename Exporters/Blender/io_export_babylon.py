@@ -333,16 +333,15 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         rot = mathutils.Quaternion((0, 0, 0, 1))
         scale = mathutils.Vector((1, 1, 1))
         
+        world = object.matrix_world
         if object.parent and object.parent.type == "ARMATURE" and len(object.vertex_groups) > 0:
-            mesh.transform(object.matrix_world)
             hasSkeleton = True
         else:
             hasSkeleton = False
-            world = object.matrix_world
             if (object.parent):
                 world = object.parent.matrix_world.inverted() * object.matrix_world
 
-            loc, rot, scale = world.decompose()
+        loc, rot, scale = world.decompose()
                                                 
         # Triangulate mesh if required
         Export_babylon.mesh_triangulate(mesh)
@@ -438,6 +437,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                                     i = i + 1
                                     if (i == 4):
                                         break;
+                            if (i == 4):
+                                break;
 
 
                     # Texture coordinates
@@ -564,6 +565,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         elif len(object.material_slots) > 1:
             multimat = MultiMaterial()
             multimat.name = "Multimaterial#" + str(len(multiMaterials))
+            multimat.materials = []
             Export_babylon.write_string(file_handler, "materialId", multimat.name)
             for mat in object.material_slots:
                 multimat.materials.append(mat.name)

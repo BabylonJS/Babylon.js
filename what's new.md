@@ -1,5 +1,16 @@
 Changes list
 ============
+- 1.5.3:
+ - **Updates**
+ - New ```lockedTarget``` for freeCamera in order to allow cameras to track moving targets ([deltakosh](http://www.github.com/deltakosh))
+ - Cameras now supports animations (see http://www.babylonjs.com/index.html?TRAIN) ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```angularSensibility``` property for cameras ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```upVector``` property for cameras. Cameras are now not limited to a (0, 1, 0) up vector ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```parent``` property for cameras and lights: Lights, cameras and meshes can be related. For instance a camera can now be attached to a mesh as child and vice versa ([deltakosh](http://www.github.com/deltakosh))
+ - **Bugfixes**
+ - Fixing a bug when exporting materials from Blender ([deltakosh](http://www.github.com/deltakosh)) 
+ - Fixing an issue with IE11 for RT ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing an issue with looping animations ([deltakosh](http://www.github.com/deltakosh))
 - 1.5.2:
  - **Updates**
  - New ```renderingGroupId``` for SpriteManager ([deltakosh](http://www.github.com/deltakosh))

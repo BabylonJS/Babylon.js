@@ -4,7 +4,7 @@
     BABYLON.RenderingGroup = function (index, scene) {
         this.index = index;
         this._scene = scene;
-        
+
         this._opaqueSubMeshes = new BABYLON.Tools.SmartArray(256);
         this._transparentSubMeshes = new BABYLON.Tools.SmartArray(256);
         this._alphaTestSubMeshes = new BABYLON.Tools.SmartArray(256);
@@ -16,7 +16,7 @@
             customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
             return true;
         }
-        
+
         if (this._opaqueSubMeshes.length === 0 && this._alphaTestSubMeshes.length === 0 && this._transparentSubMeshes === 0) {
             return false;
         }

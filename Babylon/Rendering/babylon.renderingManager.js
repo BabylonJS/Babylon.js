@@ -45,7 +45,7 @@
                 spriteManager.render();
             }
         }
-        this._scene._spritesDuration = new Date() - beforeSpritessDate;
+        this._scene._spritesDuration += new Date() - beforeSpritessDate;
     };
 
     BABYLON.RenderingManager.prototype._clearDepthBuffer = function () {

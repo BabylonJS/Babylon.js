@@ -33,6 +33,7 @@
     sphere.material = material;
     plane.material = planeMaterial;
     cylinder.position.x += 13;
+    cylinder.renderingGroupId = 1;
     torus.position.x -= 3;
     torus.parent = sphere;
     sphere.position.z = 3;
