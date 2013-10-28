@@ -580,10 +580,10 @@
         this._animate();
 
         // Meshes
-        this._renderId++;
         var beforeEvaluateActiveMeshesDate = new Date();
         this._evaluateActiveMeshes();
         this._evaluateActiveMeshesDuration = new Date() - beforeEvaluateActiveMeshesDate;
+        this._renderId++;
 
         // Camera
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
