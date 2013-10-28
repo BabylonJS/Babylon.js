@@ -135,6 +135,24 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
         Export_babylon.write_bool(file_handler, "applyGravity", object.data.applyGravity)
         Export_babylon.write_array3(file_handler, "ellipsoid", object.data.ellipsoid)
+
+        locAnim = False
+        coma = False
+
+        if object.animation_data:
+            if object.animation_data.action:
+                file_handler.write(",\"animations\":[")
+                for fcurve in object.animation_data.action.fcurves:
+                    if fcurve.data_path == "location" and locAnim == False:
+                        Export_babylon.export_animation(object, scene, file_handler, "location", "position", coma, 1)
+                        locAnim = coma = True
+                file_handler.write("]")
+                #Set Animations
+                Export_babylon.write_bool(file_handler, "autoAnimate", True)
+                Export_babylon.write_int(file_handler, "autoAnimateFrom", 0)
+                Export_babylon.write_int(file_handler, "autoAnimateTo", bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1)
+                Export_babylon.write_bool(file_handler, "autoAnimateLoop", True)
+
         file_handler.write("}")
         
     def export_light(object, scene, file_handler):      
@@ -333,15 +351,16 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         rot = mathutils.Quaternion((0, 0, 0, 1))
         scale = mathutils.Vector((1, 1, 1))
         
-        world = object.matrix_world
         if object.parent and object.parent.type == "ARMATURE" and len(object.vertex_groups) > 0:
+            mesh.transform(object.matrix_world)
             hasSkeleton = True
         else:
             hasSkeleton = False
+            world = object.matrix_world
             if (object.parent):
                 world = object.parent.matrix_world.inverted() * object.matrix_world
 
-        loc, rot, scale = world.decompose()
+            loc, rot, scale = world.decompose()
                                                 
         # Triangulate mesh if required
         Export_babylon.mesh_triangulate(mesh)
@@ -437,8 +456,6 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                                     i = i + 1
                                     if (i == 4):
                                         break;
-                            if (i == 4):
-                                break;
 
 
                     # Texture coordinates
@@ -565,7 +582,6 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         elif len(object.material_slots) > 1:
             multimat = MultiMaterial()
             multimat.name = "Multimaterial#" + str(len(multiMaterials))
-            multimat.materials = []
             Export_babylon.write_string(file_handler, "materialId", multimat.name)
             for mat in object.material_slots:
                 multimat.materials.append(mat.name)
@@ -576,7 +592,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             billboardMode = 0
             
         Export_babylon.write_vector(file_handler, "position", loc)
-        Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
+        Export_babylon.write_quaternion(file_handler, "rotation", rot)
         Export_babylon.write_vector(file_handler, "scaling", scale)
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)
