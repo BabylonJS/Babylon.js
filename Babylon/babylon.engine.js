@@ -217,7 +217,7 @@
     BABYLON.Engine.prototype.bindFramebuffer = function (texture) {
         var gl = this._gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
-        gl.viewport(0.0, 0.0, texture._size, texture._size);
+        gl.viewport(0.0, 0.0, texture._width, texture._height);
 
         this.wipeCaches();
     };
@@ -345,7 +345,10 @@
 
     // Shaders
     BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines) {
-        var name = baseName + "@" + defines;
+        var vertex = baseName.vertex || baseName;
+        var fragment = baseName.fragment || baseName;
+        
+        var name = vertex + "+" + fragment + "@" + defines;
         if (this._compiledEffects[name]) {
             return this._compiledEffects[name];
         }
@@ -363,8 +366,6 @@
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error("Error while compiling shader: " + gl.getShaderInfoLog(shader));
-            console.error("Defines: " + defines);
             throw new Error(gl.getShaderInfoLog(shader));
         }
         return shader;
@@ -474,6 +475,13 @@
             return;
 
         this._gl.uniform3f(uniform, x, y, z);
+    };
+    
+    BABYLON.Engine.prototype.setFloat = function (uniform, value) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform1f(uniform, value);
     };
 
     BABYLON.Engine.prototype.setBool = function (uniform, bool) {
@@ -719,16 +727,19 @@
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
+        var width = size.width || size;
+        var height = size.height || size;
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, generateMipMaps ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
         // Create the depth buffer
         var depthBuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
         // Create the framebuffer
         var framebuffer = gl.createFramebuffer();
@@ -743,7 +754,8 @@
 
         texture._framebuffer = framebuffer;
         texture._depthBuffer = depthBuffer;
-        texture._size = size;
+        texture._width = width;
+        texture._height = height;
         texture.isReady = true;
         texture.generateMipMaps = generateMipMaps;
         texture.references = 1;
@@ -857,6 +869,18 @@
             this._gl.uniform1i(uniform, index);
         }
         this._currentEffect = null;
+    };
+
+
+    BABYLON.Engine.prototype._bindTexture = function (channel, texture) {
+        this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+        this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+        
+        this._activeTexturesCache[channel] = null;
+    };
+
+    BABYLON.Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
+        this._bindTexture(channel, postProcess._texture);
     };
 
     BABYLON.Engine.prototype.setTexture = function (channel, texture) {

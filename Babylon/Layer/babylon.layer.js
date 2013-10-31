@@ -72,7 +72,7 @@
     
     BABYLON.Layer.prototype.dispose = function () {
         if (this._vertexBuffer) {
-            //this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+            this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
             this._vertexBuffer = null;
         }
 
