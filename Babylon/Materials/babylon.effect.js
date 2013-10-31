@@ -13,24 +13,34 @@
         this._attributesNames = attributesNames;
 
         var that = this;
+        
+        var vertex = baseName.vertex || baseName;
+        var fragment = baseName.fragment || baseName;
 
         // Is in local store ?
-        if (BABYLON.Effect.ShadersStore[baseName + "VertexShader"]) {
-            this._prepareEffect(BABYLON.Effect.ShadersStore[baseName + "VertexShader"], BABYLON.Effect.ShadersStore[baseName + "PixelShader"], attributesNames, defines, optionalDefines);
+        if (BABYLON.Effect.ShadersStore[vertex + "VertexShader"]) {
+            this._prepareEffect(BABYLON.Effect.ShadersStore[vertex + "VertexShader"], BABYLON.Effect.ShadersStore[fragment + "PixelShader"], attributesNames, defines, optionalDefines);
         } else {
-            var shaderUrl;
+            var vertexShaderUrl;
+            var fragmentShaderUrl;
 
             if (baseName[0] === ".") {
-                shaderUrl = baseName;
+                vertexShaderUrl = vertex;
+                fragmentShaderUrl = fragment;
             } else {
-                shaderUrl = BABYLON.Engine.ShadersRepository + baseName;
+                vertexShaderUrl = BABYLON.Engine.ShadersRepository + vertex;
+                if (fragment != vertex) {
+                    fragmentShaderUrl = fragment;
+                } else {
+                    fragmentShaderUrl = BABYLON.Engine.ShadersRepository + fragment;
+                }
             }
 
             // Vertex shader
-            BABYLON.Tools.LoadFile(shaderUrl + ".vertex.fx",
+            BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx",
                 function (vertexSourceCode) {
                     // Fragment shader
-                    BABYLON.Tools.LoadFile(shaderUrl + ".fragment.fx",
+                    BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx",
                         function (fragmentSourceCode) {
                             that._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines);
                         });
@@ -107,13 +117,24 @@
                 }
                 this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, true);
             } else {
+                console.error("Unable to compile effect: " + this.name);
+                console.error("Defines: " + defines);
+                console.error("Optional defines: " + optionalDefines);
                 this._compilationError = e.message;
             }
         }
     };
+    
+    BABYLON.Effect.prototype._bindTexture = function (channel, texture) {
+        this._engine._bindTexture(this._samplers.indexOf(channel), texture);
+    };
 
     BABYLON.Effect.prototype.setTexture = function (channel, texture) {
         this._engine.setTexture(this._samplers.indexOf(channel), texture);
+    };
+    
+    BABYLON.Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
+        this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
     };
 
     //BABYLON.Effect.prototype._cacheMatrix = function (uniformName, matrix) {
@@ -180,6 +201,15 @@
 
         //this._cacheMatrix(uniformName, matrix);
         this._engine.setMatrix(this.getUniform(uniformName), matrix);
+    };
+    
+    BABYLON.Effect.prototype.setFloat = function (uniformName, value) {
+        if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
+            return;
+
+        this._valueCache[uniformName] = value;
+
+        this._engine.setFloat(this.getUniform(uniformName), value);
     };
 
     BABYLON.Effect.prototype.setBool = function (uniformName, bool) {

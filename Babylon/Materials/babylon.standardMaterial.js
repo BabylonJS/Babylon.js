@@ -100,6 +100,7 @@
                 return false;
             } else {
                 defines.push("#define SPECULAR");
+                optionalDefines.push(defines[defines.length - 1]);
             }
         }
 
@@ -108,6 +109,7 @@
                 return false;
             } else {
                 defines.push("#define BUMP");
+                optionalDefines.push(defines[defines.length - 1]);
             }
         }
 
@@ -123,6 +125,7 @@
         // Fog
         if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
             defines.push("#define FOG");
+            optionalDefines.push(defines[defines.length - 1]);
         }
 
         var shadowsActivated = false;
