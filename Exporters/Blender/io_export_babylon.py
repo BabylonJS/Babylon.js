@@ -136,7 +136,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_bool(file_handler, "applyGravity", object.data.applyGravity)
         Export_babylon.write_array3(file_handler, "ellipsoid", object.data.ellipsoid)
 
-        locAnim = False
+		locAnim = False
         coma = False
 
         if object.animation_data:
@@ -351,16 +351,15 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         rot = mathutils.Quaternion((0, 0, 0, 1))
         scale = mathutils.Vector((1, 1, 1))
         
+        world = object.matrix_world
         if object.parent and object.parent.type == "ARMATURE" and len(object.vertex_groups) > 0:
-            mesh.transform(object.matrix_world)
             hasSkeleton = True
         else:
             hasSkeleton = False
-            world = object.matrix_world
             if (object.parent):
                 world = object.parent.matrix_world.inverted() * object.matrix_world
 
-            loc, rot, scale = world.decompose()
+        loc, rot, scale = world.decompose()
                                                 
         # Triangulate mesh if required
         Export_babylon.mesh_triangulate(mesh)
@@ -456,6 +455,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                                     i = i + 1
                                     if (i == 4):
                                         break;
+                            if (i == 4):
+                                break;
 
 
                     # Texture coordinates
@@ -582,6 +583,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         elif len(object.material_slots) > 1:
             multimat = MultiMaterial()
             multimat.name = "Multimaterial#" + str(len(multiMaterials))
+            multimat.materials = []
             Export_babylon.write_string(file_handler, "materialId", multimat.name)
             for mat in object.material_slots:
                 multimat.materials.append(mat.name)
@@ -592,7 +594,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             billboardMode = 0
             
         Export_babylon.write_vector(file_handler, "position", loc)
-        Export_babylon.write_quaternion(file_handler, "rotation", rot)
+        Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
         Export_babylon.write_vector(file_handler, "scaling", scale)
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)
