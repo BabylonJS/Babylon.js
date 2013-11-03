@@ -1,12 +1,12 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.PostProcess = function (name, fragmentUrl, parameters, samplers, ratio, scene) {
+    BABYLON.PostProcess = function (name, fragmentUrl, parameters, samplers, ratio, camera) {
         this.name = name;
-        this._scene = scene;
-        this._manager = scene.postProcessManager;
-        this._manager.postProcesses.push(this);
-        this._engine = scene.getEngine();
+        this._camera = camera;
+        this._scene = camera.getScene();
+        camera.postProcesses.push(this);
+        this._engine = this._scene.getEngine();
 
         this.width = this._engine._renderingCanvas.width * ratio;
         this.height = this._engine._renderingCanvas.height * ratio;
@@ -24,6 +24,7 @@
     
     // Methods
     BABYLON.PostProcess.prototype.onApply = null;
+    BABYLON.PostProcess.prototype._onDispose = null;
 
     BABYLON.PostProcess.prototype.activate = function() {
         this._engine.bindFramebuffer(this._texture);
@@ -50,11 +51,15 @@
         return this._effect;
     };
 
-    BABYLON.PostProcess.prototype.dispose = function() {
+    BABYLON.PostProcess.prototype.dispose = function () {
+        if (this._onDispose) {
+            this._onDispose();
+        }
+
         this._engine._releaseTexture(this._texture);
         
-        var index = this._manager.postProcesses.indexOf(this);
-        this._manager.postProcesses.splice(index, 1);        
+        var index = this._camera.postProcesses.indexOf(this);
+        this._camera.postProcesses.splice(index, 1);
     };
 
 })();

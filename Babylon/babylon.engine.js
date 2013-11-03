@@ -448,19 +448,12 @@
 
         this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
     };
-
-    BABYLON.Engine.prototype.setVector2 = function (uniform, x, y) {
+    
+    BABYLON.Engine.prototype.setFloat = function (uniform, value) {
         if (!uniform)
             return;
 
-        this._gl.uniform2f(uniform, x, y);
-    };
-
-    BABYLON.Engine.prototype.setVector3 = function (uniform, vector3) {
-        if (!uniform)
-            return;
-
-        this._gl.uniform3f(uniform, vector3.x, vector3.y, vector3.z);
+        this._gl.uniform1f(uniform, value);
     };
 
     BABYLON.Engine.prototype.setFloat2 = function (uniform, x, y) {
@@ -477,13 +470,6 @@
         this._gl.uniform3f(uniform, x, y, z);
     };
     
-    BABYLON.Engine.prototype.setFloat = function (uniform, value) {
-        if (!uniform)
-            return;
-
-        this._gl.uniform1f(uniform, value);
-    };
-
     BABYLON.Engine.prototype.setBool = function (uniform, bool) {
         if (!uniform)
             return;

@@ -701,6 +701,11 @@
         while (this.meshes.length) {
             this.meshes[0].dispose(true);
         }
+        
+        // Release cameras
+        while (this.cameras.length) {
+            this.cameras[0].dispose();
+        }
 
         // Release materials
         while (this.materials.length) {

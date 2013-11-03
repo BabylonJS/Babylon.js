@@ -12,41 +12,15 @@
         this._compilationError = "";
         this._attributesNames = attributesNames;
 
-        var that = this;
-        
         var vertex = baseName.vertex || baseName;
         var fragment = baseName.fragment || baseName;
 
-        // Is in local store ?
-        if (BABYLON.Effect.ShadersStore[vertex + "VertexShader"]) {
-            this._prepareEffect(BABYLON.Effect.ShadersStore[vertex + "VertexShader"], BABYLON.Effect.ShadersStore[fragment + "PixelShader"], attributesNames, defines, optionalDefines);
-        } else {
-            var vertexShaderUrl;
-            var fragmentShaderUrl;
-
-            if (baseName[0] === ".") {
-                vertexShaderUrl = vertex;
-                fragmentShaderUrl = fragment;
-            } else {
-                vertexShaderUrl = BABYLON.Engine.ShadersRepository + vertex;
-                if (fragment != vertex) {
-                    fragmentShaderUrl = fragment;
-                } else {
-                    fragmentShaderUrl = BABYLON.Engine.ShadersRepository + fragment;
-                }
-            }
-
-            // Vertex shader
-            BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx",
-                function (vertexSourceCode) {
-                    // Fragment shader
-                    BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx",
-                        function (fragmentSourceCode) {
-                            that._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines);
-                        });
-                }
-            );
-        }
+        var that = this;
+        this._loadVertexShader(vertex, function (vertexCode) {
+            that._loadFragmentShader(fragment, function (fragmentCode) {
+                that._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, optionalDefines);
+            });
+        });   
 
         // Cache
         this._valueCache = [];
@@ -84,12 +58,50 @@
     BABYLON.Effect.prototype.getSamplers = function () {
         return this._samplers;
     };
-    
+
     BABYLON.Effect.prototype.getCompilationError = function () {
         return this._compilationError;
     };
 
     // Methods
+    BABYLON.Effect.prototype._loadVertexShader = function (vertex, callback) {
+        // Is in local store ?
+        if (BABYLON.Effect.ShadersStore[vertex + "VertexShader"]) {
+            callback(BABYLON.Effect.ShadersStore[vertex + "VertexShader"]);
+            return;
+        }
+        
+        var vertexShaderUrl;
+
+        if (vertex[0] === ".") {
+            vertexShaderUrl = vertex;
+        } else {
+            vertexShaderUrl = BABYLON.Engine.ShadersRepository + vertex;
+        }
+
+        // Vertex shader
+        BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+    };
+
+    BABYLON.Effect.prototype._loadFragmentShader = function (fragment, callback) {
+        // Is in local store ?
+        if (BABYLON.Effect.ShadersStore[fragment + "PixelShader"]) {
+            callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
+            return;
+        }
+        
+        var fragmentShaderUrl;
+
+        if (fragment[0] === ".") {
+            fragmentShaderUrl = fragment;
+        } else {
+            fragmentShaderUrl = BABYLON.Engine.ShadersRepository + fragment;
+        }
+
+        // Fragment shader
+        BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+    };
+
     BABYLON.Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, useFallback) {
         try {
             var engine = this._engine;
@@ -124,7 +136,7 @@
             }
         }
     };
-    
+
     BABYLON.Effect.prototype._bindTexture = function (channel, texture) {
         this._engine._bindTexture(this._samplers.indexOf(channel), texture);
     };
@@ -132,7 +144,7 @@
     BABYLON.Effect.prototype.setTexture = function (channel, texture) {
         this._engine.setTexture(this._samplers.indexOf(channel), texture);
     };
-    
+
     BABYLON.Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
         this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
     };
@@ -141,12 +153,12 @@
     //    if (!this._valueCache[uniformName]) {
     //        this._valueCache[uniformName] = new BABYLON.Matrix();
     //    }
-        
+
     //    for (var index = 0; index < 16; index++) {
     //        this._valueCache[uniformName].m[index] = matrix.m[index];
     //    }
     //};
-    
+
     BABYLON.Effect.prototype._cacheFloat2 = function (uniformName, x, y) {
         if (!this._valueCache[uniformName]) {
             this._valueCache[uniformName] = [x, y];
@@ -156,7 +168,7 @@
         this._valueCache[uniformName][0] = x;
         this._valueCache[uniformName][1] = y;
     };
-    
+
     BABYLON.Effect.prototype._cacheFloat3 = function (uniformName, x, y, z) {
         if (!this._valueCache[uniformName]) {
             this._valueCache[uniformName] = [x, y, z];
@@ -167,7 +179,7 @@
         this._valueCache[uniformName][1] = y;
         this._valueCache[uniformName][2] = z;
     };
-    
+
     BABYLON.Effect.prototype._cacheFloat4 = function (uniformName, x, y, z, w) {
         if (!this._valueCache[uniformName]) {
             this._valueCache[uniformName] = [x, y, z, w];
@@ -178,17 +190,6 @@
         this._valueCache[uniformName][1] = y;
         this._valueCache[uniformName][2] = z;
         this._valueCache[uniformName][3] = w;
-    };
-    
-    BABYLON.Effect.prototype._cacheVector3 = function (uniformName, vector) {
-        if (!this._valueCache[uniformName]) {
-            this._valueCache[uniformName] = [vector.x , vector.y, vector.z];
-            return;
-        }
-
-        this._valueCache[uniformName][0] = vector.x;
-        this._valueCache[uniformName][1] = vector.y;
-        this._valueCache[uniformName][2] = vector.z;
     };
 
     BABYLON.Effect.prototype.setMatrices = function (uniformName, matrices) {
@@ -202,7 +203,7 @@
         //this._cacheMatrix(uniformName, matrix);
         this._engine.setMatrix(this.getUniform(uniformName), matrix);
     };
-    
+
     BABYLON.Effect.prototype.setFloat = function (uniformName, value) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
             return;
@@ -220,14 +221,13 @@
 
         this._engine.setBool(this.getUniform(uniformName), bool);
     };
-
-    BABYLON.Effect.prototype.setVector3 = function (uniformName, vector3) {
-        if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
+    
+    BABYLON.Effect.prototype.setVector2 = function (uniformName, vector2) {
+        if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector2.x && this._valueCache[uniformName][1] == vector2.y)
             return;
 
-        this._cacheVector3(uniformName, vector3);
-
-        this._engine.setVector3(this.getUniform(uniformName), vector3);
+        this._cacheFloat2(uniformName, vector2.x, vector2.y);
+        this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
     };
 
     BABYLON.Effect.prototype.setFloat2 = function (uniformName, x, y) {
@@ -236,6 +236,15 @@
 
         this._cacheFloat2(uniformName, x, y);
         this._engine.setFloat2(this.getUniform(uniformName), x, y);
+    };
+    
+    BABYLON.Effect.prototype.setVector3 = function (uniformName, vector3) {
+        if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
+            return;
+
+        this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z);
+
+        this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
     };
 
     BABYLON.Effect.prototype.setFloat3 = function (uniformName, x, y, z) {

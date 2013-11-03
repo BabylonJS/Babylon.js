@@ -2,7 +2,6 @@
 
 (function () {
     BABYLON.PostProcessManager = function (scene) {
-        this.postProcesses = [];
         this._scene = scene;
         
         // VBO
@@ -30,28 +29,32 @@
 
     // Methods
     BABYLON.PostProcessManager.prototype._prepareFrame = function () {
-        if (this.postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        var postProcesses = this._scene.activeCamera.postProcesses;
+        
+        if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
 
-        this.postProcesses[0].activate();
+        postProcesses[0].activate();
     };
     
     BABYLON.PostProcessManager.prototype._finalizeFrame = function () {
-        if (this.postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        var postProcesses = this._scene.activeCamera.postProcesses;
+        
+        if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
 
         var engine = this._scene.getEngine();
         
-        for (var index = 0; index < this.postProcesses.length; index++) {            
-            if (index < this.postProcesses.length - 1) {
-                this.postProcesses[index + 1].activate();
+        for (var index = 0; index < postProcesses.length; index++) {            
+            if (index < postProcesses.length - 1) {
+                postProcesses[index + 1].activate();
             } else {
                 engine.restoreDefaultFramebuffer();
             }
 
-            var effect = this.postProcesses[index].apply();
+            var effect = postProcesses[index].apply();
 
             if (effect) {
                 // VBOs
@@ -72,10 +75,6 @@
         if (this._indexBuffer) {
             this._scene.getEngine()._releaseBuffer(this._indexBuffer);
             this._indexBuffer = null;
-        }
-
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
         }
     };
 })();
