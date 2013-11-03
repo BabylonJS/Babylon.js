@@ -136,7 +136,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_bool(file_handler, "applyGravity", object.data.applyGravity)
         Export_babylon.write_array3(file_handler, "ellipsoid", object.data.ellipsoid)
 
-		locAnim = False
+        locAnim = False
         coma = False
 
         if object.animation_data:
