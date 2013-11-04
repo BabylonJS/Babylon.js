@@ -707,7 +707,16 @@
         texture.isReady = true;
     };
 
-    BABYLON.Engine.prototype.createRenderTargetTexture = function (size, generateMipMaps) {
+    BABYLON.Engine.prototype.createRenderTargetTexture = function (size, options) {
+        // old version had a "generateMipMaps" arg instead of options.
+        // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
+        // in the same way, generateDepthBuffer is defaulted to true
+        var generateMipMaps = false;
+        var generateDepthBuffer = true;
+        if (options !== undefined) {
+            generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
+            generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+        }
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -722,16 +731,20 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
+        var depthBuffer;
         // Create the depth buffer
-        var depthBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-
+        if (generateDepthBuffer) {
+            depthBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+        }
         // Create the framebuffer
         var framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+        if (generateDepthBuffer) {
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+        }
 
         // Unbind
         gl.bindTexture(gl.TEXTURE_2D, null);
@@ -739,7 +752,9 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         texture._framebuffer = framebuffer;
-        texture._depthBuffer = depthBuffer;
+        if (generateDepthBuffer) {
+            texture._depthBuffer = depthBuffer;
+        }
         texture._width = width;
         texture._height = height;
         texture.isReady = true;
@@ -844,6 +859,11 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
             this._activeTexturesCache[channel] = null;
+        }
+        // hmm vilain leak !
+        var index = this._loadedTexturesCache.indexOf(texture);
+        if (index !== -1) {
+            this._loadedTexturesCache.splice(index, 1);
         }
     };
 
