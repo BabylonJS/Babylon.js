@@ -1,7 +1,7 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.PostProcess = function (name, fragmentUrl, parameters, samplers, ratio, camera) {
+    BABYLON.PostProcess = function (name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode) {
         this.name = name;
         this._camera = camera;
         this._scene = camera.getScene();
@@ -10,6 +10,7 @@
         this._renderRatio = ratio;
         this.width = -1;
         this.height = -1;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.TextureSamplingModes.NEAREST;
 
         samplers = samplers || [];
         samplers.push("textureSampler");
@@ -34,7 +35,7 @@
             }
             this.width = desiredWidth;
             this.height = desiredHeight;
-            this._texture = this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: this._camera.postProcesses.indexOf(this) === 0 });
+            this._texture = this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: this._camera.postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode });
             if (this.onSizeChanged) {
                 this.onSizeChanged();
             }
@@ -74,6 +75,9 @@
         
         var index = this._camera.postProcesses.indexOf(this);
         this._camera.postProcesses.splice(index, 1);
+        if (index == 0 && this._camera.postProcesses.length > 0) {
+            this._camera.postProcesses[0].width = -1; // invalidate frameBuffer to hint the postprocess to create a depth buffer
+        }
     };
 
 })();

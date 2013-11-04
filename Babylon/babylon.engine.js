@@ -1,6 +1,12 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
+    BABYLON.TextureSamplingModes = {
+        NEAREST : 1,
+        BILINEAR: 2,
+        TRILINEAR: 3,
+        DEFAULT : 3
+    };
     BABYLON.Engine = function (canvas, antialias) {
         this._renderingCanvas = canvas;
 
@@ -713,20 +719,42 @@
         // in the same way, generateDepthBuffer is defaulted to true
         var generateMipMaps = false;
         var generateDepthBuffer = true;
+        var samplingMode = BABYLON.TextureSamplingModes.DEFAULT;
         if (options !== undefined) {
             generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
             generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+            if (options.samplingMode !== undefined) {
+                samplingMode = options.samplingMode;
+            }
         }
         var gl = this._gl;
+
+        
 
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
         var width = size.width || size;
         var height = size.height || size;
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, generateMipMaps ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+        var magFilter = gl.NEAREST;
+        var minFilter = gl.NEAREST;
+        if (samplingMode === BABYLON.TextureSamplingModes.BILINEAR) {
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+        } else if (samplingMode === BABYLON.TextureSamplingModes.TRILINEAR) {
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+        }
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
