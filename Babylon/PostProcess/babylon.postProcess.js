@@ -7,11 +7,9 @@
         this._scene = camera.getScene();
         camera.postProcesses.push(this);
         this._engine = this._scene.getEngine();
-
-        this.width = this._engine._renderingCanvas.width * ratio;
-        this.height = this._engine._renderingCanvas.height * ratio;
-        
-        this._texture = this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, false);
+        this._renderRatio = ratio;
+        this.width = -1;
+        this.height = -1;
 
         samplers = samplers || [];
         samplers.push("textureSampler");
@@ -25,8 +23,22 @@
     // Methods
     BABYLON.PostProcess.prototype.onApply = null;
     BABYLON.PostProcess.prototype._onDispose = null;
-
-    BABYLON.PostProcess.prototype.activate = function() {
+    BABYLON.PostProcess.prototype.onSizeChanged = null;
+    BABYLON.PostProcess.prototype.activate = function () {
+        var desiredWidth = this._engine._renderingCanvas.width * this._renderRatio;
+        var desiredHeight = this._engine._renderingCanvas.height * this._renderRatio;
+        if (this.width !== desiredWidth || this.height !== desiredHeight) {
+            if (this._texture) {
+                this._engine._releaseTexture(this._texture);
+                this._texture = null;
+            }
+            this.width = desiredWidth;
+            this.height = desiredHeight;
+            this._texture = this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: this._camera.postProcesses.indexOf(this) === 0 });
+            if (this.onSizeChanged) {
+                this.onSizeChanged();
+            }
+        }
         this._engine.bindFramebuffer(this._texture);
     };
 
@@ -55,8 +67,10 @@
         if (this._onDispose) {
             this._onDispose();
         }
-
-        this._engine._releaseTexture(this._texture);
+        if (this._texture) {
+            this._engine._releaseTexture(this._texture);
+            this._texture = null;
+        }
         
         var index = this._camera.postProcesses.indexOf(this);
         this._camera.postProcesses.splice(index, 1);
