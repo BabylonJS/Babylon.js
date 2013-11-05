@@ -40,8 +40,9 @@ namespace BabylonExport.Core.Exporters
             var services = new ServiceContainer();
 
             // Create a graphics device
-
-            services.AddService<IGraphicsDeviceService>(GraphicsDeviceService.singletonInstance);
+            var form = new Form();
+            
+            services.AddService<IGraphicsDeviceService>(BabylonExport.Core.Exporters.FBX.GraphicsDeviceService.AddRef(form.Handle, 1, 1));
 
             var contentBuilder = new ContentBuilder();
             var contentManager = new ContentManager(services, contentBuilder.OutputDirectory);

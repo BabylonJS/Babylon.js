@@ -1,12 +1,6 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.TextureSamplingModes = {
-        NEAREST : 1,
-        BILINEAR: 2,
-        TRILINEAR: 3,
-        DEFAULT : 3
-    };
     BABYLON.Engine = function (canvas, antialias) {
         this._renderingCanvas = canvas;
 
@@ -719,7 +713,7 @@
         // in the same way, generateDepthBuffer is defaulted to true
         var generateMipMaps = false;
         var generateDepthBuffer = true;
-        var samplingMode = BABYLON.TextureSamplingModes.DEFAULT;
+        var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
         if (options !== undefined) {
             generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
             generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
@@ -738,14 +732,14 @@
         var height = size.height || size;
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
-        if (samplingMode === BABYLON.TextureSamplingModes.BILINEAR) {
+        if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_NEAREST;
             } else {
                 minFilter = gl.LINEAR;
             }
-        } else if (samplingMode === BABYLON.TextureSamplingModes.TRILINEAR) {
+        } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -888,7 +882,7 @@
             this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
             this._activeTexturesCache[channel] = null;
         }
-        // hmm vilain leak !
+
         var index = this._loadedTexturesCache.indexOf(texture);
         if (index !== -1) {
             this._loadedTexturesCache.splice(index, 1);

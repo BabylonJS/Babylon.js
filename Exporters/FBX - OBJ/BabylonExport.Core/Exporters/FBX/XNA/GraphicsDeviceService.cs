@@ -8,8 +8,13 @@ namespace BabylonExport.Core.Exporters.FBX
 {
     public class GraphicsDeviceService : IGraphicsDeviceService
     {
-        public static GraphicsDeviceService singletonInstance;
         static int referenceCount;
+
+        public static GraphicsDeviceService SingletonInstance
+        {
+            get;
+            private set;
+        }
 
         GraphicsDeviceService(IntPtr windowHandle, int width, int height)
         {
@@ -23,6 +28,8 @@ namespace BabylonExport.Core.Exporters.FBX
             parameters.PresentationInterval = PresentInterval.Immediate;
             parameters.IsFullScreen = false;
 
+            GraphicsAdapter.UseReferenceDevice = true;
+
             graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter,
                                                 GraphicsProfile.Reach,
                                                 parameters);
@@ -32,10 +39,10 @@ namespace BabylonExport.Core.Exporters.FBX
         {
             if (Interlocked.Increment(ref referenceCount) == 1)
             {
-                singletonInstance = new GraphicsDeviceService(windowHandle, width, height);
+                SingletonInstance = new GraphicsDeviceService(windowHandle, width, height);
             }
 
-            return singletonInstance;
+            return SingletonInstance;
         }
 
         public void Release(bool disposing)

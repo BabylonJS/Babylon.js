@@ -3,6 +3,7 @@ using BabylonExport.Core.Exporters;
 using BabylonExport.Interface;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,50 +17,31 @@ namespace BabylonExport
     {
         public bool Convert(string input, string outputName)
         {
-            var form = new Form();
-            BabylonExport.Core.Exporters.FBX.GraphicsDeviceService.AddRef(form.Handle, 1, 1);
-
-            var extension = Path.GetExtension(input).ToLower();
             try
             {
-                foreach (var type in Assembly.LoadFrom("BabylonExport.Core.dll").GetTypes())
+                Console.WriteLine("input:" + input);
+                Console.WriteLine("outputName:" + outputName);
+                System.Diagnostics.Process p = new System.Diagnostics.Process();
+                p.StartInfo.FileName = "BabylonExport.exe";
+                p.StartInfo.Arguments = "/i:" + input + " /o:" + outputName;
+                p.Start();
+                if (p.WaitForExit(1000 * 60 * 3))
                 {
-                    var interf = type.GetInterface("BabylonExport.Core.IExporter");
-                    if (interf != null)
-                    {
-                        var importer = (IExporter)Activator.CreateInstance(type);
-
-                        if (!importer.SupportedExtensions.Contains(extension))
-                        {
-                            continue;
-                        }
-
-                        Console.WriteLine("Using " + type);
-
-                        // Importation
-                        try
-                        {
-                            Console.WriteLine(input);
-                            importer.GenerateBabylonFile(input, outputName, false);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                    }
+                    p.Close();
+                    return true;
                 }
-                return true;
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                Console.WriteLine(ex.LoaderExceptions[0].Message);
-                return false;
+                else
+                {
+                    p.Close();
+                    return false;
+                }
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
-            } 
+            }
             
         }
 

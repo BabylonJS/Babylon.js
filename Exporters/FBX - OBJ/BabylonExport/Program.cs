@@ -14,6 +14,7 @@ namespace BabylonExport
     {
         static void Main(string[] args)
         {
+            string output = "";
             try
             {
                 if ((args.Length == 1) && (args[0] == "/service"))
@@ -40,7 +41,6 @@ namespace BabylonExport
 
                     // Parsing arguments
                     string input = "";
-                    string output = "";
                     bool skinned = false;
                     foreach (var arg in args)
                     {
@@ -109,6 +109,11 @@ namespace BabylonExport
                                 Console.WriteLine();
                                 Console.WriteLine("Generation of " + outputName + " successfull");
                                 Console.ResetColor();
+                                using (var debugFile = new StreamWriter(output + @"\debug.txt", true))
+                                {
+                                    debugFile.Write("Generation of " + outputName + " successfull");
+                                }
+                 
                             }
                             catch (Exception ex)
                             {
@@ -116,6 +121,10 @@ namespace BabylonExport
                                 Console.WriteLine();
                                 Console.WriteLine(ex.Message);
                                 Console.ResetColor();
+                                using (var debugFile = new StreamWriter(output + @"\debug.txt", true))
+                                {
+                                    debugFile.Write(ex.Message);
+                                }
                             }
                         }
                     }
@@ -127,6 +136,13 @@ namespace BabylonExport
                 Console.WriteLine("Fatal error encountered:");
                 Console.WriteLine(ex.LoaderExceptions[0].Message);
                 Console.ResetColor();
+                if (output != "")
+                {
+                    using (var debugFile = new StreamWriter(output + @"\debug.txt", true))
+                    {
+                        debugFile.Write(ex.Message);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -134,6 +150,13 @@ namespace BabylonExport
                 Console.WriteLine("Fatal error encountered:");
                 Console.WriteLine(ex.Message);
                 Console.ResetColor();
+                if (output != "")
+                {
+                    using (var debugFile = new StreamWriter(output + @"\debug.txt", true))
+                    {
+                        debugFile.Write(ex.Message);
+                    }
+                }
             } 
         }
 

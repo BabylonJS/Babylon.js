@@ -1,5 +1,16 @@
 Changes list
 ============
+- 1.6.0:
+ - **Major updates**
+ - Support for [postprocesses](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-postprocesses) ([deltakosh](http://www.github.com/deltakosh))
+ - New builtin postprocesses: Pass, Refraction, Blur, Black and White, Convolution ([deltakosh](http://www.github.com/deltakosh))
+ - New builtin postprocess: FXAA ([simonferquel](http://www.github.com/simonferquel))
+ - Online [assets converter](http://www.babylonjs.com/converter.html)  ([pierlag](https://github.com/pierlag))
+ - **Updates**
+ - New features demos: [POSTPROCESS - REFRACTION](http://www.babylonjs.com/index.html?POSTPROCESS - REFRACTION) and [POSTPROCESS - BLOOM](http://www.babylonjs.com/index.html?POSTPROCESS - BLOOM)
+ - Removing the unused depth buffer for postprocesses chains ([simonferquel](http://www.github.com/simonferquel))
+ - **Bugfixes**
+ - Fixing a memory leak when releasing textures ([simonferquel](http://www.github.com/simonferquel))
 - 1.5.3:
  - **Updates**
  - New ```lockedTarget``` for freeCamera in order to allow cameras to track moving targets ([deltakosh](http://www.github.com/deltakosh))
