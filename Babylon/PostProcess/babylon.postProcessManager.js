@@ -59,11 +59,18 @@
             if (effect) {
                 // VBOs
                 engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
-
+                // some effect activation have a side effect of putting depthBuffer / dephWrite on
+                // so we force it off at each post process pass
+                engine.setDepthBuffer(false);
+                engine.setDepthWrite(false);
                 // Draw order
                 engine.draw(true, 0, 6);
             }
         }
+        // reenable depth buffer
+
+        engine.setDepthBuffer(true);
+        engine.setDepthWrite(true);
     };
 
     BABYLON.PostProcessManager.prototype.dispose = function () {

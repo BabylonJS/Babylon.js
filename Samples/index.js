@@ -92,6 +92,9 @@
     var touchCamera = document.getElementById("touchCamera");
     var deviceOrientationCamera = document.getElementById("deviceOrientationCamera");
     var camerasList = document.getElementById("camerasList");
+    var toggleFxaa = document.getElementById("toggleFxaa");
+    var toggleFsaa4 = document.getElementById("toggleFsaa4");
+    var toggleBandW = document.getElementById("toggleBandW");
 
     var sceneChecked;
 
@@ -586,6 +589,40 @@
     collisions.addEventListener("change", function () {
         if (scene) {
             scene.collisionsEnabled = collisions.checked;
+        }
+    });
+
+    toggleFxaa.addEventListener("click", function () {
+        if (scene && scene.activeCamera) {
+            if (scene.activeCamera.__fxaa_cookie) {
+                scene.activeCamera.__fxaa_cookie.dispose(),
+                scene.activeCamera.__fxaa_cookie = null;
+            } else {
+                scene.activeCamera.__fxaa_cookie = new BABYLON.FxaaPostProcess("fxaa", 1.0, scene.activeCamera);
+            }
+        }
+    });
+    toggleBandW.addEventListener("click", function () {
+        if (scene && scene.activeCamera) {
+            if (scene.activeCamera.__bandw_cookie) {
+                scene.activeCamera.__bandw_cookie.dispose(),
+                scene.activeCamera.__bandw_cookie = null;
+            } else {
+                scene.activeCamera.__bandw_cookie = new BABYLON.BlackAndWhitePostProcess("bandw", 1.0, scene.activeCamera);
+            }
+        }
+    });
+    toggleFsaa4.addEventListener("click", function () {
+
+        if (scene && scene.activeCamera) {
+            if (scene.activeCamera.__fsaa_cookie) {
+                scene.activeCamera.__fsaa_cookie.dispose(),
+                scene.activeCamera.__fsaa_cookie = null;
+            } else {
+                var fx = new BABYLON.PassPostProcess("fsaa", 2.0, scene.activeCamera);
+                fx.renderTargetSamplingMode = BABYLON.TextureSamplingModes.BILINEAR;
+                scene.activeCamera.__fsaa_cookie = fx;
+            }
         }
     });
 
