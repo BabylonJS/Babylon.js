@@ -10,7 +10,7 @@
         this._renderRatio = ratio;
         this.width = -1;
         this.height = -1;
-        this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.TextureSamplingModes.NEAREST;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
 
         samplers = samplers || [];
         samplers.push("textureSampler");
@@ -48,10 +48,12 @@
         if (!this._effect.isReady())
             return null;
 
-        // Render
+        // States
         this._engine.enableEffect(this._effect);
         this._engine.setState(false);
         this._engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+        this._engine.setDepthBuffer(false);
+        this._engine.setDepthWrite(false);
 
         // Texture
         this._effect._bindTexture("textureSampler", this._texture);

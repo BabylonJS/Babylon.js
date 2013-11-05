@@ -27,6 +27,10 @@
     BABYLON.Texture.prototype = Object.create(BABYLON.BaseTexture.prototype);
 
     // Constants
+    BABYLON.Texture.NEAREST_SAMPLINGMODE = 1;
+    BABYLON.Texture.BILINEAR_SAMPLINGMODE = 2;
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE = 3;
+
     BABYLON.Texture.EXPLICIT_MODE = 0;
     BABYLON.Texture.SPHERICAL_MODE = 1;
     BABYLON.Texture.PLANAR_MODE = 2;

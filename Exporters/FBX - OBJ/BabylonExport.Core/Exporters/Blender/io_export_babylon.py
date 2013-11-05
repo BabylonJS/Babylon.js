@@ -135,6 +135,24 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
         Export_babylon.write_bool(file_handler, "applyGravity", object.data.applyGravity)
         Export_babylon.write_array3(file_handler, "ellipsoid", object.data.ellipsoid)
+
+        locAnim = False
+        coma = False
+
+        if object.animation_data:
+            if object.animation_data.action:
+                file_handler.write(",\"animations\":[")
+                for fcurve in object.animation_data.action.fcurves:
+                    if fcurve.data_path == "location" and locAnim == False:
+                        Export_babylon.export_animation(object, scene, file_handler, "location", "position", coma, 1)
+                        locAnim = coma = True
+                file_handler.write("]")
+                #Set Animations
+                Export_babylon.write_bool(file_handler, "autoAnimate", True)
+                Export_babylon.write_int(file_handler, "autoAnimateFrom", 0)
+                Export_babylon.write_int(file_handler, "autoAnimateTo", bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1)
+                Export_babylon.write_bool(file_handler, "autoAnimateLoop", True)
+
         file_handler.write("}")
         
     def export_light(object, scene, file_handler):      

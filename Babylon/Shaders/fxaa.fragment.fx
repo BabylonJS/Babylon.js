@@ -1,7 +1,7 @@
 ﻿#define FXAA_REDUCE_MIN   (1.0/128.0)
 #define FXAA_REDUCE_MUL   (1.0/8.0)
 #define FXAA_SPAN_MAX     8.0
-//#define texelSize  vec2(1.0/1600, 1.0/900)
+
 varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform vec2 texelSize;

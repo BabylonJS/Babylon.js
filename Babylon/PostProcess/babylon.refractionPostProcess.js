@@ -1,8 +1,8 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.RefractionPostProcess = function (name, refractionTextureUrl, color, depth, colorLevel, ratio, camera) {
-        BABYLON.PostProcess.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera);
+    BABYLON.RefractionPostProcess = function (name, refractionTextureUrl, color, depth, colorLevel, ratio, camera, samplingMode) {
+        BABYLON.PostProcess.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode);
 
         this.color = color;
         this.depth = depth;

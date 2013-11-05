@@ -5,6 +5,8 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
 
 Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
 
+Online [assets converter](http://www.babylonjs.com/converter.html) for .FBX, .OBJ and .MXB
+
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
@@ -49,6 +51,7 @@ Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5g
  - Fullscreen mode
  - Shadow Maps and Variance Shadow Maps
  - Rendering layers
+ - Post-processes (blur, refraction, black'n'white, fxaa, customs...)
 -  Textures:
  - Render target textures
  - Dynamic textures (canvas)

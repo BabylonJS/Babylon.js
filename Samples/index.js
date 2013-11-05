@@ -1,4 +1,8 @@
-﻿var onload = function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
+    onload();
+}, false);
+
+var onload = function () {
     var canvas = document.getElementById("renderCanvas");
 
     // Demos
@@ -11,9 +15,22 @@
                 }
 
                 scene.activeCamera.detachControl(canvas);
-                scene.activeCamera = scene.cameras[4];
+                scene.activeCamera = scene.cameras[6];
                 scene.activeCamera.attachControl(canvas);
                 scene.getMaterialByName("terrain_eau").bumpTexture = null;
+
+                // Postprocesses
+                var bwPostProcess = new BABYLON.BlackAndWhitePostProcess("Black and White", 1.0, scene.cameras[2]);
+                scene.cameras[2].name = "B&W";
+
+                var sepiaKernelMatrix = BABYLON.Matrix.FromValues(
+                    0.393, 0.349, 0.272, 0,
+                    0.769, 0.686, 0.534, 0,
+                    0.189, 0.168, 0.131, 0,
+                    0, 0, 0, 0
+                );
+                var sepiaPostProcess = new BABYLON.ConvolutionPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.cameras[3]);
+                scene.cameras[3].name = "SEPIA";
             }
         },
         {
@@ -27,6 +44,8 @@
             title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", incremental: true, onload: function () {
                 scene.autoClear = true;
                 scene.createOrUpdateSelectionOctree();
+
+                var postProcess = new BABYLON.RefractionPostProcess("Refraction", "/scenes/customs/refMap.jpg", new BABYLON.Color3(1.0, 1.0, 1.0), 0.5, 0.5, 1.0, scene.cameras[1]);
             }
         },
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
@@ -51,6 +70,8 @@
         }];
 
     var tests = [
+        { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB" },
+        { title: "POSTPROCESS - BLOOM", id: 10, screenshot: "postprocessBloom.jpg", size: "1.0 MB" },
         { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB" },
         { title: "BONES", id: 9, screenshot: "bones.jpg", size: "10 MB" },
         { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "0.1 MB" },
@@ -87,14 +108,17 @@
     var loadingText = document.getElementById("loadingText");
     var hardwareScalingLevel = document.getElementById("hardwareScalingLevel");
     var collisions = document.getElementById("collisions");
+    var postProcess = document.getElementById("postProcess");
     var status = document.getElementById("status");
     var fullscreen = document.getElementById("fullscreen");
     var touchCamera = document.getElementById("touchCamera");
     var deviceOrientationCamera = document.getElementById("deviceOrientationCamera");
     var camerasList = document.getElementById("camerasList");
-    var toggleFxaa = document.getElementById("toggleFxaa");
     var toggleFsaa4 = document.getElementById("toggleFsaa4");
+    var toggleFxaa = document.getElementById("toggleFxaa");
     var toggleBandW = document.getElementById("toggleBandW");
+    var toggleSepia = document.getElementById("toggleSepia");
+
 
     var sceneChecked;
 
@@ -120,6 +144,12 @@
                 });
             };
         };
+    };
+
+    var removeChildren = function (root) {
+        while (root.childNodes.length) {
+            root.removeChild(root.childNodes[0]);
+        }
     };
 
     var createItem = function (item, root) {
@@ -160,18 +190,22 @@
     };
 
     // Demos
+
+    removeChildren(items);
     for (var index = 0; index < demos.length; index++) {
         var demo = demos[index];
         createItem(demo, items);
     }
 
     // Tests
+    removeChildren(testItems);
     for (index = 0; index < tests.length; index++) {
         var test = tests[index];
         createItem(test, testItems);
     }
 
     // 3rd party
+    removeChildren(_3rdItems);
     for (index = 0; index < thirdParties.length; index++) {
         var thirdParty = thirdParties[index];
         createItem(thirdParty, _3rdItems);
@@ -277,6 +311,11 @@
                     case 9:
                         newScene = CreateBonesTestScene(engine);
                         break;
+                    case 10:
+                        newScene = CreatePostProcessBloomTestScene(engine);
+                        break;
+                    case 11:
+                        newScene = CreatePostProcessRefractionTestScene(engine);
                 }
                 scene = newScene;
 
@@ -408,8 +447,8 @@
             controlPanel.style.transform = "translateY(0px)";
         } else {
             panelIsClosed = true;
-            controlPanel.style.webkitTransform = "translateY(200px)";
-            controlPanel.style.transform = "translateY(200px)";
+            controlPanel.style.webkitTransform = "translateY(250px)";
+            controlPanel.style.transform = "translateY(250px)";
         }
     });
 
@@ -463,8 +502,8 @@
         if (!panelIsClosed) {
             panelIsClosed = true;
             cameraPanelIsClosed = true;
-            controlPanel.style.webkitTransform = "translateY(200px)";
-            controlPanel.style.transform = "translateY(200px)";
+            controlPanel.style.webkitTransform = "translateY(250px)";
+            controlPanel.style.transform = "translateY(250px)";
             cameraPanel.style.webkitTransform = "translateX(300px)";
             cameraPanel.style.transform = "translateX(300px)";
         }
@@ -532,28 +571,39 @@
         }
     });
 
+    var switchCamera = function (camera) {
+        if (scene.activeCamera.rotation) {
+            camera.rotation = scene.activeCamera.rotation.clone();
+        }
+        camera.fov = scene.activeCamera.fov;
+        camera.minZ = scene.activeCamera.minZ;
+        camera.maxZ = scene.activeCamera.maxZ;
+
+        if (scene.activeCamera.ellipsoid) {
+            camera.ellipsoid = scene.activeCamera.ellipsoid.clone();
+        }
+        camera.checkCollisions = scene.activeCamera.checkCollisions;
+        camera.applyGravity = scene.activeCamera.applyGravity;
+
+        camera.speed = scene.activeCamera.speed;
+
+        camera.postProcesses = scene.activeCamera.postProcesses;
+        scene.activeCamera.postProcesses = [];
+        scene.activeCamera.detachControl(canvas);
+
+        scene.activeCamera = camera;
+
+        scene.activeCamera.attachControl(canvas);
+
+    };
+
     touchCamera.addEventListener("click", function () {
         if (!scene) {
             return;
         }
 
         var camera = new BABYLON.TouchCamera("touchCamera", scene.activeCamera.position, scene);
-        camera.rotation = scene.activeCamera.rotation.clone();
-        camera.fov = scene.activeCamera.fov;
-        camera.minZ = scene.activeCamera.minZ;
-        camera.maxZ = scene.activeCamera.maxZ;
-
-        camera.ellipsoid = scene.activeCamera.ellipsoid.clone();
-        camera.checkCollisions = scene.activeCamera.checkCollisions;
-        camera.applyGravity = scene.activeCamera.applyGravity;
-
-        camera.speed = scene.activeCamera.speed;
-
-        scene.activeCamera.detachControl(canvas);
-
-        scene.activeCamera = camera;
-
-        scene.activeCamera.attachControl(canvas);
+        switchCamera(camera);
     });
 
     deviceOrientationCamera.addEventListener("click", function () {
@@ -562,22 +612,7 @@
         }
 
         var camera = new BABYLON.DeviceOrientationCamera("deviceOrientationCamera", scene.activeCamera.position, scene);
-        camera.rotation = scene.activeCamera.rotation.clone();
-        camera.fov = scene.activeCamera.fov;
-        camera.minZ = scene.activeCamera.minZ;
-        camera.maxZ = scene.activeCamera.maxZ;
-
-        camera.ellipsoid = scene.activeCamera.ellipsoid.clone();
-        camera.checkCollisions = scene.activeCamera.checkCollisions;
-        camera.applyGravity = scene.activeCamera.applyGravity;
-
-        camera.speed = scene.activeCamera.speed;
-
-        scene.activeCamera.detachControl(canvas);
-
-        scene.activeCamera = camera;
-
-        scene.activeCamera.attachControl(canvas);
+        switchCamera(camera);
     });
 
     hardwareScalingLevel.addEventListener("change", function () {
@@ -592,16 +627,12 @@
         }
     });
 
-    toggleFxaa.addEventListener("click", function () {
-        if (scene && scene.activeCamera) {
-            if (scene.activeCamera.__fxaa_cookie) {
-                scene.activeCamera.__fxaa_cookie.dispose(),
-                scene.activeCamera.__fxaa_cookie = null;
-            } else {
-                scene.activeCamera.__fxaa_cookie = new BABYLON.FxaaPostProcess("fxaa", 1.0, scene.activeCamera);
-            }
+    postProcess.addEventListener("change", function () {
+        if (scene) {
+            scene.postProcessesEnabled = postProcess.checked;
         }
     });
+
     toggleBandW.addEventListener("click", function () {
         if (scene && scene.activeCamera) {
             if (scene.activeCamera.__bandw_cookie) {
@@ -612,19 +643,48 @@
             }
         }
     });
-    toggleFsaa4.addEventListener("click", function () {
+    
+    toggleFxaa.addEventListener("click", function () {
+        if (scene && scene.activeCamera) {
+            if (scene.activeCamera.__fxaa_cookie) {
+                scene.activeCamera.__fxaa_cookie.dispose(),
+                scene.activeCamera.__fxaa_cookie = null;
+            } else {
+                scene.activeCamera.__fxaa_cookie = new BABYLON.FxaaPostProcess("fxaa", 1.0, scene.activeCamera);
+            }
+        }
+    });
 
+    toggleFsaa4.addEventListener("click", function () {
         if (scene && scene.activeCamera) {
             if (scene.activeCamera.__fsaa_cookie) {
                 scene.activeCamera.__fsaa_cookie.dispose(),
                 scene.activeCamera.__fsaa_cookie = null;
             } else {
                 var fx = new BABYLON.PassPostProcess("fsaa", 2.0, scene.activeCamera);
-                fx.renderTargetSamplingMode = BABYLON.TextureSamplingModes.BILINEAR;
+                fx.renderTargetSamplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
                 scene.activeCamera.__fsaa_cookie = fx;
             }
         }
     });
+
+    toggleSepia.addEventListener("click", function () {
+        if (scene && scene.activeCamera) {
+            if (scene.activeCamera.__sepia_cookie) {
+                scene.activeCamera.__sepia_cookie.dispose(),
+                scene.activeCamera.__sepia_cookie = null;
+            } else {
+                var sepiaKernelMatrix = BABYLON.Matrix.FromValues(
+                    0.393, 0.349, 0.272, 0,
+                    0.769, 0.686, 0.534, 0,
+                    0.189, 0.168, 0.131, 0,
+                    0, 0, 0, 0
+                );
+                scene.activeCamera.__sepia_cookie = new BABYLON.ConvolutionPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.activeCamera);
+            }
+        }
+    });
+
 
     // Cameras
     camerasList.addEventListener("change", function (ev) {
