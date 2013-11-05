@@ -7,7 +7,7 @@ Changes list
  - New builtin postprocess: FXAA ([simonferquel](http://www.github.com/simonferquel))
  - Online [assets converter](http://www.babylonjs.com/converter.html)  ([pierlag](https://github.com/pierlag))
  - **Updates**
- - New features demos: [POSTPROCESS - REFRACTION](http://www.babylonjs.com/index.html?POSTPROCESS - REFRACTION) and [POSTPROCESS - BLOOM](http://www.babylonjs.com/index.html?POSTPROCESS - BLOOM)
+ - New features demos: [POSTPROCESS - REFRACTION](http://www.babylonjs.com/index.html?PPPREF) and [POSTPROCESS - BLOOM](http://www.babylonjs.com/index.html?PPBLOOM)
  - Removing the unused depth buffer for postprocesses chains ([simonferquel](http://www.github.com/simonferquel))
  - **Bugfixes**
  - Fixing a memory leak when releasing textures ([simonferquel](http://www.github.com/simonferquel))
@@ -58,7 +58,7 @@ Changes list
  - Support for Safari ([deltakosh](http://www.github.com/deltakosh))
  - Adding local transformations to Blender exporter ([deltakosh](http://www.github.com/deltakosh))
  - IndexedDB code refactoring to support simultaneous calls ([davrous](https://github.com/davrous))
- - Hardware scaling fix ([Gwenaël Hagenmuller](https://github.com/gwenael-hagenmuller))
+ - Hardware scaling fix ([Gwenaï¿½l Hagenmuller](https://github.com/gwenael-hagenmuller))
  - Fixing a bug with sprites dynamic buffers ([deltakosh](http://www.github.com/deltakosh))
 - 1.4.0:
  - **Major features** 
