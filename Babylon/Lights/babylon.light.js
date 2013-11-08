@@ -4,6 +4,7 @@
     BABYLON.Light = function (name, scene) {
         this.name = name;
         this.id = name;
+        this._childrenFlag = true;
 
         this._scene = scene;
 
