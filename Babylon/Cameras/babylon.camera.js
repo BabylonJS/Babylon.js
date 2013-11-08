@@ -6,6 +6,7 @@
         this.id = name;
         this.position = position;
         this.upVector = BABYLON.Vector3.Up();
+        this._childrenFlag = true;
 
         this._scene = scene;
 
