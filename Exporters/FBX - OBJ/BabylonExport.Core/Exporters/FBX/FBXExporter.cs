@@ -191,7 +191,7 @@ namespace BabylonExport.Core.Exporters
                 var indices = new ushort[part.PrimitiveCount * 3];
                 part.IndexBuffer.GetData(part.StartIndex * 2, indices, 0, indices.Length);
 
-                if (part.VertexBuffer.VertexDeclaration.VertexStride > PositionNormalTextured.Stride)
+                if (part.VertexBuffer.VertexDeclaration.VertexStride >= PositionNormalTexturedWeights.Stride)
                 {
                     var mesh = new Mesh<PositionNormalTexturedWeights>(material);
                     var vertices = new PositionNormalTexturedWeights[part.NumVertices];
