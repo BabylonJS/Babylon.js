@@ -46,15 +46,38 @@
         }
 
         // Transparent
-        engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-        for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
-            submesh = this._transparentSubMeshes.data[subIndex];
-            this._activeVertices += submesh.verticesCount;
+        if (this._transparentSubMeshes.length) {
+            // Sorting
+            for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
+                submesh = this._transparentSubMeshes.data[subIndex];
+                submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
+            }
 
-            submesh.render();
+            var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
+
+            sortedArray.sort(function (a, b) {
+                if (a._distanceToCamera < b._distanceToCamera) {
+                    return 1;
+                }
+                if (a._distanceToCamera > b._distanceToCamera) {
+                    return -1;
+                }
+
+                return 0;
+            });
+
+            // Rendering
+            engine.setDepthWrite(false);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
+                submesh = sortedArray[subIndex];
+                this._activeVertices += submesh.verticesCount;
+
+                submesh.render();
+            }
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            engine.setDepthWrite(true);
         }
-        engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
-
         return true;
     };
 

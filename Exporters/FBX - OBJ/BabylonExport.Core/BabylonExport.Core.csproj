@@ -35,13 +35,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Engine" />
-    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Engine">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\BabylonExport\Refs\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.AudioImporters, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -123,10 +130,12 @@
     <Compile Include="Entities\Export\BabylonAnimationKey.cs" />
     <Compile Include="Entities\Export\BabylonBone.cs" />
     <Compile Include="Entities\Export\BabylonCamera.cs" />
+    <Compile Include="Entities\Export\BabylonLensFlare.cs" />
     <Compile Include="Entities\Export\BabylonLight.cs" />
     <Compile Include="Entities\Export\BabylonMaterial.cs" />
     <Compile Include="Entities\Export\BabylonMesh.cs" />
     <Compile Include="Entities\Export\BabylonMultiMaterial.cs" />
+    <Compile Include="Entities\Export\BabylonLensFlareSystem.cs" />
     <Compile Include="Entities\Export\BabylonParticleSystem.cs" />
     <Compile Include="Entities\Export\BabylonScene.cs" />
     <Compile Include="Entities\Export\BabylonShadowGenerator.cs" />

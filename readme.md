@@ -52,6 +52,8 @@ Online [assets converter](http://www.babylonjs.com/converter.html) for .FBX, .OB
  - Shadow Maps and Variance Shadow Maps
  - Rendering layers
  - Post-processes (blur, refraction, black'n'white, fxaa, customs...)
+ - Lens flares
+ - Multi-views
 -  Textures:
  - Render target textures
  - Dynamic textures (canvas)

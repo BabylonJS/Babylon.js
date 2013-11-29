@@ -2,7 +2,12 @@
 precision mediump float;
 #endif
 
+#define MAP_EXPLICIT	0.
+#define MAP_SPHERICAL	1.
+#define MAP_PLANAR		2.
+#define MAP_CUBIC		3.
 #define MAP_PROJECTION	4.
+#define MAP_SKYBOX		5.
 
 // Constants
 uniform vec3 vEyePosition;
@@ -103,13 +108,6 @@ uniform sampler2D opacitySampler;
 uniform vec2 vOpacityInfos;
 #endif
 
-#ifdef REFLECTION
-varying vec3 vReflectionUVW;
-uniform samplerCube reflectionCubeSampler;
-uniform sampler2D reflection2DSampler;
-uniform vec3 vReflectionInfos;
-#endif
-
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
 uniform vec2 vEmissiveInfos;
@@ -122,6 +120,50 @@ uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
 #endif
 
+// Reflection
+#ifdef REFLECTION
+varying vec3 vPositionUVW;
+uniform samplerCube reflectionCubeSampler;
+uniform sampler2D reflection2DSampler;
+uniform vec3 vReflectionInfos;
+uniform mat4 reflectionMatrix;
+uniform mat4 view;
+
+vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
+{
+	if (mode == MAP_SPHERICAL)
+	{
+		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+
+		return vec3(reflectionMatrix * vec4(coords, 1.0));
+	}
+	else if (mode == MAP_PLANAR)
+	{
+		vec3 viewDir = worldPos.xyz - vEyePosition;
+		vec3 coords = normalize(reflect(viewDir, worldNormal));
+
+		return vec3(reflectionMatrix * vec4(coords, 1));
+	}
+	else if (mode == MAP_CUBIC)
+	{
+		vec3 viewDir = worldPos.xyz - vEyePosition;
+		vec3 coords = reflect(viewDir, worldNormal);
+
+		return vec3(reflectionMatrix * vec4(coords, 0));
+	}
+	else if (mode == MAP_PROJECTION)
+	{
+		return vec3(reflectionMatrix * (view * worldPos));
+	}
+	else if (mode == MAP_SKYBOX)
+	{
+		return vPositionUVW;
+	}
+
+	return vec3(0, 0, 0);
+}
+#endif
+
 // Shadows
 #ifdef SHADOWS
 
@@ -131,8 +173,8 @@ float unpack(vec4 color)
 	return dot(color, bitShift);
 }
 
-float unpackHalf(vec2 color) 
-{ 
+float unpackHalf(vec2 color)
+{
 	return color.x + (color.y / 255.0);
 }
 
@@ -156,18 +198,18 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler)
 }
 
 // Thanks to http://devmaster.net/
-float ChebychevInequality(vec2 moments, float t) 
+float ChebychevInequality(vec2 moments, float t)
 {
 	if (t <= moments.x)
 	{
 		return 1.0;
 	}
-	
-	float variance = moments.y - (moments.x * moments.x); 
+
+	float variance = moments.y - (moments.x * moments.x);
 	variance = max(variance, 0.);
 
-	float d = t - moments.x; 	
-	return variance / (variance + d * d); 
+	float d = t - moments.x;
+	return variance / (variance + d * d);
 }
 
 float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
@@ -407,11 +449,11 @@ void main(void) {
 	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0, vLightSpecular0);
 #endif
 #ifdef SHADOW0
-	#ifdef SHADOWVSM0
-		shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);
-	#else
-		shadow = computeShadow(vPositionFromLight0, shadowSampler0);
-	#endif
+#ifdef SHADOWVSM0
+	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);
+#else
+	shadow = computeShadow(vPositionFromLight0, shadowSampler0);
+#endif
 #else
 	shadow = 1.;
 #endif
@@ -430,11 +472,11 @@ void main(void) {
 	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1, vLightSpecular1);
 #endif
 #ifdef SHADOW1
-	#ifdef SHADOWVSM1
-		shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);
-	#else
-		shadow = computeShadow(vPositionFromLight1, shadowSampler1);
-	#endif
+#ifdef SHADOWVSM1
+	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);
+#else
+	shadow = computeShadow(vPositionFromLight1, shadowSampler1);
+#endif
 #else
 	shadow = 1.;
 #endif
@@ -453,11 +495,11 @@ void main(void) {
 	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2, vLightSpecular2);
 #endif
 #ifdef SHADOW2
-	#ifdef SHADOWVSM2
-		shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);
-	#else
-		shadow = computeShadow(vPositionFromLight2, shadowSampler2);
-	#endif	
+#ifdef SHADOWVSM2
+	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);
+#else
+	shadow = computeShadow(vPositionFromLight2, shadowSampler2);
+#endif	
 #else
 	shadow = 1.;
 #endif
@@ -476,11 +518,11 @@ void main(void) {
 	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3, vLightSpecular3);
 #endif
 #ifdef SHADOW3
-	#ifdef SHADOWVSM3
-		shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);
-	#else
-		shadow = computeShadow(vPositionFromLight3, shadowSampler3);
-	#endif	
+#ifdef SHADOWVSM3
+	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);
+#else
+	shadow = computeShadow(vPositionFromLight3, shadowSampler3);
+#endif	
 #else
 	shadow = 1.;
 #endif
@@ -492,6 +534,8 @@ void main(void) {
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
+	vec3 vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), normalW);
+
 	if (vReflectionInfos.z != 0.0)
 	{
 		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;

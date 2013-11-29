@@ -1,8 +1,9 @@
 ﻿var CreateTestScene = function (engine) {
     var scene = new BABYLON.Scene(engine);
     //var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 10, BABYLON.Vector3.Zero(), scene);
+    var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene);
     var camera2 = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene);
-    var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 100, 2), scene);
+    var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 100, 50), scene);
     var material = new BABYLON.StandardMaterial("leaves", scene);
     var material2 = new BABYLON.StandardMaterial("kosh transparent", scene);
     var material3 = new BABYLON.StandardMaterial("kosh", scene);
@@ -12,6 +13,12 @@
     var torus = BABYLON.Mesh.CreateTorus("Torus", 1.0, 0.5, 16, scene);
     var sphere = BABYLON.Mesh.CreateSphere("Sphere", 16, 3, scene);
     var plane = BABYLON.Mesh.CreatePlane("plane", 3, scene);
+
+    camera.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
+    camera2.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
+
+    scene.activeCameras.push(camera);
+    scene.activeCameras.push(camera2);
 
     //material.diffuseColor = new BABYLON.Color3(0, 0, 1);
     material.diffuseTexture = new BABYLON.Texture("Assets/Tree.png", scene);
@@ -32,12 +39,14 @@
     torus.material = material2;
     sphere.material = material;
     plane.material = planeMaterial;
-    cylinder.position.x += 13;
+    cylinder.position.z += 13;
     cylinder.renderingGroupId = 1;
     torus.position.x -= 3;
     torus.parent = sphere;
     sphere.position.z = 3;
     plane.position = new BABYLON.Vector3(0, 7, 0);
+
+    cylinder.parent = camera2;
 
     // Particles
     var particleSystem = new BABYLON.ParticleSystem("particles", 4000, scene);
@@ -125,6 +134,8 @@
         
         spaceDek3.material.emissiveColor = new BABYLON.Color3(1.0, 0, 0);
 
+        spaceDek3.infiniteDistance = true;
+
         scene.beginAnimation(spaceDek3, 0, 100, true, 1.0);
     });
 
@@ -136,7 +147,7 @@
     var count = 0;
     scene.registerBeforeRender(function () {
         box.rotation.y += 0.01;
-        cylinder.rotation.x += 0.01;
+       // cylinder.rotation.x += 0.01;
         sphere.rotation.y += 0.02;
         //  box3.scaling.y = 1 + Math.cos(alpha);
         torus.rotation.z += 0.01;

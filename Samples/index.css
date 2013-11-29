@@ -29,7 +29,23 @@ a {
 .buttonControlPanel {
     height: 40px;
     width: 200px;
-    margin: 10px 0px 10px 0px;
+    margin: 5px 0px 5px 0px;
+}
+
+.smallButtonControlPanel {
+    height: 30px;
+    width: 200px;
+    margin: 2px 0px 2px 0px;
+}
+
+    .smallButtonControlPanel.pushed {
+        border: 2px solid #00008b;
+    }
+
+.buttonImg {
+    height: 32px;
+    width: 32px;
+    float: left;
 }
 
 button {
@@ -400,7 +416,6 @@ button {
 
 #cameraPanel {
     position: absolute;
-    height: 480px;
     right: 0px;
     width: 300px;
     top: 350px;

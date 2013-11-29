@@ -32,7 +32,7 @@
 
     
 
-    var slideid = 2;
+    var slideid = 1;
 
     var canvas = document.getElementById("renderCanvas");
     var divFps = document.getElementById("fps");
@@ -74,9 +74,9 @@
 
                     slide.material.diffuseTexture = new BABYLON.Texture(demos[slideid].image, scene);
 
-                    scene.beginAnimation(scene.meshes[0], 301, 354, false, 1.0, function () {
-                        
-                    })
+                    scene.beginAnimation(scene.meshes[0], 301, 354, false, 1.0, function() {
+
+                    });
 
                 });
                 for (var index = 1; index < scene.meshes.length; index++) {
@@ -102,8 +102,6 @@
 
     camera.attachControl(canvas);
 
-    
-
     // Loading
     var importScene = function () {
         loadingBack.removeEventListener("transitionend", importScene);
@@ -112,8 +110,10 @@
         BABYLON.SceneLoader.ImportMesh("", "/Scenes/Robot/Assets/", "Robot.babylon", scene, function () {
            
         for (var index = 0; index < scene.meshes.length; index++) {
-            if (scene.meshes[index].name == "Slide")
+            if (scene.meshes[index].name == "Slide") {
                 slide = scene.meshes[index];
+                slide.material.diffuseTexture = new BABYLON.Texture(demos[slideid].image, scene);
+            }
             scene.stopAnimation(scene.meshes[index]);
             scene.beginAnimation(scene.meshes[index], 0, 265, false, 1.0);
 

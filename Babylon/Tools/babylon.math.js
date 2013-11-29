@@ -109,56 +109,42 @@
     };
 
     BABYLON.Ray.prototype.intersectsTriangle = function (vertex0, vertex1, vertex2) {
-        var edge1 = vertex1.subtract(vertex0);
-        var edge2 = vertex2.subtract(vertex0);
-        var pvec = BABYLON.Vector3.Cross(this.direction, edge2);
-        var det = BABYLON.Vector3.Dot(edge1, pvec);
+        if (!this._edge1) {
+            this._edge1 = BABYLON.Vector3.Zero();
+            this._edge2 = BABYLON.Vector3.Zero();
+            this._pvec = BABYLON.Vector3.Zero();
+            this._tvec = BABYLON.Vector3.Zero();
+            this._qvec = BABYLON.Vector3.Zero();
+        }
+
+        vertex1.subtractToRef(vertex0, this._edge1);
+        vertex2.subtractToRef(vertex0, this._edge2);
+        BABYLON.Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
+        var det = BABYLON.Vector3.Dot(this._edge1, this._pvec);
 
         if (det === 0) {
-            return {
-                hit: false,
-                distance: 0,
-                bu: 0,
-                bv: 0
-            };
+            return 0;
         }
 
         var invdet = 1 / det;
 
-        var tvec = this.origin.subtract(vertex0);
+        this.origin.subtractToRef(vertex0, this._tvec);
 
-        var bu = BABYLON.Vector3.Dot(tvec, pvec) * invdet;
+        var bu = BABYLON.Vector3.Dot(this._tvec, this._pvec) * invdet;
 
         if (bu < 0 || bu > 1.0) {
-            return {
-                hit: false,
-                distance: 0,
-                bu: bu,
-                bv: 0
-            };
+            return 0;
         }
 
-        var qvec = BABYLON.Vector3.Cross(tvec, edge1);
+        BABYLON.Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
 
-        bv = BABYLON.Vector3.Dot(this.direction, qvec) * invdet;
+        var bv = BABYLON.Vector3.Dot(this.direction, this._qvec) * invdet;
 
         if (bv < 0 || bu + bv > 1.0) {
-            return {
-                hit: false,
-                distance: 0,
-                bu: bu,
-                bv: bv
-            };
+            return 0;
         }
 
-        distance = BABYLON.Vector3.Dot(edge2, qvec) * invdet;
-
-        return {
-            hit: true,
-            distance: distance,
-            bu: bu,
-            bv: bv
-        };
+        return BABYLON.Vector3.Dot(this._edge2, this._qvec) * invdet;
     };
 
     // Statics
@@ -170,6 +156,13 @@
         direction.normalize();
 
         return new BABYLON.Ray(start, direction);
+    };
+    
+    BABYLON.Ray.Transform = function (ray, matrix) {
+        var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
+        var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
+        
+        return new BABYLON.Ray(newOrigin, newDirection);
     };
 
     ////////////////////////////////// Color3 //////////////////////////////////
@@ -789,6 +782,23 @@
     BABYLON.Vector3.NormalizeToRef = function (vector, result) {
         result.copyFrom(vector);
         result.normalize();
+    };
+    
+    BABYLON.Vector3.Project = function (vector, world, transform, viewport) {
+        var cw = viewport.width;
+        var ch = viewport.height;
+        var cx = viewport.x;
+        var cy = viewport.y;
+
+        var viewportMatrix = BABYLON.Matrix.FromValues(
+                                            cw / 2.0, 0, 0, 0,
+                                            0, -ch / 2.0, 0, 0,
+                                            0, 0, 1, 0,
+                                            cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
+        
+        var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
+
+        return BABYLON.Vector3.TransformCoordinates(vector, finalMatrix);
     };
 
     BABYLON.Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
@@ -1457,7 +1467,6 @@
 
     };
 
-
     var xAxis = BABYLON.Vector3.Zero();
     var yAxis = BABYLON.Vector3.Zero();
     var zAxis = BABYLON.Vector3.Zero();
@@ -1561,13 +1570,11 @@
             BABYLON.Matrix.RotationQuaternion(rotation) * BABYLON.Matrix.Translation(rotationCenter) * BABYLON.Matrix.Translation(translation);
     };
 
-    BABYLON.Matrix.GetFinalMatrix = function (viewport, world, view, projection) {
+    BABYLON.Matrix.GetFinalMatrix = function (viewport, world, view, projection, zmin, zmax) {
         var cw = viewport.width;
         var ch = viewport.height;
         var cx = viewport.x;
         var cy = viewport.y;
-        var zmin = viewport.minZ;
-        var zmax = viewport.maxZ;
 
         var viewportMatrix = new BABYLON.Matrix(cw / 2.0, 0, 0, 0,
             0, -ch / 2.0, 0, 0,
@@ -1741,6 +1748,7 @@
 
         return BABYLON.Vector3.Dot(point, normal) + d;
     };
+    
     ////////////////////////////////// Frustum //////////////////////////////////
     BABYLON.Frustum = {};
 
@@ -1799,5 +1807,22 @@
         frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
         frustumPlanes[5].d = transform.m[15] + transform.m[13];
         frustumPlanes[5].normalize();
+    };
+    
+    ////////////////////////////////// Viewport //////////////////////////////////
+    BABYLON.Viewport = {};
+    
+    BABYLON.Viewport = function (x, y, width, height) {
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+    };
+    
+
+    BABYLON.Viewport.prototype.toGlobal = function (engine) {
+        var width = engine.getRenderWidth() * engine.getHardwareScalingLevel();
+        var height = engine.getRenderHeight() * engine.getHardwareScalingLevel();
+        return new BABYLON.Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
     };
 })();

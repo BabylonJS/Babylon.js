@@ -63,8 +63,11 @@ namespace BabylonExport.Core
         public bool checkCollisions { get; set; }
 
         [DataMember]
-        public bool receiveShadows { get; set; }        
-
+        public bool receiveShadows { get; set; }    
+    
+        [DataMember]
+        public bool infiniteDistance { get; set; }
+        
         [DataMember]
         public int billboardMode { get; set; }
 

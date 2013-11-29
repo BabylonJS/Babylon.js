@@ -56,6 +56,25 @@
     
     // Elevation
     var elevationControl = new WORLDMONGER.ElevationControl(ground);
+    
+    // Bloom
+    var blurWidth = 2.0;
+
+    var postProcess0 = new BABYLON.PassPostProcess("Scene copy", 1.0, camera);
+    var postProcess1 = new BABYLON.PostProcess("Down sample", "./postprocesses/downsample", ["screenSize", "highlightThreshold"], null, 0.5, camera, BABYLON.Texture.DEFAULT_SAMPLINGMODE);
+    postProcess1.onApply = function (effect) {
+        effect.setFloat2("screenSize", postProcess1.width, postProcess1.height);
+        effect.setFloat("highlightThreshold", 0.85);
+    };
+    var postProcess2 = new BABYLON.BlurPostProcess("Horizontal blur", new BABYLON.Vector2(1.0, 0), blurWidth, 0.5, camera, BABYLON.Texture.DEFAULT_SAMPLINGMODE);
+    var postProcess3 = new BABYLON.BlurPostProcess("Vertical blur", new BABYLON.Vector2(0, 1.0), blurWidth, 0.5, camera, BABYLON.Texture.DEFAULT_SAMPLINGMODE);
+    var postProcess4 = new BABYLON.PostProcess("Final compose", "./postprocesses/compose", ["sceneIntensity", "glowIntensity", "highlightIntensity"], ["sceneSampler"], 1, camera);
+    postProcess4.onApply = function (effect) {
+        effect.setTextureFromPostProcess("sceneSampler", postProcess0);
+        effect.setFloat("sceneIntensity", 0.8);
+        effect.setFloat("glowIntensity", 0.6);
+        effect.setFloat("highlightIntensity", 1.5);
+    };
 
     // Render loop
     var renderFunction = function () {
@@ -195,24 +214,28 @@
                     waterMaterial.reflectionTexture.resize(512, true);
                     scene.getEngine().setHardwareScalingLevel(1);
                     scene.particlesEnabled = true;
+                    scene.postProcessesEnabled = true;
                     break;
                 case 2:
                     waterMaterial.refractionTexture.resize(256, true);
                     waterMaterial.reflectionTexture.resize(256, true);
                     scene.getEngine().setHardwareScalingLevel(1);
                     scene.particlesEnabled = false;
+                    scene.postProcessesEnabled = false;
                     break;
                 case 1:
                     waterMaterial.refractionTexture.resize(256, true);
                     waterMaterial.reflectionTexture.resize(256, true);
                     scene.getEngine().setHardwareScalingLevel(2);
                     scene.particlesEnabled = false;
+                    scene.postProcessesEnabled = false;
                     break;
                 case 0:
                     waterMaterial.refractionTexture.resize(256, true);
                     waterMaterial.reflectionTexture.resize(256, true);
                     scene.getEngine().setHardwareScalingLevel(3);
                     scene.particlesEnabled = false;
+                    scene.postProcessesEnabled = false;
                     break;
             }
         }

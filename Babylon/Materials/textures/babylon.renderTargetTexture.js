@@ -6,6 +6,7 @@
         this._scene.textures.push(this);
 
         this.name = name;
+        this._generateMipMaps = generateMipMaps;
 
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
@@ -34,6 +35,7 @@
     };
 
     BABYLON.RenderTargetTexture.prototype.render = function () {
+
         if (this.onBeforeRender) {
             this.onBeforeRender();
         }
@@ -52,6 +54,9 @@
         }
 
         if (!this.renderList || this.renderList.length == 0) {
+            if (this.onAfterRender) {
+                this.onAfterRender();
+            }
             return;
         }
 

@@ -2,13 +2,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Babylonjs Presentation</title>
+    <script>
+        function writeViewPort() {
+            var ua = navigator.userAgent;
+            if (ua.indexOf("Android") >= 0 && ua.indexOf("AppleWebKit") >= 0) {
+                var webkitVersion = parseFloat(ua.slice(ua.indexOf("AppleWebKit") + 12));
+                // targets android browser, not chrome browser (http://jimbergman.net/webkit-version-in-android-version/)
+                if (webkitVersion < 535) {
+                    document.write('<meta name="viewport" content="initial-scale=1" />');
+                }
+            }
+        }
+
+        writeViewPort();
+    </script>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
     <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
     <link href="index.css" rel="stylesheet" />
     <script src="../../babylon.js"></script>
-    <script src="hand.minified-1.1.1.js"></script>
-
+    <script src="../../hand.minified-1.2.js"></script>
     <script src="index.js"></script>
 </head>
 <body onload="onload();">

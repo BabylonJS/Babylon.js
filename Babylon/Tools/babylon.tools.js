@@ -40,6 +40,10 @@
         }
         this.push(value);
     };
+    
+    BABYLON.Tools.SmartArray.prototype.sort = function (compareFn) {
+        this.data.sort(compareFn);
+    };
 
     BABYLON.Tools.SmartArray.prototype.reset = function() {
         this.length = 0;

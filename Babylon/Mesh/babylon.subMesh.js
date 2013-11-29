@@ -12,23 +12,23 @@
 
         this.refreshBoundingInfo();
     };
-    
+
     //Properties
-    BABYLON.SubMesh.prototype.getBoundingInfo = function() {
+    BABYLON.SubMesh.prototype.getBoundingInfo = function () {
         return this._boundingInfo;
     };
-    
+
     BABYLON.SubMesh.prototype.getMesh = function () {
         return this._mesh;
     };
 
     BABYLON.SubMesh.prototype.getMaterial = function () {
         var rootMaterial = this._mesh.material;
-        
+
         if (rootMaterial && rootMaterial.getSubMaterial) {
             return rootMaterial.getSubMaterial(this.materialIndex);
         }
-        
+
         if (!rootMaterial) {
             return this._mesh._scene.defaultMaterial;
         }
@@ -51,25 +51,25 @@
     BABYLON.SubMesh.prototype._checkCollision = function (collider) {
         return this._boundingInfo._checkCollision(collider);
     };
-    
-    BABYLON.SubMesh.prototype.updateBoundingInfo = function(world, scale) {
+
+    BABYLON.SubMesh.prototype.updateBoundingInfo = function (world, scale) {
         this._boundingInfo._update(world, scale);
     };
-    
+
     BABYLON.SubMesh.prototype.isInFrustrum = function (frustumPlanes) {
         return this._boundingInfo.isInFrustrum(frustumPlanes);
     };
-    
-    BABYLON.SubMesh.prototype.render = function() {
+
+    BABYLON.SubMesh.prototype.render = function () {
         this._mesh.render(this);
     };
 
-    BABYLON.SubMesh.prototype.getLinesIndexBuffer = function(indices, engine) {
+    BABYLON.SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
         if (!this._linesIndexBuffer) {
             var linesIndices = [];
 
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-                linesIndices.push(  indices[index], indices[index + 1],
+                linesIndices.push(indices[index], indices[index + 1],
                                     indices[index + 1], indices[index + 2],
                                     indices[index + 2], indices[index]);
             }
@@ -80,24 +80,24 @@
         return this._linesIndexBuffer;
     };
 
-    BABYLON.SubMesh.prototype.canIntersects = function(ray) {
+    BABYLON.SubMesh.prototype.canIntersects = function (ray) {
         return ray.intersectsBox(this._boundingInfo.boundingBox);
     };
 
     BABYLON.SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
         var distance = Number.MAX_VALUE;
-        
+
         // Triangles test
         for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
             var p0 = positions[indices[index]];
             var p1 = positions[indices[index + 1]];
             var p2 = positions[indices[index + 2]];
 
-            var result = ray.intersectsTriangle(p0, p1, p2);
+            var currentDistance = ray.intersectsTriangle(p0, p1, p2);
 
-            if (result.hit) {
-                if ((fastCheck || result.distance < distance) && result.distance >= 0) {
-                    distance = result.distance;
+            if (currentDistance > 0) {
+                if (fastCheck || currentDistance < distance) {
+                    distance = currentDistance;
 
                     if (fastCheck) {
                         break;
@@ -105,20 +105,20 @@
                 }
             }
         }
-        
-        if (distance >= 0)
-            return { hit: true, distance: distance };
 
-        return { hit: false, distance: 0 };
+        if (distance > 0 && distance < Number.MAX_VALUE)
+            return distance;
+
+        return 0;
     };
 
     // Clone    
-    BABYLON.SubMesh.prototype.clone = function(newMesh) {
+    BABYLON.SubMesh.prototype.clone = function (newMesh) {
         return new BABYLON.SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh);
     };
-    
+
     // Statics
-    BABYLON.SubMesh.CreateFromIndices = function(materialIndex, startIndex, indexCount, mesh) {
+    BABYLON.SubMesh.CreateFromIndices = function (materialIndex, startIndex, indexCount, mesh) {
         var minVertexIndex = Number.MAX_VALUE;
         var maxVertexIndex = -Number.MAX_VALUE;
 

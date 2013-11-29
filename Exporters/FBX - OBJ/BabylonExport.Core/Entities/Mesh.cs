@@ -28,7 +28,7 @@ namespace BabylonExport.Core
         public void AddPart(string name, List<T> addedVertices, List<int> addedIndices)
         {
             if (concatenatedName == "")
-                concatenatedName += " / ";
+                concatenatedName += " # ";
 
             concatenatedName += name;
 
