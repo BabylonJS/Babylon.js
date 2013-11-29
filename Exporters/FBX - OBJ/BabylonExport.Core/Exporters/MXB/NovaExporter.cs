@@ -18,6 +18,7 @@ namespace BabylonExport.Core.Exporters
         readonly List<string> alreadyExportedTextures = new List<string>();
         readonly List<NovaMaterial> materialsToExport = new List<NovaMaterial>();
         readonly List<NovaParticleSystem> particleSystemsToExport = new List<NovaParticleSystem>();
+        readonly List<NovaLensFlares> lensFlareSystemToExport = new List<NovaLensFlares>();
         readonly Dictionary<NovaMaterial, NovaObject> mirrorsMaterials = new Dictionary<NovaMaterial, NovaObject>();
 
         public event Action<int> OnImportProgressChanged;
@@ -100,6 +101,9 @@ namespace BabylonExport.Core.Exporters
             // Particles
             DumpParticles(babylonScene);
 
+            // Lens flares
+            DumpLensFlares(babylonScene);
+
             // Output
             babylonScene.Prepare(false);
             using (var outputStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
@@ -108,6 +112,40 @@ namespace BabylonExport.Core.Exporters
                 ser.WriteObject(outputStream, babylonScene);
             }
             ReportProgressChanged(100);
+        }
+
+
+        void DumpLensFlares(BabylonScene babylonScene)
+        {
+            if (lensFlareSystemToExport.Count == 0)
+                return;
+
+            babylonScene.lensFlareSystems = new BabylonLensFlareSystem[lensFlareSystemToExport.Count];
+
+            var index = 0;
+            foreach (var lensFlareSystem in lensFlareSystemToExport)
+            {
+                var flares = new List<BabylonLensFlare>();
+                foreach (var flare in lensFlareSystem.Flares)
+                {
+                    flares.Add(new BabylonLensFlare
+                    {
+                        color = flare.Color.ToArray(),
+                        position = flare.Position,
+                        size = flare.Size / 1000.0f,
+                        textureName = CopyTexture(flare.Texture, babylonScene)
+                    });
+                }
+
+                babylonScene.lensFlareSystems[index] = new BabylonLensFlareSystem
+                {
+                    emitterId = (lensFlareSystem.Tag as NovaLight).ID.ToString(),
+                    borderLimit = lensFlareSystem.BorderLimit,
+                    flares = flares.ToArray()
+                };
+
+                index++;
+            }
         }
 
         private void DumpParticles(BabylonScene babylonScene)
@@ -293,6 +331,7 @@ namespace BabylonExport.Core.Exporters
             babylonMesh.visibility = novaObject.Visibility;
             babylonMesh.checkCollisions = novaObject.CheckCollisions;
             babylonMesh.receiveShadows = novaObject.ReceiveShadows;
+            babylonMesh.infiniteDistance = novaObject.InfiniteDistance;
 
             if (novaObject.Billboard)
             {
@@ -361,7 +400,7 @@ namespace BabylonExport.Core.Exporters
 
             babylonMesh.animations = animations.ToArray();
             babylonMesh.autoAnimate = novaObject.AutoAnimate;
-            
+
             if (novaObject.AutoAnimate)
             {
                 babylonMesh.autoAnimateFrom = novaObject.AnimationStartKey;
@@ -405,7 +444,7 @@ namespace BabylonExport.Core.Exporters
                     subMesh.indexCount = subObject.AttributeRange.FaceCount * 3;
 
                     subMeshes.Add(subMesh);
-                }                
+                }
             }
             babylonMesh.subMeshes = subMeshes.ToArray();
 
@@ -446,7 +485,7 @@ namespace BabylonExport.Core.Exporters
 
             if (novaObject.VertexPaint)
             {
-                var color = RGBAColor.FromArgb((int) vertex.Color);
+                var color = RGBAColor.FromArgb((int)vertex.Color);
                 colors.Add(color.Red); colors.Add(color.Green); colors.Add(color.Blue);
             }
         }
@@ -613,7 +652,7 @@ namespace BabylonExport.Core.Exporters
             }
         }
 
-        static void DumpLights(NovaScene scene, BabylonScene babylonScene)
+        void DumpLights(NovaScene scene, BabylonScene babylonScene)
         {
             foreach (NovaLight light in scene.Lights)
             {
@@ -651,6 +690,12 @@ namespace BabylonExport.Core.Exporters
                             renderList = light.ShadowMembers.Select(m => m.ID.ToString()).ToArray()
                         };
                         babylonScene.ShadowGeneratorsList.Add(shadowGenerator);
+                    }
+
+                    if (light.LensFlares != null)
+                    {
+                        light.LensFlares.Tag = light;
+                        lensFlareSystemToExport.Add(light.LensFlares);
                     }
                 }
             }

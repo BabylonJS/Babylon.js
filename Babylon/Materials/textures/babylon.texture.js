@@ -54,6 +54,7 @@
     BABYLON.Texture.prototype.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
     BABYLON.Texture.prototype.coordinatesIndex = 0;
     BABYLON.Texture.prototype.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
+    BABYLON.Texture.prototype.anisotropicFilteringLevel = 4;
 
     // Methods    
     BABYLON.Texture.prototype.delayLoad = function () {

@@ -2,7 +2,20 @@
 <html>
 <head>
     <title>Babylon.js</title>
-    <meta name="viewport" content="initial-scale=1">
+    <script>
+        function writeViewPort() {
+            var ua = navigator.userAgent;
+            if (ua.indexOf("Android") >= 0 && ua.indexOf("AppleWebKit") >= 0) {
+                var webkitVersion = parseFloat(ua.slice(ua.indexOf("AppleWebKit") + 12));
+                // targets android browser, not chrome browser (http://jimbergman.net/webkit-version-in-android-version/)
+                if (webkitVersion < 535) {
+                    document.write('<meta name="viewport" content="initial-scale=1" />');
+                }
+            }
+        }
+
+        writeViewPort();
+    </script>
     <script>
         (function (i, s, o, g, r, a, m) {
             i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
@@ -16,12 +29,13 @@
 
     </script>
     <link href="index.css" rel="stylesheet" />
-    <script src="hand.minified-1.1.1.js"></script>
-    <script src="Babylon/Tools/babylon.math.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+    <!--<script src="Babylon/Tools/babylon.math.js"></script>
     <script src="Babylon/Tools/babylon.database.js"></script>
     <script src="Babylon/Tools/babylon.tools.js"></script>
     <script src="Babylon/babylon.engine.js"></script>
     <script src="Babylon/babylon.node.js"></script>
+    <script src="Babylon/Collisions/babylon.pickingInfo.js"></script>
     <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
     <script src="Babylon/Culling/babylon.boundingBox.js"></script>
     <script src="Babylon/Culling/babylon.boundingInfo.js"></script>
@@ -76,7 +90,9 @@
     <script src="Babylon/PostProcess/babylon.blackAndWhitePostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
-    <!--<script src="babylon.js"></script>-->
+    <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
+    <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>-->
+    <script src="babylon.js"></script>
     <script src="Scenes/Customs/test.js"></script>
     <script src="Scenes/Customs/lights_test.js"></script>
     <script src="Scenes/Customs/bump_test.js"></script>
@@ -89,6 +105,7 @@
     <script src="Scenes/Customs/bones.js"></script>
     <script src="Scenes/Customs/postprocessBloom.js"></script>
     <script src="Scenes/Customs/postprocessRefraction.js"></script>
+    <script src="Scenes/Customs/lensFlares.js"></script>
     <script src="index.js"></script>
 </head>
 <body>
@@ -196,7 +213,8 @@
                                     <li>Fullscreen mode</li>
                                     <li>Shadow Maps and Variance Shadow Maps</li>
                                     <li>Rendering layers</li>
-                                    <li><b>Post-processes (blur, refraction, black'n'white, fxaa, customs...) </b></li>
+                                    <li><b>Post-processes (blur, refraction, black'n'white, fxaa, customs...)</b></li>
+                                    <li><b>Lens flares</b></li>
                                 </ul>
                             </li>
                             <li>
@@ -283,15 +301,19 @@
                     <select id="camerasList"></select>
                     <p>
                         Change control method:
-                        <button class="buttonControlPanel" id="touchCamera">Switch to touch camera</button>
-                        <button class="buttonControlPanel" id="deviceOrientationCamera">Switch to device orientation camera</button>
+                        <button class="buttonControlPanel" id="touchCamera">
+                            <img src="Assets/CamTouchOff.png" class="buttonImg"/><div style="margin-top: 8px">Touch camera</div>
+                        </button>
+                        <button class="buttonControlPanel" id="deviceOrientationCamera">
+                            <img src="Assets/CamDeviceOff.png" class="buttonImg" />Device orientation camera
+                        </button>
                     </p>
                     <p>
                         Post-processes:
-                        <button class="buttonControlPanel" id="toggleFxaa">Toggle FXAA (antialiasing)</button>
-                        <button class="buttonControlPanel" id="toggleFsaa4">Toggle FSAA 4X (antialiasing)</button>
-                        <button class="buttonControlPanel" id="toggleBandW">Toggle Black and white</button>
-                        <button class="buttonControlPanel" id="toggleSepia">Toggle Sepia</button>
+                        <button class="smallButtonControlPanel" id="toggleFxaa">Toggle FXAA (antialiasing)</button>
+                        <button class="smallButtonControlPanel" id="toggleFsaa4">Toggle FSAA 4X (antialiasing)</button>
+                        <button class="smallButtonControlPanel" id="toggleBandW">Toggle Black and white</button>
+                        <button class="smallButtonControlPanel" id="toggleSepia">Toggle Sepia</button>
                     </p>
                 </div>
                 <div class="cameraTag"><img src="Assets/camera.png" /></div>

@@ -58,6 +58,9 @@ namespace BabylonExport.Core
         public BabylonParticleSystem[] particleSystems { get; set; }
 
         [DataMember]
+        public BabylonLensFlareSystem[] lensFlareSystems { get; set; }
+
+        [DataMember]
         public BabylonShadowGenerator[] shadowGenerators { get; set; }
 
         [DataMember]

@@ -158,6 +158,20 @@
 
         return multiMaterial;
     };
+    
+    var parseLensFlareSystem = function (parsedLensFlareSystem, scene, rootUrl) {
+        var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+
+        var lensFlareSystem = new BABYLON.LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+        lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+        
+        for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+            var parsedFlare = parsedLensFlareSystem.flares[index];
+            var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+        }
+
+        return lensFlareSystem;
+    };
 
     var parseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
         var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
@@ -340,7 +354,8 @@
 
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
-
+        mesh.infiniteDistance = parsedMesh.infiniteDistance;
+        
         mesh.receiveShadows = parsedMesh.receiveShadows;
 
         mesh.billboardMode = parsedMesh.billboardMode;
@@ -660,6 +675,14 @@
                     for (var index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         parseParticleSystem(parsedParticleSystem, scene, rootUrl);
+                    }
+                }
+                
+                // Lens flares
+                if (parsedData.lensFlareSystems) {
+                    for (var index = 0; index < parsedData.lensFlareSystems.length; index++) {
+                        var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
+                        parseLensFlareSystem(parsedLensFlareSystem, scene, rootUrl);
                     }
                 }
 

@@ -1,7 +1,7 @@
 ﻿var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.DynamicTexture = function (name, size, scene, generateMipMaps) {
+    BABYLON.DynamicTexture = function (name, options, scene, generateMipMaps) {
         this._scene = scene;
         this._scene.textures.push(this);
 
@@ -12,10 +12,21 @@
 
         this._generateMipMaps = generateMipMaps;
 
-        this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
+        if (options.getContext) {
+            this._canvas = options;
+            this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+        } else {
+            this._canvas = document.createElement("canvas");
+
+            if (options.width) {
+                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+            } else {
+                this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps);
+            }
+        }
+        
         var textureSize = this.getSize();
 
-        this._canvas = document.createElement("canvas");
         this._canvas.width = textureSize.width;
         this._canvas.height = textureSize.height;
         this._context = this._canvas.getContext("2d");

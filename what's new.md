@@ -1,5 +1,17 @@
 Changes list
 ============
+- 1.7.0:
+ - **Major updates**
+ - Support for [lens flares](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) ([deltakosh](http://www.github.com/deltakosh))
+ - Support for [multi-views](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-multi-views) ([deltakosh](http://www.github.com/deltakosh))
+ - **Updates**
+ - New ```light.excludedMeshes``` property to exclude specific meshes from light coputation ([deltakosh](http://www.github.com/deltakosh))
+ - New ```texture.anisotropicFilteringLevel``` property to define the anisotropic level of a texture ([deltakosh](http://www.github.com/deltakosh))
+ - New ```mesh.infiniteDistance``` property to make a mesh static from the point of view of the camera ([deltakosh](http://www.github.com/deltakosh))
+ - New ```scene.customRenderTargets``` property to add our own renderTargetTexture ([deltakosh](http://www.github.com/deltakosh))
+ - Transparent meshes are sorted back to front ([deltakosh](http://www.github.com/deltakosh))
+ - **Bugfixes**
+ - Fixing a bug when cloning mirrorTexture ([deltakosh](http://www.github.com/deltakosh))
 - 1.6.0:
  - **Major updates**
  - Support for [postprocesses](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-postprocesses) ([deltakosh](http://www.github.com/deltakosh))

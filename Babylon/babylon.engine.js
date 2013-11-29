@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Engine = function (canvas, antialias) {
@@ -38,8 +40,10 @@
         this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
 
         // Extensions
-        var derivatives = this._gl.getExtension('OES_standard_derivatives');
-        this._caps.standardDerivatives = (derivatives !== null);
+        this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
+        this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);        
+        this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
+        this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
 
         // Cache
         this._loadedTexturesCache = [];
@@ -197,11 +201,28 @@
 
         this._gl.clear(mode);
     };
+    
+    BABYLON.Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
+        var width = requiredWidth || this._renderingCanvas.width;
+        var height = requiredHeight || this._renderingCanvas.height;
+        var x = viewport.x || 0;
+        var y = viewport.y || 0;
+        
+        this._cachedViewport = viewport;
+        
+        this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
+        this._aspectRatio = (width * viewport.width) / (height * viewport.height);
+    };
+    
+    BABYLON.Engine.prototype.setDirectViewport = function (x, y, width, height) {
+        this._cachedViewport = null;
+
+        this._gl.viewport(x, y, width, height);
+        this._aspectRatio = width / height;
+    };
 
     BABYLON.Engine.prototype.beginFrame = function () {
         BABYLON.Tools._MeasureFps();
-
-        this._gl.viewport(0, 0, this._renderingCanvas.width, this._renderingCanvas.height);
     };
 
     BABYLON.Engine.prototype.endFrame = function () {
@@ -210,14 +231,14 @@
 
     BABYLON.Engine.prototype.resize = function () {
         this._renderingCanvas.width = this._renderingCanvas.clientWidth / this._hardwareScalingLevel;
-        this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;
-        this._aspectRatio = this._renderingCanvas.width / this._renderingCanvas.height;
+        this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;        
     };
 
     BABYLON.Engine.prototype.bindFramebuffer = function (texture) {
         var gl = this._gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
-        gl.viewport(0.0, 0.0, texture._width, texture._height);
+        this._gl.viewport(0, 0, texture._width, texture._height);
+        this._aspectRatio = texture._width / texture._height;
 
         this.wipeCaches();
     };
@@ -237,7 +258,8 @@
 
     BABYLON.Engine.prototype.restoreDefaultFramebuffer = function () {
         this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
-        this._gl.viewport(0, 0, this._renderingCanvas.width, this._renderingCanvas.height);
+
+        this.setViewport(this._cachedViewport);
 
         this.wipeCaches();
     };
@@ -636,11 +658,11 @@
         return texture;
     };
 
-    BABYLON.Engine.prototype.createDynamicTexture = function (size, generateMipMaps) {
+    BABYLON.Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps) {
         var texture = this._gl.createTexture();
 
-        var width = getExponantOfTwo(size, this._caps.maxTextureSize);
-        var height = width;
+        width = getExponantOfTwo(width, this._caps.maxTextureSize);
+        height = getExponantOfTwo(height, this._caps.maxTextureSize);
 
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
@@ -722,9 +744,7 @@
             }
         }
         var gl = this._gl;
-
-        
-
+       
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -952,6 +972,8 @@
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, texture.coordinatesMode !== BABYLON.CubeTexture.CUBIC_MODE ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, texture.coordinatesMode !== BABYLON.CubeTexture.CUBIC_MODE ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
             }
+
+            this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
         } else {
             this._gl.bindTexture(this._gl.TEXTURE_2D, internalTexture);
 
@@ -985,6 +1007,17 @@
                         break;
                 }
             }
+
+            this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
+        }
+    };
+
+    BABYLON.Engine.prototype._setAnisotropicLevel = function (key, texture) {
+        var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
+
+        if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
+            this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
+            texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
         }
     };
 

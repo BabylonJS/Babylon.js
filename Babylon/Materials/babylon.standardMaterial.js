@@ -137,6 +137,10 @@
                 continue;
             }
 
+            if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {
+                continue;
+            }
+
             defines.push("#define LIGHT" + lightIndex);
             
             if (lightIndex > 0) {
@@ -345,6 +349,10 @@
             var light = this._scene.lights[index];
 
             if (!light.isEnabled()) {
+                continue;
+            }
+            
+            if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {
                 continue;
             }
 

@@ -12,6 +12,9 @@
         
         // Animations
         this.animations = [];
+        
+        // Exclusions
+        this.excludedMeshes = [];
     };
     
     BABYLON.Light.prototype = Object.create(BABYLON.Node.prototype);

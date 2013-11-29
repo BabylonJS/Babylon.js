@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Camera = function (name, position, scene) {
@@ -17,13 +19,15 @@
         }
 
         this._computedViewMatrix = BABYLON.Matrix.Identity();
-        this._currentRenderId = -1;
 
         // Animations
         this.animations = [];
 
         // Postprocesses
         this.postProcesses = [];
+        
+        // Viewport
+        this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
     };
 
     BABYLON.Camera.prototype = Object.create(BABYLON.Node.prototype);
@@ -76,12 +80,7 @@
     };
 
     BABYLON.Camera.prototype.getViewMatrix = function () {
-        if (this._currentRenderId == this._scene.getRenderId()) {
-            return this._computedViewMatrix;
-        }
-
         this._computedViewMatrix = this._getViewMatrix();
-        this._currentRenderId = this._scene.getRenderId();
 
         if (this.parent && this.parent.getWorldMatrix) {
             if (!this._worldMatrix) {

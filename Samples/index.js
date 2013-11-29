@@ -48,7 +48,7 @@ var onload = function () {
                 var postProcess = new BABYLON.RefractionPostProcess("Refraction", "/scenes/customs/refMap.jpg", new BABYLON.Color3(1.0, 1.0, 1.0), 0.5, 0.5, 1.0, scene.cameras[1]);
             }
         },
-        { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB" },
+        { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB", anchor:"WCAFE" },
         {
             title: "FLAT 2009",
             scene: "Flat2009",
@@ -60,19 +60,20 @@ var onload = function () {
                 scene.createOrUpdateSelectionOctree();
             }
         },
-        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB", incremental: true },
+        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB", incremental: true, anchor:"THECAR" },
         { title: "VIPER", scene: "Viper", screenshot: "viper.jpg", size: "18 MB" },
         { title: "SPACESHIP", scene: "Spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
         {
-            title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", onload: function () {
+            title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", anchor:"OMEGA", onload: function () {
                 scene.collisionsEnabled = false;
             }
         }];
 
     var tests = [
-        { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB" },
-        { title: "POSTPROCESS - BLOOM", id: 10, screenshot: "postprocessBloom.jpg", size: "1.0 MB" },
-        { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB" },
+        { title: "LENS FLARES", id: 12, screenshot: "lens.jpg", size: "1.0 MB", anchor: "LENS" },
+        { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB", anchor:"PPREF" },
+        { title: "POSTPROCESS - BLOOM", id: 10, screenshot: "postprocessBloom.jpg", size: "1.0 MB", anchor: "PPBLOOM" },
+        { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB", anchor:"OCTREE" },
         { title: "BONES", id: 9, screenshot: "bones.jpg", size: "10 MB" },
         { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "0.1 MB" },
         { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
@@ -88,7 +89,10 @@ var onload = function () {
     var thirdParties = [
     { title: "CAR GAME", url: "http://babylon.azurewebsites.net", screenshot: "car.jpg", size: "by G. Carlander" },
     { title: "CYCLE GAME", url: "http://tronbabylon.azurewebsites.net/", screenshot: "tron.jpg", size: "by G. Carlander" },
-    { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" }
+    { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" },
+    { title: "Catalog3D", url: "http://apps.microsoft.com/windows/en-gb/app/catalog-3d-by-sokrate/43771ce3-02f0-4365-98c3-557cd8acdad2", screenshot: "sokrate3D.jpg", size: "by SOKRATE" },
+    { title: "PSN TELECENTRES", url: "http://psntelecentres.com/visite_virtuelle.html", screenshot: "psn.jpg", size: "by SOKRATE" },
+    { title: "VIRTUAL EXPO", url: "http://www.sokrate.fr/expovirtuelle/index.htm", screenshot: "expo.jpg", size: "by SOKRATE" }
     ];
 
     // UI
@@ -316,6 +320,10 @@ var onload = function () {
                         break;
                     case 11:
                         newScene = CreatePostProcessRefractionTestScene(engine);
+                        break;
+                    case 12:
+                        newScene = CreateLensFlaresTestScene(engine);
+                        break;
                 }
                 scene = newScene;
 
@@ -515,7 +523,7 @@ var onload = function () {
             var pickResult = scene.pick(evt.clientX, evt.clientY);
 
             if (pickResult.hit) {
-                status.innerHTML = "Selected object: " + pickResult.pickedMesh.name;
+                status.innerHTML = "Selected object: " + pickResult.pickedMesh.name + "(" + pickResult.pickedPoint.x + "," + pickResult.pickedPoint.y  + "," + pickResult.pickedPoint.z  + ")";
 
                 // Animations
                 scene.beginAnimation(pickResult.pickedMesh, 0, 100, true, 1.0);
@@ -638,8 +646,10 @@ var onload = function () {
             if (scene.activeCamera.__bandw_cookie) {
                 scene.activeCamera.__bandw_cookie.dispose(),
                 scene.activeCamera.__bandw_cookie = null;
+                toggleBandW.className = "smallButtonControlPanel";
             } else {
                 scene.activeCamera.__bandw_cookie = new BABYLON.BlackAndWhitePostProcess("bandw", 1.0, scene.activeCamera);
+                toggleBandW.className = "smallButtonControlPanel pushed";
             }
         }
     });
@@ -649,8 +659,10 @@ var onload = function () {
             if (scene.activeCamera.__fxaa_cookie) {
                 scene.activeCamera.__fxaa_cookie.dispose(),
                 scene.activeCamera.__fxaa_cookie = null;
+                toggleFxaa.className = "smallButtonControlPanel";
             } else {
                 scene.activeCamera.__fxaa_cookie = new BABYLON.FxaaPostProcess("fxaa", 1.0, scene.activeCamera);
+                toggleFxaa.className = "smallButtonControlPanel pushed";
             }
         }
     });
@@ -660,10 +672,12 @@ var onload = function () {
             if (scene.activeCamera.__fsaa_cookie) {
                 scene.activeCamera.__fsaa_cookie.dispose(),
                 scene.activeCamera.__fsaa_cookie = null;
+                toggleFsaa4.className = "smallButtonControlPanel";
             } else {
                 var fx = new BABYLON.PassPostProcess("fsaa", 2.0, scene.activeCamera);
                 fx.renderTargetSamplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
                 scene.activeCamera.__fsaa_cookie = fx;
+                toggleFsaa4.className = "smallButtonControlPanel pushed";
             }
         }
     });
@@ -673,6 +687,7 @@ var onload = function () {
             if (scene.activeCamera.__sepia_cookie) {
                 scene.activeCamera.__sepia_cookie.dispose(),
                 scene.activeCamera.__sepia_cookie = null;
+                toggleSepia.className = "smallButtonControlPanel";
             } else {
                 var sepiaKernelMatrix = BABYLON.Matrix.FromValues(
                     0.393, 0.349, 0.272, 0,
@@ -681,6 +696,7 @@ var onload = function () {
                     0, 0, 0, 0
                 );
                 scene.activeCamera.__sepia_cookie = new BABYLON.ConvolutionPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.activeCamera);
+                toggleSepia.className = "smallButtonControlPanel pushed";
             }
         }
     });
@@ -708,13 +724,13 @@ var onload = function () {
             }
         } else {
             for (index = 0; index < demos.length; index++) {
-                if (demos[index].title === query) {
+                if (demos[index].anchor && demos[index].anchor === query || demos[index].title === query) {
                     itemClick(demos[index])();
                     return;
                 }
             }
             for (index = 0; index < tests.length; index++) {
-                if (tests[index].title === query) {
+                if (tests[index].anchor && tests[index].anchor === query || tests[index].title === query) {
                     itemClick(tests[index])();
                     return;
                 }
