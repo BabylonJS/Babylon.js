@@ -550,11 +550,11 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             uvs+="]\n"
 
         if hasUV2:
-            uvs2=uvs.rstrip(',')
+            uvs2=uvs2.rstrip(',')
             uvs2+="]\n"
 
         if hasVertexColor:
-            colors=uvs.rstrip(',')
+            colors=colors.rstrip(',')
             colors+="]\n"
 
         if hasSkeleton:
