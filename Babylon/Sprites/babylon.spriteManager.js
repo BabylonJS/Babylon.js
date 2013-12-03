@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {   
     BABYLON.SpriteManager = function (name, imgUrl, capacity, cellSize, scene, epsilon) {

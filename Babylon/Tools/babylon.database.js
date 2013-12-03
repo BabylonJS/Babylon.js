@@ -1,12 +1,22 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
+    function parseURL(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        var fileName = url.substring(url.lastIndexOf("/") + 1, url.length);
+        var absLocation = url.substring(0, url.indexOf(fileName, 0));
+        return absLocation;
+    };
+
     // Handling various flavors of prefixed version of IndexedDB
-    window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||
+    var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||
         window.msIndexedDB;
-    window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction ||
+    var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction ||
         window.msIDBTransaction;
-    window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
+    var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
 
     BABYLON.Database = function (urlToScene) {
         this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
@@ -21,14 +31,6 @@
 
     BABYLON.Database.isUASupportingBlobStorage = true;
 
-    function parseURL(url) {
-        var a = document.createElement('a');
-        a.href = url;
-        var fileName = url.substring(url.lastIndexOf("/") + 1, url.length);
-        var absLocation = url.substring(0, url.indexOf(fileName, 0));
-        return absLocation;
-    };
-
     BABYLON.Database.ReturnFullUrlLocation = function (url) {
         if (url.indexOf("http:/") === -1) {
             return (parseURL(window.location.href) + url);
@@ -39,6 +41,12 @@
     };
 
     BABYLON.Database.prototype.checkManifestFile = function () {
+        function noManifestFile() {
+            console.log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
+            that.enableSceneOffline = false;
+            that.enableTexturesOffline = false;
+        };
+
         var that = this;
         var manifestURL = this.currentSceneUrl + ".manifest";
 
@@ -46,16 +54,10 @@
 
         xhr.open("GET", manifestURL, false);
 
-        function noManifestFile() {
-            console.log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
-            that.enableSceneOffline = false;
-            that.enableTexturesOffline = false;
-        };
-
         xhr.addEventListener("load", function () {
             if (xhr.status === 200) {
                 try {
-                    manifestFile = JSON.parse(xhr.response);
+                    var manifestFile = JSON.parse(xhr.response);
                     that.enableSceneOffline = manifestFile.enableSceneOffline;
                     that.enableTexturesOffline = manifestFile.enableTexturesOffline;
                     if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
@@ -84,8 +86,13 @@
     };
 
     BABYLON.Database.prototype.openAsync = function (successCallback, errorCallback) {
+        function handleError() {
+            that.isSupported = false;
+            if (errorCallback) errorCallback();
+        }
+
         var that = this;
-        if (!window.indexedDB || !(this.enableSceneOffline || this.enableTexturesOffline)) {
+        if (!indexedDB || !(this.enableSceneOffline || this.enableTexturesOffline)) {
             // Your browser doesn't support IndexedDB
             this.isSupported = false;
             if (errorCallback) errorCallback();
@@ -96,12 +103,7 @@
                 this.hasReachedQuota = false;
                 this.isSupported = true;
 
-                var request = window.indexedDB.open("babylonjs", 1.0);
-
-                function handleError() {
-                    that.isSupported = false;
-                    if (errorCallback) errorCallback();
-                }
+                var request = indexedDB.open("babylonjs", 1.0);
 
                 // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
                 request.onerror = function (event) {
