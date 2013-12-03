@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     ////////////////////////////////// Ray //////////////////////////////////
@@ -1699,10 +1701,12 @@
         var pyth = (Math.sqrt((yz * yz) + (xz * xz) + (xy * xy)));
         var invPyth;
 
-        if (pyth != 0)
+        if (pyth != 0) {
             invPyth = 1.0 / pyth;
-        else
+        }
+        else {
             invPyth = 0;
+        }
 
         this.normal.x = yz * invPyth;
         this.normal.y = xz * invPyth;

@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.BlurPostProcess = function (name, direction, blurWidth, ratio, camera, samplingMode) {

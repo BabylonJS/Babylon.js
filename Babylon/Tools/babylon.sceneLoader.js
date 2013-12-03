@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
@@ -587,10 +589,7 @@
             }, progressCallBack, database);
         },
         Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
-            // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            var database = new BABYLON.Database(rootUrl + sceneFilename);
-
-            BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
+            function loadSceneFromData(data) {
                 var parsedData = JSON.parse(data);
                 var scene = new BABYLON.Scene(engine);
                 scene.database = database;
@@ -663,7 +662,7 @@
                         camera.parent = scene.getLastEntryByID(camera._waitingParentId);
                         delete camera._waitingParentId;
                     }
-                    
+
                     if (camera._waitingLockedTargetId) {
                         camera.lockedTarget = scene.getLastEntryByID(camera._waitingLockedTargetId);
                         delete camera._waitingLockedTargetId;
@@ -677,7 +676,7 @@
                         parseParticleSystem(parsedParticleSystem, scene, rootUrl);
                     }
                 }
-                
+
                 // Lens flares
                 if (parsedData.lensFlareSystems) {
                     for (var index = 0; index < parsedData.lensFlareSystems.length; index++) {
@@ -699,7 +698,18 @@
                 if (then) {
                     then(scene);
                 }
-            }, progressCallBack, database);
+            };
+
+            if (rootUrl.indexOf("file:") === -1) {
+                // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                var database = new BABYLON.Database(rootUrl + sceneFilename);
+
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
+            }
+            // Loading file from disk via input file or drag'n'drop
+            else {
+                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
+            }
         }
     };
 })();

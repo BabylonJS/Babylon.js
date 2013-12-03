@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.RenderTargetTexture = function (name, size, scene, generateMipMaps) {
@@ -71,7 +73,7 @@
         for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
             var mesh = this.renderList[meshIndex];
 
-            if (mesh.isEnabled() && mesh.isVisible) {
+            if (mesh && mesh.isEnabled() && mesh.isVisible) {
                 for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                     var subMesh = mesh.subMeshes[subIndex];
                     scene._activeVertices += subMesh.verticesCount;

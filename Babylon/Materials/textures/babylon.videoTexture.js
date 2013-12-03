@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.VideoTexture = function (name, urls, size, scene, generateMipMaps) {
@@ -10,7 +12,7 @@
         this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
         this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
 
-        this._texture = scene.getEngine().createDynamicTexture(size, generateMipMaps);
+        this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps);
         var textureSize = this.getSize();
 
         this.video = document.createElement("video");

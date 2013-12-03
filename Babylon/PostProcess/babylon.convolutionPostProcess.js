@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.ConvolutionPostProcess = function (name, kernelMatrix, ratio, camera, samplingMode) {

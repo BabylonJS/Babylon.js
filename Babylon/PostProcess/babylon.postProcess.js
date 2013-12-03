@@ -1,4 +1,6 @@
-﻿var BABYLON = BABYLON || {};
+﻿"use strict";
+
+var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.PostProcess = function (name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode) {
