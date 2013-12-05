@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.ServiceModel;
 using BabylonExport.Interface;
 using BabylonExport.Core;
+using System.Linq;
 
 namespace BabylonExport
 {
@@ -76,7 +77,7 @@ namespace BabylonExport
                     }
 
                     // Browsing exporters
-                    foreach (var type in Assembly.GetAssembly(typeof(NovaExporter)).GetTypes())
+                    foreach (var type in Assembly.GetAssembly(typeof(NovaExporter)).GetTypes().Where(t => !t.IsAbstract))
                     {
                         var interf = type.GetInterface("BabylonExport.Core.IExporter");
                         if (interf != null)

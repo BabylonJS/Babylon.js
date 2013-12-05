@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 #pragma warning disable 67
 
-namespace BabylonExport.Core.Exporters.FBX
+namespace BabylonExport.Core.Exporters.XNA
 {
     public class GraphicsDeviceService : IGraphicsDeviceService
     {

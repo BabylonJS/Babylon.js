@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
-namespace BabylonExport.Core.Exporters.FBX
+namespace BabylonExport.Core.Exporters.XNA
 {
     class ErrorLogger : ILogger
     {
