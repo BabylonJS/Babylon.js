@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BabylonExport</RootNamespace>
     <AssemblyName>BabylonExport</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -174,7 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="generateAll.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <!--<CopyToOutputDirectory>Always</CopyToOutputDirectory>-->
     </Content>
     <None Include="Test scenes\Chimie\BalanceDM.dds" />
     <None Include="Test scenes\Chimie\BalanceLightingMap.dds" />
@@ -915,6 +915,14 @@
     <ProjectReference Include="..\BabylonExport.Core\BabylonExport.Core.csproj">
       <Project>{ce70b051-fb63-420d-80c0-51cc03a214ba}</Project>
       <Name>BabylonExport.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaBase\ColladaXnaBase.csproj">
+      <Project>{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}</Project>
+      <Name>ColladaXnaBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaImporter\ColladaXnaImporter.csproj">
+      <Project>{625E5D7F-86F6-4961-89D0-3835BF261ACC}</Project>
+      <Name>ColladaXnaImporter</Name>
     </ProjectReference>
     <ProjectReference Include="..\BabylonExport.Interface\BabylonExport.Interface.csproj">
       <Project>{dec52846-ffcb-4a66-9f13-64f65b61edba}</Project>
