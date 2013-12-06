@@ -8,7 +8,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using System.Windows.Forms;
 
-namespace BabylonExport.Core.Exporters.FBX
+namespace BabylonExport.Core.Exporters.XNA
 {
     class ContentBuilder : IDisposable
     {
@@ -16,7 +16,6 @@ namespace BabylonExport.Core.Exporters.FBX
 
         static readonly string[] pipelineAssemblies =
         {
-            "Microsoft.Xna.Framework.Content.Pipeline.FBXImporter" + xnaVersion,
             "Microsoft.Xna.Framework.Content.Pipeline.XImporter" + xnaVersion,
             "Microsoft.Xna.Framework.Content.Pipeline.TextureImporter" + xnaVersion,
             "Microsoft.Xna.Framework.Content.Pipeline.EffectImporter" + xnaVersion,
@@ -40,10 +39,10 @@ namespace BabylonExport.Core.Exporters.FBX
             get { return Path.Combine(buildDirectory, "bin"); }
         }
 
-        public ContentBuilder()
+        public ContentBuilder(IEnumerable<string> extraPipelineAssemblies = null)
         {
             CreateTempDirectory();
-            CreateBuildProject();
+            CreateBuildProject(extraPipelineAssemblies);
         }
 
         public void Dispose()
@@ -51,7 +50,7 @@ namespace BabylonExport.Core.Exporters.FBX
             DeleteTempDirectory();
         }
 
-        void CreateBuildProject()
+        void CreateBuildProject(IEnumerable<string> extraPipelineAssemblies = null)
         {
             string projectPath = Path.Combine(buildDirectory, "content.contentproj");
             string outputPath = Path.Combine(buildDirectory, "bin");
@@ -60,7 +59,7 @@ namespace BabylonExport.Core.Exporters.FBX
             projectRootElement = ProjectRootElement.Create(projectPath);
 
             // Include the standard targets file that defines how to build XNA Framework content.
-            projectRootElement.AddImport(Application.StartupPath + "\\Exporters\\FBX\\XNA\\XNA Game Studio\\" +
+            projectRootElement.AddImport(Application.StartupPath + "\\Exporters\\ThroughXNA\\XNA\\XNA Game Studio\\" +
                                          "v4.0\\Microsoft.Xna.GameStudio.ContentPipeline.targets");
 
             buildProject = new Project(projectRootElement);
@@ -77,6 +76,13 @@ namespace BabylonExport.Core.Exporters.FBX
             foreach (string pipelineAssembly in pipelineAssemblies)
             {
                 buildProject.AddItem("Reference", pipelineAssembly);
+            }
+            if (extraPipelineAssemblies != null)
+            {
+                foreach (string pipelineAssembly in extraPipelineAssemblies)
+                {
+                    buildProject.AddItem("Reference", pipelineAssembly);
+                }
             }
 
             // Hook up our custom error logger.

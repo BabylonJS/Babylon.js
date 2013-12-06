@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BabylonExport.Core.Exporters.FBX
+namespace BabylonExport.Core.Exporters.XNA
 {
     public class ServiceContainer : IServiceProvider
     {
