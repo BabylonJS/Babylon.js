@@ -10,24 +10,21 @@ using Microsoft.Xna.Framework.Graphics;
 using SkinnedModel;
 using Vertice.Nova.Animations;
 
-namespace BabylonExport.Core.Exporters
+namespace BabylonExport.Core.Exporters.XNA
 {
-    public class FBXExporter : IExporter
+    public abstract class XNAExporter : IExporter
     {
+        public abstract string SupportedExtensions { get; }
+        public abstract string Importer { get; }
+
+        public virtual IEnumerable<string> ExtraPipelineAssemblies { get { return null; } }
+        
         public event Action<int> OnImportProgressChanged;
 
         readonly Dictionary<string, string> exportedTexturesFilename = new Dictionary<string, string>();
         readonly List<StandardMaterial> exportedMaterials = new List<StandardMaterial>();
 
         private int texturesCount = 0;
-
-        public string SupportedExtensions
-        {
-            get
-            {
-                return ".fbx";
-            }
-        }
 
         public void GenerateBabylonFile(string file, string outputFile, bool skinned)
         {
@@ -44,12 +41,12 @@ namespace BabylonExport.Core.Exporters
             
             services.AddService<IGraphicsDeviceService>(GraphicsDeviceService.AddRef(form.Handle, 1, 1));
 
-            var contentBuilder = new ContentBuilder();
+            var contentBuilder = new ContentBuilder(ExtraPipelineAssemblies);
             var contentManager = new ContentManager(services, contentBuilder.OutputDirectory);
 
             // Tell the ContentBuilder what to build.
             contentBuilder.Clear();
-            contentBuilder.Add(Path.GetFullPath(file), "Model", null, skinned ? "SkinnedModelProcessor" : "ModelProcessor");
+            contentBuilder.Add(Path.GetFullPath(file), "Model", Importer, skinned ? "SkinnedModelProcessor" : "ModelProcessor");
 
             // Build this new model data.
             string buildError = contentBuilder.Build();
@@ -210,7 +207,7 @@ namespace BabylonExport.Core.Exporters
                 {
                     var mesh = new Mesh<PositionNormalTextured>(material);
                     var vertices = new PositionNormalTextured[part.NumVertices];
-                    part.VertexBuffer.GetData(part.VertexOffset * PositionNormalTextured.Stride, vertices, 0, vertices.Length, PositionNormalTextured.Stride);
+                    part.VertexBuffer.GetData(part.VertexOffset * part.VertexBuffer.VertexDeclaration.VertexStride, vertices, 0, vertices.Length, part.VertexBuffer.VertexDeclaration.VertexStride);
 
                     for (int index = 0; index < vertices.Length; index++)
                     {

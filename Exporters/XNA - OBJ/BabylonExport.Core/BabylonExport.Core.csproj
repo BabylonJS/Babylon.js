@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BabylonExport.Core</RootNamespace>
     <AssemblyName>BabylonExport.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -149,11 +149,13 @@
     <Compile Include="Entities\PositionNormalTexturedWeights.cs" />
     <Compile Include="Entities\ProxyMesh.cs" />
     <Compile Include="Entities\StandardMaterial.cs" />
-    <Compile Include="Exporters\FBX\FBXExporter.cs" />
-    <Compile Include="Exporters\FBX\XNA\ContentBuilder.cs" />
-    <Compile Include="Exporters\FBX\XNA\ErrorLogger.cs" />
-    <Compile Include="Exporters\FBX\XNA\GraphicsDeviceService.cs" />
-    <Compile Include="Exporters\FBX\XNA\ServiceContainer.cs" />
+    <Compile Include="Exporters\ThroughXNA\DAE\DAEExporter.cs" />
+    <Compile Include="Exporters\ThroughXNA\FBX\FBXExporter.cs" />
+    <Compile Include="Exporters\ThroughXNA\XNAExporter.cs" />
+    <Compile Include="Exporters\ThroughXNA\XNA\ContentBuilder.cs" />
+    <Compile Include="Exporters\ThroughXNA\XNA\ErrorLogger.cs" />
+    <Compile Include="Exporters\ThroughXNA\XNA\GraphicsDeviceService.cs" />
+    <Compile Include="Exporters\ThroughXNA\XNA\ServiceContainer.cs" />
     <Compile Include="Exporters\IExporter.cs" />
     <Compile Include="Exporters\MXB\NovaExporter.cs" />
     <Compile Include="Exporters\MXB\NovaExporter.Materials.cs" />
@@ -170,34 +172,34 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Exporters\Blender\io_export_babylon.py" />
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.ContentPipelineExtensions.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.ContentPipelineExtensions.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.AvailablePlatforms.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.AvailablePlatforms.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Common.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Common.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Content.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Content.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.ContentPipeline.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.ContentPipeline.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Windows.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Windows.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Xbox 360.targets">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.GameStudio.Xbox 360.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Refs\xnafx40_redist.msi" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Exporters\FBX\XNA\XNA Game Studio\v4.0\Microsoft.Xna.Framework.Tools.Packaging.Tasks.dll">
+    <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\v4.0\Microsoft.Xna.Framework.Tools.Packaging.Tasks.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -221,6 +223,16 @@
     <Content Include="Refs\Vertice.Nova.dll" />
     <Content Include="Refs\Vertice.Nova.Interop.dll" />
     <Content Include="Refs\Vertice.Wrappers.DirectX.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaBase\ColladaXnaBase.csproj">
+      <Project>{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}</Project>
+      <Name>ColladaXnaBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaImporter\ColladaXnaImporter.csproj">
+      <Project>{625E5D7F-86F6-4961-89D0-3835BF261ACC}</Project>
+      <Name>ColladaXnaImporter</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
