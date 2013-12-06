@@ -204,6 +204,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Refs\ColladaXnaBase.dll" />
+    <Content Include="Refs\ColladaXnaImporter.dll" />
     <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.AudioImporters.dll" />
     <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.dll" />
     <Content Include="Refs\Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll" />
