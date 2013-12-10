@@ -7,6 +7,8 @@ Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5g
 
 Online [assets converter](http://www.babylonjs.com/converter.html) for .FBX, .OBJ and .MXB
 
+Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
+
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
