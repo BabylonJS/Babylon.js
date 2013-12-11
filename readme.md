@@ -5,7 +5,7 @@ Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
 
 Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
 
-Online [assets converter](http://www.babylonjs.com/converter.html) for .FBX, .OBJ and .MXB
+Online [assets converter](http://www.babylonjs.com/converter.html) for .FBX, .DAE, .OBJ and .MXB
 
 Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
 
