@@ -29,6 +29,7 @@ attribute vec4 matricesWeights;
 // Uniforms
 uniform mat4 world;
 uniform mat4 view;
+uniform mat4 viewProjection;
 
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
@@ -75,9 +76,6 @@ uniform mat4 bumpMatrix;
 
 #ifdef BONES
 uniform mat4 mBones[BonesPerMesh];
-uniform mat4 viewProjection;
-#else
-uniform mat4 worldViewProjection;
 #endif
 
 // Output
@@ -166,12 +164,12 @@ void main(void) {
 #else
 	finalWorld = world * (m0 + m1 + m2);
 #endif 
-	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
-#else
 
+#else
 	finalWorld = world;
-	gl_Position = worldViewProjection * vec4(position, 1.0);
 #endif
+
+	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);

@@ -473,7 +473,8 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef OPACITY
-	vec3 opacityMap = texture2D(opacitySampler, vOpacityUV).rgb * vec3(0.3, 0.59, 0.11);
+	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
+	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11) * opacityMap.a;
 	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
 #endif
 

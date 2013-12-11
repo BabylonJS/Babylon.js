@@ -99,6 +99,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ColladaXnaBase">
+      <HintPath>..\BabylonExport.Core\Refs\ColladaXnaBase.dll</HintPath>
+    </Reference>
+    <Reference Include="ColladaXnaImporter">
+      <HintPath>..\BabylonExport.Core\Refs\ColladaXnaImporter.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline">
       <HintPath>..\BabylonExport.Core\Refs\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
       <Private>True</Private>
@@ -915,14 +921,6 @@
     <ProjectReference Include="..\BabylonExport.Core\BabylonExport.Core.csproj">
       <Project>{ce70b051-fb63-420d-80c0-51cc03a214ba}</Project>
       <Name>BabylonExport.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaBase\ColladaXnaBase.csproj">
-      <Project>{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}</Project>
-      <Name>ColladaXnaBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaImporter\ColladaXnaImporter.csproj">
-      <Project>{625E5D7F-86F6-4961-89D0-3835BF261ACC}</Project>
-      <Name>ColladaXnaImporter</Name>
     </ProjectReference>
     <ProjectReference Include="..\BabylonExport.Interface\BabylonExport.Interface.csproj">
       <Project>{dec52846-ffcb-4a66-9f13-64f65b61edba}</Project>
