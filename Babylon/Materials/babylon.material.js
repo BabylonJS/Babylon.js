@@ -13,10 +13,12 @@ var BABYLON = BABYLON || {};
     
     // Members
     BABYLON.Material.prototype.checkReadyOnEveryCall = true;
+    BABYLON.Material.prototype.checkReadyOnlyOnce = false;
     BABYLON.Material.prototype.alpha = 1.0;
     BABYLON.Material.prototype.wireframe = false;
     BABYLON.Material.prototype.backFaceCulling = true;
     BABYLON.Material.prototype._effect = null;
+    BABYLON.Material.prototype._wasPreviouslyReady = false;
 
     BABYLON.Material.prototype.onDispose = null;
     

@@ -69,7 +69,6 @@ var BABYLON = BABYLON || {};
             });
 
             // Rendering
-            engine.setDepthWrite(false);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 submesh = sortedArray[subIndex];
@@ -78,7 +77,6 @@ var BABYLON = BABYLON || {};
                 submesh.render();
             }
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
-            engine.setDepthWrite(true);
         }
         return true;
     };
@@ -96,12 +94,12 @@ var BABYLON = BABYLON || {};
 
         if (material.needAlphaBlending() || mesh.visibility < 1.0) { // Transparent
             if (material.alpha > 0 || mesh.visibility < 1.0) {
-                this._transparentSubMeshes.push(subMesh); // Opaque
+                this._transparentSubMeshes.push(subMesh);
             }
         } else if (material.needAlphaTesting()) { // Alpha test
             this._alphaTestSubMeshes.push(subMesh);
         } else {
-            this._opaqueSubMeshes.push(subMesh);
+            this._opaqueSubMeshes.push(subMesh); // Opaque
         }
     };
 })();

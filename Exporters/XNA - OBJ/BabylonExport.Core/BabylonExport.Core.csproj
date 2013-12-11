@@ -171,7 +171,6 @@
     <Compile Include="Tools.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Exporters\Blender\io_export_babylon.py" />
     <None Include="Exporters\ThroughXNA\XNA\XNA Game Studio\Microsoft.Xna.GameStudio.ContentPipelineExtensions.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

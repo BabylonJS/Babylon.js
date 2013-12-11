@@ -179,7 +179,11 @@ var BABYLON = BABYLON || {};
                 pointerId = null;
             };
 
-            this._onGestureStart = function(e) {
+            this._onGestureStart = function (e) {
+                if (window.MSGesture === undefined) {
+                    return;
+                }
+
                 if (!that._MSGestureHandler) {
                     that._MSGestureHandler = new MSGesture();
                     that._MSGestureHandler.target = canvas;

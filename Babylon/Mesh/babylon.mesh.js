@@ -34,7 +34,6 @@ var BABYLON = BABYLON || {};
         this._positions = null;
         this._cache = {
             localMatrixUpdated: false,
-            infiniteDistance: true,
             position: BABYLON.Vector3.Zero(),
             scaling: BABYLON.Vector3.Zero(),
             rotation: BABYLON.Vector3.Zero(),
@@ -152,7 +151,7 @@ var BABYLON = BABYLON || {};
             return false;
         }
         
-        if (this._cache.infiniteDistance !== this.infiniteDistance) {
+        if (this.infiniteDistance) {
             return false;
         }
 
@@ -232,13 +231,12 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
-        if (this._currentRenderId == this._scene.getRenderId() || !force && this.isSynchronized()) {
+        if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized())) {
             this._childrenFlag = false;
             return this._worldMatrix;
         }
 
         this._childrenFlag = true;
-        this._cache.infiniteDistance = this.infiniteDistance;
         this._cache.position.copyFrom(this.position);
         this._cache.scaling.copyFrom(this.scaling);
         this._cache.pivotMatrixUpdated = false;

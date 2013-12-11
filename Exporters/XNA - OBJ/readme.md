@@ -4,6 +4,7 @@
 BabylonExporter can create a .babylon scene from the following formats:
  - FBX
  - OBJ
+ - DAE
 
 Command line usage:
 BabylonExporter.exe /i:"source.fbx" /o:"outputDir" [/sk]
@@ -22,7 +23,7 @@ BabylonExporter.exe /i:"source.fbx" /o:"outputDir" [/sk]
    * Specular color
    * Specular power
 
-* FBX engine can export:
+* FBX/DAE engine can export:
  * Geometries
  * Meshes hierarchies
  * Bones and bones' animations

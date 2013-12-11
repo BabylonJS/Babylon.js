@@ -178,7 +178,15 @@ var BABYLON = BABYLON || {};
             else {
                 try {
                     var textureName = url.substring(5);
-                    img.src = URL.createObjectURL(BABYLON.FilesTextures[textureName]);
+                    var blobURL;
+                    try {
+                        blobURL = URL.createObjectURL(BABYLON.FilesTextures[textureName], { oneTimeOnly: true });
+                    }
+                    catch (ex) {
+                        // Chrome doesn't support oneTimeOnly parameter
+                        blobURL = URL.createObjectURL(BABYLON.FilesTextures[textureName]);
+                    }
+                    img.src = blobURL;
                 }
                 catch (e) {
                     console.log("Error while trying to load texture: " + textureName);

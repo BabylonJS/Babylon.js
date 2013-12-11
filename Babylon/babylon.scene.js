@@ -37,6 +37,7 @@ var BABYLON = BABYLON || {};
         this.fogEnd = 1000.0;
 
         // Lights
+        this.lightsEnabled = true;
         this.lights = [];
 
         // Cameras
@@ -62,6 +63,7 @@ var BABYLON = BABYLON || {};
         this.defaultMaterial = new BABYLON.StandardMaterial("default material", this);
 
         // Textures
+        this.texturesEnabled = true;
         this.textures = [];
 
         // Particles
@@ -99,6 +101,7 @@ var BABYLON = BABYLON || {};
         this.postProcessManager = new BABYLON.PostProcessManager(this);
 
         // Customs render targets
+        this.renderTargetsEnabled = true;
         this.customRenderTargets = [];
 
         // Multi-cameras
@@ -604,10 +607,12 @@ var BABYLON = BABYLON || {};
 
         // Render targets
         var beforeRenderTargetDate = new Date();
-        for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-            var renderTarget = this._renderTargets.data[renderIndex];
-            this._renderId++;
-            renderTarget.render();
+        if (this.renderTargetsEnabled) {
+            for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
+                var renderTarget = this._renderTargets.data[renderIndex];
+                this._renderId++;
+                renderTarget.render();
+            }
         }
 
         if (this._renderTargets.length > 0) { // Restore back buffer
