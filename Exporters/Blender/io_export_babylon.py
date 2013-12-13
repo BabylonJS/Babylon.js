@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Babylon.js",
     "author": "David Catuhe",
-    "version": (1, 0),
+    "version": (1, 1),
     "blender": (2, 67, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -675,6 +675,38 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
         # Closing
         file_handler.write("}")
+
+    def export_node(object, scene, file_handler):
+        # Transform
+        loc = mathutils.Vector((0, 0, 0))
+        rot = mathutils.Quaternion((0, 0, 0, 1))
+        scale = mathutils.Vector((1, 1, 1))
+        
+        world = object.matrix_world
+        if (object.parent):
+            world = object.parent.matrix_world.inverted() * object.matrix_world
+
+        loc, rot, scale = world.decompose()
+                                                                
+        # Writing node      
+        file_handler.write("{")
+        
+        Export_babylon.write_string(file_handler, "name", object.name, True)        
+        Export_babylon.write_string(file_handler, "id", object.name)        
+        if object.parent != None:
+            Export_babylon.write_string(file_handler, "parentId", object.parent.name)
+                   
+        Export_babylon.write_vector(file_handler, "position", loc)
+        Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
+        Export_babylon.write_vector(file_handler, "scaling", scale)
+        Export_babylon.write_bool(file_handler, "isVisible", False)
+        Export_babylon.write_bool(file_handler, "isEnabled", True)
+        Export_babylon.write_bool(file_handler, "checkCollisions", False)
+        Export_babylon.write_int(file_handler, "billboardMode", 0)
+        Export_babylon.write_bool(file_handler, "receiveShadows", False)
+        
+        # Closing
+        file_handler.write("}")
         
     def export_shadowGenerator(lamp, scene, file_handler):      
         file_handler.write("{")
@@ -870,12 +902,16 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         multiMaterials = []
         first = True
         for object in [object for object in scene.objects]:
-            if (object.type == 'MESH'):
+            if object.type == 'MESH' or object.type == 'EMPTY':
                 if first != True:
                     file_handler.write(",")
 
                 first = False
-                data_string = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials)
+                if object.type == 'MESH':
+                    data_string = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials)
+                else:
+                    data_string = Export_babylon.export_node(object, scene, file_handler)
+
         file_handler.write("]")
         
         # Multi-materials

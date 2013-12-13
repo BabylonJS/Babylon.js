@@ -1,5 +1,13 @@
-Changes list
+﻿Changes list
 ============
+- 1.7.3:
+ - **Updates**
+ - Support for "file://" moniker ([davrous](https://github.com/davrous))
+ - Support for DAE (COLLADA) file format ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
+ - Support for "empty" object type in Blender exporter ([deltakosh](http://www.github.com/deltakosh))
+ - **Bugfixes**
+ - "use strict" is no more included in minified version ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing a bug with MSGesture with IE11 on Windows 7 ([deltakosh](http://www.github.com/deltakosh))
 - 1.7.0:
  - **Major updates**
  - Support for [lens flares](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) ([deltakosh](http://www.github.com/deltakosh))
