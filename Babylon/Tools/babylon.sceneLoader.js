@@ -368,6 +368,12 @@ var BABYLON = BABYLON || {};
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
 
+        // Parent
+        if (parsedMesh.parentId) {
+            mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
+        }
+
+        // Geometry
         if (parsedMesh.delayLoadingFile) {
             mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
             mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
@@ -396,11 +402,6 @@ var BABYLON = BABYLON || {};
 
         } else {
             BABYLON.SceneLoader._ImportGeometry(parsedMesh, mesh);
-        }
-
-        // Parent
-        if (parsedMesh.parentId) {
-            mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
         }
 
         // Material
