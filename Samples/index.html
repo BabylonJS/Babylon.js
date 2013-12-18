@@ -30,11 +30,13 @@
     </script>
     <link href="index.css" rel="stylesheet" />
     <script src="hand.minified-1.2.js"></script>
+    <script src="cannon.js"></script>
     <!--<script src="Babylon/Tools/babylon.math.js"></script>
     <script src="Babylon/Tools/babylon.database.js"></script>
     <script src="Babylon/Tools/babylon.tools.js"></script>
     <script src="Babylon/babylon.engine.js"></script>
     <script src="Babylon/babylon.node.js"></script>
+    <script src="Babylon/Tools/babylon.filesInput.js"></script>
     <script src="Babylon/Collisions/babylon.pickingInfo.js"></script>
     <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
     <script src="Babylon/Culling/babylon.boundingBox.js"></script>
@@ -91,7 +93,8 @@
     <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
     <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
-    <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>-->
+    <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
+    <script src="Babylon/Physics/babylon.physicsEngine.js"></script>-->
     <script src="babylon.js"></script>
     <script src="Scenes/Customs/test.js"></script>
     <script src="Scenes/Customs/lights_test.js"></script>
@@ -106,6 +109,7 @@
     <script src="Scenes/Customs/postprocessBloom.js"></script>
     <script src="Scenes/Customs/postprocessRefraction.js"></script>
     <script src="Scenes/Customs/lensFlares.js"></script>
+    <script src="Scenes/Customs/physics.js"></script>
     <script src="index.js"></script>
 </head>
 <body>
@@ -152,7 +156,6 @@
                         <i>3D engine:</i> David <b>CATUHE</b> (<a href="http://www.twitter.com/@deltakosh">@deltakosh</a>)<br />
                         <i>Scenes:</i> Michel <b>ROUSSEAU</b> (<a href="http://www.twitter.com/@rousseau_michel">@rousseau_michel</a>)<br />
                         <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
-                        <i>Game FX:</i> Sébastien <b>PERTUS</b> (<a href="http://www.twitter.com/@sebastienpertus">@sebastienpertus</a>)<br />
                         <i>Game FX:</i> David <b>ROUSSET</b> (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
                         <br />
                         <i>Train scene:</i> Romuald <b>ROUHIER</b> and <a href="http://www.progiss.com/">Progiss</a><br />
@@ -168,6 +171,7 @@
                         <ul>
                             <li>Complete scene graph with lights, cameras, materials and meshes</li>
                             <li><b>Collisions engine</b></li>
+                            <li><b>Physics engine (thanks to cannon.js)</b></li>
                             <li>Scene picking</li>
                             <li>Antialiasing</li>
                             <li><b>Animations engine</b></li>
@@ -215,6 +219,7 @@
                                     <li>Rendering layers</li>
                                     <li><b>Post-processes (blur, refraction, black'n'white, fxaa, customs...)</b></li>
                                     <li><b>Lens flares</b></li>
+                                    <li><b>Multi-views</b></li>
                                 </ul>
                             </li>
                             <li>
@@ -247,11 +252,19 @@
                                 <ul>
                                     <li>Babylon scene file can be converted from <i>.OBJ</i>, <i>.FBX</i>, <i>.MXB</i></li>
                                     <li>Exporter for Blender</li>
+                                    <li>Support for drag'n'drop</li>
                                 </ul>
                             </li>
                         </ul>
                     </div>
                 </div>
+            </div>
+            <div id="footer">
+                <a class="footerLink" href="http://www.babylonjs.com/sandbox">sandbox</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="footerLink" href="http://www.html5gamedevs.com/forum/16-babylonjs/">forum</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="footerLink" href="https://github.com/BabylonJS/Babylon.js/wiki" >wiki</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="footerLink" href="https://github.com/BabylonJS/Babylon.js">github</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="footerLink" href="http://www.sokrate.fr/documentation/babylonjs/index.html">documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                
             </div>
         </div>
         <div id="opacityMask" class="hidden"></div>
@@ -276,7 +289,7 @@
                             <label><input type="checkbox" id="postProcess" checked="true" />Post-processes</label>
                         </p>
                         <p>
-                            <button id="fullscreen">Switch fullscreen mode</button>
+                            <label><input type="checkbox" id="mirrors" checked="true" />Mirrors</label>
                         </p>
                     </div>
                     <div id="rightPart">
@@ -290,6 +303,9 @@
                             </select>
                         </p>
                         <p id="extensions"></p>
+                        <p>
+                            <button id="fullscreen">Switch fullscreen mode</button>
+                        </p>
                     </div>
                 </div>
                 <div class="tag">Control panel</div>

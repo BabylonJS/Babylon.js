@@ -308,6 +308,7 @@ var BABYLON = BABYLON || {};
                 }
                 this.nearestDistance = distToCollision;                
                 this.collisionFound = true;
+                this.collidedMesh = subMesh.getMesh();
             }
         }
     };

@@ -19,6 +19,18 @@ var BABYLON = BABYLON || {};
     };
 
     // Methods   
+    BABYLON.Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
+        return startValue + (endValue - startValue) * gradient;
+    };
+    
+    BABYLON.Animation.prototype.quaternionInterpolateFunction = function (startValue, endValue, gradient) {
+        return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
+    };
+    
+    BABYLON.Animation.prototype.vector3InterpolateFunction = function (startValue, endValue, gradient) {
+        return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
+    };
+
     BABYLON.Animation.prototype.clone = function() {
         var clone = new BABYLON.Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
@@ -37,6 +49,8 @@ var BABYLON = BABYLON || {};
         if (loopMode === BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
             return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
         }
+
+        this.currentFrame = currentFrame;
         
         for (var key = 0; key < this._keys.length; key++) {
             if (this._keys[key + 1].frame >= currentFrame) {
@@ -50,9 +64,9 @@ var BABYLON = BABYLON || {};
                         switch (loopMode) {
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return startValue + (endValue - startValue) * gradient;                                
+                                return this.floatInterpolateFunction(startValue, endValue, gradient);                                
                             case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return offsetValue * repeatCount + (startValue + (endValue - startValue) * gradient);
+                                return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
                         }
                         break;
                     // Quaternion
@@ -61,10 +75,10 @@ var BABYLON = BABYLON || {};
                         switch (loopMode) {
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                quaternion = BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
+                                quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient);
                                 break;
                             case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                quaternion = BABYLON.Quaternion.Slerp(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                quaternion = this.quaternionInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                                 break;
                         }
 
@@ -74,9 +88,9 @@ var BABYLON = BABYLON || {};
                         switch (loopMode) {
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE:
                             case BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
+                                return this.vector3InterpolateFunction(startValue, endValue, gradient);
                             case BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return BABYLON.Vector3.Lerp(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                         }
                     // Matrix
                     case BABYLON.Animation.ANIMATIONTYPE_MATRIX:

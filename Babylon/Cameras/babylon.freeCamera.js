@@ -45,7 +45,7 @@ var BABYLON = BABYLON || {};
     BABYLON.FreeCamera.prototype.noRotationConstraint = false;
     BABYLON.FreeCamera.prototype.angularSensibility = 2000.0;
     BABYLON.FreeCamera.prototype.lockedTarget = null;
-
+    BABYLON.FreeCamera.prototype.onCollide = null;
 
     // Methods
     BABYLON.FreeCamera.prototype._computeLocalCameraSpeed = function () {
@@ -228,6 +228,9 @@ var BABYLON = BABYLON || {};
 
         if (this._diffPosition.length() > BABYLON.Engine.collisionsEpsilon) {
             this.position.addInPlace(this._diffPosition);
+            if (this.onCollide) {
+                this.onCollide(this._collider.collidedMesh);
+            }
         }
     };
 

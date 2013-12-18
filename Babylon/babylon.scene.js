@@ -121,10 +121,6 @@ var BABYLON = BABYLON || {};
         return this._activeVertices;
     };
 
-    BABYLON.Scene.prototype.getTotalVertices = function () {
-        return this._totalVertices;
-    };
-
     BABYLON.Scene.prototype.getActiveParticles = function () {
         return this._activeParticles;
     };
@@ -690,8 +686,14 @@ var BABYLON = BABYLON || {};
         }
         
         // Animations
-        this._animationRatio = BABYLON.Tools.GetDeltaTime() * (60.0 / 1000.0);
+        var deltaTime = BABYLON.Tools.GetDeltaTime();
+        this._animationRatio = deltaTime * (60.0 / 1000.0);
         this._animate();
+        
+        // Physics
+        if (this._physicsEngine) {
+            this._physicsEngine._runOneStep(deltaTime / 1000.0);
+        }
         
         // Clear
         this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
@@ -788,6 +790,11 @@ var BABYLON = BABYLON || {};
 
         // Post-processes
         this.postProcessManager.dispose();
+        
+        // Physics
+        if (this._physicsEngine) {
+            this.disablePhysicsEngine();
+        }
 
         // Remove from engine
         index = this._engine.scenes.indexOf(this);
@@ -950,6 +957,42 @@ var BABYLON = BABYLON || {};
             world.invertToRef(that._pickWithRayInverseMatrix);
             return BABYLON.Ray.Transform(ray, that._pickWithRayInverseMatrix);
         }, predicate, fastCheck);
+    };
+    
+    // Physics
+    BABYLON.Scene.prototype.enablePhysics = function(gravity) {
+        if (this._physicsEngine) {
+            return true;
+        }
+        
+        if (!BABYLON.PhysicsEngine.IsSupported()) {
+            return false;
+        }
+
+        this._physicsEngine = new BABYLON.PhysicsEngine(gravity);
+
+        return true;
+    };
+
+    BABYLON.Scene.prototype.disablePhysicsEngine = function() {
+        if (!this._physicsEngine) {
+            return;
+        }
+
+        this._physicsEngine.dispose();
+        this._physicsEngine = undefined;
+    };
+
+    BABYLON.Scene.prototype.isPhysicsEnabled = function() {
+        return this._physicsEngine !== undefined;
+    };
+    
+    BABYLON.Scene.prototype.setGravity = function (gravity) {
+        if (!this._physicsEngine) {
+            return;
+        }
+
+        this._physicsEngine._setGravity(gravity);
     };
 
     // Statics

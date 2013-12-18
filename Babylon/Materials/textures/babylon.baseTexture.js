@@ -11,7 +11,6 @@ var BABYLON = BABYLON || {};
     // Members
     BABYLON.BaseTexture.prototype.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
     BABYLON.BaseTexture.prototype.hasAlpha = false;
-    BABYLON.BaseTexture.prototype.hasAlpha = false;
     BABYLON.BaseTexture.prototype.level = 1;
     BABYLON.BaseTexture.prototype._texture = null;
 

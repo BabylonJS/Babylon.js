@@ -1,5 +1,14 @@
 ﻿Changes list
 ============
+- 1.8.0:
+ - **Major updates**
+ - Support for [physics engine](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) thanks to cannon.js ([deltakosh](http://www.github.com/deltakosh))
+ - New [sandbox tool](http://www.babylonjs.com/sandbox/) ([davrous](http://www.github.com/davrous))
+ - **Updates**
+ - New ```animation.currentFrame``` property to get current animation frame ([deltakosh](http://www.github.com/deltakosh))
+ - New ```animation.floatInterpolateFunction``` property to define custom float interpolation function ([deltakosh](http://www.github.com/deltakosh))
+ - New ```animation.vector3InterpolateFunction``` property to define custom vector3 interpolation function ([deltakosh](http://www.github.com/deltakosh))
+ - New ```animation.quaternionInterpolateFunction``` property to define custom quaternion interpolation function ([deltakosh](http://www.github.com/deltakosh))
 - 1.7.3:
  - **Updates**
  - Support for "file://" moniker ([davrous](https://github.com/davrous))
@@ -13,7 +22,7 @@
  - Support for [lens flares](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) ([deltakosh](http://www.github.com/deltakosh))
  - Support for [multi-views](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-multi-views) ([deltakosh](http://www.github.com/deltakosh))
  - **Updates**
- - New ```light.excludedMeshes``` property to exclude specific meshes from light coputation ([deltakosh](http://www.github.com/deltakosh))
+ - New ```light.excludedMeshes``` property to exclude specific meshes from light computation ([deltakosh](http://www.github.com/deltakosh))
  - New ```texture.anisotropicFilteringLevel``` property to define the anisotropic level of a texture ([deltakosh](http://www.github.com/deltakosh))
  - New ```mesh.infiniteDistance``` property to make a mesh static from the point of view of the camera ([deltakosh](http://www.github.com/deltakosh))
  - New ```scene.customRenderTargets``` property to add our own renderTargetTexture ([deltakosh](http://www.github.com/deltakosh))

@@ -845,7 +845,7 @@ var BABYLON = BABYLON || {};
 
         var that = this;
         cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-            var width = getExponantOfTwo(imgs[0].width);
+            var width = getExponantOfTwo(imgs[0].width, that._caps.maxCubemapTextureSize);
             var height = width;
 
             that._workingCanvas.width = width;

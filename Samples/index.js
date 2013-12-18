@@ -7,8 +7,18 @@ var onload = function () {
 
     // Demos
     var demos = [
+        //{
+        //    title: "HILLVALLEY", scene: "hillvalley", screenshot: "hill.jpg", size: "150 MB<br>(high-end device recommanded)", incremental: true, big: true, onload: function () {
+        //        scene.collisionsEnabled = false;
+        //        scene.lightsEnabled = false;
+        //        scene.createOrUpdateSelectionOctree();
+        //        for (var matIndex = 0; matIndex < scene.materials.length; matIndex++) {
+        //            scene.materials[matIndex].checkReadyOnEveryCall = false;
+        //        }
+        //    }
+        //},
         {
-            title: "TRAIN", scene: "Train", screenshot: "train.jpg", size: "70 MB", big: true, onload: function () {
+            title: "TRAIN", scene: "Train", screenshot: "train.jpg", size: "70 MB", onload: function () {
                 scene.collisionsEnabled = false;
                 for (var index = 0; index < scene.cameras.length; index++) {
                     scene.cameras[index].minZ = 10;
@@ -48,7 +58,7 @@ var onload = function () {
                 var postProcess = new BABYLON.RefractionPostProcess("Refraction", "/scenes/customs/refMap.jpg", new BABYLON.Color3(1.0, 1.0, 1.0), 0.5, 0.5, 1.0, scene.cameras[1]);
             }
         },
-        { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB", anchor:"WCAFE" },
+        { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB", anchor: "WCAFE" },
         {
             title: "FLAT 2009",
             scene: "Flat2009",
@@ -60,20 +70,21 @@ var onload = function () {
                 scene.createOrUpdateSelectionOctree();
             }
         },
-        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB", incremental: true, anchor:"THECAR" },
+        { title: "THE CAR", scene: "TheCar", screenshot: "thecar.jpg", size: "100 MB", incremental: true, anchor: "THECAR" },
         { title: "VIPER", scene: "Viper", screenshot: "viper.jpg", size: "18 MB" },
         { title: "SPACESHIP", scene: "Spaceship", screenshot: "spaceship.jpg", size: "1 MB" },
         {
-            title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", anchor:"OMEGA", onload: function () {
+            title: "OMEGA CRUSHER", scene: "SpaceDek", screenshot: "omegacrusher.jpg", size: "10 MB", anchor: "OMEGA", onload: function () {
                 scene.collisionsEnabled = false;
             }
         }];
 
     var tests = [
+        { title: "PHYSICS", id: 13, screenshot: "physics.jpg", size: "1.0 MB", anchor: "PHYSICS" },
         { title: "LENS FLARES", id: 12, screenshot: "lens.jpg", size: "1.0 MB", anchor: "LENS" },
-        { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB", anchor:"PPREF" },
+        { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB", anchor: "PPREF" },
         { title: "POSTPROCESS - BLOOM", id: 10, screenshot: "postprocessBloom.jpg", size: "1.0 MB", anchor: "PPBLOOM" },
-        { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB", anchor:"OCTREE" },
+        { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB", anchor: "OCTREE" },
         { title: "BONES", id: 9, screenshot: "bones.jpg", size: "10 MB" },
         { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "0.1 MB" },
         { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
@@ -87,6 +98,7 @@ var onload = function () {
     ];
 
     var thirdParties = [
+    { title: "BING 3D MAPS", url: "http://babylonbing.azurewebsites.net/", screenshot: "bing3D.jpg", size: "by A. Beaulieu" },
     { title: "CAR GAME", url: "http://babylon.azurewebsites.net", screenshot: "car.jpg", size: "by G. Carlander" },
     { title: "CYCLE GAME", url: "http://tronbabylon.azurewebsites.net/", screenshot: "tron.jpg", size: "by G. Carlander" },
     { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" },
@@ -113,6 +125,7 @@ var onload = function () {
     var hardwareScalingLevel = document.getElementById("hardwareScalingLevel");
     var collisions = document.getElementById("collisions");
     var postProcess = document.getElementById("postProcess");
+    var mirrors = document.getElementById("mirrors");
     var status = document.getElementById("status");
     var fullscreen = document.getElementById("fullscreen");
     var touchCamera = document.getElementById("touchCamera");
@@ -324,6 +337,9 @@ var onload = function () {
                     case 12:
                         newScene = CreateLensFlaresTestScene(engine);
                         break;
+                    case 13:
+                        newScene = CreatePhysicsScene(engine);
+                        break;
                 }
                 scene = newScene;
 
@@ -506,7 +522,7 @@ var onload = function () {
         }
     });
 
-    canvas.addEventListener("click", function (evt) {
+    canvas.addEventListener("mousedown", function (evt) {
         if (!panelIsClosed) {
             panelIsClosed = true;
             cameraPanelIsClosed = true;
@@ -516,14 +532,14 @@ var onload = function () {
             cameraPanel.style.transform = "translateX(300px)";
         }
 
-        if (evt.ctrlKey) {
-            if (!scene)
-                return;
+        if (!scene)
+            return;
 
-            var pickResult = scene.pick(evt.clientX, evt.clientY);
+        var pickResult = scene.pick(evt.clientX, evt.clientY);
 
-            if (pickResult.hit) {
-                status.innerHTML = "Selected object: " + pickResult.pickedMesh.name + "(" + pickResult.pickedPoint.x + "," + pickResult.pickedPoint.y  + "," + pickResult.pickedPoint.z  + ")";
+        if (pickResult.hit) {
+            if (evt.ctrlKey) {
+                status.innerHTML = "Selected object: " + pickResult.pickedMesh.name + "(" + pickResult.pickedPoint.x + "," + pickResult.pickedPoint.y + "," + pickResult.pickedPoint.z + ")";
 
                 // Animations
                 scene.beginAnimation(pickResult.pickedMesh, 0, 100, true, 1.0);
@@ -558,6 +574,9 @@ var onload = function () {
                 particleSystem.start();
 
             } else {
+                var dir = pickResult.pickedPoint.subtract(scene.activeCamera.position);
+                dir.normalize();
+                pickResult.pickedMesh.applyImpulse(dir.scale(10), pickResult.pickedPoint);
                 status.innerHTML = "";
             }
         }
@@ -641,6 +660,12 @@ var onload = function () {
         }
     });
 
+    mirrors.addEventListener("change", function () {
+        if (scene) {
+            scene.renderTargetsEnabled = mirrors.checked;
+        }
+    });
+
     toggleBandW.addEventListener("click", function () {
         if (scene && scene.activeCamera) {
             if (scene.activeCamera.__bandw_cookie) {
@@ -653,7 +678,7 @@ var onload = function () {
             }
         }
     });
-    
+
     toggleFxaa.addEventListener("click", function () {
         if (scene && scene.activeCamera) {
             if (scene.activeCamera.__fxaa_cookie) {

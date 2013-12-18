@@ -37,7 +37,6 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.ORTHOGRAPHIC_CAMERA = 1;
 
     // Members
-    BABYLON.Camera.prototype.fov = 0.8;
     BABYLON.Camera.prototype.orthoLeft = null;
     BABYLON.Camera.prototype.orthoRight = null;
     BABYLON.Camera.prototype.orthoBottom = null;

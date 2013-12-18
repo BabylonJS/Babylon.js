@@ -801,6 +801,78 @@ var BABYLON = BABYLON || {};
             this.onDispose();
         }
     };
+    
+    // Physics
+    BABYLON.Mesh.prototype.setPhysicsState = function(options) {
+        if (!this._scene._physicsEngine) {
+            return;
+        }
+
+        options.impostor = options.impostor || BABYLON.PhysicsEngine.NoImpostor;
+        options.mass = options.mass || 0;
+        options.friction = options.friction || 0.0;
+        options.restitution = options.restitution || 0.9;
+
+        this._physicImpostor = options.impostor;
+        this._physicsMass = options.mass;
+        this._physicsFriction = options.friction;
+        this._physicRestitution = options.restitution;
+
+        if (options.impostor === BABYLON.PhysicsEngine.NoImpostor) {
+            this._scene._physicsEngine._unregisterMesh(this);
+            return;
+        }
+        
+        this._scene._physicsEngine._registerMesh(this, options);
+    };
+
+    BABYLON.Mesh.prototype.getPhysicsImpostor = function() {
+        if (!this._physicImpostor) {
+            return BABYLON.PhysicsEngine.NoImpostor;
+        }
+
+        return this._physicImpostor;
+    };
+
+    BABYLON.Mesh.prototype.getPhysicsMass = function() {
+        if (!this._physicsMass) {
+            return 0;
+        }
+
+        return this._physicsMass;
+    };
+    
+    BABYLON.Mesh.prototype.getPhysicsFriction = function () {
+        if (!this._physicsFriction) {
+            return 0;
+        }
+
+        return this._physicsFriction;
+    };
+    
+    BABYLON.Mesh.prototype.getPhysicsRestitution = function () {
+        if (!this._physicRestitution) {
+            return 0;
+        }
+
+        return this._physicRestitution;
+    };
+
+    BABYLON.Mesh.prototype.applyImpulse = function(force, contactPoint) {
+        if (!this._physicImpostor) {
+            return;
+        }
+
+        this._scene._physicsEngine._applyImpulse(this, force, contactPoint);
+    };
+
+    BABYLON.Mesh.prototype.setPhysicsLinkWith = function(otherMesh, pivot1, pivot2) {
+        if (!this._physicImpostor) {
+            return;
+        }
+        
+        this._scene._physicsEngine._createLink(this, otherMesh, pivot1, pivot2);
+    };
 
     // Statics
     BABYLON.Mesh.CreateBox = function (name, size, scene, updatable) {
