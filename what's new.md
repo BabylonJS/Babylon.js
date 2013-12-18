@@ -2,7 +2,7 @@
 ============
 - 1.8.0:
  - **Major updates**
- - Support for [physics engine](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-lens-flares) thanks to cannon.js ([deltakosh](http://www.github.com/deltakosh))
+ - Support for [physics engine](http://www.babylonjs.com/index.html?PHYSICS) thanks to cannon.js ([deltakosh](http://www.github.com/deltakosh))
  - New [sandbox tool](http://www.babylonjs.com/sandbox/) ([davrous](http://www.github.com/davrous))
  - **Updates**
  - New ```animation.currentFrame``` property to get current animation frame ([deltakosh](http://www.github.com/deltakosh))
