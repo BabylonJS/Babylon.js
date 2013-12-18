@@ -18,6 +18,10 @@ uniform mat4 viewProjection;
 uniform mat4 worldViewProjection;
 #endif
 
+#ifndef VSM
+varying vec4 vPosition;
+#endif
+
 void main(void)
 {
 #ifdef BONES
@@ -28,6 +32,9 @@ void main(void)
 	mat4 finalWorld = world * (m0 + m1 + m2 + m3);
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
+#ifndef VSM
+	vPosition = worldViewProjection * vec4(position, 1.0);
+#endif
 	gl_Position = worldViewProjection * vec4(position, 1.0);
 #endif
 }

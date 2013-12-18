@@ -22,14 +22,17 @@ vec2 packHalf(float depth)
 	return color - (color.yy * bitOffset);
 }
 
+#ifndef VSM
+varying vec4 vPosition;
+#endif
 
 void main(void)
 {
 #ifdef VSM
-	float moment1 = gl_FragCoord.z / gl_FragCoord.w; 
+	float moment1 = gl_FragCoord.z / gl_FragCoord.w;
 	float moment2 = moment1 * moment1;
 	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
 #else
-	gl_FragColor = pack(gl_FragCoord.z / gl_FragCoord.w);
+	gl_FragColor = pack(vPosition.z / vPosition.w);
 #endif
 }

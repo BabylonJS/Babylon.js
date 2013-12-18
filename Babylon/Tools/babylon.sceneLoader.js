@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var BABYLON = BABYLON || {};
+var BABYLON = BABYLON || {}; 
 
 (function () {
     var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
@@ -414,6 +414,22 @@ var BABYLON = BABYLON || {};
         // Skeleton
         if (parsedMesh.skeletonId > -1) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
+        }
+        
+        // Physics
+        if (parsedMesh.physicsImpostor) {
+            if (!scene.isPhysicsEnabled()) {
+                scene.enablePhysics();
+            }
+
+            switch (parsedMesh.physicsImpostor) {
+                case 1: // BOX
+                    mesh.setPhysicsState({ impostor: BABYLON.PhysicsEngine.BoxImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
+                    break;
+                case 2: // SPHERE
+                    mesh.setPhysicsState({ impostor: BABYLON.PhysicsEngine.SphereImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
+                    break;
+            }
         }
 
         // Animations

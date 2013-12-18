@@ -14,7 +14,7 @@ var BABYLON = BABYLON || {};
     BABYLON.PointLight.prototype = Object.create(BABYLON.Light.prototype);
     
     // Methods
-    BABYLON.Light.prototype.transferToEffect = function (effect, positionUniformName) {
+    BABYLON.PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
         if (this.parent && this.parent.getWorldMatrix) {
             if (!this._transformedPosition) {
                 this._transformedPosition = BABYLON.Vector3.Zero();

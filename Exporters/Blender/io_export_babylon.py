@@ -601,6 +601,17 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
         Export_babylon.write_int(file_handler, "billboardMode", billboardMode)
         Export_babylon.write_bool(file_handler, "receiveShadows", object.data.receiveShadows)
+
+        # Export Physics
+        if object.rigid_body != None:
+            shape_items = {'BOX': 1, 'SPHERE': 2}
+            shape_type = shape_items[object.rigid_body.collision_shape]
+            Export_babylon.write_int(file_handler, "physicsImpostor", shape_type)
+            Export_babylon.write_float(file_handler, "physicsMass", object.rigid_body.mass)
+            Export_babylon.write_float(file_handler, "physicsFriction", object.rigid_body.friction)
+            Export_babylon.write_float(file_handler, "physicsRestitution", object.rigid_body.restitution)
+
+        # Geometry
         if hasSkeleton:
             i = 0
             for obj in [object for object in scene.objects if object.is_visible(scene)]:
@@ -644,7 +655,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             file_handler.write("}")
             first = False
         file_handler.write("]")
-                
+
         #Export Animations
         
         rotAnim = False
