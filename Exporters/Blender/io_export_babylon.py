@@ -607,7 +607,10 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             shape_items = {'BOX': 1, 'SPHERE': 2}
             shape_type = shape_items[object.rigid_body.collision_shape]
             Export_babylon.write_int(file_handler, "physicsImpostor", shape_type)
-            Export_babylon.write_float(file_handler, "physicsMass", object.rigid_body.mass)
+            mass = object.rigid_body.mass
+            if mass < 0.005:
+                mass = 0
+            Export_babylon.write_float(file_handler, "physicsMass", mass)
             Export_babylon.write_float(file_handler, "physicsFriction", object.rigid_body.friction)
             Export_babylon.write_float(file_handler, "physicsRestitution", object.rigid_body.restitution)
 
