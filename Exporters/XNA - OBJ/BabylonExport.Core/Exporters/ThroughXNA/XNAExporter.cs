@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Windows.Forms;
-using BabylonExport.Core.Exporters.FBX;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using SkinnedModel;
@@ -186,8 +185,17 @@ namespace BabylonExport.Core.Exporters.XNA
                 var material = exportedMaterials.First(m => m.Name == part.Effect.GetHashCode().ToString());
 
                 var indices = new ushort[part.PrimitiveCount * 3];
+                                
                 part.IndexBuffer.GetData(part.StartIndex * 2, indices, 0, indices.Length);
-
+                for (int ib = 0; ib < indices.Length; ib += 3) // reverse winding of triangles Needed for Right-Left Coordinate System
+                {
+                    ushort ti;
+                    ti = indices[ib];
+                    indices[ib] = indices[ib + 2];
+                    indices[ib + 2] = ti;
+                }
+                
+                
                 if (part.VertexBuffer.VertexDeclaration.VertexStride >= PositionNormalTexturedWeights.Stride)
                 {
                     var mesh = new Mesh<PositionNormalTexturedWeights>(material);
@@ -196,15 +204,19 @@ namespace BabylonExport.Core.Exporters.XNA
                     part.VertexBuffer.GetData(part.VertexOffset * part.VertexBuffer.VertexDeclaration.VertexStride, vertices, 0, vertices.Length, part.VertexBuffer.VertexDeclaration.VertexStride);
 
                     for (int index = 0; index < vertices.Length; index++)
-                    {
+                    { 
                         vertices[index].TextureCoordinates.Y = 1.0f - vertices[index].TextureCoordinates.Y;
+                        // Negate Position.Z & Normal.Z -- Needed for Right-Left Coordinate System
+                        vertices[index].Position.Z = -vertices[index].Position.Z;
+                        vertices[index].Normal.Z = -vertices[index].Normal.Z;
                     }
-
-                    mesh.AddPart(indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
+                    // Prefix MeshName to MeshParts -- MeshName#MeshPartIndex
+                    mesh.AddPart(modelMesh.Name+"#"+indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
                     mesh.CreateBabylonMesh(scene, proxyID, skeleton);
                 }
                 else
                 {
+                    if (part.VertexBuffer.VertexDeclaration.VertexStride < 32) return; // Error: Not a PositionNormalTextured mesh!
                     var mesh = new Mesh<PositionNormalTextured>(material);
                     var vertices = new PositionNormalTextured[part.NumVertices];
                     part.VertexBuffer.GetData(part.VertexOffset * part.VertexBuffer.VertexDeclaration.VertexStride, vertices, 0, vertices.Length, part.VertexBuffer.VertexDeclaration.VertexStride);
@@ -212,9 +224,13 @@ namespace BabylonExport.Core.Exporters.XNA
                     for (int index = 0; index < vertices.Length; index++)
                     {
                         vertices[index].TextureCoordinates.Y = 1.0f - vertices[index].TextureCoordinates.Y;
+                        // Negate Position.Z & Normal.Z -- Needed for Right-Left Coordinate System
+                        vertices[index].Position.Z = -vertices[index].Position.Z;
+                        vertices[index].Normal.Z = -vertices[index].Normal.Z;
                     }
 
-                    mesh.AddPart(indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
+                    // Prefix MeshName to MeshParts -- MeshName#MeshPartIndex
+                    mesh.AddPart(modelMesh.Name + "#" + indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
                     mesh.CreateBabylonMesh(scene, proxyID, skeleton);
                 }
 
@@ -225,7 +241,7 @@ namespace BabylonExport.Core.Exporters.XNA
         void ParseEffect(Effect effect, BabylonScene scene)
         {
             var material = new StandardMaterial(effect.GetHashCode().ToString());
-
+            
             exportedMaterials.Add(material);
 
             var basicEffect = effect as BasicEffect;
