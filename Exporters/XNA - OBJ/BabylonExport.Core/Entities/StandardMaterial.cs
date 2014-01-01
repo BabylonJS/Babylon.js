@@ -69,8 +69,11 @@ namespace BabylonExport.Core
 
             babylonMaterial.diffuseTexture = new BabylonTexture();
             babylonMaterial.diffuseTexture.name = Path.GetFileName(DiffuseTexture);
-            if (babylonMaterial.diffuseTexture.name.ToLower().EndsWith(".png"))  // Only PNGs have transparency, otherwise .JPG
-                babylonMaterial.diffuseTexture.hasAlpha = true; 
+
+            if (babylonMaterial.diffuseTexture.name.ToLower().EndsWith(".png"))
+            {
+                babylonMaterial.diffuseTexture.hasAlpha = true;
+            }
 
             scene.AddTexture(DiffuseTexture);
         }

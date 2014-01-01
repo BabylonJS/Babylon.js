@@ -8,6 +8,6 @@ namespace BabylonExport.Core
 
         string SupportedExtensions { get; }
 
-        void GenerateBabylonFile(string file, string outputFile, bool skinned);
+        void GenerateBabylonFile(string file, string outputFile, bool skinned, bool rightToLeft);
     }
 }
