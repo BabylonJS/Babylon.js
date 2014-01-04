@@ -161,6 +161,7 @@ var BABYLON = BABYLON || {};
         };
 
         var noIndexedDB = function () {
+            img.crossOrigin = 'anonymous';
             img.src = url;
         };
 
