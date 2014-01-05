@@ -6,16 +6,16 @@ declare module BABYLON {
         targetProperty: string;
         targetPropertyPath: string[];
         framePerSecond: number;
-        dataType: string;
+        dataType: number;
         loopMode: number;
         _keys: number[];
         _offsetCache: Object;
         _highLimitsCache: Object;
 
-        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: string, loopMode: number);
+        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode: number);
 
         clone(): Animation;
-        setKeys(values: number[]);
+        setKeys(values: any[]);
         _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue: number, highLimitValue: number);
         animate(target: Object, delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean;
         
@@ -28,4 +28,4 @@ declare module BABYLON {
         static ANIMATIONLOOPMODE_CYCLE: number;
         static ANIMATIONLOOPMODE_CONSTANT: number;
     }
-}
+}   

@@ -6,7 +6,7 @@ declare module BABYLON {
         url: string
         animations: Animation[];
 
-        constructor(url: string, scene: Scene, noMipmap: boolean, invertY: boolean);
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean);
 
         static EXPLICIT_MODE: number;
         static SPHERICAL_MODE: number;

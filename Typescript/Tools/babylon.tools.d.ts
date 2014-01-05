@@ -20,7 +20,7 @@ declare module BABYLON.Tools {
     function _MeasureFps(): void;
 
     class SmartArray {
-        data: Array;
+        data: any[];
         length: number;
 
         constructor(capacity: number);
