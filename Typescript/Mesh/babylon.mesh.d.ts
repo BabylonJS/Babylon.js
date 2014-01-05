@@ -14,7 +14,7 @@ declare module BABYLON {
         subMeshes: SubMesh[];
         animations: Animation[];
 
-        constructor(name: string, vertexDeclaration: number[], scene: Scene);
+        constructor(name: string, scene: Scene);
 
         static BILLBOARDMODE_NONE: number;
         static BILLBOARDMODE_X: number;
