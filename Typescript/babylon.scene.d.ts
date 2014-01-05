@@ -57,8 +57,8 @@ declare module BABYLON {
         executeWhenReady(func: Function): void;
         getWaitingItemsCount(): number;
 
-        beginAnimation(target: string, from: number, to: number, loop: boolean, speedRatio: number, onAnimationEnd: Function): void;
-        stopAnimation(target: string);
+        beginAnimation(target: Mesh, from: number, to: number, loop: boolean, speedRatio?: number, onAnimationEnd?: Function): void;
+        stopAnimation(target: Mesh);
 
         getViewMatrix(): Matrix;
         getProjectionMatrix(): Matrix;
