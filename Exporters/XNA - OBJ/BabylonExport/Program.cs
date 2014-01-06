@@ -43,6 +43,7 @@ namespace BabylonExport
                     // Parsing arguments
                     string input = "";
                     bool skinned = false;
+                    bool rightToLeft = false;
                     foreach (var arg in args)
                     {
                         var order = arg.Substring(0, 3);
@@ -57,6 +58,9 @@ namespace BabylonExport
                                 break;
                             case "/sk":
                                 skinned = true;
+                                break;
+                            case "/rl":
+                                rightToLeft = true;
                                 break;
                             default:
                                 DisplayUsage();
@@ -104,7 +108,7 @@ namespace BabylonExport
                                 Console.WriteLine("Generation of " + outputName + " started");
                                 Console.WriteLine();
                                 Console.ResetColor();
-                                importer.GenerateBabylonFile(input, outputName, skinned);
+                                importer.GenerateBabylonFile(input, outputName, skinned, rightToLeft);
                                 Console.ForegroundColor = ConsoleColor.Green;
                                 Console.WriteLine();
                                 Console.WriteLine();
@@ -163,7 +167,7 @@ namespace BabylonExport
 
         static void DisplayUsage()
         {
-            Console.WriteLine("Babylon Import usage: BabylonImport.exe /i:\"source file\" /o:\"output folder\" [/sk]");
+            Console.WriteLine("Babylon Import usage: BabylonImport.exe /i:\"source file\" /o:\"output folder\" [/sk] [/rl]");
         }
     }
 }

@@ -28,7 +28,7 @@ namespace BabylonExport.Core
         public void AddPart(string name, List<T> addedVertices, List<int> addedIndices)
         {
             if (concatenatedName == "")
-                concatenatedName += " # ";
+                concatenatedName += "#"; // ProfessorF-Removed spaces before and after #
 
             concatenatedName += name;
 
