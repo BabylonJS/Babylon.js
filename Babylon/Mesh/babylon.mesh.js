@@ -140,7 +140,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.getPivotMatrix = function () {
-        return this._localMatrix;
+        return this._pivotMatrix;
     };
 
     BABYLON.Mesh.prototype.isSynchronized = function () {

@@ -10,12 +10,12 @@ declare module BABYLON {
         update(data: any[]): void;
         dispose(): void;
 
-        PositionKind: string;
-        NormalKind: string;
-        UVKind: string;
-        UV2Kind: string;
-        ColorKind: string;
-        MatricesIndicesKind: string;
-        MatricesWeightsKind: string;
+        static PositionKind: string;
+        static NormalKind: string;
+        static UVKind: string;
+        static UV2Kind: string;
+        static ColorKind: string;
+        static MatricesIndicesKind: string;
+        static MatricesWeightsKind: string;
     }
 }

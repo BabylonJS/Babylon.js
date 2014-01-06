@@ -39,7 +39,7 @@ namespace BabylonExport.Core.Exporters
             }
         }
 
-        public void GenerateBabylonFile(string file, string outputFile, bool skinned)
+        public void GenerateBabylonFile(string file, string outputFile, bool skinned, bool rightToLeft)
         {
             try
             {
