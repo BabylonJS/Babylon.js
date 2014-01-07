@@ -295,14 +295,17 @@ var BABYLON = BABYLON || {};
             this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
             this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
         }
+        
+        // Local world
+        this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
 
         // Parent
         if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
-            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
-            var parentWorld = this.parent.getWorldMatrix();
-
-            this._localWorld.multiplyToRef(parentWorld, this._worldMatrix);
+            this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
         } else {
+            // multiplyToRef instead of this._worldMatrix = this._localWorld;
+            // to be sure not to have a bug with a call to this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+            // Moreover multiplyToRef is more efficient than clone
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
         }
 
@@ -533,7 +536,9 @@ var BABYLON = BABYLON || {};
     };
 
     // Geometry
+    // deprecated: use setPositionWithLocalVector instead. It fixes setLocalTranslation.
     BABYLON.Mesh.prototype.setLocalTranslation = function(vector3) {
+        console.warn("deprecated: use setPositionWithLocalVector instead");
         this.computeWorldMatrix();
         var worldMatrix = this._worldMatrix.clone();
         worldMatrix.setTranslation(BABYLON.Vector3.Zero());
@@ -541,13 +546,35 @@ var BABYLON = BABYLON || {};
         this.position = BABYLON.Vector3.TransformCoordinates(vector3, worldMatrix);
     };
     
+    // deprecated: use getPositionExpressedInLocalSpace instead. It fixes getLocalTranslation.
     BABYLON.Mesh.prototype.getLocalTranslation = function () {
+        console.warn("deprecated: use getPositionExpressedInLocalSpace instead");
         this.computeWorldMatrix();
         var invWorldMatrix = this._worldMatrix.clone();
         invWorldMatrix.setTranslation(BABYLON.Vector3.Zero());
         invWorldMatrix.invert();
 
         return BABYLON.Vector3.TransformCoordinates(this.position, invWorldMatrix);
+    };
+    
+    BABYLON.Mesh.prototype.setPositionWithLocalVector = function(vector3) {
+        this.computeWorldMatrix();
+        
+        this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
+    };
+
+    BABYLON.Mesh.prototype.getPositionExpressedInLocalSpace = function () {
+        this.computeWorldMatrix();
+        var invLocalWorldMatrix = this._localWorld.clone();
+        invLocalWorldMatrix.invert();
+
+        return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
+    };
+    
+    BABYLON.Mesh.prototype.locallyTranslate = function(vector3) {
+        this.computeWorldMatrix();
+        
+        this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
     };
 
     BABYLON.Mesh.prototype.bakeTransformIntoVertices = function (transform) {
