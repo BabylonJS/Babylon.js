@@ -51,6 +51,8 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.maxZ = 1000.0;
     BABYLON.Camera.prototype.inertia = 0.9;
     BABYLON.Camera.prototype.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+    BABYLON.Camera.prototype.forceWireframe = false;
+    BABYLON.Camera.prototype.fpsThresoldForForceWireframe = -1;
 
     // Properties
     BABYLON.Camera.prototype.getScene = function () {
@@ -94,6 +96,8 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype._updateFromScene = function () {
         this.updateCache();
         this._update();
+        
+        this.forceWireframe = (BABYLON.Tools.GetFps() < this.fpsThresoldForForceWireframe) && !this._isSynchronized();
     };
 
     BABYLON.Camera.prototype.getWorldMatrix = function () {

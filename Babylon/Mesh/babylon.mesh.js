@@ -432,7 +432,7 @@ var BABYLON = BABYLON || {};
 
         // Bind and draw
         var engine = this._scene.getEngine();
-        this.bindAndDraw(subMesh, effectiveMaterial.getEffect(), engine.forceWireframe || effectiveMaterial.wireframe);
+        this.bindAndDraw(subMesh, effectiveMaterial.getEffect(), engine.forceWireframe || this._scene.activeCamera.forceWireframe || effectiveMaterial.wireframe);
 
         // Unbind
         effectiveMaterial.unbind();
