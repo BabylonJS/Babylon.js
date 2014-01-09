@@ -22,6 +22,8 @@ var BABYLON = BABYLON || {};
         this._viewMatrix = new BABYLON.Matrix();
 
         this.getViewMatrix();
+
+        BABYLON.ArcRotateCamera.prototype._initCache.call(this);
     };
     
     BABYLON.ArcRotateCamera.prototype = Object.create(BABYLON.Camera.prototype);
@@ -37,6 +39,39 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.angularSensibility = 1000.0;
 
+    BABYLON.ArcRotateCamera.prototype._getTargetPosition = function () {       
+        return this.target.position || this.target;
+    };
+    
+    // Cache
+    BABYLON.ArcRotateCamera.prototype._initCache = function () {
+        this._cache.target = this._getTargetPosition().clone();
+        this._cache.alpha = this.alpha;
+        this._cache.beta = this.beta;
+        this._cache.radius = this.radius;
+    };
+
+    BABYLON.ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
+        if(!ignoreParentClass)
+            BABYLON.Camera.prototype._updateCache.call(this);
+        
+        this._cache.target.copyFrom(this._getTargetPosition());
+        this._cache.alpha = this.alpha;
+        this._cache.beta = this.beta;
+        this._cache.radius = this.radius;
+    };
+
+    // Synchronized
+    BABYLON.ArcRotateCamera.prototype._isSynchronized = function () {
+        if (!BABYLON.Camera.prototype._isSynchronized.call(this))
+            return false;
+        
+        return this._cache.target.equals(this._getTargetPosition())
+            && this._cache.alpha === this.alpha
+            && this._cache.beta === this.beta
+            && this._cache.radius === this.radius;
+    };
+    
     // Methods
     BABYLON.ArcRotateCamera.prototype.attachControl = function(canvas, noPreventDefault) {
         var previousPosition;
@@ -304,7 +339,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.ArcRotateCamera.prototype.setPosition = function(position) {
-        var radiusv3 = position.subtract(this.target.position ? this.target.position : this.target);
+        var radiusv3 = position.subtract(this._getTargetPosition());
         this.radius = radiusv3.length();
 
         this.alpha = Math.atan(radiusv3.z / radiusv3.x);
@@ -324,8 +359,10 @@ var BABYLON = BABYLON || {};
         var cosb = Math.cos(this.beta);
         var sinb = Math.sin(this.beta);
 
-        this.target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-        BABYLON.Matrix.LookAtLHToRef(this.position, this.target, this.upVector, this._viewMatrix);
+        var target = this._getTargetPosition();
+        
+        target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+        BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
 
         return this._viewMatrix;
     };

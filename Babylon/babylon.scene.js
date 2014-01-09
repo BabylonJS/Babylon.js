@@ -660,7 +660,7 @@ var BABYLON = BABYLON || {};
         this.postProcessManager._finalizeFrame();
 
         // Update camera
-        this.activeCamera._update();
+        this.activeCamera._updateFromScene();
         
         // Reset some special arrays
         this._renderTargets.reset();
