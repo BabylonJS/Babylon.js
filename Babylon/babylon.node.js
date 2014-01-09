@@ -4,6 +4,7 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Node = function () {
+        BABYLON.Node.prototype._initCache.call(this);
     };
     
     // Properties
@@ -12,8 +13,59 @@ var BABYLON = BABYLON || {};
     BABYLON.Node.prototype._isReady = true;
     BABYLON.Node.prototype._isEnabled = true;
 
+    // Cache
+    BABYLON.Node.prototype._cache = null;
     
-    BABYLON.Node.prototype.isSynchronized = function () {
+    // override it in derived class if you add new variables to the cache
+    // and call it in the constructor of your class like this
+    // BABYLON.YourClass.prototype._initCache.call(this)
+    // DO NOT call parent class method
+    BABYLON.Node.prototype._initCache = function () {
+        this._cache = {};
+    };
+
+    BABYLON.Node.prototype.updateCache = function (force) {
+        if (!force && this.isSynchronized())
+            return;
+        
+        this._cache.parent = this.parent;
+        
+        this._updateCache();
+    };
+
+    // override it in derived class if you add new variables to the cache
+    // and call the parent class method if !ignoreParentClass
+    // BABYLON.ParentClass.prototype._updateCache.call(this, ignoreParentClass)
+    BABYLON.Node.prototype._updateCache = function (ignoreParentClass) {
+    };
+
+    // override it in derived class if you add new variables to the cache
+    // and call the parent class method
+    // BABYLON.ParentClass.prototype._isSynchronized.call(this)
+    BABYLON.Node.prototype._isSynchronized = function () {
+        return true;
+    };
+
+    BABYLON.Node.prototype.isSynchronized = function (updateCache) {
+        var r = this.hasNewParent();
+
+        r = r ? true : (this.parent && this.parent._needToSynchonizeChildren());
+        
+        r = r ? true : !this._isSynchronized();
+        
+        if(updateCache)
+            this.updateCache(true);
+        
+        return !r;
+    };
+
+    BABYLON.Node.prototype.hasNewParent = function (update) {
+        if (this._cache.parent === this.parent)
+            return false;
+        
+        if(update)
+            this._cache.parent = this.parent;
+        
         return true;
     };
     
