@@ -4,6 +4,8 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Camera = function (name, position, scene) {
+        BABYLON.Node.call(this);
+        
         this.name = name;
         this.id = name;
         this.position = position;
@@ -28,6 +30,9 @@ var BABYLON = BABYLON || {};
         
         // Viewport
         this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
+        
+        //Cache
+        BABYLON.Camera.prototype._initCache.call(this);
     };
 
     BABYLON.Camera.prototype = Object.create(BABYLON.Node.prototype);
@@ -46,11 +51,37 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.maxZ = 1000.0;
     BABYLON.Camera.prototype.inertia = 0.9;
     BABYLON.Camera.prototype.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+    BABYLON.Camera.prototype.forceWireframe = false;
+    BABYLON.Camera.prototype.fpsThresoldForForceWireframe = -1;
 
     // Properties
     BABYLON.Camera.prototype.getScene = function () {
         return this._scene;
     };
+    
+    //Cache
+    BABYLON.Camera.prototype._initCache = function () {
+        this._cache.position = this.position.clone();
+        this._cache.upVector = this.upVector.clone();
+    };
+
+    BABYLON.Camera.prototype._updateCache = function (ignoreParentClass) {
+        
+        if(!ignoreParentClass)
+            BABYLON.Node.prototype._updateCache.call(this);
+        
+        this._cache.position.copyFrom(this.position);
+        this._cache.upVector.copyFrom(this.upVector);
+    };
+
+    // Synchronized
+    BABYLON.Camera.prototype._isSynchronized = function () {
+        if (!BABYLON.Node.prototype._isSynchronized.call(this))
+            return false;
+        
+        return this._cache.position.equals(this.position) 
+            && this._cache.upVector.equals(this.upVector);
+    };    
 
     // Methods
     BABYLON.Camera.prototype.attachControl = function (canvas) {
@@ -60,6 +91,13 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Camera.prototype._update = function () {
+    };
+    
+    BABYLON.Camera.prototype._updateFromScene = function () {
+        this.updateCache();
+        this._update();
+        
+        this.forceWireframe = (BABYLON.Tools.GetFps() < this.fpsThresoldForForceWireframe) && !this._isSynchronized();
     };
 
     BABYLON.Camera.prototype.getWorldMatrix = function () {
@@ -79,22 +117,30 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Camera.prototype.getViewMatrix = function () {
-        this._computedViewMatrix = this._getViewMatrix();
+        this._computedViewMatrix = this._computeViewMatrix();
 
-        if (this.parent && this.parent.getWorldMatrix) {
-            if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
-            }
-
-            this._computedViewMatrix.invertToRef(this._worldMatrix);
-
-            this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
-
-            this._computedViewMatrix.invert();
-
+        if(!this.parent 
+            ||  !this.parent.getWorldMatrix
+            || (!this.hasNewParent() && this.parent.isSynchronized())) {
             return this._computedViewMatrix;
         }
+        
+        this._computedViewMatrix.invertToRef(this._worldMatrix);
 
+        this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+
+        this._computedViewMatrix.invert();
+
+        return this._computedViewMatrix;
+    };
+    
+    BABYLON.Camera.prototype._computeViewMatrix = function (force) {
+
+        if (!force && this.isSynchronized()) {
+            return this._computedViewMatrix;
+        }
+        
+        this._computedViewMatrix = this._getViewMatrix();
         return this._computedViewMatrix;
     };
 
