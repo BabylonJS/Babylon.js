@@ -18,7 +18,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
-- Physics engine (thanks to cannon.js)
+- Physics engine (thanks to [cannon.js](http://github.com/schteppe/cannon.js))
 - Scene picking
 - Antialiasing
 - Animations engine
