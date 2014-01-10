@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xsd:import namespace="http://www.w3.org/2001/XInclude" schemaLocation="http://www.w3.org/2001/XInclude" />
+  
+  <!-- <files> -->
+  <xsd:element name="files">
+    <xsd:complexType>
+      <xsd:sequence minOccurs="0">
+        <xsd:element ref="xi:include" minOccurs="0" maxOccurs="unbounded" />
+        <xsd:element ref="script" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+    <xsd:unique name="UniqueSrc">
+      <xsd:selector xpath="./script" />
+      <xsd:field xpath="@src" />
+    </xsd:unique>
+  </xsd:element>
+  <!-- </files> -->
+
+  <!-- END ROOT -->
+
+  <!-- FIRST LEVEL -->
+
+  <!-- <script> -->
+  <xsd:element name="script">
+    <xsd:complexType>
+      <xsd:sequence minOccurs="0">
+       <xsd:element ref="dependsOn" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:ID" use="optional" />
+      <xsd:attribute name="src" type="xsd:token" use="required" />
+    </xsd:complexType>
+    <xsd:key name="refScript">
+      <xsd:selector xpath="./script" />
+      <xsd:field xpath="@id"/>
+    </xsd:key>
+  </xsd:element>
+  <!-- </script> -->
+
+  <!-- END FIRST LEVEL -->
+
+  <!-- SECOND LEVEL -->
+
+  <!-- <dependsOn> -->
+  <xsd:element name="dependsOn">
+    <xsd:complexType>
+      <xsd:attribute name="scriptref" type="xsd:IDREF" use="required" />
+    </xsd:complexType>
+    <xsd:keyref name="keyrefScript" refer="refScript">
+      <xsd:selector xpath="./script/dependsOn" />
+      <xsd:field xpath="@scriptref" />
+    </xsd:keyref>
+  </xsd:element>
+  <!-- </dependsOn> -->
+
+  <!-- END SECOND LEVEL -->
+  
+</xsd:schema>
+

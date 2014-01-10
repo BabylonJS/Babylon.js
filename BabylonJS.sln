@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonJS", "BabylonJS.csproj", "{0263AD0D-56E6-4439-BC05-6EC957200F52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonJSServer", "BabylonJSServer\BabylonJSServer.csproj", "{93EF5B02-72EB-4B55-831E-E5051269EDA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myBabylonJS", "myBabylonJS\myBabylonJS.csproj", "{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0263AD0D-56E6-4439-BC05-6EC957200F52}.Release|x86.ActiveCfg = Release|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{93EF5B02-72EB-4B55-831E-E5051269EDA6}.Release|x86.ActiveCfg = Release|Any CPU
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Debug|x86.ActiveCfg = Debug|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Debug|x86.Build.0 = Debug|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Release|Any CPU.ActiveCfg = Release|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Release|Mixed Platforms.Build.0 = Release|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Release|x86.ActiveCfg = Release|x86
+		{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "My BabylonJS";
+    ViewBag.BabylonJSFolder = "..\\";
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if (!BABYLON.Engine.isSupported()) {
+            alert("Your browser does not support WebGL so you can't use BabylonJS on it");
+            return;
+        }
+        var canvas = $("#babylonJSCanvas")[0];
+        var engine = new BABYLON.Engine(canvas, true);
+
+        BABYLON.SceneLoader.Load("/Content/Train/", "Train.babylon", engine, function (scene) {
+            // Render loop
+            var renderLoop = function () {
+                scene.render();
+            };
+
+            // Launch render loop
+            engine.runRenderLoop(renderLoop);
+        });
+    });
+</script>
