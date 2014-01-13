@@ -22,6 +22,7 @@ var BABYLON = BABYLON || {};
     // DO NOT call parent class method
     BABYLON.Node.prototype._initCache = function () {
         this._cache = {};
+        this._cache.parent = undefined;
     };
 
     BABYLON.Node.prototype.updateCache = function (force) {
