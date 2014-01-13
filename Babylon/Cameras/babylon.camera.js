@@ -21,6 +21,7 @@ var BABYLON = BABYLON || {};
         }
 
         this._computedViewMatrix = BABYLON.Matrix.Identity();
+        this._projectionMatrix = new BABYLON.Matrix();
 
         // Animations
         this.animations = [];
@@ -61,25 +62,79 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype._initCache = function () {
         this._cache.position = this.position.clone();
         this._cache.upVector = this.upVector.clone();
+
+        this._cache.mode = this.mode;
+        this._cache.minZ = this.minZ;
+        this._cache.maxZ = this.maxZ;
+
+        this._cache.fov = this.fov;
+        this._cache.aspectRatio = engine.getAspectRatio();
+
+        this._cache.orthoLeft = this.orthoLeft;
+        this._cache.orthoRight = this.orthoRight;
+        this._cache.orthoBottom = this.orthoBottom;
+        this._cache.orthoTop = this.orthoTop;
+        this._cache.renderWidth = engine.getRenderWidth()
+        this._cache.renderHeight = engine.getRenderHeight();
     };
 
     BABYLON.Camera.prototype._updateCache = function (ignoreParentClass) {
-        
         if(!ignoreParentClass)
             BABYLON.Node.prototype._updateCache.call(this);
         
         this._cache.position.copyFrom(this.position);
         this._cache.upVector.copyFrom(this.upVector);
+
+        this._cache.mode = this.mode;
+        this._cache.minZ = this.minZ;
+        this._cache.maxZ = this.maxZ;
+
+        this._cache.fov = this.fov;
+        this._cache.aspectRatio = engine.getAspectRatio();
+
+        this._cache.orthoLeft = this.orthoLeft;
+        this._cache.orthoRight = this.orthoRight;
+        this._cache.orthoBottom = this.orthoBottom;
+        this._cache.orthoTop = this.orthoTop;
+        this._cache.renderWidth = engine.getRenderWidth()
+        this._cache.renderHeight = engine.getRenderHeight();
     };
 
     // Synchronized
     BABYLON.Camera.prototype._isSynchronized = function () {
+        return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
+    };
+
+    BABYLON.Camera.prototype._isSynchronizedViewMatrix = function () {
         if (!BABYLON.Node.prototype._isSynchronized.call(this))
             return false;
         
         return this._cache.position.equals(this.position) 
             && this._cache.upVector.equals(this.upVector);
-    };    
+    };
+
+    BABYLON.Camera.prototype._isSynchronizedProjectionMatrix = function () {
+        var r = this._cache.mode === this.mode
+             && this._cache.minZ === this.minZ
+             && this._cache.maxZ === this.maxZ;
+
+        if (r) {
+            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+                r = r & this._cache.fov === this.fov
+                     && this._cache.aspectRatio === engine.getAspectRatio();
+            }
+            else {
+                r = r & this._cache.orthoLeft === this.orthoLeft
+                     && this._cache.orthoRight === this.orthoRight
+                     && this._cache.orthoBottom === this.orthoBottom
+                     && this._cache.orthoTop === this.orthoTop
+                     && this._cache.renderWidth === engine.getRenderWidth()
+                     && this._cache.renderHeight === engine.getRenderHeight();
+            }
+        }
+
+        return r;
+    };
 
     // Methods
     BABYLON.Camera.prototype.attachControl = function (canvas) {
@@ -131,8 +186,7 @@ var BABYLON = BABYLON || {};
     };
     
     BABYLON.Camera.prototype._computeViewMatrix = function (force) {
-
-        if (!force && this.isSynchronized()) {
+        if (!force && this._isSynchronizedViewMatrix()) {
             return this._computedViewMatrix;
         }
         
@@ -140,9 +194,9 @@ var BABYLON = BABYLON || {};
         return this._computedViewMatrix;
     };
 
-    BABYLON.Camera.prototype.getProjectionMatrix = function () {
-        if (!this._projectionMatrix) {
-            this._projectionMatrix = new BABYLON.Matrix();
+    BABYLON.Camera.prototype.getProjectionMatrix = function (force) {
+        if(!force && this._isSynchronizedProjectionMatrix()) {
+            return this._projectionMatrix;
         }
 
         var engine = this._scene.getEngine();
