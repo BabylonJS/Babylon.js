@@ -31,6 +31,7 @@ var BABYLON = BABYLON || {};
     // Members
     BABYLON.ArcRotateCamera.prototype.inertialAlphaOffset = 0;
     BABYLON.ArcRotateCamera.prototype.inertialBetaOffset = 0;
+    BABYLON.ArcRotateCamera.prototype.inertialRadiusOffset = 0;
     BABYLON.ArcRotateCamera.prototype.lowerAlphaLimit = null;
     BABYLON.ArcRotateCamera.prototype.upperAlphaLimit = null;
     BABYLON.ArcRotateCamera.prototype.lowerBetaLimit = null;
@@ -162,7 +163,7 @@ var BABYLON = BABYLON || {};
                 }
 
                 if (delta)
-                    that.radius -= delta;
+                    that.inertialRadiusOffset += delta;
 
                 if (event.preventDefault) {
                     if (!noPreventDefault) {
@@ -302,19 +303,24 @@ var BABYLON = BABYLON || {};
         }
         
         // Inertia
-        if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0) {
+        if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0 || this.inertialRadiusOffset != 0) {
 
             this.alpha += this.inertialAlphaOffset;
             this.beta += this.inertialBetaOffset;
+            this.radius -= this.inertialRadiusOffset;
 
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
+            this.inertialRadiusOffset *= this.inertia;
 
             if (Math.abs(this.inertialAlphaOffset) < BABYLON.Engine.epsilon)
                 this.inertialAlphaOffset = 0;
 
             if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.epsilon)
                 this.inertialBetaOffset = 0;
+
+            if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.epsilon)
+                this.inertialRadiusOffset = 0;
         }
         
         // Limits
