@@ -21,9 +21,9 @@ var BABYLON = BABYLON || {};
 
         this._viewMatrix = new BABYLON.Matrix();
 
-        this.getViewMatrix();
-
         BABYLON.ArcRotateCamera.prototype._initCache.call(this);
+        
+        this.getViewMatrix();
     };
     
     BABYLON.ArcRotateCamera.prototype = Object.create(BABYLON.Camera.prototype);
@@ -40,7 +40,7 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.angularSensibility = 1000.0;
 
-    BABYLON.ArcRotateCamera.prototype._getTargetPosition = function () {       
+    BABYLON.ArcRotateCamera.prototype._getTargetPosition = function () {
         return this.target.position || this.target;
     };
     
@@ -63,8 +63,8 @@ var BABYLON = BABYLON || {};
     };
 
     // Synchronized
-    BABYLON.ArcRotateCamera.prototype._isSynchronized = function () {
-        if (!BABYLON.Camera.prototype._isSynchronized.call(this))
+    BABYLON.ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
+        if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this))
             return false;
         
         return this._cache.target.equals(this._getTargetPosition())

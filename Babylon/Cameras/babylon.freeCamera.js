@@ -82,8 +82,8 @@ var BABYLON = BABYLON || {};
     };
 
     // Synchronized
-    BABYLON.FreeCamera.prototype._isSynchronized = function () {
-        if (!BABYLON.Camera.prototype._isSynchronized.call(this))
+    BABYLON.FreeCamera.prototype._isSynchronizedViewMatrix = function () {
+        if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this))
             return false;
 
         var lockedTargetPosition = this._getLockedTargetPosition();
