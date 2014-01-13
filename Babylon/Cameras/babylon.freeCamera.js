@@ -58,9 +58,8 @@ var BABYLON = BABYLON || {};
 
     // Cache
     BABYLON.FreeCamera.prototype._initCache = function () {
-        var lockedTargetPosition = this._getLockedTargetPosition();
-        this._cache.lockedTarget = lockedTargetPosition ? lockedTargetPosition.clone() : null;
-        this._cache.rotation = this.rotation.clone();
+        this._cache.lockedTarget = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
+        this._cache.rotation = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
     };
 
     BABYLON.FreeCamera.prototype._updateCache = function (ignoreParentClass) {

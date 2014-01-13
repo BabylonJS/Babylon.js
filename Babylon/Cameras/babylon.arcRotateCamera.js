@@ -46,10 +46,10 @@ var BABYLON = BABYLON || {};
     
     // Cache
     BABYLON.ArcRotateCamera.prototype._initCache = function () {
-        this._cache.target = this._getTargetPosition().clone();
-        this._cache.alpha = this.alpha;
-        this._cache.beta = this.beta;
-        this._cache.radius = this.radius;
+        this._cache.target = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
+        this._cache.alpha = undefined;
+        this._cache.beta = undefined;
+        this._cache.radius = undefined;
     };
 
     BABYLON.ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {

@@ -60,22 +60,22 @@ var BABYLON = BABYLON || {};
     
     //Cache
     BABYLON.Camera.prototype._initCache = function () {
-        this._cache.position = this.position.clone();
-        this._cache.upVector = this.upVector.clone();
+        this._cache.position = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
+        this._cache.upVector = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
 
-        this._cache.mode = this.mode;
-        this._cache.minZ = this.minZ;
-        this._cache.maxZ = this.maxZ;
+        this._cache.mode = undefined;
+        this._cache.minZ = undefined;
+        this._cache.maxZ = undefined;
 
-        this._cache.fov = this.fov;
-        this._cache.aspectRatio = engine.getAspectRatio();
+        this._cache.fov = undefined;
+        this._cache.aspectRatio = undefined;
 
-        this._cache.orthoLeft = this.orthoLeft;
-        this._cache.orthoRight = this.orthoRight;
-        this._cache.orthoBottom = this.orthoBottom;
-        this._cache.orthoTop = this.orthoTop;
-        this._cache.renderWidth = engine.getRenderWidth()
-        this._cache.renderHeight = engine.getRenderHeight();
+        this._cache.orthoLeft = undefined;
+        this._cache.orthoRight = undefined;
+        this._cache.orthoBottom = undefined;
+        this._cache.orthoTop = undefined;
+        this._cache.renderWidth = undefined;
+        this._cache.renderHeight = undefined;
     };
 
     BABYLON.Camera.prototype._updateCache = function (ignoreParentClass) {
