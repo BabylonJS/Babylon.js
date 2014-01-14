@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<files xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <xi:include href="babylonJS.xml" xpointer="xpointer(//files//script)" />
+  <!-- you cannot override a <script> already defined in babylon.xml. You must modify it in babylon.js
+  to be sure that everyone will have it -->
+  <!--<script id="myFile" src="myFile.js">
+    <dependsOn scriptref="Node" />
+  </script>-->
+</files>
