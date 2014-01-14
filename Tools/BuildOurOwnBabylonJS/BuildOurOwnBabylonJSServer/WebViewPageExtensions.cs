@@ -2,9 +2,9 @@
 using System.IO;
 using System.Text;
 using System.Web;
-using BabylonJSServer.Controllers;
+using BuildOurOwnBabylonJSServer.Controllers;
 
-namespace BabylonJSServer.Extensions
+namespace BuildOurOwnBabylonJSServer.Extensions
 {
     public static class WebViewPageExtensions
     {
@@ -15,8 +15,8 @@ namespace BabylonJSServer.Extensions
                 return null;
             
             var type = "text/javascript";
-            var src = page.Url.Action(BabylonJSController.GetFileContentActionName, 
-                                      "BabylonJS", 
+            var src = page.Url.Action(BuildOurOwnBabylonJSController.GetFileContentActionName,
+                                      "BuildOurOwnBabylonJS", 
                                       new { rootPath = page.ViewBag.BabylonJSFolder, relPath = relPathToBabylonJSFolder, type = type });
 
             var script = new TagBuilder("script");

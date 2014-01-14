@@ -8,8 +8,8 @@
     <ProjectGuid>{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>myBabylonJS</RootNamespace>
-    <AssemblyName>myBabylonJS</AssemblyName>
+    <RootNamespace>BuildOurOwnBabylonJS</RootNamespace>
+    <AssemblyName>BuildOurOwnBabylonJS</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -56,22 +56,20 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\myBabylon.js">
-      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Content>
-    <None Include="babylon.xsd">
+    <Content Include="ourOwnBabylon.js"></Content>
+    <None Include="babylonJS.xsd">
       <SubType>Designer</SubType>
     </None>
     <Content Include="Refs\Mvp.Xml-bin-2.0\license.txt" />
     <Content Include="Refs\Mvp.Xml-bin-2.0\Mvp.Xml.dll" />
     <Content Include="Refs\Mvp.Xml-bin-2.0\readme.txt" />
-    <Resource Include="babylon.xml">
+    <Resource Include="babylonJS.xml">
       <SubType>Designer</SubType>
     </Resource>
     <Content Include="executables\JSKompactor.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="myBabylon.xml">
+    <Resource Include="ourOwnBabylonJS.xml">
       <SubType>Designer</SubType>
     </Resource>
   </ItemGroup>

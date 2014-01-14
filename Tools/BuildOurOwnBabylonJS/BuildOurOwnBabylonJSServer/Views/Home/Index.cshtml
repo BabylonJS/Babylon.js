@@ -1,6 +1,6 @@
 ﻿@{
-    ViewBag.Title = "My BabylonJS";
-    ViewBag.BabylonJSFolder = "..\\";
+    ViewBag.Title = "Our Own BabylonJS";
+    ViewBag.BabylonJSFolder = "..\\..\\..\\";
 }
 
 <script type="text/javascript">
@@ -9,7 +9,7 @@
             alert("Your browser does not support WebGL so you can't use BabylonJS on it");
             return;
         }
-        var canvas = $("#babylonJSCanvas")[0];
+        var canvas = $("#ourOwnBabylonJSCanvas")[0];
         var engine = new BABYLON.Engine(canvas, true);
 
         BABYLON.SceneLoader.Load("/Content/Train/", "Train.babylon", engine, function (scene) {

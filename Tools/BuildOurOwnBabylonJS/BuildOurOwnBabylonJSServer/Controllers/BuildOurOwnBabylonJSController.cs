@@ -2,13 +2,13 @@
 using System.IO;
 using System.Text;
 
-namespace BabylonJSServer.Controllers
+namespace BuildOurOwnBabylonJSServer.Controllers
 {
-    public class BabylonJSController : Controller
+    public class BuildOurOwnBabylonJSController : Controller
     {
         public const string GetFileContentActionName = "GetFileContent";
         
-        [ActionName(BabylonJSController.GetFileContentActionName)]
+        [ActionName(BuildOurOwnBabylonJSController.GetFileContentActionName)]
         public ActionResult GetFileContent(string rootPath, string relPath, string type)
         {
             var babylonJSPath = Path.Combine(Server.MapPath("~"), rootPath);

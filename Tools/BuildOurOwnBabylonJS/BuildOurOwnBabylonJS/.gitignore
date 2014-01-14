@@ -1,0 +1,6 @@
+# User-specific files
+executables/jskompactor.exe
+ourOwnBabylonJS.xml
+ourOwnBabylon.js
+#is in repo do have an example of command line
+BuildOurOwnBabylonJS.csproj.user 

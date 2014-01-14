@@ -9,7 +9,7 @@ using System.Diagnostics;
 using Mvp.Xml.XInclude;
 using System.Xml;
 
-namespace myBabylonJS
+namespace BuildOurOwnBabylonJS
 {
     class Program
     {
@@ -23,7 +23,7 @@ namespace myBabylonJS
             }
 
             // Parsing arguments
-            var myBabylonXmlFilePath = "";
+            var ourOwnBabylonJSXmlFilePath = "";
             var scriptsFolderPath = "";
             var shadersFolderPath = "";
             var outputFolderPath = "";
@@ -36,7 +36,7 @@ namespace myBabylonJS
                 switch (order)
                 {
                     case "/i:":
-                        myBabylonXmlFilePath = arg.Substring(3);
+                        ourOwnBabylonJSXmlFilePath = arg.Substring(3);
                         break;
                     case "/w:":
                         scriptsFolderPath = arg.Substring(3);
@@ -57,7 +57,7 @@ namespace myBabylonJS
                 }
             }
 
-            if (String.IsNullOrEmpty(myBabylonXmlFilePath)
+            if (String.IsNullOrEmpty(ourOwnBabylonJSXmlFilePath)
                 || String.IsNullOrEmpty(scriptsFolderPath)
                 || String.IsNullOrEmpty(shadersFolderPath)
                 || String.IsNullOrEmpty(outputFolderPath))
@@ -69,7 +69,7 @@ namespace myBabylonJS
 
             try
             {
-                ParseListOfFiles(myBabylonXmlFilePath);
+                ParseListOfFiles(ourOwnBabylonJSXmlFilePath);
 
                 if (String.IsNullOrEmpty(JSKompactorFolderPath))
                     JSKompactorFolderPath = "executables";
@@ -144,7 +144,7 @@ namespace myBabylonJS
             using (var batchFile = new StreamWriter(batchFilePath, false))
             {
                 batchFile.Write("\"" + jskompactorPath + "\\JSKompactor.exe\" /i:\"" + output
-                    + "\" /o:\"" + outputFolderPath + "\\myBabylon.js\" /w:\"" + scriptsFolderPath + "\\\\\" /s:\"" + shadersFolderPath + "\""); // \r\npause");
+                    + "\" /o:\"" + outputFolderPath + "\\ourOwnBabylon.js\" /w:\"" + scriptsFolderPath + "\" /s:\"" + shadersFolderPath + "\"");
             }
 
             return batchFilePath;
@@ -160,8 +160,7 @@ namespace myBabylonJS
 
         private static void DisplayUsage()
         {
-            //Console.WriteLine("myBabylon usage: myBabylon.exe /xml:\"path of the xml file containing list of files to include\" /myb:\"path of root folder containing your separate js files to extend Babylon.js\" /bjs:\"path of root folder containing separate js files for Babylon.js\"");
-            Console.WriteLine("myBabylon usage: myBabylon.exe /w:\"Working folder\" /i:\"Path of the xml file containing list of files to merge\" /s:\"Shaders folder\" /o:\"Output folder\" [/k:\"Path to JSKompactor.exe\"]");
+            Console.WriteLine("BuildOurOwnBabylonJS usage: BuildOurOwnBabylonJS.exe /w:\"Working folder\" /i:\"Path of the xml file containing list of files to merge\" /s:\"Shaders folder\" /o:\"Output folder\" [/k:\"Path to JSKompactor.exe\"]");
         }
 
         private static void Error(Exception ex)
