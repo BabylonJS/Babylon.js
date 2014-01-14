@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace myBabylonJS
+namespace BuildOurOwnBabylonJS
 {
     public class Script
     {

@@ -1,1 +1,0 @@
-myBabylonJS.exe /w:"..\.." /i:"..\..\myBabylonJS\myBabylon.xml" /s:"Babylon\Shaders" /o:"..\.." /k:"."

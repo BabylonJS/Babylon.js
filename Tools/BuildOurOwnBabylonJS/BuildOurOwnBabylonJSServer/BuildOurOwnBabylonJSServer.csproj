@@ -10,8 +10,8 @@
     <ProjectTypeGuids>{E53F8FEA-EAE0-44A6-8774-FFD645390401};{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BabylonJSServer</RootNamespace>
-    <AssemblyName>BabylonJSServer</AssemblyName>
+    <RootNamespace>BuildOurOwnBabylonJSServer</RootNamespace>
+    <AssemblyName>BuildOurOwnBabylonJSServer</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>false</UseIISExpress>
@@ -64,7 +64,7 @@
   <ItemGroup>
     <Compile Include="WebViewPageExtensions.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\BabylonJSController.cs" />
+    <Compile Include="Controllers\BuildOurOwnBabylonJSController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -252,10 +252,6 @@
     <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -263,9 +259,9 @@
     <None Include="Content\Train\Train.babylon.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\myBabylonJS\myBabylonJS.csproj">
+    <ProjectReference Include="..\BuildOurOwnBabylonJS\BuildOurOwnBabylonJS.csproj">
       <Project>{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}</Project>
-      <Name>myBabylonJS</Name>
+      <Name>BuildOurOwnBabylonJS</Name>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
@@ -304,6 +300,6 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)myBabylonJS\$(OutDir)$(ConfigurationName)\myBabylonJS.exe" /w:"$(SolutionDir)\" /i:"$(SolutionDir)\myBabylonJS\myBabylon.xml" /s:"Babylon\Shaders" /o:"$(SolutionDir)\"</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)BuildOurOwnBabylonJS\$(OutDir)$(ConfigurationName)\BuildOurOwnBabylonJS.exe" /w:"$(SolutionDir)..\.." /i:"$(SolutionDir)BuildOurOwnBabylonJS\ourOwnBabylonJS.xml" /s:"Babylon\Shaders" /o:"$(SolutionDir)BuildOurOwnBabylonJS"</PostBuildEvent>
   </PropertyGroup>
 </Project>

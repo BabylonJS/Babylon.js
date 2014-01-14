@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonJS", "BabylonJS.csproj", "{0263AD0D-56E6-4439-BC05-6EC957200F52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonJS", "..\..\BabylonJS.csproj", "{0263AD0D-56E6-4439-BC05-6EC957200F52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonJSServer", "BabylonJSServer\BabylonJSServer.csproj", "{93EF5B02-72EB-4B55-831E-E5051269EDA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildOurOwnBabylonJSServer", "BuildOurOwnBabylonJSServer\BuildOurOwnBabylonJSServer.csproj", "{93EF5B02-72EB-4B55-831E-E5051269EDA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myBabylonJS", "myBabylonJS\myBabylonJS.csproj", "{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildOurOwnBabylonJS", "BuildOurOwnBabylonJS\BuildOurOwnBabylonJS.csproj", "{CFBE5149-1605-4824-8BD2-55C9B3C1DA60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
