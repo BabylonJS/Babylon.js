@@ -46,7 +46,7 @@ var BABYLON = BABYLON || {};
     
     // Cache
     BABYLON.ArcRotateCamera.prototype._initCache = function () {
-        this._cache.target = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
+        this._cache.target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         this._cache.alpha = undefined;
         this._cache.beta = undefined;
         this._cache.radius = undefined;

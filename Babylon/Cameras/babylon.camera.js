@@ -60,8 +60,8 @@ var BABYLON = BABYLON || {};
     
     //Cache
     BABYLON.Camera.prototype._initCache = function () {
-        this._cache.position = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
-        this._cache.upVector = new BABYLON.Vector3(-Infinity, -Infinity,-Infinity);
+        this._cache.position = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._cache.upVector = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
         this._cache.mode = undefined;
         this._cache.minZ = undefined;
@@ -117,22 +117,22 @@ var BABYLON = BABYLON || {};
         var r = this._cache.mode === this.mode
              && this._cache.minZ === this.minZ
              && this._cache.maxZ === this.maxZ;
+             
+        if (!r)
+            return false;
 
-        if (r) {
-            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                r = r & this._cache.fov === this.fov
-                     && this._cache.aspectRatio === engine.getAspectRatio();
-            }
-            else {
-                r = r & this._cache.orthoLeft === this.orthoLeft
-                     && this._cache.orthoRight === this.orthoRight
-                     && this._cache.orthoBottom === this.orthoBottom
-                     && this._cache.orthoTop === this.orthoTop
-                     && this._cache.renderWidth === engine.getRenderWidth()
-                     && this._cache.renderHeight === engine.getRenderHeight();
-            }
+        if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            r = this._cache.fov === this.fov
+                 && this._cache.aspectRatio === engine.getAspectRatio();
         }
-
+        else {
+            r = this._cache.orthoLeft === this.orthoLeft
+                 && this._cache.orthoRight === this.orthoRight
+                 && this._cache.orthoBottom === this.orthoBottom
+                 && this._cache.orthoTop === this.orthoTop
+                 && this._cache.renderWidth === engine.getRenderWidth()
+                 && this._cache.renderHeight === engine.getRenderHeight();
+        }
         return r;
     };
 
