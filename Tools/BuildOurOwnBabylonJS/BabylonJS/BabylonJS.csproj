@@ -33,10 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="cannon.js" />
-    <Content Include="babylon.*.*.*.js" />
-    <Content Include="Babylon\**\*.*" />
-    <Content Include="Typescript\**\*.*" />
+    <Resource Include="..\..\..\cannon.js">
+      <Link>cannon.js</Link>
+    </Resource>
+    <Resource Include="..\..\..\babylon.*.*.*.js">
+      <Link>%(Filename)%(Extension)</Link>
+    </Resource>
+    <Resource Include="..\..\..\Babylon\**\*.*">
+      <Link>Babylon\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Resource>
+    <Resource Include="..\..\..\Typescript\**\*.*">
+      <Link>Typescript\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

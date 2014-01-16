@@ -76,6 +76,12 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BabylonJS\BabylonJS.csproj">
+      <Project>{0263AD0D-56E6-4439-BC05-6EC957200F52}</Project>
+      <Name>BabylonJS</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
