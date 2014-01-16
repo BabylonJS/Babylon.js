@@ -90,13 +90,16 @@ var BABYLON = BABYLON || {};
         this._cache.maxZ = this.maxZ;
 
         this._cache.fov = this.fov;
+
+        var engine = this._scene.getEngine();
+
         this._cache.aspectRatio = engine.getAspectRatio();
 
         this._cache.orthoLeft = this.orthoLeft;
         this._cache.orthoRight = this.orthoRight;
         this._cache.orthoBottom = this.orthoBottom;
         this._cache.orthoTop = this.orthoTop;
-        this._cache.renderWidth = engine.getRenderWidth()
+        this._cache.renderWidth = engine.getRenderWidth();
         this._cache.renderHeight = engine.getRenderHeight();
     };
 
@@ -120,6 +123,9 @@ var BABYLON = BABYLON || {};
              
         if (!r)
             return false;
+
+
+        var engine = this._scene.getEngine();
 
         if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
             r = this._cache.fov === this.fov
@@ -152,11 +158,11 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Camera.prototype.getWorldMatrix = function () {
-        var viewMatrix = this.getViewMatrix();
-
         if (!this._worldMatrix) {
             this._worldMatrix = BABYLON.Matrix.Identity();
         }
+        
+        var viewMatrix = this.getViewMatrix();
 
         viewMatrix.invertToRef(this._worldMatrix);
 
@@ -174,6 +180,10 @@ var BABYLON = BABYLON || {};
             ||  !this.parent.getWorldMatrix
             || (!this.hasNewParent() && this.parent.isSynchronized())) {
             return this._computedViewMatrix;
+        }
+
+        if (!this._worldMatrix) {
+            this._worldMatrix = BABYLON.Matrix.Identity();
         }
         
         this._computedViewMatrix.invertToRef(this._worldMatrix);
