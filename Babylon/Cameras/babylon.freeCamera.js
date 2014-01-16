@@ -34,6 +34,8 @@ var BABYLON = BABYLON || {};
         this._newPosition = BABYLON.Vector3.Zero();
         this._lookAtTemp = BABYLON.Matrix.Zero();
         this._tempMatrix = BABYLON.Matrix.Zero();
+        
+        BABYLON.FreeCamera.prototype._initCache.call(this);
     };
 
     BABYLON.FreeCamera.prototype = Object.create(BABYLON.Camera.prototype);
@@ -47,6 +49,48 @@ var BABYLON = BABYLON || {};
     BABYLON.FreeCamera.prototype.lockedTarget = null;
     BABYLON.FreeCamera.prototype.onCollide = null;
 
+    BABYLON.FreeCamera.prototype._getLockedTargetPosition = function () {       
+        if(!this.lockedTarget)
+            return null;
+        
+        return this.lockedTarget.position || this.lockedTarget;
+    };
+
+    // Cache
+    BABYLON.FreeCamera.prototype._initCache = function () {
+        this._cache.lockedTarget = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._cache.rotation = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    };
+
+    BABYLON.FreeCamera.prototype._updateCache = function (ignoreParentClass) {
+        if(!ignoreParentClass)
+            BABYLON.Camera.prototype._updateCache.call(this);
+        
+        var lockedTargetPosition = this._getLockedTargetPosition();
+        if (!lockedTargetPosition) {
+            this._cache.lockedTarget = null;
+        }
+        else {
+            if (!this._cache.lockedTarget) 
+                this._cache.lockedTarget = lockedTargetPosition.clone();
+            else
+                this._cache.lockedTarget.copyFrom(lockedTargetPosition);
+        }
+        
+        this._cache.rotation.copyFrom(this.rotation);
+    };
+
+    // Synchronized
+    BABYLON.FreeCamera.prototype._isSynchronizedViewMatrix = function () {
+        if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this))
+            return false;
+
+        var lockedTargetPosition = this._getLockedTargetPosition();
+ 
+        return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
+            && this._cache.rotation.equals(this.rotation);
+    };    
+    
     // Methods
     BABYLON.FreeCamera.prototype._computeLocalCameraSpeed = function () {
         return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
@@ -299,9 +343,24 @@ var BABYLON = BABYLON || {};
 
         // Inertia
         if (needToMove) {
+            if (Math.abs(this.cameraDirection.x) < BABYLON.Engine.epsilon)
+                this.cameraDirection.x = 0;
+
+            if (Math.abs(this.cameraDirection.y) < BABYLON.Engine.epsilon)
+                this.cameraDirection.y = 0;
+
+            if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.epsilon)
+                this.cameraDirection.z = 0;
+        
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
+            if (Math.abs(this.cameraRotation.x) < BABYLON.Engine.epsilon)
+                this.cameraRotation.x = 0;
+
+            if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.epsilon)
+                this.cameraRotation.y = 0;
+        
             this.cameraRotation.scaleInPlace(this.inertia);
         }
     };
@@ -327,11 +386,7 @@ var BABYLON = BABYLON || {};
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
         } else {
-            if (this.lockedTarget.position) {
-                this._currentTarget.copyFrom(this.lockedTarget.position);
-            } else {
-                this._currentTarget.copyFrom(this.lockedTarget);
-            }
+            this._currentTarget.copyFrom(this._getLockedTargetPosition());
         }
         
         BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
