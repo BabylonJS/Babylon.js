@@ -1349,7 +1349,7 @@ var BABYLON = BABYLON || {};
         return ground;
     };
     
-    BABYLON.Mesh.prototype._initCache = function (
+    BABYLON.Mesh.prototype._initCache = function () {
         this._cache.localMatrixUpdated = false;
         this._cache.position = BABYLON.Vector3.Zero();
         this._cache.scaling = BABYLON.Vector3.Zero();
