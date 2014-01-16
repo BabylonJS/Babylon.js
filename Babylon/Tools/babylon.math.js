@@ -191,7 +191,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Color3.prototype.equals = function (otherColor) {
-        return this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
+        return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
     };
 
     BABYLON.Color3.prototype.scale = function (scale) {
@@ -334,7 +334,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Vector2.prototype.equals = function (otherVector) {
-        return this.x === otherVector.x && this.y === otherVector.y;
+        return otherVector && this.x === otherVector.x && this.y === otherVector.y;
     };
 
     // Properties
@@ -540,7 +540,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Vector3.prototype.equals = function (otherVector) {
-        return this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
+        return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
     };
 
     BABYLON.Vector3.prototype.equalsToFloats = function (x, y, z) {
@@ -858,7 +858,7 @@ var BABYLON = BABYLON || {};
     };
     
     BABYLON.Quaternion.prototype.equals = function (otherQuaternion) {
-        return this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
+        return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
     };
 
     BABYLON.Quaternion.prototype.clone = function () {
@@ -1176,7 +1176,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Matrix.prototype.equals = function (value) {
-        return (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
+        return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
                 this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
                 this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
                 this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);

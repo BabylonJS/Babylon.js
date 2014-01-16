@@ -4,6 +4,8 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Mesh = function (name, scene) {
+        BABYLON.Node.call(this);
+        
         this.name = name;
         this.id = name;
         this._scene = scene;
@@ -30,15 +32,10 @@ var BABYLON = BABYLON || {};
         // Animations
         this.animations = [];
 
-        // Cache
         this._positions = null;
-        this._cache = {
-            localMatrixUpdated: false,
-            position: BABYLON.Vector3.Zero(),
-            scaling: BABYLON.Vector3.Zero(),
-            rotation: BABYLON.Vector3.Zero(),
-            rotationQuaternion: new BABYLON.Quaternion(0, 0, 0, 0)
-        };
+        
+        // Cache
+        BABYLON.Mesh.prototype._initCache.call(this);
 
         this._childrenFlag = false;
         this._localScaling = BABYLON.Matrix.Zero();
@@ -143,7 +140,7 @@ var BABYLON = BABYLON || {};
         return this._pivotMatrix;
     };
 
-    BABYLON.Mesh.prototype.isSynchronized = function () {
+    BABYLON.Mesh.prototype._isSynchronized = function () {
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE)
             return false;
 
@@ -168,9 +165,6 @@ var BABYLON = BABYLON || {};
 
         if (!this._cache.scaling.equals(this.scaling))
             return false;
-
-        if (this.parent)
-            return !this.parent._needToSynchonizeChildren();
 
         return true;
     };
@@ -231,7 +225,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
-        if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized())) {
+        if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
             this._childrenFlag = false;
             return this._worldMatrix;
         }
@@ -1354,6 +1348,14 @@ var BABYLON = BABYLON || {};
 
         return ground;
     };
+    
+    BABYLON.Mesh.prototype._initCache = function (
+        this._cache.localMatrixUpdated = false;
+        this._cache.position = BABYLON.Vector3.Zero();
+        this._cache.scaling = BABYLON.Vector3.Zero();
+        this._cache.rotation = BABYLON.Vector3.Zero();
+        this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+    };
 
     // Tools
     BABYLON.Mesh.ComputeNormal = function (positions, normals, indices) {
@@ -1400,5 +1402,5 @@ var BABYLON = BABYLON || {};
             normals[index * 3 + 1] = normal.y;
             normals[index * 3 + 2] = normal.z;
         }
-    };   
+    };
 })();
