@@ -3,13 +3,13 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.BlurPostProcess = function (name, direction, blurWidth, ratio, camera, samplingMode) {
+    BABYLON.BlurPostProcess = function (name, direction, blurWidth, ratio, camera, samplingMode, engine, reusable) {
         
         if (samplingMode === undefined) {
             samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
         }
 
-        BABYLON.PostProcess.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, ratio, camera, samplingMode);
+        BABYLON.PostProcess.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, ratio, camera, samplingMode, engine, reusable);
 
         this.direction = direction;
         this.blurWidth = blurWidth;
