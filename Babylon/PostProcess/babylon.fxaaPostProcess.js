@@ -3,8 +3,8 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.FxaaPostProcess = function (name, ratio, camera, samplingMode) {
-        BABYLON.PostProcess.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode);
+    BABYLON.FxaaPostProcess = function (name, ratio, camera, samplingMode, engine, reusable) {
+        BABYLON.PostProcess.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
     };
     
     BABYLON.FxaaPostProcess.prototype = Object.create(BABYLON.PostProcess.prototype);

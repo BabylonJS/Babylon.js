@@ -31,32 +31,32 @@ var BABYLON = BABYLON || {};
 
     // Methods
     BABYLON.PostProcessManager.prototype._prepareFrame = function () {
-        var postProcesses = this._scene.activeCamera.postProcesses;
+        var postProcesses = this._scene.activeCamera._postProcesses;
         
         if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
-
-        postProcesses[0].activate();
+        
+        postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
     };
     
     BABYLON.PostProcessManager.prototype._finalizeFrame = function () {
-        var postProcesses = this._scene.activeCamera.postProcesses;
-        
+        var postProcesses = this._scene.activeCamera._postProcesses;
+        var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
         if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
 
         var engine = this._scene.getEngine();
         
-        for (var index = 0; index < postProcesses.length; index++) {            
-            if (index < postProcesses.length - 1) {
-                postProcesses[index + 1].activate();
+        for (var index = 0; index < postProcessesTakenIndices.length; index++) {
+            if (postProcessesTakenIndices[index] < postProcesses.length - 1) {
+                postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
             } else {
                 engine.restoreDefaultFramebuffer();
             }
 
-            var effect = postProcesses[index].apply();
+            var effect = postProcesses[postProcessesTakenIndices[index]].apply();
 
             if (effect) {
                 // VBOs

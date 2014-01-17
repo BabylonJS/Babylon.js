@@ -27,7 +27,8 @@ var BABYLON = BABYLON || {};
         this.animations = [];
 
         // Postprocesses
-        this.postProcesses = [];
+        this._postProcesses = [];
+        this._postProcessesTakenIndices = [];
         
         // Viewport
         this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
@@ -145,7 +146,7 @@ var BABYLON = BABYLON || {};
     // Methods
     BABYLON.Camera.prototype.attachControl = function (canvas) {
     };
-
+    
     BABYLON.Camera.prototype.detachControl = function (canvas) {
     };
 
@@ -155,6 +156,91 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype._updateFromScene = function () {
         this.updateCache();
         this._update();
+    };
+
+    BABYLON.Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
+        if (!postProcess._reusable && this._postProcesses.indexOf(postProcess) > -1) {
+            return;
+        }
+
+        if (!insertAt || insertAt < 0) {
+            this._postProcesses.push(postProcess);
+            this._postProcessesTakenIndices.push(this._postProcesses.length - 1);
+
+            return this._postProcesses.length - 1;
+        }
+
+        var add = 0;
+
+        if (this._postProcesses[insertAt]) {
+
+            var start = this._postProcesses.length - 1;
+
+
+            for (var i = start; i >= insertAt + 1; --i) {
+                this._postProcesses[i + 1] = this._postProcesses[i];
+            }
+
+            add = 1;
+        }
+
+        for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
+            if (this._postProcessesTakentIndices[i] < insertAt) {
+                continue;
+            }
+
+            var start = this._postProcessesTakenIndices.length - 1;
+            for (var j = start; j >= i; --j) {
+                this._postProcessesTakenIndices[j + 1] = this._postProcessesTakenIndices[j] + add;
+            }
+            this._postProcessesTakenIndices[i] = insertAt;
+            break;
+        }
+
+        result = insertAt + add;
+
+        this._postProcesses[result] = postProcess;
+
+        return result;
+    };
+
+    BABYLON.Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
+        var result = [];
+
+        if (!atIndices) {
+
+            var length = this._postProcesses.length;
+
+            for (var i = 0; i < length; i++) {
+
+                if (this._postProcesses[i] !== postProcess) {
+                    continue;
+                }
+
+                delete this._postProcesses[i];
+
+                var index = this._postProcessesTakenIndices.indexOf(i);
+                this._postProcessesTakenIndices.splice(i, 1);
+            }
+
+        }
+
+        else {
+            for (var i = 0; i < atIndices.length; i++) {
+                var foundPostProcess = this._postProcesses[atIndices[i]];
+
+                if (foundPostProcess !== postProcess) {
+                    result.push(i);
+                    continue;
+                }
+
+                delete this._postProcesses[atIndices[i]];
+
+                var index = this._postProcessesTakenIndices.indexOf(atIndices[i]);
+                this._postProcessesTakenIndices.splice(index, 1);
+            }
+        }
+        return result;
     };
 
     BABYLON.Camera.prototype.getWorldMatrix = function () {
@@ -227,8 +313,8 @@ var BABYLON = BABYLON || {};
         this._scene.cameras.splice(index, 1);
         
         // Postprocesses
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
+        for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
+            this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
         }
     };
 })();
