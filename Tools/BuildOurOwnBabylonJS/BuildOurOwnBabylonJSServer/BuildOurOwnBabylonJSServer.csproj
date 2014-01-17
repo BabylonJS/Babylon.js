@@ -62,6 +62,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\DemoController.cs" />
     <Compile Include="WebViewPageExtensions.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\BuildOurOwnBabylonJSController.cs" />
@@ -255,8 +256,12 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\DRILLING-RISER-7000mm-SHIFTING\DRILLING-RISER-7000mm-SHIFTING - fileSimplified.babylon" />
+    <None Include="Content\DRILLING-RISER-7000mm-SHIFTING\DRILLING-RISER-7000mm-SHIFTING.babylon" />
     <None Include="Content\Train\Train.babylon" />
     <None Include="Content\Train\Train.babylon.manifest" />
+    <Content Include="Views\Demo\DRILLING-RISER-7000mm-SHIFTING.cshtml" />
+    <Content Include="Views\Demo\DRILLING-RISER-7000mm-SHIFTING - fileSimplified.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BuildOurOwnBabylonJS\BuildOurOwnBabylonJS.csproj">
@@ -265,6 +270,7 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
