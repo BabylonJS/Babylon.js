@@ -1,5 +1,21 @@
 ﻿Changes list
 ============
+- 1.8.5:
+ - **Major updates**
+ - Visual Studio 2013 templates for Windows 8.1 and nuget packages ([pierlag](http://www.github.com/pierlag))
+ - **Updates**
+ - New ```matrix.multiply``` function (up to 50% faster) ([deltakosh](http://www.github.com/deltakosh))
+ - New matrices cache system for camera (view and projection matrices) ([juliengobin](http://www.github.com/juliengobin))
+ - New physics impostor: compound and mesh (still really slow) ([deltakosh](http://www.github.com/deltakosh))
+ - Set crossOrigin flag for support CORS ([vbouzon](http://www.github.com/vbouzon))
+ - XNA importer: Changes for Right-Left Coordinate Systems & Prefixed Mesh Parts with Mesh Name ([professorF](http://www.github.com/professorF))
+ - Fixing getPivotMatrix ([gwenael-hagenmuller](http://www.github.com/gwenael-hagenmuller))
+ - New geometry functions: getLocalTranslation, setPositionWithLocalVector, getPositionExpressedInLocalSpace,locallyTranslate ([gwenael-hagenmuller](http://www.github.com/gwenael-hagenmuller))
+ - Adding multi mesh import from same file([nicolas-obre](http://www.github.com/nicolas-obre)) 
+ - **Bugfixes**
+ - Fixing issue when disposing a parent and not its children ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing .obj importer ([deltakosh](http://www.github.com/deltakosh))
+ - Added guardband checks for impostors' size ([deltakosh](http://www.github.com/deltakosh))
 - 1.8.0:
  - **Major updates**
  - Support for [physics engine](http://www.babylonjs.com/index.html?PHYSICS) thanks to cannon.js ([deltakosh](http://www.github.com/deltakosh))
