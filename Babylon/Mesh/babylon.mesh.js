@@ -4,11 +4,10 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Mesh = function (name, scene) {
-        BABYLON.Node.call(this);
-        
+        BABYLON.Node.call(this, scene);
+
         this.name = name;
         this.id = name;
-        this._scene = scene;
 
         this._totalVertices = 0;
         this._worldMatrix = BABYLON.Matrix.Identity();
@@ -28,16 +27,14 @@ var BABYLON = BABYLON || {};
         this._renderId = 0;
 
         this._onBeforeRenderCallbacks = [];
-        
+
         // Animations
         this.animations = [];
 
-        this._positions = null;
-        
         // Cache
+        this._positions = null;
         BABYLON.Mesh.prototype._initCache.call(this);
 
-        this._childrenFlag = false;
         this._localScaling = BABYLON.Matrix.Zero();
         this._localRotation = BABYLON.Matrix.Zero();
         this._localTranslation = BABYLON.Matrix.Zero();
@@ -53,7 +50,7 @@ var BABYLON = BABYLON || {};
 
         this._absolutePosition = BABYLON.Vector3.Zero();
     };
-    
+
     BABYLON.Mesh.prototype = Object.create(BABYLON.Node.prototype);
 
     // Constants
@@ -77,9 +74,9 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.onDispose = null;
 
     BABYLON.Mesh.prototype.skeleton = null;
-    
+
     BABYLON.Mesh.prototype.renderingGroupId = 0;
-    
+
     BABYLON.Mesh.prototype.infiniteDistance = false;
 
     // Properties
@@ -98,11 +95,11 @@ var BABYLON = BABYLON || {};
         }
         return this._worldMatrix;
     };
-    
+
     BABYLON.Mesh.prototype.getAbsolutePosition = function () {
         return this._absolutePosition;
     };
-        
+
     BABYLON.Mesh.prototype.getTotalVertices = function () {
         return this._totalVertices;
     };
@@ -112,7 +109,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.isVerticesDataPresent = function (kind) {
-        if (!this._vertexBuffers && this._delayInfo) {            
+        if (!this._vertexBuffers && this._delayInfo) {
             return this._delayInfo.indexOf(kind) !== -1;
         }
 
@@ -147,7 +144,7 @@ var BABYLON = BABYLON || {};
         if (this._cache.pivotMatrixUpdated) {
             return false;
         }
-        
+
         if (this.infiniteDistance) {
             return false;
         }
@@ -180,15 +177,23 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.isDisposed = function () {
         return this._isDisposed;
     };
-    
+
     // Methods
+    BABYLON.Mesh.prototype._initCache = function () {
+        this._cache.localMatrixUpdated = false;
+        this._cache.position = BABYLON.Vector3.Zero();
+        this._cache.scaling = BABYLON.Vector3.Zero();
+        this._cache.rotation = BABYLON.Vector3.Zero();
+        this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+    };
+
     BABYLON.Mesh.prototype.markAsDirty = function (property) {
         if (property === "rotation") {
             this.rotationQuaternion = null;
         }
-        this._childrenFlag = true;
+        this._syncChildFlag();
     };
-    
+
     BABYLON.Mesh.prototype.refreshBoundingInfo = function () {
         var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
@@ -202,11 +207,11 @@ var BABYLON = BABYLON || {};
         for (var index = 0; index < this.subMeshes.length; index++) {
             this.subMeshes[index].refreshBoundingInfo();
         }
-        
+
         this._updateBoundingInfo();
     };
 
-    BABYLON.Mesh.prototype._updateBoundingInfo = function() {
+    BABYLON.Mesh.prototype._updateBoundingInfo = function () {
         if (this._boundingInfo) {
             this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
             this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
@@ -226,11 +231,10 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
         if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
-            this._childrenFlag = false;
             return this._worldMatrix;
         }
 
-        this._childrenFlag = true;
+        this._syncChildFlag();
         this._cache.position.copyFrom(this.position);
         this._cache.scaling.copyFrom(this.scaling);
         this._cache.pivotMatrixUpdated = false;
@@ -289,7 +293,7 @@ var BABYLON = BABYLON || {};
             this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
             this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
         }
-        
+
         // Local world
         this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
 
@@ -297,9 +301,6 @@ var BABYLON = BABYLON || {};
         if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
             this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
         } else {
-            // multiplyToRef instead of this._worldMatrix = this._localWorld;
-            // to be sure not to have a bug with a call to this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
-            // Moreover multiplyToRef is more efficient than clone
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
         }
 
@@ -311,6 +312,7 @@ var BABYLON = BABYLON || {};
 
         return this._worldMatrix;
     };
+
 
     BABYLON.Mesh.prototype._createGlobalSubMesh = function () {
         if (!this._totalVertices || !this._indices) {
@@ -395,7 +397,7 @@ var BABYLON = BABYLON || {};
         // Draw order
         engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
     };
-    
+
     BABYLON.Mesh.prototype.registerBeforeRender = function (func) {
         this._onBeforeRenderCallbacks.push(func);
     };
@@ -412,11 +414,11 @@ var BABYLON = BABYLON || {};
         if (!this._vertexBuffers || !this._indexBuffer) {
             return;
         }
-        
+
         for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
             this._onBeforeRenderCallbacks[callbackIndex]();
         }
-        
+
         // World
         var world = this.getWorldMatrix();
 
@@ -477,13 +479,13 @@ var BABYLON = BABYLON || {};
         return results;
     };
 
-    BABYLON.Mesh.prototype.isInFrustrum = function (frustumPlanes) {
+    BABYLON.Mesh.prototype.isInFrustum = function (frustumPlanes) {
         if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
             return false;
         }
 
-        var result = this._boundingInfo.isInFrustrum(frustumPlanes);
-        
+        var result = this._boundingInfo.isInFrustum(frustumPlanes);
+
         if (result && this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
             var that = this;
@@ -530,8 +532,7 @@ var BABYLON = BABYLON || {};
     };
 
     // Geometry
-    // deprecated: use setPositionWithLocalVector instead. It fixes setLocalTranslation.
-    BABYLON.Mesh.prototype.setLocalTranslation = function(vector3) {
+    BABYLON.Mesh.prototype.setLocalTranslation = function (vector3) {
         console.warn("deprecated: use setPositionWithLocalVector instead");
         this.computeWorldMatrix();
         var worldMatrix = this._worldMatrix.clone();
@@ -539,8 +540,7 @@ var BABYLON = BABYLON || {};
 
         this.position = BABYLON.Vector3.TransformCoordinates(vector3, worldMatrix);
     };
-    
-    // deprecated: use getPositionExpressedInLocalSpace instead. It fixes getLocalTranslation.
+
     BABYLON.Mesh.prototype.getLocalTranslation = function () {
         console.warn("deprecated: use getPositionExpressedInLocalSpace instead");
         this.computeWorldMatrix();
@@ -550,10 +550,10 @@ var BABYLON = BABYLON || {};
 
         return BABYLON.Vector3.TransformCoordinates(this.position, invWorldMatrix);
     };
-    
-    BABYLON.Mesh.prototype.setPositionWithLocalVector = function(vector3) {
+
+    BABYLON.Mesh.prototype.setPositionWithLocalVector = function (vector3) {
         this.computeWorldMatrix();
-        
+
         this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
     };
 
@@ -564,10 +564,10 @@ var BABYLON = BABYLON || {};
 
         return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
     };
-    
-    BABYLON.Mesh.prototype.locallyTranslate = function(vector3) {
+
+    BABYLON.Mesh.prototype.locallyTranslate = function (vector3) {
         this.computeWorldMatrix();
-        
+
         this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
     };
 
@@ -776,6 +776,8 @@ var BABYLON = BABYLON || {};
             }
         }
 
+        result.computeWorldMatrix(true);
+
         return result;
     };
 
@@ -813,6 +815,14 @@ var BABYLON = BABYLON || {};
                     objects[index].dispose();
                 }
             }
+        } else {
+            for (var index = 0; index < this._scene.meshes.length; index++) {
+                var obj = this._scene.meshes[index];
+                if (obj.parent === this) {
+                    obj.parent = null;
+                    obj.computeWorldMatrix(true);
+                }
+            }
         }
 
         this._isDisposed = true;
@@ -822,16 +832,16 @@ var BABYLON = BABYLON || {};
             this.onDispose();
         }
     };
-    
+
     // Physics
-    BABYLON.Mesh.prototype.setPhysicsState = function(options) {
+    BABYLON.Mesh.prototype.setPhysicsState = function (options) {
         if (!this._scene._physicsEngine) {
             return;
         }
 
         options.impostor = options.impostor || BABYLON.PhysicsEngine.NoImpostor;
         options.mass = options.mass || 0;
-        options.friction = options.friction || 0.0;
+        options.friction = options.friction || 0.2;
         options.restitution = options.restitution || 0.9;
 
         this._physicImpostor = options.impostor;
@@ -843,11 +853,11 @@ var BABYLON = BABYLON || {};
             this._scene._physicsEngine._unregisterMesh(this);
             return;
         }
-        
+
         this._scene._physicsEngine._registerMesh(this, options);
     };
 
-    BABYLON.Mesh.prototype.getPhysicsImpostor = function() {
+    BABYLON.Mesh.prototype.getPhysicsImpostor = function () {
         if (!this._physicImpostor) {
             return BABYLON.PhysicsEngine.NoImpostor;
         }
@@ -855,14 +865,14 @@ var BABYLON = BABYLON || {};
         return this._physicImpostor;
     };
 
-    BABYLON.Mesh.prototype.getPhysicsMass = function() {
+    BABYLON.Mesh.prototype.getPhysicsMass = function () {
         if (!this._physicsMass) {
             return 0;
         }
 
         return this._physicsMass;
     };
-    
+
     BABYLON.Mesh.prototype.getPhysicsFriction = function () {
         if (!this._physicsFriction) {
             return 0;
@@ -870,7 +880,7 @@ var BABYLON = BABYLON || {};
 
         return this._physicsFriction;
     };
-    
+
     BABYLON.Mesh.prototype.getPhysicsRestitution = function () {
         if (!this._physicRestitution) {
             return 0;
@@ -879,7 +889,7 @@ var BABYLON = BABYLON || {};
         return this._physicRestitution;
     };
 
-    BABYLON.Mesh.prototype.applyImpulse = function(force, contactPoint) {
+    BABYLON.Mesh.prototype.applyImpulse = function (force, contactPoint) {
         if (!this._physicImpostor) {
             return;
         }
@@ -887,11 +897,11 @@ var BABYLON = BABYLON || {};
         this._scene._physicsEngine._applyImpulse(this, force, contactPoint);
     };
 
-    BABYLON.Mesh.prototype.setPhysicsLinkWith = function(otherMesh, pivot1, pivot2) {
+    BABYLON.Mesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2) {
         if (!this._physicImpostor) {
             return;
         }
-        
+
         this._scene._physicsEngine._createLink(this, otherMesh, pivot1, pivot2);
     };
 
@@ -1038,7 +1048,7 @@ var BABYLON = BABYLON || {};
 
         var createCylinderCap = function (isTop) {
             var radius = isTop ? radiusTop : radiusBottom;
-            
+
             if (radius == 0) {
                 return
             }
@@ -1125,7 +1135,7 @@ var BABYLON = BABYLON || {};
         cylinder.setIndices(indices);
 
         return cylinder;
-    };    
+    };
 
     // Torus  (Code from SharpDX.org)
     BABYLON.Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
@@ -1347,14 +1357,6 @@ var BABYLON = BABYLON || {};
         ground._isReady = false;
 
         return ground;
-    };
-    
-    BABYLON.Mesh.prototype._initCache = function () {
-        this._cache.localMatrixUpdated = false;
-        this._cache.position = BABYLON.Vector3.Zero();
-        this._cache.scaling = BABYLON.Vector3.Zero();
-        this._cache.rotation = BABYLON.Vector3.Zero();
-        this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
     };
 
     // Tools

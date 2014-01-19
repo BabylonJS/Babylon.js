@@ -78,7 +78,7 @@ var BABYLON = BABYLON || {};
             }
             return;
         }
-        if (BABYLON.BoundingBox.IsInFrustrum(this._boundingVectors, frustumPlanes)) {
+        if (BABYLON.BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
             selection.push(this);
         }
     };

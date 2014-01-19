@@ -134,6 +134,10 @@ var BABYLON = BABYLON || {};
         return this._evaluateActiveMeshesDuration;
     };
 
+    BABYLON.Scene.prototype.geActiveMeshes = function () {
+        return this._activeMeshes;
+    };
+
     BABYLON.Scene.prototype.getRenderTargetsDuration = function () {
         return this._renderTargetsDuration;
     };
@@ -446,7 +450,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-        if (mesh.subMeshes.length == 1 || subMesh.isInFrustrum(this._frustumPlanes)) {
+        if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             var material = subMesh.getMaterial();
 
             if (material) {
@@ -500,7 +504,7 @@ var BABYLON = BABYLON || {};
                         mesh._renderId = 0;
                     }
 
-                    if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes))) {
+                    if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes))) {
                         if (mesh._renderId === 0) {
                             this._activeMeshes.push(mesh);
                         }
@@ -538,7 +542,7 @@ var BABYLON = BABYLON || {};
 
                 mesh.computeWorldMatrix();
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustrum(this._frustumPlanes)) {
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
 
                     if (mesh.skeleton) {
@@ -880,7 +884,7 @@ var BABYLON = BABYLON || {};
         for (var index = 0; index < this.meshes.length; index++) {
             var mesh = this.meshes[index];
 
-            mesh.computeWorldMatrix();
+            mesh.computeWorldMatrix(true);
             var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
             var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
 
@@ -960,7 +964,7 @@ var BABYLON = BABYLON || {};
     };
     
     // Physics
-    BABYLON.Scene.prototype.enablePhysics = function(gravity) {
+    BABYLON.Scene.prototype.enablePhysics = function(gravity, iterations) {
         if (this._physicsEngine) {
             return true;
         }
@@ -969,7 +973,7 @@ var BABYLON = BABYLON || {};
             return false;
         }
 
-        this._physicsEngine = new BABYLON.PhysicsEngine(gravity);
+        this._physicsEngine = new BABYLON.PhysicsEngine(gravity, iterations || 10);
 
         return true;
     };
@@ -993,6 +997,31 @@ var BABYLON = BABYLON || {};
         }
 
         this._physicsEngine._setGravity(gravity);
+    };
+
+    BABYLON.Scene.prototype.createCompoundImpostor = function (options) {
+        if (!this._physicsEngine) {
+            return null;
+        }
+
+        for (var index = 0; index < options.parts.length; index++) {
+            var mesh = options.parts[index].mesh;
+
+            mesh._physicImpostor = options.parts[index].impostor;
+            mesh._physicsMass = options.mass / options.parts.length;
+            mesh._physicsFriction = options.friction;
+            mesh._physicRestitution = options.restitution;
+        }
+
+        return this._physicsEngine._registerCompound(options);
+    };
+
+    BABYLON.Scene.prototype.deleteCompoundImpostor = function (compound) {
+        for (var index = 0; index < compound.parts.length; index++) {
+            var mesh = compound.parts[index].mesh;
+            mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
+            this._scene._physicsEngine._unregisterMesh(mesh);
+        }
     };
 
     // Statics

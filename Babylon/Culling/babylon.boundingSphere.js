@@ -22,7 +22,7 @@ var BABYLON = BABYLON || {};
         this.radiusWorld = this.radius * scale;
     };
     
-    BABYLON.BoundingSphere.prototype.isInFrustrum = function (frustumPlanes) {
+    BABYLON.BoundingSphere.prototype.isInFrustum = function (frustumPlanes) {
         for (var i = 0; i < 6; i++) {
             if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
                 return false;

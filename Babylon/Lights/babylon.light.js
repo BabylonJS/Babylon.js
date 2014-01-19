@@ -4,11 +4,10 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Light = function (name, scene) {
+        BABYLON.Node.call(this, scene);
+
         this.name = name;
         this.id = name;
-        this._childrenFlag = true;
-
-        this._scene = scene;
 
         scene.lights.push(this);
         
@@ -37,7 +36,9 @@ var BABYLON = BABYLON || {};
     BABYLON.Light.prototype.transferToEffect = function() {
     };
 
-    BABYLON.Light.prototype.getWorldMatrix = function() {
+    BABYLON.Light.prototype.getWorldMatrix = function () {
+        this._syncChildFlag();
+
         var worldMatrix = this._getWorldMatrix();
 
         if (this.parent && this.parent.getWorldMatrix) {
