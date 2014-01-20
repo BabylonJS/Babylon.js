@@ -532,6 +532,7 @@ var BABYLON = BABYLON || {};
     };
 
     // Geometry
+    // Deprecated: use setPositionWithLocalVector instead 
     BABYLON.Mesh.prototype.setLocalTranslation = function (vector3) {
         console.warn("deprecated: use setPositionWithLocalVector instead");
         this.computeWorldMatrix();
@@ -541,6 +542,7 @@ var BABYLON = BABYLON || {};
         this.position = BABYLON.Vector3.TransformCoordinates(vector3, worldMatrix);
     };
 
+    // Deprecated: use getPositionExpressedInLocalSpace instead 
     BABYLON.Mesh.prototype.getLocalTranslation = function () {
         console.warn("deprecated: use getPositionExpressedInLocalSpace instead");
         this.computeWorldMatrix();
@@ -598,6 +600,25 @@ var BABYLON = BABYLON || {};
         }
 
         this.setVerticesData(temp, BABYLON.VertexBuffer.NormalKind, this._vertexBuffers[BABYLON.VertexBuffer.NormalKind].isUpdatable());
+    };
+
+    BABYLON.Mesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
+        /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
+        /// <param name="targetPoint" type="BABYLON.Vector3">The position (must be in same space as current mesh) to look at</param>
+        /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
+        /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
+        /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
+        /// <returns>Mesh oriented towards targetMesh</returns>
+
+        yawCor = yawCor || 0; // default to zero if undefined 
+        pitchCor = pitchCor || 0;
+        rollCor = rollCor || 0;
+
+        var dv = targetPoint.subtract(this.position);
+        var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
+        var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
+        var pitch = Math.atan2(dv.y, len);
+        this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
     };
 
     // Cache
