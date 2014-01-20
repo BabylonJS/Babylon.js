@@ -7,8 +7,6 @@ var BABYLON = BABYLON || {};
         this.name = name;
 
         if (camera != null) {
-            console.warn("Adding a camera in a post process is deprecated");
-
             this._camera = camera;
             this._scene = camera.getScene();
             camera.attachPostProcess(this);
@@ -113,7 +111,7 @@ var BABYLON = BABYLON || {};
         }
         if (this._textures.length > 0) {
             for (var i = 0; i < this._textures.length; i++) {
-                this._engine._releaseTexture(this._textures[i]);
+                this._engine._releaseTexture(this._textures.data[i]);
             }
             this._textures.reset();
         }
