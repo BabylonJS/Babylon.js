@@ -104,7 +104,8 @@ var onload = function () {
     { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" },
     { title: "Catalog3D", url: "http://apps.microsoft.com/windows/en-gb/app/catalog-3d-by-sokrate/43771ce3-02f0-4365-98c3-557cd8acdad2", screenshot: "sokrate3D.jpg", size: "by SOKRATE" },
     { title: "PSN TELECENTRES", url: "http://psntelecentres.com/visite_virtuelle.html", screenshot: "psn.jpg", size: "by SOKRATE" },
-    { title: "VIRTUAL EXPO", url: "http://www.sokrate.fr/expovirtuelle/index.htm", screenshot: "expo.jpg", size: "by SOKRATE" }
+    { title: "VIRTUAL EXPO", url: "http://www.sokrate.fr/expovirtuelle/index.htm", screenshot: "expo.jpg", size: "by SOKRATE" },
+    { title: "3delyvisions SKYBOX TOUR", url: "http://urbanproductions.com/wingy/babylon/skyboxes/skybox_tour.htm", screenshot: "tour.jpg", size: "by Wingnut" }
     ];
 
     // UI

@@ -4,7 +4,7 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Camera = function (name, position, scene) {
-        BABYLON.Node.call(this);
+        BABYLON.Node.call(this, scene);
         
         this.name = name;
         this.id = name;
@@ -59,6 +59,8 @@ var BABYLON = BABYLON || {};
         return this._scene;
     };
     
+    // Methods
+
     //Cache
     BABYLON.Camera.prototype._initCache = function () {
         this._cache.position = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -80,9 +82,12 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Camera.prototype._updateCache = function (ignoreParentClass) {
-        if(!ignoreParentClass)
+        if (!ignoreParentClass) {
             BABYLON.Node.prototype._updateCache.call(this);
+        }
         
+        var engine = this._scene.getEngine();
+
         this._cache.position.copyFrom(this.position);
         this._cache.upVector.copyFrom(this.upVector);
 
@@ -91,9 +96,6 @@ var BABYLON = BABYLON || {};
         this._cache.maxZ = this.maxZ;
 
         this._cache.fov = this.fov;
-
-        var engine = this._scene.getEngine();
-
         this._cache.aspectRatio = engine.getAspectRatio();
 
         this._cache.orthoLeft = this.orthoLeft;
@@ -102,6 +104,11 @@ var BABYLON = BABYLON || {};
         this._cache.orthoTop = this.orthoTop;
         this._cache.renderWidth = engine.getRenderWidth();
         this._cache.renderHeight = engine.getRenderHeight();
+    };
+
+    BABYLON.Camera.prototype._updateFromScene = function () {
+        this.updateCache();
+        this._update();
     };
 
     // Synchronized
@@ -114,36 +121,38 @@ var BABYLON = BABYLON || {};
             return false;
         
         return this._cache.position.equals(this.position) 
-            && this._cache.upVector.equals(this.upVector);
+            && this._cache.upVector.equals(this.upVector)
+            && this.isSynchronizedWithParent();
     };
 
     BABYLON.Camera.prototype._isSynchronizedProjectionMatrix = function () {
-        var r = this._cache.mode === this.mode
+        var check = this._cache.mode === this.mode
              && this._cache.minZ === this.minZ
              && this._cache.maxZ === this.maxZ;
              
-        if (!r)
+        if (!check) {
             return false;
-
+        }
 
         var engine = this._scene.getEngine();
 
         if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-            r = this._cache.fov === this.fov
+            check = this._cache.fov === this.fov
                  && this._cache.aspectRatio === engine.getAspectRatio();
         }
         else {
-            r = this._cache.orthoLeft === this.orthoLeft
+            check = this._cache.orthoLeft === this.orthoLeft
                  && this._cache.orthoRight === this.orthoRight
                  && this._cache.orthoBottom === this.orthoBottom
                  && this._cache.orthoTop === this.orthoTop
                  && this._cache.renderWidth === engine.getRenderWidth()
                  && this._cache.renderHeight === engine.getRenderHeight();
         }
-        return r;
+
+        return check;
     };
 
-    // Methods
+    // Controls
     BABYLON.Camera.prototype.attachControl = function (canvas) {
     };
     
@@ -153,11 +162,6 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype._update = function () {
     };
     
-    BABYLON.Camera.prototype._updateFromScene = function () {
-        this.updateCache();
-        this._update();
-    };
-
     BABYLON.Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
         if (!postProcess._reusable && this._postProcesses.indexOf(postProcess) > -1) {
             console.error("You're trying to reuse a post process not defined as reusable.");
@@ -291,7 +295,7 @@ var BABYLON = BABYLON || {};
         if (!force && this._isSynchronizedViewMatrix()) {
             return this._computedViewMatrix;
         }
-        
+        this._syncChildFlag();
         this._computedViewMatrix = this._getViewMatrix();
         return this._computedViewMatrix;
     };

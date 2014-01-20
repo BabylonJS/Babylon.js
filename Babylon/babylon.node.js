@@ -1,21 +1,24 @@
 ﻿"use strict";
 
+
 var BABYLON = BABYLON || {};
 
+
 (function () {
-    BABYLON.Node = function () {
+    BABYLON.Node = function (scene) {
+        this._scene = scene;
         BABYLON.Node.prototype._initCache.call(this);
     };
-    
+
     // Properties
     BABYLON.Node.prototype.parent = null;
-    BABYLON.Node.prototype._childrenFlag = false;
+    BABYLON.Node.prototype._childrenFlag = -1;
     BABYLON.Node.prototype._isReady = true;
     BABYLON.Node.prototype._isEnabled = true;
 
     // Cache
     BABYLON.Node.prototype._cache = null;
-    
+
     // override it in derived class if you add new variables to the cache
     // and call it in the constructor of your class like this
     // BABYLON.YourClass.prototype._initCache.call(this)
@@ -28,9 +31,9 @@ var BABYLON = BABYLON || {};
     BABYLON.Node.prototype.updateCache = function (force) {
         if (!force && this.isSynchronized())
             return;
-        
+
         this._cache.parent = this.parent;
-        
+
         this._updateCache();
     };
 
@@ -47,45 +50,55 @@ var BABYLON = BABYLON || {};
         return true;
     };
 
-    BABYLON.Node.prototype.isSynchronized = function (updateCache) {
-        var r = this.hasNewParent();
+    BABYLON.Node.prototype._syncChildFlag = function() {
+        this._childrenFlag = this.parent ? this.parent._childrenFlag : this._scene.getRenderId();
+    };
 
-        r = r || (this.parent && this.parent._needToSynchonizeChildren());
-        
-        r = r || !this._isSynchronized();
-        
-        if(updateCache)
+    BABYLON.Node.prototype.isSynchronizedWithParent = function() {
+        return this.parent ? !this.parent._needToSynchonizeChildren(this._childrenFlag) : true;
+    };
+
+    BABYLON.Node.prototype.isSynchronized = function (updateCache) {
+        var check = this.hasNewParent();
+
+        check = check || !this.isSynchronizedWithParent();
+
+        check = check || !this._isSynchronized();
+
+        if (updateCache)
             this.updateCache(true);
-        
-        return !r;
+
+        return !check;
     };
 
     BABYLON.Node.prototype.hasNewParent = function (update) {
         if (this._cache.parent === this.parent)
             return false;
-        
-        if(update)
+
+        if (update)
             this._cache.parent = this.parent;
-        
+
         return true;
     };
-    
-    BABYLON.Node.prototype._needToSynchonizeChildren = function () {
-        return this._childrenFlag;
+
+    BABYLON.Node.prototype._needToSynchonizeChildren = function (childFlag) {
+        return this._childrenFlag != childFlag;
     };
-    
+
     BABYLON.Node.prototype.isReady = function () {
         return this._isReady;
     };
-    
+
     BABYLON.Node.prototype.isEnabled = function () {
         if (!this.isReady() || !this._isEnabled) {
             return false;
         }
 
+
         if (this.parent) {
             return this.parent.isEnabled();
         }
+
 
         return true;
     };
@@ -93,19 +106,20 @@ var BABYLON = BABYLON || {};
     BABYLON.Node.prototype.setEnabled = function (value) {
         this._isEnabled = value;
     };
-    
+
     BABYLON.Node.prototype.isDescendantOf = function (ancestor) {
         if (this.parent) {
             if (this.parent === ancestor) {
                 return true;
             }
 
+
             return this.parent.isDescendantOf(ancestor);
         }
         return false;
     };
 
-    BABYLON.Node.prototype._getDescendants = function(list, results) {
+    BABYLON.Node.prototype._getDescendants = function (list, results) {
         for (var index = 0; index < list.length; index++) {
             var item = list[index];
             if (item.isDescendantOf(this)) {
@@ -124,3 +138,4 @@ var BABYLON = BABYLON || {};
     };
 
 })();
+

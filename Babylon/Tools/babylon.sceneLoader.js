@@ -1,6 +1,6 @@
-"use strict";
+﻿"use strict";
 
-var BABYLON = BABYLON || {}; 
+var BABYLON = BABYLON || {};
 
 (function () {
     var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
@@ -160,13 +160,13 @@ var BABYLON = BABYLON || {};
 
         return multiMaterial;
     };
-    
+
     var parseLensFlareSystem = function (parsedLensFlareSystem, scene, rootUrl) {
         var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
 
         var lensFlareSystem = new BABYLON.LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
         lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
-        
+
         for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
             var parsedFlare = parsedLensFlareSystem.flares[index];
             var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
@@ -303,7 +303,7 @@ var BABYLON = BABYLON || {};
         } else {
             camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
         }
-        
+
         // Locked target
         if (parsedCamera.lockedTargetId) {
             camera._waitingLockedTargetId = parsedCamera.lockedTargetId;
@@ -357,7 +357,7 @@ var BABYLON = BABYLON || {};
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
         mesh.infiniteDistance = parsedMesh.infiniteDistance;
-        
+
         mesh.receiveShadows = parsedMesh.receiveShadows;
 
         mesh.billboardMode = parsedMesh.billboardMode;
@@ -415,7 +415,7 @@ var BABYLON = BABYLON || {};
         if (parsedMesh.skeletonId > -1) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
         }
-        
+
         // Physics
         if (parsedMesh.physicsImpostor) {
             if (!scene.isPhysicsEnabled()) {
@@ -448,14 +448,15 @@ var BABYLON = BABYLON || {};
         return mesh;
     };
 
+
     var isDescendantOf = function (mesh, names, hierarchyIds) {
-		names = (names instanceof Array) ? names : [names];
-		for(var i in names){
-			if (mesh.name === names[i]) {
-				hierarchyIds.push(mesh.id);
-				return true;
-			}
-		}
+        names = (names instanceof Array) ? names : [names];
+        for (var i in names) {
+            if (mesh.name === names[i]) {
+                hierarchyIds.push(mesh.id);
+                return true;
+            }
+        }
 
         if (mesh.parentId && hierarchyIds.indexOf(mesh.parentId) !== -1) {
             hierarchyIds.push(mesh.id);
@@ -543,9 +544,11 @@ var BABYLON = BABYLON || {};
                     var parsedMesh = parsedData.meshes[index];
 
                     if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
-						// Remove found mesh name from list.
-						delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
-						
+                        if (meshesNames instanceof Array) {
+                            // Remove found mesh name from list.
+                            delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
+                        }
+
                         // Material ?
                         if (parsedMesh.materialId) {
                             var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
@@ -729,7 +732,7 @@ var BABYLON = BABYLON || {};
 
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
             }
-            // Loading file from disk via input file or drag'n'drop
+                // Loading file from disk via input file or drag'n'drop
             else {
                 BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
             }
