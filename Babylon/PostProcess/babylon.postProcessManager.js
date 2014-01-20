@@ -50,7 +50,7 @@ var BABYLON = BABYLON || {};
         var engine = this._scene.getEngine();
         
         for (var index = 0; index < postProcessesTakenIndices.length; index++) {
-            if (postProcessesTakenIndices[index] < postProcesses.length - 1) {
+            if (postProcessesTakenIndices[index] < postProcessesTakenIndices.length - 1) {
                 postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
             } else {
                 engine.restoreDefaultFramebuffer();
