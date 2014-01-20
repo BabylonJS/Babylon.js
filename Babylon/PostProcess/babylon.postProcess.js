@@ -77,7 +77,9 @@ var BABYLON = BABYLON || {};
         // Clear
         this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true);
 
-        this._currentRenderTextureInd = (this._currentRenderTextureInd+1)%2;
+        if (this._reusable) {
+            this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
+        }
     };
 
     BABYLON.PostProcess.prototype.apply = function () {

@@ -160,6 +160,7 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
         if (!postProcess._reusable && this._postProcesses.indexOf(postProcess) > -1) {
+            console.error("You're trying to reuse a post process not defined as reusable.");
             return;
         }
 
@@ -185,7 +186,7 @@ var BABYLON = BABYLON || {};
         }
 
         for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
-            if (this._postProcessesTakentIndices[i] < insertAt) {
+            if (this._postProcessesTakenIndices[i] < insertAt) {
                 continue;
             }
 
@@ -197,6 +198,10 @@ var BABYLON = BABYLON || {};
             break;
         }
 
+        if (!add && this._postProcessesTakenIndices.indexOf(insertAt) == -1) {
+            this._postProcessesTakenIndices.push(insertAt);
+        }
+
         result = insertAt + add;
 
         this._postProcesses[result] = postProcess;
@@ -206,6 +211,8 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
         var result = [];
+
+        atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
 
         if (!atIndices) {
 
@@ -224,7 +231,6 @@ var BABYLON = BABYLON || {};
             }
 
         }
-
         else {
             for (var i = 0; i < atIndices.length; i++) {
                 var foundPostProcess = this._postProcesses[atIndices[i]];
