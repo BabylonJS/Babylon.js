@@ -10,9 +10,6 @@ var BABYLON = BABYLON || {};
         this.id = name;
         this.position = position;
         this.upVector = BABYLON.Vector3.Up();
-        this._childrenFlag = true;
-
-        this._scene = scene;
 
         scene.cameras.push(this);
 
@@ -29,10 +26,10 @@ var BABYLON = BABYLON || {};
         // Postprocesses
         this._postProcesses = [];
         this._postProcessesTakenIndices = [];
-        
+
         // Viewport
         this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
-        
+
         //Cache
         BABYLON.Camera.prototype._initCache.call(this);
     };
@@ -58,7 +55,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.getScene = function () {
         return this._scene;
     };
-    
+
     // Methods
 
     //Cache
@@ -85,7 +82,7 @@ var BABYLON = BABYLON || {};
         if (!ignoreParentClass) {
             BABYLON.Node.prototype._updateCache.call(this);
         }
-        
+
         var engine = this._scene.getEngine();
 
         this._cache.position.copyFrom(this.position);
@@ -119,8 +116,8 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype._isSynchronizedViewMatrix = function () {
         if (!BABYLON.Node.prototype._isSynchronized.call(this))
             return false;
-        
-        return this._cache.position.equals(this.position) 
+
+        return this._cache.position.equals(this.position)
             && this._cache.upVector.equals(this.upVector)
             && this.isSynchronizedWithParent();
     };
@@ -272,8 +269,8 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.getViewMatrix = function () {
         this._computedViewMatrix = this._computeViewMatrix();
 
-        if(!this.parent 
-            ||  !this.parent.getWorldMatrix
+        if (!this.parent
+            || !this.parent.getWorldMatrix
             || (!this.hasNewParent() && this.parent.isSynchronized())) {
             return this._computedViewMatrix;
         }
@@ -301,7 +298,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Camera.prototype.getProjectionMatrix = function (force) {
-        if(!force && this._isSynchronizedProjectionMatrix()) {
+        if (!force && this._isSynchronizedProjectionMatrix()) {
             return this._projectionMatrix;
         }
 
