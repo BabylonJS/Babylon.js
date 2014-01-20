@@ -62,6 +62,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\BabylonJSDemoController.cs" />
+    <Compile Include="Controllers\OurDemoController.cs" />
     <Compile Include="WebViewPageExtensions.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\BuildOurOwnBabylonJSController.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Logo.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -98,124 +101,9 @@
     <Content Include="Content\themes\base\jquery.ui.slider.css" />
     <Content Include="Content\themes\base\jquery.ui.tabs.css" />
     <Content Include="Content\themes\base\jquery.ui.theme.css" />
-    <Content Include="Content\Train\barrieres_bois.jpg" />
-    <Content Include="Content\Train\barrieres_bois_n.jpg" />
-    <Content Include="Content\Train\bat_console_murs_ext_lm.jpg" />
-    <Content Include="Content\Train\bat_console_murs_lm.jpg" />
-    <Content Include="Content\Train\bat_lm.jpg" />
-    <Content Include="Content\Train\bosquet_grass.jpg" />
-    <Content Include="Content\Train\bosquet_grass.png" />
-    <Content Include="Content\Train\bottes_paille.jpg" />
-    <Content Include="Content\Train\bottes_paille_face.jpg" />
-    <Content Include="Content\Train\champ_ble.jpg" />
-    <Content Include="Content\Train\champ_ble.png" />
-    <Content Include="Content\Train\chariot_planche.jpg" />
-    <Content Include="Content\Train\chariot_planche_n.jpg" />
-    <Content Include="Content\Train\chariot_roue.jpg" />
-    <Content Include="Content\Train\chariot_roue_n.jpg" />
-    <Content Include="Content\Train\console.jpg" />
-    <Content Include="Content\Train\console_n.jpg" />
-    <Content Include="Content\Train\cubemap5_nx.jpg" />
-    <Content Include="Content\Train\cubemap5_ny.jpg" />
-    <Content Include="Content\Train\cubemap5_nz.jpg" />
-    <Content Include="Content\Train\cubemap5_px.jpg" />
-    <Content Include="Content\Train\cubemap5_py.jpg" />
-    <Content Include="Content\Train\cubemap5_pz.jpg" />
-    <Content Include="Content\Train\cubemap_nx.jpg" />
-    <Content Include="Content\Train\cubemap_ny.jpg" />
-    <Content Include="Content\Train\cubemap_nz.jpg" />
-    <Content Include="Content\Train\cubemap_px.jpg" />
-    <Content Include="Content\Train\cubemap_py.jpg" />
-    <Content Include="Content\Train\cubemap_pz.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_nx.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_ny.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_nz.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_px.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_py.jpg" />
-    <Content Include="Content\Train\cubemap_vitres_pz.jpg" />
-    <Content Include="Content\Train\cuir.jpg" />
-    <Content Include="Content\Train\cuir_n.jpg" />
-    <Content Include="Content\Train\debug.txt" />
-    <Content Include="Content\Train\disneyland_paris.jpg" />
-    <Content Include="Content\Train\flechage.jpg" />
-    <Content Include="Content\Train\flechage.png" />
-    <Content Include="Content\Train\flechage2.jpg" />
-    <Content Include="Content\Train\flechage2.png" />
-    <Content Include="Content\Train\grass.jpg" />
-    <Content Include="Content\Train\grass.png" />
-    <Content Include="Content\Train\grillage.jpg" />
-    <Content Include="Content\Train\grillage.png" />
-    <Content Include="Content\Train\lens2.png" />
-    <Content Include="Content\Train\lens3.png" />
-    <Content Include="Content\Train\lens4.png" />
-    <Content Include="Content\Train\lens5.png" />
-    <Content Include="Content\Train\lens6.png" />
-    <Content Include="Content\Train\metal_rouille.jpg" />
-    <Content Include="Content\Train\metal_rouille_n.jpg" />
-    <Content Include="Content\Train\metal_tache.jpg" />
-    <Content Include="Content\Train\metal_tache_n.jpg" />
-    <Content Include="Content\Train\murs_wood.jpg" />
-    <Content Include="Content\Train\murs_wood_n.jpg" />
-    <Content Include="Content\Train\no_signal.jpg" />
-    <Content Include="Content\Train\paille_alpha.jpg" />
-    <Content Include="Content\Train\paille_alpha.png" />
-    <Content Include="Content\Train\pile_bois.jpg" />
-    <Content Include="Content\Train\pile_bois_n.jpg" />
-    <Content Include="Content\Train\planches.jpg" />
-    <Content Include="Content\Train\planches_n.jpg" />
-    <Content Include="Content\Train\poteaux.jpg" />
-    <Content Include="Content\Train\poteaux_n.jpg" />
-    <Content Include="Content\Train\poubelle.jpg" />
-    <Content Include="Content\Train\poubelle_n.jpg" />
-    <Content Include="Content\Train\rochers_big.jpg" />
-    <Content Include="Content\Train\rochers_big_n.jpg" />
-    <Content Include="Content\Train\rock_tunnel.jpg" />
-    <Content Include="Content\Train\rock_tunnel_n.jpg" />
-    <Content Include="Content\Train\sacs_sable.jpg" />
-    <Content Include="Content\Train\sacs_sable_n.jpg" />
-    <Content Include="Content\Train\sapin_leaves.jpg" />
-    <Content Include="Content\Train\sapin_leaves.png" />
-    <Content Include="Content\Train\sapin_trunk_up.jpg" />
-    <Content Include="Content\Train\sapin_trunk_up_n.jpg" />
-    <Content Include="Content\Train\skydome.jpg" />
-    <Content Include="Content\Train\smoke.png" />
-    <Content Include="Content\Train\sol_metal.jpg" />
-    <Content Include="Content\Train\sol_metal_n.jpg" />
-    <Content Include="Content\Train\terrain1.jpg" />
-    <Content Include="Content\Train\terrain1_lm.jpg" />
-    <Content Include="Content\Train\terrain1_n.jpg" />
-    <Content Include="Content\Train\terrain2.jpg" />
-    <Content Include="Content\Train\terrain2_lm.jpg" />
-    <Content Include="Content\Train\terrain2_n.jpg" />
-    <Content Include="Content\Train\terrain3.jpg" />
-    <Content Include="Content\Train\terrain3_lm.jpg" />
-    <Content Include="Content\Train\terrain3_n.jpg" />
-    <Content Include="Content\Train\terrain4.jpg" />
-    <Content Include="Content\Train\terrain4_lm.jpg" />
-    <Content Include="Content\Train\terrain4_n.jpg" />
-    <Content Include="Content\Train\terrain_clotures_lm.jpg" />
-    <Content Include="Content\Train\terrain_escalier_lm.jpg" />
-    <Content Include="Content\Train\terrain_tunnel_lm.jpg" />
-    <Content Include="Content\Train\toit_bois.jpg" />
-    <Content Include="Content\Train\toit_bois_n.jpg" />
-    <Content Include="Content\Train\tole.jpg" />
-    <Content Include="Content\Train\tole_n.jpg" />
-    <Content Include="Content\Train\tonneau.jpg" />
-    <Content Include="Content\Train\tonneau_n.jpg" />
-    <Content Include="Content\Train\tracteur.jpg" />
-    <Content Include="Content\Train\tracteur_n.jpg" />
-    <Content Include="Content\Train\train_4.jpg" />
-    <Content Include="Content\Train\train_4_n.jpg" />
-    <Content Include="Content\Train\train_cote.jpg" />
-    <Content Include="Content\Train\train_cote_n.jpg" />
-    <Content Include="Content\Train\train_loco_lm.jpg" />
-    <Content Include="Content\Train\train_wagon_lm.jpg" />
-    <Content Include="Content\Train\tronc.jpg" />
-    <Content Include="Content\Train\tronc_face.jpg" />
-    <Content Include="Content\Train\tronc_face_n.jpg" />
-    <Content Include="Content\Train\tronc_n.jpg" />
-    <Content Include="Content\Train\verre_lampes.jpg" />
-    <Content Include="Content\Train\water_n.jpg" />
+    <Content Include="..\..\..\Samples\Scenes\**\*.*">
+      <Link>Content\BabylonJS-Demos\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
     <Content Include="Global.asax" />
     <Content Include="Scripts\jquery-1.5.1-vsdoc.js" />
     <Content Include="Scripts\jquery-1.5.1.js" />
@@ -255,8 +143,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\Train\Train.babylon" />
-    <None Include="Content\Train\Train.babylon.manifest" />
+    <Content Include="Views\BabylonJSDemo\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BuildOurOwnBabylonJS\BuildOurOwnBabylonJS.csproj">
@@ -265,6 +152,7 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
