@@ -58,8 +58,8 @@ var BABYLON = BABYLON || {};
         this._boundingInfo._update(world, scale);
     };
 
-    BABYLON.SubMesh.prototype.isInFrustrum = function (frustumPlanes) {
-        return this._boundingInfo.isInFrustrum(frustumPlanes);
+    BABYLON.SubMesh.prototype.isInFrustum = function (frustumPlanes) {
+        return this._boundingInfo.isInFrustum(frustumPlanes);
     };
 
     BABYLON.SubMesh.prototype.render = function () {

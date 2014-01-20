@@ -39,11 +39,11 @@ var BABYLON = BABYLON || {};
         return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     };
 
-    BABYLON.BoundingInfo.prototype.isInFrustrum = function (frustumPlanes) {
-        if (!this.boundingSphere.isInFrustrum(frustumPlanes))
+    BABYLON.BoundingInfo.prototype.isInFrustum = function (frustumPlanes) {
+        if (!this.boundingSphere.isInFrustum(frustumPlanes))
             return false;
 
-        return this.boundingBox.isInFrustrum(frustumPlanes);
+        return this.boundingBox.isInFrustum(frustumPlanes);
     };
 
     BABYLON.BoundingInfo.prototype._checkCollision = function (collider) {
