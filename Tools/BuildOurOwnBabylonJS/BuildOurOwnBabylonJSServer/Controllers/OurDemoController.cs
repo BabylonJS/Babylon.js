@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace BuildOurOwnBabylonJSServer.Controllers
 {
-    public class DemoController : Controller
+    public class OurDemoController : Controller
     {
         public ActionResult Show(string demo)
         {
