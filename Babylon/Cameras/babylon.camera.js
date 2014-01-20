@@ -216,7 +216,6 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
         var result = [];
 
-        atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
 
         if (!atIndices) {
 
@@ -231,11 +230,12 @@ var BABYLON = BABYLON || {};
                 delete this._postProcesses[i];
 
                 var index = this._postProcessesTakenIndices.indexOf(i);
-                this._postProcessesTakenIndices.splice(i, 1);
+                this._postProcessesTakenIndices.splice(index, 1);
             }
 
         }
         else {
+            atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
             for (var i = 0; i < atIndices.length; i++) {
                 var foundPostProcess = this._postProcesses[atIndices[i]];
 
