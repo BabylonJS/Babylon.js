@@ -17,11 +17,11 @@
                     alert("Your browser does not support WebGL so you can't use BabylonJS on it");
                     return;
                 }
-                var canvas = $("#ourOwnBabylonJSCanvas")[0];
 
                 var OURBABYLON = {};
 
-                OURBABYLON.engine = new BABYLON.Engine(canvas, true);
+                OURBABYLON.canvas = $("#ourOwnBabylonJSCanvas")[0];
+                OURBABYLON.engine = new BABYLON.Engine(OURBABYLON.canvas, true);
 
                 window.addEventListener("resize", function () {
                     OURBABYLON.engine.resize();
