@@ -215,12 +215,11 @@ namespace BabylonExport.Core.Exporters.XNA
                         }
                     }
 
-                    mesh.AddPart(modelMesh.Name+"#"+indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
+                    mesh.AddPart(modelMesh.Name + "#" + indexName.ToString(), vertices.ToList(), indices.Select(i => (int)i).ToList());
                     mesh.CreateBabylonMesh(scene, proxyID, skeleton);
                 }
                 else
                 {
-                    if (part.VertexBuffer.VertexDeclaration.VertexStride < PositionNormalTextured.Stride) return; // Error: Not a PositionNormalTextured mesh!
                     var mesh = new Mesh<PositionNormalTextured>(material);
                     var vertices = new PositionNormalTextured[part.NumVertices];
                     part.VertexBuffer.GetData(part.VertexOffset * part.VertexBuffer.VertexDeclaration.VertexStride, vertices, 0, vertices.Length, part.VertexBuffer.VertexDeclaration.VertexStride);

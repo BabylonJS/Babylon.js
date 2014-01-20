@@ -80,8 +80,8 @@ var BABYLON = BABYLON || {};
         BABYLON.Vector3.FromArrayToRef(world.m, 8, this.directions[2]);
     };
 
-    BABYLON.BoundingBox.prototype.isInFrustrum = function (frustumPlanes) {
-        return BABYLON.BoundingBox.IsInFrustrum(this.vectorsWorld, frustumPlanes);
+    BABYLON.BoundingBox.prototype.isInFrustum = function (frustumPlanes) {
+        return BABYLON.BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
     };
 
     BABYLON.BoundingBox.prototype.intersectsPoint = function (point) {
@@ -130,7 +130,7 @@ var BABYLON = BABYLON || {};
         return true;
     };
     
-    BABYLON.BoundingBox.IsInFrustrum = function (boundingVectors, frustumPlanes) {
+    BABYLON.BoundingBox.IsInFrustum = function (boundingVectors, frustumPlanes) {
         for (var p = 0; p < 6; p++) {
             var inCount = 8;
 

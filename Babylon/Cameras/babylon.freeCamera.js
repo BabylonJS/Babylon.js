@@ -5,7 +5,7 @@ var BABYLON = BABYLON || {};
 (function () {
     BABYLON.FreeCamera = function (name, position, scene) {
         BABYLON.Camera.call(this, name, position, scene);
-        
+
         this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
         this.cameraRotation = new BABYLON.Vector2(0, 0);
         this.rotation = new BABYLON.Vector3(0, 0, 0);
@@ -34,7 +34,7 @@ var BABYLON = BABYLON || {};
         this._newPosition = BABYLON.Vector3.Zero();
         this._lookAtTemp = BABYLON.Matrix.Zero();
         this._tempMatrix = BABYLON.Matrix.Zero();
-        
+
         BABYLON.FreeCamera.prototype._initCache.call(this);
     };
 
@@ -49,10 +49,11 @@ var BABYLON = BABYLON || {};
     BABYLON.FreeCamera.prototype.lockedTarget = null;
     BABYLON.FreeCamera.prototype.onCollide = null;
 
-    BABYLON.FreeCamera.prototype._getLockedTargetPosition = function () {       
-        if(!this.lockedTarget)
+    BABYLON.FreeCamera.prototype._getLockedTargetPosition = function () {
+        if (!this.lockedTarget) {
             return null;
-        
+        }
+
         return this.lockedTarget.position || this.lockedTarget;
     };
 
@@ -63,34 +64,35 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.FreeCamera.prototype._updateCache = function (ignoreParentClass) {
-        if(!ignoreParentClass)
+        if (!ignoreParentClass)
             BABYLON.Camera.prototype._updateCache.call(this);
-        
+
         var lockedTargetPosition = this._getLockedTargetPosition();
         if (!lockedTargetPosition) {
             this._cache.lockedTarget = null;
         }
         else {
-            if (!this._cache.lockedTarget) 
+            if (!this._cache.lockedTarget)
                 this._cache.lockedTarget = lockedTargetPosition.clone();
             else
                 this._cache.lockedTarget.copyFrom(lockedTargetPosition);
         }
-        
+
         this._cache.rotation.copyFrom(this.rotation);
     };
 
     // Synchronized
     BABYLON.FreeCamera.prototype._isSynchronizedViewMatrix = function () {
-        if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this))
+        if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this)) {
             return false;
+        }
 
         var lockedTargetPosition = this._getLockedTargetPosition();
- 
+
         return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
             && this._cache.rotation.equals(this.rotation);
-    };    
-    
+    };
+
     // Methods
     BABYLON.FreeCamera.prototype._computeLocalCameraSpeed = function () {
         return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
@@ -99,7 +101,7 @@ var BABYLON = BABYLON || {};
     // Target
     BABYLON.FreeCamera.prototype.setTarget = function (target) {
         this.upVector.normalize();
-        
+
         BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
         this._camMatrix.invert();
 
@@ -115,14 +117,17 @@ var BABYLON = BABYLON || {};
 
         this.rotation.z = -Math.acos(BABYLON.Vector3.Dot(new BABYLON.Vector3(0, 1.0, 0), this.upVector));
 
-        if (isNaN(this.rotation.x))
+        if (isNaN(this.rotation.x)) {
             this.rotation.x = 0;
+        }
 
-        if (isNaN(this.rotation.y))
+        if (isNaN(this.rotation.y)) {
             this.rotation.y = 0;
+        }
 
-        if (isNaN(this.rotation.z))
+        if (isNaN(this.rotation.z)) {
             this.rotation.z = 0;
+        }
     };
 
     // Controls
@@ -130,7 +135,7 @@ var BABYLON = BABYLON || {};
         var previousPosition;
         var that = this;
         var engine = this._scene.getEngine();
-        
+
         if (this._attachedCanvas) {
             return;
         }
@@ -227,7 +232,7 @@ var BABYLON = BABYLON || {};
                 that._keys = [];
             };
 
-            this._reset = function() {
+            this._reset = function () {
                 that._keys = [];
                 previousPosition = null;
                 that.cameraDirection = new BABYLON.Vector3(0, 0, 0);
@@ -256,7 +261,7 @@ var BABYLON = BABYLON || {};
         window.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("keyup", this._onKeyUp);
         window.removeEventListener("blur", this._onLostFocus);
-        
+
         this._attachedCanvas = null;
         if (this._reset) {
             this._reset();
@@ -316,6 +321,7 @@ var BABYLON = BABYLON || {};
             if (this.checkCollisions && this._scene.collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
 
+
                 if (this.applyGravity) {
                     var oldPosition = this.position;
                     this._collideWithWorld(this._scene.gravity);
@@ -331,8 +337,10 @@ var BABYLON = BABYLON || {};
             this.rotation.x += this.cameraRotation.x;
             this.rotation.y += this.cameraRotation.y;
 
+
             if (!this.noRotationConstraint) {
                 var limit = (Math.PI / 2) * 0.95;
+
 
                 if (this.rotation.x > limit)
                     this.rotation.x = limit;
@@ -351,7 +359,7 @@ var BABYLON = BABYLON || {};
 
             if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.epsilon)
                 this.cameraDirection.z = 0;
-        
+
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
@@ -360,7 +368,7 @@ var BABYLON = BABYLON || {};
 
             if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.epsilon)
                 this.cameraRotation.y = 0;
-        
+
             this.cameraRotation.scaleInPlace(this.inertia);
         }
     };
@@ -373,6 +381,7 @@ var BABYLON = BABYLON || {};
             if (this.upVector.x != 0 || this.upVector.y != 1.0 || this.upVector.z != 0) {
                 BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+
 
                 this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
                 this._lookAtTemp.invert();
@@ -388,8 +397,9 @@ var BABYLON = BABYLON || {};
         } else {
             this._currentTarget.copyFrom(this._getLockedTargetPosition());
         }
-        
+
         BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
         return this._viewMatrix;
     };
 })();
+
