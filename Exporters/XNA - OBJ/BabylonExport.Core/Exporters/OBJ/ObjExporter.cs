@@ -80,7 +80,7 @@ namespace BabylonExport.Core.Exporters
                             normals.Add(line.ToVector3());
                             break;
                         case ObjHeader.Group:
-                            currentName = line.Tokens[1];
+                            currentName = line.Tokens.Length > 1 ? line.Tokens[1] : "noname";
                             break;
                         case ObjHeader.Faces:
                             AppendFace(line);

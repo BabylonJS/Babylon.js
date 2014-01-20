@@ -7,12 +7,12 @@ var BABYLON = BABYLON || {};
 
     BABYLON.ArcRotateCamera = function (name, alpha, beta, radius, target, scene) {
         BABYLON.Camera.call(this, name, BABYLON.Vector3.Zero(), scene);
-        
+
         this.alpha = alpha;
         this.beta = beta;
         this.radius = radius;
         this.target = target;
-        
+
         this._keys = [];
         this.keysUp = [38];
         this.keysDown = [40];
@@ -22,10 +22,10 @@ var BABYLON = BABYLON || {};
         this._viewMatrix = new BABYLON.Matrix();
 
         BABYLON.ArcRotateCamera.prototype._initCache.call(this);
-        
+
         this.getViewMatrix();
     };
-    
+
     BABYLON.ArcRotateCamera.prototype = Object.create(BABYLON.Camera.prototype);
 
     // Members
@@ -43,7 +43,7 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype._getTargetPosition = function () {
         return this.target.position || this.target;
     };
-    
+
     // Cache
     BABYLON.ArcRotateCamera.prototype._initCache = function () {
         this._cache.target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -53,9 +53,9 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
-        if(!ignoreParentClass)
+        if (!ignoreParentClass)
             BABYLON.Camera.prototype._updateCache.call(this);
-        
+
         this._cache.target.copyFrom(this._getTargetPosition());
         this._cache.alpha = this.alpha;
         this._cache.beta = this.beta;
@@ -66,19 +66,19 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
         if (!BABYLON.Camera.prototype._isSynchronizedViewMatrix.call(this))
             return false;
-        
+
         return this._cache.target.equals(this._getTargetPosition())
             && this._cache.alpha === this.alpha
             && this._cache.beta === this.beta
             && this._cache.radius === this.radius;
     };
-    
+
     // Methods
-    BABYLON.ArcRotateCamera.prototype.attachControl = function(canvas, noPreventDefault) {
+    BABYLON.ArcRotateCamera.prototype.attachControl = function (canvas, noPreventDefault) {
         var previousPosition;
         var that = this;
         var pointerId;
-        
+
         if (this._attachedCanvas) {
             return;
         }
@@ -87,7 +87,7 @@ var BABYLON = BABYLON || {};
         var engine = this._scene.getEngine();
 
         if (this._onPointerDown === undefined) {
-            this._onPointerDown = function(evt) {
+            this._onPointerDown = function (evt) {
 
                 if (pointerId) {
                     return;
@@ -105,7 +105,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onPointerUp = function(evt) {
+            this._onPointerUp = function (evt) {
                 previousPosition = null;
                 pointerId = null;
                 if (!noPreventDefault) {
@@ -113,7 +113,8 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onPointerMove = function(evt) {
+
+            this._onPointerMove = function (evt) {
                 if (!previousPosition) {
                     return;
                 }
@@ -138,7 +139,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onMouseMove = function(evt) {
+            this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
                     return;
                 }
@@ -154,7 +155,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._wheel = function(event) {
+            this._wheel = function (event) {
                 var delta = 0;
                 if (event.wheelDelta) {
                     delta = event.wheelDelta / 120;
@@ -172,7 +173,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onKeyDown = function(evt) {
+            this._onKeyDown = function (evt) {
                 if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
                     that.keysDown.indexOf(evt.keyCode) !== -1 ||
                     that.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -191,7 +192,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onKeyUp = function(evt) {
+            this._onKeyUp = function (evt) {
                 if (that.keysUp.indexOf(evt.keyCode) !== -1 ||
                     that.keysDown.indexOf(evt.keyCode) !== -1 ||
                     that.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -210,7 +211,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._onLostFocus = function() {
+            this._onLostFocus = function () {
                 that._keys = [];
                 pointerId = null;
             };
@@ -228,8 +229,9 @@ var BABYLON = BABYLON || {};
                 that._MSGestureHandler.addPointer(e.pointerId);
             };
 
-            this._onGesture = function(e) {
+            this._onGesture = function (e) {
                 that.radius *= e.scale;
+
 
                 if (e.preventDefault) {
                     if (!noPreventDefault) {
@@ -239,7 +241,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            this._reset = function() {
+            this._reset = function () {
                 that._keys = [];
                 that.inertialAlphaOffset = 0;
                 that.inertialBetaOffset = 0;
@@ -260,7 +262,7 @@ var BABYLON = BABYLON || {};
         window.addEventListener('mousewheel', this._wheel, false);
         window.addEventListener("blur", this._onLostFocus, false);
     };
-    
+
     BABYLON.ArcRotateCamera.prototype.detachControl = function (canvas) {
         if (this._attachedCanvas != canvas) {
             return;
@@ -301,7 +303,7 @@ var BABYLON = BABYLON || {};
                 this.inertialBetaOffset += 0.01;
             }
         }
-        
+
         // Inertia
         if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0 || this.inertialRadiusOffset != 0) {
 
@@ -322,7 +324,7 @@ var BABYLON = BABYLON || {};
             if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.epsilon)
                 this.inertialRadiusOffset = 0;
         }
-        
+
         // Limits
         if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
             this.alpha = this.lowerAlphaLimit;
@@ -344,7 +346,7 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.ArcRotateCamera.prototype.setPosition = function(position) {
+    BABYLON.ArcRotateCamera.prototype.setPosition = function (position) {
         var radiusv3 = position.subtract(this._getTargetPosition());
         this.radius = radiusv3.length();
 
@@ -366,10 +368,11 @@ var BABYLON = BABYLON || {};
         var sinb = Math.sin(this.beta);
 
         var target = this._getTargetPosition();
-        
+
         target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
         BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
 
         return this._viewMatrix;
     };
 })();
+
