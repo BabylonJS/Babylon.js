@@ -61,9 +61,9 @@ var BABYLON = BABYLON || {};
     BABYLON.Node.prototype.isSynchronized = function (updateCache) {
         var check = this.hasNewParent();
 
-        check = check ? true : !this.isSynchronizedWithParent();
+        check = check || !this.isSynchronizedWithParent();
 
-        check = check ? true : !this._isSynchronized();
+        check = check || !this._isSynchronized();
 
         if (updateCache)
             this.updateCache(true);
