@@ -44,14 +44,14 @@ var BABYLON = BABYLON || {};
     BABYLON.PostProcessManager.prototype._finalizeFrame = function () {
         var postProcesses = this._scene.activeCamera._postProcesses;
         var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
-        if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
 
         var engine = this._scene.getEngine();
         
         for (var index = 0; index < postProcessesTakenIndices.length; index++) {
-            if (postProcessesTakenIndices[index] < postProcessesTakenIndices.length - 1) {
+            if (index < postProcessesTakenIndices.length - 1) {
                 postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
             } else {
                 engine.restoreDefaultFramebuffer();
