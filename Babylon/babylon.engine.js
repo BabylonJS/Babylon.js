@@ -189,7 +189,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Engine.prototype.clear = function (color, backBuffer, depthStencil) {
-        this._gl.clearColor(color.r, color.g, color.b, color.a || 1.0);
+        this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
         this._gl.clearDepth(1.0);
         var mode = 0;
 
@@ -928,7 +928,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-        this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+        this._bindTexture(channel, postProcess._texture);
     };
 
     BABYLON.Engine.prototype.setTexture = function (channel, texture) {
