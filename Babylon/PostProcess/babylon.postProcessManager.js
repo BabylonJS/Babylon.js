@@ -32,8 +32,9 @@ var BABYLON = BABYLON || {};
     // Methods
     BABYLON.PostProcessManager.prototype._prepareFrame = function () {
         var postProcesses = this._scene.activeCamera._postProcesses;
-        
-        if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
+		
+        if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
         
