@@ -97,7 +97,70 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.getAbsolutePosition = function () {
+        this.computeWorldMatrix();
         return this._absolutePosition;
+    };
+
+    BABYLON.Mesh.prototype.setAbsolutePosition = function (absolutePosition) {
+        if (!absolutePosition) {
+            return;
+        }
+
+        var absolutePositionX;
+        var absolutePositionY;
+        var absolutePositionZ;
+
+        if (absolutePosition.x === undefined) {
+            if (arguments.length < 3) {
+                return;
+            }
+            absolutePositionX = arguments[0];
+            absolutePositionY = arguments[1];
+            absolutePositionZ = arguments[2];
+        }
+        else {
+            absolutePositionX = absolutePosition.x;
+            absolutePositionY = absolutePosition.y;
+            absolutePositionZ = absolutePosition.z;
+        }
+
+        // worldMatrix = pivotMatrix * scalingMatrix * rotationMatrix * translateMatrix * parentWorldMatrix
+        // => translateMatrix = invertRotationMatrix * invertScalingMatrix * invertPivotMatrix * worldMatrix * invertParentWorldMatrix
+
+        // get this matrice before the other ones since
+        // that will update them if they have to be updated
+
+        var worldMatrix = this.getWorldMatrix().clone();
+
+        worldMatrix.m[12] = absolutePositionX;
+        worldMatrix.m[13] = absolutePositionY;
+        worldMatrix.m[14] = absolutePositionZ;
+
+        var invertRotationMatrix = this._localRotation.clone();
+        invertRotationMatrix.invert();
+
+        var invertScalingMatrix = this._localScaling.clone();
+        invertScalingMatrix.invert();
+
+        var invertPivotMatrix = this._pivotMatrix.clone();
+        invertPivotMatrix.invert();
+
+        var translateMatrix = invertRotationMatrix.multiply(invertScalingMatrix);
+
+        translateMatrix.multiplyToRef(invertPivotMatrix, invertScalingMatrix); // reuse matrix
+        invertScalingMatrix.multiplyToRef(worldMatrix, translateMatrix);
+
+        if (this.parent) {
+            var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+            invertParentWorldMatrix.invert();
+
+            translateMatrix.multiplyToRef(invertParentWorldMatrix, invertScalingMatrix); // reuse matrix
+            translateMatrix = invertScalingMatrix;
+        }
+
+        this.position.x = translateMatrix.m[12];
+        this.position.y = translateMatrix.m[13];
+        this.position.z = translateMatrix.m[14];
     };
 
     BABYLON.Mesh.prototype.getTotalVertices = function () {
