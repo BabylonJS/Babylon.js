@@ -165,7 +165,7 @@ var BABYLON = BABYLON || {};
             return;
         }
 
-        if (!insertAt || insertAt < 0) {
+        if (insertAt == null || insertAt < 0) {
             this._postProcesses.push(postProcess);
             this._postProcessesTakenIndices.push(this._postProcesses.length - 1);
 
