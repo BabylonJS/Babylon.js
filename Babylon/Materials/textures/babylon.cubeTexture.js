@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {    
-    BABYLON.CubeTexture = function (rootUrl, scene) {
+    BABYLON.CubeTexture = function (rootUrl, scene, extensions) {
         this._scene = scene;
         this._scene.textures.push(this);
         
@@ -13,10 +13,14 @@ var BABYLON = BABYLON || {};
         this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
 
         this._texture = this._getFromCache(rootUrl);
+
+        if (!preventExtensions) {
+            extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+        }
         
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
-                this._texture = scene.getEngine().createCubeTexture(rootUrl, scene);
+                this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions);
             } else {
                 this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
             }            
