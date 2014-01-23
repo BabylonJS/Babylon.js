@@ -928,7 +928,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-        this._bindTexture(channel, postProcess._texture);
+        this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
     };
 
     BABYLON.Engine.prototype.setTexture = function (channel, texture) {
