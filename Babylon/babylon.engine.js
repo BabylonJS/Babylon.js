@@ -808,10 +808,8 @@ var BABYLON = BABYLON || {};
 
         return texture;
     };
-
-    var extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
-
-    var cascadeLoad = function (rootUrl, index, loadedImages, scene, onfinish) {
+    
+    var cascadeLoad = function (rootUrl, index, loadedImages, scene, onfinish, extensions) {
         var img;
         
         var onload = function () {
@@ -820,7 +818,7 @@ var BABYLON = BABYLON || {};
             scene._removePendingData(img);
 
             if (index != extensions.length - 1) {
-                cascadeLoad(rootUrl, index + 1, loadedImages, scene, onfinish);
+                cascadeLoad(rootUrl, index + 1, loadedImages, scene, onfinish, extensions);
             } else {
                 onfinish(loadedImages);
             }
@@ -834,7 +832,7 @@ var BABYLON = BABYLON || {};
         scene._addPendingData(img);
     };
 
-    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene) {
+    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions) {
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -877,7 +875,7 @@ var BABYLON = BABYLON || {};
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
-        });
+        }, extensions);
 
         return texture;
     };

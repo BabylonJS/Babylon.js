@@ -14,7 +14,7 @@ var BABYLON = BABYLON || {};
 
         this._texture = this._getFromCache(rootUrl);
 
-        if (!preventExtensions) {
+        if (!extensions) {
             extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
         }
         
