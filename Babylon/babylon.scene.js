@@ -134,7 +134,7 @@ var BABYLON = BABYLON || {};
         return this._evaluateActiveMeshesDuration;
     };
 
-    BABYLON.Scene.prototype.geActiveMeshes = function () {
+    BABYLON.Scene.prototype.getActiveMeshes = function () {
         return this._activeMeshes;
     };
 
