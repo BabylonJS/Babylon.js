@@ -171,12 +171,31 @@ var BABYLON = BABYLON || {};
         return this._vertexBuffers[kind].getData();
     };
 
+    BABYLON.Mesh.prototype.getVertexBuffer = function (kind) {
+        return this._vertexBuffers[kind];
+    };
+
     BABYLON.Mesh.prototype.isVerticesDataPresent = function (kind) {
         if (!this._vertexBuffers && this._delayInfo) {
             return this._delayInfo.indexOf(kind) !== -1;
         }
 
         return this._vertexBuffers[kind] !== undefined;
+    };
+
+    BABYLON.Mesh.prototype.getVerticesDataKinds = function () {
+        var result = [];
+        if (!this._vertexBuffers && this._delayInfo) {
+            for (var kind in this._delayInfo) {
+                result.push(kind);
+            }
+        } else {
+            for (var kind in this._vertexBuffers) {
+                result.push(kind);
+            }
+        }
+
+        return result;
     };
 
     BABYLON.Mesh.prototype.getTotalIndices = function () {
@@ -987,6 +1006,92 @@ var BABYLON = BABYLON || {};
         }
 
         this._scene._physicsEngine._createLink(this, otherMesh, pivot1, pivot2);
+    };
+
+    // Geometric tools
+    BABYLON.Mesh.prototype.convertToFlatShadedMesh = function() {
+        /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
+        /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
+
+        var kinds = this.getVerticesDataKinds();
+        var vbs = [];
+        var data = [];
+        var newdata = [];
+        var updatableNormals = false;
+        for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+            var kind = kinds[kindIndex];
+
+            if (kind === BABYLON.VertexBuffer.NormalKind) {
+                updatableNormals = this.getVertexBuffer(kind).isUpdatable();
+                kinds.splice(kindIndex, 1);
+                kindIndex--;
+                continue;
+            }
+
+            vbs[kind] = this.getVertexBuffer(kind);
+            data[kind] = vbs[kind].getData();
+            newdata[kind] = [];
+        }
+
+        // Save previous submeshes
+        var previousSubmeshes = this.subMeshes.slice(0);
+
+        var indices = this.getIndices();
+
+        // Generating unique vertices per face
+        for (var index = 0; index < indices.length; index++) {
+            var vertexIndex = indices[index];
+
+            for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                var kind = kinds[kindIndex];
+                var stride = vbs[kind].getStrideSize();
+
+                for (var offset = 0; offset < stride; offset++) {
+                    newdata[kind].push(data[kind][vertexIndex * stride + offset]);
+                }
+            }
+        }
+
+        // Updating faces & normal
+        var normals = [];
+        var positions = newdata[BABYLON.VertexBuffer.PositionKind];
+        for (var index = 0; index < indices.length; index += 3) {
+            indices[index] = index;
+            indices[index + 1] = index + 1;
+            indices[index + 2] = index + 2;
+
+            var p1 = BABYLON.Vector3.FromArray(positions, index * 3);
+            var p2 = BABYLON.Vector3.FromArray(positions, (index + 1) * 3);
+            var p3 = BABYLON.Vector3.FromArray(positions, (index + 2) * 3);
+
+            var p1p2 = p1.subtract(p2);
+            var p3p2 = p3.subtract(p2);
+
+            var normal = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+
+            // Store same normals for every vertex
+            for (var localIndex = 0; localIndex < 3; localIndex++) {
+                normals.push(normal.x);
+                normals.push(normal.y);
+                normals.push(normal.z);
+            }
+        }
+
+        this.setIndices(indices);
+        this.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatableNormals);
+
+        // Updating vertex buffers
+        for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+            var kind = kinds[kindIndex];
+            this.setVerticesData(newdata[kind], kind, vbs[kind].isUpdatable());
+        }
+
+        // Updating submeshes
+        this.subMeshes = [];
+        for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
+            var previousOne = previousSubmeshes[submeshIndex];
+            var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+        }
     };
 
     // Statics
