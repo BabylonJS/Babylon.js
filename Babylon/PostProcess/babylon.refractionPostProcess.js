@@ -30,7 +30,9 @@ var BABYLON = BABYLON || {};
     
     // Methods
     BABYLON.RefractionPostProcess.prototype._onDispose = function () {
-        this._refRexture.dispose();
+        if (this._refRexture) {
+            this._refRexture.dispose();
+        }
     };
 
 })();

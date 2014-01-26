@@ -159,11 +159,11 @@ var BABYLON = BABYLON || {};
 
         return new BABYLON.Ray(start, direction);
     };
-    
+
     BABYLON.Ray.Transform = function (ray, matrix) {
         var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
         var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
-        
+
         return new BABYLON.Ray(newOrigin, newDirection);
     };
 
@@ -180,6 +180,24 @@ var BABYLON = BABYLON || {};
     };
 
     // Operators
+    BABYLON.Color3.prototype.asArray = function () {
+        var result = [];
+
+        this.toArray(result, 0);
+
+        return result;
+    };
+
+    BABYLON.Color3.prototype.toArray = function (array, index) {
+        if (index === undefined) {
+            index = 0;
+        }
+
+        array[index] = this.r;
+        array[index + 1] = this.g;
+        array[index + 2] = this.b;
+    };
+
     BABYLON.Color3.prototype.multiply = function (otherColor) {
         return new BABYLON.Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
     };
@@ -240,6 +258,24 @@ var BABYLON = BABYLON || {};
         this.g += right.g;
         this.b += right.b;
         this.a += right.a;
+    };
+
+    BABYLON.Color4.prototype.asArray = function () {
+        var result = [];
+
+        this.toArray(result, 0);
+
+        return result;
+    };
+
+    BABYLON.Color4.prototype.toArray = function (array, index) {
+        if (index === undefined) {
+            index = 0;
+        }
+        array[index] = this.r;
+        array[index + 1] = this.g;
+        array[index + 2] = this.b;
+        array[index + 3] = this.a;
     };
 
     BABYLON.Color4.prototype.add = function (right) {
@@ -312,6 +348,23 @@ var BABYLON = BABYLON || {};
     };
 
     // Operators
+    BABYLON.Vector2.prototype.asArray = function () {
+        var result = [];
+
+        this.toArray(result, 0);
+
+        return result;
+    };
+
+    BABYLON.Vector2.prototype.toArray = function (array, index) {
+        if (index === undefined) {
+            index = 0;
+        }
+
+        array[index] = this.x;
+        array[index + 1] = this.y;
+    };
+
     BABYLON.Vector2.prototype.add = function (otherVector) {
         return new BABYLON.Vector2(this.x + otherVector.x, this.y + otherVector.y);
     };
@@ -471,7 +524,19 @@ var BABYLON = BABYLON || {};
     };
 
     // Operators
+    BABYLON.Vector3.prototype.asArray = function () {
+        var result = [];
+
+        this.toArray(result, 0);
+
+        return result;
+    };
+
     BABYLON.Vector3.prototype.toArray = function (array, index) {
+        if (index === undefined) {
+            index = 0;
+        }
+
         array[index] = this.x;
         array[index + 1] = this.y;
         array[index + 2] = this.z;
@@ -785,7 +850,7 @@ var BABYLON = BABYLON || {};
         result.copyFrom(vector);
         result.normalize();
     };
-    
+
     BABYLON.Vector3.Project = function (vector, world, transform, viewport) {
         var cw = viewport.width;
         var ch = viewport.height;
@@ -797,7 +862,7 @@ var BABYLON = BABYLON || {};
                                             0, -ch / 2.0, 0, 0,
                                             0, 0, 1, 0,
                                             cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
-        
+
         var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
 
         return BABYLON.Vector3.TransformCoordinates(vector, finalMatrix);
@@ -856,7 +921,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Quaternion.prototype.toString = function () {
         return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
     };
-    
+
     BABYLON.Quaternion.prototype.equals = function (otherQuaternion) {
         return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
     };
@@ -864,7 +929,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Quaternion.prototype.clone = function () {
         return new BABYLON.Quaternion(this.x, this.y, this.z, this.w);
     };
-    
+
     BABYLON.Quaternion.prototype.copyFrom = function (other) {
         this.x = other.x;
         this.y = other.y;
@@ -888,7 +953,7 @@ var BABYLON = BABYLON || {};
         return result;
     };
 
-    BABYLON.Quaternion.prototype.multiplyToRef = function(q1, result) {
+    BABYLON.Quaternion.prototype.multiplyToRef = function (q1, result) {
         result.x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
         result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
         result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
@@ -1128,7 +1193,7 @@ var BABYLON = BABYLON || {};
         other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
         other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
     };
-    
+
     BABYLON.Matrix.prototype.setTranslation = function (vector3) {
         this.m[12] = vector3.x;
         this.m[13] = vector3.y;
@@ -1788,7 +1853,7 @@ var BABYLON = BABYLON || {};
 
         return BABYLON.Vector3.Dot(point, normal) + d;
     };
-    
+
     ////////////////////////////////// Frustum //////////////////////////////////
     BABYLON.Frustum = {};
 
@@ -1848,17 +1913,17 @@ var BABYLON = BABYLON || {};
         frustumPlanes[5].d = transform.m[15] + transform.m[13];
         frustumPlanes[5].normalize();
     };
-    
+
     ////////////////////////////////// Viewport //////////////////////////////////
     BABYLON.Viewport = {};
-    
+
     BABYLON.Viewport = function (x, y, width, height) {
         this.width = width;
         this.height = height;
         this.x = x;
         this.y = y;
     };
-    
+
 
     BABYLON.Viewport.prototype.toGlobal = function (engine) {
         var width = engine.getRenderWidth() * engine.getHardwareScalingLevel();
