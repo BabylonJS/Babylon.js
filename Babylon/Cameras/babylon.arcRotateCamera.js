@@ -34,8 +34,8 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype.inertialRadiusOffset = 0;
     BABYLON.ArcRotateCamera.prototype.lowerAlphaLimit = null;
     BABYLON.ArcRotateCamera.prototype.upperAlphaLimit = null;
-    BABYLON.ArcRotateCamera.prototype.lowerBetaLimit = null;
-    BABYLON.ArcRotateCamera.prototype.upperBetaLimit = null;
+    BABYLON.ArcRotateCamera.prototype.lowerBetaLimit = 0.01;
+    BABYLON.ArcRotateCamera.prototype.upperBetaLimit = Math.PI;
     BABYLON.ArcRotateCamera.prototype.lowerRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.angularSensibility = 1000.0;
@@ -356,12 +356,6 @@ var BABYLON = BABYLON || {};
 
     BABYLON.ArcRotateCamera.prototype._getViewMatrix = function () {
         // Compute
-        if (this.beta > Math.PI)
-            this.beta = Math.PI;
-
-        if (this.beta <= 0)
-            this.beta = 0.01;
-
         var cosa = Math.cos(this.alpha);
         var sina = Math.sin(this.alpha);
         var cosb = Math.cos(this.beta);
