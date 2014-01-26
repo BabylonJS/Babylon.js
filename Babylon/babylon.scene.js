@@ -902,18 +902,17 @@ var BABYLON = BABYLON || {};
     };
 
     // Picking
-    BABYLON.Scene.prototype.createPickingRay = function (x, y, world) {
+    BABYLON.Scene.prototype.createPickingRay = function (x, y, world, camera) {
         var engine = this._engine;
 
-        if (!this._viewMatrix) {
+        if (!camera) {
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
 
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            camera = this.activeCamera;
         }
-        var viewport = this.activeCamera.viewport.toGlobal(engine);
-
-        return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), this._viewMatrix, this._projectionMatrix);
+        var viewport = camera.viewport.toGlobal(engine);
+        return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
     };
 
     BABYLON.Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
@@ -950,10 +949,17 @@ var BABYLON = BABYLON || {};
         return pickingInfo || new BABYLON.PickingInfo();
     };
 
-    BABYLON.Scene.prototype.pick = function (x, y, predicate, fastCheck) {
+    BABYLON.Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+
         var that = this;
         return this._internalPick(function (world) {
-            return that.createPickingRay(x, y, world);
+            return that.createPickingRay(x, y, world, camera);
         }, predicate, fastCheck);
     };
 

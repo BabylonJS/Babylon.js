@@ -17,6 +17,8 @@ var BABYLON = BABYLON || {};
         if (!extensions) {
             extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
         }
+
+        this._extensions = extensions;
         
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
@@ -43,7 +45,7 @@ var BABYLON = BABYLON || {};
         this._texture = this._getFromCache(this.url);
 
         if (!this._texture) {
-            this._texture = this._scene.getEngine().createCubeTexture(this.url, this._scene);
+            this._texture = this._scene.getEngine().createCubeTexture(this.url, this._scene, this._extensions);
         }
     };
 
