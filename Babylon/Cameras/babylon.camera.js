@@ -93,7 +93,7 @@ var BABYLON = BABYLON || {};
         this._cache.maxZ = this.maxZ;
 
         this._cache.fov = this.fov;
-        this._cache.aspectRatio = engine.getAspectRatio();
+        this._cache.aspectRatio = engine.getAspectRatio(this);
 
         this._cache.orthoLeft = this.orthoLeft;
         this._cache.orthoRight = this.orthoRight;
@@ -135,7 +135,7 @@ var BABYLON = BABYLON || {};
 
         if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
             check = this._cache.fov === this.fov
-                 && this._cache.aspectRatio === engine.getAspectRatio();
+                 && this._cache.aspectRatio === engine.getAspectRatio(this);
         }
         else {
             check = this._cache.orthoLeft === this.orthoLeft
@@ -304,7 +304,7 @@ var BABYLON = BABYLON || {};
 
         var engine = this._scene.getEngine();
         if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-            BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(), this.minZ, this.maxZ, this._projectionMatrix);
+            BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
         }
 

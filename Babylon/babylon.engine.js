@@ -109,8 +109,9 @@ var BABYLON = BABYLON || {};
     };
 
     // Properties
-    BABYLON.Engine.prototype.getAspectRatio = function () {
-        return this._aspectRatio;
+    BABYLON.Engine.prototype.getAspectRatio = function (camera) {
+        var viewport = camera.viewport;
+        return (this._renderingCanvas.width * viewport.width) / (this._renderingCanvas.height * viewport.height);;
     };
 
     BABYLON.Engine.prototype.getRenderWidth = function () {
@@ -210,15 +211,13 @@ var BABYLON = BABYLON || {};
         
         this._cachedViewport = viewport;
         
-        this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
-        this._aspectRatio = (width * viewport.width) / (height * viewport.height);
+        this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);        
     };
     
     BABYLON.Engine.prototype.setDirectViewport = function (x, y, width, height) {
         this._cachedViewport = null;
 
         this._gl.viewport(x, y, width, height);
-        this._aspectRatio = width / height;
     };
 
     BABYLON.Engine.prototype.beginFrame = function () {
@@ -238,7 +237,6 @@ var BABYLON = BABYLON || {};
         var gl = this._gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
         this._gl.viewport(0, 0, texture._width, texture._height);
-        this._aspectRatio = texture._width / texture._height;
 
         this.wipeCaches();
     };
