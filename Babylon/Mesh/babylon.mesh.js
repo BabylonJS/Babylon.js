@@ -176,10 +176,12 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.isVerticesDataPresent = function (kind) {
-        if (!this._vertexBuffers && this._delayInfo) {
-            return this._delayInfo.indexOf(kind) !== -1;
+        if (!this._vertexBuffers) {
+            if (this._delayInfo) {
+                return this._delayInfo.indexOf(kind) !== -1;
+            }
+            return false;
         }
-
         return this._vertexBuffers[kind] !== undefined;
     };
 

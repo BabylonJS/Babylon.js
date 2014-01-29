@@ -598,6 +598,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_vector(file_handler, "scaling", scale)
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)
+        Export_babylon.write_bool(file_handler, "useFlatShading", object.data.useFlatShading)
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
         Export_babylon.write_int(file_handler, "billboardMode", billboardMode)
         Export_babylon.write_bool(file_handler, "receiveShadows", object.data.receiveShadows)
@@ -974,6 +975,10 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         return {'FINISHED'}
 
 # UI
+bpy.types.Mesh.useFlatShading = BoolProperty(
+    name="Use Flat Shading", 
+    default = False)
+
 bpy.types.Mesh.checkCollisions = BoolProperty(
     name="Check Collisions", 
     default = False)
@@ -1023,10 +1028,11 @@ class ObjectPanel(bpy.types.Panel):
         isCamera = isinstance(ob.data, bpy.types.Camera)
         isLight = isinstance(ob.data, bpy.types.Lamp)
         
-        if isMesh:
+        if isMesh:   
+            layout.prop(ob.data, 'useFlatShading') 
             layout.prop(ob.data, 'checkCollisions')     
             layout.prop(ob.data, 'castShadows')     
-            layout.prop(ob.data, 'receiveShadows')      
+            layout.prop(ob.data, 'receiveShadows')   
         elif isCamera:
             layout.prop(ob.data, 'checkCollisions')
             layout.prop(ob.data, 'applyGravity')
