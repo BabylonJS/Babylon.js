@@ -367,6 +367,7 @@ var BABYLON = BABYLON || {};
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
         // Parent
         if (parsedMesh.parentId) {
@@ -519,6 +520,12 @@ var BABYLON = BABYLON || {};
 
             // Update
             mesh.computeWorldMatrix(true);
+
+            // Flat shading
+            if (mesh._shouldGenerateFlatShading) {
+                mesh.convertToFlatShadedMesh();
+                delete mesh._shouldGenerateFlatShading;
+            }
 
             var scene = mesh.getScene();
             if (scene._selectionOctree) {
