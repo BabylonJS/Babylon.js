@@ -6,7 +6,7 @@ namespace BabylonExport.Core
 {
     public struct PositionNormalTexturedWeights : IDumpable, IQueryable
     {
-        public const int Stride = 64;
+        public const int Stride = 52; // Maya returning >=52 for PNTW vertex, not 64
         public Vector3 Position;
         public int Indices;
         public Vector4 Weights;
