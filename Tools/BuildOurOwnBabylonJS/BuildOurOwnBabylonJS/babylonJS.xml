@@ -62,4 +62,5 @@
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/Tools/babylon.math.js"></script>
   <script src="Babylon/babylon.node.js"></script>
+  <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
 </files>
