@@ -243,11 +243,7 @@ var BABYLON = BABYLON || {};
         reader.readAsText(fileToLoad);
     };
 
-    // Misc.    
-    BABYLON.Tools.isIE = function () {
-        return window.ActiveXObject !== undefined;
-    };
-    
+    // Misc.        
     BABYLON.Tools.WithinEpsilon = function (a, b) {
         var num = a - b;
         return -1.401298E-45 <= num && num <= 1.401298E-45;

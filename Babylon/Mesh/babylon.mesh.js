@@ -16,7 +16,9 @@ var BABYLON = BABYLON || {};
 
         this.position = new BABYLON.Vector3(0, 0, 0);
         this.rotation = new BABYLON.Vector3(0, 0, 0);
+        this.worldRotation = new BABYLON.Vector3(0, 0, 0);
         this.rotationQuaternion = null;
+        this.worldRotationQuaternion = null;
         this.scaling = new BABYLON.Vector3(1, 1, 1);
 
         this._pivotMatrix = BABYLON.Matrix.Identity();
@@ -37,10 +39,12 @@ var BABYLON = BABYLON || {};
 
         this._localScaling = BABYLON.Matrix.Zero();
         this._localRotation = BABYLON.Matrix.Zero();
+        this._localWorldRotation = BABYLON.Matrix.Zero();
         this._localTranslation = BABYLON.Matrix.Zero();
         this._localBillboard = BABYLON.Matrix.Zero();
         this._localPivotScaling = BABYLON.Matrix.Zero();
         this._localPivotScalingRotation = BABYLON.Matrix.Zero();
+        this._localPivotScalingRotationWorld = BABYLON.Matrix.Zero();
         this._localWorld = BABYLON.Matrix.Zero();
         this._worldMatrix = BABYLON.Matrix.Zero();
         this._rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
@@ -124,43 +128,18 @@ var BABYLON = BABYLON || {};
             absolutePositionZ = absolutePosition.z;
         }
 
-        // worldMatrix = pivotMatrix * scalingMatrix * rotationMatrix * translateMatrix * parentWorldMatrix
-        // => translateMatrix = invertRotationMatrix * invertScalingMatrix * invertPivotMatrix * worldMatrix * invertParentWorldMatrix
-
-        // get this matrice before the other ones since
-        // that will update them if they have to be updated
-
-        var worldMatrix = this.getWorldMatrix().clone();
-
-        worldMatrix.m[12] = absolutePositionX;
-        worldMatrix.m[13] = absolutePositionY;
-        worldMatrix.m[14] = absolutePositionZ;
-
-        var invertRotationMatrix = this._localRotation.clone();
-        invertRotationMatrix.invert();
-
-        var invertScalingMatrix = this._localScaling.clone();
-        invertScalingMatrix.invert();
-
-        var invertPivotMatrix = this._pivotMatrix.clone();
-        invertPivotMatrix.invert();
-
-        var translateMatrix = invertRotationMatrix.multiply(invertScalingMatrix);
-
-        translateMatrix.multiplyToRef(invertPivotMatrix, invertScalingMatrix); // reuse matrix
-        invertScalingMatrix.multiplyToRef(worldMatrix, translateMatrix);
-
         if (this.parent) {
             var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
             invertParentWorldMatrix.invert();
 
-            translateMatrix.multiplyToRef(invertParentWorldMatrix, invertScalingMatrix); // reuse matrix
-            translateMatrix = invertScalingMatrix;
-        }
+            var worldPosition = new BABYLON.Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
 
-        this.position.x = translateMatrix.m[12];
-        this.position.y = translateMatrix.m[13];
-        this.position.z = translateMatrix.m[14];
+            this.position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
+        } else {
+            this.position.x = absolutePositionX;
+            this.position.y = absolutePositionY;
+            this.position.z = absolutePositionZ;
+        }
     };
 
     BABYLON.Mesh.prototype.getTotalVertices = function () {
@@ -244,6 +223,14 @@ var BABYLON = BABYLON || {};
                 return false;
         }
 
+        if (this.worldRotationQuaternion) {
+            if (!this._cache.worldRotationQuaternion.equals(this.worldRotationQuaternion))
+                return false;
+        } else {
+            if (!this._cache.worldRotation.equals(this.worldRotation))
+                return false;
+        }
+
         if (!this._cache.scaling.equals(this.scaling))
             return false;
 
@@ -269,6 +256,8 @@ var BABYLON = BABYLON || {};
         this._cache.scaling = BABYLON.Vector3.Zero();
         this._cache.rotation = BABYLON.Vector3.Zero();
         this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+        this._cache.worldRotation = BABYLON.Vector3.Zero();
+        this._cache.worldRotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
     };
 
     BABYLON.Mesh.prototype.markAsDirty = function (property) {
@@ -336,6 +325,15 @@ var BABYLON = BABYLON || {};
             this._cache.rotation.copyFrom(this.rotation);
         }
 
+        // World rotation
+        if (this.worldRotationQuaternion) {
+            this.worldRotationQuaternion.toRotationMatrix(this._localWorldRotation);
+            this._cache.worldRotationQuaternion.copyFrom(this.worldRotationQuaternion);
+        } else {
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.worldRotation.y, this.worldRotation.x, this.worldRotation.z, this._localWorldRotation);
+            this._cache.worldRotation.copyFrom(this.worldRotation);
+        }
+
         // Translation
         if (this.infiniteDistance) {
             var camera = this._scene.activeCamera;
@@ -347,6 +345,7 @@ var BABYLON = BABYLON || {};
         // Composing transformations
         this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
         this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
+        this._localPivotScalingRotation.multiplyToRef(this._localWorldRotation, this._localPivotScalingRotationWorld);
 
         // Billboarding
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE) {
@@ -374,18 +373,18 @@ var BABYLON = BABYLON || {};
 
             this._localBillboard.invert();
 
-            this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
-            this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
+            this._localPivotScalingRotationWorld.multiplyToRef(this._localBillboard, this._localWorld);
+            this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotationWorld);
         }
 
         // Local world
-        this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+        this._localPivotScalingRotationWorld.multiplyToRef(this._localTranslation, this._localWorld);
 
         // Parent
         if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
             this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
         } else {
-            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._worldMatrix);
+            this._localPivotScalingRotationWorld.multiplyToRef(this._localTranslation, this._worldMatrix);
         }
 
         // Bounding info
@@ -616,27 +615,6 @@ var BABYLON = BABYLON || {};
     };
 
     // Geometry
-    // Deprecated: use setPositionWithLocalVector instead 
-    BABYLON.Mesh.prototype.setLocalTranslation = function (vector3) {
-        console.warn("deprecated: use setPositionWithLocalVector instead");
-        this.computeWorldMatrix();
-        var worldMatrix = this._worldMatrix.clone();
-        worldMatrix.setTranslation(BABYLON.Vector3.Zero());
-
-        this.position = BABYLON.Vector3.TransformCoordinates(vector3, worldMatrix);
-    };
-
-    // Deprecated: use getPositionExpressedInLocalSpace instead 
-    BABYLON.Mesh.prototype.getLocalTranslation = function () {
-        console.warn("deprecated: use getPositionExpressedInLocalSpace instead");
-        this.computeWorldMatrix();
-        var invWorldMatrix = this._worldMatrix.clone();
-        invWorldMatrix.setTranslation(BABYLON.Vector3.Zero());
-        invWorldMatrix.invert();
-
-        return BABYLON.Vector3.TransformCoordinates(this.position, invWorldMatrix);
-    };
-
     BABYLON.Mesh.prototype.setPositionWithLocalVector = function (vector3) {
         this.computeWorldMatrix();
 
@@ -1011,7 +989,7 @@ var BABYLON = BABYLON || {};
     };
 
     // Geometric tools
-    BABYLON.Mesh.prototype.convertToFlatShadedMesh = function() {
+    BABYLON.Mesh.prototype.convertToFlatShadedMesh = function () {
         /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
         /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
 

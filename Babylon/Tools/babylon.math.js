@@ -922,6 +922,10 @@ var BABYLON = BABYLON || {};
         return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
     };
 
+    BABYLON.Quaternion.prototype.asArray = function () {
+        return [this.x, this.y, this.z, this.w];
+    };
+
     BABYLON.Quaternion.prototype.equals = function (otherQuaternion) {
         return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
     };
@@ -1129,6 +1133,10 @@ var BABYLON = BABYLON || {};
     // Methods
     BABYLON.Matrix.prototype.toArray = function () {
         return this.m;
+    };
+
+    BABYLON.Matrix.prototype.asArray = function () {
+        return this.toArray();
     };
 
     BABYLON.Matrix.prototype.invert = function () {
@@ -1751,6 +1759,10 @@ var BABYLON = BABYLON || {};
     BABYLON.Plane = function (a, b, c, d) {
         this.normal = new BABYLON.Vector3(a, b, c);
         this.d = d;
+    };
+
+    BABYLON.Plane.prototype.asArray = function () {
+        return [this.normal.x, this.normal.y, this.normal.z, this.d];
     };
 
     // Methods

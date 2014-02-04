@@ -17,6 +17,8 @@ var BABYLON = BABYLON || {};
     BABYLON.PhysicsEngine.prototype._runOneStep = function (delta) {
         if (delta > 0.1) {
             delta = 0.1;
+        } else if (delta <= 0) {
+            delta = 1.0 / 60.0;
         }
 
         this._world.step(delta);
