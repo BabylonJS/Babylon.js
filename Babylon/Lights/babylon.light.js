@@ -37,7 +37,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Light.prototype.getWorldMatrix = function () {
-        this._syncChildFlag();
+        this._currentRenderId = this._scene.getRenderId();
 
         var worldMatrix = this._getWorldMatrix();
 

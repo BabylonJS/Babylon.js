@@ -264,7 +264,7 @@ var BABYLON = BABYLON || {};
         if (property === "rotation") {
             this.rotationQuaternion = null;
         }
-        this._syncChildFlag();
+        this._currentRenderId = -1;
     };
 
     BABYLON.Mesh.prototype.refreshBoundingInfo = function () {
@@ -304,10 +304,10 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
         if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
+            this._currentRenderId = this._scene.getRenderId();
             return this._worldMatrix;
         }
 
-        this._syncChildFlag();
         this._cache.position.copyFrom(this.position);
         this._cache.scaling.copyFrom(this.scaling);
         this._cache.pivotMatrixUpdated = false;
@@ -384,7 +384,7 @@ var BABYLON = BABYLON || {};
         if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
             this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
         } else {
-            this._localPivotScalingRotationWorld.multiplyToRef(this._localTranslation, this._worldMatrix);
+            this._worldMatrix.copyFrom(this._localWorld);
         }
 
         // Bounding info
@@ -867,8 +867,8 @@ var BABYLON = BABYLON || {};
     // Dispose
     BABYLON.Mesh.prototype.dispose = function (doNotRecurse) {
         if (this._vertexBuffers) {
-            for (var index = 0; index < this._vertexBuffers.length; index++) {
-                this._vertexBuffers[index].dispose();
+            for (var vbKind in this._vertexBuffers) {
+                this._vertexBuffers[vbKind].dispose();
             }
             this._vertexBuffers = null;
         }

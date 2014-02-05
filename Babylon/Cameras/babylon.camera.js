@@ -290,9 +290,10 @@ var BABYLON = BABYLON || {};
     
     BABYLON.Camera.prototype._computeViewMatrix = function (force) {
         if (!force && this._isSynchronizedViewMatrix()) {
+            this._currentRenderId = this._scene.getRenderId();
             return this._computedViewMatrix;
         }
-        this._syncChildFlag();
+
         this._computedViewMatrix = this._getViewMatrix();
         return this._computedViewMatrix;
     };
