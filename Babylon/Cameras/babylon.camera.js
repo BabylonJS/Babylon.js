@@ -271,7 +271,7 @@ var BABYLON = BABYLON || {};
 
         if (!this.parent
             || !this.parent.getWorldMatrix
-            || (!this.hasNewParent() && this.parent.isSynchronized())) {
+            || this.isSynchronized()) {
             return this._computedViewMatrix;
         }
 
