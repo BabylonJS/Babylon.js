@@ -335,9 +335,13 @@ var BABYLON = BABYLON || {};
         }
 
         // Translation
-        if (this.infiniteDistance) {
+        if (this.infiniteDistance && !this.parent) {
             var camera = this._scene.activeCamera;
-            BABYLON.Matrix.TranslationToRef(this.position.x + camera.position.x, this.position.y + camera.position.y, this.position.z + camera.position.z, this._localTranslation);
+            var cameraWorldMatrix = camera.getWorldMatrix();
+
+            var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+
+            BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
         } else {
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
         }

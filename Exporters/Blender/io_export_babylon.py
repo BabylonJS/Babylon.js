@@ -25,6 +25,8 @@ from bpy.props import (BoolProperty, FloatProperty, StringProperty, EnumProperty
 from math import radians
 from mathutils import *
 
+MAX_INT = 1000000000
+
 class SubMesh:
     materialIndex = 0
     verticesStart = 0
@@ -342,7 +344,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         
         file_handler.write("]}")
 
-    def export_mesh(object, scene, file_handler, multiMaterials):
+    def export_mesh(object, scene, file_handler, multiMaterials, minVertex, maxVertex):
         # Get mesh  
         mesh = object.to_mesh(scene, True, "PREVIEW")
         
@@ -401,6 +403,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         vertices_Colors=[]
         vertices_indices=[]
         subMeshes = []
+
+        finish = True
                 
         for v in range(0, len(mesh.vertices)):
             alreadySavedVertices.append(False)
@@ -423,9 +427,17 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                 
                 if face.material_index != materialIndex:
                     continue
+
+                if face.vertices[0] < minVertex and face.vertices[1] < minVertex and face.vertices[2] < minVertex:
+                    continue
                 
+                if face.vertices[0] > maxVertex or face.vertices[1] > maxVertex or face.vertices[2] > maxVertex:
+                    finish = False
+                    continue
+
                 for v in range(3): # For each vertex in face
                     vertex_index = face.vertices[v]
+
                     vertex = mesh.vertices[vertex_index]
                     position = vertex.co
                     normal = vertex.normal
@@ -691,6 +703,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Closing
         file_handler.write("}")
 
+        return finish
+
     def export_node(object, scene, file_handler):
         # Transform
         loc = mathutils.Vector((0, 0, 0))
@@ -923,7 +937,17 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
                 first = False
                 if object.type == 'MESH':
-                    data_string = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials)
+                    maxVertex = 65535
+                    minVertex = 0
+
+                    while True:
+                        finish = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials, minVertex, maxVertex)
+
+                        if finish:
+                            break
+                        minVertex = maxVertex
+                        maxVertex = minVertex + 65535
+                        file_handler.write(",")
                 else:
                     data_string = Export_babylon.export_node(object, scene, file_handler)
 
