@@ -270,8 +270,6 @@ var BABYLON = BABYLON || {};
                 var material = scene.materials[index];
 
                 serializationObject.materials.push(serializeMaterial(material));
-
-                ;
             }
 
             return serializationObject;
