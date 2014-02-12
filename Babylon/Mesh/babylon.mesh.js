@@ -16,9 +16,7 @@ var BABYLON = BABYLON || {};
 
         this.position = new BABYLON.Vector3(0, 0, 0);
         this.rotation = new BABYLON.Vector3(0, 0, 0);
-        this.worldRotation = new BABYLON.Vector3(0, 0, 0);
         this.rotationQuaternion = null;
-        this.worldRotationQuaternion = null;
         this.scaling = new BABYLON.Vector3(1, 1, 1);
 
         this._pivotMatrix = BABYLON.Matrix.Identity();
@@ -44,7 +42,6 @@ var BABYLON = BABYLON || {};
         this._localBillboard = BABYLON.Matrix.Zero();
         this._localPivotScaling = BABYLON.Matrix.Zero();
         this._localPivotScalingRotation = BABYLON.Matrix.Zero();
-        this._localPivotScalingRotationWorld = BABYLON.Matrix.Zero();
         this._localWorld = BABYLON.Matrix.Zero();
         this._worldMatrix = BABYLON.Matrix.Zero();
         this._rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
@@ -98,6 +95,34 @@ var BABYLON = BABYLON || {};
             this.computeWorldMatrix();
         }
         return this._worldMatrix;
+    };
+
+    BABYLON.Mesh.prototype.rotate = function (axis, amount, space) {
+        var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+
+        if (!this.rotationQuaternion) {
+            this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+            this.rotation = BABYLON.Vector3.Zero();
+        }
+
+        if (space == BABYLON.Space.LOCAL) {
+            this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
+        }
+        else {
+            this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
+        }
+    };
+
+    BABYLON.Mesh.prototype.translate = function (axis, distance, space) {
+        var displacementVector = axis.scale(distance);
+
+        if (space == BABYLON.Space.LOCAL) {
+            var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
+            this.setPositionWithLocalVector(tempV3);
+        }
+        else {
+            this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
+        }
     };
 
     BABYLON.Mesh.prototype.getAbsolutePosition = function () {
@@ -325,15 +350,6 @@ var BABYLON = BABYLON || {};
             this._cache.rotation.copyFrom(this.rotation);
         }
 
-        // World rotation
-        if (this.worldRotationQuaternion) {
-            this.worldRotationQuaternion.toRotationMatrix(this._localWorldRotation);
-            this._cache.worldRotationQuaternion.copyFrom(this.worldRotationQuaternion);
-        } else {
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.worldRotation.y, this.worldRotation.x, this.worldRotation.z, this._localWorldRotation);
-            this._cache.worldRotation.copyFrom(this.worldRotation);
-        }
-
         // Translation
         if (this.infiniteDistance && !this.parent) {
             var camera = this._scene.activeCamera;
@@ -349,7 +365,6 @@ var BABYLON = BABYLON || {};
         // Composing transformations
         this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
         this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
-        this._localPivotScalingRotation.multiplyToRef(this._localWorldRotation, this._localPivotScalingRotationWorld);
 
         // Billboarding
         if (this.billboardMode !== BABYLON.Mesh.BILLBOARDMODE_NONE) {
@@ -377,12 +392,12 @@ var BABYLON = BABYLON || {};
 
             this._localBillboard.invert();
 
-            this._localPivotScalingRotationWorld.multiplyToRef(this._localBillboard, this._localWorld);
-            this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotationWorld);
+            this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
+            this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
         }
 
         // Local world
-        this._localPivotScalingRotationWorld.multiplyToRef(this._localTranslation, this._localWorld);
+        this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
 
         // Parent
         if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {

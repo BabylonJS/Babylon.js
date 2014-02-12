@@ -5,6 +5,14 @@ var BABYLON = BABYLON || {};
 (function () {
     BABYLON.Tools = {};
 
+    BABYLON.Tools.ToDegrees = function(angle) {
+        return angle * 180 / Math.PI;
+    };
+
+    BABYLON.Tools.ToRadians = function(angle) {
+         return angle * Math.PI / 180;
+    };
+
     BABYLON.Tools.ExtractMinAndMax = function (positions, start, count) {
         var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
