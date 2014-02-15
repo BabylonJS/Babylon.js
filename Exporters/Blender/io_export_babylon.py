@@ -25,7 +25,7 @@ from bpy.props import (BoolProperty, FloatProperty, StringProperty, EnumProperty
 from math import radians
 from mathutils import *
 
-MAX_INT = 1000000000
+MAX_VERTICES = 65535
 
 class SubMesh:
     materialIndex = 0
@@ -344,20 +344,21 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         
         file_handler.write("]}")
 
-    def export_mesh(object, scene, file_handler, multiMaterials, minVertex, maxVertex):
+    def export_mesh(object, scene, file_handler, multiMaterials, startFace, forcedParent, nameID):
         # Get mesh  
         mesh = object.to_mesh(scene, True, "PREVIEW")
         
         # Transform
         loc = mathutils.Vector((0, 0, 0))
-        rot = mathutils.Quaternion((0, 0, 0, 1))
+        rot = mathutils.Quaternion((0, 0, 0, -1))
         scale = mathutils.Vector((1, 1, 1))
         
+        hasSkeleton = False
+
         world = object.matrix_world
         if object.parent and object.parent.type == "ARMATURE" and len(object.vertex_groups) > 0:
             hasSkeleton = True
         else:
-            hasSkeleton = False
             if (object.parent):
                 world = object.parent.matrix_world.inverted() * object.matrix_world
 
@@ -404,7 +405,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         vertices_indices=[]
         subMeshes = []
 
-        finish = True
+        offsetFace = 0
                 
         for v in range(0, len(mesh.vertices)):
             alreadySavedVertices.append(False)
@@ -418,22 +419,23 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         indicesCount = 0
 
         for materialIndex in range(materialsCount):
+            if offsetFace != 0:
+                break
+
             subMeshes.append(SubMesh())
             subMeshes[materialIndex].materialIndex = materialIndex
             subMeshes[materialIndex].verticesStart = verticesCount
             subMeshes[materialIndex].indexStart = indicesCount
         
-            for face in mesh.tessfaces:  # For each face
-                
+            for faceIndex in range(startFace, len(mesh.tessfaces)):  # For each face
+                face = mesh.tessfaces[faceIndex]
+
                 if face.material_index != materialIndex:
                     continue
 
-                if face.vertices[0] < minVertex and face.vertices[1] < minVertex and face.vertices[2] < minVertex:
-                    continue
-                
-                if face.vertices[0] > maxVertex or face.vertices[1] > maxVertex or face.vertices[2] > maxVertex:
-                    finish = False
-                    continue
+                if verticesCount + 3 > MAX_VERTICES:
+                    offsetFace = faceIndex
+                    break
 
                 for v in range(3): # For each vertex in face
                     vertex_index = face.vertices[v]
@@ -548,7 +550,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                     
             subMeshes[materialIndex].verticesCount = verticesCount - subMeshes[materialIndex].verticesStart
             subMeshes[materialIndex].indexCount = indicesCount - subMeshes[materialIndex].indexStart
-                
+
         positions=positions.rstrip(',')
         normals=normals.rstrip(',')
         indices=indices.rstrip(',')
@@ -579,10 +581,14 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Writing mesh      
         file_handler.write("{")
         
-        Export_babylon.write_string(file_handler, "name", object.name, True)        
-        Export_babylon.write_string(file_handler, "id", object.name)        
-        if object.parent != None:
-            Export_babylon.write_string(file_handler, "parentId", object.parent.name)
+        Export_babylon.write_string(file_handler, "name", object.name + nameID, True)        
+        Export_babylon.write_string(file_handler, "id", object.name + nameID)   
+
+        if forcedParent is None:     
+            if object.parent != None:
+                Export_babylon.write_string(file_handler, "parentId", object.parent.name)
+        else:
+            Export_babylon.write_string(file_handler, "parentId", forcedParent.name)
         
         if len(object.material_slots) == 1:
             material = object.material_slots[0].material
@@ -604,10 +610,16 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             billboardMode = 0
         else:
             billboardMode = 0
-            
-        Export_babylon.write_vector(file_handler, "position", loc)
-        Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
-        Export_babylon.write_vector(file_handler, "scaling", scale)
+        
+        if forcedParent is None:
+            Export_babylon.write_vector(file_handler, "position", loc)
+            Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
+            Export_babylon.write_vector(file_handler, "scaling", scale)
+        else:
+            Export_babylon.write_vector(file_handler, "position", mathutils.Vector((0, 0, 0)))
+            Export_babylon.write_vectorScaled(file_handler, "rotation", mathutils.Vector((0, 0, 0)), 1)
+            Export_babylon.write_vector(file_handler, "scaling", mathutils.Vector((1, 1, 1)))
+
         Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
         Export_babylon.write_bool(file_handler, "isEnabled", True)
         Export_babylon.write_bool(file_handler, "useFlatShading", object.data.useFlatShading)
@@ -703,7 +715,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Closing
         file_handler.write("}")
 
-        return finish
+        return offsetFace
 
     def export_node(object, scene, file_handler):
         # Transform
@@ -937,16 +949,21 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
                 first = False
                 if object.type == 'MESH':
-                    maxVertex = 65535
-                    minVertex = 0
+                    forcedParent = None
+                    nameID = ""
+                    startFace = 0
 
                     while True:
-                        finish = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials, minVertex, maxVertex)
+                        startFace = Export_babylon.export_mesh(object, scene, file_handler, multiMaterials, startFace, forcedParent, str(nameID))
 
-                        if finish:
+                        if startFace == 0:
                             break
-                        minVertex = maxVertex
-                        maxVertex = minVertex + 65535
+
+                        if forcedParent is None:
+                            nameID = 0
+                            forcedParent = object
+
+                        nameID = nameID + 1
                         file_handler.write(",")
                 else:
                     data_string = Export_babylon.export_node(object, scene, file_handler)

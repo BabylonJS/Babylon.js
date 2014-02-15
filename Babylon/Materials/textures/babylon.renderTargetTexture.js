@@ -8,6 +8,7 @@ var BABYLON = BABYLON || {};
         this._scene.textures.push(this);
 
         this.name = name;
+        this._size = size;
         this._generateMipMaps = generateMipMaps;
 
         this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
