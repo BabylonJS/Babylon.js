@@ -181,6 +181,7 @@ var BABYLON = BABYLON || {};
         var particleSystem = new BABYLON.ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
         if (parsedParticleSystem.textureName) {
             particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
+            particleSystem.particleTexture.name = parsedParticleSystem.textureName;
         }
         particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
         particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
@@ -487,18 +488,23 @@ var BABYLON = BABYLON || {};
                 }
 
                 if (parsedGeometry.matricesIndices) {
-                    var floatIndices = [];
+                    if (!parsedGeometry.matricesIndices._isExpanded) {
+                        var floatIndices = [];
 
-                    for (var i = 0; i < parsedGeometry.matricesIndices.length; i++) {
-                        var matricesIndex = parsedGeometry.matricesIndices[i];
+                        for (var i = 0; i < parsedGeometry.matricesIndices.length; i++) {
+                            var matricesIndex = parsedGeometry.matricesIndices[i];
 
-                        floatIndices.push(matricesIndex & 0x000000FF);
-                        floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
-                        floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                            floatIndices.push(matricesIndex & 0x000000FF);
+                            floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
+                            floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
+                            floatIndices.push(matricesIndex >> 24);
+                        }
+
+                        mesh.setVerticesData(floatIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
+                    } else {
+                        delete parsedGeometry.matricesIndices._isExpanded;
+                        mesh.setVerticesData(parsedGeometry.matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
                     }
-
-                    mesh.setVerticesData(floatIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
                 }
 
                 if (parsedGeometry.matricesWeights) {

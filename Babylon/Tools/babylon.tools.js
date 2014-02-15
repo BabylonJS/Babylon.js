@@ -5,6 +5,14 @@ var BABYLON = BABYLON || {};
 (function () {
     BABYLON.Tools = {};
 
+    BABYLON.Tools.GetFilename = function (path) {
+        var index = path.lastIndexOf("/");
+        if (index < 0)
+            return path;
+
+        return path.substring(index + 1);
+    };
+
     BABYLON.Tools.ToDegrees = function(angle) {
         return angle * 180 / Math.PI;
     };
