@@ -125,7 +125,7 @@ var BABYLON = BABYLON || {};
         var det = BABYLON.Vector3.Dot(this._edge1, this._pvec);
 
         if (det === 0) {
-            return 0;
+            return null;
         }
 
         var invdet = 1 / det;
@@ -135,7 +135,7 @@ var BABYLON = BABYLON || {};
         var bu = BABYLON.Vector3.Dot(this._tvec, this._pvec) * invdet;
 
         if (bu < 0 || bu > 1.0) {
-            return 0;
+            return null;
         }
 
         BABYLON.Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
@@ -143,10 +143,15 @@ var BABYLON = BABYLON || {};
         var bv = BABYLON.Vector3.Dot(this.direction, this._qvec) * invdet;
 
         if (bv < 0 || bu + bv > 1.0) {
-            return 0;
+            return null;
         }
 
-        return BABYLON.Vector3.Dot(this._edge2, this._qvec) * invdet;
+        return {
+            bu: bu,
+            bv: bv,
+            distance: BABYLON.Vector3.Dot(this._edge2, this._qvec) * invdet
+        };
+
     };
 
     // Statics

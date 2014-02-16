@@ -786,7 +786,7 @@ var BABYLON = BABYLON || {};
 
         this._generatePointsArray();
 
-        var distance = Number.MAX_VALUE;
+        var intersectInfo = null;
 
         for (var index = 0; index < this.subMeshes.length; index++) {
             var subMesh = this.subMeshes[index];
@@ -795,11 +795,11 @@ var BABYLON = BABYLON || {};
             if (this.subMeshes.length > 1 && !subMesh.canIntersects(ray))
                 continue;
 
-            var currentDistance = subMesh.intersects(ray, this._positions, this._indices, fastCheck);
+            var currentIntersectInfo = subMesh.intersects(ray, this._positions, this._indices, fastCheck);
 
-            if (currentDistance > 0) {
-                if (fastCheck || currentDistance < distance) {
-                    distance = currentDistance;
+            if (currentIntersectInfo) {
+                if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                    intersectInfo = currentIntersectInfo;
 
                     if (fastCheck) {
                         break;
@@ -808,13 +808,13 @@ var BABYLON = BABYLON || {};
             }
         }
 
-        if (distance >= 0 && distance < Number.MAX_VALUE) {
+        if (intersectInfo) {
             // Get picked point
             var world = this.getWorldMatrix();
             var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
             var direction = ray.direction.clone();
             direction.normalize();
-            direction = direction.scale(distance);
+            direction = direction.scale(intersectInfo.distance);
             var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
 
             var pickedPoint = worldOrigin.add(worldDirection);
@@ -824,6 +824,9 @@ var BABYLON = BABYLON || {};
             pickingInfo.distance = BABYLON.Vector3.Distance(worldOrigin, pickedPoint);
             pickingInfo.pickedPoint = pickedPoint;
             pickingInfo.pickedMesh = this;
+            pickingInfo.bu = intersectInfo.bu;
+            pickingInfo.bv = intersectInfo.bv;
+            pickingInfo.faceId = intersectInfo.faceId;
             return pickingInfo;
         }
 
