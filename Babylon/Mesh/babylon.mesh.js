@@ -595,7 +595,7 @@ var BABYLON = BABYLON || {};
             this._scene._addPendingData(this);
 
             BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
-                BABYLON.SceneLoader._ImportGeometry(JSON.parse(data), that);
+                that._delayLoadingFunction(JSON.parse(data), that);
                 that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                 that._scene._removePendingData(that);
             }, function () { }, this._scene.database);
@@ -1238,7 +1238,7 @@ var BABYLON = BABYLON || {};
             var radius = isTop ? radiusTop : radiusBottom;
 
             if (radius == 0) {
-                return
+                return;
             }
 
             // Create cap indices.
