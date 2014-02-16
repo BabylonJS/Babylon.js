@@ -24,7 +24,7 @@
   <script src="Babylon/Layer/babylon.layer.js"></script>
   <script src="Babylon/Sprites/babylon.sprite.js"></script>
   <script src="Babylon/Sprites/babylon.spriteManager.js"></script>
-  <script src="Babylon/Tools/babylon.sceneLoader.js"></script>
+  <script src="Babylon/Loading/babylon.sceneLoader.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>
   <script src="Babylon/Materials/babylon.multiMaterial.js"></script>
   <script src="Babylon/Materials/babylon.standardMaterial.js"></script>
@@ -64,4 +64,5 @@
   <script src="Babylon/babylon.node.js"></script>
   <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
   <script src="Babylon/Mesh/babylon.axis.js"></script>
+  <script src="Babylon/Loading/Plugins/babylon.babylonFileLoader.js"></script>
 </files>
