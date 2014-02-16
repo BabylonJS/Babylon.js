@@ -87,7 +87,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
-        var distance = Number.MAX_VALUE;
+        var intersectInfo = null;
 
         // Triangles test
         for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
@@ -95,11 +95,12 @@ var BABYLON = BABYLON || {};
             var p1 = positions[indices[index + 1]];
             var p2 = positions[indices[index + 2]];
 
-            var currentDistance = ray.intersectsTriangle(p0, p1, p2);
+            var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
-            if (currentDistance > 0) {
-                if (fastCheck || currentDistance < distance) {
-                    distance = currentDistance;
+            if (currentIntersectInfo) {
+                if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                    intersectInfo = currentIntersectInfo;
+                    intersectInfo.faceId = index / 3;
 
                     if (fastCheck) {
                         break;
@@ -108,10 +109,7 @@ var BABYLON = BABYLON || {};
             }
         }
 
-        if (distance > 0 && distance < Number.MAX_VALUE)
-            return distance;
-
-        return 0;
+        return intersectInfo;
     };
 
     // Clone    
