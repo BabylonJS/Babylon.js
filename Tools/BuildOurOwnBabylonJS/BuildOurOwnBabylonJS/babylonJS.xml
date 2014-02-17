@@ -59,10 +59,10 @@
   <script src="Babylon/Culling/babylon.boundingBox.js"></script>
   <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
   <script src="Babylon/babylon.engine.js"></script>
-  <script src="Babylon/Tools/babylon.tools.js"></script>
+  <script src="Babylon/Math/babylon.tools.js"></script>
   <script src="Babylon/Tools/babylon.math.js"></script>
   <script src="Babylon/babylon.node.js"></script>
   <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
-  <script src="Babylon/Mesh/babylon.axis.js"></script>
+  <script src="Babylon/Math/babylon.axis.js"></script>
   <script src="Babylon/Loading/Plugins/babylon.babylonFileLoader.js"></script>
 </files>
