@@ -1039,11 +1039,12 @@ var BABYLON = BABYLON || {};
     // Statics
     BABYLON.Quaternion.RotationAxis = function (axis, angle) {
         var result = new BABYLON.Quaternion();
+        var sin = Math.sin(angle / 2);
 
         result.w = Math.cos(angle / 2);
-        result.x = axis.x * Math.sin(angle / 2);
-        result.y = axis.y * Math.sin(angle / 2);
-        result.z = axis.z * Math.sin(angle / 2);
+        result.x = axis.x * sin;
+        result.y = axis.y * sin;
+        result.z = axis.z * sin;
 
         return result;
     };

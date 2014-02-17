@@ -542,13 +542,9 @@ var BABYLON = BABYLON || {};
 
     BABYLON.SceneLoader.RegisterPlugin({
         extensions: ".babylon",
-        importMesh: function (meshesNames, scene, data, rootUrl, then) {
+        importMesh: function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
             var parsedData = JSON.parse(data);
 
-            // Meshes
-            var meshes = [];
-            var particleSystems = [];
-            var skeletons = [];
             var loadedSkeletonsIds = [];
             var loadedMaterialsIds = [];
             var hierarchyIds = [];
@@ -621,11 +617,9 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (then) {
-                then(meshes, particleSystems, skeletons);
-            }
+            return true;
         },
-        load: function (scene, data, rootUrl, then) {
+        load: function (scene, data, rootUrl) {
             var parsedData = JSON.parse(data);
 
             // Scene
@@ -729,9 +723,7 @@ var BABYLON = BABYLON || {};
             }
 
             // Finish
-            if (then) {
-                then(scene);
-            }
+            return true;
         }
     });
 
