@@ -558,7 +558,7 @@ var BABYLON = BABYLON || {};
                 break;
             case BABYLON.Engine.ALPHA_COMBINE:
                 this.setDepthWrite(false);
-                this._gl.blendFuncSeparate(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ZERO, this._gl.ONE);
+                this._gl.blendFuncSeparate(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                 this._gl.enable(this._gl.BLEND);
                 break;
             case BABYLON.Engine.ALPHA_ADD:

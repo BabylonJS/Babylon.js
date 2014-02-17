@@ -27,7 +27,7 @@ var BABYLON = BABYLON || {};
             this._registeredPlugins.push(plugin);
         },
 
-        ImportMesh: function (meshesNames, rootUrl, sceneFilename, scene, then, progressCallBack) {
+        ImportMesh: function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
             var database = new BABYLON.Database(rootUrl + sceneFilename);
             scene.database = database;
@@ -39,15 +39,21 @@ var BABYLON = BABYLON || {};
                 var particleSystems = [];
                 var skeletons = [];
 
-                plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons);
+                if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
+                    if (onerror) {
+                        onerror(scene);
+                    }
 
-                if (then) {
-                    then(meshes, particleSystems, skeletons);
+                    return;
+                }
+
+                if (onsuccess) {
+                    onsuccess(meshes, particleSystems, skeletons);
                 }
             }, progressCallBack, database);
         },
 
-        Load: function (rootUrl, sceneFilename, engine, then, progressCallBack) {
+        Load: function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
 
             var plugin = this._getPluginForFilename(sceneFilename);
             var database;
@@ -55,10 +61,17 @@ var BABYLON = BABYLON || {};
             var loadSceneFromData = function (data) {
                 var scene = new BABYLON.Scene(engine);
                 scene.database = database;
-                plugin.load(scene, data, rootUrl);
 
-                if (then) {
-                    then(scene);
+                if (!plugin.load(scene, data, rootUrl)) {
+                    if (onerror) {
+                        onerror(scene);
+                    }
+
+                    return;
+                }
+
+                if (onsuccess) {
+                    onsuccess(scene);
                 }
             };
 
