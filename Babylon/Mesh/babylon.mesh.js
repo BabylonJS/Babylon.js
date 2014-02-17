@@ -102,7 +102,7 @@ var BABYLON = BABYLON || {};
             this.rotation = BABYLON.Vector3.Zero();
         }
 
-        if (space == BABYLON.Space.LOCAL) {
+        if (!space || space == BABYLON.Space.LOCAL) {
             var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
             this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
         }
@@ -121,7 +121,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.translate = function (axis, distance, space) {
         var displacementVector = axis.scale(distance);
 
-        if (space == BABYLON.Space.LOCAL) {
+        if (!space || space == BABYLON.Space.LOCAL) {
             var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
             this.setPositionWithLocalVector(tempV3);
         }

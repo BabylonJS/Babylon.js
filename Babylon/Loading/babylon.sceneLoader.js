@@ -35,7 +35,15 @@ var BABYLON = BABYLON || {};
             var plugin = this._getPluginForFilename(sceneFilename);
 
             BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
-                plugin.importMesh(meshesNames, scene, data, rootUrl, then);
+                var meshes = [];
+                var particleSystems = [];
+                var skeletons = [];
+
+                plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons);
+
+                if (then) {
+                    then(meshes, particleSystems, skeletons);
+                }
             }, progressCallBack, database);
         },
 
@@ -47,7 +55,11 @@ var BABYLON = BABYLON || {};
             var loadSceneFromData = function (data) {
                 var scene = new BABYLON.Scene(engine);
                 scene.database = database;
-                plugin.load(scene, data, rootUrl, then);
+                plugin.load(scene, data, rootUrl);
+
+                if (then) {
+                    then(scene);
+                }
             };
 
             if (rootUrl.indexOf("file:") === -1) {
