@@ -37,7 +37,6 @@ var BABYLON = BABYLON || {};
 
         this._localScaling = BABYLON.Matrix.Zero();
         this._localRotation = BABYLON.Matrix.Zero();
-        this._localWorldRotation = BABYLON.Matrix.Zero();
         this._localTranslation = BABYLON.Matrix.Zero();
         this._localBillboard = BABYLON.Matrix.Zero();
         this._localPivotScaling = BABYLON.Matrix.Zero();
@@ -98,17 +97,23 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.rotate = function (axis, amount, space) {
-        var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
-
         if (!this.rotationQuaternion) {
             this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
             this.rotation = BABYLON.Vector3.Zero();
         }
 
         if (space == BABYLON.Space.LOCAL) {
+            var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
             this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
         }
         else {
+            if (this.parent) {
+                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                invertParentWorldMatrix.invert();
+
+                axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
+            }
+            var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
             this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
         }
     };
@@ -248,14 +253,6 @@ var BABYLON = BABYLON || {};
                 return false;
         }
 
-        if (this.worldRotationQuaternion) {
-            if (!this._cache.worldRotationQuaternion.equals(this.worldRotationQuaternion))
-                return false;
-        } else {
-            if (!this._cache.worldRotation.equals(this.worldRotation))
-                return false;
-        }
-
         if (!this._cache.scaling.equals(this.scaling))
             return false;
 
@@ -281,8 +278,6 @@ var BABYLON = BABYLON || {};
         this._cache.scaling = BABYLON.Vector3.Zero();
         this._cache.rotation = BABYLON.Vector3.Zero();
         this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
-        this._cache.worldRotation = BABYLON.Vector3.Zero();
-        this._cache.worldRotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
     };
 
     BABYLON.Mesh.prototype.markAsDirty = function (property) {
