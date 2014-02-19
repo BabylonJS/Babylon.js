@@ -119,16 +119,14 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         return (matrix.to_3x3() * mathutils.Vector((0.0, 0.0, -1.0))).normalized()
             
     def export_camera(object, scene, file_handler):     
-        invWorld = object.matrix_world.copy()
-        invWorld.invert()
-        
-        target = mathutils.Vector((0, 1, 0)) * invWorld
+        rotation = mathutils.Vector((-object.rotation_euler[0] + math.pi / 2,
+            object.rotation_euler[1], -object.rotation_euler[2]))
     
         file_handler.write("{")
         Export_babylon.write_string(file_handler, "name", object.name, True)        
         Export_babylon.write_string(file_handler, "id", object.name)
         Export_babylon.write_vector(file_handler, "position", object.location)
-        Export_babylon.write_vector(file_handler, "target", target)
+        Export_babylon.write_vector(file_handler, "rotation", rotation)
         Export_babylon.write_float(file_handler, "fov", object.data.angle)
         Export_babylon.write_float(file_handler, "minZ", object.data.clip_start)
         Export_babylon.write_float(file_handler, "maxZ", object.data.clip_end)
