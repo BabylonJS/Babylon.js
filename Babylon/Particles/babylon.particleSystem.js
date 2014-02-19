@@ -93,6 +93,8 @@ var BABYLON = BABYLON || {};
 
     BABYLON.ParticleSystem.prototype.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
 
+    BABYLON.ParticleSystem.prototype.forceDepthWrite = false;
+
     // Methods   
     BABYLON.ParticleSystem.prototype.isAlive = function () {
         return this._alive;
@@ -329,6 +331,11 @@ var BABYLON = BABYLON || {};
         } else {
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
         }
+
+        if (this.forceDepthWrite) {
+            this.setDepthWrite(true);
+        }
+
         engine.draw(true, 0, this.particles.length * 6);
         engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
 

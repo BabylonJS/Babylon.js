@@ -5,6 +5,22 @@ var BABYLON = BABYLON || {};
 (function () {
     BABYLON.Tools = {};
 
+    BABYLON.Tools.GetFilename = function (path) {
+        var index = path.lastIndexOf("/");
+        if (index < 0)
+            return path;
+
+        return path.substring(index + 1);
+    };
+
+    BABYLON.Tools.ToDegrees = function(angle) {
+        return angle * 180 / Math.PI;
+    };
+
+    BABYLON.Tools.ToRadians = function(angle) {
+         return angle * Math.PI / 180;
+    };
+
     BABYLON.Tools.ExtractMinAndMax = function (positions, start, count) {
         var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -243,11 +259,7 @@ var BABYLON = BABYLON || {};
         reader.readAsText(fileToLoad);
     };
 
-    // Misc.    
-    BABYLON.Tools.isIE = function () {
-        return window.ActiveXObject !== undefined;
-    };
-    
+    // Misc.        
     BABYLON.Tools.WithinEpsilon = function (a, b) {
         var num = a - b;
         return -1.401298E-45 <= num && num <= 1.401298E-45;
