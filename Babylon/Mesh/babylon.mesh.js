@@ -305,20 +305,21 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype._updateBoundingInfo = function () {
-        if (this._boundingInfo) {
-            this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
-            this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
+        
+        this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this._absolutePosition, this._absolutePosition);
+        
+        this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
+        this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
 
-            if (this.parent && this.parent._scaleFactor)
-                this._scaleFactor = this._scaleFactor * this.parent._scaleFactor;
+        if (this.parent && this.parent._scaleFactor)
+            this._scaleFactor = this._scaleFactor * this.parent._scaleFactor;
 
-            this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
+        this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
 
-            for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
-                var subMesh = this.subMeshes[subIndex];
+        for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+            var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
-            }
+            subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
         }
     };
 
