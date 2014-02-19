@@ -259,7 +259,8 @@ var BABYLON = BABYLON || {};
         canvas.addEventListener("MSGestureChange", this._onGesture, false);
         window.addEventListener("keydown", this._onKeyDown, false);
         window.addEventListener("keyup", this._onKeyUp, false);
-        window.addEventListener('mousewheel', this._wheel, false);
+        window.addEventListener('mousewheel', this._wheel, false); //Chrome, Safari, Opera, IE
+        window.addEventListener('DOMMouseScroll', this._wheel, false); //Firefox
         window.addEventListener("blur", this._onLostFocus, false);
     };
 
@@ -277,7 +278,8 @@ var BABYLON = BABYLON || {};
         canvas.removeEventListener("MSGestureChange", this._onGesture);
         window.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("keyup", this._onKeyUp);
-        window.removeEventListener('mousewheel', this._wheel);
+        window.removeEventListener('mousewheel', this._wheel); //Chrome, Safari, Opera, IE
+        window.removeEventListener('DOMMouseScroll', this._wheel); //Firefox
         window.removeEventListener("blur", this._onLostFocus);
 
         this._MSGestureHandler = null;

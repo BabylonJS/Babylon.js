@@ -249,6 +249,7 @@ var BABYLON = BABYLON || {};
         if (speedRatio === undefined) {
             speedRatio = 1.0;
         }
+
         // Local animations
         if (target.animations) {
             this.stopAnimation(target);
@@ -269,10 +270,21 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Scene.prototype.stopAnimation = function (target) {
-        for (var index = 0; index < this._activeAnimatables.length; index++) {
-            if (this._activeAnimatables[index].target === target) {
-                this._activeAnimatables.splice(index, 1);
-                return;
+        // Local animations
+        if (target.animations) {
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    this._activeAnimatables.splice(index, 1);
+                    return;
+                }
+            }
+        }
+
+        // Children animations
+        if (target.getAnimatables) {
+            var animatables = target.getAnimatables();
+            for (var index = 0; index < animatables.length; index++) {
+                this.stopAnimation(animatables[index]);
             }
         }
     };

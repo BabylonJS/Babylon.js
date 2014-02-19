@@ -229,10 +229,10 @@ var BABYLON = BABYLON || {};
         if (this._cachedDefines != join) {
             this._cachedDefines = join;
 
-            // IE patch
+            // Legacy browser patch
             var shaderName = "default";
-            if (BABYLON.Tools.isIE()) {
-                shaderName = "iedefault";
+            if (!this._scene.getEngine().getCaps().standardDerivatives) {
+                shaderName = "legacydefault";
             }
 
             this._effect = this._scene.getEngine().createEffect(shaderName,

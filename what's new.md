@@ -1,5 +1,23 @@
 Changes list
 ============
+- 1.9.0:
+ - **Major updates**
+ - Beta support for scene serialization with ```BABYLON.SceneSerializer.Serialize``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Blender exporter now supports 32 bits indices ([deltakosh](http://www.github.com/deltakosh))
+ - Flat shading support (From Blender and with ```mesh.convertToFlatShadedMesh()``) ([deltakosh](http://www.github.com/deltakosh))
+ - **Updates**
+ - New ```mesh.rotate``` and ```mesh.translate``` functions to rotate and translate mesh both locally and globally ([deltakosh](http://www.github.com/deltakosh))
+ - New feature for particles: ```ParticleSystem.forceDepthWrite``` ([deltakosh](http://www.github.com/deltakosh))
+ - Adding a new parameter to pick in order to be able to pick even on multi views ([deltakosh](http://www.github.com/deltakosh))
+ - New ```mesh.lookAt``` function ([professorF](https://github.com/professorF))
+ - New postprocess system (independent from cameras) ([michael-korbas](https://github.com/michael-korbas))
+ - New ```mesh.setAbsolutePosition``` function ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
+ - **Bugfixes**
+ - Fixing issue with ```mesh.infiniteDistance``` ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing issue with camera caches ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing issue with aspect ratio ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing arcRotateCamera angle limitations ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing a bug with multi-views: depth buffer was not clear between different passes ([deltakosh](http://www.github.com/deltakosh))
 - 1.8.5:
  - **Major updates**
  - Visual Studio 2013 templates for Windows 8.1 and nuget packages ([pierlag](http://www.github.com/pierlag))
