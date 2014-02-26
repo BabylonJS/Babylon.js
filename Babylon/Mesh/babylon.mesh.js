@@ -836,7 +836,7 @@ var BABYLON = BABYLON || {};
         // Buffers
         result._vertexBuffers = this._vertexBuffers;
         for (var kind in result._vertexBuffers) {
-            result._vertexBuffers[kind].references++;
+            result._vertexBuffers[kind]._buffer.references++;
         }
 
         result._indexBuffer = this._indexBuffer;
