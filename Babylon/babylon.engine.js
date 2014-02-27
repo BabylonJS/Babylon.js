@@ -111,7 +111,7 @@ var BABYLON = BABYLON || {};
     // Properties
     BABYLON.Engine.prototype.getAspectRatio = function (camera) {
         var viewport = camera.viewport;
-        return (this._renderingCanvas.width * viewport.width) / (this._renderingCanvas.height * viewport.height);;
+        return (this._renderingCanvas.width * viewport.width) / (this._renderingCanvas.height * viewport.height);
     };
 
     BABYLON.Engine.prototype.getRenderWidth = function () {
