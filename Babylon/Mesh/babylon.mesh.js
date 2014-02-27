@@ -305,9 +305,8 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype._updateBoundingInfo = function () {
-        
         this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this._absolutePosition, this._absolutePosition);
-        
+
         this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
         this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
 
@@ -321,6 +320,7 @@ var BABYLON = BABYLON || {};
 
             subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
         }
+
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
@@ -836,7 +836,7 @@ var BABYLON = BABYLON || {};
         // Buffers
         result._vertexBuffers = this._vertexBuffers;
         for (var kind in result._vertexBuffers) {
-            result._vertexBuffers[kind].references++;
+            result._vertexBuffers[kind]._buffer.references++;
         }
 
         result._indexBuffer = this._indexBuffer;
