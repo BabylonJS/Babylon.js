@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Mesh/babylon.csg.js"></script>
   <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
   <script src="Babylon/Physics/babylon.physicsEngine.js"></script>
   <script src="Babylon/Tools/babylon.filesInput.js"></script>
