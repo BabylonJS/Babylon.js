@@ -267,7 +267,7 @@ var BABYLON = BABYLON || {};
 
     // Statics
     BABYLON.PhysicsEngine.IsSupported = function () {
-        return CANNON !== undefined;
+        return window.CANNON !== undefined;
     };
 
     BABYLON.PhysicsEngine.NoImpostor = 0;
