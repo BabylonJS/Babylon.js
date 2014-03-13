@@ -455,6 +455,13 @@ var BABYLON = BABYLON || {};
 
         this._currentEffect = effect;
     };
+    
+    BABYLON.Engine.prototype.setArray = function (uniform, array) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform1fv(uniform, array);
+    };
 
     BABYLON.Engine.prototype.setMatrices = function (uniform, matrices) {
         if (!uniform)
