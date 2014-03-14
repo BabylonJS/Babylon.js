@@ -3,12 +3,15 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Engine = function (canvas, antialias) {
+    BABYLON.Engine = function (canvas, antialias, options) {
         this._renderingCanvas = canvas;
+
+        options = options || {};
+        options.antialias = antialias;
 
         // GL
         try {
-            this._gl = canvas.getContext("webgl", { antialias: antialias }) || canvas.getContext("experimental-webgl", { antialias: antialias });
+            this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
         } catch (e) {
             throw new Error("WebGL not supported");
         }
@@ -454,6 +457,13 @@ var BABYLON = BABYLON || {};
         }
 
         this._currentEffect = effect;
+    };
+    
+    BABYLON.Engine.prototype.setArray = function (uniform, array) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform1fv(uniform, array);
     };
 
     BABYLON.Engine.prototype.setMatrices = function (uniform, matrices) {
