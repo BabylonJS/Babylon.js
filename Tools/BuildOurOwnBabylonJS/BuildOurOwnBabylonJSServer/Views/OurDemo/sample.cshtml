@@ -1,0 +1,47 @@
+﻿@model OurDemoViewModel
+@using BuildOurOwnBabylonJSServer.ViewModels
+@using System.Text.RegularExpressions
+
+@{
+    ViewBag.Title = "Our Own BabylonJS";
+    ViewBag.BabylonJSFolder = "..\\..\\..\\";
+
+    var myRegex = new Regex(@"[\\]", RegexOptions.Singleline);
+
+    Model.Folder = myRegex.Replace(Model.Folder, @"/");
+    Model.Folder = Model.Folder.Trim('/');
+
+    if (!String.IsNullOrEmpty(Model.Folder))
+    {
+        Model.Folder += "/";
+    }
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        BABYLON.SceneLoader.Load("/Content/@Model.Folder", "@Model.Dictionary["fileBJS"]" + ".babylon", OURBABYLON.engine, function (scene) {
+
+            scene.activeCamera = new BABYLON.ArcRotateCamera("defaultCamera", 0, 0, 100, BABYLON.Vector3.Zero(), scene);
+
+            scene.activeCamera.zoomOn();
+            scene.activeCamera.attachControl(OURBABYLON.canvas);
+
+            var material = new BABYLON.StandardMaterial("default", scene);
+            material.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
+
+            for (var m in scene.meshes) {
+                scene.meshes[m].material = material;
+            }
+
+            // Render loop
+            var renderLoop = function () {
+                scene.render();
+            };
+
+            // Launch render loop
+            scene.getEngine().runRenderLoop(renderLoop);
+
+            OURBABYLON.currentScene = scene;
+        });
+    });
+</script>

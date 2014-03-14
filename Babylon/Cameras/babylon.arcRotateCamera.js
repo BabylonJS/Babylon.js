@@ -370,5 +370,37 @@ var BABYLON = BABYLON || {};
 
         return this._viewMatrix;
     };
+
+    BABYLON.ArcRotateCamera.ZOOM_ON_FACTOR = 1;
+    BABYLON.ArcRotateCamera.prototype.zoomOn = function (meshes) {
+        meshes = meshes || this._scene.meshes;
+
+        var minMaxVector = BABYLON.Mesh.MinMax(meshes);
+        var distance = BABYLON.Vector3.Distance(minMaxVector.min, minMaxVector.max);
+
+        this.radius = distance * BABYLON.ArcRotateCamera.ZOOM_ON_FACTOR;
+
+        this.focusOn({min: minMaxVector.min, max: minMaxVector.max, distance: distance});
+    };
+
+    BABYLON.ArcRotateCamera.prototype.focusOn = function (meshesOrMinMaxVectorAndDistance) {
+        var meshesOrMinMaxVector;
+        var distance;
+
+        if (meshesOrMinMaxVectorAndDistance.min === undefined) { // meshes
+            meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this._scene.meshes;
+            meshesOrMinMaxVector = BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
+            distance = BABYLON.Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
+        }
+        else { //minMaxVector and distance
+            meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
+            distance = meshesOrMinMaxVectorAndDistance.distance;
+        }
+        
+        this.target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
+        
+        this.maxZ = distance * 2;
+    };
+
 })();
 

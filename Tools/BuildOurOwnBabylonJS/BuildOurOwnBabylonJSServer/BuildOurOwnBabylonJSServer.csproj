@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Controllers\BabylonJSDemoController.cs" />
     <Compile Include="Controllers\OurDemoController.cs" />
+    <Compile Include="ViewModel\OurDemoViewModel.cs" />
     <Compile Include="WebViewPageExtensions.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\BuildOurOwnBabylonJSController.cs" />
@@ -154,7 +155,6 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
