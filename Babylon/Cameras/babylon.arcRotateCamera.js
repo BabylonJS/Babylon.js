@@ -39,6 +39,7 @@ var BABYLON = BABYLON || {};
     BABYLON.ArcRotateCamera.prototype.lowerRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.upperRadiusLimit = null;
     BABYLON.ArcRotateCamera.prototype.angularSensibility = 1000.0;
+    BABYLON.ArcRotateCamera.prototype.wheelPrecision = 3.0;
 
     BABYLON.ArcRotateCamera.prototype._getTargetPosition = function () {
         return this.target.position || this.target;
@@ -158,9 +159,9 @@ var BABYLON = BABYLON || {};
             this._wheel = function (event) {
                 var delta = 0;
                 if (event.wheelDelta) {
-                    delta = event.wheelDelta / 120;
+                    delta = event.wheelDelta / (that.wheelPrecision * 40);
                 } else if (event.detail) {
-                    delta = -event.detail / 3;
+                    delta = -event.detail / that.wheelPrecision;
                 }
 
                 if (delta)
