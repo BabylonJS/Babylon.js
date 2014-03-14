@@ -193,6 +193,10 @@ var BABYLON = BABYLON || {};
         this._valueCache[uniformName][2] = z;
         this._valueCache[uniformName][3] = w;
     };
+    
+    BABYLON.Effect.prototype.setArray = function (uniformName, array) {
+        this._engine.setArray(this.getUniform(uniformName), array);
+    };
 
     BABYLON.Effect.prototype.setMatrices = function (uniformName, matrices) {
         this._engine.setMatrices(this.getUniform(uniformName), matrices);
