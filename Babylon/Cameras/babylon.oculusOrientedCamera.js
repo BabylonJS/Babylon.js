@@ -29,7 +29,7 @@ var BABYLON = BABYLON || {};
 
         this._projectionMatrix = new BABYLON.Matrix();
         this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * ovrSettings.InterpupillaryDistance : -.5 * ovrSettings.InterpupillaryDistance, 0, 0);
-        new BABYLON.oculusDistortionCorrectionPostProcess("Oculus Distortion", this, !isLeftEye, ovrSettings);
+        new BABYLON.OculusDistortionCorrectionPostProcess("Oculus Distortion", this, !isLeftEye, ovrSettings);
         this.resetProjectionMatrix();
         this.resetViewMatrix();
     };
