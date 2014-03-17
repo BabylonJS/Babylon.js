@@ -22,6 +22,8 @@ var BABYLON = BABYLON || {};
 	BABYLON.inputControllerTarget.prototype.rotateRelative = function (relativeOrientation) {
 
 	};
+	BABYLON.inputControllerTarget.prototype.getOrientationMatrix = function () { return new BABYLON.Matrix(); };
+	BABYLON.inputControllerTarget.prototype.getInvertOrientationMatrix = function () { return new BABYLON.Matrix(); };
 
 	BABYLON.inputControllerMultiTarget = function (targets) {
 	    this.targets = targets;
@@ -39,6 +41,11 @@ var BABYLON = BABYLON || {};
 	BABYLON.inputControllerMultiTarget.prototype.getOrientation = function () {
 		return this.targets[0].getOrientation();
 	};
+
+
+	BABYLON.inputControllerMultiTarget.prototype.getOrientationMatrix = function () { return this.targets[0].getOrientationMatrix(); };
+	BABYLON.inputControllerMultiTarget.prototype.getInvertOrientationMatrix = function () { return this.targets[0].getInvertOrientationMatrix(); };
+
 	BABYLON.inputControllerMultiTarget.prototype.moveRelative = function (movementVector) {
 		for (var i = 0; i < this.targets.length; ++i) {
 			this.targets[i].moveRelative(movementVector);
@@ -100,6 +107,8 @@ var BABYLON = BABYLON || {};
 	BABYLON.inputFilter.prototype.getOrientation = function () {
 	    return this.target.getOrientation();
 	};
+	BABYLON.inputFilter.prototype.getOrientationMatrix = function () { return this.target.getOrientationMatrix(); };
+	BABYLON.inputFilter.prototype.getInvertOrientationMatrix = function () { return this.target.getInvertOrientationMatrix(); };
 	BABYLON.inputFilter.prototype.moveRelative = function (movementVector) {
 	    this.target.moveRelative(movementVector);
 	};

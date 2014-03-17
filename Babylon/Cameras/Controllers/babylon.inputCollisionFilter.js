@@ -5,8 +5,6 @@ var BABYLON = BABYLON || {};
 (function () {
 	BABYLON.inputCollisionFilter = function (scene, target, ellipsoid) {
 		BABYLON.inputFilter.call(this, scene, target);
-		this._orientationMatrix = new BABYLON.Matrix();
-		this._orientationMatrixInvert = new BABYLON.Matrix();
 		this._transformedDirection = new BABYLON.Vector3();
 		this._tempNewPosition = new BABYLON.Vector3();
 		this._tempNewPosition2 = new BABYLON.Vector3();
@@ -19,8 +17,7 @@ var BABYLON = BABYLON || {};
 	BABYLON.inputCollisionFilter.prototype = Object.create(BABYLON.inputFilter.prototype);
 	BABYLON.inputCollisionFilter.prototype.moveRelative = function (relativeMovement) {
 		var rotation = this.getOrientation();
-		BABYLON.Matrix.RotationYawPitchRollToRef(rotation.yaw, rotation.pitch, rotation.roll, this._orientationMatrix);
-		BABYLON.Vector3.TransformNormalToRef(relativeMovement, this._orientationMatrix, this._transformedDirection);
+		BABYLON.Vector3.TransformNormalToRef(relativeMovement, this.getOrientationMatrix(), this._transformedDirection);
 		this.getPosition().addToRef(this._transformedDirection, this._tempNewPosition);
 		//this._tempNewPosition.y -= this._ellipsoid.y;
 		this._collider.radius = this._ellipsoid;
@@ -34,14 +31,11 @@ var BABYLON = BABYLON || {};
 
 
 		this._collidedPosition.subtractToRef(this._positionBottom, this._tempNewPosition2);
+		if (this._tempNewPosition2.length() > BABYLON.Engine.collisionsEpsilon * 5) {
 
-		if (this._tempNewPosition2.length() > BABYLON.Engine.collisionsEpsilon) {
-
-		    this._orientationMatrix.invertToRef(this._orientationMatrixInvert);
-		    BABYLON.Vector3.TransformNormalToRef(this._tempNewPosition2, this._orientationMatrixInvert, this._tempNewPosition);
-
+		    BABYLON.Vector3.TransformNormalToRef(this._tempNewPosition2, this.getInvertOrientationMatrix(), this._tempNewPosition);
 		    this.target.moveRelative(this._tempNewPosition);
-		}
+		} 
 
 	};
 })();

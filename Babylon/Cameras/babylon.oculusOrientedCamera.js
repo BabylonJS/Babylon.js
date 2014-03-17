@@ -13,6 +13,7 @@ var BABYLON = BABYLON || {};
         this._currentOrientation = Object.create(neutralOrientation || { yaw: 0.0, pitch: 0.0, roll: 0.0 });
         this._currentViewMatrix = new BABYLON.Matrix();
         this._currentOrientationMatrix = new BABYLON.Matrix();
+        this._currentInvertOrientationMatrix = new BABYLON.Matrix();
         this._tempMatrix = new BABYLON.Matrix();
         
         if (isLeftEye) {
@@ -98,6 +99,7 @@ var BABYLON = BABYLON || {};
             this._currentOrientation.pitch,
             -this._currentOrientation.roll
             , this._currentOrientationMatrix);
+        this._currentOrientationMatrix.invertToRef(this._currentInvertOrientationMatrix);
 
         BABYLON.Vector3.TransformNormalToRef(this._referenceDirection, this._currentOrientationMatrix, this._actualDirection);
         BABYLON.Vector3.TransformNormalToRef(this._referenceUp, this._currentOrientationMatrix, this._actualUp);
@@ -118,6 +120,14 @@ var BABYLON = BABYLON || {};
                 this.controllers[i].update();
             }
         }
+    };
+
+    BABYLON.OculusOrientedCamera.prototype.getOrientationMatrix = function () {
+        return this._currentOrientationMatrix;
+    };
+
+    BABYLON.OculusOrientedCamera.prototype.getInvertOrientationMatrix = function () {
+        return this._currentInvertOrientationMatrix;
     };
 
     BABYLON.OculusOrientedCamera.prototype.resetProjectionMatrix = function () {
