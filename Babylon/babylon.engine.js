@@ -865,7 +865,7 @@ var BABYLON = BABYLON || {};
         scene._addPendingData(img);
     };
 
-    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions) {
+    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -895,9 +895,12 @@ var BABYLON = BABYLON || {};
                 gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, that._workingCanvas);
             }
 
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            if (!noMipmap) {
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
+            
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
