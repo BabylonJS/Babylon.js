@@ -3,8 +3,8 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.keyboardMoveController = function (scene, target) {
-		BABYLON.inputController.call(this, scene, target);
+	BABYLON.KeyboardMoveController = function (scene, target) {
+		BABYLON.InputController.call(this, scene, target);
 		this._keys = [];
 		this.keysUp = [38];
 		this.keysDown = [40];
@@ -19,8 +19,8 @@ var BABYLON = BABYLON || {};
 		this.maxAbsoluteAcceleration = 5; // 2 meters per second²
 		this._targetSpeed = new BABYLON.Vector3(0, 0, 0);
 	};
-	BABYLON.keyboardMoveController.prototype = Object.create(BABYLON.inputController.prototype);
-	BABYLON.keyboardMoveController.prototype.attachToCanvas = function (canvas) {
+	BABYLON.KeyboardMoveController.prototype = Object.create(BABYLON.InputController.prototype);
+	BABYLON.KeyboardMoveController.prototype.attachToCanvas = function (canvas) {
 		var that = this;
 		this._canvas = canvas;
 
@@ -58,12 +58,12 @@ var BABYLON = BABYLON || {};
 		window.addEventListener("keyup", this._onKeyUp, false);
 		window.addEventListener("blur", this._onLostFocus, false);
 	};
-	BABYLON.keyboardMoveController.prototype.detachFromCanvas = function (canvas) {
+	BABYLON.KeyboardMoveController.prototype.detachFromCanvas = function (canvas) {
 		window.removeEventListener("keydown", this._onKeyDown, false);
 		window.removeEventListener("keyup", this._onKeyUp, false);
 		window.removeEventListener("blur", this._onLostFocus, false);
 	};
-	BABYLON.keyboardMoveController.prototype.updateCurrentSpeed = function () {
+	BABYLON.KeyboardMoveController.prototype.updateCurrentSpeed = function () {
 		this._lastFrameSpeed.x = this._currentSpeed.x;
 		this._lastFrameSpeed.y = this._currentSpeed.y;
 		this._lastFrameSpeed.z = this._currentSpeed.z;
@@ -92,7 +92,7 @@ var BABYLON = BABYLON || {};
 			this._currentSpeed.addInPlace(dv);
 		}
 	};
-	BABYLON.keyboardMoveController.prototype.update = function () {
+	BABYLON.KeyboardMoveController.prototype.update = function () {
 		this._targetSpeed.x = 0;
 		this._targetSpeed.y = 0;
 		this._targetSpeed.z = 0;
