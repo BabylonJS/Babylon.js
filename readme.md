@@ -61,14 +61,18 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
  - Render target textures
  - Dynamic textures (canvas)
  - Video textures
+ - Compressed (DDS) textures
 -  Cameras (Perspective and orthographic):
  - Arc rotate camera
  - Free camera
  - Touch camera
+ - Virtual Joysticks camera
+ - Oculus Rift camera
 -  Meshes: 
  - Mesh cloning
  - Dynamic meshes
  - Height maps
+ - Constructive solid geometries
 -  Import: 
  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
  - Exporter for Blender

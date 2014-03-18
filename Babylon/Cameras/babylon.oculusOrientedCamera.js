@@ -3,54 +3,6 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.OculusController = function (scene, target) {
-        BABYLON.inputController.call(this, scene, target);
-        this._deviceOrientationHandler = this.onOrientationEvent.bind(this);
-        this._tempOrientation = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
-        this._relativeOrientation = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
-        window.addEventListener("deviceorientation", this._deviceOrientationHandler);
-    };
-
-    BABYLON.OculusController.prototype = Object.create(BABYLON.inputController.prototype);
-
-    BABYLON.OculusController.prototype.onOrientationEvent = function (ev) {
-        this._tempOrientation.yaw = ev.alpha / 180 * Math.PI;
-        this._tempOrientation.pitch = ev.beta / 180 * Math.PI;
-        this._tempOrientation.roll = ev.gamma / 180 * Math.PI;
-
-        if (!this._lastOrientation) {
-            this._lastOrientation = Object.create(this._tempOrientation);
-        }
-        else {
-            this._relativeOrientation.yaw = this._tempOrientation.yaw - this._lastOrientation.yaw;
-            this._relativeOrientation.pitch = this._tempOrientation.pitch - this._lastOrientation.pitch;
-            this._relativeOrientation.roll = this._tempOrientation.roll - this._lastOrientation.roll;
-
-            var temp = this._tempOrientation;
-            this._tempOrientation = this._lastOrientation;
-            this._lastOrientation = temp;
-            this.target.rotateRelative(this._relativeOrientation);
-        }
-    };
-    BABYLON.OculusController.prototype.dispose = function () {
-        window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
-    };
-
-    BABYLON.OculusController.CameraSettings_OculusRiftDevKit2013_Metric = {
-        HResolution: 1280,
-        VResolution: 800,
-        HScreenSize: 0.149759993,
-        VScreenSize: 0.0935999975,
-        VScreenCenter: 0.0467999987,
-        EyeToScreenDistance: 0.0410000011,
-        LensSeparationDistance: 0.0635000020,
-        InterpupillaryDistance: 0.0640000030,
-        DistortionK: [1.0, 0.219999999, 0.239999995, 0.0],
-        ChromaAbCorrection: [0.995999992, -0.00400000019, 1.01400006, 0.0],
-        PostProcessScaleFactor: 1.714605507808412,
-        LensCenterOffset: 0.151976421
-    };
-
     BABYLON.OculusOrientedCamera = function (name, position, scene, isLeftEye, ovrSettings, neutralOrientation) {
         BABYLON.Camera.call(this, name, position, scene);
         this._referenceDirection = new BABYLON.Vector3(0, 0, 1);
@@ -58,10 +10,12 @@ var BABYLON = BABYLON || {};
         this._actualDirection = new BABYLON.Vector3(1, 0, 0);
         this._actualUp = new BABYLON.Vector3(0, 1, 0);
         this._currentTargetPoint = new BABYLON.Vector3(0, 0, 0);
-        this._currentOrientation = neutralOrientation || { yaw: 0.0, pitch: 0.0, roll: 0.0 };
+        this._currentOrientation = Object.create(neutralOrientation || { yaw: 0.0, pitch: 0.0, roll: 0.0 });
         this._currentViewMatrix = new BABYLON.Matrix();
         this._currentOrientationMatrix = new BABYLON.Matrix();
+        this._currentInvertOrientationMatrix = new BABYLON.Matrix();
         this._tempMatrix = new BABYLON.Matrix();
+        
         if (isLeftEye) {
             this.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
         } else {
@@ -76,12 +30,12 @@ var BABYLON = BABYLON || {};
 
         this._projectionMatrix = new BABYLON.Matrix();
         this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * ovrSettings.InterpupillaryDistance : -.5 * ovrSettings.InterpupillaryDistance, 0, 0);
-        new BABYLON.oculusDistortionCorrectionPostProcess("Oculus Distortion", this, !isLeftEye, ovrSettings);
+        new BABYLON.OculusDistortionCorrectionPostProcess("Oculus Distortion", this, !isLeftEye, ovrSettings);
         this.resetProjectionMatrix();
         this.resetViewMatrix();
     };
     
-    BABYLON.OculusOrientedCamera.buildOculusStereoCamera = function (scene, name, canvas, minZ, maxZ, position, neutralOrientation, useFXAA, ovrSettings) {
+    BABYLON.OculusOrientedCamera.BuildOculusStereoCamera = function (scene, name, canvas, minZ, maxZ, position, neutralOrientation, useFXAA, disableGravity,disableCollisions, ovrSettings) {
         position = position || new BABYLON.Vector2(0, 0);
         neutralOrientation = neutralOrientation || { yaw: 0.0, pitch: 0.0, roll: 0.0 };
         //var controller =  new BABYLON.OculusController();
@@ -107,7 +61,18 @@ var BABYLON = BABYLON || {};
         rightCamera.attachControl(canvas);
         var multiTarget = new BABYLON.inputControllerMultiTarget([leftCamera, rightCamera]);
         var controller = new BABYLON.OculusController(scene, multiTarget);
-        var moveController = new BABYLON.keyboardMoveController(scene, multiTarget);
+        var moveTarget = multiTarget;
+        if (!disableCollisions) {
+            var collisionFilter = new BABYLON.inputCollisionFilter(scene, multiTarget);
+            moveTarget = collisionFilter;
+        }
+        if (!disableGravity) {
+
+            var globalAxisFactorFilter = new BABYLON.globalAxisFactorsFilter(scene, moveTarget, 1, 0, 1);
+            var gravityController = new BABYLON.GravityInputController(scene, moveTarget);
+            moveTarget = globalAxisFactorFilter;
+        }
+        var moveController = new BABYLON.keyboardMoveController(scene, moveTarget);
         moveController.attachToCanvas(canvas);
         var result = {
             leftCamera: leftCamera, rightCamera: rightCamera, intermediateControllerTarget: multiTarget,
@@ -134,9 +99,10 @@ var BABYLON = BABYLON || {};
             this._currentOrientation.pitch,
             -this._currentOrientation.roll
             , this._currentOrientationMatrix);
+        this._currentOrientationMatrix.invertToRef(this._currentInvertOrientationMatrix);
 
-        BABYLON.Vector3.TransformCoordinatesToRef(this._referenceDirection, this._currentOrientationMatrix, this._actualDirection);
-        BABYLON.Vector3.TransformCoordinatesToRef(this._referenceUp, this._currentOrientationMatrix, this._actualUp);
+        BABYLON.Vector3.TransformNormalToRef(this._referenceDirection, this._currentOrientationMatrix, this._actualDirection);
+        BABYLON.Vector3.TransformNormalToRef(this._referenceUp, this._currentOrientationMatrix, this._actualUp);
 
         BABYLON.Vector3.FromFloatsToRef(this.position.x + this._actualDirection.x, this.position.y + this._actualDirection.y, this.position.z + this._actualDirection.z, this._currentTargetPoint);
         BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTargetPoint, this._actualUp, this._tempMatrix);
@@ -149,19 +115,19 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.OculusOrientedCamera.prototype._update = function () {
-        //if (!this._referenceOculusOrientation) {
-        //    this._referenceOculusOrientation = { yaw: this._controller._currentOrientation.yaw, pitch: this._controller._currentOrientation.pitch, roll: this._controller._currentOrientation.roll };
-        //}
-        //else {
-        //    this._currentOrientation.yaw = this._controller._currentOrientation.yaw - this._referenceOculusOrientation.yaw;
-        //    this._currentOrientation.pitch = this._controller._currentOrientation.pitch - this._referenceOculusOrientation.pitch;
-        //    this._currentOrientation.roll = this._controller._currentOrientation.roll - this._referenceOculusOrientation.roll;
-        //}
         if (this.controllers) {
             for (var i = 0; i < this.controllers.length; ++i) {
                 this.controllers[i].update();
             }
         }
+    };
+
+    BABYLON.OculusOrientedCamera.prototype.getOrientationMatrix = function () {
+        return this._currentOrientationMatrix;
+    };
+
+    BABYLON.OculusOrientedCamera.prototype.getInvertOrientationMatrix = function () {
+        return this._currentInvertOrientationMatrix;
     };
 
     BABYLON.OculusOrientedCamera.prototype.resetProjectionMatrix = function () {
@@ -185,7 +151,7 @@ var BABYLON = BABYLON || {};
         if (!this._tempMoveVector) {
             this._tempMoveVector = new BABYLON.Vector3(0, 0, 0);
         }
-        BABYLON.Vector3.TransformCoordinatesToRef(movementVector, this._currentOrientationMatrix, this._tempMoveVector);
+        BABYLON.Vector3.TransformNormalToRef(movementVector, this._currentOrientationMatrix, this._tempMoveVector);
         this.position.addInPlace(this._tempMoveVector);
         this.resetViewMatrix();
     };

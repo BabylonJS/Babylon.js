@@ -896,6 +896,11 @@ var BABYLON = BABYLON || {};
             this._indexBuffer = null;
         }
 
+        // Physics
+        if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
+            this.setPhysicsState({ impostor: BABYLON.PhysicsEngine.NoImpostor });
+        }
+
         // Remove from scene
         var index = this._scene.meshes.indexOf(this);
         this._scene.meshes.splice(index, 1);
