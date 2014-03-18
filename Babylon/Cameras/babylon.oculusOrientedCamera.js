@@ -59,7 +59,7 @@ var BABYLON = BABYLON || {};
         scene.activeCameras.push(rightCamera);
         leftCamera.attachControl(canvas);
         rightCamera.attachControl(canvas);
-        var multiTarget = new BABYLON.inputControllerMultiTarget([leftCamera, rightCamera]);
+        var multiTarget = new BABYLON.InputControllerMultiTarget([leftCamera, rightCamera]);
         var controller = new BABYLON.OculusController(scene, multiTarget);
         var moveTarget = multiTarget;
         if (!disableCollisions) {
@@ -72,7 +72,7 @@ var BABYLON = BABYLON || {};
             var gravityController = new BABYLON.GravityInputController(scene, moveTarget);
             moveTarget = globalAxisFactorFilter;
         }
-        var moveController = new BABYLON.keyboardMoveController(scene, moveTarget);
+        var moveController = new BABYLON.KeyboardMoveController(scene, moveTarget);
         moveController.attachToCanvas(canvas);
         var result = {
             leftCamera: leftCamera, rightCamera: rightCamera, intermediateControllerTarget: multiTarget,
@@ -140,7 +140,7 @@ var BABYLON = BABYLON || {};
         return this._projectionMatrix;
     };
 
-    // implementation of inputControllerTarget
+    // implementation of InputControllerTarget
     BABYLON.OculusOrientedCamera.prototype.getOrientation = function () {
         return this._currentOrientation;
     };

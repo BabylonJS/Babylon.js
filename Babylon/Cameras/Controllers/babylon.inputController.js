@@ -4,28 +4,28 @@ var BABYLON = BABYLON || {};
 
 (function () {
 
-	BABYLON.inputControllerTarget = function () {
+	BABYLON.InputControllerTarget = function () {
 		this._position = new BABYLON.Vector3(0, 0, 0);
 		this._orientation = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
 	};
 
-	BABYLON.inputControllerTarget.prototype.getPosition = function () {
+	BABYLON.InputControllerTarget.prototype.getPosition = function () {
 		return this._position;
 	};
-	BABYLON.inputControllerTarget.prototype.getOrientation = function () {
+	BABYLON.InputControllerTarget.prototype.getOrientation = function () {
 		return this._orientation;
 	};
-	BABYLON.inputControllerTarget.prototype.moveRelative = function (movementVector) {
+	BABYLON.InputControllerTarget.prototype.moveRelative = function (movementVector) {
 
 	};
 	
-	BABYLON.inputControllerTarget.prototype.rotateRelative = function (relativeOrientation) {
+	BABYLON.InputControllerTarget.prototype.rotateRelative = function (relativeOrientation) {
 
 	};
-	BABYLON.inputControllerTarget.prototype.getOrientationMatrix = function () { return new BABYLON.Matrix(); };
-	BABYLON.inputControllerTarget.prototype.getInvertOrientationMatrix = function () { return new BABYLON.Matrix(); };
+	BABYLON.InputControllerTarget.prototype.getOrientationMatrix = function () { return new BABYLON.Matrix(); };
+	BABYLON.InputControllerTarget.prototype.getInvertOrientationMatrix = function () { return new BABYLON.Matrix(); };
 
-	BABYLON.inputControllerMultiTarget = function (targets) {
+	BABYLON.InputControllerMultiTarget = function (targets) {
 	    this.targets = targets;
 	    var mainTarget = this.targets[0];
 	    if (!mainTarget.controllers) {
@@ -35,30 +35,30 @@ var BABYLON = BABYLON || {};
 	    }
 	};
 
-	BABYLON.inputControllerMultiTarget.prototype.getPosition = function () {
+	BABYLON.InputControllerMultiTarget.prototype.getPosition = function () {
 		return this.targets[0].getPosition();
 	};
-	BABYLON.inputControllerMultiTarget.prototype.getOrientation = function () {
+	BABYLON.InputControllerMultiTarget.prototype.getOrientation = function () {
 		return this.targets[0].getOrientation();
 	};
 
 
-	BABYLON.inputControllerMultiTarget.prototype.getOrientationMatrix = function () { return this.targets[0].getOrientationMatrix(); };
-	BABYLON.inputControllerMultiTarget.prototype.getInvertOrientationMatrix = function () { return this.targets[0].getInvertOrientationMatrix(); };
+	BABYLON.InputControllerMultiTarget.prototype.getOrientationMatrix = function () { return this.targets[0].getOrientationMatrix(); };
+	BABYLON.InputControllerMultiTarget.prototype.getInvertOrientationMatrix = function () { return this.targets[0].getInvertOrientationMatrix(); };
 
-	BABYLON.inputControllerMultiTarget.prototype.moveRelative = function (movementVector) {
+	BABYLON.InputControllerMultiTarget.prototype.moveRelative = function (movementVector) {
 		for (var i = 0; i < this.targets.length; ++i) {
 			this.targets[i].moveRelative(movementVector);
 		}
 	};
 
-	BABYLON.inputControllerMultiTarget.prototype.rotateRelative = function (relativeOrientation) {
+	BABYLON.InputControllerMultiTarget.prototype.rotateRelative = function (relativeOrientation) {
 		for (var i = 0; i < this.targets.length; ++i) {
 			this.targets[i].rotateRelative(relativeOrientation);
 		}
 	};
 
-	BABYLON.inputControllerMultiTarget.prototype.update = function () {
+	BABYLON.InputControllerMultiTarget.prototype.update = function () {
 		if (this.controllers) {
 			for (var i = 0; i < this.controllers.length; ++i) {
 				this.controllers[i].update();
@@ -66,7 +66,7 @@ var BABYLON = BABYLON || {};
 		}
 	};
 	
-	BABYLON.inputController = function (scene, target) {
+	BABYLON.InputController = function (scene, target) {
 		this.scene = scene;
 		this.target = target;
 		if (!this.target.controllers) {
@@ -75,24 +75,24 @@ var BABYLON = BABYLON || {};
 			this.target.controllers.push(this);
 		}
 	};
-	BABYLON.inputController.prototype.attachToCanvas = function (canvas) {
+	BABYLON.InputController.prototype.attachToCanvas = function (canvas) {
 
 	};
-	BABYLON.inputController.prototype.detachFromCanvas = function (canvas) {
+	BABYLON.InputController.prototype.detachFromCanvas = function (canvas) {
 
 	};
-	BABYLON.inputController.prototype.update = function () {
+	BABYLON.InputController.prototype.update = function () {
 
 	};
 
-	BABYLON.inputController.prototype.dispose = function () {
+	BABYLON.InputController.prototype.dispose = function () {
 
 	};
 
 	BABYLON.inputFilter = function (scene, target) {
-	    BABYLON.inputController.call(this, scene, target);
+	    BABYLON.InputController.call(this, scene, target);
 	};
-	BABYLON.inputFilter.prototype = Object.create(BABYLON.inputController.prototype);
+	BABYLON.inputFilter.prototype = Object.create(BABYLON.InputController.prototype);
 	BABYLON.inputFilter.prototype.update = function () {
 	    if (this.controllers) {
 	        for (var i = 0; i < this.controllers.length; ++i) {
