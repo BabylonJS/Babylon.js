@@ -656,6 +656,18 @@ var BABYLON = BABYLON || {};
         result.z = this.z / otherVector.z;
     };
 
+    BABYLON.Vector3.prototype.MinimizeInPlace = function (other) {
+        if (other.x < this.x) this.x = other.x;
+        if (other.y < this.y) this.y = other.y;
+        if (other.z < this.z) this.z = other.z;
+    };
+
+    BABYLON.Vector3.prototype.MaximizeInPlace = function (other) {
+        if (other.x > this.x) this.x = other.x;
+        if (other.y > this.y) this.y = other.y;
+        if (other.z > this.z) this.z = other.z;
+    };
+
     // Properties
     BABYLON.Vector3.prototype.length = function () {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
@@ -898,17 +910,15 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Vector3.Minimize = function (left, right) {
-        var x = (left.x < right.x) ? left.x : right.x;
-        var y = (left.y < right.y) ? left.y : right.y;
-        var z = (left.z < right.z) ? left.z : right.z;
-        return new BABYLON.Vector3(x, y, z);
+        var min = left.clone();
+        min.MinimizeInPlace(right);
+        return min;
     };
 
     BABYLON.Vector3.Maximize = function (left, right) {
-        var x = (left.x > right.x) ? left.x : right.x;
-        var y = (left.y > right.y) ? left.y : right.y;
-        var z = (left.z > right.z) ? left.z : right.z;
-        return new BABYLON.Vector3(x, y, z);
+        var max = left.clone();
+        max.MaximizeInPlace(right);
+        return max;
     };
 
     BABYLON.Vector3.Distance = function (value1, value2) {
@@ -921,6 +931,12 @@ var BABYLON = BABYLON || {};
         var z = value1.z - value2.z;
 
         return (x * x) + (y * y) + (z * z);
+    };
+
+    BABYLON.Vector3.Center = function (value1, value2) {
+        var center = value1.add(value2);
+        center.scaleInPlace(0.5);
+        return center;
     };
 
     ////////////////////////////////// Quaternion //////////////////////////////////
