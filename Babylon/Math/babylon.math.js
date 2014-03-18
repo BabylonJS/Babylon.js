@@ -247,6 +247,10 @@ var BABYLON = BABYLON || {};
     BABYLON.Color3.FromArray = function (array) {
         return new BABYLON.Color3(array[0], array[1], array[2]);
     };
+    
+    BABYLON.Color3.FromInts = function (r, g, b) {
+        return new BABYLON.Color3(r / 255.0, g / 255.0, b / 255.0);
+    };
 
     ////////////////////////////////// Color4 //////////////////////////////////
 
@@ -340,6 +344,11 @@ var BABYLON = BABYLON || {};
 
         return new BABYLON.Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
     };
+    
+    BABYLON.Color4.FromInts = function (r, g, b, a) {
+        return new BABYLON.Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+    };
+
 
     ////////////////////////////////// Vector2 //////////////////////////////////
 
