@@ -3,11 +3,12 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.VideoTexture = function (name, urls, size, scene, generateMipMaps) {
+    BABYLON.VideoTexture = function (name, urls, size, scene, generateMipMaps, invertY) {
         this._scene = scene;
         this._scene.textures.push(this);
 
         this.name = name;
+        this._invertY = invertY;
 
         this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
         this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
@@ -54,7 +55,7 @@ var BABYLON = BABYLON || {};
         }
 
         this._lastUpdate = now;
-        this._scene.getEngine().updateVideoTexture(this._texture, this.video);
+        this._scene.getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
         return true;
     };
 })();

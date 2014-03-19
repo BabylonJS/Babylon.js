@@ -733,9 +733,9 @@ var BABYLON = BABYLON || {};
         texture.isReady = true;
     };
 
-    BABYLON.Engine.prototype.updateVideoTexture = function (texture, video) {
+    BABYLON.Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, false);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY);
 
         // Scale the video if it is a NPOT
         if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
