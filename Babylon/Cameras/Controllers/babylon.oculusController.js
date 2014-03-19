@@ -4,14 +4,14 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.OculusController = function (scene, target) {
-        BABYLON.inputController.call(this, scene, target);
+        BABYLON.InputController.call(this, scene, target);
         this._deviceOrientationHandler = this.onOrientationEvent.bind(this);
         this._tempOrientation = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
         this._relativeOrientation = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
         window.addEventListener("deviceorientation", this._deviceOrientationHandler);
     };
 
-    BABYLON.OculusController.prototype = Object.create(BABYLON.inputController.prototype);
+    BABYLON.OculusController.prototype = Object.create(BABYLON.InputController.prototype);
 
     BABYLON.OculusController.prototype.onOrientationEvent = function (ev) {
         this._tempOrientation.yaw = ev.alpha / 180 * Math.PI;
