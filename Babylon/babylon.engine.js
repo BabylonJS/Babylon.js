@@ -44,7 +44,7 @@ var BABYLON = BABYLON || {};
 
         // Extensions
         this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
-        this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc') ;
+        this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
         this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);        
         this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
         this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
@@ -865,7 +865,7 @@ var BABYLON = BABYLON || {};
         scene._addPendingData(img);
     };
 
-    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions) {
+    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -895,9 +895,12 @@ var BABYLON = BABYLON || {};
                 gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, that._workingCanvas);
             }
 
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            if (!noMipmap) {
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
+            
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
