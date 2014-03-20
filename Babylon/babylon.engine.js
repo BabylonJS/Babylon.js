@@ -735,7 +735,7 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? false : true); // Video are upside down by default
 
         // Scale the video if it is a NPOT
         if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {

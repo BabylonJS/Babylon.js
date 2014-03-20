@@ -651,7 +651,7 @@ var BABYLON = BABYLON || {};
             }
 
             if (parsedData.activeCameraID) {
-                scene.activeCameraByID(parsedData.activeCameraID);
+                scene.setActiveCameraByID(parsedData.activeCameraID);
             }
 
             // Materials
