@@ -73,7 +73,7 @@ window.requestAnimationFrame = (function () {
                 vjCanvas.style.backgroundColor = "transparent";
                 vjCanvas.style.top = "0px";
                 vjCanvas.style.left = "0px";
-                vjCanvas.style.zIndex = 10;
+                vjCanvas.style.zIndex = 5;
                 vjCanvas.style.msTouchAction = "none";
                 vjCanvasContext = vjCanvas.getContext('2d');
                 vjCanvasContext.strokeStyle = "#ffffff";
@@ -297,6 +297,7 @@ window.requestAnimationFrame = (function () {
         VirtualJoystick.prototype.releaseCanvas = function () {
             if (vjCanvas) {
                 document.body.removeChild(vjCanvas);
+                vjCanvas = null;
             };
         };
 
