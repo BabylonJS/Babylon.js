@@ -203,7 +203,7 @@ var BABYLON = BABYLON || {};
             this._postProcessesTakenIndices.push(insertAt);
         }
 
-        result = insertAt + add;
+        var result = insertAt + add;
 
         this._postProcesses[result] = postProcess;
 
