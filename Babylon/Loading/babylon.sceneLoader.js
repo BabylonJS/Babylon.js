@@ -55,7 +55,7 @@ var BABYLON = BABYLON || {};
 
         Load: function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
 
-            var plugin = this._getPluginForFilename(sceneFilename);
+            var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
             var loadSceneFromData = function (data) {

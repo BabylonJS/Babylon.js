@@ -3,12 +3,15 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Engine = function (canvas, antialias) {
+    BABYLON.Engine = function (canvas, antialias, options) {
         this._renderingCanvas = canvas;
+
+        options = options || {};
+        options.antialias = antialias;
 
         // GL
         try {
-            this._gl = canvas.getContext("webgl", { antialias: antialias }) || canvas.getContext("experimental-webgl", { antialias: antialias });
+            this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
         } catch (e) {
             throw new Error("WebGL not supported");
         }
@@ -41,6 +44,7 @@ var BABYLON = BABYLON || {};
 
         // Extensions
         this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
+        this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
         this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);        
         this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
         this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
@@ -454,6 +458,13 @@ var BABYLON = BABYLON || {};
 
         this._currentEffect = effect;
     };
+    
+    BABYLON.Engine.prototype.setArray = function (uniform, array) {
+        if (!uniform)
+            return;
+
+        this._gl.uniform1fv(uniform, array);
+    };
 
     BABYLON.Engine.prototype.setMatrices = function (uniform, matrices) {
         if (!uniform)
@@ -603,55 +614,79 @@ var BABYLON = BABYLON || {};
         return count;
     };
 
+
+    var prepareWebGLTexture = function (texture, scene, width, height, invertY, noMipmap, processFunction) {
+        var engine = scene.getEngine();
+        var potWidth = getExponantOfTwo(width, engine._caps.maxTextureSize);
+        var potHeight = getExponantOfTwo(height, engine._caps.maxTextureSize);
+
+        engine._gl.bindTexture(engine._gl.TEXTURE_2D, texture);
+        engine._gl.pixelStorei(engine._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? true : invertY);
+
+        processFunction(potWidth, potHeight);
+
+        engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MAG_FILTER, engine._gl.LINEAR);
+
+        if (noMipmap) {
+            engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MIN_FILTER, engine._gl.LINEAR);
+        } else {
+            engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MIN_FILTER, engine._gl.LINEAR_MIPMAP_LINEAR);
+            engine._gl.generateMipmap(engine._gl.TEXTURE_2D);
+        }
+        engine._gl.bindTexture(engine._gl.TEXTURE_2D, null);
+
+        engine._activeTexturesCache = [];
+        texture._baseWidth = width;
+        texture._baseHeight = height;
+        texture._width = potWidth;
+        texture._height = potHeight;
+        texture.isReady = true;
+        scene._removePendingData(texture);
+    };
+
     BABYLON.Engine.prototype.createTexture = function (url, noMipmap, invertY, scene) {
         var texture = this._gl.createTexture();
         var that = this;
-        
-        var onload = function (img) {
-            var potWidth = getExponantOfTwo(img.width, that._caps.maxTextureSize);
-            var potHeight = getExponantOfTwo(img.height, that._caps.maxTextureSize);
-            var isPot = (img.width == potWidth && img.height == potHeight);
-
-            if (!isPot) {
-                that._workingCanvas.width = potWidth;
-                that._workingCanvas.height = potHeight;
-
-                that._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-            };
-            
-            that._gl.bindTexture(that._gl.TEXTURE_2D, texture);
-            that._gl.pixelStorei(that._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? true : invertY);
-            that._gl.texImage2D(that._gl.TEXTURE_2D, 0, that._gl.RGBA, that._gl.RGBA, that._gl.UNSIGNED_BYTE, isPot ? img : that._workingCanvas);
-            that._gl.texParameteri(that._gl.TEXTURE_2D, that._gl.TEXTURE_MAG_FILTER, that._gl.LINEAR);
-
-            if (noMipmap) {
-                that._gl.texParameteri(that._gl.TEXTURE_2D, that._gl.TEXTURE_MIN_FILTER, that._gl.LINEAR);
-            } else {
-                that._gl.texParameteri(that._gl.TEXTURE_2D, that._gl.TEXTURE_MIN_FILTER, that._gl.LINEAR_MIPMAP_LINEAR);
-                that._gl.generateMipmap(that._gl.TEXTURE_2D);
-            }
-            that._gl.bindTexture(that._gl.TEXTURE_2D, null);
-
-            that._activeTexturesCache = [];
-            texture._baseWidth = img.width;
-            texture._baseHeight = img.height;
-            texture._width = potWidth;
-            texture._height = potHeight;
-            texture.isReady = true;
-            scene._removePendingData(texture);
-        };
-
-        var onerror = function () {
-            scene._removePendingData(texture);
-        };
+        var isDDS = this.getCaps().s3tc && (url.substr(url.length - 4, 4).toLowerCase() === ".dds");
 
         scene._addPendingData(texture);
-        BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
-
         texture.url = url;
         texture.noMipmap = noMipmap;
         texture.references = 1;
         this._loadedTexturesCache.push(texture);
+
+        if (isDDS) {
+            BABYLON.Tools.LoadFile(url, function (data) {
+                var info = BABYLON.Tools.GetDDSInfo(data);
+
+                var loadMipmap = info.mipmapCount > 1 && !noMipmap;
+
+                prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, function (potWidth, potHeight) {
+                    BABYLON.Tools.UploadDDSLevels(that._gl, that.getCaps().s3tc, data, loadMipmap);
+                });
+            }, null, scene.database, true);
+        } else {
+            var onload = function(img) {
+                prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, function (potWidth, potHeight) {
+                    var isPot = (img.width == potWidth && img.height == potHeight);
+                    if (!isPot) {
+                        that._workingCanvas.width = potWidth;
+                        that._workingCanvas.height = potHeight;
+
+                        that._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                    }
+
+                    that._gl.texImage2D(that._gl.TEXTURE_2D, 0, that._gl.RGBA, that._gl.RGBA, that._gl.UNSIGNED_BYTE, isPot ? img : that._workingCanvas);
+
+                });
+            };
+
+            var onerror = function() {
+                scene._removePendingData(texture);
+            };
+
+            BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+        }
 
         return texture;
     };
@@ -698,9 +733,9 @@ var BABYLON = BABYLON || {};
         texture.isReady = true;
     };
 
-    BABYLON.Engine.prototype.updateVideoTexture = function (texture, video) {
+    BABYLON.Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, false);
+        this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? false : true); // Video are upside down by default
 
         // Scale the video if it is a NPOT
         if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
@@ -830,7 +865,7 @@ var BABYLON = BABYLON || {};
         scene._addPendingData(img);
     };
 
-    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions) {
+    BABYLON.Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
         var gl = this._gl;
 
         var texture = gl.createTexture();
@@ -860,9 +895,12 @@ var BABYLON = BABYLON || {};
                 gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, that._workingCanvas);
             }
 
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            if (!noMipmap) {
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
+            
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
