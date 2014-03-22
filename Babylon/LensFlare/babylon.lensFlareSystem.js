@@ -164,7 +164,7 @@ var BABYLON = BABYLON || {};
             var y = centerY - (distY * flare.position);
             
             var cw = flare.size;
-            var ch = flare.size * engine.getAspectRatio();
+            var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera);
             var cx = 2 * (x / globalViewport.width) - 1.0;
             var cy = 1.0 - 2 * (y / globalViewport.height);
             

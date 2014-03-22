@@ -896,6 +896,11 @@ var BABYLON = BABYLON || {};
             this._indexBuffer = null;
         }
 
+        // Physics
+        if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
+            this.setPhysicsState({ impostor: BABYLON.PhysicsEngine.NoImpostor });
+        }
+
         // Remove from scene
         var index = this._scene.meshes.indexOf(this);
         this._scene.meshes.splice(index, 1);
@@ -1591,5 +1596,31 @@ var BABYLON = BABYLON || {};
             normals[index * 3 + 1] = normal.y;
             normals[index * 3 + 2] = normal.z;
         }
+    };
+
+    BABYLON.Mesh.MinMax = function(meshes) {
+        var minVector;
+        var maxVector;
+        for(var i in meshes) {
+            var mesh = meshes[i];
+            var boundingBox = mesh.getBoundingInfo().boundingBox;
+            if (!minVector) {
+                minVector = boundingBox.minimumWorld;
+                maxVector = boundingBox.maximumWorld;
+                continue;
+            }
+            minVector.MinimizeInPlace(boundingBox.minimumWorld);
+            maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+        }
+
+        return {
+            min: minVector,
+            max: maxVector
+        };
+    };
+
+    BABYLON.Mesh.Center = function(meshesOrMinMaxVector) {
+        var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
+        return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
     };
 })();

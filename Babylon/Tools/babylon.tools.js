@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.Tools = {};
+    BABYLON.Tools = BABYLON.Tools || {};
 
     BABYLON.Tools.GetFilename = function (path) {
         var index = path.lastIndexOf("/");
@@ -215,18 +215,22 @@ var BABYLON = BABYLON || {};
         return img;
     };
 
-    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack, database) {
+    BABYLON.Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer) {
         var noIndexedDB = function () {
             var request = new XMLHttpRequest();
             var loadUrl = BABYLON.Tools.BaseUrl + url;
             request.open('GET', loadUrl, true);
+            
+            if (useArrayBuffer) {
+                request.responseType = "arraybuffer";
+            }
 
             request.onprogress = progressCallBack;
 
             request.onreadystatechange = function () {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        callback(request.responseText);
+                        callback(!useArrayBuffer ? request.responseText : request.response);
                     } else { // Failed
                         throw new Error(request.status, "Unable to load " + loadUrl);
                     }

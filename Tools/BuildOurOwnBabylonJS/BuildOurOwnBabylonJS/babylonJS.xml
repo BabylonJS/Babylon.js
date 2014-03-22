@@ -1,5 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
+  <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
+  <script src="Babylon/Cameras/babylon.oculusOrientedCamera.js"></script>
+  <script src="Babylon/PostProcess/babylon.oculusDistortionCorrectionPostProcess.js"></script>
+  <script src="Babylon/Cameras/Controllers/babylon.oculusController.js"></script>
+  <script src="Babylon/Cameras/Controllers/babylon.keyboardMoveController.js"></script>
+  <script src="Babylon/Cameras/Controllers/babylon.inputController.js"></script>
+  <script src="Babylon/Mesh/babylon.csg.js"></script>
   <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
   <script src="Babylon/Physics/babylon.physicsEngine.js"></script>
   <script src="Babylon/Tools/babylon.filesInput.js"></script>
@@ -7,6 +15,7 @@
   <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
   <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
+  <script src="Babylon/PostProcess/babylon.filterPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.blackAndWhitePostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.refractionPostProcess.js"></script>
