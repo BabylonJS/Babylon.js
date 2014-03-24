@@ -233,12 +233,21 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_float(file_handler, "vAng", 0)     
         Export_babylon.write_float(file_handler, "wAng", 0)
         
+        texture_clampMode = 0;
+        texture_wrapMode = 1;
+        texture_mirrorMode = 2;
         if (texture.texture.extension == "REPEAT"):
-            Export_babylon.write_bool(file_handler, "wrapU", True)      
-            Export_babylon.write_bool(file_handler, "wrapV", True)
+            if (texture.texture.use_mirror_x):
+                Export_babylon.write_int(file_handler, "wrapU", texture_mirrorMode)      
+            else:
+                Export_babylon.write_int(file_handler, "wrapU", texture_wrapMode) 
+            if (texture.texture.use_mirror_y):	
+                Export_babylon.write_int(file_handler, "wrapV", texture_mirrorMode)
+            else:
+                Export_babylon.write_int(file_handler, "wrapV", texture_wrapMode)
         else:
-            Export_babylon.write_bool(file_handler, "wrapU", False)     
-            Export_babylon.write_bool(file_handler, "wrapV", False)
+            Export_babylon.write_int(file_handler, "wrapU", texture_clampMode)     
+            Export_babylon.write_int(file_handler, "wrapV", texture_clampMode)
             
         Export_babylon.write_int(file_handler, "coordinatesIndex", 0)
         
