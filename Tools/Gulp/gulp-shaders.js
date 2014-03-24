@@ -1,12 +1,11 @@
 var through = require('through');
-
 var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var File = gutil.File;
 var path = require('path');
 
 
-var shaders = function shaders() {
+var shaders = function shaders(name) {
 
   var firstFile = null;
   var content = {};
@@ -28,7 +27,7 @@ var shaders = function shaders() {
 
   function endStream(){
 
-    var joinedPath = path.join(firstFile.base, 'shaders.js');
+    var joinedPath = path.join(firstFile.base, name);
 
     var joinedFile = new File({
       cwd: firstFile.cwd,
