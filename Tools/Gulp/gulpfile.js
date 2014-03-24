@@ -7,7 +7,7 @@ var gulp = require('gulp'),
 
 gulp.task('shaders', function() {
   return gulp.src(['../../Babylon/Shaders/*.fx'])
-    .pipe(shaders())
+    .pipe(shaders('shaders.js'))
     .pipe(gulp.dest('build/'))
 
 });
