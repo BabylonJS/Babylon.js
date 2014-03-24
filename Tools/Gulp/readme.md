@@ -18,14 +18,26 @@ npm install -g gulp
 ```
 npm install
 ```
+### Update gulpfile if you want to add files:
+```
+return gulp.src([
+      '../../Babylon/Math/babylon.math.js',
+      '../../Babylon/Math/babylon.axis.js',
+      
+      ....
+```
 
 ### Build Babylon.js :
 
 ```
 gulp
 ```
+Will be generated :
+- build/babylon.js
+- build/babylon.min.js
 
 ### Build Babylon.js when you save a file:
 ```
 gulp watch
 ```
+
