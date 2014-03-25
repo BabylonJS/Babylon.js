@@ -947,7 +947,7 @@ var BABYLON = BABYLON || {};
             camera = this.activeCamera;
         }
         var viewport = camera.viewport.toGlobal(engine);
-        return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+        return BABYLON.Ray.CreateNew(x  * this._engine.getHardwareScalingLevel(), y * this._engine.getHardwareScalingLevel(), viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
     };
 
     BABYLON.Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
