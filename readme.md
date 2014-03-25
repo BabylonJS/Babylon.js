@@ -76,6 +76,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 -  Import: 
  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
  - Exporter for Blender
+ - Exporter for Cheetah3d
 
 ## Apache License 2.0 (Apache)
 
