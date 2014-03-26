@@ -137,6 +137,10 @@
         spaceDek3.infiniteDistance = true;
 
         scene.beginAnimation(spaceDek3, 0, 100, true, 1.0);
+
+        // Test serialization
+        var serializationObject = BABYLON.SceneSerializer.Serialize(scene);
+        var string = JSON.stringify(serializationObject);
     });
 
     // Animations

@@ -1,22 +1,44 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿/// <reference path="babylon.js" />
+document.addEventListener("DOMContentLoaded", function () {
     onload();
 }, false);
 
 var onload = function () {
     var canvas = document.getElementById("renderCanvas");
 
+    var backImg = document.getElementById("back");
+    backImg.style.maxWidth = window.innerWidth + "px";
+    window.addEventListener("resize", function () {
+        backImg.style.maxWidth = window.innerWidth + "px";
+    });
+
+    function hideAllUI() {
+        var divsToHide = document.querySelectorAll("#renderZone > div");
+        for (var i = 0; i < divsToHide.length; ++i) {
+            if (divsToHide[i].id == "fps") continue;
+            divsToHide[i].className += " hidden";
+        }
+    }
+
+    function restoreAllUI() {
+        var divsToHide = document.querySelectorAll("#renderZone > div");
+        for (var i = 0; i < divsToHide.length; ++i) {
+            if (divsToHide[i].id == "fps") continue;
+            divsToHide[i].className = divsToHide[i].className.replace(" hidden", "");
+        }
+    }
     // Demos
     var demos = [
-        //{
-        //    title: "HILLVALLEY", scene: "hillvalley", screenshot: "hill.jpg", size: "150 MB<br>(high-end device recommanded)", incremental: true, big: true, onload: function () {
-        //        scene.collisionsEnabled = false;
-        //        scene.lightsEnabled = false;
-        //        scene.createOrUpdateSelectionOctree();
-        //        for (var matIndex = 0; matIndex < scene.materials.length; matIndex++) {
-        //            scene.materials[matIndex].checkReadyOnEveryCall = false;
-        //        }
-        //    }
-        //},
+        {
+            title: "HILLVALLEY", scene: "hillvalley", screenshot: "hill.jpg", size: "70 MB - Original by Camille JOLY<BR>Optimized by Michel ROUSSEAU", incremental: false, big: true, onload: function () {
+                scene.collisionsEnabled = false;
+                scene.lightsEnabled = false;
+                scene.createOrUpdateSelectionOctree();
+                for (var matIndex = 0; matIndex < scene.materials.length; matIndex++) {
+                    scene.materials[matIndex].checkReadyOnEveryCall = false;
+                }
+            }
+        },
         {
             title: "TRAIN", scene: "Train", screenshot: "train.jpg", size: "70 MB", onload: function () {
                 scene.collisionsEnabled = false;
@@ -39,8 +61,11 @@ var onload = function () {
                     0.189, 0.168, 0.131, 0,
                     0, 0, 0, 0
                 );
-                var sepiaPostProcess = new BABYLON.ConvolutionPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.cameras[3]);
+                var sepiaPostProcess = new BABYLON.FilterPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.cameras[3]);
                 scene.cameras[3].name = "SEPIA";
+
+                var serializationObject = BABYLON.SceneSerializer.Serialize(scene);
+                var string = JSON.stringify(serializationObject);
             }
         },
         {
@@ -50,6 +75,7 @@ var onload = function () {
         },
         { title: "WORLDMONGER", url: "Scenes/Worldmonger/index.html", screenshot: "worldmonger.jpg", size: "8.5 MB" },
         { title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", },
+
         {
             title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", incremental: true, onload: function () {
                 scene.autoClear = true;
@@ -58,6 +84,7 @@ var onload = function () {
                 var postProcess = new BABYLON.RefractionPostProcess("Refraction", "/scenes/customs/refMap.jpg", new BABYLON.Color3(1.0, 1.0, 1.0), 0.5, 0.5, 1.0, scene.cameras[1]);
             }
         },
+
         { title: "WINDOWS CAFE", scene: "WCafe", screenshot: "wcafe.jpg", size: "28 MB", anchor: "WCAFE" },
         {
             title: "FLAT 2009",
@@ -66,7 +93,7 @@ var onload = function () {
             size: "44 MB",
             onload: function () {
                 var ecran = scene.getMeshByName("Ecran");
-                ecran.material.diffuseTexture = new BABYLON.VideoTexture("video", ["Scenes/Flat2009/babylonjs.mp4", "Scenes/Flat2009/babylonjs.webm"], 256, scene, true);
+                ecran.material.diffuseTexture = new BABYLON.VideoTexture("video", ["Scenes/Flat2009/babylonjs.mp4", "Scenes/Flat2009/babylonjs.webm"], 256, scene, true, true);
                 scene.createOrUpdateSelectionOctree();
             }
         },
@@ -79,13 +106,56 @@ var onload = function () {
             }
         }];
 
+    var oculusProcessing = function () {
+        var originCamera = scene.activeCamera;
+        scene.activeCamera = null;
+        scene.activeCameras = [];
+        scene.autoClear = true;
+        BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(scene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position,
+            { yaw: 3, pitch: 0, roll: 0 }, true, true, true);
+        hideAllUI();
+    };
+
+    var oculusProcessingWithCollisionsAndGravity = function () {
+        var originCamera = scene.activeCamera;
+        scene.activeCamera = null;
+        scene.activeCameras = [];
+        scene.autoClear = true;
+        BABYLON.OculusOrientedCamera.BuildOculusStereoCamera(scene, "Oculus", originCamera.minZ, originCamera.maxZ, originCamera.position,
+            { yaw: 3, pitch: 0, roll: 0 }, true);
+        hideAllUI();
+    };
+
+    var oculusTests = [
+        {
+            title: "HILLVALLEY", scene: "hillvalley", screenshot: "hill2.jpg", size: "70 MB", anchor: "OCC0", onload: oculusProcessing
+        },
+        {
+            title: "HEART", scene: "Heart", screenshot: "heart.jpg", size: "14 MB", anchor: "OCC1", onload: oculusProcessingWithCollisionsAndGravity
+        },
+        {
+            title: "ESPILIT", scene: "Espilit", screenshot: "espilit.jpg", size: "50 MB", anchor: "OCC2", onload: oculusProcessingWithCollisionsAndGravity
+        },
+        {
+            title: "WINDOWS CAFE", scene: "wcafe", screenshot: "wcafe.jpg", size: "28 MB", anchor: "OCC3", onload: oculusProcessingWithCollisionsAndGravity
+        },
+        {
+            title: "Flat 2009", scene: "Flat2009", screenshot: "Flat2009.jpg", size: "44 MB", anchor: "OCC4", onload: oculusProcessingWithCollisionsAndGravity
+        }
+    ];
+
     var tests = [
+        { title: "POSTPROCESS - CONVOLUTION", id: 16, screenshot: "convolution.jpg", size: "1 MB", anchor: "PPCONVOLUTION" },
+        { title: "CONSTRUCTIVE SOLID GEOMETRIES", id: 15, screenshot: "csg.jpg", size: "1 MB", anchor: "CSG" },
+        { title: "CUSTOM SHADER - CELL SHADING", id: 14, screenshot: "cellshading.jpg", size: "1 MB", anchor: "CUSTOMSHADER" },
+        { title: "EDITOR", url: "http://www.babylonjs.com/editor", screenshot: "editor.jpg", size: "1 MB" },
         { title: "PHYSICS", id: 13, screenshot: "physics.jpg", size: "1.0 MB", anchor: "PHYSICS" },
         { title: "LENS FLARES", id: 12, screenshot: "lens.jpg", size: "1.0 MB", anchor: "LENS" },
         { title: "POSTPROCESS - REFRACTION", id: 11, screenshot: "postprocessRefraction.jpg", size: "1.0 MB", anchor: "PPREF" },
         { title: "POSTPROCESS - BLOOM", id: 10, screenshot: "postprocessBloom.jpg", size: "1.0 MB", anchor: "PPBLOOM" },
         { title: "OCTREE - 8000 spheres", id: 8, screenshot: "octree.jpg", size: "0.1 MB", anchor: "OCTREE" },
         { title: "BONES", id: 9, screenshot: "bones.jpg", size: "10 MB" },
+
         { title: "CHARTING", id: 7, screenshot: "charting.jpg", size: "0.1 MB" },
         { title: "SHADOWS", id: 6, screenshot: "shadows.jpg", size: "1.0 MB" },
         { title: "HEIGHTMAP", id: 5, screenshot: "heightmap.jpg", size: "1.0 MB" },
@@ -98,14 +168,16 @@ var onload = function () {
     ];
 
     var thirdParties = [
-    { title: "BING 3D MAPS", url: "http://babylonbing.azurewebsites.net/", screenshot: "bing3D.jpg", size: "by A. Beaulieu" },
-    { title: "CAR GAME", url: "http://babylon.azurewebsites.net", screenshot: "car.jpg", size: "by G. Carlander" },
-    { title: "CYCLE GAME", url: "http://tronbabylon.azurewebsites.net/", screenshot: "tron.jpg", size: "by G. Carlander" },
-    { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" },
-    { title: "Catalog3D", url: "http://apps.microsoft.com/windows/en-gb/app/catalog-3d-by-sokrate/43771ce3-02f0-4365-98c3-557cd8acdad2", screenshot: "sokrate3D.jpg", size: "by SOKRATE" },
-    { title: "PSN TELECENTRES", url: "http://psntelecentres.com/visite_virtuelle.html", screenshot: "psn.jpg", size: "by SOKRATE" },
-    { title: "VIRTUAL EXPO", url: "http://www.sokrate.fr/expovirtuelle/index.htm", screenshot: "expo.jpg", size: "by SOKRATE" },
-    { title: "3delyvisions SKYBOX TOUR", url: "http://urbanproductions.com/wingy/babylon/skyboxes/skybox_tour.htm", screenshot: "tour.jpg", size: "by Wingnut" }
+        { title: "LIGHT SPEED READY", url: "http://xanmia.github.io/Light-Speed-Ready/game.html", screenshot: "Light Speed Ready.jpg", size: "by Xanmia" },
+        { title: "DRIFT", url: "http://www.visualiser.fr/Babylon/Drift/default.htm", screenshot: "Drift.jpg", size: "by S. Girardin" },
+        { title: "BING 3D MAPS", url: "http://babylonbing.azurewebsites.net/", screenshot: "bing3D.jpg", size: "by A. Beaulieu" },
+        { title: "CAR GAME", url: "http://babylon.azurewebsites.net", screenshot: "car.jpg", size: "by G. Carlander" },
+        { title: "CYCLE GAME", url: "http://tronbabylon.azurewebsites.net/", screenshot: "tron.jpg", size: "by G. Carlander" },
+        { title: "GALLERY", url: "http://guillaume.carlander.fr/Babylon/Gallery/", screenshot: "gallery.png", size: "by G. Carlander" },
+        { title: "Catalog3D", url: "http://apps.microsoft.com/windows/en-gb/app/catalog-3d-by-sokrate/43771ce3-02f0-4365-98c3-557cd8acdad2", screenshot: "sokrate3D.jpg", size: "by SOKRATE" },
+        { title: "PSN TELECENTRES", url: "http://psntelecentres.com/visite_virtuelle.html", screenshot: "psn.jpg", size: "by SOKRATE" },
+        { title: "VIRTUAL EXPO", url: "http://www.sokrate.fr/expovirtuelle/index.htm", screenshot: "expo.jpg", size: "by SOKRATE" },
+        { title: "3delyvisions SKYBOX TOUR", url: "http://urbanproductions.com/wingy/babylon/skyboxes/skybox_tour.htm", screenshot: "tour.jpg", size: "by Wingnut" }
     ];
 
     // UI
@@ -114,6 +186,7 @@ var onload = function () {
     var items = document.getElementById("items");
     var testItems = document.getElementById("testItems");
     var _3rdItems = document.getElementById("3rdItems");
+    var oculusDemosElem = document.getElementById("oculusDemos");
     var renderZone = document.getElementById("renderZone");
     var controlPanel = document.getElementById("controlPanel");
     var cameraPanel = document.getElementById("cameraPanel");
@@ -131,6 +204,7 @@ var onload = function () {
     var fullscreen = document.getElementById("fullscreen");
     var touchCamera = document.getElementById("touchCamera");
     var deviceOrientationCamera = document.getElementById("deviceOrientationCamera");
+    var virtualJoysticksCamera = document.getElementById("virtualJoysticksCamera");
     var camerasList = document.getElementById("camerasList");
     var toggleFsaa4 = document.getElementById("toggleFsaa4");
     var toggleFxaa = document.getElementById("toggleFxaa");
@@ -147,6 +221,9 @@ var onload = function () {
                 document.getElementById("notSupported").className = "";
                 opacityMask.className = "";
             } else {
+
+                restoreAllUI();
+
                 if (demo.url) {
                     window.location = demo.url;
                     return;
@@ -227,6 +304,14 @@ var onload = function () {
     for (index = 0; index < thirdParties.length; index++) {
         var thirdParty = thirdParties[index];
         createItem(thirdParty, _3rdItems);
+    }
+
+    if (oculusDemosElem) {
+        removeChildren(oculusDemosElem);
+        for (index = 0; index < oculusTests.length; ++index) {
+            var test = oculusTests[index];
+            createItem(test, oculusDemosElem);
+        }
     }
 
     // Go Back
@@ -340,6 +425,15 @@ var onload = function () {
                         break;
                     case 13:
                         newScene = CreatePhysicsScene(engine);
+                        break;
+                    case 14:
+                        newScene = CreateCellShadingScene(engine);
+                        break;
+                    case 15:
+                        newScene = CreateCSGTestScene(engine);
+                        break;
+                    case 16:
+                        newScene = CreateConvolutionTestScene(engine);
                         break;
                 }
                 scene = newScene;
@@ -483,9 +577,7 @@ var onload = function () {
             cameraPanel.style.webkitTransform = "translateX(0px)";
             cameraPanel.style.transform = "translateX(0px)";
         } else {
-            cameraPanelIsClosed = true;
-            cameraPanel.style.webkitTransform = "translateX(300px)";
-            cameraPanel.style.transform = "translateX(300px)";
+            hideCameraPanel();
         }
     });
 
@@ -515,22 +607,27 @@ var onload = function () {
         evt.cancelBubble = true;
     });
 
+    var hideCameraPanel = function () {
+        cameraPanelIsClosed = true;
+        cameraPanel.style.webkitTransform = "translateX(17em)";
+        cameraPanel.style.transform = "translateX(17em)";
+    };
+
     document.getElementById("menuPanel").addEventListener("click", function (evt) {
         if (!aboutIsClosed) {
             aboutIsClosed = true;
             aboutPanel.style.webkitTransform = "translateX(-120%)";
             aboutPanel.style.transform = "translateX(-120%)";
+
+            hideCameraPanel();
         }
     });
 
     canvas.addEventListener("mousedown", function (evt) {
         if (!panelIsClosed) {
             panelIsClosed = true;
-            cameraPanelIsClosed = true;
             controlPanel.style.webkitTransform = "translateY(250px)";
             controlPanel.style.transform = "translateY(250px)";
-            cameraPanel.style.webkitTransform = "translateX(300px)";
-            cameraPanel.style.transform = "translateX(300px)";
         }
 
         if (!scene)
@@ -618,11 +715,13 @@ var onload = function () {
         camera.postProcesses = scene.activeCamera.postProcesses;
         scene.activeCamera.postProcesses = [];
         scene.activeCamera.detachControl(canvas);
+        if (scene.activeCamera.dispose) scene.activeCamera.dispose();
 
         scene.activeCamera = camera;
 
         scene.activeCamera.attachControl(canvas);
 
+        hideCameraPanel();
     };
 
     touchCamera.addEventListener("click", function () {
@@ -631,6 +730,15 @@ var onload = function () {
         }
 
         var camera = new BABYLON.TouchCamera("touchCamera", scene.activeCamera.position, scene);
+        switchCamera(camera);
+    });
+
+    virtualJoysticksCamera.addEventListener("click", function () {
+        if (!scene) {
+            return;
+        }
+
+        var camera = new BABYLON.VirtualJoysticksCamera("virtualJoysticksCamera", scene.activeCamera.position, scene);
         switchCamera(camera);
     });
 
@@ -721,7 +829,7 @@ var onload = function () {
                     0.189, 0.168, 0.131, 0,
                     0, 0, 0, 0
                 );
-                scene.activeCamera.__sepia_cookie = new BABYLON.ConvolutionPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.activeCamera);
+                scene.activeCamera.__sepia_cookie = new BABYLON.FilterPostProcess("Sepia", sepiaKernelMatrix, 1.0, scene.activeCamera);
                 toggleSepia.className = "smallButtonControlPanel pushed";
             }
         }
@@ -758,6 +866,12 @@ var onload = function () {
             for (index = 0; index < tests.length; index++) {
                 if (tests[index].anchor && tests[index].anchor === query || tests[index].title === query) {
                     itemClick(tests[index])();
+                    return;
+                }
+            }
+            for (index = 0; index < oculusTests.length; index++) {
+                if (oculusTests[index].anchor && oculusTests[index].anchor === query || oculusTests[index].title === query) {
+                    itemClick(oculusTests[index])();
                     return;
                 }
             }

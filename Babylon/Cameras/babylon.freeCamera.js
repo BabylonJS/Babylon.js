@@ -72,10 +72,12 @@ var BABYLON = BABYLON || {};
             this._cache.lockedTarget = null;
         }
         else {
-            if (!this._cache.lockedTarget)
+            if (!this._cache.lockedTarget) {
                 this._cache.lockedTarget = lockedTargetPosition.clone();
-            else
+            }
+            else {
                 this._cache.lockedTarget.copyFrom(lockedTargetPosition);
+            }
         }
 
         this._cache.rotation.copyFrom(this.rotation);

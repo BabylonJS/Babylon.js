@@ -1,5 +1,39 @@
 Changes list
 ============
+- 1.10.0:
+ - **Major updates**
+ - Virtual joysticks canera ([davrous](http://www.github.com/davrous))
+ - Oculus Rift support ([davrous](http://www.github.com/davrous)), ([simonferquel](http://www.github.com/simonferquel)), ([deltakosh](http://www.github.com/deltakosh))
+ - Support for DDS textures ([deltakosh](http://www.github.com/deltakosh))
+ - Constructive solid geometries ([CraigFeldspar](https://github.com/CraigFeldspar))
+ - Importer plugin system ([deltakosh](http://www.github.com/deltakosh))
+ - Filter postprocess ([deltakosh](http://www.github.com/deltakosh))
+ - Convolution postprocess ([deltakosh](http://www.github.com/deltakosh))
+ - Added Cheetah3d exporter ([Calebsem](http://www.github.com/Calebsem))
+ - **Updates**
+ - Addind arcRotateCamera.wheelPrecision ([deltakosh](http://www.github.com/deltakosh))
+ - Support for DOMMouseScroll ([nicolas-obre](https://github.com/nicolas-obre))
+ - Adding BABYLON.PickingInfo.prototype.getNormal ([deltakosh](http://www.github.com/deltakosh))
+ - Adding a new noMipmap parameter to ```BABYLON.CubeTexture``` constructor ([deltakosh](http://www.github.com/deltakosh))
+ - Adding ```BABYLON.Color3.FromInts()``` and ```BABYLON.Color4.FromInts()``` ([deltakosh](http://www.github.com/deltakosh))
+ - Adding invertY parameter to ```BABYLON.VideoTexture``` constructor ([deltakosh](http://www.github.com/deltakosh))
+ - Adding new ```BABYLON.Scene.getCameraByID``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Adding new ```BABYLON.Scene.setActiveCameraByName()``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Renaming ```BABYLON.Scene.activeCameraByID()``` to ```BABYLON.Scene.setActiveCameraByID()``` ([deltakosh](http://www.github.com/deltakosh))
+ - Adding texture wrapping support to Blender exporter ([vousk](http://www.github.com/vousk))
+ - Add Gulp for buiding babylon cross platform ([SideraX](http://www.github.com/SideraX))
+ - **Bugfixes**
+ - Fixing multimat naming convention in Blender ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing mesh.clone ([temechon](http://www.github.com/temechon))
+ - Fixing camera rotation export in blender ([khmm12](http://www.github.com/khmm12))
+ - Fixing opacity map bug ([deltakosh](http://www.github.com/deltakosh))
+ - Fixing physics objects disposal ([deltakosh](http://www.github.com/deltakosh))
+ - Using the hardware scaling when creating a ray ([demonixis](http://www.github.com/demonixis))
+ - **New demos*
+ - [Hill Valley](http://www.babylonjs.com/index.html?HILLVALLEY)
+ - [Custom shader - cell shading](http://www.babylonjs.com/index.html?CUSTOMSHADER)
+ - [Constructive solid geometries](http://www.babylonjs.com/index.html?CSG)
+ - [Postprocess - Convolution](http://www.babylonjs.com/index.html?PPCONVOLUTION)
 - 1.9.0:
  - **Major updates**
  - Beta support for scene serialization with ```BABYLON.SceneSerializer.Serialize``` function ([deltakosh](http://www.github.com/deltakosh))

@@ -80,6 +80,7 @@
     shadowGenerator.getShadowMap().renderList.push(part0);
     shadowGenerator.getShadowMap().renderList.push(part1);
 
+
     // Playground
     var ground = BABYLON.Mesh.CreateBox("Ground", 1, scene);
     ground.scaling = new BABYLON.Vector3(100, 1, 100);
