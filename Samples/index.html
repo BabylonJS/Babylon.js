@@ -31,8 +31,9 @@
     <link href="index.css" rel="stylesheet" />
     <script src="hand.minified-1.2.js"></script>
     <script src="cannon.js"></script>
-    <!--<script src="Babylon/Tools/babylon.math.js"></script>
+    <!--<script src="Babylon/Math/babylon.math.js"></script>
     <script src="Babylon/Tools/babylon.database.js"></script>
+    <script src="Babylon/Tools/babylon.tools.dds.js"></script>
     <script src="Babylon/Tools/babylon.tools.js"></script>
     <script src="Babylon/babylon.engine.js"></script>
     <script src="Babylon/babylon.node.js"></script>
@@ -48,6 +49,7 @@
     <script src="Babylon/Lights/babylon.directionalLight.js"></script>
     <script src="Babylon/Lights/Shadows/babylon.shadowGenerator.js"></script>
     <script src="Babylon/Collisions/babylon.collider.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.inputController.js"></script>
     <script src="Babylon/Cameras/babylon.camera.js"></script>
     <script src="Babylon/Cameras/babylon.freeCamera.js"></script>
     <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
@@ -70,7 +72,8 @@
     <script src="Babylon/Materials/babylon.material.js"></script>
     <script src="Babylon/Materials/babylon.standardMaterial.js"></script>
     <script src="Babylon/Materials/babylon.multiMaterial.js"></script>
-    <script src="Babylon/Tools/babylon.sceneLoader.js"></script>
+    <script src="Babylon/Loading/babylon.sceneLoader.js"></script>
+    <script src="Babylon/Loading/Plugins/babylon.babylonFileLoader.js"></script>
     <script src="Babylon/Tools/babylon.database.js"></script>
     <script src="Babylon/Sprites/babylon.spriteManager.js"></script>
     <script src="Babylon/Sprites/babylon.sprite.js"></script>
@@ -91,11 +94,24 @@
     <script src="Babylon/PostProcess/babylon.refractionPostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.blackAndWhitePostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
+    <script src="Babylon/PostProcess/babylon.filterPostProcess.js"></script>
     <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
     <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
     <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
-    <script src="Babylon/Physics/babylon.physicsEngine.js"></script>-->
-    <script src="babylon.js"></script>
+    <script src="Babylon/Physics/babylon.physicsEngine.js"></script>
+    <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
+    <script src="Babylon/Math/babylon.axis.js"></script>
+    <script src="Babylon/Mesh/babylon.csg.js"></script>
+    <script src="Babylon/PostProcess/babylon.oculusDistortionCorrectionPostProcess.js"></script>
+    <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.oculusController.js"></script>
+    <script src="Babylon/Cameras/babylon.oculusOrientedCamera.js"></script>
+    <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.keyboardMoveController.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.inputCollisionFilter.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.gravityInputController.js"></script>
+    <script src="Babylon/Cameras/Controllers/babylon.globalAxisFactorsFilter.js"></script>-->
+    <script src=" babylon.js"></script>
     <script src="Scenes/Customs/test.js"></script>
     <script src="Scenes/Customs/lights_test.js"></script>
     <script src="Scenes/Customs/bump_test.js"></script>
@@ -110,6 +126,9 @@
     <script src="Scenes/Customs/postprocessRefraction.js"></script>
     <script src="Scenes/Customs/lensFlares.js"></script>
     <script src="Scenes/Customs/physics.js"></script>
+    <script src="Scenes/Customs/cellShading.js"></script>
+    <script src="Scenes/Customs/csg.js"></script>
+    <script src="Scenes/Customs/postprocessConvolution.js"></script>
     <script src="index.js"></script>
 </head>
 <body>
@@ -132,6 +151,12 @@
                         THIRD-PARTY
                     </div>
                     <div id="3rdItems"></div>
+                    <div class="header">
+                        <br />
+                        OCULUS RIFT
+                    </div>
+                    <div class="warning">You must install <a href="OculusVR Driver/OculusVR Driver.zip">this driver</a> and use IE11+ to see these demos</div><br />
+                    <div id="oculusDemos"></div>
                 </div>
             </div>
             <img id="back" src="Assets/BandeauEmbleme.png" />
@@ -158,6 +183,7 @@
                         <i>Game FX:</i> Pierre <b>LAGARDE</b> (<a href="http://www.twitter.com/@pierlag">@pierlag</a>)<br />
                         <i>Game FX:</i> David <b>ROUSSET</b> (<a href="http://www.twitter.com/@davrous">@davrous</a>)<br />
                         <br />
+                        <i>Hill Valley scene:</i> Camille <b>JOLY</b> and <a href="http://www.enozone.com/">Enozone</a><br />
                         <i>Train scene:</i> Romuald <b>ROUHIER</b> and <a href="http://www.progiss.com/">Progiss</a><br />
                     </p>
                 </div>
@@ -228,6 +254,7 @@
                                     <li>Render target textures</li>
                                     <li>Dynamic textures (canvas)</li>
                                     <li>Video textures</li>
+                                    <li>Compressed (DDS) textures</li>
                                 </ul>
                             </li>
                             <li>
@@ -235,7 +262,11 @@
                                 <ul>
                                     <li>Arc rotate camera</li>
                                     <li>Free camera</li>
-                                    <li><b>Touch camera</b></li>
+                                    <li>Touch camera</li>
+                                    <li>
+                                        <b>Virtual Joysticks camera</b>
+                                    </li>
+                                    <li><b>Oculus Rift camera</b></li>
                                 </ul>
                             </li>
                             <li>
@@ -245,6 +276,7 @@
                                     <li>Dynamic meshes</li>
                                     <li><b>Height maps</b></li>
                                     <li>Bones</li>
+                                    <li>Constructive solid geometries</li>
                                 </ul>
                             </li>
                             <li>
@@ -252,6 +284,7 @@
                                 <ul>
                                     <li>Babylon scene file can be converted from <i>.OBJ</i>, <i>.FBX</i>, <i>.MXB</i></li>
                                     <li>Exporter for Blender</li>
+                                    <li>Exporter for Cheetah3d</li>
                                     <li>Support for drag'n'drop</li>
                                 </ul>
                             </li>
@@ -262,9 +295,9 @@
             <div id="footer">
                 <a class="footerLink" href="http://www.babylonjs.com/sandbox">sandbox</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a class="footerLink" href="http://www.html5gamedevs.com/forum/16-babylonjs/">forum</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a class="footerLink" href="https://github.com/BabylonJS/Babylon.js/wiki" >wiki</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="footerLink" href="https://github.com/BabylonJS/Babylon.js/wiki">wiki</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a class="footerLink" href="https://github.com/BabylonJS/Babylon.js">github</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a class="footerLink" href="http://www.sokrate.fr/documentation/babylonjs/index.html">documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                
+                <a class="footerLink" href="http://www.sokrate.fr/documentation/babylonjs/index.html">documentation</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </div>
         </div>
         <div id="opacityMask" class="hidden"></div>
@@ -318,10 +351,13 @@
                     <p>
                         Change control method:
                         <button class="buttonControlPanel" id="touchCamera">
-                            <img src="Assets/CamTouchOff.png" class="buttonImg"/><div style="margin-top: 8px">Touch camera</div>
+                            <img src="Assets/CamTouchOff.png" class="buttonImg" />Touch camera
                         </button>
                         <button class="buttonControlPanel" id="deviceOrientationCamera">
                             <img src="Assets/CamDeviceOff.png" class="buttonImg" />Device orientation camera
+                        </button>
+                        <button class="buttonControlPanel" id="virtualJoysticksCamera">
+                            <img src="Assets/CamDeviceOff.png" class="buttonImg" />Virtual joysticks camera
                         </button>
                     </p>
                     <p>

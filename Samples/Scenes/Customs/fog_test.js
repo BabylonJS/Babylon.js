@@ -19,6 +19,8 @@
     material2.diffuseColor = new BABYLON.Color3(1, 0, 1);
     sphere2.material = material2;
     sphere2.position = new BABYLON.Vector3(10, 0, 0);
+
+    sphere1.convertToFlatShadedMesh();
     
     camera.setTarget(new BABYLON.Vector3(0, 0, 0));
     

@@ -18,7 +18,11 @@
     // Ground
     var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "Scenes/Customs/heightMap.png", 100, 100, 100, 0, 10, scene, false);
     var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("Scenes/Customs/ground.jpg", scene);
+    if (engine.getCaps().s3tc) {
+        groundMaterial.diffuseTexture = new BABYLON.Texture("Scenes/Customs/grass.dds", scene);
+    } else {
+        groundMaterial.diffuseTexture = new BABYLON.Texture("Scenes/Customs/ground.jpg", scene);
+    }
     groundMaterial.diffuseTexture.uScale = 6;
     groundMaterial.diffuseTexture.vScale = 6;
     groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -32,8 +36,8 @@
         else if (camera.beta > (Math.PI / 2) * 0.9)
             camera.beta = (Math.PI / 2) * 0.9;
 
-        if (camera.radius > 30)
-            camera.radius = 30;
+        if (camera.radius > 50)
+            camera.radius = 50;
 
         if (camera.radius < 5)
             camera.radius = 5;
