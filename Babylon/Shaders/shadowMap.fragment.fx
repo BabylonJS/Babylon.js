@@ -7,10 +7,11 @@ vec4 pack(float depth)
 	const vec4 bitOffset = vec4(255. * 255. * 255., 255. * 255., 255., 1.);
 	const vec4 bitMask = vec4(0., 1. / 255., 1. / 255., 1. / 255.);
 	
-	vec4 comp = fract(depth * bitOffset);
-	comp -= comp.xxyz * bitMask;
-	
-	return comp;
+	vec4 comp = mod( depth * bitOffset * vec4( 254. ),
+    			vec4( 255. ) ) / vec4( 254. );
+  	comp -= comp.xxyz * bitMask;
+
+  	return comp;
 }
 
 // Thanks to http://devmaster.net/
