@@ -8,7 +8,7 @@ var BABYLON = BABYLON || {};
 		this._transformedDirection = new BABYLON.Vector3();
 		this._tempNewPosition = new BABYLON.Vector3();
 		this._tempNewPosition2 = new BABYLON.Vector3();
-		this._ellipsoid = ellipsoid || new BABYLON.Vector3(.5,.5,.5);
+		this._ellipsoid = ellipsoid || new BABYLON.Vector3(.2,.855,.2);
 		this._collider = new BABYLON.Collider();
 		this._collidedPosition = new BABYLON.Vector3(0, 0, 0);
 		this._cameraHeight = 1.7;
@@ -31,7 +31,7 @@ var BABYLON = BABYLON || {};
 
 
 		this._collidedPosition.subtractToRef(this._positionBottom, this._tempNewPosition2);
-		if (this._tempNewPosition2.length() > BABYLON.Engine.collisionsEpsilon * 5) {
+		if (this._tempNewPosition2.length() > BABYLON.Engine.collisionsEpsilon * 2) {
 
 		    BABYLON.Vector3.TransformNormalToRef(this._tempNewPosition2, this.getInvertOrientationMatrix(), this._tempNewPosition);
 		    this.target.moveRelative(this._tempNewPosition);

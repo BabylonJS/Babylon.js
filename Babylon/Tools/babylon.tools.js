@@ -13,6 +13,20 @@ var BABYLON = BABYLON || {};
         return path.substring(index + 1);
     };
 
+    BABYLON.Tools.GetDOMTextContent = function(element) {
+        var result = "";
+        var child = element.firstChild;
+
+        while (child) {
+            if (child.nodeType == 3) {
+                result += child.textContent;
+            }
+            child = child.nextSibling;
+        }
+
+        return result;
+    };
+
     BABYLON.Tools.ToDegrees = function(angle) {
         return angle * 180 / Math.PI;
     };

@@ -10,8 +10,11 @@ Changes list
  - Filter postprocess ([deltakosh](http://www.github.com/deltakosh))
  - Convolution postprocess ([deltakosh](http://www.github.com/deltakosh))
  - Added Cheetah3d exporter ([Calebsem](http://www.github.com/Calebsem))
+ - New ```BABYLON.ShaderMaterial``` object to simply create custom shaders ([deltakosh](http://www.github.com/deltakosh)) - See [Custom shader - cell shading](http://www.babylonjs.com/index.html?CUSTOMSHADER)
+ - New ```BABYLON.VertexData``` object to easily manipulates vertex attributes ([deltakosh](http://www.github.com/deltakosh)) - See [VertexData](http://www.babylonjs.com/index.html?CLOUDS)
  - **Updates**
- - Addind arcRotateCamera.wheelPrecision ([deltakosh](http://www.github.com/deltakosh))
+ - Shaders can be loaded from DOM element alongside .fx files ([deltakosh](http://www.github.com/deltakosh))
+ - Adding arcRotateCamera.wheelPrecision ([deltakosh](http://www.github.com/deltakosh))
  - Support for DOMMouseScroll ([nicolas-obre](https://github.com/nicolas-obre))
  - Adding BABYLON.PickingInfo.prototype.getNormal ([deltakosh](http://www.github.com/deltakosh))
  - Adding a new noMipmap parameter to ```BABYLON.CubeTexture``` constructor ([deltakosh](http://www.github.com/deltakosh))
@@ -22,6 +25,7 @@ Changes list
  - Renaming ```BABYLON.Scene.activeCameraByID()``` to ```BABYLON.Scene.setActiveCameraByID()``` ([deltakosh](http://www.github.com/deltakosh))
  - Adding texture wrapping support to Blender exporter ([vousk](http://www.github.com/vousk))
  - Add Gulp for buiding babylon cross platform ([SideraX](http://www.github.com/SideraX))
+ - Shadow map improvement on pack method ([clementlevasseur](http://www.github.com/clementlevasseur))
  - **Bugfixes**
  - Fixing multimat naming convention in Blender ([deltakosh](http://www.github.com/deltakosh))
  - Fixing mesh.clone ([temechon](http://www.github.com/temechon))
@@ -34,6 +38,7 @@ Changes list
  - [Custom shader - cell shading](http://www.babylonjs.com/index.html?CUSTOMSHADER)
  - [Constructive solid geometries](http://www.babylonjs.com/index.html?CSG)
  - [Postprocess - Convolution](http://www.babylonjs.com/index.html?PPCONVOLUTION)
+ - [VertexData](http://www.babylonjs.com/index.html?CLOUDS)
 - 1.9.0:
  - **Major updates**
  - Beta support for scene serialization with ```BABYLON.SceneSerializer.Serialize``` function ([deltakosh](http://www.github.com/deltakosh))
