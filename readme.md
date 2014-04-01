@@ -15,6 +15,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 - [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
 - [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
 - [Samples](https://github.com/BabylonJS/Samples)
+- [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
 
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
