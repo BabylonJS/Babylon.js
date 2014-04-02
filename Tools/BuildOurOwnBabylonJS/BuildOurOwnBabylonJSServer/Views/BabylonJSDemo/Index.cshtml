@@ -6,7 +6,7 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        BABYLON.SceneLoader.Load("@Html.Raw(this.BabylonJSFile("Samples/Scenes/" + (string)ViewBag.DemoFolderName))" + "@Url.Encode("/")", "@ViewBag.DemoFile", OURBABYLON.engine, function (scene) {
+        BABYLON.SceneLoader.Load("@Html.Raw(this.BabylonJSSamplesFile("Scenes/" + (string)ViewBag.DemoFolderName))" + "@Url.Encode("/")", "@ViewBag.DemoFile", OURBABYLON.engine, function (scene) {
             
             scene.activeCamera.attachControl(OURBABYLON.canvas);
             

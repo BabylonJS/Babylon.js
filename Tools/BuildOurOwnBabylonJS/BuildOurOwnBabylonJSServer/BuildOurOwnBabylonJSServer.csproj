@@ -117,7 +117,7 @@
     <Content Include="Content\themes\base\jquery.ui.slider.css" />
     <Content Include="Content\themes\base\jquery.ui.tabs.css" />
     <Content Include="Content\themes\base\jquery.ui.theme.css" />
-    <Content Include="..\..\..\Samples\Scenes\**\*.*">
+    <Content Include="$(BabylonJSSamplesDirFullPath)Scenes\**\*.*">
       <Link>Content\BabylonJS-Demos\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
     <Content Include="Global.asax" />
