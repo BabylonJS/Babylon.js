@@ -4,6 +4,9 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.OculusOrientedCamera = function (name, position, scene, isLeftEye, ovrSettings, neutralOrientation) {
+        // OculusOrientedCamera is usually built 2 times using the same position
+        // So I duplicate the position to avoid errors from physics system (which could manipulate it twice per frame)
+        position = position ? new BABYLON.Vector3(position.x, position.y, position.z) : null;
         BABYLON.Camera.call(this, name, position, scene);
         this._referenceDirection = new BABYLON.Vector3(0, 0, 1);
         this._referenceUp = new BABYLON.Vector3(0, 1, 0);

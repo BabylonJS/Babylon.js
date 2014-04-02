@@ -4,6 +4,7 @@ var BABYLON = BABYLON || {};
 
 (function () {
     BABYLON.Engine = function (canvas, antialias, options) {
+        var that = this;
         this._renderingCanvas = canvas;
 
         options = options || {};
@@ -20,9 +21,26 @@ var BABYLON = BABYLON || {};
             throw new Error("WebGL not supported");
         }
 
+        this._windowIsBackground = false;
+        window.addEventListener("blur", function () {
+            that._windowIsBackground = true;
+        });
+
+        window.addEventListener("focus", function () {
+            that._windowIsBackground = false;
+
+            if (that._runningLoop) {
+                // Register new frame
+                BABYLON.Tools.QueueNewFrame(function () {
+                    that._renderLoop();
+                });
+            }
+        });
+
         // Options
         this.forceWireframe = false;
         this.cullBackFaces = true;
+        this.renderEvenInBackground = true;
 
         // Scenes
         this.scenes = [];
@@ -64,7 +82,6 @@ var BABYLON = BABYLON || {};
 
         // Fullscreen
         this.isFullscreen = false;
-        var that = this;
 
         var onFullscreenChange = function () {
             if (document.fullscreen !== undefined) {
@@ -154,6 +171,10 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Engine.prototype._renderLoop = function () {
+        if (!this.renderEvenInBackground && this._windowIsBackground) {
+            return;
+        }
+
         // Start new frame
         this.beginFrame();
 
