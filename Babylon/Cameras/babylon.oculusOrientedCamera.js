@@ -35,8 +35,9 @@ var BABYLON = BABYLON || {};
         this.resetViewMatrix();
     };
     
-    BABYLON.OculusOrientedCamera.BuildOculusStereoCamera = function (scene, name, canvas, minZ, maxZ, position, neutralOrientation, useFXAA, disableGravity,disableCollisions, ovrSettings) {
-        position = position || new BABYLON.Vector2(0, 0);
+    BABYLON.OculusOrientedCamera.BuildOculusStereoCamera = function (scene, name, minZ, maxZ, position, neutralOrientation, useFXAA, disableGravity, disableCollisions, collisionEllipsoid, ovrSettings) {
+        var canvas = scene.getEngine().getRenderingCanvas();
+        position = position || BABYLON.Vector3.Zero(0, 0, 0);
         neutralOrientation = neutralOrientation || { yaw: 0.0, pitch: 0.0, roll: 0.0 };
         //var controller =  new BABYLON.OculusController();
         ovrSettings = ovrSettings || BABYLON.OculusController.CameraSettings_OculusRiftDevKit2013_Metric;
@@ -63,7 +64,7 @@ var BABYLON = BABYLON || {};
         var controller = new BABYLON.OculusController(scene, multiTarget);
         var moveTarget = multiTarget;
         if (!disableCollisions) {
-            var collisionFilter = new BABYLON.InputCollisionFilter(scene, multiTarget);
+            var collisionFilter = new BABYLON.InputCollisionFilter(scene, multiTarget, collisionEllipsoid);
             moveTarget = collisionFilter;
         }
         if (!disableGravity) {
