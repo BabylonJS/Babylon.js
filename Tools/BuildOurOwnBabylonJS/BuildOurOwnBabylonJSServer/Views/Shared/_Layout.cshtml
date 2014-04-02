@@ -9,8 +9,8 @@
     <script src="@Url.Content("~/Scripts/modernizr-1.7.min.js")" type="text/javascript"></script>
     @if (ViewBag.DoNotUseBabylonJS == null)
     {
-        @this.BabylonJSScript("cannon.js")
-        @this.BabylonJSScript(@"Tools\BuildOurOwnBabylonJS\BuildOurOwnBabylonJS\ourOwnBabylon.js")
+        @Html.Raw(this.BabylonJSScript("cannon.js"))
+        @Html.Raw(this.BabylonJSScript(@"Tools\BuildOurOwnBabylonJS\BuildOurOwnBabylonJS\ourOwnBabylon.js"))
         <script type="text/javascript">
             $(document).ready(function () {
                 if (!BABYLON.Engine.isSupported()) {
@@ -45,6 +45,7 @@
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Rabbit", demoFile = "Rabbit.babylon" })">Rabbit</a>
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Robot", demoFile = "Robot.babylon" })">Robot</a>
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "SpaceDek", demoFile = "SpaceDek.babylon" })">SpaceDek</a>
+                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Spaceship", demoFile = "Spaceship.babylon" })">Spaceship</a>
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "TheCar", demoFile = "TheCar.incremental.babylon" })">TheCar</a>
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Train", demoFile = "Train.babylon" })">Train</a>
                 | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Viper", demoFile = "Viper.babylon" })">Viper</a>

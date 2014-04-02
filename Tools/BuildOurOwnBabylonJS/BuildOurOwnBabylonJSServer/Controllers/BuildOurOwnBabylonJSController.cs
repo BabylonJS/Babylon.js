@@ -48,7 +48,14 @@ namespace BuildOurOwnBabylonJSServer.Controllers
                     break;
             }
 
-            return File(new FileStream(absPath, FileMode.Open), type);
+            try
+            {
+                return File(new FileStream(absPath, FileMode.Open), type);
+            }
+            catch
+            {
+                return new HttpNotFoundResult();
+            }
         }
     }
 }

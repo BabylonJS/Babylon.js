@@ -15,7 +15,7 @@ namespace BuildOurOwnBabylonJSServer.Extensions
             if (page == null)
                 return null;
 
-            // relPath must be the last one so filename must be appended to it
+            // relPath must be the last one so filename can be appended to it
             var url = page.Url.Action(BuildOurOwnBabylonJSController.GetFileContentActionName,
                                       "BuildOurOwnBabylonJS",
                                       new { rootPath = page.ViewBag.BabylonJSFolder, relPath = relPathToBabylonJSFolder },
@@ -39,6 +39,23 @@ namespace BuildOurOwnBabylonJSServer.Extensions
             script.Attributes.Add("type", type);
 
             return page.Html.Raw(script.ToString(TagRenderMode.Normal));
+        }
+
+        public static string BabylonJSSamplesFile(this WebViewPage page,
+            string relPathToBabylonJSSamplesFolder)
+        {
+            if (page == null)
+                return null;
+
+            var babylonJSSamplesDirFullPath = Environment.GetEnvironmentVariable("BabylonJSSamplesDirFullPath");
+
+            // relPath must be the last one so filename can be appended to it
+            var url = page.Url.Action(BuildOurOwnBabylonJSController.GetFileContentActionName,
+                                      "BuildOurOwnBabylonJS",
+                                      new { rootPath = babylonJSSamplesDirFullPath, relPath = relPathToBabylonJSSamplesFolder },
+                                      page.Request.Url.Scheme);
+
+            return url;
         }
     }
 }
