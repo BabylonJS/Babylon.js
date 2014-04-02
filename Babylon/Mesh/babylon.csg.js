@@ -7,7 +7,7 @@ var BABYLON = BABYLON || {};
 (function () {
 
     // Unique ID when we import meshes from Babylon to CSG
-    var _currentCSGMeshId = 0;
+    var currentCSGMeshId = 0;
 
     BABYLON.CSG = function () {
         this.polygons = [];
@@ -51,7 +51,7 @@ var BABYLON = BABYLON || {};
                     vertices.push(vertex);
                 }
 
-                polygon = new BABYLON.CSG.Polygon(vertices, { subMeshId: sm, meshId: _currentCSGMeshId, materialIndex: subMeshes[sm].materialIndex });
+                polygon = new BABYLON.CSG.Polygon(vertices, { subMeshId: sm, meshId: currentCSGMeshId, materialIndex: subMeshes[sm].materialIndex });
 
                 // To handle the case of degenerated triangle
                 // polygon.plane == null <=> the polygon does not represent 1 single plane <=> the triangle is degenerated
@@ -62,7 +62,7 @@ var BABYLON = BABYLON || {};
 
         var csg = BABYLON.CSG.fromPolygons(polygons);
         csg.copyTransformAttributes(this);
-        _currentCSGMeshId++;
+        currentCSGMeshId++;
 
         return csg;
     };

@@ -369,8 +369,8 @@ var BABYLON = BABYLON || {};
 
     // Shaders
     BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines) {
-        var vertex = baseName.vertex || baseName;
-        var fragment = baseName.fragment || baseName;
+        var vertex = baseName.vertexElement || baseName.vertex || baseName;
+        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
         
         var name = vertex + "+" + fragment + "@" + defines;
         if (this._compiledEffects[name]) {
