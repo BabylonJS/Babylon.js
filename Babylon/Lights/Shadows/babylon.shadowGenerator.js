@@ -14,6 +14,9 @@ var BABYLON = BABYLON || {};
         this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.renderParticles = false;
+
+        // Level of Gray
+        this._grayLevel = 0.;
                 
         // Custom render function
         var that = this;
@@ -124,6 +127,19 @@ var BABYLON = BABYLON || {};
         }
 
         return this._transformMatrix;
+    };
+
+    BABYLON.ShadowGenerator.prototype.getGrayLevel = function () {
+        return this._grayLevel;
+    };
+
+    BABYLON.ShadowGenerator.prototype.setGrayLevel = function (grayLevel) {
+        if (grayLevel >= 1.0)
+            this._grayLevel = 1.0;
+        else if (grayLevel <= 0.0)   
+            this._grayLevel = 0.0;
+        else
+            this._grayLevel = grayLevel;
     };
 
     BABYLON.ShadowGenerator.prototype.dispose = function() {
