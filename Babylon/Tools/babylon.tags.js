@@ -7,6 +7,30 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Tags.EnableFor = function (obj) {
         obj._tags = obj._tags || {};
+
+        obj.hasTags = function () {
+            return BABYLON.Tags.HasTags(obj);
+        };
+
+        obj.addTags = function (tagsString) {
+            return BABYLON.Tags.AddTagsTo(obj, tagsString);
+        };
+
+        obj.removeTags = function (tagsString) {
+            return BABYLON.Tags.RemoveTagsFrom(obj, tagsString);
+        };
+
+        obj.matchesTagsQuery = function (tagsQuery) {
+            return BABYLON.Tags.MatchesQuery(obj, tagsQuery);
+        };
+    };
+
+    BABYLON.Tags.DisableFor = function (obj) {
+        delete obj._tags;
+        delete obj.hasTags;
+        delete obj.addTags;
+        delete obj.removeTags;
+        delete obj.matchesTagsQuery;
     };
 
     BABYLON.Tags.HasTags = function (obj) {
