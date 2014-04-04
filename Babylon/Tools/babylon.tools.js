@@ -51,6 +51,13 @@ var BABYLON = BABYLON || {};
             maximum: maximum
         };
     };
+	
+	BABYLON.Tools.MakeArray = function (obj, allowsNullUndefined) {
+		if (allowsNullUndefined !== true && (obj === undefined || obj == null))
+			return undefined;
+
+		return Array.isArray(obj) ? obj : [obj];
+    };
 
     // Smart array
     BABYLON.Tools.SmartArray = function(capacity) {
