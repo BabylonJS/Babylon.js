@@ -20,6 +20,10 @@ var BABYLON = BABYLON || {};
             mesh.setVerticesData(this.uvs, BABYLON.VertexBuffer.UVKind, updatable);
         }
 
+        if (this.colors) {
+            mesh.setVerticesData(this.colors, BABYLON.VertexBuffer.ColorKind, updatable);
+        }
+
         if (this.indices) {
             mesh.setIndices(this.indices);
         }
@@ -92,6 +96,15 @@ var BABYLON = BABYLON || {};
             }
             for (index = 0; index < other.uvs.length; index++) {
                 this.uvs.push(other.uvs[index]);
+            }
+        }
+
+        if (other.colors) {
+            if (!this.colors) {
+                this.colors = [];
+            }
+            for (index = 0; index < other.colors.length; index++) {
+                this.colors.push(other.colors[index]);
             }
         }
     };
