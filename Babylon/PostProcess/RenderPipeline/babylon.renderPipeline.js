@@ -101,10 +101,10 @@ var BABYLON = BABYLON || {};
 		pass._name = BABYLON.RenderPipeline.PASS_SAMPLER_NAME;
 		
 		for (var i = 0; i < cameras.length; i++) {
-			this._renderEffectsPasses[cameras[i].name] = this._renderEffectsPasses[cameras[i].name] || new BABYLON.RenderEffect(this._engine, BABYLON.RenderPipeline.PASS_EFFECT_NAME, "BABYLON.PassPostProcess");
-			this._renderEffectsPasses[cameras[i].name].attachCameras(cameras[i]);
+		    this._renderEffectsPasses[cameras[i].name] = this._renderEffectsPasses[cameras[i].name] || new BABYLON.RenderEffect(this._engine, BABYLON.RenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0);
 			this._renderEffectsPasses[cameras[i].name].emptyPasses();
 			this._renderEffectsPasses[cameras[i].name].addPass(pass);
+			this._renderEffectsPasses[cameras[i].name].attachCameras(cameras[i]);
 		}
 	};
 

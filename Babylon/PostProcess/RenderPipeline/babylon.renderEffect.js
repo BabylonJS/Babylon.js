@@ -85,6 +85,10 @@ var BABYLON = BABYLON || {};
 			if (this._cameras.indexOf(cameras[i].name) == -1) {
 				this._cameras.push(cameras[i].name);
 			}
+
+			for (var passName in this._renderPasses) {
+			    this._renderPasses[passName].incRefCount();
+			}
 		}
 
 		this._linkParameters();
@@ -103,6 +107,10 @@ var BABYLON = BABYLON || {};
 
 			this._indicesForCamera.splice(cameras[i].name, 1);
 			this._cameras.splice(this._cameras.indexOf(cameras[i].name), 1);
+
+			for (var passName in this._renderPasses) {
+			    this._renderPasses[passName].decRefCount();
+			}
 		}
 	};
 
@@ -116,7 +124,7 @@ var BABYLON = BABYLON || {};
 		}
 	};
 
-	BABYLON.RenderEffect.prototype._linkTextures = function () {
+	BABYLON.RenderEffect.prototype._linkTextures = function (effect) {
         for (var renderPassName in this._renderPasses) {
             effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
         }
@@ -147,6 +155,10 @@ var BABYLON = BABYLON || {};
 					}
 				}
 			}
+
+			for (var passName in this._renderPasses) {
+			    this._renderPasses[passName].incRefCount();
+			}
 		}
 	};
 
@@ -159,7 +171,11 @@ var BABYLON = BABYLON || {};
 			}
 			else {
 				cameras[i].detachPostProcess(this._postProcesses[cameras[i].name], this._indicesForCamera[cameras[i].name]);
-			}
+		    }
+
+		    for (var passName in this._renderPasses) {
+		        this._renderPasses[passName].decRefCount();
+		    }
 		}
 	};
 

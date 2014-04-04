@@ -15,6 +15,11 @@
   <script src="Babylon/Collisions/babylon.pickingInfo.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.renderPass.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.renderEffect.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.renderPipeline.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.renderPipelineManager.js"></script>
+  <script src="Babylon/PostProcess/babylon.displayPassPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.filterPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
