@@ -132,6 +132,10 @@ var BABYLON = BABYLON || {};
         }
     };
 
+    BABYLON.FreeCamera.prototype.getTarget = function () {
+        return this._currentTarget;
+    };
+
     // Controls
     BABYLON.FreeCamera.prototype.attachControl = function (canvas, noPreventDefault) {
         var previousPosition;
