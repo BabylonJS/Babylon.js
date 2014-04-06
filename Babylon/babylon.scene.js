@@ -608,7 +608,7 @@ var BABYLON = BABYLON || {};
         this._particlesDuration += new Date() - beforeParticlesDate;
     };
 
-    BABYLON.Scene.prototype._renderForCamera = function (camera, mustClearDepth) {
+    BABYLON.Scene.prototype._renderForCamera = function (camera) {
         var engine = this._engine;
 
         this.activeCamera = camera;
@@ -618,11 +618,6 @@ var BABYLON = BABYLON || {};
 
         // Viewport
         engine.setViewport(this.activeCamera.viewport);
-
-        // Clear
-        if (mustClearDepth) {
-            this._engine.clear(this.clearColor, false, true);
-        }
 
         // Camera
         this._renderId++;
@@ -701,13 +696,31 @@ var BABYLON = BABYLON || {};
         this._renderDuration += new Date() - beforeRenderDate;
 
         // Finalize frame
-        this.postProcessManager._finalizeFrame();
+        this.postProcessManager._finalizeFrame(camera.isIntermediate);
 
         // Update camera
         this.activeCamera._updateFromScene();
 
         // Reset some special arrays
         this._renderTargets.reset();
+    };
+
+    BABYLON.Scene.prototype._processSubCameras = function (camera) {
+        if (camera.subCameras.length == 0) {
+            this._renderForCamera(camera);
+            return;
+        }
+
+        // Sub-cameras
+        for (var index = 0; index < camera.subCameras.length; index++) {
+            this._renderForCamera(camera.subCameras[index]);
+        }
+
+        this.activeCamera = camera;
+        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+
+        // Update camera
+        this.activeCamera._updateFromScene();
     };
 
     BABYLON.Scene.prototype.render = function () {
@@ -757,10 +770,10 @@ var BABYLON = BABYLON || {};
             var currentRenderId = this._renderId;
             for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 this._renderId = currentRenderId;
-                this._renderForCamera(this.activeCameras[cameraIndex], cameraIndex != 0);
+                this._processSubCameras(this.activeCameras[cameraIndex]);
             }
         } else {
-            this._renderForCamera(this.activeCamera);
+            this._processSubCameras(this.activeCamera);
         }
 
         // After render

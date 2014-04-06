@@ -8,7 +8,7 @@ var BABYLON = BABYLON || {};
         
         this.name = name;
         this.id = name;
-        this.position = position;
+        this.position = position.clone();
         this.upVector = BABYLON.Vector3.Up();
 
         scene.cameras.push(this);
@@ -19,6 +19,9 @@ var BABYLON = BABYLON || {};
 
         this._computedViewMatrix = BABYLON.Matrix.Identity();
         this._projectionMatrix = new BABYLON.Matrix();
+
+        // Sub-cameras
+        this.subCameras = [];
 
         // Animations
         this.animations = [];
@@ -50,6 +53,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Camera.prototype.maxZ = 1000.0;
     BABYLON.Camera.prototype.inertia = 0.9;
     BABYLON.Camera.prototype.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+    BABYLON.Camera.prototype.isIntermediate = false;
 
     // Properties
     BABYLON.Camera.prototype.getScene = function () {
