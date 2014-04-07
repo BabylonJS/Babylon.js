@@ -245,7 +245,8 @@ var BABYLON = BABYLON || {};
                 "vFogInfos", "vFogColor",
                  "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                  "mBones",
-                 "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix"],
+                 "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
+                 "darkness0", "darkness1", "darkness2", "darkness3"],
                 ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                  "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ],
@@ -391,6 +392,7 @@ var BABYLON = BABYLON || {};
                     world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
                     this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
                     this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
+                    this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
                 }
 
                 lightIndex++;
