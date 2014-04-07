@@ -1084,24 +1084,38 @@ var BABYLON = BABYLON || {};
     };
 
     // Tags
-    BABYLON.Scene.prototype.getMeshesByTags = function (tagsQuery) {
-        var meshes = this.meshes;
-
-        if (tagsQuery === undefined) { 
-            // returns all meshes (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
-            return meshes;
+    BABYLON.Scene.prototype._getByTags = function(list, tagsQuery) {
+        if (tagsQuery === undefined) {
+            // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
+            return list;
         }
 
-        var meshesByTags = [];
+        var listByTags = [];
 
-        for (var i in meshes) {
-            var mesh = meshes[i];
-            if (BABYLON.Tags.MatchesQuery(mesh, tagsQuery)) {
-                meshesByTags.push(mesh);
+        for (var i in list) {
+            var item = list[i];
+            if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {
+                listByTags.push(item);
             }
         }
 
-        return meshesByTags;
+        return listByTags;
+    };
+
+    BABYLON.Scene.prototype.getMeshesByTags = function (tagsQuery) {
+        return this._getByTags(this.meshes, tagsQuery);
+    };
+
+    BABYLON.Scene.prototype.getCamerasByTags = function (tagsQuery) {
+        return this._getByTags(this.cameras, tagsQuery);
+    };
+
+    BABYLON.Scene.prototype.getLightsByTags = function (tagsQuery) {
+        return this._getByTags(this.lights, tagsQuery);
+    };
+
+    BABYLON.Scene.prototype.getMaterialByTags = function (tagsQuery) {
+        return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
     };
 
     // Statics
