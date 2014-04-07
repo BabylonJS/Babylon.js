@@ -44,6 +44,10 @@ var BABYLON = BABYLON || {};
     // a tag cannot start with '||', '&&', and '!'
     // it cannot contain whitespaces
     BABYLON.Tags.AddTagsTo = function (obj, tagsString) {
+        if (!tagsString) {
+            return;
+        }
+
         var tags = tagsString.split(" ");
         for (var t in tags) {
             BABYLON.Tags._AddTagTo(obj, tags[t]);
