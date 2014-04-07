@@ -37,19 +37,6 @@
         <div id="title">
             <h1>@ViewBag.Title</h1>
             <div id="menu">
-                <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Blender", demoFile = "blender.babylon" })">Blender</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Dude", demoFile = "Dude.babylon" })">Dude</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Espilit", demoFile = "Espilit.incremental.babylon" })">Espilit</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Flat2009", demoFile = "Flat2009.babylon" })">Flat2009</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Heart", demoFile = "Heart.babylon" })">Heart</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Rabbit", demoFile = "Rabbit.babylon" })">Rabbit</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Robot", demoFile = "Robot.babylon" })">Robot</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "SpaceDek", demoFile = "SpaceDek.babylon" })">SpaceDek</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Spaceship", demoFile = "Spaceship.babylon" })">Spaceship</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "TheCar", demoFile = "TheCar.incremental.babylon" })">TheCar</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Train", demoFile = "Train.babylon" })">Train</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "Viper", demoFile = "Viper.babylon" })">Viper</a>
-                | <a href="@Url.Action("Index", "BabylonJSDemo", new { demoFolderName = "WCafe", demoFile = "WCafe.babylon" })">WCafe</a>
             </div>
         </div>
         @if (ViewBag.DoNotUseBabylonJS == null)
@@ -57,6 +44,32 @@
         <canvas id="ourOwnBabylonJSCanvas"></canvas>
         }
         @RenderBody()
+        <script type="text/javascript">
+            var menu = document.getElementById("menu");
+
+            var req = new XMLHttpRequest();
+            req.open('GET', "@Html.Raw(this.BabylonJSSamplesFolder())");
+            req.onreadystatechange = function (evt) {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        var json = JSON.parse(req.responseText);
+                        for (var i in json.files) {
+                            if (i > 0) {
+                                var span = document.createElement("span");
+                                span.innerHTML = " | ";
+                                menu.appendChild(span);
+                            }
+                            var file = json.files[i];
+                            var a = document.createElement("a");
+                            a.setAttribute("href", file.url);
+                            a.textContent = file.linkName.charAt(0).toUpperCase() + file.linkName.slice(1);
+                            menu.appendChild(a);
+                        }
+                    }
+                }
+            };
+            req.send(null);
+        </script>
     </div>
 </body>
 </html>
