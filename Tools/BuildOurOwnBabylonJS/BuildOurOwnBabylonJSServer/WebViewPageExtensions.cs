@@ -57,5 +57,20 @@ namespace BuildOurOwnBabylonJSServer.Extensions
 
             return url;
         }
+
+
+        public static string BabylonJSSamplesFolder(this WebViewPage page)
+        {
+            if (page == null)
+                return null;
+
+            var babylonJSSamplesDirFullPath = Environment.GetEnvironmentVariable("BabylonJSSamplesDirFullPath") + "\\Scenes";
+
+            var url = page.Url.Action(BuildOurOwnBabylonJSController.GetBabylonScenesActionName,
+                                      "BuildOurOwnBabylonJS",
+                                      new { rootPath = babylonJSSamplesDirFullPath },
+                                      page.Request.Url.Scheme);
+            return url;
+        }
     }
 }
