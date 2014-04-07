@@ -1083,6 +1083,27 @@ var BABYLON = BABYLON || {};
         }
     };
 
+    // Tags
+    BABYLON.Scene.prototype.getMeshesByTags = function (tagsQuery) {
+        var meshes = this.meshes;
+
+        if (tagsQuery === undefined) { 
+            // returns all meshes (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
+            return meshes;
+        }
+
+        var meshesByTags = [];
+
+        for (var i in meshes) {
+            var mesh = meshes[i];
+            if (BABYLON.Tags.MatchesQuery(mesh, tagsQuery)) {
+                meshesByTags.push(mesh);
+            }
+        }
+
+        return meshesByTags;
+    };
+
     // Statics
     BABYLON.Scene.FOGMODE_NONE = 0;
     BABYLON.Scene.FOGMODE_EXP = 1;
