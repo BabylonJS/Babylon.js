@@ -760,7 +760,7 @@ var BABYLON = BABYLON || {};
             var light = this.lights[lightIndex];
             var shadowGenerator = light.getShadowGenerator();
 
-            if (light.isEnabled() && shadowGenerator) {
+            if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap()._scene.textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
                 this._renderTargets.push(shadowGenerator.getShadowMap());
             }
         }
