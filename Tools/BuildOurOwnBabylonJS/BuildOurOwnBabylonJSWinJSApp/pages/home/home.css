@@ -2,3 +2,16 @@
     margin-left: 120px;
     margin-right: 120px;
 }
+
+.ListItem {
+    width: 150px;
+    height: 100px;
+    background-image: radial-gradient(#606060, #808080);
+    text-shadow: black 0.1em 0.1em 0.2em;
+    padding: 5px 10px;
+}
+
+#babylonScenesListView {
+    height: 100%;
+    margin: 0px 10px;
+}

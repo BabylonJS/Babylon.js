@@ -1,12 +1,20 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.2.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.2.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.2.0/js/ui.js"></script>
+
     <title>BabylonScene</title>
     <script src="babylonScene.js"></script>
     <script src="/js/ourOwnBabylon.js"></script>
     <link href="babylonScene.css" rel="stylesheet" />
 </head>
 <body>
+    <div data-win-control="WinJS.UI.NavBar">
+        <button class="backButton" data-win-control="WinJS.UI.BackButton"></button>
+    </div>
     <div id="babylonScene">
         <canvas id="babylonCanvas"></canvas>
     </div>
