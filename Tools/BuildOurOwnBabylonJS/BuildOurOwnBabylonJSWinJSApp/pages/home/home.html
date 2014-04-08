@@ -16,7 +16,28 @@
     <script src="/pages/home/home.js"></script>
 </head>
 <body>
-    <h1>It sun a game</h1>
-    <ul id="babylonScenes"></ul>
+    <div id="ListHeaderTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+        <div class="sceneListHeader">
+            <h2 data-win-bind="innerText: title"></h2>
+        </div>
+    </div>
+    <div id="ListItemTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+        <div class="ListItem">
+            <h4 data-win-bind="textContent: title"></h4>
+            <h6 data-win-bind="textContent: text"></h6>
+        </div>
+    </div>
+
+    <div id="babylonScenesListView"
+         class="win-selectionstylefilled"
+         data-win-control="WinJS.UI.ListView"
+         data-win-options="{
+            itemDataSource: home.babylonScenes.groupedItemsList.dataSource,
+            itemTemplate: select('#ListItemTemplate'),
+            groupDataSource: home.babylonScenes.groupedItemsList.groups.dataSource,
+            groupHeaderTemplate: select('#ListHeaderTemplate'),
+            layout: { type: WinJS.UI.GridLayout }
+         }">
+    </div>
 </body>
 </html>
