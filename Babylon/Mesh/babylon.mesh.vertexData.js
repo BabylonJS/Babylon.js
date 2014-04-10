@@ -20,8 +20,20 @@ var BABYLON = BABYLON || {};
             mesh.setVerticesData(this.uvs, BABYLON.VertexBuffer.UVKind, updatable);
         }
 
+        if (this.uv2s) {
+            mesh.setVerticesData(this.uv2s, BABYLON.VertexBuffer.UV2Kind, updatable);
+        }
+
         if (this.colors) {
             mesh.setVerticesData(this.colors, BABYLON.VertexBuffer.ColorKind, updatable);
+        }
+
+        if (this.matricesIndices) {
+            mesh.setVerticesData(this.matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind, updatable);
+        }
+
+        if (this.matricesWeights) {
+            mesh.setVerticesData(this.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, updatable);
         }
 
         if (this.indices) {
@@ -99,6 +111,33 @@ var BABYLON = BABYLON || {};
             }
         }
 
+        if (other.uv2s) {
+            if (!this.uv2s) {
+                this.uv2s = [];
+            }
+            for (index = 0; index < other.uv2s.length; index++) {
+                this.uv2s.push(other.uv2s[index]);
+            }
+        }
+
+        if (other.matricesIndices) {
+            if (!this.matricesIndices) {
+                this.matricesIndices = [];
+            }
+            for (index = 0; index < other.matricesIndices.length; index++) {
+                this.matricesIndices.push(other.matricesIndices[index]);
+            }
+        }
+
+        if (other.matricesWeights) {
+            if (!this.matricesWeights) {
+                this.matricesWeights = [];
+            }
+            for (index = 0; index < other.matricesWeights.length; index++) {
+                this.matricesWeights.push(other.matricesWeights[index]);
+            }
+        }
+
         if (other.colors) {
             if (!this.colors) {
                 this.colors = [];
@@ -110,6 +149,42 @@ var BABYLON = BABYLON || {};
     };
 
     // Statics
+    BABYLON.VertexData.ExtractFromMesh = function (mesh) {
+        var result = new BABYLON.VertexData();
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+            result.positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+            result.normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+            result.uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+            result.uv2s = mesh.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
+            result.colors = mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
+            result.matricesIndices = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+        }
+
+        if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            result.matricesWeights = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+        }
+
+        result.indices = mesh.getIndices();
+
+        return result;
+    };
+
     BABYLON.VertexData.CreateBox = function(size) {
         var normalsSource = [
             new BABYLON.Vector3(0, 0, 1),
