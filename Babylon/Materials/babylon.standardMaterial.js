@@ -64,7 +64,7 @@ var BABYLON = BABYLON || {};
 
         // Textures
         if (this._scene.texturesEnabled) {
-            if (this.diffuseTexture) {
+            if (this.diffuseTexture && BABYLON.StandardMaterial.diffuseTextureEnabled) {
                 if (!this.diffuseTexture.isReady()) {
                     return false;
                 } else {
@@ -72,7 +72,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.ambientTexture) {
+            if (this.ambientTexture && BABYLON.StandardMaterial.ambientTextureEnabled) {
                 if (!this.ambientTexture.isReady()) {
                     return false;
                 } else {
@@ -80,7 +80,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.opacityTexture) {
+            if (this.opacityTexture && BABYLON.StandardMaterial.opacityTextureEnabled) {
                 if (!this.opacityTexture.isReady()) {
                     return false;
                 } else {
@@ -88,7 +88,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.reflectionTexture) {
+            if (this.reflectionTexture && BABYLON.StandardMaterial.reflectionTextureEnabled) {
                 if (!this.reflectionTexture.isReady()) {
                     return false;
                 } else {
@@ -96,7 +96,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.emissiveTexture) {
+            if (this.emissiveTexture && BABYLON.StandardMaterial.emissiveTextureEnabled) {
                 if (!this.emissiveTexture.isReady()) {
                     return false;
                 } else {
@@ -104,7 +104,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.specularTexture) {
+            if (this.specularTexture && BABYLON.StandardMaterial.specularTextureEnabled) {
                 if (!this.specularTexture.isReady()) {
                     return false;
                 } else {
@@ -114,7 +114,7 @@ var BABYLON = BABYLON || {};
             }
         }
 
-        if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture) {
+        if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && BABYLON.StandardMaterial.bumpTextureEnabled) {
             if (!this.bumpTexture.isReady()) {
                 return false;
             } else {
@@ -524,5 +524,14 @@ var BABYLON = BABYLON || {};
 
         return newStandardMaterial;
     };
+
+    // Flags used to enable or disable a type of texture for all Standard Materials
+    BABYLON.StandardMaterial.diffuseTextureEnabled = true;
+    BABYLON.StandardMaterial.ambientTextureEnabled = true;
+    BABYLON.StandardMaterial.opacityTextureEnabled = true;
+    BABYLON.StandardMaterial.reflectionTextureEnabled = true;
+    BABYLON.StandardMaterial.emissiveTextureEnabled = true;
+    BABYLON.StandardMaterial.specularTextureEnabled = true;
+    BABYLON.StandardMaterial.bumpTextureEnabled = true;
 
 })();
