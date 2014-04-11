@@ -15,6 +15,7 @@
   <script src="Babylon/Collisions/babylon.pickingInfo.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
+  <script src="Babylon/PostProcess/babylon.anaglyphPostProcess.js"></script>
   <script src="Babylon/PostProcess/RenderPipeline/babylon.renderPass.js"></script>
   <script src="Babylon/PostProcess/RenderPipeline/babylon.renderEffect.js"></script>
   <script src="Babylon/PostProcess/RenderPipeline/babylon.renderPipeline.js"></script>
@@ -61,6 +62,7 @@
   <script src="Babylon/Mesh/babylon.mesh.vertexData.js"></script>
   <script src="Babylon/Mesh/babylon.vertexBuffer.js"></script>
   <script src="Babylon/babylon.scene.js"></script>
+  <script src="Babylon/Cameras/babylon.anaglyphCamera.js"></script>
   <script src="Babylon/Cameras/babylon.arcRotateCamera.js"></script>
   <script src="Babylon/Cameras/babylon.deviceOrientationCamera.js"></script>
   <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
@@ -79,6 +81,8 @@
   <script src="Babylon/babylon.engine.js"></script>
   <script src="Babylon/Math/babylon.axis.js"></script>
   <script src="Babylon/Math/babylon.math.js"></script>
+  <script src="Babylon/Tools/babylon.tags.js"></script>
+  <script src="Babylon/Tools/babylon.andOrNotEvaluator.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/babylon.node.js"></script>
 </files>

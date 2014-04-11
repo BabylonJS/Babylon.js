@@ -349,6 +349,13 @@ var BABYLON = BABYLON || {};
         }
     };
 
+    BABYLON.Tools.IsEmpty = function (obj) {
+        for (var i in obj) {
+            return false;
+        }
+        return true;
+    };
+
     // FPS
     var fpsRange = 60;
     var previousFramesDuration = [];

@@ -41,7 +41,7 @@ var BABYLON = BABYLON || {};
         postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
     };
     
-    BABYLON.PostProcessManager.prototype._finalizeFrame = function () {
+    BABYLON.PostProcessManager.prototype._finalizeFrame = function (doNotPresent) {
         var postProcesses = this._scene.activeCamera._postProcesses;
         var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
         if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
@@ -55,6 +55,10 @@ var BABYLON = BABYLON || {};
                 postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
             } else {
                 engine.restoreDefaultFramebuffer();
+            }
+
+            if (doNotPresent) {
+                break;
             }
 
             var effect = postProcesses[postProcessesTakenIndices[index]].apply();
