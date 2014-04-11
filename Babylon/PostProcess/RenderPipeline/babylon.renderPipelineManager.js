@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderPipelineManager = function RenderPipelineManager() {
+	BABYLON.RenderPipelineManager = function () {
 		this._renderPipelines = [];
 	};
 
