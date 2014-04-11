@@ -324,7 +324,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
-        if (!force && this.isSynchronized(true)) {
+        if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
             return this._worldMatrix;
         }
 
@@ -449,6 +449,8 @@ var BABYLON = BABYLON || {};
         this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this, data, kind, updatable);
 
         if (kind === BABYLON.VertexBuffer.PositionKind) {
+            this._resetPointsArrayCache();
+
             var stride = this._vertexBuffers[kind].getStrideSize();
             this._totalVertices = data.length / stride;
 
@@ -459,9 +461,21 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.Mesh.prototype.updateVerticesData = function (kind, data) {
+    BABYLON.Mesh.prototype.updateVerticesData = function (kind, data, updateExtends) {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].update(data);
+
+            if (kind === BABYLON.VertexBuffer.PositionKind) {
+                this._resetPointsArrayCache();
+
+                if (updateExtends) {
+                    var stride = this._vertexBuffers[kind].getStrideSize();
+                    this._totalVertices = data.length / stride;
+
+                    var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                }
+            }
         }
     };
 
@@ -1117,7 +1131,7 @@ var BABYLON = BABYLON || {};
 
     // Cylinder and cone (Code inspired by SharpDX.org)
     BABYLON.Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
-        var cylinder = new BABYLON.Mesh(name, scene);        
+        var cylinder = new BABYLON.Mesh(name, scene);
         var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
 
         vertexData.applyToMesh(cylinder, updatable);
@@ -1280,10 +1294,10 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.Mesh.MinMax = function(meshes) {
+    BABYLON.Mesh.MinMax = function (meshes) {
         var minVector;
         var maxVector;
-        for(var i in meshes) {
+        for (var i in meshes) {
             var mesh = meshes[i];
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             if (!minVector) {
@@ -1301,7 +1315,7 @@ var BABYLON = BABYLON || {};
         };
     };
 
-    BABYLON.Mesh.Center = function(meshesOrMinMaxVector) {
+    BABYLON.Mesh.Center = function (meshesOrMinMaxVector) {
         var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
         return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
     };
