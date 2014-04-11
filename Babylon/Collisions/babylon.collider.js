@@ -10,7 +10,7 @@ var BABYLON = BABYLON || {};
         this.basePointWorld = BABYLON.Vector3.Zero();
         this.velocityWorld = BABYLON.Vector3.Zero();
         this.normalizedVelocity = BABYLON.Vector3.Zero();
-        
+
         // Internals
         this._collisionPoint = BABYLON.Vector3.Zero();
         this._planeIntersectionPoint = BABYLON.Vector3.Zero();
@@ -137,13 +137,15 @@ var BABYLON = BABYLON || {};
         if (!subMesh._trianglePlanes) {
             subMesh._trianglePlanes = [];
         }
-        
-        if (!subMesh._trianglePlanes[faceIndex]) {
-            subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
-            subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
-        }
+
 
         var trianglePlane = subMesh._trianglePlanes[faceIndex];
+        if (!trianglePlane || !subMesh._meshPosition.equals(trianglePlane._meshPosition)) {
+            subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
+            subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
+            subMesh._trianglePlanes[faceIndex]._meshPosition = subMesh._meshPosition.clone();
+            trianglePlane = subMesh._trianglePlanes[faceIndex];
+        }
 
         if ((!subMesh.getMaterial()) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
             return;
@@ -306,7 +308,7 @@ var BABYLON = BABYLON || {};
                 } else {
                     this.intersectionPoint.copyFrom(this._collisionPoint);
                 }
-                this.nearestDistance = distToCollision;                
+                this.nearestDistance = distToCollision;
                 this.collisionFound = true;
                 this.collidedMesh = subMesh.getMesh();
             }
@@ -322,7 +324,7 @@ var BABYLON = BABYLON || {};
             this._testTriangle(i, subMesh, p3, p2, p1);
         }
     };
-    
+
     BABYLON.Collider.prototype._getResponse = function(pos, vel) {
         pos.addToRef(vel, this._destinationPoint);
         vel.scaleInPlace((this.nearestDistance / vel.length()));

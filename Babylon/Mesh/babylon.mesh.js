@@ -60,7 +60,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.BILLBOARDMODE_Z = 4;
     BABYLON.Mesh.BILLBOARDMODE_ALL = 7;
 
-    // Members    
+    // Members
     BABYLON.Mesh.prototype.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
     BABYLON.Mesh.prototype.material = null;
     BABYLON.Mesh.prototype.isVisible = true;
@@ -462,6 +462,9 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.updateVerticesData = function (kind, data) {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].update(data);
+            if (kind === BABYLON.VertexBuffer.PositionKind) {
+                this._resetPointsArrayCache();
+            }
         }
     };
 
@@ -686,7 +689,7 @@ var BABYLON = BABYLON || {};
         /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
         /// <returns>Mesh oriented towards targetMesh</returns>
 
-        yawCor = yawCor || 0; // default to zero if undefined 
+        yawCor = yawCor || 0; // default to zero if undefined
         pitchCor = pitchCor || 0;
         rollCor = rollCor || 0;
 
@@ -718,7 +721,10 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype._collideForSubMesh = function (subMesh, transformMatrix, collider) {
         this._generatePointsArray();
         // Transformation
-        if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
+        if (!subMesh._lastColliderWorldVertices
+                || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)
+                || !this.position.equals(subMesh._meshPosition)) {
+            subMesh._meshPosition = this.position.clone();
             subMesh._lastColliderTransformMatrix = transformMatrix;
             subMesh._lastColliderWorldVertices = [];
             var start = subMesh.verticesStart;
@@ -1117,7 +1123,7 @@ var BABYLON = BABYLON || {};
 
     // Cylinder and cone (Code inspired by SharpDX.org)
     BABYLON.Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
-        var cylinder = new BABYLON.Mesh(name, scene);        
+        var cylinder = new BABYLON.Mesh(name, scene);
         var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
 
         vertexData.applyToMesh(cylinder, updatable);
