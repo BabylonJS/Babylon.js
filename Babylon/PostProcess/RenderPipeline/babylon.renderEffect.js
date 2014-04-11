@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderEffect = function RenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+	BABYLON.RenderEffect = function (engine, name, postProcessType, ratio, samplingMode, singleInstance) {
 		this._engine = engine;
 
 		this._name = name;
@@ -60,7 +60,7 @@ var BABYLON = BABYLON || {};
 	};
 
 	BABYLON.RenderEffect.prototype.attachCameras = function (cameras) {
-		var postProcess = null;
+		var postProcess;
 
 		cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 

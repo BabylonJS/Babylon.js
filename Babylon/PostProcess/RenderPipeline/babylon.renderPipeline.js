@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderPipeline = function RenderPipeline(engine, name) {
+	BABYLON.RenderPipeline = function (engine, name) {
 		this._engine = engine;
 
 		this._name = name;
@@ -94,7 +94,7 @@ var BABYLON = BABYLON || {};
 			return;
 		}
 		
-		for (var renderEffectName in this._renderEffects) {
+		for (renderEffectName in this._renderEffects) {
 			this._renderEffects[renderEffectName].disable(cameras);
 		}
 		

@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderPass = function RenderPass(scene, name, size, renderList, beforeRender, afterRender) {
+	BABYLON.RenderPass = function (scene, name, size, renderList, beforeRender, afterRender) {
 		this._name = name;
 		this._enabled = true;
 
