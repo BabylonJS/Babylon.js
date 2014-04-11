@@ -336,7 +336,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
 	float specComp = max(0., dot(vNormal, angleW));
-	specComp = pow(specComp, vSpecularColor.a);
+	specComp = pow(specComp, max(1., vSpecularColor.a));
 
 	result.diffuse = ndl * diffuseColor;
 	result.specular = specComp * specularColor;

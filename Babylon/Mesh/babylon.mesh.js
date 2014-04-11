@@ -324,8 +324,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
-        if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
-            this._currentRenderId = this._scene.getRenderId();
+        if (!force && this.isSynchronized(true)) {
             return this._worldMatrix;
         }
 
