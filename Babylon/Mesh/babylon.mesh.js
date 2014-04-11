@@ -33,7 +33,6 @@ var BABYLON = BABYLON || {};
 
         // Cache
         this._positions = null;
-        this._positionsVersion = 0;
         BABYLON.Mesh.prototype._initCache.call(this);
 
         this._localScaling = BABYLON.Matrix.Zero();
@@ -712,7 +711,6 @@ var BABYLON = BABYLON || {};
             return;
 
         this._positions = [];
-        this._positionsVersion++;
 
         var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
         for (var index = 0; index < data.length; index += 3) {
@@ -724,10 +722,10 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype._collideForSubMesh = function (subMesh, transformMatrix, collider) {
         this._generatePointsArray();
         // Transformation
-        if (this._positionsVersion != subMesh._positionsVersion
-                || !subMesh._lastColliderWorldVertices
-                || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
-            subMesh._positionsVersion = this._positionsVersion;
+        if (!subMesh._lastColliderWorldVertices
+                || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)
+                || !this.position.equals(subMesh._meshPosition)) {
+            subMesh._meshPosition = this.position.clone();
             subMesh._lastColliderTransformMatrix = transformMatrix;
             subMesh._lastColliderWorldVertices = [];
             var start = subMesh.verticesStart;

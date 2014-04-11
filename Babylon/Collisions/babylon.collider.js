@@ -140,10 +140,10 @@ var BABYLON = BABYLON || {};
 
 
         var trianglePlane = subMesh._trianglePlanes[faceIndex];
-        if (!trianglePlane || trianglePlane._positionsVersion != subMesh._positionsVersion) {
+        if (!trianglePlane || !subMesh._meshPosition.equals(trianglePlane._meshPosition)) {
             subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
             subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
-            subMesh._trianglePlanes[faceIndex]._positionsVersion = subMesh._positionsVersion;
+            subMesh._trianglePlanes[faceIndex]._meshPosition = subMesh._meshPosition.clone();
             trianglePlane = subMesh._trianglePlanes[faceIndex];
         }
 
