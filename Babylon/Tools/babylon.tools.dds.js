@@ -56,6 +56,7 @@ var BABYLON = BABYLON || {};
     }
 
     var FOURCC_DXT1 = FourCCToInt32("DXT1");
+    var FOURCC_DXT3 = FourCCToInt32("DXT3");
     var FOURCC_DXT5 = FourCCToInt32("DXT5");
 
     var headerLengthInt = 31; // The header length in 32 bit ints
@@ -110,6 +111,10 @@ var BABYLON = BABYLON || {};
             case FOURCC_DXT1:
                 blockBytes = 8;
                 internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                break;
+            case FOURCC_DXT3:
+                blockBytes = 16;
+                internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT3_EXT;
                 break;
             case FOURCC_DXT5:
                 blockBytes = 16;
