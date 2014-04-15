@@ -250,7 +250,7 @@ var BABYLON = BABYLON || {};
                 ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                  "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ],
-                join, optionalDefines);
+                join, optionalDefines, this.onCompiled, this.onError);
         }
         if (!this._effect.isReady()) {
             return false;
@@ -452,7 +452,7 @@ var BABYLON = BABYLON || {};
         return results;
     };
 
-    BABYLON.StandardMaterial.prototype.dispose = function () {
+    BABYLON.StandardMaterial.prototype.dispose = function (forceDisposeEffect) {
         if (this.diffuseTexture) {
             this.diffuseTexture.dispose();
         }
@@ -481,7 +481,7 @@ var BABYLON = BABYLON || {};
             this.bumpTexture.dispose();
         }
 
-        this.baseDispose();
+        this.baseDispose(forceDisposeEffect);
     };
 
     BABYLON.StandardMaterial.prototype.clone = function (name) {

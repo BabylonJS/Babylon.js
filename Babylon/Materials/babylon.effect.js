@@ -4,7 +4,7 @@ var BABYLON = BABYLON || {};
 
 (function () {
 
-    BABYLON.Effect = function (baseName, attributesNames, uniformsNames, samplers, engine, defines, optionalDefines) {
+    BABYLON.Effect = function (baseName, attributesNames, uniformsNames, samplers, engine, defines, optionalDefines, onCompiled, onError) {
         this._engine = engine;
         this.name = baseName;
         this.defines = defines;
@@ -13,6 +13,9 @@ var BABYLON = BABYLON || {};
         this._isReady = false;
         this._compilationError = "";
         this._attributesNames = attributesNames;
+
+        this.onError = onError;
+        this.onCompiled = onCompiled;
 
         var vertexSource;
         var fragmentSource;
@@ -30,11 +33,15 @@ var BABYLON = BABYLON || {};
             that._loadFragmentShader(fragmentSource, function (fragmentCode) {
                 that._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, optionalDefines);
             });
-        });   
+        });
 
         // Cache
         this._valueCache = [];
     };
+
+    // Events
+    BABYLON.Effect.prototype.onCompiled = null;
+    BABYLON.Effect.prototype.onError = null;
 
     // Properties
     BABYLON.Effect.prototype.isReady = function () {
@@ -87,7 +94,7 @@ var BABYLON = BABYLON || {};
             callback(BABYLON.Effect.ShadersStore[vertex + "VertexShader"]);
             return;
         }
-        
+
         var vertexShaderUrl;
 
         if (vertex[0] === ".") {
@@ -113,7 +120,7 @@ var BABYLON = BABYLON || {};
             callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
             return;
         }
-        
+
         var fragmentShaderUrl;
 
         if (fragment[0] === ".") {
@@ -146,6 +153,9 @@ var BABYLON = BABYLON || {};
             engine.bindSamplers(this);
 
             this._isReady = true;
+            if (this.onCompiled) {
+                this.onCompiled(this);
+            }
         } catch (e) {
             if (!useFallback && optionalDefines) {
                 for (var index = 0; index < optionalDefines.length; index++) {
@@ -157,6 +167,10 @@ var BABYLON = BABYLON || {};
                 console.error("Defines: " + defines);
                 console.error("Optional defines: " + optionalDefines);
                 this._compilationError = e.message;
+
+                if (this.onError) {
+                    this.onError(this, this._compilationError);
+                }
             }
         }
     };
@@ -215,7 +229,7 @@ var BABYLON = BABYLON || {};
         this._valueCache[uniformName][2] = z;
         this._valueCache[uniformName][3] = w;
     };
-    
+
     BABYLON.Effect.prototype.setArray = function (uniformName, array) {
         this._engine.setArray(this.getUniform(uniformName), array);
 
@@ -259,7 +273,7 @@ var BABYLON = BABYLON || {};
 
         return this;
     };
-    
+
     BABYLON.Effect.prototype.setVector2 = function (uniformName, vector2) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector2.x && this._valueCache[uniformName][1] == vector2.y)
             return this;
@@ -279,7 +293,7 @@ var BABYLON = BABYLON || {};
 
         return this;
     };
-    
+
     BABYLON.Effect.prototype.setVector3 = function (uniformName, vector3) {
         if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
             return this;
