@@ -272,6 +272,8 @@ var BABYLON = BABYLON || {};
             gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
+
+        this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
     };
 
     BABYLON.Engine.prototype.flushFramebuffer = function () {
