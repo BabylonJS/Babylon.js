@@ -116,8 +116,8 @@ var BABYLON = BABYLON || {};
         this._effect = engine.createEffect(this._shaderPath,
             this._options.attributes,
             this._options.uniforms,
-            this._options.samplers,
-            "");
+            this._options.samplers,            
+            "", null, this.onCompiled, this.onError);
 
         if (!this._effect.isReady()) {
             return false;
@@ -190,13 +190,13 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.ShaderMaterial.prototype.dispose = function () {
+    BABYLON.ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
         for (var name in this._textures) {
             this._textures[name].dispose();
         }
 
         this._textures = [];
         
-        this.baseDispose();
+        this.baseDispose(forceDisposeEffect);
     };
 })();

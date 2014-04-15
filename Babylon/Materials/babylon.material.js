@@ -20,8 +20,11 @@ var BABYLON = BABYLON || {};
     BABYLON.Material.prototype._effect = null;
     BABYLON.Material.prototype._wasPreviouslyReady = false;
 
+    // Events
+    BABYLON.Effect.prototype.onCompiled = null;
+    BABYLON.Effect.prototype.onError = null;
     BABYLON.Material.prototype.onDispose = null;
-    
+
     // Properties
     BABYLON.Material.prototype.isReady = function (mesh) {
         return true;
@@ -40,6 +43,9 @@ var BABYLON = BABYLON || {};
     };
 
     // Methods   
+    BABYLON.Material.prototype.trackCreation = function (onCompiled, onError) {
+    };
+
     BABYLON.Material.prototype._preBind = function () {
         var engine = this._scene.getEngine();
         
@@ -53,10 +59,16 @@ var BABYLON = BABYLON || {};
     BABYLON.Material.prototype.unbind = function () {
     };
     
-    BABYLON.Material.prototype.baseDispose = function () {
+    BABYLON.Material.prototype.baseDispose = function (forceDisposeEffect) {
         // Remove from scene
         var index = this._scene.materials.indexOf(this);
         this._scene.materials.splice(index, 1);
+
+        // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
+        if (forceDisposeEffect && this._effect) {
+            this._scene.getEngine()._releaseEffect(this._effect);
+            this._effect = null;
+        }
 
         // Callback
         if (this.onDispose) {
@@ -64,7 +76,7 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.Material.prototype.dispose = function () {
-        this.baseDispose();
+    BABYLON.Material.prototype.dispose = function (forceDisposeEffect) {
+        this.baseDispose(forceDisposeEffect);
     };
 })();

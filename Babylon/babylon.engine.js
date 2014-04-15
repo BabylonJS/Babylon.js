@@ -390,7 +390,16 @@ var BABYLON = BABYLON || {};
     };
 
     // Shaders
-    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines) {
+    BABYLON.Engine.prototype._releaseEffect = function (effect) {
+        if (this._compiledEffects[effect._key]) {
+            delete this._compiledEffects[effect._key];
+            if (effect._program) {
+                this._gl.deleteProgram(effect._program);
+            }
+        }
+    };
+
+    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines, onCompiled, onError) {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
         
@@ -399,7 +408,8 @@ var BABYLON = BABYLON || {};
             return this._compiledEffects[name];
         }
 
-        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, optionalDefines);
+        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, optionalDefines, onCompiled, onError);
+        effect._key = name;
         this._compiledEffects[name] = effect;
 
         return effect;
