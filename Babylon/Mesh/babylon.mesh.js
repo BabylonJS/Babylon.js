@@ -1149,6 +1149,15 @@ var BABYLON = BABYLON || {};
         return torus;
     };
 
+    BABYLON.Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, scene, updatable) {
+        var torusKnot = new BABYLON.Mesh(name, scene);
+        var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments);
+
+        vertexData.applyToMesh(torusKnot, updatable);
+
+        return torusKnot;
+    };
+
     // Plane & ground
     BABYLON.Mesh.CreatePlane = function (name, size, scene, updatable) {
         var plane = new BABYLON.Mesh(name, scene);
@@ -1229,7 +1238,7 @@ var BABYLON = BABYLON || {};
             }
 
             // Normals
-            BABYLON.Mesh.ComputeNormal(positions, normals, indices);
+            BABYLON.VertexData.ComputeNormal(positions, indices, normals);
 
             // Transfer
             ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
@@ -1248,52 +1257,6 @@ var BABYLON = BABYLON || {};
     };
 
     // Tools
-    BABYLON.Mesh.ComputeNormal = function (positions, normals, indices) {
-        var positionVectors = [];
-        var facesOfVertices = [];
-        var index;
-
-        for (index = 0; index < positions.length; index += 3) {
-            var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
-            positionVectors.push(vector3);
-            facesOfVertices.push([]);
-        }
-        // Compute normals
-        var facesNormals = [];
-        for (index = 0; index < indices.length / 3; index++) {
-            var i1 = indices[index * 3];
-            var i2 = indices[index * 3 + 1];
-            var i3 = indices[index * 3 + 2];
-
-            var p1 = positionVectors[i1];
-            var p2 = positionVectors[i2];
-            var p3 = positionVectors[i3];
-
-            var p1p2 = p1.subtract(p2);
-            var p3p2 = p3.subtract(p2);
-
-            facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
-            facesOfVertices[i1].push(index);
-            facesOfVertices[i2].push(index);
-            facesOfVertices[i3].push(index);
-        }
-
-        for (index = 0; index < positionVectors.length; index++) {
-            var faces = facesOfVertices[index];
-
-            var normal = BABYLON.Vector3.Zero();
-            for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
-                normal.addInPlace(facesNormals[faces[faceIndex]]);
-            }
-
-            normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
-
-            normals[index * 3] = normal.x;
-            normals[index * 3 + 1] = normal.y;
-            normals[index * 3 + 2] = normal.z;
-        }
-    };
-
     BABYLON.Mesh.MinMax = function (meshes) {
         var minVector;
         var maxVector;

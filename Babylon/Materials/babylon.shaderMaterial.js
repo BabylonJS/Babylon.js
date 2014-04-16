@@ -48,7 +48,9 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.ShaderMaterial.prototype.setTexture = function (name, texture) {
-        this._checkUniform(name);
+        if (this._options.samplers.indexOf(name) === -1) {
+            this._options.samplers.push(name);
+        }
         this._textures[name] = texture;
 
         return this;
@@ -134,6 +136,10 @@ var BABYLON = BABYLON || {};
 
         if (this._options.uniforms.indexOf("view") !== -1) {
             this._effect.setMatrix("view", this._scene.getViewMatrix());
+        }
+
+        if (this._options.uniforms.indexOf("worldView") !== -1) {
+            this._effect.setMatrix("worldView", world.multiply(this._scene.getViewMatrix()));
         }
 
         if (this._options.uniforms.indexOf("projection") !== -1) {
