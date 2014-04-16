@@ -37,6 +37,7 @@
         <div id="title">
             <h1>@ViewBag.Title</h1>
             <div id="menu">
+                <a href="@Url.Action("Index", "SandBox")">Our own sandbox</a>
             </div>
         </div>
         @if (ViewBag.DoNotUseBabylonJS == null)
@@ -54,11 +55,10 @@
                     if (req.status == 200) {
                         var json = JSON.parse(req.responseText);
                         for (var i in json.files) {
-                            if (i > 0) {
-                                var span = document.createElement("span");
-                                span.innerHTML = " | ";
-                                menu.appendChild(span);
-                            }
+                            var span = document.createElement("span");
+                            span.innerHTML = " | ";
+                            menu.appendChild(span);
+
                             var file = json.files[i];
                             var a = document.createElement("a");
                             a.setAttribute("href", file.url);
