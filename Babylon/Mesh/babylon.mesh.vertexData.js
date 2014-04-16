@@ -200,6 +200,8 @@ var BABYLON = BABYLON || {};
         var normals = [];
         var uvs = [];
 
+        size = size || 1;
+
         // Create each face in turn.
         for (var index = 0; index < normalsSource.length; index++) {
             var normal = normalsSource[index];
@@ -252,6 +254,10 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.VertexData.CreateSphere = function (segments, diameter) {
+
+        segments = segments || 32;
+        diameter = diameter || 1;
+
         var radius = diameter / 2;
 
         var totalZRotationSteps = 2 + segments;
@@ -316,6 +322,11 @@ var BABYLON = BABYLON || {};
         var positions = [];
         var normals = [];
         var uvs = [];
+
+        height = height || 1;
+        diameterTop = diameterTop || 0.5;
+        diameterBottom = diameterBottom || 1;
+        tessellation = tessellation || 16;
 
         var getCircleVector = function (i) {
             var angle = (i * 2.0 * Math.PI / tessellation);
@@ -425,6 +436,10 @@ var BABYLON = BABYLON || {};
         var normals = [];
         var uvs = [];
 
+        diameter = diameter || 1;
+        thickness = thickness || 0.5;
+        tessellation = tessellation || 16;
+
         var stride = tessellation + 1;
 
         for (var i = 0; i <= tessellation; i++) {
@@ -485,6 +500,10 @@ var BABYLON = BABYLON || {};
         var uvs = [];
         var row, col;
 
+        width = width || 1;
+        height = height || 1;
+        subdivisions = subdivisions || 1;
+
         for (row = 0; row <= subdivisions; row++) {
             for (col = 0; col <= subdivisions; col++) {
                 var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
@@ -525,6 +544,8 @@ var BABYLON = BABYLON || {};
         var normals = [];
         var uvs = [];
 
+        size = size || 1;
+
         // Vertices
         var halfSize = size / 2.0;
         positions.push(-halfSize, -halfSize, 0);
@@ -561,5 +582,142 @@ var BABYLON = BABYLON || {};
         vertexData.uvs = uvs;
 
         return vertexData;
+    };
+
+    // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
+    BABYLON.VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q) {
+        var indices = [];
+        var positions = [];
+        var normals = [];
+        var uvs = [];
+
+        radius = radius || 2;
+        tube = tube || 0.5;
+        radialSegments = radialSegments || 32;
+        tubularSegments = tubularSegments || 32;
+        p = p || 2;
+        q = q || 3;
+
+        // Helper
+        function getPos(u, q, p, radius) {
+
+            var cu = Math.cos(u);
+            var su = Math.sin(u);
+            var quOverP = q / p * u;
+            var cs = Math.cos(quOverP);
+
+            var tx = radius * (2 + cs) * 0.5 * cu;
+            var ty = radius * (2 + cs) * su * 0.5;
+            var tz = radius * Math.sin(quOverP) * 0.5;
+
+            return new BABYLON.Vector3(tx, ty, tz);
+        };
+
+        // Vertices
+        for (var i = 0; i <= radialSegments; i++) {
+            var modI = i % radialSegments;
+            var u = modI / radialSegments * 2 * p * Math.PI;
+            var p1 = getPos(u, q, p, radius);
+            var p2 = getPos(u + 0.01, q, p, radius);
+            var tang = p2.subtract(p1);
+            var n = p2.add(p1);
+
+            var bitan = BABYLON.Vector3.Cross(tang, n);
+            n = BABYLON.Vector3.Cross(bitan, tang);
+
+            bitan.normalize();
+            n.normalize();
+
+            for (var j = 0; j <= tubularSegments; j++) {
+                var modJ = j % tubularSegments;
+                var v = modJ / tubularSegments * 2 * Math.PI;
+                var cx = -tube * Math.cos(v);
+                var cy = tube * Math.sin(v);
+
+                var pos = new BABYLON.Vector3();
+                pos.x = p1.x + cx * n.x + cy * bitan.x;
+                pos.y = p1.y + cx * n.y + cy * bitan.y;
+                pos.z = p1.z + cx * n.z + cy * bitan.z;
+
+                positions.push(pos.x);
+                positions.push(pos.y);
+                positions.push(pos.z);
+
+                uvs.push(i / radialSegments);
+                uvs.push(j / tubularSegments);
+            }
+        }
+
+        for (var i = 0; i <= radialSegments; i++) {
+            for (var j = 0; j < tubularSegments; j++) {
+                var a = i * tubularSegments + j;
+                var b = (i + 1) * tubularSegments + j;
+                var c = (i + 1) * tubularSegments + j + 1;
+                var d = i * tubularSegments + j + 1;
+
+                indices.push(a); indices.push(b); indices.push(d);
+                indices.push(b); indices.push(c); indices.push(d);
+            }
+        }
+
+        // Normals
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+
+        // Result
+        var vertexData = new BABYLON.VertexData();
+
+        vertexData.indices = indices;
+        vertexData.positions = positions;
+        vertexData.normals = normals;
+        vertexData.uvs = uvs;
+
+        return vertexData;
+    };
+
+    // Tools
+    BABYLON.VertexData.ComputeNormals = function (positions, indices, normals) {
+        var positionVectors = [];
+        var facesOfVertices = [];
+        var index;
+
+        for (index = 0; index < positions.length; index += 3) {
+            var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
+            positionVectors.push(vector3);
+            facesOfVertices.push([]);
+        }
+        // Compute normals
+        var facesNormals = [];
+        for (index = 0; index < indices.length / 3; index++) {
+            var i1 = indices[index * 3];
+            var i2 = indices[index * 3 + 1];
+            var i3 = indices[index * 3 + 2];
+
+            var p1 = positionVectors[i1];
+            var p2 = positionVectors[i2];
+            var p3 = positionVectors[i3];
+
+            var p1p2 = p1.subtract(p2);
+            var p3p2 = p3.subtract(p2);
+
+            facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+            facesOfVertices[i1].push(index);
+            facesOfVertices[i2].push(index);
+            facesOfVertices[i3].push(index);
+        }
+
+        for (index = 0; index < positionVectors.length; index++) {
+            var faces = facesOfVertices[index];
+
+            var normal = BABYLON.Vector3.Zero();
+            for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
+                normal.addInPlace(facesNormals[faces[faceIndex]]);
+            }
+
+            normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
+
+            normals[index * 3] = normal.x;
+            normals[index * 3 + 1] = normal.y;
+            normals[index * 3 + 2] = normal.z;
+        }
     };
 })();
