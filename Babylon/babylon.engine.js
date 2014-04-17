@@ -309,11 +309,14 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-        // Should be (vertices instanceof Float32Array ? vertices : new Float32Array(vertices)) but Chrome raises an Exception in this case :(
-        if (length) {
+        if (length && length != vertices.length) {
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
         } else {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            }
         }
         
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);

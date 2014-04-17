@@ -733,8 +733,9 @@ var BABYLON = BABYLON || {};
         this._generatePointsArray();
         // Transformation
         if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
-            subMesh._lastColliderTransformMatrix = transformMatrix;
+            subMesh._lastColliderTransformMatrix = transformMatrix.clone();
             subMesh._lastColliderWorldVertices = [];
+            subMesh._trianglePlanes = [];
             var start = subMesh.verticesStart;
             var end = (subMesh.verticesStart + subMesh.verticesCount);
             for (var i = start; i < end; i++) {
