@@ -3,9 +3,9 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-    BABYLON.VertexBuffer = function (mesh, data, kind, updatable) {
+    BABYLON.VertexBuffer = function (mesh, data, kind, updatable, engine) {
         this._mesh = mesh;
-        this._engine = mesh.getScene().getEngine();
+        this._engine = engine || mesh.getScene().getEngine();
         this._updatable = updatable;
         
         if (updatable) {
@@ -21,7 +21,9 @@ var BABYLON = BABYLON || {};
         switch (kind) {
             case BABYLON.VertexBuffer.PositionKind:
                 this._strideSize = 3;
-                this._mesh._resetPointsArrayCache();
+                if (this._mesh) {
+                    this._mesh._resetPointsArrayCache();
+                }
                 break;
             case BABYLON.VertexBuffer.NormalKind:
                 this._strideSize = 3;
@@ -62,7 +64,7 @@ var BABYLON = BABYLON || {};
         this._engine.updateDynamicVertexBuffer(this._buffer, data);
         this._data = data;
         
-        if (this._kind === BABYLON.VertexBuffer.PositionKind) {
+        if (this._kind === BABYLON.VertexBuffer.PositionKind && this._mesh) {
             this._mesh._resetPointsArrayCache();
         }
     };
