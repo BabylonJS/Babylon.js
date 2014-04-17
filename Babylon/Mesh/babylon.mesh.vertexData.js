@@ -653,8 +653,8 @@ var BABYLON = BABYLON || {};
                 var c = (i + 1) * tubularSegments + jNext;
                 var d = i * tubularSegments + jNext;
 
-                indices.push(a); indices.push(b); indices.push(d);
-                indices.push(b); indices.push(c); indices.push(d);
+                indices.push(d); indices.push(b); indices.push(a);
+                indices.push(d); indices.push(c); indices.push(b);
             }
         }
 
