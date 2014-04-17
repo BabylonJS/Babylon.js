@@ -161,6 +161,22 @@ var BABYLON = BABYLON || {};
     };
 
     // Methods
+    BABYLON.Engine.prototype.setDepthFunctionToGreater = function() {
+        this._gl.depthFunc(this._gl.GREATER);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToGreaterOrEqual = function () {
+        this._gl.depthFunc(this._gl.GEQUAL);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToLess = function () {
+        this._gl.depthFunc(this._gl.LESS);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToLessOrEqual = function () {
+        this._gl.depthFunc(this._gl.LEQUAL);
+    };
+
     BABYLON.Engine.prototype.stopRenderLoop = function () {
         this._renderFunction = null;
         this._runningLoop = false;

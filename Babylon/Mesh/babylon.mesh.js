@@ -78,6 +78,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.renderingGroupId = 0;
 
     BABYLON.Mesh.prototype.infiniteDistance = false;
+    BABYLON.Mesh.prototype.showBoundingBox = false;
 
     // Properties
 
