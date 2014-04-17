@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderEffect = function RenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+	BABYLON.PostProcessRenderEffect = function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
 		this._engine = engine;
 
 		this._name = name;
@@ -14,7 +14,7 @@ var BABYLON = BABYLON || {};
 
 		this._postProcessType = postProcessType;
 
-		this._ratio = ratio;
+		this._ratio = ratio || 1.0;
 		this._samplingMode = samplingMode || null;
 
 		this._cameras = [];
@@ -27,25 +27,25 @@ var BABYLON = BABYLON || {};
 
 	};
 
-	BABYLON.RenderEffect.prototype.addPass = function(renderPass) {
+	BABYLON.PostProcessRenderEffect.prototype.addPass = function(renderPass) {
 		this._renderPasses[renderPass._name] = renderPass;
 
 		this._linkParameters();
 	};
 
-	BABYLON.RenderEffect.prototype.removePass = function (renderPass) {
+	BABYLON.PostProcessRenderEffect.prototype.removePass = function (renderPass) {
 		delete this._renderPasses[renderPass._name];
 
 		this._linkParameters();
 	};
 
-	BABYLON.RenderEffect.prototype.addRenderEffectAsPass = function(renderEffect) {
+	BABYLON.PostProcessRenderEffect.prototype.addRenderEffectAsPass = function(renderEffect) {
 		this._renderEffectAsPasses[renderEffect._name] = renderEffect;
 
 		this._linkParameters();
 	};
 
-	BABYLON.RenderEffect.prototype.getPass = function (passName) {
+	BABYLON.PostProcessRenderEffect.prototype.getPass = function (passName) {
 	    for (var renderPassName in this._renderPasses) {
 	        if (renderPassName == passName) {
 	            return this._renderPasses[passName];
@@ -53,24 +53,24 @@ var BABYLON = BABYLON || {};
 	    }
 	};
 
-	BABYLON.RenderEffect.prototype.emptyPasses = function () {
+	BABYLON.PostProcessRenderEffect.prototype.emptyPasses = function () {
 		this._renderPasses.length = 0;
 
 		this._linkParameters();
 	};
 
-	BABYLON.RenderEffect.prototype.attachCameras = function (cameras) {
+	BABYLON.PostProcessRenderEffect.prototype.attachCameras = function (cameras) {
 		var postProcess = null;
 
 		cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
 		for (var i = 0; i < cameras.length; i++) {
 			if (this._singleInstance) {
-			    postProcess = this._postProcesses[0] || eval(BABYLON.RenderEffect.getStringToInstantiate(this._postProcessType, this._ratio, this._samplingMode));
+			    postProcess = this._postProcesses[0] || BABYLON.PostProcessRenderEffect.getInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
 				this._postProcesses[0] = postProcess;
 			}
 			else {
-			    postProcess = this._postProcesses[cameras[i]] || eval(BABYLON.RenderEffect.getStringToInstantiate(this._postProcessType, this._ratio, this._samplingMode));
+			    postProcess = this._postProcesses[cameras[i]] || BABYLON.PostProcessRenderEffect.getInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
 				this._postProcesses[cameras[i].name] = postProcess;
 			}
 
@@ -94,7 +94,7 @@ var BABYLON = BABYLON || {};
 		this._linkParameters();
 	};
 
-	BABYLON.RenderEffect.prototype.detachCameras = function (cameras) {
+	BABYLON.PostProcessRenderEffect.prototype.detachCameras = function (cameras) {
 		cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
 		for (var i = 0; i < cameras.length; i++) {
@@ -114,7 +114,7 @@ var BABYLON = BABYLON || {};
 		}
 	};
 
-	BABYLON.RenderEffect.prototype._linkParameters = function () {
+	BABYLON.PostProcessRenderEffect.prototype._linkParameters = function () {
 		var that = this;
 		for (var index in this._postProcesses) {
 		    this._postProcesses[index].onApply = function (effect) {
@@ -124,7 +124,7 @@ var BABYLON = BABYLON || {};
 		}
 	};
 
-	BABYLON.RenderEffect.prototype._linkTextures = function (effect) {
+	BABYLON.PostProcessRenderEffect.prototype._linkTextures = function (effect) {
         for (var renderPassName in this._renderPasses) {
             effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
         }
@@ -135,13 +135,13 @@ var BABYLON = BABYLON || {};
 	};
 
     
-	BABYLON.RenderEffect.prototype._update = function () {
+	BABYLON.PostProcessRenderEffect.prototype._update = function () {
 		for (var renderPassName in this._renderPasses) {
 			this._renderPasses[renderPassName]._update();
 		}
 	};
 
-	BABYLON.RenderEffect.prototype.enable = function (cameras) {
+	BABYLON.PostProcessRenderEffect.prototype.enable = function (cameras) {
 	    cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
 		for (var i = 0; i < cameras.length; i++) {
@@ -162,7 +162,7 @@ var BABYLON = BABYLON || {};
 		}
 	};
 
-	BABYLON.RenderEffect.prototype.disable = function (cameras) {
+	BABYLON.PostProcessRenderEffect.prototype.disable = function (cameras) {
 		cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
 		for (var i = 0; i < cameras.length; i++) {
@@ -180,50 +180,52 @@ var BABYLON = BABYLON || {};
 	};
 
 
-	BABYLON.RenderEffect.prototype.getPostProcess = function(camera) {
+	BABYLON.PostProcessRenderEffect.prototype.getPostProcess = function(camera) {
 		return this._postProcess;
 	};
 
-	BABYLON.RenderEffect.getStringToInstantiate = function (postProcessType, ratio, samplingMode) {
-	    var stringToInstantiate = "new " + postProcessType + "(";
+	BABYLON.PostProcessRenderEffect.getInstance = function (engine, postProcessType, ratio, samplingMode) {
+	    var tmpClass;
+	    var instance;
+	    var args = new Array();
 
-	    var parameters = BABYLON.RenderEffect.getParametersNames(postProcessType);
+	    var parameters = BABYLON.PostProcessRenderEffect.getParametersNames(postProcessType);
 	    for (var i = 0; i < parameters.length; i++) {
 	        switch (parameters[i]) {
 	            case "name":
-	                stringToInstantiate += "\"" + postProcessType + "\"";
+	                args[i] = postProcessType.toString();
 	                break;
 	            case "ratio":
-	                stringToInstantiate += ratio;
+	                args[i] = ratio;
 	                break;
 	            case "camera":
-	                stringToInstantiate += "null";
+	                args[i] = null;
 	                break;
 	            case "samplingMode":
-	                stringToInstantiate += samplingMode;
+	                args[i] = samplingMode;
 	                break;
 	            case "engine":
-	                stringToInstantiate += "this._engine";
+	                args[i] = engine;
 	                break;
 	            case "reusable":
-	                stringToInstantiate += "true";
+	                args[i] = true;
 	                break;
 	            default:
-	                stringToInstantiate += "null";
+	                args[i] = null;
 	                break;
-	        }
-
-	        if (i + 1 < parameters.length) {
-	            stringToInstantiate += ",";
 	        }
 	    }
 
-	    stringToInstantiate += ")";
+	    tmpClass = function () { };
+	    tmpClass.prototype = postProcessType.prototype;
 
-	    return stringToInstantiate;
+	    instance = new tmpClass();
+	    postProcessType.apply(instance, args);
+
+	    return instance;
 	};
 
-	BABYLON.RenderEffect.getParametersNames = function (func) {
+	BABYLON.PostProcessRenderEffect.getParametersNames = function (func) {
 	    var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 	    var functWithoutComments = eval(func).toString().replace(commentsRegex, '');
 

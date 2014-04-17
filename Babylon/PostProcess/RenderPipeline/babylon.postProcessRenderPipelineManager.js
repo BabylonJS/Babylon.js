@@ -3,21 +3,21 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderPipelineManager = function RenderPipelineManager() {
+	BABYLON.PostProcessRenderPipelineManager = function PostProcessRenderPipelineManager() {
 		this._renderPipelines = [];
 	};
 
-	BABYLON.RenderPipelineManager.prototype.addPipeline = function(renderPipeline) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.addPipeline = function(renderPipeline) {
 		this._renderPipelines[renderPipeline._name] = renderPipeline;
 	};
 
-	BABYLON.RenderPipelineManager.prototype.update = function () {
+	BABYLON.PostProcessRenderPipelineManager.prototype.update = function () {
 		for (var renderPipelineName in this._renderPipelines) {
 			this._renderPipelines[renderPipelineName]._update();
 		}
 	};
 
-	BABYLON.RenderPipelineManager.prototype.attachCamerasToRenderPipeline = function (renderPipelineName, cameras, unique) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.attachCamerasToRenderPipeline = function (renderPipelineName, cameras, unique) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
@@ -27,7 +27,7 @@ var BABYLON = BABYLON || {};
 		renderPipeline.attachCameras(cameras, unique);
 	};
 
-	BABYLON.RenderPipelineManager.prototype.detachCamerasFromRenderPipeline = function (renderPipelineName, cameras) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.detachCamerasFromRenderPipeline = function (renderPipelineName, cameras) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
@@ -38,7 +38,7 @@ var BABYLON = BABYLON || {};
 	};
 
 
-	BABYLON.RenderPipelineManager.prototype.enableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.enableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
@@ -48,7 +48,7 @@ var BABYLON = BABYLON || {};
 		renderPipeline.enableEffect(renderEffectName, cameras);
 	};
 
-	BABYLON.RenderPipelineManager.prototype.disableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.disableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
@@ -59,7 +59,7 @@ var BABYLON = BABYLON || {};
 	};
 
 
-	BABYLON.RenderPipelineManager.prototype.enableDisplayOnlyPassInPipeline = function (renderPipelineName, passName, cameras) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.enableDisplayOnlyPassInPipeline = function (renderPipelineName, passName, cameras) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
@@ -69,7 +69,7 @@ var BABYLON = BABYLON || {};
 		renderPipeline.enableDisplayOnlyPass(passName, cameras);
 	};
 
-	BABYLON.RenderPipelineManager.prototype.disableDisplayOnlyPassInPipeline = function (renderPipelineName, cameras) {
+	BABYLON.PostProcessRenderPipelineManager.prototype.disableDisplayOnlyPassInPipeline = function (renderPipelineName, cameras) {
 		var renderPipeline = this._renderPipelines[renderPipelineName];
 
 		if (!renderPipeline) {
