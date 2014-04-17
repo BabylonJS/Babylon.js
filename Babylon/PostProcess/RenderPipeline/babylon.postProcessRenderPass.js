@@ -3,7 +3,7 @@
 var BABYLON = BABYLON || {};
 
 (function () {
-	BABYLON.RenderPass = function (scene, name, size, renderList, beforeRender, afterRender) {
+	BABYLON.PostProcessRenderPass = function PostProcessRenderPass(scene, name, size, renderList, beforeRender, afterRender) {
 		this._name = name;
 		this._enabled = true;
 
@@ -20,7 +20,7 @@ var BABYLON = BABYLON || {};
 		this._refCount = 0;
 	};
 
-	BABYLON.RenderPass.prototype.incRefCount = function () {
+	BABYLON.PostProcessRenderPass.prototype.incRefCount = function () {
 	    if (this._refCount == 0) {
 	        this._scene.customRenderTargets.push(this._renderTexture);
 	    }
@@ -28,7 +28,7 @@ var BABYLON = BABYLON || {};
 	    this._refCount++;
 	};
 
-	BABYLON.RenderPass.prototype.decRefCount = function () {
+	BABYLON.PostProcessRenderPass.prototype.decRefCount = function () {
 	    this._refCount--;
 
 	    if (this._refCount <= 0) {
@@ -36,15 +36,15 @@ var BABYLON = BABYLON || {};
 	    }
 	};
 
-	BABYLON.RenderPass.prototype.setRenderList = function (renderList) {
+	BABYLON.PostProcessRenderPass.prototype.setRenderList = function (renderList) {
 		this._renderTexture.renderList = renderList;
 	};
 
-	BABYLON.RenderPass.prototype.getRenderTexture = function () {
+	BABYLON.PostProcessRenderPass.prototype.getRenderTexture = function () {
 		return this._renderTexture;
 	};
 
-	BABYLON.RenderPass.prototype._update = function () {
+	BABYLON.PostProcessRenderPass.prototype._update = function () {
 		this.setRenderList(this._renderList);
 	};
 })();
