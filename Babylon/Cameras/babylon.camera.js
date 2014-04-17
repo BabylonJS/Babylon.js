@@ -289,6 +289,7 @@ var BABYLON = BABYLON || {};
 
         this._computedViewMatrix.invert();
 
+        this._currentRenderId = this._scene.getRenderId();
         return this._computedViewMatrix;
     };
     
@@ -297,8 +298,10 @@ var BABYLON = BABYLON || {};
             return this._computedViewMatrix;
         }
 
-        this._currentRenderId = this._scene.getRenderId();
         this._computedViewMatrix = this._getViewMatrix();
+        if (!this.parent || !this.parent.getWorldMatrix) {
+            this._currentRenderId = this._scene.getRenderId();
+        }
         return this._computedViewMatrix;
     };
 

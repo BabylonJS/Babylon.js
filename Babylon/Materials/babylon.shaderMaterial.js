@@ -27,6 +27,8 @@ var BABYLON = BABYLON || {};
         this._vectors3 = [];
         this._vectors4 = [];
         this._matrices = [];
+
+        this._cachedWorldViewMatrix = new BABYLON.Matrix();
     };
 
     BABYLON.ShaderMaterial.prototype = Object.create(BABYLON.Material.prototype);
@@ -48,7 +50,9 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.ShaderMaterial.prototype.setTexture = function (name, texture) {
-        this._checkUniform(name);
+        if (this._options.samplers.indexOf(name) === -1) {
+            this._options.samplers.push(name);
+        }
         this._textures[name] = texture;
 
         return this;
@@ -116,8 +120,8 @@ var BABYLON = BABYLON || {};
         this._effect = engine.createEffect(this._shaderPath,
             this._options.attributes,
             this._options.uniforms,
-            this._options.samplers,
-            "");
+            this._options.samplers,            
+            "", null, this.onCompiled, this.onError);
 
         if (!this._effect.isReady()) {
             return false;
@@ -134,6 +138,11 @@ var BABYLON = BABYLON || {};
 
         if (this._options.uniforms.indexOf("view") !== -1) {
             this._effect.setMatrix("view", this._scene.getViewMatrix());
+        }
+
+        if (this._options.uniforms.indexOf("worldView") !== -1) {
+            world.multiplyToRef(this._scene.getViewMatrix(), this._cachedWorldViewMatrix);
+            this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
         if (this._options.uniforms.indexOf("projection") !== -1) {
@@ -190,13 +199,13 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.ShaderMaterial.prototype.dispose = function () {
+    BABYLON.ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
         for (var name in this._textures) {
             this._textures[name].dispose();
         }
 
         this._textures = [];
         
-        this.baseDispose();
+        this.baseDispose(forceDisposeEffect);
     };
 })();
