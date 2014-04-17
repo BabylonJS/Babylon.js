@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Rendering/babylon.boundingBoxRenderer.js"></script>
   <script src="Babylon/Materials/babylon.shaderMaterial.js"></script>
   <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
   <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
