@@ -1238,7 +1238,7 @@ var BABYLON = BABYLON || {};
             }
 
             // Normals
-            BABYLON.VertexData.ComputeNormal(positions, indices, normals);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
 
             // Transfer
             ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
