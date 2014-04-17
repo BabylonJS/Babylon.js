@@ -1149,9 +1149,9 @@ var BABYLON = BABYLON || {};
         return torus;
     };
 
-    BABYLON.Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, scene, updatable) {
+    BABYLON.Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable) {
         var torusKnot = new BABYLON.Mesh(name, scene);
-        var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments);
+        var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
 
         vertexData.applyToMesh(torusKnot, updatable);
 
