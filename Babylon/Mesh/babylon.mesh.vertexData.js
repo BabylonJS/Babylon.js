@@ -7,7 +7,7 @@ var BABYLON = BABYLON || {};
     };
 
     // Methods
-    BABYLON.VertexData.prototype.applyToMesh = function(mesh, updatable) {
+    BABYLON.VertexData.prototype.applyToMesh = function (mesh, updatable) {
         if (this.positions) {
             mesh.setVerticesData(this.positions, BABYLON.VertexBuffer.PositionKind, updatable);
         }
@@ -185,7 +185,7 @@ var BABYLON = BABYLON || {};
         return result;
     };
 
-    BABYLON.VertexData.CreateBox = function(size) {
+    BABYLON.VertexData.CreateBox = function (size) {
         var normalsSource = [
             new BABYLON.Vector3(0, 0, 1),
             new BABYLON.Vector3(0, 0, -1),
@@ -628,32 +628,30 @@ var BABYLON = BABYLON || {};
             bitan.normalize();
             n.normalize();
 
-            for (var j = 0; j <= tubularSegments; j++) {
+            for (var j = 0; j < tubularSegments; j++) {
                 var modJ = j % tubularSegments;
                 var v = modJ / tubularSegments * 2 * Math.PI;
                 var cx = -tube * Math.cos(v);
                 var cy = tube * Math.sin(v);
 
-                var pos = new BABYLON.Vector3();
-                pos.x = p1.x + cx * n.x + cy * bitan.x;
-                pos.y = p1.y + cx * n.y + cy * bitan.y;
-                pos.z = p1.z + cx * n.z + cy * bitan.z;
-
-                positions.push(pos.x);
-                positions.push(pos.y);
-                positions.push(pos.z);
+                positions.push(p1.x + cx * n.x + cy * bitan.x);
+                positions.push(p1.y + cx * n.y + cy * bitan.y);
+                positions.push(p1.z + cx * n.z + cy * bitan.z);
 
                 uvs.push(i / radialSegments);
                 uvs.push(j / tubularSegments);
             }
         }
 
-        for (var i = 0; i <= radialSegments; i++) {
+        var max = radialSegments * tubularSegments - 1;
+
+        for (var i = 0; i < radialSegments; i++) {
             for (var j = 0; j < tubularSegments; j++) {
+                var jNext =  (j + 1) % tubularSegments;
                 var a = i * tubularSegments + j;
                 var b = (i + 1) * tubularSegments + j;
-                var c = (i + 1) * tubularSegments + j + 1;
-                var d = i * tubularSegments + j + 1;
+                var c = (i + 1) * tubularSegments + jNext;
+                var d = i * tubularSegments + jNext;
 
                 indices.push(a); indices.push(b); indices.push(d);
                 indices.push(b); indices.push(c); indices.push(d);

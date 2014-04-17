@@ -27,6 +27,8 @@ var BABYLON = BABYLON || {};
         this._vectors3 = [];
         this._vectors4 = [];
         this._matrices = [];
+
+        this._cachedWorldViewMatrix = new BABYLON.Matrix();
     };
 
     BABYLON.ShaderMaterial.prototype = Object.create(BABYLON.Material.prototype);
@@ -139,7 +141,8 @@ var BABYLON = BABYLON || {};
         }
 
         if (this._options.uniforms.indexOf("worldView") !== -1) {
-            this._effect.setMatrix("worldView", world.multiply(this._scene.getViewMatrix()));
+            world.multiplyToRef(this._scene.getViewMatrix(), this._cachedWorldViewMatrix);
+            this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
         if (this._options.uniforms.indexOf("projection") !== -1) {
