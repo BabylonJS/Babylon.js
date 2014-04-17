@@ -6,8 +6,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var filesInput = new BABYLON.FilesInput(OURBABYLON.engine, OURBABYLON.currentScene, OURBABYLON.canvas, function (sceneFile, babylonScene) {
-            OURBABYLON.currentScene = babylonScene;
-            //babylonScene.activeCamera.attachControl(OURBABYLON.canvas);
+            OURBABYLON.sceneInitialization(babylonScene, true);
         });
         filesInput.monitorElementForDragNDrop(OURBABYLON.canvas);
     });

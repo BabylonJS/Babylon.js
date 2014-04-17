@@ -7,14 +7,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         BABYLON.SceneLoader.Load("@Html.Raw(this.BabylonJSSamplesFile("Scenes/" + (string)ViewBag.DemoFolderName))" + "@Url.Encode("/")", "@ViewBag.DemoFile", OURBABYLON.engine, function (scene) {
-
-            if (!scene.activeCamera) {
-                scene.activeCamera = new BABYLON.ArcRotateCamera("DefaultCamera", Math.PI / 2, 0, 10, new BABYLON.Vector3.Zero(), scene);
-                scene.activeCamera.zoomOn();
-            }
-            if (scene.lights.length == 0) {
-                var light = new BABYLON.HemisphericLight("Default light", new BABYLON.Vector3(0, 1, 0), scene);
-            }
+            OURBABYLON.sceneInitialization(scene);
             scene.activeCamera.attachControl(OURBABYLON.canvas);
 
             // Render loop
@@ -24,8 +17,6 @@
 
             // Launch render loop
             scene.getEngine().runRenderLoop(renderLoop);
-
-            OURBABYLON.currentScene = scene;
         });
     });
 </script>
