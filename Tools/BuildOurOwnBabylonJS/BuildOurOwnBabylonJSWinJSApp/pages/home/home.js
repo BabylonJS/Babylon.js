@@ -28,9 +28,15 @@
         ready: function (element, options) {
             element.querySelector("#babylonScenesListView").addEventListener("iteminvoked", function (event) {
                 event.detail.itemPromise.done(function (item) {
+                    if (!item.data.file) {
+                        WinJS.Navigation.navigate('/pages/sandbox/sandbox.html');
+                        return;
+                    }
                     WinJS.Navigation.navigate('/pages/babylonScene/babylonScene.html', { babylonFolder: item.data.folder, babylonFile: item.data.file });
                 });
             });
+
+            var className = "ListItem";
 
             var onSceneFolderOpenCallback = function (rootFolder) {
                 rootFolder.getFoldersAsync().then(function (folders) {
@@ -52,7 +58,8 @@
                                     text: file.name,
                                     group: group,
                                     folder: rootFolder.name + "/" + folder.name,
-                                    file: file.name
+                                    file: file.name,
+                                    className: className
                                 });
                             }
                         });
@@ -61,6 +68,14 @@
             };
 
             if (itemsList.length == 0) {
+                itemsList.push({
+                    title: "Sandbox",
+                    text: "BabylonJS Sandbox",
+                    group: "Sandbox",
+                    folder: null,
+                    file: null,
+                    className: className + " sandbox"
+                });
                 Windows.ApplicationModel.Package.current.installedLocation.getFolderAsync("BabylonJS-Demos").then(onSceneFolderOpenCallback);
                 Windows.ApplicationModel.Package.current.installedLocation.getFolderAsync("addToPackage").then(onSceneFolderOpenCallback);
             }

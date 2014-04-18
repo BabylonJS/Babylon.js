@@ -24,7 +24,7 @@
                         scene.render();
                     });
                 });
-            })
+            });
         },
         unload: function () {
             engine.stopRenderLoop();
