@@ -91,12 +91,17 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).targets" />
   <Import Project="packageExtraFiles.targets" />
+  <Target Name="AfterBuild">
+    <PropertyGroup>
+      <!--ConfigurationName should be the one set by the Solution but it doesn't really matter here, doesn't it?-->
+      <_BuildOurOwnBabylonJSExeFolder>$(SolutionDir)BuildOurOwnBabylonJS\bin\$(ConfigurationName)\</_BuildOurOwnBabylonJSExeFolder>
+    </PropertyGroup>
+    <Exec Command="&quot;$(_BuildOurOwnBabylonJSExeFolder)BuildOurOwnBabylonJS.exe&quot; /w:&quot;$(SolutionDir)..\..&quot; /i:&quot;$(SolutionDir)BuildOurOwnBabylonJS\ourOwnBabylonJS.xml&quot; /s:&quot;Babylon\Shaders&quot; /o:&quot;$(SolutionDir)BuildOurOwnBabylonJS&quot; /k:&quot;$(_BuildOurOwnBabylonJSExeFolder)executables&quot;" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below then uncomment
        that target and the DisableFastUpToDateCheck PropertyGroup. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
   </Target>
   <PropertyGroup>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
