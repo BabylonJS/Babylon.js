@@ -32,6 +32,7 @@ uniform vec3 vLightSpecular0;
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
 uniform sampler2D shadowSampler0;
+uniform float darkness0;
 #endif
 #ifdef SPOTLIGHT0
 uniform vec4 vLightDirection0;
@@ -48,6 +49,7 @@ uniform vec3 vLightSpecular1;
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
 uniform sampler2D shadowSampler1;
+uniform float darkness1;
 #endif
 #ifdef SPOTLIGHT1
 uniform vec4 vLightDirection1;
@@ -64,6 +66,7 @@ uniform vec3 vLightSpecular2;
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
 uniform sampler2D shadowSampler2;
+uniform float darkness2;
 #endif
 #ifdef SPOTLIGHT2
 uniform vec4 vLightDirection2;
@@ -80,6 +83,7 @@ uniform vec3 vLightSpecular3;
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
 uniform sampler2D shadowSampler3;
+uniform float darkness3;
 #endif
 #ifdef SPOTLIGHT3
 uniform vec4 vLightDirection3;
@@ -178,7 +182,7 @@ float unpackHalf(vec2 color)
 	return color.x + (color.y / 255.0);
 }
 
-float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler)
+float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
@@ -192,7 +196,7 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler)
 
 	if (depth.z > shadow)
 	{
-		return 0.;
+		return darkness;
 	}
 	return 1.;
 }
@@ -332,7 +336,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
 	float specComp = max(0., dot(vNormal, angleW));
-	specComp = pow(specComp, vSpecularColor.a);
+	specComp = pow(specComp, max(1., vSpecularColor.a));
 
 	result.diffuse = ndl * diffuseColor;
 	result.specular = specComp * specularColor;
@@ -452,7 +456,7 @@ void main(void) {
 #ifdef SHADOWVSM0
 	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);
 #else
-	shadow = computeShadow(vPositionFromLight0, shadowSampler0);
+	shadow = computeShadow(vPositionFromLight0, shadowSampler0, darkness0);
 #endif
 #else
 	shadow = 1.;
@@ -475,7 +479,7 @@ void main(void) {
 #ifdef SHADOWVSM1
 	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);
 #else
-	shadow = computeShadow(vPositionFromLight1, shadowSampler1);
+	shadow = computeShadow(vPositionFromLight1, shadowSampler1, darkness1);
 #endif
 #else
 	shadow = 1.;
@@ -498,7 +502,7 @@ void main(void) {
 #ifdef SHADOWVSM2
 	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);
 #else
-	shadow = computeShadow(vPositionFromLight2, shadowSampler2);
+	shadow = computeShadow(vPositionFromLight2, shadowSampler2, darkness2);
 #endif	
 #else
 	shadow = 1.;
@@ -521,7 +525,7 @@ void main(void) {
 #ifdef SHADOWVSM3
 	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);
 #else
-	shadow = computeShadow(vPositionFromLight3, shadowSampler3);
+	shadow = computeShadow(vPositionFromLight3, shadowSampler3, darkness3);
 #endif	
 #else
 	shadow = 1.;

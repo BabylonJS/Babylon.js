@@ -52,7 +52,7 @@ var BABYLON = BABYLON || {};
     };
 
     BABYLON.Node.prototype.isSynchronizedWithParent = function() {
-        return this.parent ? !this.parent._currentRenderId === this._currentRenderId : true;
+        return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
     };
 
     BABYLON.Node.prototype.isSynchronized = function (updateCache) {

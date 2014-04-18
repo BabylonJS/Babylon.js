@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Rendering/babylon.boundingBoxRenderer.js"></script>
   <script src="Babylon/Materials/babylon.shaderMaterial.js"></script>
   <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
   <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
@@ -16,6 +17,11 @@
   <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
   <script src="Babylon/PostProcess/babylon.anaglyphPostProcess.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPass.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js"></script>
+  <script src="Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js"></script>
+  <script src="Babylon/PostProcess/babylon.displayPassPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.filterPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.convolutionPostProcess.js"></script>
@@ -76,6 +82,8 @@
   <script src="Babylon/babylon.engine.js"></script>
   <script src="Babylon/Math/babylon.axis.js"></script>
   <script src="Babylon/Math/babylon.math.js"></script>
+  <script src="Babylon/Tools/babylon.tags.js"></script>
+  <script src="Babylon/Tools/babylon.andOrNotEvaluator.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/babylon.node.js"></script>
 </files>

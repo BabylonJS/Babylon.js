@@ -289,16 +289,19 @@ var BABYLON = BABYLON || {};
 
         this._computedViewMatrix.invert();
 
+        this._currentRenderId = this._scene.getRenderId();
         return this._computedViewMatrix;
     };
     
     BABYLON.Camera.prototype._computeViewMatrix = function (force) {
         if (!force && this._isSynchronizedViewMatrix()) {
-            this._currentRenderId = this._scene.getRenderId();
             return this._computedViewMatrix;
         }
 
         this._computedViewMatrix = this._getViewMatrix();
+        if (!this.parent || !this.parent.getWorldMatrix) {
+            this._currentRenderId = this._scene.getRenderId();
+        }
         return this._computedViewMatrix;
     };
 

@@ -99,6 +99,8 @@ var BABYLON = BABYLON || {};
         material.alpha = parsedMaterial.alpha;
 
         material.id = parsedMaterial.id;
+
+        BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
         material.backFaceCulling = parsedMaterial.backFaceCulling;
 
         if (parsedMaterial.diffuseTexture) {
@@ -147,6 +149,8 @@ var BABYLON = BABYLON || {};
         var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
 
         multiMaterial.id = parsedMultiMaterial.id;
+
+        BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
 
         for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
             var subMatId = parsedMultiMaterial.materials[matIndex];
@@ -282,6 +286,8 @@ var BABYLON = BABYLON || {};
 
         light.id = parsedLight.id;
 
+        BABYLON.Tags.AddTagsTo(light, parsedLight.tags);
+
         if (parsedLight.intensity) {
             light.intensity = parsedLight.intensity;
         }
@@ -292,6 +298,8 @@ var BABYLON = BABYLON || {};
     var parseCamera = function (parsedCamera, scene) {
         var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
         camera.id = parsedCamera.id;
+
+        BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
 
         // Parent
         if (parsedCamera.parentId) {
@@ -342,6 +350,8 @@ var BABYLON = BABYLON || {};
     var parseMesh = function (parsedMesh, scene, rootUrl) {
         var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
+
+        BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
         if (parsedMesh.rotation) {

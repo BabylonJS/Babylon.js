@@ -14,6 +14,12 @@ var BABYLON = BABYLON || {};
         this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.renderParticles = false;
+
+        // Darkness
+        this._darkness = 0.;
+
+        // Darkness
+        this._transparencyShadow = false;        
                 
         // Custom render function
         var that = this;
@@ -42,7 +48,7 @@ var BABYLON = BABYLON || {};
             }
         };
 
-        this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
+        this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
             var index;
             
             for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -51,6 +57,12 @@ var BABYLON = BABYLON || {};
             
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
+            }
+
+            if (that._transparencyShadow) {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }                
             }
         };
         
@@ -124,6 +136,23 @@ var BABYLON = BABYLON || {};
         }
 
         return this._transformMatrix;
+    };
+
+    BABYLON.ShadowGenerator.prototype.getDarkness = function () {
+        return this._darkness;
+    };
+
+    BABYLON.ShadowGenerator.prototype.setDarkness = function (darkness) {
+        if (darkness >= 1.0)
+            this._darkness = 1.0;
+        else if (darkness <= 0.0)   
+            this._darkness = 0.0;
+        else
+            this._darkness = darkness;
+    };
+
+    BABYLON.ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
+        this._transparencyShadow = hasShadow;
     };
 
     BABYLON.ShadowGenerator.prototype.dispose = function() {

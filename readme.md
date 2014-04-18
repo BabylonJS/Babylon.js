@@ -45,6 +45,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
  - Bump texture
  - Up to 4 lights (points, directionals, spots, hemispherics)
  - Custom materials
+ - Custom shaders
  - Skybox
  - Vertex color
  - Bones (Animations and shadows are supported)

@@ -161,6 +161,22 @@ var BABYLON = BABYLON || {};
     };
 
     // Methods
+    BABYLON.Engine.prototype.setDepthFunctionToGreater = function() {
+        this._gl.depthFunc(this._gl.GREATER);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToGreaterOrEqual = function () {
+        this._gl.depthFunc(this._gl.GEQUAL);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToLess = function () {
+        this._gl.depthFunc(this._gl.LESS);
+    };
+
+    BABYLON.Engine.prototype.setDepthFunctionToLessOrEqual = function () {
+        this._gl.depthFunc(this._gl.LEQUAL);
+    };
+
     BABYLON.Engine.prototype.stopRenderLoop = function () {
         this._renderFunction = null;
         this._runningLoop = false;
@@ -272,6 +288,8 @@ var BABYLON = BABYLON || {};
             gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
+
+        this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
     };
 
     BABYLON.Engine.prototype.flushFramebuffer = function () {
@@ -307,11 +325,14 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-        // Should be (vertices instanceof Float32Array ? vertices : new Float32Array(vertices)) but Chrome raises an Exception in this case :(
-        if (length) {
+        if (length && length != vertices.length) {
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
         } else {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            }
         }
         
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
@@ -388,7 +409,16 @@ var BABYLON = BABYLON || {};
     };
 
     // Shaders
-    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines) {
+    BABYLON.Engine.prototype._releaseEffect = function (effect) {
+        if (this._compiledEffects[effect._key]) {
+            delete this._compiledEffects[effect._key];
+            if (effect._program) {
+                this._gl.deleteProgram(effect._program);
+            }
+        }
+    };
+
+    BABYLON.Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, optionalDefines, onCompiled, onError) {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
         
@@ -397,7 +427,8 @@ var BABYLON = BABYLON || {};
             return this._compiledEffects[name];
         }
 
-        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, optionalDefines);
+        var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, optionalDefines, onCompiled, onError);
+        effect._key = name;
         this._compiledEffects[name] = effect;
 
         return effect;
