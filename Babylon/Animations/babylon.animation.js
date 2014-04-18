@@ -140,6 +140,7 @@ var BABYLON = BABYLON || {};
         if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
             offsetValue = 0;
             returnValue = false;
+            highLimitValue = this._keys[this._keys.length - 1].value;
         } else {
             // Get max value if required
             var offsetValue = 0;
