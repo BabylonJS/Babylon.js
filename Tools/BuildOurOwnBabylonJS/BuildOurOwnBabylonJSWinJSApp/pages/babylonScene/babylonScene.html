@@ -9,17 +9,18 @@
     <title>BabylonScene</title>
     <script src="babylonScene.js"></script>
     <script src="/js/ourOwnBabylon.js"></script>
+    <script src="/js/babylonLoadingMessage.js"></script>
     <link href="babylonScene.css" rel="stylesheet" />
 </head>
 <body>
     <div data-win-control="WinJS.UI.NavBar">
         <div data-win-control="WinJS.UI.NavBarContainer">
-            <div>
-                <button class="backButton" data-win-control="WinJS.UI.BackButton"></button>
-            </div>
+            <button class="backButton" data-win-control="WinJS.UI.BackButton"></button>
         </div>
     </div>
     <div id="babylonScene">
+        <div id="loadingBack" class="loadingBack"></div>
+        <div id="loadingText" class="loadingText"></div>
         <canvas id="babylonCanvas"></canvas>
     </div>
 </body>

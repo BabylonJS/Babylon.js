@@ -1,0 +1,36 @@
+﻿#loadingBack {
+    background-color: #FFFFFF;
+    border: 1px solid #888888;
+    cursor: default;
+    height: 60px;
+    left: 0;
+    margin-top: -30px;
+    position: absolute;
+    top: 50%;
+    transition: transform 0.25s ease-in-out 0s;
+    width: 100%;
+    z-index: 3;
+}
+.loadingBack {
+    transform: translateX(-120%);
+}
+
+
+#loadingText {
+    color: #888888;
+    cursor: default;
+    font-size: 30px;
+    height: 60px;
+    left: 0;
+    margin-top: -30px;
+    padding-top: 10px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transition: transform 0.25s ease-in-out 0s;
+    width: 100%;
+    z-index: 3;
+}
+.loadingText {
+    transform: translateX(120%);
+}
