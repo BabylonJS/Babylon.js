@@ -64,7 +64,7 @@ var BABYLON = BABYLON || {};
 
         // Textures
         if (this._scene.texturesEnabled) {
-            if (this.diffuseTexture) {
+            if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
                 if (!this.diffuseTexture.isReady()) {
                     return false;
                 } else {
@@ -72,7 +72,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.ambientTexture) {
+            if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
                 if (!this.ambientTexture.isReady()) {
                     return false;
                 } else {
@@ -80,7 +80,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.opacityTexture) {
+            if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
                 if (!this.opacityTexture.isReady()) {
                     return false;
                 } else {
@@ -88,7 +88,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.reflectionTexture) {
+            if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
                 if (!this.reflectionTexture.isReady()) {
                     return false;
                 } else {
@@ -96,7 +96,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.emissiveTexture) {
+            if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
                 if (!this.emissiveTexture.isReady()) {
                     return false;
                 } else {
@@ -104,7 +104,7 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            if (this.specularTexture) {
+            if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
                 if (!this.specularTexture.isReady()) {
                     return false;
                 } else {
@@ -114,7 +114,7 @@ var BABYLON = BABYLON || {};
             }
         }
 
-        if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture) {
+        if (this._scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled) {
             if (!this.bumpTexture.isReady()) {
                 return false;
             } else {
@@ -245,11 +245,12 @@ var BABYLON = BABYLON || {};
                 "vFogInfos", "vFogColor",
                  "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                  "mBones",
-                 "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix"],
+                 "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
+                 "darkness0", "darkness1", "darkness2", "darkness3"],
                 ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                  "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ],
-                join, optionalDefines);
+                join, optionalDefines, this.onCompiled, this.onError);
         }
         if (!this._effect.isReady()) {
             return false;
@@ -289,7 +290,7 @@ var BABYLON = BABYLON || {};
         }
 
         // Textures        
-        if (this.diffuseTexture) {
+        if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
             this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
             this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
@@ -298,21 +299,21 @@ var BABYLON = BABYLON || {};
             this._baseColor.copyFromFloats(1, 1, 1);
         }
 
-        if (this.ambientTexture) {
+        if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
             this._effect.setTexture("ambientSampler", this.ambientTexture);
 
             this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
             this._effect.setMatrix("ambientMatrix", this.ambientTexture._computeTextureMatrix());
         }
 
-        if (this.opacityTexture) {
+        if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
             this._effect.setTexture("opacitySampler", this.opacityTexture);
 
             this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
             this._effect.setMatrix("opacityMatrix", this.opacityTexture._computeTextureMatrix());
         }
 
-        if (this.reflectionTexture) {
+        if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
             if (this.reflectionTexture.isCube) {
                 this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
             } else {
@@ -323,21 +324,21 @@ var BABYLON = BABYLON || {};
             this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
         }
 
-        if (this.emissiveTexture) {
+        if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
             this._effect.setTexture("emissiveSampler", this.emissiveTexture);
 
             this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
             this._effect.setMatrix("emissiveMatrix", this.emissiveTexture._computeTextureMatrix());
         }
 
-        if (this.specularTexture) {
+        if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
             this._effect.setTexture("specularSampler", this.specularTexture);
 
             this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
             this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
         }
 
-        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives) {
+        if (this.bumpTexture && this._scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
             this._effect.setTexture("bumpSampler", this.bumpTexture);
 
             this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -391,6 +392,7 @@ var BABYLON = BABYLON || {};
                     world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
                     this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
                     this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
+                    this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
                 }
 
                 lightIndex++;
@@ -450,7 +452,7 @@ var BABYLON = BABYLON || {};
         return results;
     };
 
-    BABYLON.StandardMaterial.prototype.dispose = function () {
+    BABYLON.StandardMaterial.prototype.dispose = function (forceDisposeEffect) {
         if (this.diffuseTexture) {
             this.diffuseTexture.dispose();
         }
@@ -479,7 +481,7 @@ var BABYLON = BABYLON || {};
             this.bumpTexture.dispose();
         }
 
-        this.baseDispose();
+        this.baseDispose(forceDisposeEffect);
     };
 
     BABYLON.StandardMaterial.prototype.clone = function (name) {
@@ -522,5 +524,16 @@ var BABYLON = BABYLON || {};
 
         return newStandardMaterial;
     };
+
+    // Statics
+
+    // Flags used to enable or disable a type of texture for all Standard Materials
+    BABYLON.StandardMaterial.DiffuseTextureEnabled = true;
+    BABYLON.StandardMaterial.AmbientTextureEnabled = true;
+    BABYLON.StandardMaterial.OpacityTextureEnabled = true;
+    BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
+    BABYLON.StandardMaterial.EmissiveTextureEnabled = true;
+    BABYLON.StandardMaterial.SpecularTextureEnabled = true;
+    BABYLON.StandardMaterial.BumpTextureEnabled = true;
 
 })();

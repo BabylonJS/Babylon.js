@@ -78,6 +78,7 @@ var BABYLON = BABYLON || {};
     BABYLON.Mesh.prototype.renderingGroupId = 0;
 
     BABYLON.Mesh.prototype.infiniteDistance = false;
+    BABYLON.Mesh.prototype.showBoundingBox = false;
 
     // Properties
 
@@ -325,7 +326,6 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Mesh.prototype.computeWorldMatrix = function (force) {
         if (!force && (this._currentRenderId == this._scene.getRenderId() || this.isSynchronized(true))) {
-            this._currentRenderId = this._scene.getRenderId();
             return this._worldMatrix;
         }
 
@@ -450,6 +450,8 @@ var BABYLON = BABYLON || {};
         this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this, data, kind, updatable);
 
         if (kind === BABYLON.VertexBuffer.PositionKind) {
+            this._resetPointsArrayCache();
+
             var stride = this._vertexBuffers[kind].getStrideSize();
             this._totalVertices = data.length / stride;
 
@@ -460,9 +462,21 @@ var BABYLON = BABYLON || {};
         }
     };
 
-    BABYLON.Mesh.prototype.updateVerticesData = function (kind, data) {
+    BABYLON.Mesh.prototype.updateVerticesData = function (kind, data, updateExtends) {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].update(data);
+
+            if (kind === BABYLON.VertexBuffer.PositionKind) {
+                this._resetPointsArrayCache();
+
+                if (updateExtends) {
+                    var stride = this._vertexBuffers[kind].getStrideSize();
+                    this._totalVertices = data.length / stride;
+
+                    var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                }
+            }
         }
     };
 
@@ -720,8 +734,9 @@ var BABYLON = BABYLON || {};
         this._generatePointsArray();
         // Transformation
         if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
-            subMesh._lastColliderTransformMatrix = transformMatrix;
+            subMesh._lastColliderTransformMatrix = transformMatrix.clone();
             subMesh._lastColliderWorldVertices = [];
+            subMesh._trianglePlanes = [];
             var start = subMesh.verticesStart;
             var end = (subMesh.verticesStart + subMesh.verticesCount);
             for (var i = start; i < end; i++) {
@@ -1118,7 +1133,7 @@ var BABYLON = BABYLON || {};
 
     // Cylinder and cone (Code inspired by SharpDX.org)
     BABYLON.Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
-        var cylinder = new BABYLON.Mesh(name, scene);        
+        var cylinder = new BABYLON.Mesh(name, scene);
         var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
 
         vertexData.applyToMesh(cylinder, updatable);
@@ -1134,6 +1149,15 @@ var BABYLON = BABYLON || {};
         vertexData.applyToMesh(torus, updatable);
 
         return torus;
+    };
+
+    BABYLON.Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable) {
+        var torusKnot = new BABYLON.Mesh(name, scene);
+        var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+
+        vertexData.applyToMesh(torusKnot, updatable);
+
+        return torusKnot;
     };
 
     // Plane & ground
@@ -1216,7 +1240,7 @@ var BABYLON = BABYLON || {};
             }
 
             // Normals
-            BABYLON.Mesh.ComputeNormal(positions, normals, indices);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
 
             // Transfer
             ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
@@ -1235,56 +1259,10 @@ var BABYLON = BABYLON || {};
     };
 
     // Tools
-    BABYLON.Mesh.ComputeNormal = function (positions, normals, indices) {
-        var positionVectors = [];
-        var facesOfVertices = [];
-        var index;
-
-        for (index = 0; index < positions.length; index += 3) {
-            var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
-            positionVectors.push(vector3);
-            facesOfVertices.push([]);
-        }
-        // Compute normals
-        var facesNormals = [];
-        for (index = 0; index < indices.length / 3; index++) {
-            var i1 = indices[index * 3];
-            var i2 = indices[index * 3 + 1];
-            var i3 = indices[index * 3 + 2];
-
-            var p1 = positionVectors[i1];
-            var p2 = positionVectors[i2];
-            var p3 = positionVectors[i3];
-
-            var p1p2 = p1.subtract(p2);
-            var p3p2 = p3.subtract(p2);
-
-            facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
-            facesOfVertices[i1].push(index);
-            facesOfVertices[i2].push(index);
-            facesOfVertices[i3].push(index);
-        }
-
-        for (index = 0; index < positionVectors.length; index++) {
-            var faces = facesOfVertices[index];
-
-            var normal = BABYLON.Vector3.Zero();
-            for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
-                normal.addInPlace(facesNormals[faces[faceIndex]]);
-            }
-
-            normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
-
-            normals[index * 3] = normal.x;
-            normals[index * 3 + 1] = normal.y;
-            normals[index * 3 + 2] = normal.z;
-        }
-    };
-
-    BABYLON.Mesh.MinMax = function(meshes) {
+    BABYLON.Mesh.MinMax = function (meshes) {
         var minVector;
         var maxVector;
-        for(var i in meshes) {
+        for (var i in meshes) {
             var mesh = meshes[i];
             var boundingBox = mesh.getBoundingInfo().boundingBox;
             if (!minVector) {
@@ -1302,7 +1280,7 @@ var BABYLON = BABYLON || {};
         };
     };
 
-    BABYLON.Mesh.Center = function(meshesOrMinMaxVector) {
+    BABYLON.Mesh.Center = function (meshesOrMinMaxVector) {
         var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
         return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
     };

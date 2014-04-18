@@ -8,6 +8,7 @@ var BABYLON = BABYLON || {};
         var serializationObject = {};
         serializationObject.name = light.name;
         serializationObject.id = light.id;
+        serializationObject.tags = light._tags;
 
         if (light instanceof BABYLON.PointLight) {
             serializationObject.type = 0;
@@ -39,6 +40,7 @@ var BABYLON = BABYLON || {};
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
+        serializationObject.tags = camera._tags;
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
 
@@ -125,6 +127,7 @@ var BABYLON = BABYLON || {};
 
         serializationObject.name = material.name;
         serializationObject.id = material.id;
+        serializationObject.tags = material._tags;
 
         serializationObject.materials = [];
 
@@ -155,6 +158,7 @@ var BABYLON = BABYLON || {};
         serializationObject.alpha = material.alpha;
 
         serializationObject.id = material.id;
+        serializationObject.tags = material._tags;
         serializationObject.backFaceCulling = material.backFaceCulling;
 
         if (material.diffuseTexture) {
@@ -349,6 +353,7 @@ var BABYLON = BABYLON || {};
 
         serializationObject.name = mesh.name;
         serializationObject.id = mesh.id;
+        serializationObject.tags = mesh._tags;
 
         serializationObject.position = mesh.position.asArray();
 
