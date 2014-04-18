@@ -4,8 +4,18 @@
     ViewBag.BabylonJSFolder = "..\\..\\..\\";
 }
 
+<div id="loadingBack" class="loadingBack"></div>
+<div id="loadingText" class="loadingText"></div>
+
 <script type="text/javascript">
     $(document).ready(function () {
+        var loadingBack = document.getElementById("loadingBack");
+        var loadingText = document.getElementById("loadingText");
+
+        loadingBack.className = "";
+        loadingText.className = "";
+        loadingText.innerHTML = "Loading, please wait...";
+
         BABYLON.SceneLoader.Load("@Html.Raw(this.BabylonJSSamplesFile("Scenes/" + (string)ViewBag.DemoFolderName))" + "@Url.Encode("/")", "@ViewBag.DemoFile", OURBABYLON.engine, function (scene) {
             OURBABYLON.sceneInitialization(scene);
             scene.activeCamera.attachControl(OURBABYLON.canvas);
@@ -17,6 +27,17 @@
 
             // Launch render loop
             scene.getEngine().runRenderLoop(renderLoop);
+
+            loadingBack.className = "loadingBack";
+            loadingText.className = "loadingText";
+
+        }, function (evt) {
+            if (evt.lengthComputable) {
+                loadingText.innerHTML = "Loading, please wait..." + (evt.loaded * 100 / evt.total).toFixed() + "%";
+            } else {
+                dlCount = evt.loaded / (1024 * 1024);
+                loadingText.innerHTML = "Loading, please wait..." + Math.floor(dlCount * 100.0) / 100.0 + " MB already loaded.";
+            }
         });
     });
 </script>
