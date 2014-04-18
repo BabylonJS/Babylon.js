@@ -22,7 +22,7 @@
         </div>
     </div>
     <div id="ListItemTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
-        <div class="ListItem">
+        <div data-win-bind="className: className">
             <h4 data-win-bind="textContent: title"></h4>
             <h6 data-win-bind="textContent: text"></h6>
         </div>
@@ -36,7 +36,9 @@
             itemTemplate: select('#ListItemTemplate'),
             groupDataSource: home.babylonScenes.groupedItemsList.groups.dataSource,
             groupHeaderTemplate: select('#ListHeaderTemplate'),
-            layout: { type: WinJS.UI.GridLayout }
+            layout: { type: WinJS.UI.GridLayout },
+            selectionMode: 'single',
+            swipeBehavior: 'none'
          }">
     </div>
 </body>
