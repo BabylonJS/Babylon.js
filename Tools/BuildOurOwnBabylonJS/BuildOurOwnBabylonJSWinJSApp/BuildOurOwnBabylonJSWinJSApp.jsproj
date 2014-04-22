@@ -74,6 +74,12 @@
     <Content Include="..\BuildOurOwnBabylonJS\ourOwnBabylon.js">
       <Link>js\ourOwnBabylon.js</Link>
     </Content>
+    <Content Include="..\BuildOurOwnBabylonJSShared\Scripts\Loading.js">
+      <Link>js\Shared\Loading.js</Link>
+    </Content>
+    <Content Include="..\BuildOurOwnBabylonJSShared\Style\Loading.css">
+      <Link>css\Shared\Loading.css</Link>
+    </Content>
     <Content Include="$(BabylonJSSamplesDirFullPath)Scenes\**\*.*">
       <Link>BabylonJS-Demos\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -8,14 +8,10 @@
         ready: function (element, options) {
             var canvas = element.querySelector("#babylonCanvas");
             engine = new BABYLON.Engine(canvas, true);
-            var container = canvas.parentElement;
 
-            var loadingBack = element.querySelector("#loadingBack");
-            var loadingText = element.querySelector("#loadingText");
+            var loading = new OURBABYLON.Loading(canvas.parentElement);
 
-            loadingBack.className = "";
-            loadingText.className = "";
-            loadingText.innerHTML = "Loading, please wait...";
+            loading.show();
 
             BABYLON.SceneLoader.Load(options.babylonFolder + "/", options.babylonFile, engine, function (scene) {
                 scene.executeWhenReady(function () { 
@@ -32,17 +28,9 @@
                         scene.render();
                     });
 
-                    loadingBack.className = "loadingBack";
-                    loadingText.className = "loadingText";
+                    loading.hide();
                 });
-            }, function (evt) {
-                if (evt.lengthComputable) {
-                    loadingText.innerHTML = "Loading, please wait..." + (evt.loaded * 100 / evt.total).toFixed() + "%";
-                } else {
-                    dlCount = evt.loaded / (1024 * 1024);
-                    loadingText.innerHTML = "Loading, please wait..." + Math.floor(dlCount * 100.0) / 100.0 + " MB already loaded.";
-                }
-            });
+            }, $.proxy(loading.onProgress, loading));
 
         },
         unload: function () {
