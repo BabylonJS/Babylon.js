@@ -7,9 +7,9 @@ var BABYLON = BABYLON || {};
         this.index = index;
         this._scene = scene;
 
-        this._opaqueSubMeshes = new BABYLON.Tools.SmartArray(256);
-        this._transparentSubMeshes = new BABYLON.Tools.SmartArray(256);
-        this._alphaTestSubMeshes = new BABYLON.Tools.SmartArray(256);
+        this._opaqueSubMeshes = new BABYLON.SmartArray(256);
+        this._transparentSubMeshes = new BABYLON.SmartArray(256);
+        this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
     };
 
     // Methods

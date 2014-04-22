@@ -80,10 +80,10 @@
   <script src="Babylon/Culling/babylon.boundingBox.js"></script>
   <script src="Babylon/Culling/babylon.boundingSphere.js"></script>
   <script src="Babylon/babylon.engine.js"></script>
-  <script src="Babylon/Math/babylon.axis.js"></script>
   <script src="Babylon/Math/babylon.math.js"></script>
   <script src="Babylon/Tools/babylon.tags.js"></script>
   <script src="Babylon/Tools/babylon.andOrNotEvaluator.js"></script>
+  <script src="Babylon/Tools/babylon.smartArray.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/babylon.node.js"></script>
 </files>

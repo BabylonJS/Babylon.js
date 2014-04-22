@@ -1,61 +1,62 @@
-﻿"use strict";
+﻿var BABYLON;
+(function (BABYLON) {
+    var BoundingSphere = (function () {
+        function BoundingSphere(minimum, maximum) {
+            this.minimum = minimum;
+            this.maximum = maximum;
+            var distance = BABYLON.Vector3.Distance(minimum, maximum);
 
-var BABYLON = BABYLON || {};
+            this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);
+            ;
+            this.radius = distance * 0.5;
 
-(function () {
-    BABYLON.BoundingSphere = function (minimum, maximum) {
-        this.minimum = minimum;
-        this.maximum = maximum;
-        
-        var distance = BABYLON.Vector3.Distance(minimum, maximum);
-        
-        this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);;
-        this.radius = distance * 0.5;
-
-        this.centerWorld = BABYLON.Vector3.Zero();
-        this._update(BABYLON.Matrix.Identity());
-    };
-    
-    // Methods
-    BABYLON.BoundingSphere.prototype._update = function (world, scale) {
-        BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-        this.radiusWorld = this.radius * scale;
-    };
-    
-    BABYLON.BoundingSphere.prototype.isInFrustum = function (frustumPlanes) {
-        for (var i = 0; i < 6; i++) {
-            if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
-                return false;
+            this.centerWorld = BABYLON.Vector3.Zero();
+            this._update(BABYLON.Matrix.Identity());
         }
+        // Methods
+        BoundingSphere.prototype._update = function (world, scale) {
+            if (typeof scale === "undefined") { scale = 1.0; }
+            BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
+            this.radiusWorld = this.radius * scale;
+        };
 
-        return true;
-    };
+        BoundingSphere.prototype.isInFrustum = function (frustumPlanes) {
+            for (var i = 0; i < 6; i++) {
+                if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
+                    return false;
+            }
 
-    BABYLON.BoundingSphere.prototype.intersectsPoint = function(point) {
-        var x = this.centerWorld.x - point.x;
-        var y = this.centerWorld.y - point.y;
-        var z = this.centerWorld.z - point.z;
+            return true;
+        };
 
-        var distance = Math.sqrt((x * x) + (y * y) + (z * z));
+        BoundingSphere.prototype.intersectsPoint = function (point) {
+            var x = this.centerWorld.x - point.x;
+            var y = this.centerWorld.y - point.y;
+            var z = this.centerWorld.z - point.z;
 
-        if (this.radiusWorld < distance)
-            return false;
+            var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-        return true;
-    };
+            if (this.radiusWorld < distance)
+                return false;
 
-    // Statics
-    BABYLON.BoundingSphere.intersects = function (sphere0, sphere1) {
-        var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
-        var y = sphere0.centerWorld.y - sphere1.centerWorld.y;
-        var z = sphere0.centerWorld.z - sphere1.centerWorld.z;
+            return true;
+        };
 
-        var distance = Math.sqrt((x * x) + (y * y) + (z * z));
+        // Statics
+        BoundingSphere.Intersects = function (sphere0, sphere1) {
+            var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
+            var y = sphere0.centerWorld.y - sphere1.centerWorld.y;
+            var z = sphere0.centerWorld.z - sphere1.centerWorld.z;
 
-        if (sphere0.radiusWorld + sphere1.radiusWorld < distance)
-            return false;
+            var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-        return true;
-    };
+            if (sphere0.radiusWorld + sphere1.radiusWorld < distance)
+                return false;
 
-})();
+            return true;
+        };
+        return BoundingSphere;
+    })();
+    BABYLON.BoundingSphere = BoundingSphere;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.boundingSphere.js.map

@@ -22,7 +22,7 @@ var BABYLON = BABYLON || {};
         this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
 
-        this._textures = new BABYLON.Tools.SmartArray(2);
+        this._textures = new BABYLON.SmartArray(2);
         this._currentRenderTextureInd = 0;
 
         samplers = samplers || [];

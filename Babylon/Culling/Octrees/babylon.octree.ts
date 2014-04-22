@@ -1,23 +1,32 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var Octree = (function () {
-        function Octree(maxBlockCapacity) {
+﻿module BABYLON {
+    export interface IOctreeContainer {
+        blocks: Array<OctreeBlock>;
+    }
+
+    export class Octree {
+        public blocks: Array<OctreeBlock>;
+        private _maxBlockCapacity: number;
+        private _selection;
+
+
+        constructor(maxBlockCapacity: number) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
             this._selection = new BABYLON.SmartArray(256);
         }
-        // Methods
-        Octree.prototype.update = function (worldMin, worldMax, meshes) {
-            Octree._CreateBlocks(worldMin, worldMax, meshes, this._maxBlockCapacity, this);
-        };
 
-        Octree.prototype.addMesh = function (mesh) {
+        // Methods
+        public update(worldMin: Vector3, worldMax: Vector3, meshes): void {
+            Octree._CreateBlocks(worldMin, worldMax, meshes, this._maxBlockCapacity, this);
+        }
+
+        public addMesh(mesh): void {
             for (var index = 0; index < this.blocks.length; index++) {
                 var block = this.blocks[index];
                 block.addMesh(mesh);
             }
-        };
+        }
 
-        Octree.prototype.select = function (frustumPlanes) {
+        public select(frustumPlanes: Plane[]) {
             this._selection.reset();
 
             for (var index = 0; index < this.blocks.length; index++) {
@@ -26,13 +35,14 @@
             }
 
             return this._selection;
-        };
+        }
 
         // Statics
-        Octree._CreateBlocks = function (worldMin, worldMax, meshes, maxBlockCapacity, target) {
+        static _CreateBlocks(worldMin: Vector3, worldMax: Vector3, meshes, maxBlockCapacity: number, target: IOctreeContainer): void {
             target.blocks = [];
             var blockSize = new BABYLON.Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
 
+            // Segmenting space
             for (var x = 0; x < 2; x++) {
                 for (var y = 0; y < 2; y++) {
                     for (var z = 0; z < 2; z++) {
@@ -45,9 +55,6 @@
                     }
                 }
             }
-        };
-        return Octree;
-    })();
-    BABYLON.Octree = Octree;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.octree.js.map
+        }
+    }
+} 

@@ -22,7 +22,7 @@ var BABYLON = BABYLON || {};
 
         this._cachedDefines = null;
 
-        this._renderTargets = new BABYLON.Tools.SmartArray(16);
+        this._renderTargets = new BABYLON.SmartArray(16);
 
         // Internals
         this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();

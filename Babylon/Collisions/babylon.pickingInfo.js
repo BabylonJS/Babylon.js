@@ -24,9 +24,9 @@ var BABYLON = BABYLON || {};
         var indices = this.pickedMesh.getIndices();
         var normals = this.pickedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
 
-        var normal0 = BABYLON.Vector3.FromArray(normals , indices[this.faceId]);
-        var normal1 = BABYLON.Vector3.FromArray(normals, indices[this.faceId + 1]);
-        var normal2 = BABYLON.Vector3.FromArray(normals, indices[this.faceId + 2]);
+        var normal0 = BABYLON.Vector3.FromArray(normals , indices[this.faceId * 3] * 3);
+        var normal1 = BABYLON.Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
+        var normal2 = BABYLON.Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
 
         normal0 = normal0.scale(this.bu);
         normal1 = normal1.scale(this.bv);

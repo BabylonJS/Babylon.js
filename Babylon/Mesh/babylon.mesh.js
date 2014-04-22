@@ -673,7 +673,7 @@ var BABYLON = BABYLON || {};
         this._resetPointsArrayCache();
 
         var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
-        var temp = new BABYLON.MatrixType(data.length);
+        var temp = new Float32Array(data.length);
         for (var index = 0; index < data.length; index += 3) {
             BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
         }
