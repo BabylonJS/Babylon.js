@@ -1,16 +1,20 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var PhysicsEngine = (function () {
-        function PhysicsEngine(gravity, iterations) {
-            this.gravity = gravity;
-            this._world = new CANNON.World();
-            this._registeredMeshes = [];
-            this._physicsMaterials = [];
+﻿module BABYLON {
+    declare var CANNON;
+    declare var window;
+
+    export class PhysicsEngine {
+        private _world = new CANNON.World();
+
+        private _registeredMeshes = [];
+        private _physicsMaterials = [];
+
+        constructor(public gravity: Vector3, iterations: number) {
             this._world.broadphase = new CANNON.NaiveBroadphase();
             this._world.solver.iterations = iterations;
             this._setGravity(gravity);
         }
-        PhysicsEngine.prototype._runOneStep = function (delta) {
+
+        public _runOneStep(delta: number): void {
             if (delta > 0.1) {
                 delta = 0.1;
             } else if (delta <= 0) {
@@ -39,9 +43,9 @@
                 registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.y;
                 registeredMesh.mesh.rotationQuaternion.w = -registeredMesh.body.quaternion.w;
             }
-        };
+        }
 
-        PhysicsEngine.prototype._addMaterial = function (friction, restitution) {
+        public _addMaterial(friction: number, restitution: number) {
             var index;
             var mat;
 
@@ -69,18 +73,18 @@
             }
 
             return currentMat;
-        };
+        }
 
-        PhysicsEngine.prototype._setGravity = function (gravity) {
+        public _setGravity(gravity: Vector3): void {
             this.gravity = gravity || new BABYLON.Vector3(0, -9.82, 0);
             this._world.gravity.set(this.gravity.x, this.gravity.z, this.gravity.y);
-        };
+        }
 
-        PhysicsEngine.prototype._checkWithEpsilon = function (value) {
+        public _checkWithEpsilon(value: number): number {
             return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
-        };
+        }
 
-        PhysicsEngine.prototype._registerMesh = function (mesh, options, onlyShape) {
+        public _registerMesh(mesh: Mesh, options, onlyShape?: boolean): void {
             var shape = null;
             var initialRotation;
 
@@ -120,6 +124,7 @@
 
                     mesh.computeWorldMatrix(true);
 
+                    // Get vertices
                     for (var i = 0; i < rawVerts.length; i += 3) {
                         var transformed = BABYLON.Vector3.Zero();
 
@@ -127,6 +132,7 @@
                         verts.push(new CANNON.Vec3(transformed.x, transformed.z, transformed.y));
                     }
 
+                    // Get faces
                     for (var j = 0; j < rawFaces.length; j += 3) {
                         faces.push([rawFaces[j], rawFaces[j + 2], rawFaces[j + 1]]);
                     }
@@ -156,9 +162,9 @@
             this._registeredMeshes.push({ mesh: mesh, body: body, material: material });
 
             return body;
-        };
+        }
 
-        PhysicsEngine.prototype._registerCompound = function (options) {
+        public _registerCompound(options): void {
             var compoundShape = new CANNON.Compound();
             var initialMesh = options.parts[0].mesh;
             var initialPosition = initialMesh.position;
@@ -168,7 +174,7 @@
 
                 var shape = this._registerMesh(mesh, options.parts[index], true);
 
-                if (index == 0) {
+                if (index == 0) { // Parent
                     compoundShape.addChild(shape, new CANNON.Vec3(0, 0, 0));
                 } else {
                     compoundShape.addChild(shape, new CANNON.Vec3(mesh.position.x, mesh.position.z, mesh.position.y));
@@ -189,9 +195,9 @@
             body.parts = options.parts;
 
             return body;
-        };
+        }
 
-        PhysicsEngine.prototype._unbindBody = function (body) {
+        public _unbindBody(body): void {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
 
@@ -199,9 +205,9 @@
                     registeredMesh.body = null;
                 }
             }
-        };
+        }
 
-        PhysicsEngine.prototype._unregisterMesh = function (mesh) {
+        public _unregisterMesh(mesh: Mesh): void {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
 
@@ -217,9 +223,9 @@
                     return;
                 }
             }
-        };
+        }
 
-        PhysicsEngine.prototype._applyImpulse = function (mesh, force, contactPoint) {
+        public _applyImpulse(mesh: Mesh, force: Vector3, contactPoint: Vector3): void {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.z, contactPoint.y);
             var impulse = new CANNON.Vec3(force.x, force.z, force.y);
 
@@ -231,9 +237,9 @@
                     return;
                 }
             }
-        };
+        }
 
-        PhysicsEngine.prototype._createLink = function (mesh1, mesh2, pivot1, pivot2) {
+        public _createLink(mesh1: Mesh, mesh2: Mesh, pivot1: Vector3, pivot2: Vector3): void {
             var body1, body2;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
@@ -251,28 +257,25 @@
 
             var constraint = new CANNON.PointToPointConstraint(body1, new CANNON.Vec3(pivot1.x, pivot1.z, pivot1.y), body2, new CANNON.Vec3(pivot2.x, pivot2.z, pivot2.y));
             this._world.addConstraint(constraint);
-        };
+        }
 
-        PhysicsEngine.prototype.dispose = function () {
+        public dispose(): void {
             while (this._registeredMeshes.length) {
                 this._unregisterMesh(this._registeredMeshes[0].mesh);
             }
-        };
+        }
 
         // Statics
-        PhysicsEngine.IsSupported = function () {
+        public static IsSupported(): boolean {
             return window.CANNON !== undefined;
-        };
+        }
 
-        PhysicsEngine.NoImpostor = 0;
-        PhysicsEngine.SphereImpostor = 1;
-        PhysicsEngine.BoxImpostor = 2;
-        PhysicsEngine.PlaneImpostor = 3;
-        PhysicsEngine.CompoundImpostor = 4;
-        PhysicsEngine.MeshImpostor = 4;
-        PhysicsEngine.Epsilon = 0.001;
-        return PhysicsEngine;
-    })();
-    BABYLON.PhysicsEngine = PhysicsEngine;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.physicsEngine.js.map
+        public static NoImpostor = 0;
+        public static SphereImpostor = 1;
+        public static BoxImpostor = 2;
+        public static PlaneImpostor = 3;
+        public static CompoundImpostor = 4;
+        public static MeshImpostor = 4;
+        public static Epsilon = 0.001;
+    }
+}

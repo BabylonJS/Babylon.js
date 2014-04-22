@@ -1,0 +1,1283 @@
+﻿module BABYLON {
+    export class Mesh extends Node {
+        // Statics
+        public static BILLBOARDMODE_NONE = 0;
+        public static BILLBOARDMODE_X = 1;
+        public static BILLBOARDMODE_Y = 2;
+        public static BILLBOARDMODE_Z = 4;
+        public static BILLBOARDMODE_ALL = 7;
+
+        // Members
+        public position = new BABYLON.Vector3(0, 0, 0);
+        public rotation = new BABYLON.Vector3(0, 0, 0);
+        public rotationQuaternion = null;
+        public scaling = new BABYLON.Vector3(1, 1, 1);
+        public delayLoadState = 0; //ANY; BABYLON.Engine.DELAYLOADSTATE_NONE
+        public material = null;
+        public isVisible = true;
+        public isPickable = true;
+        public visibility = 1.0;
+        public billboardMode = BABYLON.Mesh.BILLBOARDMODE_NONE;
+        public checkCollisions = false;
+        public receiveShadows = false;
+        public _isDisposed = false;
+        public onDispose = null;
+        public skeleton = null;
+        public renderingGroupId = 0;
+        public infiniteDistance = false;
+        public showBoundingBox = false;
+        public subMeshes; //ANY
+        public delayLoadingFile: string;
+
+        // Cache
+        private _positions = null;
+        private _localScaling = BABYLON.Matrix.Zero();
+        private _localRotation = BABYLON.Matrix.Zero();
+        private _localTranslation = BABYLON.Matrix.Zero();
+        private _localBillboard = BABYLON.Matrix.Zero();
+        private _localPivotScaling = BABYLON.Matrix.Zero();
+        private _localPivotScalingRotation = BABYLON.Matrix.Zero();
+        private _localWorld = BABYLON.Matrix.Zero();
+        private _worldMatrix = BABYLON.Matrix.Zero();
+        private _rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
+        private _collisionsTransformMatrix = BABYLON.Matrix.Zero();
+        private _collisionsScalingMatrix = BABYLON.Matrix.Zero();
+        private _absolutePosition = BABYLON.Vector3.Zero();
+
+        // Physics
+        private _physicImpostor = PhysicsEngine.NoImpostor;
+        private _physicsMass: number;
+        private _physicsFriction: number;
+        private _physicRestitution: number;
+
+        // Private
+        private _boundingInfo: BoundingInfo;
+        private _totalVertices = 0;
+        private _pivotMatrix = BABYLON.Matrix.Identity();
+        private _indices = [];
+        private _renderId = 0;
+        private _onBeforeRenderCallbacks = [];
+        private _delayInfo; //ANY
+        private _vertexStrideSize = 0;
+        private _animationStarted = false;
+        private _scaleFactor: number;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _delayLoadingFunction: (any, Mesh) => void;
+
+        //ANY
+        constructor(name: string, scene) {
+            super(name, scene);
+
+            scene.meshes.push(this);
+        }
+
+        public getBoundingInfo(): BoundingInfo {
+            return this._boundingInfo;
+        }
+
+        public getWorldMatrix(): Matrix {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this.computeWorldMatrix();
+            }
+            return this._worldMatrix;
+        }
+
+        public rotate(axis: Vector3, amount: number, space: Space): void {
+            if (!this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation = BABYLON.Vector3.Zero();
+            }
+
+            if (!space || space == BABYLON.Space.LOCAL) {
+                var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+                this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
+            }
+            else {
+                if (this.parent) {
+                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                    invertParentWorldMatrix.invert();
+
+                    axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
+                }
+                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+                this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
+            }
+        }
+
+        public translate(axis: Vector3, distance: number, space: Space): void {
+            var displacementVector = axis.scale(distance);
+
+            if (!space || space == BABYLON.Space.LOCAL) {
+                var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
+                this.setPositionWithLocalVector(tempV3);
+            }
+            else {
+                this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
+            }
+        }
+
+        public getAbsolutePosition(): Vector3 {
+            this.computeWorldMatrix();
+            return this._absolutePosition;
+        }
+
+        public setAbsolutePosition(absolutePosition: Vector3): void {
+            if (!absolutePosition) {
+                return;
+            }
+
+            var absolutePositionX;
+            var absolutePositionY;
+            var absolutePositionZ;
+
+            if (absolutePosition.x === undefined) {
+                if (arguments.length < 3) {
+                    return;
+                }
+                absolutePositionX = arguments[0];
+                absolutePositionY = arguments[1];
+                absolutePositionZ = arguments[2];
+            }
+            else {
+                absolutePositionX = absolutePosition.x;
+                absolutePositionY = absolutePosition.y;
+                absolutePositionZ = absolutePosition.z;
+            }
+
+            if (this.parent) {
+                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
+                invertParentWorldMatrix.invert();
+
+                var worldPosition = new BABYLON.Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
+
+                this.position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
+            } else {
+                this.position.x = absolutePositionX;
+                this.position.y = absolutePositionY;
+                this.position.z = absolutePositionZ;
+            }
+        }
+
+        public getTotalVertices(): number {
+            return this._totalVertices;
+        }
+
+        public getVerticesData(kind): number[] {
+            return this._vertexBuffers[kind].getData();
+        }
+
+        public getVertexBuffer(kind): VertexBuffer {
+            return this._vertexBuffers[kind];
+        }
+
+        public isVerticesDataPresent(kind: string): boolean {
+            if (!this._vertexBuffers) {
+                if (this._delayInfo) {
+                    return this._delayInfo.indexOf(kind) !== -1;
+                }
+                return false;
+            }
+            return this._vertexBuffers[kind] !== undefined;
+        }
+
+        public getVerticesDataKinds(): string[] {
+            var result = [];
+            if (!this._vertexBuffers && this._delayInfo) {
+                for (var kind in this._delayInfo) {
+                    result.push(kind);
+                }
+            } else {
+                for (kind in this._vertexBuffers) {
+                    result.push(kind);
+                }
+            }
+
+            return result;
+        }
+
+        public getTotalIndices(): number {
+            return this._indices.length;
+        }
+
+        public getIndices(): number[] {
+            return this._indices;
+        }
+
+        public getVertexStrideSize(): number {
+            return this._vertexStrideSize;
+        }
+
+        public setPivotMatrix(matrix: Matrix): void {
+            this._pivotMatrix = matrix;
+            this._cache.pivotMatrixUpdated = true;
+        }
+
+        public getPivotMatrix(): Matrix {
+            return this._pivotMatrix;
+        }
+
+        public _isSynchronized(): boolean {
+            if (this.billboardMode !== Mesh.BILLBOARDMODE_NONE)
+                return false;
+
+            if (this._cache.pivotMatrixUpdated) {
+                return false;
+            }
+
+            if (this.infiniteDistance) {
+                return false;
+            }
+
+            if (!this._cache.position.equals(this.position))
+                return false;
+
+            if (this.rotationQuaternion) {
+                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
+                    return false;
+            } else {
+                if (!this._cache.rotation.equals(this.rotation))
+                    return false;
+            }
+
+            if (!this._cache.scaling.equals(this.scaling))
+                return false;
+
+            return true;
+        }
+
+        public isReady(): boolean {
+            return this._isReady;
+        }
+
+        public isAnimated(): boolean {
+            return this._animationStarted;
+        }
+
+        public isDisposed(): boolean {
+            return this._isDisposed;
+        }
+
+        // Methods
+        public _initCache() {
+            super._initCache();
+
+            this._cache.localMatrixUpdated = false;
+            this._cache.position = BABYLON.Vector3.Zero();
+            this._cache.scaling = BABYLON.Vector3.Zero();
+            this._cache.rotation = BABYLON.Vector3.Zero();
+            this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+        }
+
+        public markAsDirty(property: string): void {
+            if (property === "rotation") {
+                this.rotationQuaternion = null;
+            }
+            this._currentRenderId = -1;
+        }
+
+        public refreshBoundingInfo(): void {
+            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+            if (!data) {
+                return;
+            }
+
+            var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+            this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+
+            for (var index = 0; index < this.subMeshes.length; index++) {
+                this.subMeshes[index].refreshBoundingInfo();
+            }
+
+            this._updateBoundingInfo();
+        }
+
+        public _updateBoundingInfo(): void {
+            this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this._absolutePosition, this._absolutePosition);
+
+            this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
+            this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
+
+            if (this.parent && this.parent instanceof Mesh)
+                this._scaleFactor = this._scaleFactor * (<any>this.parent)._scaleFactor;
+
+            this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
+
+            if (!this.subMeshes) {
+                return;
+            }
+
+            for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
+                var subMesh = this.subMeshes[subIndex];
+
+                subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
+            }
+        }
+
+        public computeWorldMatrix(force?: boolean): Matrix {
+            if (!force && (this._currentRenderId == this.getScene().getRenderId() || this.isSynchronized(true))) {
+                return this._worldMatrix;
+            }
+
+            this._cache.position.copyFrom(this.position);
+            this._cache.scaling.copyFrom(this.scaling);
+            this._cache.pivotMatrixUpdated = false;
+            this._currentRenderId = this.getScene().getRenderId();
+
+            // Scaling
+            BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+
+            // Rotation
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toRotationMatrix(this._localRotation);
+                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            } else {
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+                this._cache.rotation.copyFrom(this.rotation);
+            }
+
+            // Translation
+            if (this.infiniteDistance && !this.parent) {
+                var camera = this.getScene().activeCamera;
+                var cameraWorldMatrix = camera.getWorldMatrix();
+
+                var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+
+                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
+            } else {
+                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+            }
+
+            // Composing transformations
+            this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
+            this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
+
+            // Billboarding
+            if (this.billboardMode !== Mesh.BILLBOARDMODE_NONE) {
+                var localPosition = this.position.clone();
+                var zero = this.getScene().activeCamera.position.clone();
+
+                if (this.parent && (<any>this.parent).position) {
+                    localPosition.addInPlace((<any>this.parent).position);
+                    BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
+                }
+
+                if ((this.billboardMode & Mesh.BILLBOARDMODE_ALL) === Mesh.BILLBOARDMODE_ALL) {
+                    zero = this.getScene().activeCamera.position;
+                } else {
+                    if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_X)
+                        zero.x = localPosition.x + 0.001;//ANY:BABYLON.Engine.epsilon
+                    if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_Y)
+                        zero.y = localPosition.y + 0.001;
+                    if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_Z)
+                        zero.z = localPosition.z + 0.001;
+                }
+
+                BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
+                this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
+
+                this._localBillboard.invert();
+
+                this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
+                this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
+            }
+
+            // Local world
+            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+
+            // Parent
+            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.Mesh.BILLBOARDMODE_NONE) {
+                this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+            } else {
+                this._worldMatrix.copyFrom(this._localWorld);
+            }
+
+            // Bounding info
+            this._updateBoundingInfo();
+
+            // Absolute position
+            this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+
+            return this._worldMatrix;
+        }
+
+
+        public _createGlobalSubMesh(): SubMesh {
+            if (!this._totalVertices || !this._indices) {
+                return null;
+            }
+
+            this.subMeshes = [];
+            return new BABYLON.SubMesh(0, 0, this._totalVertices, 0, this._indices.length, this);
+        }
+
+        public subdivide(count: number): void {
+            if (count < 1) {
+                return;
+            }
+
+            var subdivisionSize = this._indices.length / count;
+            var offset = 0;
+
+            this.subMeshes = [];
+            for (var index = 0; index < count; index++) {
+                BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, this._indices.length - offset), this);
+
+                offset += subdivisionSize;
+            }
+        }
+
+        public setVerticesData(data: number[], kind: string, updatable?: boolean): void {
+            if (!this._vertexBuffers) {
+                this._vertexBuffers = {};
+            }
+
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].dispose();
+            }
+
+            this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this, data, kind, updatable);
+
+            if (kind === BABYLON.VertexBuffer.PositionKind) {
+                this._resetPointsArrayCache();
+
+                var stride = this._vertexBuffers[kind].getStrideSize();
+                this._totalVertices = data.length / stride;
+
+                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+
+                this._createGlobalSubMesh();
+            }
+        }
+
+        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
+            if (this._vertexBuffers[kind]) {
+                this._vertexBuffers[kind].update(data);
+
+                if (kind === BABYLON.VertexBuffer.PositionKind) {
+                    this._resetPointsArrayCache();
+
+                    if (updateExtends) {
+                        var stride = this._vertexBuffers[kind].getStrideSize();
+                        this._totalVertices = data.length / stride;
+
+                        var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                        this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    }
+                }
+            }
+        }
+
+        public setIndices(indices: number[]): void {
+            if (this._indexBuffer) {
+                this.getScene().getEngine()._releaseBuffer(this._indexBuffer);
+            }
+
+            this._indexBuffer = this.getScene().getEngine().createIndexBuffer(indices);
+            this._indices = indices;
+
+            this._createGlobalSubMesh();
+        }
+
+        // ANY
+        public bindAndDraw(subMesh: SubMesh, effect, wireframe?: boolean): void {
+            var engine = this.getScene().getEngine();
+
+            // Wireframe
+            var indexToBind = this._indexBuffer;
+            var useTriangles = true;
+
+            if (wireframe) {
+                indexToBind = subMesh.getLinesIndexBuffer(this._indices, engine);
+                useTriangles = false;
+            }
+
+            // VBOs
+            engine.bindMultiBuffers(this._vertexBuffers, indexToBind, effect);
+
+            // Draw order
+            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
+        }
+
+        public registerBeforeRender(func: () => void): void {
+            this._onBeforeRenderCallbacks.push(func);
+        }
+
+        public unregisterBeforeRender(func: () => void): void {
+            var index = this._onBeforeRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onBeforeRenderCallbacks.splice(index, 1);
+            }
+        }
+
+        public render(subMesh: SubMesh): void {
+            if (!this._vertexBuffers || !this._indexBuffer) {
+                return;
+            }
+
+            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+                this._onBeforeRenderCallbacks[callbackIndex]();
+            }
+
+            // World
+            var world = this.getWorldMatrix();
+
+            // Material
+            var effectiveMaterial = subMesh.getMaterial();
+
+            if (!effectiveMaterial || !effectiveMaterial.isReady(this)) {
+                return;
+            }
+
+            effectiveMaterial._preBind();
+            effectiveMaterial.bind(world, this);
+
+            // Bind and draw
+            var engine = this.getScene().getEngine();
+            this.bindAndDraw(subMesh, effectiveMaterial.getEffect(), engine.forceWireframe || effectiveMaterial.wireframe);
+
+            // Unbind
+            effectiveMaterial.unbind();
+        }
+
+        //ANY
+        public getEmittedParticleSystems() {
+            var results = [];
+            for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+                var particleSystem = this.getScene().particleSystems[index];
+                if (particleSystem.emitter === this) {
+                    results.push(particleSystem);
+                }
+            }
+
+            return results;
+        }
+
+        //ANY
+        public getHierarchyEmittedParticleSystems() {
+            var results = [];
+            var descendants = this.getDescendants();
+            descendants.push(this);
+
+            for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+                var particleSystem = this.getScene().particleSystems[index];
+                if (descendants.indexOf(particleSystem.emitter) !== -1) {
+                    results.push(particleSystem);
+                }
+            }
+
+            return results;
+        }
+
+        public getChildren(): Node[] {
+            var results = [];
+            for (var index = 0; index < this.getScene().meshes.length; index++) {
+                var mesh = this.getScene().meshes[index];
+                if (mesh.parent == this) {
+                    results.push(mesh);
+                }
+            }
+
+            return results;
+        }
+
+        public isInFrustum(frustumPlanes: Plane[]): boolean {
+            if (this.delayLoadState === 2) { //ANY BABYLON.Engine.DELAYLOADSTATE_LOADING
+                return false;
+            }
+
+            var result = this._boundingInfo.isInFrustum(frustumPlanes);
+
+            if (result && this.delayLoadState === 4) { //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED
+                this.delayLoadState = 2; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADING
+                this.getScene()._addPendingData(this);
+
+                Tools.LoadFile(this.delayLoadingFile, data => {
+                    this._delayLoadingFunction(JSON.parse(data), this);
+                    this.delayLoadState = 1; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                    this.getScene()._removePendingData(this);
+                }, () => { }, this.getScene().database);
+            }
+
+            return result;
+        }
+
+        public setMaterialByID(id: string): void {
+            var materials = this.getScene().materials;
+            for (var index = 0; index < materials.length; index++) {
+                if (materials[index].id == id) {
+                    this.material = materials[index];
+                    return;
+                }
+            }
+
+            // Multi
+            var multiMaterials = this.getScene().multiMaterials;
+            for (index = 0; index < multiMaterials.length; index++) {
+                if (multiMaterials[index].id == id) {
+                    this.material = multiMaterials[index];
+                    return;
+                }
+            }
+        }
+
+        public getAnimatables(): IAnimatable[] {
+            var results = [];
+
+            if (this.material) {
+                results.push(this.material);
+            }
+
+            return results;
+        }
+
+        // Geometry
+        public setPositionWithLocalVector(vector3: Vector3): void {
+            this.computeWorldMatrix();
+
+            this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
+        }
+
+        public getPositionExpressedInLocalSpace(): Vector3 {
+            this.computeWorldMatrix();
+            var invLocalWorldMatrix = this._localWorld.clone();
+            invLocalWorldMatrix.invert();
+
+            return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
+        }
+
+        public locallyTranslate(vector3: Vector3): void {
+            this.computeWorldMatrix();
+
+            this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
+        }
+
+        public bakeTransformIntoVertices(transform: Matrix): void {
+            // Position
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+                return;
+            }
+
+            this._resetPointsArrayCache();
+
+            var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
+            var temp = [];
+            for (var index = 0; index < data.length; index += 3) {
+                BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+            }
+
+            this.setVerticesData(temp, BABYLON.VertexBuffer.PositionKind, this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].isUpdatable());
+
+            // Normals
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                return;
+            }
+
+            data = this._vertexBuffers[BABYLON.VertexBuffer.NormalKind].getData();
+            for (index = 0; index < data.length; index += 3) {
+                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+            }
+
+            this.setVerticesData(temp, BABYLON.VertexBuffer.NormalKind, this._vertexBuffers[BABYLON.VertexBuffer.NormalKind].isUpdatable());
+        }
+
+        public lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void {
+            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
+            /// <param name="targetPoint" type="BABYLON.Vector3">The position (must be in same space as current mesh) to look at</param>
+            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
+            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
+            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
+            /// <returns>Mesh oriented towards targetMesh</returns>
+
+            yawCor = yawCor || 0; // default to zero if undefined 
+            pitchCor = pitchCor || 0;
+            rollCor = rollCor || 0;
+
+            var dv = targetPoint.subtract(this.position);
+            var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
+            var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
+            var pitch = Math.atan2(dv.y, len);
+            this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+        }
+
+        // Cache
+        public _resetPointsArrayCache(): void {
+            this._positions = null;
+        }
+
+        public _generatePointsArray(): void {
+            if (this._positions)
+                return;
+
+            this._positions = [];
+
+            var data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
+            for (var index = 0; index < data.length; index += 3) {
+                this._positions.push(BABYLON.Vector3.FromArray(data, index));
+            }
+        }
+
+        // Collisions
+        public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): void {
+            this._generatePointsArray();
+            // Transformation
+            if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
+                subMesh._lastColliderTransformMatrix = transformMatrix.clone();
+                subMesh._lastColliderWorldVertices = [];
+                subMesh._trianglePlanes = [];
+                var start = subMesh.verticesStart;
+                var end = (subMesh.verticesStart + subMesh.verticesCount);
+                for (var i = start; i < end; i++) {
+                    subMesh._lastColliderWorldVertices.push(BABYLON.Vector3.TransformCoordinates(this._positions[i], transformMatrix));
+                }
+            }
+            // Collide
+            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this._indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+        }
+
+        public _processCollisionsForSubModels(collider: Collider, transformMatrix: Matrix): void {
+            for (var index = 0; index < this.subMeshes.length; index++) {
+                var subMesh = this.subMeshes[index];
+
+                // Bounding test
+                if (this.subMeshes.length > 1 && !subMesh._checkCollision(collider))
+                    continue;
+
+                this._collideForSubMesh(subMesh, transformMatrix, collider);
+            }
+        }
+
+        public _checkCollision(collider: Collider): void {
+            // Bounding box test
+            if (!this._boundingInfo._checkCollision(collider))
+                return;
+
+            // Transformation matrix
+            BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+            this._worldMatrix.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
+
+            this._processCollisionsForSubModels(collider, this._collisionsTransformMatrix);
+        }
+
+        public intersectsMesh(mesh: Mesh, precise?: boolean): boolean {
+            if (!this._boundingInfo || !mesh._boundingInfo) {
+                return false;
+            }
+
+            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+        }
+
+        public intersectsPoint(point: Vector3): boolean {
+            if (!this._boundingInfo) {
+                return false;
+            }
+
+            return this._boundingInfo.intersectsPoint(point);
+        }
+
+        // Picking
+        public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
+            var pickingInfo = new BABYLON.PickingInfo();
+
+            if (!this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
+                return pickingInfo;
+            }
+
+            this._generatePointsArray();
+
+            var intersectInfo = null;
+
+            for (var index = 0; index < this.subMeshes.length; index++) {
+                var subMesh = this.subMeshes[index];
+
+                // Bounding test
+                if (this.subMeshes.length > 1 && !subMesh.canIntersects(ray))
+                    continue;
+
+                var currentIntersectInfo = subMesh.intersects(ray, this._positions, this._indices, fastCheck);
+
+                if (currentIntersectInfo) {
+                    if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                        intersectInfo = currentIntersectInfo;
+
+                        if (fastCheck) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (intersectInfo) {
+                // Get picked point
+                var world = this.getWorldMatrix();
+                var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
+                var direction = ray.direction.clone();
+                direction.normalize();
+                direction = direction.scale(intersectInfo.distance);
+                var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
+
+                var pickedPoint = worldOrigin.add(worldDirection);
+
+                // Return result
+                pickingInfo.hit = true;
+                pickingInfo.distance = BABYLON.Vector3.Distance(worldOrigin, pickedPoint);
+                pickingInfo.pickedPoint = pickedPoint;
+                pickingInfo.pickedMesh = this;
+                pickingInfo.bu = intersectInfo.bu;
+                pickingInfo.bv = intersectInfo.bv;
+                pickingInfo.faceId = intersectInfo.faceId;
+                return pickingInfo;
+            }
+
+            return pickingInfo;
+        }
+
+        // Clone
+        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh {
+            var result = new BABYLON.Mesh(name, this.getScene());
+
+            // Buffers
+            result._vertexBuffers = this._vertexBuffers;
+            for (var kind in result._vertexBuffers) {
+                result._vertexBuffers[kind]._buffer.references++;
+            }
+
+            result._indexBuffer = this._indexBuffer;
+            this._indexBuffer.references++;
+
+            // Deep copy
+            BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], ["_indices", "_totalVertices"]);
+
+            // Bounding info
+            var extend = BABYLON.Tools.ExtractMinAndMax(this.getVerticesData(BABYLON.VertexBuffer.PositionKind), 0, this._totalVertices);
+            result._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+
+            // Material
+            result.material = this.material;
+
+            // Parent
+            if (newParent) {
+                result.parent = newParent;
+            }
+
+            if (!doNotCloneChildren) {
+                // Children
+                for (var index = 0; index < this.getScene().meshes.length; index++) {
+                    var mesh = this.getScene().meshes[index];
+
+                    if (mesh.parent == this) {
+                        mesh.clone(mesh.name, result);
+                    }
+                }
+            }
+
+            // Particles
+            for (index = 0; index < this.getScene().particleSystems.length; index++) {
+                var system = this.getScene().particleSystems[index];
+
+                if (system.emitter == this) {
+                    system.clone(system.name, result);
+                }
+            }
+
+            result.computeWorldMatrix(true);
+
+            return result;
+        }
+
+        // Dispose
+        public dispose(doNotRecurse?: boolean): void {
+            if (this._vertexBuffers) {
+                for (var vbKind in this._vertexBuffers) {
+                    this._vertexBuffers[vbKind].dispose();
+                }
+                this._vertexBuffers = null;
+            }
+
+            if (this._indexBuffer) {
+                this.getScene().getEngine()._releaseBuffer(this._indexBuffer);
+                this._indexBuffer = null;
+            }
+
+            // Physics
+            if (this.getPhysicsImpostor() != PhysicsEngine.NoImpostor) {
+                this.setPhysicsState({ impostor: PhysicsEngine.NoImpostor });
+            }
+
+            // Remove from scene
+            var index = this.getScene().meshes.indexOf(this);
+            this.getScene().meshes.splice(index, 1);
+
+            if (!doNotRecurse) {
+                // Particles
+                for (index = 0; index < this.getScene().particleSystems.length; index++) {
+                    if (this.getScene().particleSystems[index].emitter == this) {
+                        this.getScene().particleSystems[index].dispose();
+                        index--;
+                    }
+                }
+
+                // Children
+                var objects = this.getScene().meshes.slice(0);
+                for (index = 0; index < objects.length; index++) {
+                    if (objects[index].parent == this) {
+                        objects[index].dispose();
+                    }
+                }
+            } else {
+                for (index = 0; index < this.getScene().meshes.length; index++) {
+                    var obj = this.getScene().meshes[index];
+                    if (obj.parent === this) {
+                        obj.parent = null;
+                        obj.computeWorldMatrix(true);
+                    }
+                }
+            }
+
+            this._isDisposed = true;
+
+            // Callback
+            if (this.onDispose) {
+                this.onDispose();
+            }
+        }
+
+        // Physics
+        public setPhysicsState(options): void {
+            if (!this.getScene()._physicsEngine) {
+                return;
+            }
+
+            options.impostor = options.impostor || PhysicsEngine.NoImpostor;
+            options.mass = options.mass || 0;
+            options.friction = options.friction || 0.2;
+            options.restitution = options.restitution || 0.9;
+
+            this._physicImpostor = options.impostor;
+            this._physicsMass = options.mass;
+            this._physicsFriction = options.friction;
+            this._physicRestitution = options.restitution;
+
+            if (options.impostor === BABYLON.PhysicsEngine.NoImpostor) {
+                this.getScene()._physicsEngine._unregisterMesh(this);
+                return;
+            }
+
+            this.getScene()._physicsEngine._registerMesh(this, options);
+        }
+
+        public getPhysicsImpostor(): number {
+            if (!this._physicImpostor) {
+                return BABYLON.PhysicsEngine.NoImpostor;
+            }
+
+            return this._physicImpostor;
+        }
+
+        public getPhysicsMass(): number {
+            if (!this._physicsMass) {
+                return 0;
+            }
+
+            return this._physicsMass;
+        }
+
+        public getPhysicsFriction(): number {
+            if (!this._physicsFriction) {
+                return 0;
+            }
+
+            return this._physicsFriction;
+        }
+
+        public getPhysicsRestitution(): number {
+            if (!this._physicRestitution) {
+                return 0;
+            }
+
+            return this._physicRestitution;
+        }
+
+        public applyImpulse(force: Vector3, contactPoint: Vector3): void {
+            if (!this._physicImpostor) {
+                return;
+            }
+
+            this.getScene()._physicsEngine._applyImpulse(this, force, contactPoint);
+        }
+
+        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3): void {
+            if (!this._physicImpostor) {
+                return;
+            }
+
+            this.getScene()._physicsEngine._createLink(this, otherMesh, pivot1, pivot2);
+        }
+
+        // Geometric tools
+        public convertToFlatShadedMesh(): void {
+            /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
+            /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
+
+            var kinds = this.getVerticesDataKinds();
+            var vbs = [];
+            var data = [];
+            var newdata = [];
+            var updatableNormals = false;
+            for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                var kind = kinds[kindIndex];
+
+                if (kind === BABYLON.VertexBuffer.NormalKind) {
+                    updatableNormals = this.getVertexBuffer(kind).isUpdatable();
+                    kinds.splice(kindIndex, 1);
+                    kindIndex--;
+                    continue;
+                }
+
+                vbs[kind] = this.getVertexBuffer(kind);
+                data[kind] = vbs[kind].getData();
+                newdata[kind] = [];
+            }
+
+            // Save previous submeshes
+            var previousSubmeshes = this.subMeshes.slice(0);
+
+            var indices = this.getIndices();
+
+            // Generating unique vertices per face
+            for (index = 0; index < indices.length; index++) {
+                var vertexIndex = indices[index];
+
+                for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                    kind = kinds[kindIndex];
+                    var stride = vbs[kind].getStrideSize();
+
+                    for (var offset = 0; offset < stride; offset++) {
+                        newdata[kind].push(data[kind][vertexIndex * stride + offset]);
+                    }
+                }
+            }
+
+            // Updating faces & normal
+            var normals = [];
+            var positions = newdata[BABYLON.VertexBuffer.PositionKind];
+            for (var index = 0; index < indices.length; index += 3) {
+                indices[index] = index;
+                indices[index + 1] = index + 1;
+                indices[index + 2] = index + 2;
+
+                var p1 = BABYLON.Vector3.FromArray(positions, index * 3);
+                var p2 = BABYLON.Vector3.FromArray(positions, (index + 1) * 3);
+                var p3 = BABYLON.Vector3.FromArray(positions, (index + 2) * 3);
+
+                var p1p2 = p1.subtract(p2);
+                var p3p2 = p3.subtract(p2);
+
+                var normal = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+
+                // Store same normals for every vertex
+                for (var localIndex = 0; localIndex < 3; localIndex++) {
+                    normals.push(normal.x);
+                    normals.push(normal.y);
+                    normals.push(normal.z);
+                }
+            }
+
+            this.setIndices(indices);
+            this.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatableNormals);
+
+            // Updating vertex buffers
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
+                this.setVerticesData(newdata[kind], kind, vbs[kind].isUpdatable());
+            }
+
+            // Updating submeshes
+            this.subMeshes = [];
+            for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
+                var previousOne = previousSubmeshes[submeshIndex];
+                var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            }
+        }
+
+        // Statics
+        //ANY
+        public static CreateBox(name: string, size: number, scene, updatable?: boolean): Mesh {
+            var box = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateBox(size);
+
+            vertexData.applyToMesh(box, updatable);
+
+            return box;
+        }
+        //ANY
+        public static CreateSphere(name: string, segments: number, diameter: number, scene, updatable?: boolean): Mesh {
+            var sphere = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter);
+
+            vertexData.applyToMesh(sphere, updatable);
+
+            return sphere;
+        }
+
+        // Cylinder and cone (Code inspired by SharpDX.org)
+        //ANY
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, scene, updatable?: boolean): Mesh {
+            var cylinder = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
+
+            vertexData.applyToMesh(cylinder, updatable);
+
+            return cylinder;
+        }
+
+        // Torus  (Code from SharpDX.org)
+        //ANY
+        public static CreateTorus(name: string, diameter, thickness: number, tessellation: number, scene, updatable?: boolean): Mesh {
+            var torus = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
+
+            vertexData.applyToMesh(torus, updatable);
+
+            return torus;
+        }
+        //ANY
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene, updatable?: boolean): Mesh {
+            var torusKnot = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+
+            vertexData.applyToMesh(torusKnot, updatable);
+
+            return torusKnot;
+        }
+
+        // Plane & ground
+        //ANY
+        public static CreatePlane(name: string, size: number, scene, updatable?: boolean): Mesh {
+            var plane = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreatePlane(size);
+
+            vertexData.applyToMesh(plane, updatable);
+
+            return plane;
+        }
+        //ANY
+        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene, updatable?: boolean): Mesh {
+            var ground = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateGround(width, height, subdivisions);
+
+            vertexData.applyToMesh(ground, updatable);
+
+            return ground;
+        }
+        //ANY
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene, updatable?: boolean): Mesh {
+            var ground = new BABYLON.Mesh(name, scene);
+
+            var onload = img => {
+                var indices = [];
+                var positions = [];
+                var normals = [];
+                var uvs = [];
+                var row, col;
+
+                // Getting height map data
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                var heightMapWidth = img.width;
+                var heightMapHeight = img.height;
+                canvas.width = heightMapWidth;
+                canvas.height = heightMapHeight;
+
+                context.drawImage(img, 0, 0);
+
+                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+
+                // Vertices
+                for (row = 0; row <= subdivisions; row++) {
+                    for (col = 0; col <= subdivisions; col++) {
+                        var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+
+                        // Compute height
+                        var heightMapX = (((position.x + width / 2) / width) * (heightMapWidth - 1)) | 0;
+                        var heightMapY = ((1.0 - (position.z + height / 2) / height) * (heightMapHeight - 1)) | 0;
+
+                        var pos = (heightMapX + heightMapY * heightMapWidth) * 4;
+                        var r = buffer[pos] / 255.0;
+                        var g = buffer[pos + 1] / 255.0;
+                        var b = buffer[pos + 2] / 255.0;
+
+                        var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+
+                        position.y = minHeight + (maxHeight - minHeight) * gradient;
+
+                        // Add  vertex
+                        positions.push(position.x, position.y, position.z);
+                        normals.push(0, 0, 0);
+                        uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    }
+                }
+
+                // Indices
+                for (row = 0; row < subdivisions; row++) {
+                    for (col = 0; col < subdivisions; col++) {
+                        indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                        indices.push(col + 1 + row * (subdivisions + 1));
+                        indices.push(col + row * (subdivisions + 1));
+
+                        indices.push(col + (row + 1) * (subdivisions + 1));
+                        indices.push(col + 1 + (row + 1) * (subdivisions + 1));
+                        indices.push(col + row * (subdivisions + 1));
+                    }
+                }
+
+                // Normals
+                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+
+                // Transfer
+                ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+                ground.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+                ground.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+                ground.setIndices(indices);
+
+                ground._isReady = true;
+            };
+
+            Tools.LoadImage(url, onload, () => {}, scene.database);
+
+            ground._isReady = false;
+
+            return ground;
+        }
+
+        // Tools
+        public static MinMax(meshes: Mesh[]): {min: Vector3; max: Vector3} {
+            var minVector;
+            var maxVector;
+            for (var i in meshes) {
+                var mesh = meshes[i];
+                var boundingBox = mesh.getBoundingInfo().boundingBox;
+                if (!minVector) {
+                    minVector = boundingBox.minimumWorld;
+                    maxVector = boundingBox.maximumWorld;
+                    continue;
+                }
+                minVector.MinimizeInPlace(boundingBox.minimumWorld);
+                maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+            }
+
+            return {
+                min: minVector,
+                max: maxVector
+            };
+        }
+
+        public static Center(meshesOrMinMaxVector): Vector3 {
+            var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
+            return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
+        }
+    }
+} 

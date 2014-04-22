@@ -1,12 +1,5 @@
-﻿var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var BABYLON;
-(function (BABYLON) {
-    var buildCamera = function (that, name) {
+﻿module BABYLON {
+    var buildCamera = (that, name) => {
         that._leftCamera.isIntermediate = true;
 
         that.subCameras.push(that._leftCamera);
@@ -15,18 +8,21 @@ var BABYLON;
         that._leftTexture = new BABYLON.PassPostProcess(name + "_leftTexture", 1.0, that._leftCamera);
         that._anaglyphPostProcess = new BABYLON.AnaglyphPostProcess(name + "_anaglyph", 1.0, that._rightCamera);
 
-        that._anaglyphPostProcess.onApply = function (effect) {
+        that._anaglyphPostProcess.onApply = effect => {
             effect.setTextureFromPostProcess("leftSampler", that._leftTexture);
         };
 
         that._update();
     };
 
-    var AnaglyphArcRotateCamera = (function (_super) {
-        __extends(AnaglyphArcRotateCamera, _super);
+    export class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        private _eyeSpace: number;
+        private _leftCamera: ArcRotateCamera;
+        private _rightCamera: ArcRotateCamera;
+
         // ANY
-        function AnaglyphArcRotateCamera(name, alpha, beta, radius, target, eyeSpace, scene) {
-            _super.call(this, name, alpha, beta, radius, target, scene);
+        constructor(name: string, alpha: number, beta: number, radius: number, target, eyeSpace: number, scene) {
+            super(name, alpha, beta, radius, target, scene);
 
             this._eyeSpace = BABYLON.Tools.ToRadians(eyeSpace);
 
@@ -35,17 +31,18 @@ var BABYLON;
 
             buildCamera(this, name);
         }
-        AnaglyphArcRotateCamera.prototype._update = function () {
+
+        public _update(): void {
             this._updateCamera(this._leftCamera);
             this._updateCamera(this._rightCamera);
 
             this._leftCamera.alpha = this.alpha - this._eyeSpace;
             this._rightCamera.alpha = this.alpha + this._eyeSpace;
 
-            _super.prototype._update.call(this);
-        };
+            super._update();
+        }
 
-        AnaglyphArcRotateCamera.prototype._updateCamera = function (camera) {
+        public _updateCamera(camera: ArcRotateCamera) {
             camera.beta = this.beta;
             camera.radius = this.radius;
 
@@ -55,16 +52,18 @@ var BABYLON;
             camera.fov = this.fov;
 
             camera.target = this.target;
-        };
-        return AnaglyphArcRotateCamera;
-    })(BABYLON.ArcRotateCamera);
-    BABYLON.AnaglyphArcRotateCamera = AnaglyphArcRotateCamera;
+        }
+    }
 
-    var AnaglyphFreeCamera = (function (_super) {
-        __extends(AnaglyphFreeCamera, _super);
+    export class AnaglyphFreeCamera extends FreeCamera {
+        private _eyeSpace: number;
+        private _leftCamera: FreeCamera;
+        private _rightCamera: FreeCamera;
+        private _transformMatrix: Matrix;
+
         //ANY
-        function AnaglyphFreeCamera(name, position, eyeSpace, scene) {
-            _super.call(this, name, position, scene);
+        constructor(name: string, position: Vector3, eyeSpace: number, scene) {
+            super(name, position, scene);
 
             this._eyeSpace = BABYLON.Tools.ToRadians(eyeSpace);
             this._transformMatrix = new BABYLON.Matrix();
@@ -74,35 +73,33 @@ var BABYLON;
 
             buildCamera(this, name);
         }
-        AnaglyphFreeCamera.prototype._getSubCameraPosition = function (eyeSpace, result) {
+
+        public _getSubCameraPosition(eyeSpace, result) {
             var target = this.getTarget();
             BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(eyeSpace), this._transformMatrix);
 
             this._transformMatrix = this._transformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
 
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._transformMatrix, result);
-        };
+        }
 
-        AnaglyphFreeCamera.prototype._update = function () {
+        public _update(): void {
             this._getSubCameraPosition(-this._eyeSpace, this._leftCamera.position);
             this._getSubCameraPosition(this._eyeSpace, this._rightCamera.position);
 
             this._updateCamera(this._leftCamera);
             this._updateCamera(this._rightCamera);
 
-            _super.prototype._update.call(this);
-        };
+            super._update();
+        }
 
-        AnaglyphFreeCamera.prototype._updateCamera = function (camera) {
+        public _updateCamera(camera: FreeCamera): void {
             camera.minZ = this.minZ;
             camera.maxZ = this.maxZ;
 
             camera.fov = this.fov;
 
             camera.setTarget(this.getTarget());
-        };
-        return AnaglyphFreeCamera;
-    })(BABYLON.FreeCamera);
-    BABYLON.AnaglyphFreeCamera = AnaglyphFreeCamera;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.anaglyphCamera.js.map
+        }
+    }
+} 

@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    export interface IAnimatable {
+         animations: Array<Animation>;
+    }
+
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};

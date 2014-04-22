@@ -1,9 +1,15 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var VertexData = (function () {
-        function VertexData() {
-        }
-        VertexData.prototype.applyToMesh = function (mesh, updatable) {
+﻿module BABYLON {
+    export class VertexData {
+        public positions: number[];
+        public normals: number[];
+        public uvs: number[];
+        public uv2s: number[];
+        public colors: number[];
+        public matricesIndices: number[];
+        public matricesWeights: number[];
+        public indices: number[];
+
+        public applyToMesh(mesh: Mesh, updatable?: boolean): void {
             if (this.positions) {
                 mesh.setVerticesData(this.positions, BABYLON.VertexBuffer.PositionKind, updatable);
             }
@@ -35,9 +41,9 @@
             if (this.indices) {
                 mesh.setIndices(this.indices);
             }
-        };
+        }
 
-        VertexData.prototype.transform = function (matrix) {
+        public transform(matrix: Matrix): void {
             var transformed = BABYLON.Vector3.Zero();
 
             if (this.positions) {
@@ -65,9 +71,9 @@
                     this.normals[index + 2] = transformed.z;
                 }
             }
-        };
+        }
 
-        VertexData.prototype.merge = function (other) {
+        public merge(other: VertexData): void {
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -142,10 +148,10 @@
                     this.colors.push(other.colors[index]);
                 }
             }
-        };
+        }
 
         // Statics
-        VertexData.ExtractFromMesh = function (mesh) {
+        public static ExtractFromMesh(mesh: Mesh): VertexData {
             var result = new BABYLON.VertexData();
 
             if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
@@ -179,9 +185,9 @@
             result.indices = mesh.getIndices();
 
             return result;
-        };
+        }
 
-        VertexData.CreateBox = function (size) {
+        public static CreateBox(size: number): VertexData {
             var normalsSource = [
                 new BABYLON.Vector3(0, 0, 1),
                 new BABYLON.Vector3(0, 0, -1),
@@ -198,6 +204,7 @@
 
             size = size || 1;
 
+            // Create each face in turn.
             for (var index = 0; index < normalsSource.length; index++) {
                 var normal = normalsSource[index];
 
@@ -246,9 +253,10 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
-        VertexData.CreateSphere = function (segments, diameter) {
+        public static CreateSphere(segments: number, diameter: number): VertexData {
+
             segments = segments || 32;
             diameter = diameter || 1;
 
@@ -307,9 +315,9 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
-        VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation) {
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number): VertexData {
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
             var indices = [];
@@ -322,7 +330,7 @@
             diameterBottom = diameterBottom || 1;
             tessellation = tessellation || 16;
 
-            var getCircleVector = function (i) {
+            var getCircleVector = i => {
                 var angle = (i * 2.0 * Math.PI / tessellation);
                 var dx = Math.sin(angle);
                 var dz = Math.cos(angle);
@@ -330,13 +338,14 @@
                 return new BABYLON.Vector3(dx, 0, dz);
             };
 
-            var createCylinderCap = function (isTop) {
+            var createCylinderCap = isTop => {
                 var radius = isTop ? radiusTop : radiusBottom;
 
                 if (radius == 0) {
                     return;
                 }
 
+                // Create cap indices.
                 for (var i = 0; i < tessellation - 2; i++) {
                     var i1 = (i + 1) % tessellation;
                     var i2 = (i + 2) % tessellation;
@@ -362,6 +371,7 @@
                     textureScale.x = -textureScale.x;
                 }
 
+                // Create cap vertices.
                 for (i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(normal.scale(height));
@@ -379,6 +389,7 @@
 
             var stride = tessellation + 1;
 
+            // Create a ring of triangles around the outside of the cylinder.
             for (var i = 0; i <= tessellation; i++) {
                 var normal = getCircleVector(i);
                 var sideOffsetBottom = normal.scale(radiusBottom);
@@ -418,9 +429,9 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
-        VertexData.CreateTorus = function (diameter, thickness, tessellation) {
+        public static CreateTorus(diameter, thickness, tessellation) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -481,9 +492,9 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
-        VertexData.CreateGround = function (width, height, subdivisions) {
+        public static CreateGround(width: number, height: number, subdivisions: number): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -526,9 +537,9 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
-        VertexData.CreatePlane = function (size) {
+        public static CreatePlane(size: number): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -572,10 +583,10 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q) {
+        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -589,7 +600,8 @@
             q = q || 3;
 
             // Helper
-            var getPos = function (angle) {
+            var getPos = (angle) => {
+
                 var cu = Math.cos(angle);
                 var su = Math.sin(angle);
                 var quOverP = q / p * angle;
@@ -602,6 +614,7 @@
                 return new BABYLON.Vector3(tx, ty, tz);
             };
 
+            // Vertices
             for (var i = 0; i <= radialSegments; i++) {
                 var modI = i % radialSegments;
                 var u = modI / radialSegments * 2 * p * Math.PI;
@@ -639,12 +652,8 @@
                     var c = (i + 1) * tubularSegments + jNext;
                     var d = i * tubularSegments + jNext;
 
-                    indices.push(d);
-                    indices.push(b);
-                    indices.push(a);
-                    indices.push(d);
-                    indices.push(c);
-                    indices.push(b);
+                    indices.push(d); indices.push(b); indices.push(a);
+                    indices.push(d); indices.push(c); indices.push(b);
                 }
             }
 
@@ -660,10 +669,10 @@
             vertexData.uvs = uvs;
 
             return vertexData;
-        };
+        }
 
         // Tools
-        VertexData.ComputeNormals = function (positions, indices, normals) {
+        public static ComputeNormals(positions: number[], indices: number[], normals: number[]) {
             var positionVectors = [];
             var facesOfVertices = [];
             var index;
@@ -673,7 +682,6 @@
                 positionVectors.push(vector3);
                 facesOfVertices.push([]);
             }
-
             // Compute normals
             var facesNormals = [];
             for (index = 0; index < indices.length / 3; index++) {
@@ -708,9 +716,6 @@
                 normals[index * 3 + 1] = normal.y;
                 normals[index * 3 + 2] = normal.z;
             }
-        };
-        return VertexData;
-    })();
-    BABYLON.VertexData = VertexData;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
+        }
+    }
+} 

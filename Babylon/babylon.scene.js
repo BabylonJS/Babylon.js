@@ -600,10 +600,12 @@ var BABYLON = BABYLON || {};
                         this._boundingBoxRenderer.renderList.push(mesh);
                     }
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
+                    if (mesh.subMeshes) {
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
 
-                        this._evaluateSubMesh(subMesh, mesh);
+                            this._evaluateSubMesh(subMesh, mesh);
+                        }
                     }
                 }
             }
