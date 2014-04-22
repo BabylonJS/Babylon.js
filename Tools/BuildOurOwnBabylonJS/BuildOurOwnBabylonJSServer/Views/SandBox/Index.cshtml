@@ -2,17 +2,43 @@
     ViewBag.Title = "Our Own BabylonJS";
     ViewBag.BabylonJSFolder = "..\\..\\..\\";
 }
+<style>
+    #loadingInfos {
+        color: #888888;
+        cursor: default;
+        font-size: 30px;
+        height: 60px;
+        left: 0;
+        margin-top: -30px;
+        padding-top: 10px;
+        position: absolute;
+        text-align: center;
+        bottom: 0;
+        transition: transform 0.25s ease-in-out 0s;
+        width: calc(100% - 10px);
+        z-index: 3;
+        border: 5px dotted gray;
+        pointer-events: none;
+    }
+
+    #loadingInfos .content {
+        position: relative;
+        top: 50%;
+    }
+
+    .loadingInfos {
+        transform: translateX(120%);
+        -webkit-transform: translate(120%);
+    }
+</style>
 <div id="loadingInfos"><div class="content">Drag and drop your .babylon files inside, with associated assets</div></div>
-<div id="loadingBack" class="loadingBack"></div>
-<div id="loadingText" class="loadingText"></div>
+
 <script type="text/javascript">
     $(document).ready(function () {
-
-        var loadingBack = document.getElementById("loadingBack");
-        var loadingText = document.getElementById("loadingText");
-
+        var loading = new OURBABYLON.Loading(OURBABYLON.canvas.parentElement);
 
         var loadingInfos = document.getElementById("loadingInfos");
+
         loadingInfos.style.height = (OURBABYLON.canvas.height-20)+"px";
         window.addEventListener('resize', function () {
             loadingInfos.style.height = (OURBABYLON.canvas.height - 20) + "px";
@@ -20,20 +46,10 @@
 
         var filesInput = new BABYLON.FilesInput(OURBABYLON.engine, OURBABYLON.currentScene, OURBABYLON.canvas, function (sceneFile, babylonScene) {
             OURBABYLON.sceneInitialization(babylonScene, true);
-            loadingBack.className = "loadingBack";
-            loadingText.className = "loadingText";
-        }, function (evt) {
-            if (evt.lengthComputable) {
-                loadingText.innerHTML = "Loading, please wait..." + (evt.loaded * 100 / evt.total).toFixed() + "%";
-            } else {
-                dlCount = evt.loaded / (1024 * 1024);
-                loadingText.innerHTML = "Loading, please wait..." + Math.floor(dlCount * 100.0) / 100.0 + " MB already loaded.";
-            }
-        }, null, null, function () {
+            loading.hide();
+        }, $.proxy(loading.onProgress, loading), null, null, function () {
+            loading.show();
             loadingInfos.className = "loadingInfos";
-            loadingBack.className = "";
-            loadingText.className = "";
-            loadingText.innerHTML = "Loading, please wait...";
         });
         filesInput.monitorElementForDragNDrop(OURBABYLON.canvas);
     });

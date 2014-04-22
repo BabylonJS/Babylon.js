@@ -48,6 +48,10 @@ namespace BuildOurOwnBabylonJSServer.Controllers
                         type = "image/bmp";
                         break;
 
+                    case ".css":
+                        type = "text/css";
+                        break;
+
                     default:
                         type = "text/plain";
                         break;
