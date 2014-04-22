@@ -18,7 +18,7 @@ var BABYLON = BABYLON || {};
         this._vb = new BABYLON.VertexBuffer(null, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false, engine);
         this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
 
-        this.renderList = new BABYLON.Tools.SmartArray(32);
+        this.renderList = new BABYLON.SmartArray(32);
     };
 
     // Members

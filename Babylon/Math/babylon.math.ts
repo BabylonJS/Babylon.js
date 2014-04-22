@@ -1,17 +1,14 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var Color3 = (function () {
-        function Color3(r, g, b) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
+﻿module BABYLON {
+    export class Color3 {
+        constructor(public r: number, public g: number, public b: number) {
         }
-        Color3.prototype.toString = function () {
+
+        public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
-        };
+        }
 
         // Operators
-        Color3.prototype.toArray = function (array, index) {
+        public toArray(array: number[], index?: number): void {
             if (index === undefined) {
                 index = 0;
             }
@@ -19,120 +16,115 @@
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
-        };
+        }
 
-        Color3.prototype.asArray = function () {
+        public asArray(): number[] {
             var result = [];
 
             this.toArray(result, 0);
 
             return result;
-        };
+        }
 
-        Color3.prototype.multiply = function (otherColor) {
+        public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
-        };
+        }
 
-        Color3.prototype.multiplyToRef = function (otherColor, result) {
+        public multiplyToRef(otherColor: Color3, result: Color3): void {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
-        };
+        }
 
-        Color3.prototype.equals = function (otherColor) {
+        public equals(otherColor: Color3): boolean {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
-        };
+        }
 
-        Color3.prototype.scale = function (scale) {
+        public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
-        };
+        }
 
-        Color3.prototype.scaleToRef = function (scale, result) {
+        public scaleToRef(scale: number, result: Color3): void {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
-        };
+        }
 
-        Color3.prototype.add = function (otherColor) {
+        public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
-        };
+        }
 
-        Color3.prototype.addToRef = function (otherColor, result) {
+        public addToRef(otherColor: Color3, result: Color3): void {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
-        };
+        }
 
-        Color3.prototype.subtract = function (otherColor) {
+        public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
-        };
+        }
 
-        Color3.prototype.subtractToRef = function (otherColor, result) {
+        public subtractToRef(otherColor: Color3, result: Color3): void {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
-        };
+        }
 
-        Color3.prototype.clone = function () {
+        public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
-        };
+        }
 
-        Color3.prototype.copyFrom = function (source) {
+        public copyFrom(source: Color3): void {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
-        };
+        }
 
-        Color3.prototype.copyFromFloats = function (r, g, b) {
+        public copyFromFloats(r: number, g: number, b: number): void {
             this.r = r;
             this.g = g;
             this.b = b;
-        };
+        }
 
         // Statics
-        Color3.FromArray = function (array) {
+        public static FromArray(array: number[]): Color3 {
             return new Color3(array[0], array[1], array[2]);
-        };
+        }
 
-        Color3.FromInts = function (r, g, b) {
+        public static FromInts(r: number, g: number, b: number): Color3 {
             return new Color3(r / 255.0, g / 255.0, b / 255.0);
-        };
+        }
 
-        Color3.Lerp = function (start, end, amount) {
+        public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
             var r = start.r + ((end.r - start.r) * amount);
             var g = start.g + ((end.g - start.g) * amount);
             var b = start.b + ((end.b - start.b) * amount);
 
             return new Color3(r, g, b);
-        };
-        return Color3;
-    })();
-    BABYLON.Color3 = Color3;
-
-    var Color4 = (function () {
-        function Color4(r, g, b, a) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
         }
+    }
+
+    export class Color4 {
+        constructor(public r: number, public g: number, public b: number, public a: number) {
+        }
+
         // Operators
-        Color4.prototype.addInPlace = function (right) {
+        public addInPlace(right) {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
             this.a += right.a;
-        };
+        }
 
-        Color4.prototype.asArray = function () {
+        public asArray(): number[] {
             var result = [];
 
             this.toArray(result, 0);
 
             return result;
-        };
+        }
 
-        Color4.prototype.toArray = function (array, index) {
+        public toArray(array: number[], index?: number): void {
             if (index === undefined) {
                 index = 0;
             }
@@ -140,136 +132,133 @@
             array[index + 1] = this.g;
             array[index + 2] = this.b;
             array[index + 3] = this.a;
-        };
+        }
 
-        Color4.prototype.add = function (right) {
+        public add(right: Color4): Color4 {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
-        };
+        }
 
-        Color4.prototype.subtract = function (right) {
+        public subtract(right: Color4): Color4 {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
-        };
+        }
 
-        Color4.prototype.subtractToRef = function (right, result) {
+        public subtractToRef(right: Color4, result: Color4): void {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
             result.b = this.b - right.b;
             result.a = this.a - right.a;
-        };
+        }
 
-        Color4.prototype.scale = function (scale) {
+        public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
-        };
+        }
 
-        Color4.prototype.scaleToRef = function (scale, result) {
+        public scaleToRef(scale: number, result: Color4): void {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
-        };
+        }
 
-        Color4.prototype.toString = function () {
+        public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
-        };
+        }
 
-        Color4.prototype.clone = function () {
+        public clone(): Color4 {
             return new Color4(this.r, this.g, this.b, this.a);
-        };
+        }
 
         // Statics
-        Color4.Lerp = function (left, right, amount) {
+        public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0, 0, 0, 0);
 
             BABYLON.Color4.LerpToRef(left, right, amount, result);
 
             return result;
-        };
+        }
 
-        Color4.LerpToRef = function (left, right, amount, result) {
+        public static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void {
             result.r = left.r + (right.r - left.r) * amount;
             result.g = left.g + (right.g - left.g) * amount;
             result.b = left.b + (right.b - left.b) * amount;
             result.a = left.a + (right.a - left.a) * amount;
-        };
+        }
 
-        Color4.FromArray = function (array, offset) {
+        public static FromArray(array: number[], offset: number): Color4 {
             if (!offset) {
                 offset = 0;
             }
 
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
-        };
-
-        Color4.FromInts = function (r, g, b, a) {
-            return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
-        };
-        return Color4;
-    })();
-    BABYLON.Color4 = Color4;
-
-    var Vector2 = (function () {
-        function Vector2(x, y) {
-            this.x = x;
-            this.y = y;
         }
-        Vector2.prototype.toString = function () {
+
+        public static FromInts(r: number, g: number, b: number, a: number): Color4 {
+            return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+        }
+    }
+
+    export class Vector2 {
+        constructor(public x: number, public y: number) {
+        }
+
+        public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + "}";
-        };
+        }
 
         // Operators
-        Vector2.prototype.toArray = function (array, index) {
+        public toArray(array: number[], index?: number): void {
             if (index === undefined) {
                 index = 0;
             }
 
             array[index] = this.x;
             array[index + 1] = this.y;
-        };
+        }
 
-        Vector2.prototype.asArray = function () {
+        public asArray(): number[] {
             var result = [];
 
             this.toArray(result, 0);
 
             return result;
-        };
+        }
 
-        Vector2.prototype.add = function (otherVector) {
+        public add(otherVector: Vector2): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
-        };
+        }
 
-        Vector2.prototype.subtract = function (otherVector) {
+        public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
-        };
+        }
 
-        Vector2.prototype.negate = function () {
+        public negate(): Vector2 {
             return new Vector2(-this.x, -this.y);
-        };
+        }
 
-        Vector2.prototype.scaleInPlace = function (scale) {
+        public scaleInPlace(scale: number): void {
             this.x *= scale;
             this.y *= scale;
-        };
+        }
 
-        Vector2.prototype.scale = function (scale) {
+        public scale(scale: number): Vector2 {
             return new Vector2(this.x * scale, this.y * scale);
-        };
+        }
 
-        Vector2.prototype.equals = function (otherVector) {
+        public equals(otherVector: Vector2): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
-        };
+        }
 
         // Properties
-        Vector2.prototype.length = function () {
+        public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y);
-        };
+        }
 
-        Vector2.prototype.lengthSquared = function () {
+        public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y);
-        };
+        }
 
         // Methods
-        Vector2.prototype.normalize = function () {
+        public normalize(): void {
             var len = this.length();
 
             if (len === 0)
@@ -279,29 +268,33 @@
 
             this.x *= num;
             this.y *= num;
-        };
+        }
 
-        Vector2.prototype.clone = function () {
+        public clone(): Vector2 {
             return new Vector2(this.x, this.y);
-        };
+        }
 
         // Statics
-        Vector2.Zero = function () {
+        public static Zero(): Vector2 {
             return new Vector2(0, 0);
-        };
+        }
 
-        Vector2.CatmullRom = function (value1, value2, value3, value4, amount) {
+        public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
-            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) + (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) + ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
+                (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
+                ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
 
-            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) + (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) + ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
+                (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
+                ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Clamp = function (value, min, max) {
+        public static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2 {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -311,9 +304,9 @@
             y = (y < min.y) ? min.y : y;
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+        public static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -325,80 +318,77 @@
             var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Lerp = function (start, end, amount) {
+        public static Lerp(start: Vector2, end: Vector2, amount: number): Vector2 {
             var x = start.x + ((end.x - start.x) * amount);
             var y = start.y + ((end.y - start.y) * amount);
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Dot = function (left, right) {
+        public static Dot(left: Vector2, right: Vector2): number {
             return left.x * right.x + left.y * right.y;
-        };
+        }
 
-        Vector2.Normalize = function (vector) {
+        public static Normalize(vector: Vector2): Vector2 {
             var newVector = vector.clone();
             newVector.normalize();
             return newVector;
-        };
+        }
 
-        Vector2.Minimize = function (left, right) {
+        public static Minimize(left: Vector2, right: Vector2): Vector2 {
             var x = (left.x < right.x) ? left.x : right.x;
             var y = (left.y < right.y) ? left.y : right.y;
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Maximize = function (left, right) {
+        public static Maximize(left: Vector2, right: Vector2): Vector2 {
             var x = (left.x > right.x) ? left.x : right.x;
             var y = (left.y > right.y) ? left.y : right.y;
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Transform = function (vector, transformation) {
+        public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]);
             var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]);
 
             return new Vector2(x, y);
-        };
+        }
 
-        Vector2.Distance = function (value1, value2) {
+        public static Distance(value1: Vector2, value2: Vector2): number {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
-        };
+        }
 
-        Vector2.DistanceSquared = function (value1, value2) {
+        public static DistanceSquared(value1: Vector2, value2: Vector2): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
 
             return (x * x) + (y * y);
-        };
-        return Vector2;
-    })();
-    BABYLON.Vector2 = Vector2;
-
-    var Vector3 = (function () {
-        function Vector3(x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
         }
-        Vector3.prototype.toString = function () {
+    }
+
+    export class Vector3 {
+
+        constructor(public x: number, public y: number, public z: number) {
+        }
+
+        public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
-        };
+        }
 
         // Operators
-        Vector3.prototype.asArray = function () {
+        public asArray(): number[] {
             var result = [];
 
             this.toArray(result, 0);
 
             return result;
-        };
+        }
 
-        Vector3.prototype.toArray = function (array, index) {
+        public toArray(array: number[], index?: number): void {
             if (index === undefined) {
                 index = 0;
             }
@@ -406,137 +396,131 @@
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
-        };
+        }
 
-        Vector3.prototype.addInPlace = function (otherVector) {
+        public addInPlace(otherVector: Vector3): void {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
-        };
+        }
 
-        Vector3.prototype.add = function (otherVector) {
+        public add(otherVector: Vector3): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
-        };
+        }
 
-        Vector3.prototype.addToRef = function (otherVector, result) {
+        public addToRef(otherVector: Vector3, result: Vector3): void {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
-        };
+        }
 
-        Vector3.prototype.subtractInPlace = function (otherVector) {
+        public subtractInPlace(otherVector: Vector3): void {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
-        };
+        }
 
-        Vector3.prototype.subtract = function (otherVector) {
+        public subtract(otherVector: Vector3): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
-        };
+        }
 
-        Vector3.prototype.subtractToRef = function (otherVector, result) {
+        public subtractToRef(otherVector: Vector3, result: Vector3): void {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
-        };
+        }
 
-        Vector3.prototype.subtractFromFloats = function (x, y, z) {
+        public subtractFromFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x - x, this.y - y, this.z - z);
-        };
+        }
 
-        Vector3.prototype.subtractFromFloatsToRef = function (x, y, z, result) {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
-        };
+        }
 
-        Vector3.prototype.negate = function () {
+        public negate(): Vector3 {
             return new Vector3(-this.x, -this.y, -this.z);
-        };
+        }
 
-        Vector3.prototype.scaleInPlace = function (scale) {
+        public scaleInPlace(scale: number): void {
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
-        };
+        }
 
-        Vector3.prototype.scale = function (scale) {
+        public scale(scale: number): Vector3 {
             return new Vector3(this.x * scale, this.y * scale, this.z * scale);
-        };
+        }
 
-        Vector3.prototype.scaleToRef = function (scale, result) {
+        public scaleToRef(scale: number, result: Vector3) {
             result.x = this.x * scale;
             result.y = this.y * scale;
             result.z = this.z * scale;
-        };
+        }
 
-        Vector3.prototype.equals = function (otherVector) {
+        public equals(otherVector: Vector3): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
-        };
+        }
 
-        Vector3.prototype.equalsToFloats = function (x, y, z) {
+        public equalsToFloats(x: number, y: number, z: number): boolean {
             return this.x === x && this.y === y && this.z === z;
-        };
+        }
 
-        Vector3.prototype.multiplyInPlace = function (otherVector) {
+        public multiplyInPlace(otherVector: Vector3): void {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
-        };
+        }
 
-        Vector3.prototype.multiply = function (otherVector) {
+        public multiply(otherVector: Vector3): Vector3 {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
-        };
+        }
 
-        Vector3.prototype.multiplyToRef = function (otherVector, result) {
+        public multiplyToRef(otherVector: Vector3, result: Vector3): void {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
-        };
+        }
 
-        Vector3.prototype.multiplyByFloats = function (x, y, z) {
+        public multiplyByFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x * x, this.y * y, this.z * z);
-        };
+        }
 
-        Vector3.prototype.divide = function (otherVector) {
+        public divide(otherVector: Vector3): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
-        };
+        }
 
-        Vector3.prototype.divideToRef = function (otherVector, result) {
+        public divideToRef(otherVector: Vector3, result: Vector3): void {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
-        };
+        }
 
-        Vector3.prototype.MinimizeInPlace = function (other) {
-            if (other.x < this.x)
-                this.x = other.x;
-            if (other.y < this.y)
-                this.y = other.y;
-            if (other.z < this.z)
-                this.z = other.z;
-        };
+        public MinimizeInPlace(other: Vector3): void {
+            if (other.x < this.x) this.x = other.x;
+            if (other.y < this.y) this.y = other.y;
+            if (other.z < this.z) this.z = other.z;
+        }
 
-        Vector3.prototype.MaximizeInPlace = function (other) {
-            if (other.x > this.x)
-                this.x = other.x;
-            if (other.y > this.y)
-                this.y = other.y;
-            if (other.z > this.z)
-                this.z = other.z;
-        };
+        public MaximizeInPlace(other: Vector3): void {
+            if (other.x > this.x) this.x = other.x;
+            if (other.y > this.y) this.y = other.y;
+            if (other.z > this.z) this.z = other.z;
+        }
 
         // Properties
-        Vector3.prototype.length = function () {
+        public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-        };
+        }
 
-        Vector3.prototype.lengthSquared = function () {
+        public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y + this.z * this.z);
-        };
+        }
 
         // Methods
-        Vector3.prototype.normalize = function () {
+        public normalize(): void {
             var len = this.length();
 
             if (len === 0)
@@ -547,68 +531,68 @@
             this.x *= num;
             this.y *= num;
             this.z *= num;
-        };
+        }
 
-        Vector3.prototype.clone = function () {
+        public clone(): Vector3 {
             return new Vector3(this.x, this.y, this.z);
-        };
+        }
 
-        Vector3.prototype.copyFrom = function (source) {
+        public copyFrom(source: Vector3): void {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
-        };
+        }
 
-        Vector3.prototype.copyFromFloats = function (x, y, z) {
+        public copyFromFloats(x: number, y: number, z: number): void {
             this.x = x;
             this.y = y;
             this.z = z;
-        };
+        }
 
         // Statics
-        Vector3.FromArray = function (array, offset) {
+        public static FromArray(array: number[], offset?: number): Vector3 {
             if (!offset) {
                 offset = 0;
             }
 
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
-        };
+        }
 
-        Vector3.FromArrayToRef = function (array, offset, result) {
+        public static FromArrayToRef(array: number[], offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
-        };
+        }
 
-        Vector3.FromFloatArrayToRef = function (array, offset, result) {
+        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
-        };
+        }
 
-        Vector3.FromFloatsToRef = function (x, y, z, result) {
+        public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
             result.x = x;
             result.y = y;
             result.z = z;
-        };
+        }
 
-        Vector3.Zero = function () {
+        public static Zero(): Vector3 {
             return new Vector3(0, 0, 0);
-        };
+        }
 
-        Vector3.Up = function () {
+        public static Up(): Vector3 {
             return new Vector3(0, 1.0, 0);
-        };
+        }
 
-        Vector3.TransformCoordinates = function (vector, transformation) {
+        public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
 
             Vector3.TransformCoordinatesToRef(vector, transformation, result);
 
             return result;
-        };
+        }
 
-        Vector3.TransformCoordinatesToRef = function (vector, transformation, result) {
+        public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]) + transformation.m[12];
             var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]) + transformation.m[13];
             var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]) + transformation.m[14];
@@ -617,9 +601,9 @@
             result.x = x / w;
             result.y = y / w;
             result.z = z / w;
-        };
+        }
 
-        Vector3.TransformCoordinatesFromFloatsToRef = function (x, y, z, transformation, result) {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             var rx = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]) + transformation.m[12];
             var ry = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]) + transformation.m[13];
             var rz = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]) + transformation.m[14];
@@ -628,42 +612,48 @@
             result.x = rx / rw;
             result.y = ry / rw;
             result.z = rz / rw;
-        };
+        }
 
-        Vector3.TransformNormal = function (vector, transformation) {
+        public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
 
             Vector3.TransformNormalToRef(vector, transformation, result);
 
             return result;
-        };
+        }
 
-        Vector3.TransformNormalToRef = function (vector, transformation, result) {
+        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             result.x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
             result.y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
             result.z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
-        };
+        }
 
-        Vector3.TransformNormalFromFloatsToRef = function (x, y, z, transformation, result) {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
             result.y = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]);
             result.z = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]);
-        };
+        }
 
-        Vector3.CatmullRom = function (value1, value2, value3, value4, amount) {
+        public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
 
-            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) + (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) + ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
+                (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
+                ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
 
-            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) + (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) + ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
+                (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
+                ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
 
-            var z = 0.5 * ((((2.0 * value2.z) + ((-value1.z + value3.z) * amount)) + (((((2.0 * value1.z) - (5.0 * value2.z)) + (4.0 * value3.z)) - value4.z) * squared)) + ((((-value1.z + (3.0 * value2.z)) - (3.0 * value3.z)) + value4.z) * cubed));
+            var z = 0.5 * ((((2.0 * value2.z) + ((-value1.z + value3.z) * amount)) +
+                (((((2.0 * value1.z) - (5.0 * value2.z)) + (4.0 * value3.z)) - value4.z) * squared)) +
+                ((((-value1.z + (3.0 * value2.z)) - (3.0 * value3.z)) + value4.z) * cubed));
 
             return new Vector3(x, y, z);
-        };
+        }
 
-        Vector3.Clamp = function (value, min, max) {
+        public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -677,9 +667,9 @@
             z = (z < min.z) ? min.z : z;
 
             return new Vector3(x, y, z);
-        };
+        }
 
-        Vector3.Hermite = function (value1, tangent1, value2, tangent2, amount) {
+        public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -692,59 +682,63 @@
             var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
 
             return new Vector3(x, y, z);
-        };
+        }
 
-        Vector3.Lerp = function (start, end, amount) {
+        public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
             var x = start.x + ((end.x - start.x) * amount);
             var y = start.y + ((end.y - start.y) * amount);
             var z = start.z + ((end.z - start.z) * amount);
 
             return new Vector3(x, y, z);
-        };
+        }
 
-        Vector3.Dot = function (left, right) {
+        public static Dot(left: Vector3, right: Vector3): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
-        };
+        }
 
-        Vector3.Cross = function (left, right) {
+        public static Cross(left: Vector3, right: Vector3): Vector3 {
             var result = Vector3.Zero();
 
             Vector3.CrossToRef(left, right, result);
 
             return result;
-        };
+        }
 
-        Vector3.CrossToRef = function (left, right, result) {
+        public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
             result.x = left.y * right.z - left.z * right.y;
             result.y = left.z * right.x - left.x * right.z;
             result.z = left.x * right.y - left.y * right.x;
-        };
+        }
 
-        Vector3.Normalize = function (vector) {
+        public static Normalize(vector: Vector3): Vector3 {
             var result = Vector3.Zero();
             Vector3.NormalizeToRef(vector, result);
             return result;
-        };
+        }
 
-        Vector3.NormalizeToRef = function (vector, result) {
+        public static NormalizeToRef(vector: Vector3, result: Vector3): void {
             result.copyFrom(vector);
             result.normalize();
-        };
+        }
 
-        Vector3.Project = function (vector, world, transform, viewport) {
+        public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = BABYLON.Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
+            var viewportMatrix = BABYLON.Matrix.FromValues(
+                cw / 2.0, 0, 0, 0,
+                0, -ch / 2.0, 0, 0,
+                0, 0, 1, 0,
+                cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
 
             var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
 
             return Vector3.TransformCoordinates(vector, finalMatrix);
-        };
+        }
 
-        Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
+        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
@@ -757,111 +751,103 @@
             }
 
             return vector;
-        };
+        }
 
-        Vector3.Minimize = function (left, right) {
+        public static Minimize(left: Vector3, right: Vector3): Vector3 {
             var min = left.clone();
             min.MinimizeInPlace(right);
             return min;
-        };
+        }
 
-        Vector3.Maximize = function (left, right) {
+        public static Maximize(left: Vector3, right: Vector3): Vector3 {
             var max = left.clone();
             max.MaximizeInPlace(right);
             return max;
-        };
+        }
 
-        Vector3.Distance = function (value1, value2) {
+        public static Distance(value1: Vector3, value2: Vector3): number {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
-        };
+        }
 
-        Vector3.DistanceSquared = function (value1, value2) {
+        public static DistanceSquared(value1: Vector3, value2: Vector3): number {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
 
             return (x * x) + (y * y) + (z * z);
-        };
+        }
 
-        Vector3.Center = function (value1, value2) {
+        public static Center(value1: Vector3, value2: Vector3): Vector3 {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
-        };
-        return Vector3;
-    })();
-    BABYLON.Vector3 = Vector3;
-
-    var Quaternion = (function () {
-        function Quaternion(x, y, z, w) {
-            if (typeof x === "undefined") { x = 0; }
-            if (typeof y === "undefined") { y = 0; }
-            if (typeof z === "undefined") { z = 0; }
-            if (typeof w === "undefined") { w = 0; }
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
         }
-        Quaternion.prototype.toString = function () {
+    }
+
+    export class Quaternion {
+        constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 0) {
+
+        }
+
+        public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
-        };
+        }
 
-        Quaternion.prototype.asArray = function () {
+        public asArray(): number[] {
             return [this.x, this.y, this.z, this.w];
-        };
+        }
 
-        Quaternion.prototype.equals = function (otherQuaternion) {
+        public equals(otherQuaternion: Quaternion): boolean {
             return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
-        };
+        }
 
-        Quaternion.prototype.clone = function () {
+        public clone(): Quaternion {
             return new Quaternion(this.x, this.y, this.z, this.w);
-        };
+        }
 
-        Quaternion.prototype.copyFrom = function (other) {
+        public copyFrom(other: Quaternion): void {
             this.x = other.x;
             this.y = other.y;
             this.z = other.z;
             this.w = other.w;
-        };
+        }
 
-        Quaternion.prototype.add = function (other) {
+        public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
-        };
+        }
 
-        Quaternion.prototype.scale = function (value) {
+        public scale(value: number): Quaternion {
             return new Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
-        };
+        }
 
-        Quaternion.prototype.multiply = function (q1) {
+        public multiply(q1: Quaternion): Quaternion {
             var result = new Quaternion(0, 0, 0, 1.0);
 
             this.multiplyToRef(q1, result);
 
             return result;
-        };
+        }
 
-        Quaternion.prototype.multiplyToRef = function (q1, result) {
+        public multiplyToRef(q1: Quaternion, result: Quaternion): void {
             result.x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
             result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
             result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
-        };
+        }
 
-        Quaternion.prototype.length = function () {
+        public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
-        };
+        }
 
-        Quaternion.prototype.normalize = function () {
+        public normalize(): void {
             var length = 1.0 / this.length();
             this.x *= length;
             this.y *= length;
             this.z *= length;
             this.w *= length;
-        };
+        }
 
-        Quaternion.prototype.toEulerAngles = function () {
+        public toEulerAngles(): Vector3 {
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
@@ -885,9 +871,9 @@
             }
 
             return new Vector3(pitch, yaw, roll);
-        };
+        }
 
-        Quaternion.prototype.toRotationMatrix = function (result) {
+        public toRotationMatrix(result: Matrix): void {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
             var zz = this.z * this.z;
@@ -914,10 +900,10 @@
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
-        };
+        }
 
         // Statics
-        Quaternion.RotationAxis = function (axis, angle) {
+        public static RotationAxis(axis: Vector3, angle: number): Quaternion {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
 
@@ -927,25 +913,25 @@
             result.z = axis.z * sin;
 
             return result;
-        };
+        }
 
-        Quaternion.FromArray = function (array, offset) {
+        public static FromArray(array: number[], offset?: number): Quaternion {
             if (!offset) {
                 offset = 0;
             }
 
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
-        };
+        }
 
-        Quaternion.RotationYawPitchRoll = function (yaw, pitch, roll) {
+        public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
             var result = new Quaternion();
 
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
 
             return result;
-        };
+        }
 
-        Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
+        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -961,9 +947,10 @@
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
-        };
+        }
 
-        Quaternion.Slerp = function (left, right, amount) {
+
+        public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
             var num2;
             var num3;
             var num = amount;
@@ -978,7 +965,8 @@
             if (num4 > 0.999999) {
                 num3 = 1 - num;
                 num2 = flag ? -num : num;
-            } else {
+            }
+            else {
                 var num5 = Math.acos(num4);
                 var num6 = (1.0 / Math.sin(num5));
                 num3 = (Math.sin((1.0 - num) * num5)) * num6;
@@ -986,27 +974,32 @@
             }
 
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
-        };
-        return Quaternion;
-    })();
-    BABYLON.Quaternion = Quaternion;
-
-    var Matrix = (function () {
-        function Matrix() {
-            this.m = new Float32Array(16);
         }
+    }
+
+    export class Matrix {
+        private static _tempQuaternion: Quaternion = new Quaternion();
+        private static _xAxis: Vector3 = Vector3.Zero();
+        private static _yAxis: Vector3 = Vector3.Zero();
+        private static _zAxis: Vector3 = Vector3.Zero();
+
+        public m: Float32Array = new Float32Array(16);
+
         // Properties
-        Matrix.prototype.isIdentity = function () {
+        public isIdentity(): boolean {
             if (this.m[0] != 1.0 || this.m[5] != 1.0 || this.m[10] != 1.0 || this.m[15] != 1.0)
                 return false;
 
-            if (this.m[1] != 0.0 || this.m[2] != 0.0 || this.m[3] != 0.0 || this.m[4] != 0.0 || this.m[6] != 0.0 || this.m[7] != 0.0 || this.m[8] != 0.0 || this.m[9] != 0.0 || this.m[11] != 0.0 || this.m[12] != 0.0 || this.m[13] != 0.0 || this.m[14] != 0.0)
+            if (this.m[1] != 0.0 || this.m[2] != 0.0 || this.m[3] != 0.0 ||
+                this.m[4] != 0.0 || this.m[6] != 0.0 || this.m[7] != 0.0 ||
+                this.m[8] != 0.0 || this.m[9] != 0.0 || this.m[11] != 0.0 ||
+                this.m[12] != 0.0 || this.m[13] != 0.0 || this.m[14] != 0.0)
                 return false;
 
             return true;
-        };
+        }
 
-        Matrix.prototype.determinant = function () {
+        public determinant(): number {
             var temp1 = (this.m[10] * this.m[15]) - (this.m[11] * this.m[14]);
             var temp2 = (this.m[9] * this.m[15]) - (this.m[11] * this.m[13]);
             var temp3 = (this.m[9] * this.m[14]) - (this.m[10] * this.m[13]);
@@ -1014,23 +1007,25 @@
             var temp5 = (this.m[8] * this.m[14]) - (this.m[10] * this.m[12]);
             var temp6 = (this.m[8] * this.m[13]) - (this.m[9] * this.m[12]);
 
-            return ((((this.m[0] * (((this.m[5] * temp1) - (this.m[6] * temp2)) + (this.m[7] * temp3))) - (this.m[1] * (((this.m[4] * temp1) - (this.m[6] * temp4)) + (this.m[7] * temp5)))) + (this.m[2] * (((this.m[4] * temp2) - (this.m[5] * temp4)) + (this.m[7] * temp6)))) - (this.m[3] * (((this.m[4] * temp3) - (this.m[5] * temp5)) + (this.m[6] * temp6))));
-        };
+            return ((((this.m[0] * (((this.m[5] * temp1) - (this.m[6] * temp2)) + (this.m[7] * temp3))) - (this.m[1] * (((this.m[4] * temp1) -
+                (this.m[6] * temp4)) + (this.m[7] * temp5)))) + (this.m[2] * (((this.m[4] * temp2) - (this.m[5] * temp4)) + (this.m[7] * temp6)))) -
+                (this.m[3] * (((this.m[4] * temp3) - (this.m[5] * temp5)) + (this.m[6] * temp6))));
+        }
 
         // Methods
-        Matrix.prototype.toArray = function () {
+        public toArray(): Float32Array {
             return this.m;
-        };
+        }
 
-        Matrix.prototype.asArray = function () {
+        public asArray(): Float32Array {
             return this.toArray();
-        };
+        }
 
-        Matrix.prototype.invert = function () {
+        public invert(): void {
             this.invertToRef(this);
-        };
+        }
 
-        Matrix.prototype.invertToRef = function (other) {
+        public invertToRef(other: Matrix) {
             var l1 = this.m[0];
             var l2 = this.m[1];
             var l3 = this.m[2];
@@ -1087,33 +1082,34 @@
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
-        };
+        }
 
-        Matrix.prototype.setTranslation = function (vector3) {
+        public setTranslation(vector3: Vector3): void {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
-        };
+        }
 
-        Matrix.prototype.multiply = function (other) {
+        public multiply(other: Matrix): Matrix {
             var result = new Matrix();
 
             this.multiplyToRef(other, result);
 
             return result;
-        };
+        }
 
-        Matrix.prototype.copyFrom = function (other) {
+        public copyFrom(other: Matrix): void {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
-        };
+        }
 
-        Matrix.prototype.multiplyToRef = function (other, result) {
+        public multiplyToRef(other: Matrix, result: Matrix): void {
             this.multiplyToArray(other, result.m, 0);
-        };
+        }
 
-        Matrix.prototype.multiplyToArray = function (other, result, offset) {
+        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): void {
+
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -1167,18 +1163,25 @@
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
-        };
+        }
 
-        Matrix.prototype.equals = function (value) {
-            return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] && this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] && this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] && this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
-        };
+        public equals(value: Matrix): boolean {
+            return value &&
+                (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
+                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+        }
 
-        Matrix.prototype.clone = function () {
-            return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5], this.m[6], this.m[7], this.m[8], this.m[9], this.m[10], this.m[11], this.m[12], this.m[13], this.m[14], this.m[15]);
-        };
+        public clone(): Matrix {
+            return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3],
+                this.m[4], this.m[5], this.m[6], this.m[7],
+                this.m[8], this.m[9], this.m[10], this.m[11],
+                this.m[12], this.m[13], this.m[14], this.m[15]);
+        }
 
         // Statics
-        Matrix.FromArray = function (array, offset) {
+        public static FromArray(array: number[], offset?: number): Matrix {
             var result = new Matrix();
 
             if (!offset) {
@@ -1188,15 +1191,20 @@
             Matrix.FromArrayToRef(array, offset, result);
 
             return result;
-        };
+        }
 
-        Matrix.FromArrayToRef = function (array, offset, result) {
+        public static FromArrayToRef(array: number[], offset: number, result: Matrix) {
+
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
             }
-        };
+        }
 
-        Matrix.FromValuesToRef = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44, result) {
+        public static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
+            initialM21: number, initialM22: number, initialM23: number, initialM24: number,
+            initialM31: number, initialM32: number, initialM33: number, initialM34: number,
+            initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void {
+
             result.m[0] = initialM11;
             result.m[1] = initialM12;
             result.m[2] = initialM13;
@@ -1213,9 +1221,13 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
-        };
+        }
 
-        Matrix.FromValues = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44) {
+        public static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
+            initialM21: number, initialM22: number, initialM23: number, initialM24: number,
+            initialM31: number, initialM32: number, initialM33: number, initialM34: number,
+            initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix {
+
             var result = new Matrix();
 
             result.m[0] = initialM11;
@@ -1236,29 +1248,38 @@
             result.m[15] = initialM44;
 
             return result;
-        };
+        }
 
-        Matrix.Identity = function () {
-            return Matrix.FromValues(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0);
-        };
+        public static Identity(): Matrix {
+            return Matrix.FromValues(1.0, 0, 0, 0,
+                0, 1.0, 0, 0,
+                0, 0, 1.0, 0,
+                0, 0, 0, 1.0);
+        }
 
-        Matrix.IdentityToRef = function (result) {
-            Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, result);
-        };
+        public static IdentityToRef(result: Matrix): void {
+            Matrix.FromValuesToRef(1.0, 0, 0, 0,
+                0, 1.0, 0, 0,
+                0, 0, 1.0, 0,
+                0, 0, 0, 1.0, result);
+        }
 
-        Matrix.Zero = function () {
-            return Matrix.FromValues(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        };
+        public static Zero(): Matrix {
+            return Matrix.FromValues(0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+        }
 
-        Matrix.RotationX = function (angle) {
+        public static RotationX(angle: number): Matrix {
             var result = new Matrix();
 
             Matrix.RotationXToRef(angle, result);
 
             return result;
-        };
+        }
 
-        Matrix.RotationXToRef = function (angle, result) {
+        public static RotationXToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
 
@@ -1280,17 +1301,17 @@
             result.m[12] = 0;
             result.m[13] = 0;
             result.m[14] = 0;
-        };
+        }
 
-        Matrix.RotationY = function (angle) {
+        public static RotationY(angle: number): Matrix {
             var result = new Matrix();
 
             Matrix.RotationYToRef(angle, result);
 
             return result;
-        };
+        }
 
-        Matrix.RotationYToRef = function (angle, result) {
+        public static RotationYToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
 
@@ -1312,17 +1333,17 @@
             result.m[12] = 0;
             result.m[13] = 0;
             result.m[14] = 0;
-        };
+        }
 
-        Matrix.RotationZ = function (angle) {
+        public static RotationZ(angle: number): Matrix {
             var result = new Matrix();
 
             Matrix.RotationZToRef(angle, result);
 
             return result;
-        };
+        }
 
-        Matrix.RotationZToRef = function (angle, result) {
+        public static RotationZToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
 
@@ -1344,9 +1365,9 @@
             result.m[12] = 0;
             result.m[13] = 0;
             result.m[14] = 0;
-        };
+        }
 
-        Matrix.RotationAxis = function (axis, angle) {
+        public static RotationAxis(axis: Vector3, angle: number): Matrix {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
@@ -1372,31 +1393,31 @@
             result.m[15] = 1.0;
 
             return result;
-        };
+        }
 
-        Matrix.RotationYawPitchRoll = function (yaw, pitch, roll) {
+        public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
             var result = new Matrix();
 
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, result);
 
             return result;
-        };
+        }
 
-        Matrix.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
+        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, this._tempQuaternion);
 
             this._tempQuaternion.toRotationMatrix(result);
-        };
+        }
 
-        Matrix.Scaling = function (x, y, z) {
+        public static Scaling(x: number, y: number, z: number): Matrix {
             var result = Matrix.Zero();
 
             Matrix.ScalingToRef(x, y, z, result);
 
             return result;
-        };
+        }
 
-        Matrix.ScalingToRef = function (x, y, z, result) {
+        public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
             result.m[0] = x;
             result.m[1] = 0;
             result.m[2] = 0;
@@ -1413,29 +1434,32 @@
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
-        };
+        }
 
-        Matrix.Translation = function (x, y, z) {
+        public static Translation(x: number, y: number, z: number): Matrix {
             var result = Matrix.Identity();
 
             Matrix.TranslationToRef(x, y, z, result);
 
             return result;
-        };
+        }
 
-        Matrix.TranslationToRef = function (x, y, z, result) {
-            Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
-        };
+        public static TranslationToRef(x: number, y: number, z: number, result: Matrix): void {
+            Matrix.FromValuesToRef(1.0, 0, 0, 0,
+                0, 1.0, 0, 0,
+                0, 0, 1.0, 0,
+                x, y, z, 1.0, result);
+        }
 
-        Matrix.LookAtLH = function (eye, target, up) {
+        public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
 
             Matrix.LookAtLHToRef(eye, target, up, result);
 
             return result;
-        };
+        }
 
-        Matrix.LookAtLHToRef = function (eye, target, up, result) {
+        public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
@@ -1453,27 +1477,33 @@
             var ey = -Vector3.Dot(this._yAxis, eye);
             var ez = -Vector3.Dot(this._zAxis, eye);
 
-            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
-        };
+            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0,
+                this._xAxis.y, this._yAxis.y, this._zAxis.y, 0,
+                this._xAxis.z, this._yAxis.z, this._zAxis.z, 0,
+                ex, ey, ez, 1, result);
+        }
 
-        Matrix.OrthoLH = function (width, height, znear, zfar) {
+        public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var hw = 2.0 / width;
             var hh = 2.0 / height;
             var id = 1.0 / (zfar - znear);
             var nid = znear / (znear - zfar);
 
-            return Matrix.FromValues(hw, 0, 0, 0, 0, hh, 0, 0, 0, 0, id, 0, 0, 0, nid, 1);
-        };
+            return Matrix.FromValues(hw, 0, 0, 0,
+                0, hh, 0, 0,
+                0, 0, id, 0,
+                0, 0, nid, 1);
+        }
 
-        Matrix.OrthoOffCenterLH = function (left, right, bottom, top, znear, zfar) {
+        public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix);
 
             return matrix;
-        };
+        }
 
-        Matrix.OrthoOffCenterLHToRef = function (left, right, bottom, top, znear, zfar, result) {
+        public static OrthoOffCenterLHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             result.m[0] = 2.0 / (right - left);
             result.m[1] = result.m[2] = result.m[3] = 0;
             result.m[5] = 2.0 / (top - bottom);
@@ -1484,9 +1514,9 @@
             result.m[13] = (top + bottom) / (bottom - top);
             result.m[14] = znear / (znear - zfar);
             result.m[15] = 1.0;
-        };
+        }
 
-        Matrix.PerspectiveLH = function (width, height, znear, zfar) {
+        public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
             matrix.m[0] = (2.0 * znear) / width;
@@ -1500,17 +1530,17 @@
             matrix.m[14] = (znear * zfar) / (znear - zfar);
 
             return matrix;
-        };
+        }
 
-        Matrix.PerspectiveFovLH = function (fov, aspect, znear, zfar) {
+        public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
 
             return matrix;
-        };
+        }
 
-        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result) {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
 
             result.m[0] = tan / aspect;
@@ -1522,20 +1552,23 @@
             result.m[11] = 1.0;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = (znear * zfar) / (znear - zfar);
-        };
+        }
 
-        Matrix.GetFinalMatrix = function (viewport, world, view, projection, zmin, zmax) {
+        public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, zmax - zmin, 0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
+            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0,
+                0, -ch / 2.0, 0, 0,
+                0, 0, zmax - zmin, 0,
+                cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
 
             return world.multiply(view).multiply(projection).multiply(viewportMatrix);
-        };
+        }
 
-        Matrix.Transpose = function (matrix) {
+        public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
             result.m[0] = matrix.m[0];
@@ -1559,17 +1592,17 @@
             result.m[15] = matrix.m[15];
 
             return result;
-        };
+        }
 
-        Matrix.Reflection = function (plane) {
+        public static Reflection(plane: Plane): Matrix {
             var matrix = new Matrix();
 
             Matrix.ReflectionToRef(plane, matrix);
 
             return matrix;
-        };
+        }
 
-        Matrix.ReflectionToRef = function (plane, result) {
+        public static ReflectionToRef(plane: Plane, result: Matrix): void {
             plane.normalize();
             var x = plane.normal.x;
             var y = plane.normal.y;
@@ -1593,26 +1626,24 @@
             result.m[13] = temp2 * plane.d;
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
-        };
-        Matrix._tempQuaternion = new Quaternion();
-        Matrix._xAxis = Vector3.Zero();
-        Matrix._yAxis = Vector3.Zero();
-        Matrix._zAxis = Vector3.Zero();
-        return Matrix;
-    })();
-    BABYLON.Matrix = Matrix;
+        }
+    }
 
-    var Plane = (function () {
-        function Plane(a, b, c, d) {
+    export class Plane {
+        public normal: Vector3;
+        public d: number;
+
+        constructor(a: number, b: number, c: number, d: number) {
             this.normal = new Vector3(a, b, c);
             this.d = d;
         }
-        Plane.prototype.asArray = function () {
+
+        public asArray(): number[] {
             return [this.normal.x, this.normal.y, this.normal.z, this.d];
-        };
+        }
 
         // Methods
-        Plane.prototype.normalize = function () {
+        public normalize(): void {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;
 
@@ -1625,9 +1656,9 @@
             this.normal.z *= magnitude;
 
             this.d *= magnitude;
-        };
+        }
 
-        Plane.prototype.transform = function (transformation) {
+        public transform(transformation: Matrix): Plane {
             var transposedMatrix = BABYLON.Matrix.Transpose(transformation);
             var x = this.normal.x;
             var y = this.normal.y;
@@ -1640,13 +1671,14 @@
             var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
 
             return new BABYLON.Plane(normalX, normalY, normalZ, finalD);
-        };
+        }
 
-        Plane.prototype.dotCoordinate = function (point) {
+
+        public dotCoordinate(point): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
-        };
+        }
 
-        Plane.prototype.copyFromPoints = function (point1, point2, point3) {
+        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): void {
             var x1 = point2.x - point1.x;
             var y1 = point2.y - point1.y;
             var z1 = point2.z - point1.z;
@@ -1661,7 +1693,8 @@
 
             if (pyth != 0) {
                 invPyth = 1.0 / pyth;
-            } else {
+            }
+            else {
                 invPyth = 0;
             }
 
@@ -1669,32 +1702,32 @@
             this.normal.y = xz * invPyth;
             this.normal.z = xy * invPyth;
             this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
-        };
+        }
 
-        Plane.prototype.isFrontFacingTo = function (direction, epsilon) {
+        public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
             var dot = Vector3.Dot(this.normal, direction);
 
             return (dot <= epsilon);
-        };
+        }
 
-        Plane.prototype.signedDistanceTo = function (point) {
+        public signedDistanceTo(point: Vector3): number {
             return Vector3.Dot(point, this.normal) + this.d;
-        };
+        }
 
         // Statics
-        Plane.FromArray = function (array) {
+        static FromArray(array: number[]): Plane {
             return new BABYLON.Plane(array[0], array[1], array[2], array[3]);
-        };
+        }
 
-        Plane.FromPoints = function (point1, point2, point3) {
+        static FromPoints(point1, point2, point3): Plane {
             var result = new BABYLON.Plane(0, 0, 0, 0);
 
             result.copyFromPoints(point1, point2, point3);
 
             return result;
-        };
+        }
 
-        Plane.FromPositionAndNormal = function (origin, normal) {
+        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane {
             var result = new BABYLON.Plane(0, 0, 0, 0);
             normal.normalize();
 
@@ -1702,37 +1735,28 @@
             result.d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
 
             return result;
-        };
+        }
 
-        Plane.SignedDistanceToPlaneFromPositionAndNormal = function (origin, normal, point) {
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number {
             var d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
 
             return Vector3.Dot(point, normal) + d;
-        };
-        return Plane;
-    })();
-    BABYLON.Plane = Plane;
-
-    var Viewport = (function () {
-        function Viewport(x, y, width, height) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
         }
-        Viewport.prototype.toGlobal = function (engine) {
+    }
+
+    export class Viewport {
+        constructor(public x: number, public y: number, public width: number, public height: number) {
+        }
+
+        public toGlobal(engine) {
             var width = engine.getRenderWidth() * engine.getHardwareScalingLevel();
             var height = engine.getRenderHeight() * engine.getHardwareScalingLevel();
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
-        };
-        return Viewport;
-    })();
-    BABYLON.Viewport = Viewport;
-
-    var Frustum = (function () {
-        function Frustum() {
         }
-        Frustum.GetPlanes = function (transform) {
+    }
+
+    export class Frustum {
+        public static GetPlanes(transform: Matrix): Plane[] {
             var frustumPlanes = [];
 
             for (var index = 0; index < 6; index++) {
@@ -1742,9 +1766,9 @@
             Frustum.GetPlanesToRef(transform, frustumPlanes);
 
             return frustumPlanes;
-        };
+        }
 
-        Frustum.GetPlanesToRef = function (transform, frustumPlanes) {
+        public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
             // Near
             frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
             frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
@@ -1786,18 +1810,21 @@
             frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
             frustumPlanes[5].d = transform.m[15] + transform.m[13];
             frustumPlanes[5].normalize();
-        };
-        return Frustum;
-    })();
-    BABYLON.Frustum = Frustum;
-
-    var Ray = (function () {
-        function Ray(origin, direction) {
-            this.origin = origin;
-            this.direction = direction;
         }
+    }
+
+    export class Ray {
+        private _edge1: Vector3;
+        private _edge2: Vector3;
+        private _pvec: Vector3;
+        private _tvec: Vector3;
+        private _qvec: Vector3;
+
+        constructor(public origin: Vector3, public direction: Vector3) {
+        }
+
         // Methods
-        Ray.prototype.intersectsBox = function (box) {
+        public intersectsBox(box): boolean {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
 
@@ -1805,7 +1832,8 @@
                 if (this.origin.x < box.minimum.x || this.origin.x > box.maximum.x) {
                     return false;
                 }
-            } else {
+            }
+            else {
                 var inv = 1.0 / this.direction.x;
                 var min = (box.minimum.x - this.origin.x) * inv;
                 var max = (box.maximum.x - this.origin.x) * inv;
@@ -1828,7 +1856,8 @@
                 if (this.origin.y < box.minimum.y || this.origin.y > box.maximum.y) {
                     return false;
                 }
-            } else {
+            }
+            else {
                 inv = 1.0 / this.direction.y;
                 min = (box.minimum.y - this.origin.y) * inv;
                 max = (box.maximum.y - this.origin.y) * inv;
@@ -1851,7 +1880,8 @@
                 if (this.origin.z < box.minimum.z || this.origin.z > box.maximum.z) {
                     return false;
                 }
-            } else {
+            }
+            else {
                 inv = 1.0 / this.direction.z;
                 min = (box.minimum.z - this.origin.z) * inv;
                 max = (box.maximum.z - this.origin.z) * inv;
@@ -1870,9 +1900,9 @@
                 }
             }
             return true;
-        };
+        }
 
-        Ray.prototype.intersectsSphere = function (sphere) {
+        public intersectsSphere(sphere): boolean {
             var x = sphere.center.x - this.origin.x;
             var y = sphere.center.y - this.origin.y;
             var z = sphere.center.z - this.origin.z;
@@ -1891,9 +1921,9 @@
             var temp = pyth - (dot * dot);
 
             return temp <= rr;
-        };
+        }
 
-        Ray.prototype.intersectsTriangle = function (vertex0, vertex1, vertex2) {
+        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3) {
             if (!this._edge1) {
                 this._edge1 = BABYLON.Vector3.Zero();
                 this._edge2 = BABYLON.Vector3.Zero();
@@ -1934,10 +1964,10 @@
                 bv: bv,
                 distance: Vector3.Dot(this._edge2, this._qvec) * invdet
             };
-        };
+        }
 
         // Statics
-        Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
+        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
             var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
             var end = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
 
@@ -1945,33 +1975,24 @@
             direction.normalize();
 
             return new Ray(start, direction);
-        };
+        }
 
-        Ray.Transform = function (ray, matrix) {
+        public static Transform(ray: Ray, matrix: Matrix): Ray {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
 
             return new Ray(newOrigin, newDirection);
-        };
-        return Ray;
-    })();
-    BABYLON.Ray = Ray;
-
-    (function (Space) {
-        Space[Space["LOCAL"] = 0] = "LOCAL";
-        Space[Space["WORLD"] = 1] = "WORLD";
-    })(BABYLON.Space || (BABYLON.Space = {}));
-    var Space = BABYLON.Space;
-
-    var Axis = (function () {
-        function Axis() {
         }
-        Axis.X = new BABYLON.Vector3(1, 0, 0);
-        Axis.Y = new BABYLON.Vector3(0, 1, 0);
-        Axis.Z = new BABYLON.Vector3(0, 0, 1);
-        return Axis;
-    })();
-    BABYLON.Axis = Axis;
-    ;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map
+    }
+
+    export enum Space {
+        LOCAL = 0,
+        WORLD = 1
+    }
+
+    export class Axis {
+        public static X: Vector3 = new BABYLON.Vector3(1, 0, 0);
+        public static Y: Vector3 = new BABYLON.Vector3(0, 1, 0);
+        public static Z: Vector3 =new BABYLON.Vector3(0, 0, 1);
+    };
+}

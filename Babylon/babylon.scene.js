@@ -22,7 +22,7 @@ var BABYLON = BABYLON || {};
         this._renderId = 0;
         this._executeWhenReadyTimeoutId = -1;
 
-        this._toBeDisposed = new BABYLON.Tools.SmartArray(256);
+        this._toBeDisposed = new BABYLON.SmartArray(256);
 
         this._onReadyCallbacks = [];
         this._pendingData = [];
@@ -48,11 +48,11 @@ var BABYLON = BABYLON || {};
         this.meshes = [];
 
         // Internal smart arrays
-        this._activeMeshes = new BABYLON.Tools.SmartArray(256);
-        this._processedMaterials = new BABYLON.Tools.SmartArray(256);
-        this._renderTargets = new BABYLON.Tools.SmartArray(256);
-        this._activeParticleSystems = new BABYLON.Tools.SmartArray(256);
-        this._activeSkeletons = new BABYLON.Tools.SmartArray(32);
+        this._activeMeshes = new BABYLON.SmartArray(256);
+        this._processedMaterials = new BABYLON.SmartArray(256);
+        this._renderTargets = new BABYLON.SmartArray(256);
+        this._activeParticleSystems = new BABYLON.SmartArray(256);
+        this._activeSkeletons = new BABYLON.SmartArray(32);
 
         // Rendering groups
         this._renderingManager = new BABYLON.RenderingManager(this);
@@ -261,7 +261,7 @@ var BABYLON = BABYLON || {};
         if (target.animations) {
             this.stopAnimation(target);
 
-            var animatable = new BABYLON._Animatable(target, from, to, loop, speedRatio, onAnimationEnd);
+            var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd);
 
             this._activeAnimatables.push(animatable);
         }

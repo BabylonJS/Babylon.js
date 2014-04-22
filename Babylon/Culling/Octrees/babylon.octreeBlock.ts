@@ -1,10 +1,15 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var OctreeBlock = (function () {
-        function OctreeBlock(minPoint, maxPoint, capacity) {
-            this.meshes = [];
-            this.subMeshes = [];
-            this._boundingVectors = new Array();
+﻿module BABYLON {
+    export class OctreeBlock {
+        public meshes = [];
+        public subMeshes = [];
+        public blocks: Array<OctreeBlock>;
+
+        private _capacity: number;
+        private _minPoint: Vector3;
+        private _maxPoint: Vector3;
+        private _boundingVectors = new Array<Vector3>();
+
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number) {
             this._capacity = capacity;
 
             this._minPoint = minPoint;
@@ -31,8 +36,9 @@
             this._boundingVectors.push(maxPoint.clone());
             this._boundingVectors[7].y = minPoint.y;
         }
+
         // Methods
-        OctreeBlock.prototype.addMesh = function (mesh) {
+        public addMesh(mesh): void {
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];
@@ -55,18 +61,18 @@
             }
 
             if (this.subMeshes.length > this._capacity) {
-                BABYLON.Octree._CreateBlocks(this._minPoint, this._maxPoint, this.meshes, this._capacity, this);
+                Octree._CreateBlocks(this._minPoint, this._maxPoint, this.meshes, this._capacity, this);
             }
-        };
+        }
 
-        OctreeBlock.prototype.addEntries = function (meshes) {
+        public addEntries(meshes): void {
             for (var index = 0; index < meshes.length; index++) {
                 var mesh = meshes[index];
                 this.addMesh(mesh);
             }
-        };
+        }
 
-        OctreeBlock.prototype.select = function (frustumPlanes, selection) {
+        public select(frustumPlanes: Plane[], selection): void {
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];
@@ -77,9 +83,6 @@
             if (BABYLON.BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
                 selection.push(this);
             }
-        };
-        return OctreeBlock;
-    })();
-    BABYLON.OctreeBlock = OctreeBlock;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.octreeBlock.js.map
+        }
+    }
+} 

@@ -31,7 +31,7 @@ var BABYLON = BABYLON || {};
         }
 
         if (!this._transformMatrices || this._transformMatrices.length !== 16 * this.bones.length) {
-            this._transformMatrices = new BABYLON.MatrixType(16 * this.bones.length);
+            this._transformMatrices = new Float32Array(16 * this.bones.length);
         }
 
         for (var index = 0; index < this.bones.length; index++) {
