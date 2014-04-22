@@ -708,12 +708,12 @@ var BABYLON = BABYLON || {};
 
         if (isDDS) {
             BABYLON.Tools.LoadFile(url, function (data) {
-                var info = BABYLON.Tools.GetDDSInfo(data);
+                var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                 var loadMipmap = info.mipmapCount > 1 && !noMipmap;
 
                 prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, function (potWidth, potHeight) {
-                    BABYLON.Tools.UploadDDSLevels(that._gl, that.getCaps().s3tc, data, loadMipmap);
+                    BABYLON.Internals.DDSTools.UploadDDSLevels(that._gl, that.getCaps().s3tc, data, loadMipmap);
                 });
             }, null, scene.database, true);
         } else {

@@ -1,17 +1,15 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var PickingInfo = (function () {
-        function PickingInfo() {
-            this.hit = false;
-            this.distance = 0;
-            this.pickedPoint = null;
-            this.pickedMesh = null;
-            this.bu = 0;
-            this.bv = 0;
-            this.faceId = -1;
-        }
+﻿module BABYLON {
+    export class PickingInfo {
+        public hit = false;
+        public distance = 0;
+        public pickedPoint = null;
+        public pickedMesh = null;
+        public bu = 0;
+        public bv = 0;
+        public faceId = -1;
+
         // Methods
-        PickingInfo.prototype.getNormal = function () {
+        public getNormal(): Vector3 {
             if (!this.pickedMesh) {
                 return null;
             }
@@ -28,9 +26,6 @@
             normal2 = normal2.scale(1.0 - this.bu - this.bv);
 
             return new BABYLON.Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
-        };
-        return PickingInfo;
-    })();
-    BABYLON.PickingInfo = PickingInfo;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.pickingInfo.js.map
+        }
+    }
+} 

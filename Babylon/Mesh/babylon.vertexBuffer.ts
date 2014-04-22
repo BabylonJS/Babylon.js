@@ -1,8 +1,15 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var VertexBuffer = (function () {
+﻿module BABYLON {
+    export class VertexBuffer {
+        private _mesh; //ANY
+        private _engine; //ANY
+        private _buffer;
+        private _data: number[];
+        private _updatable: boolean;
+        private _kind: string;
+        private _strideSize: number;
+
         //ANY
-        function VertexBuffer(mesh, data, kind, updatable, engine) {
+        constructor(mesh, data: number[], kind: string, updatable: boolean, engine?) {
             this._mesh = mesh;
             this._engine = engine || mesh.getScene().getEngine();
             this._updatable = updatable;
@@ -44,42 +51,41 @@
                     break;
             }
         }
+
         // Properties
-        VertexBuffer.prototype.isUpdatable = function () {
+        public isUpdatable(): boolean {
             return this._updatable;
-        };
+        }
 
-        VertexBuffer.prototype.getData = function () {
+        public getData(): number[] {
             return this._data;
-        };
+        }
 
-        VertexBuffer.prototype.getStrideSize = function () {
+        public getStrideSize(): number {
             return this._strideSize;
-        };
+        }
 
         // Methods
-        VertexBuffer.prototype.update = function (data) {
+        public update(data: number[]): void {
             this._engine.updateDynamicVertexBuffer(this._buffer, data);
             this._data = data;
 
             if (this._kind === BABYLON.VertexBuffer.PositionKind && this._mesh) {
                 this._mesh._resetPointsArrayCache();
             }
-        };
+        }
 
-        VertexBuffer.prototype.dispose = function () {
+        public dispose(): void {
             this._engine._releaseBuffer(this._buffer);
-        };
+        }
 
-        VertexBuffer.PositionKind = "position";
-        VertexBuffer.NormalKind = "normal";
-        VertexBuffer.UVKind = "uv";
-        VertexBuffer.UV2Kind = "uv2";
-        VertexBuffer.ColorKind = "color";
-        VertexBuffer.MatricesIndicesKind = "matricesIndices";
-        VertexBuffer.MatricesWeightsKind = "matricesWeights";
-        return VertexBuffer;
-    })();
-    BABYLON.VertexBuffer = VertexBuffer;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.vertexBuffer.js.map
+        // Enums
+        public static PositionKind = "position";
+        public static NormalKind = "normal";
+        public static UVKind = "uv";
+        public static UV2Kind = "uv2";
+        public static ColorKind = "color";
+        public static MatricesIndicesKind = "matricesIndices";
+        public static MatricesWeightsKind = "matricesWeights";
+    }
+} 

@@ -1,63 +1,72 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var Node = (function () {
-        function Node(name, scene) {
-            this.animations = new Array();
-            this._childrenFlag = -1;
-            this._isEnabled = true;
-            this._isReady = true;
-            this._currentRenderId = -1;
+﻿module BABYLON {
+    export class Node {
+        public parent: Node;
+        public name: string;
+        public id: string;
+
+        public animations = new Array<Animation>();
+
+        private _childrenFlag = -1;
+        private _isEnabled = true;
+        public _isReady = true;
+        public _currentRenderId = -1;
+
+        private _scene;
+        public _cache;
+
+        constructor(name: string, scene) {
             this.name = name;
             this.id = name;
             this._scene = scene;
             this._initCache();
         }
-        //ANY
-        Node.prototype.getScene = function () {
-            return this._scene;
-        };
 
         //ANY
-        Node.prototype.getEngine = function () {
+        public getScene() {
+            return this._scene;
+        }
+
+        //ANY
+        public getEngine() {
             return this._scene.getEngine();
-        };
+        }
 
         // override it in derived class
-        Node.prototype.getWorldMatrix = function () {
-            return BABYLON.Matrix.Identity();
-        };
+        public getWorldMatrix(): Matrix {
+            return Matrix.Identity();
+        }
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
-        Node.prototype._initCache = function () {
+        public _initCache() {
             this._cache = {};
             this._cache.parent = undefined;
-        };
+        }
 
-        Node.prototype.updateCache = function (force) {
+        public updateCache(force?: boolean): void {
             if (!force && this.isSynchronized())
                 return;
 
             this._cache.parent = this.parent;
 
             this._updateCache();
-        };
+        }
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method if !ignoreParentClass
-        Node.prototype._updateCache = function (ignoreParentClass) {
-        };
+        public _updateCache(ignoreParentClass?: boolean): void {
+        }
 
         // override it in derived class if you add new variables to the cache
-        Node.prototype._isSynchronized = function () {
+        public _isSynchronized(): boolean {
             return true;
-        };
+        }
 
-        Node.prototype.isSynchronizedWithParent = function () {
+        public isSynchronizedWithParent(): boolean {
             return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
-        };
+        }
 
-        Node.prototype.isSynchronized = function (updateCache) {
+        public isSynchronized(updateCache?: boolean): boolean {
             var check = this.hasNewParent();
 
             check = check || !this.isSynchronizedWithParent();
@@ -68,9 +77,9 @@
                 this.updateCache(true);
 
             return !check;
-        };
+        }
 
-        Node.prototype.hasNewParent = function (update) {
+        public hasNewParent(update?: boolean): boolean {
             if (this._cache.parent === this.parent)
                 return false;
 
@@ -78,13 +87,13 @@
                 this._cache.parent = this.parent;
 
             return true;
-        };
+        }
 
-        Node.prototype.isReady = function () {
+        public isReady(): boolean {
             return this._isReady;
-        };
+        }
 
-        Node.prototype.isEnabled = function () {
+        public isEnabled(): boolean {
             if (!this.isReady() || !this._isEnabled) {
                 return false;
             }
@@ -94,42 +103,40 @@
             }
 
             return true;
-        };
+        }
 
-        Node.prototype.setEnabled = function (value) {
+        public setEnabled(value: boolean): void {
             this._isEnabled = value;
-        };
+        }
 
-        Node.prototype.isDescendantOf = function (ancestor) {
+        public isDescendantOf(ancestor: Node): boolean {
             if (this.parent) {
                 if (this.parent === ancestor) {
                     return true;
                 }
 
+
                 return this.parent.isDescendantOf(ancestor);
             }
             return false;
-        };
+        }
 
-        Node.prototype._getDescendants = function (list, results) {
+        public _getDescendants(list: Node[], results: Node[]): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
                 if (item.isDescendantOf(this)) {
                     results.push(item);
                 }
             }
-        };
+        }
 
-        Node.prototype.getDescendants = function () {
+        public getDescendants(): Node[] {
             var results = [];
             this._getDescendants(this._scene.meshes, results);
             this._getDescendants(this._scene.lights, results);
             this._getDescendants(this._scene.cameras, results);
 
             return results;
-        };
-        return Node;
-    })();
-    BABYLON.Node = Node;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.node.js.map
+        }
+    }
+} 

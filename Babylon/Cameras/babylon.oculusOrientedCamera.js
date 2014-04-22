@@ -52,7 +52,7 @@ var BABYLON = BABYLON || {};
             new BABYLON.FxaaPostProcess("fxaa_left", 1.0, leftCamera);
         }
 
-        var rightCamera = new BABYLON.OculusOrientedCamera(name + "_right", position, scene, false, ovrSettings, neutralOrientation);
+        var rightCamera = new BABYLON.OculusOrientedCamera(name + "_right", position.clone(), scene, false, ovrSettings, neutralOrientation);
         rightCamera.minZ = minZ;
         rightCamera.maxZ = maxZ;
         if (useFXAA) {

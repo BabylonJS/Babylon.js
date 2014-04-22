@@ -2,8 +2,8 @@
 (function (BABYLON) {
     var OctreeBlock = (function () {
         function OctreeBlock(minPoint, maxPoint, capacity) {
-            this.meshes = [];
-            this.subMeshes = [];
+            this.meshes = new Array();
+            this.subMeshes = new Array();
             this._boundingVectors = new Array();
             this._capacity = capacity;
 
@@ -33,6 +33,10 @@
         }
         // Methods
         OctreeBlock.prototype.addMesh = function (mesh) {
+            if (!mesh.subMeshes) {
+                return;
+            }
+
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];

@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class OctreeBlock {
-        public meshes = [];
-        public subMeshes = [];
+        public meshes = new Array<Mesh>();
+        public subMeshes = new Array <Array<SubMesh>>();
         public blocks: Array<OctreeBlock>;
 
         private _capacity: number;
@@ -38,7 +38,11 @@
         }
 
         // Methods
-        public addMesh(mesh): void {
+        public addMesh(mesh: Mesh): void {
+            if (!mesh.subMeshes) {
+                return;
+            }
+
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];
@@ -65,14 +69,14 @@
             }
         }
 
-        public addEntries(meshes): void {
+        public addEntries(meshes: Mesh[]): void {
             for (var index = 0; index < meshes.length; index++) {
                 var mesh = meshes[index];
                 this.addMesh(mesh);
             }
         }
 
-        public select(frustumPlanes: Plane[], selection): void {
+        public select(frustumPlanes: Plane[], selection: OctreeBlock[]): void {
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];
