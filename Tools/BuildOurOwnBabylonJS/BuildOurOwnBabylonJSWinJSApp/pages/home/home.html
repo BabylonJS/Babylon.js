@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>homePage</title>
+
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.2.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.2.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.2.0/js/ui.js"></script>
+
+    <script src="/js/jquery-2.1.0.min.js"></script>
+
+    <link href="/css/default.css" rel="stylesheet" />
+    <link href="/pages/home/home.css" rel="stylesheet" />
+    <script src="/pages/home/home.js"></script>
+</head>
+<body>
+    <div id="ListHeaderTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+        <div class="sceneListHeader">
+            <h2 data-win-bind="innerText: title"></h2>
+        </div>
+    </div>
+    <div id="ListItemTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+        <div data-win-bind="className: className">
+            <h4 data-win-bind="textContent: title"></h4>
+            <h6 data-win-bind="textContent: text"></h6>
+        </div>
+    </div>
+
+    <div id="babylonScenesListView"
+         class="win-selectionstylefilled"
+         data-win-control="WinJS.UI.ListView"
+         data-win-options="{
+            itemDataSource: home.babylonScenes.groupedItemsList.dataSource,
+            itemTemplate: select('#ListItemTemplate'),
+            groupDataSource: home.babylonScenes.groupedItemsList.groups.dataSource,
+            groupHeaderTemplate: select('#ListHeaderTemplate'),
+            layout: { type: WinJS.UI.GridLayout },
+            selectionMode: 'single',
+            swipeBehavior: 'none'
+         }">
+    </div>
+</body>
+</html>

@@ -39,7 +39,7 @@
     <Resource Include="..\..\..\cannon.js">
       <Link>cannon.js</Link>
     </Resource>
-    <Resource Include="..\..\..\babylon.*.*.*.js">
+    <Resource Include="..\..\..\babylon.*.*.js">
       <Link>%(Filename)%(Extension)</Link>
     </Resource>
     <Resource Include="..\..\..\Babylon\**\*.*">

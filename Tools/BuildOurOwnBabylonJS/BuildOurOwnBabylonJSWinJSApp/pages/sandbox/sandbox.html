@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.2.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.2.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.2.0/js/ui.js"></script>
+
+    <title>Sandbox</title>
+    <script src="sandbox.js"></script>
+
+    <script src="/js/hand-1.3.6.js"></script>
+    <script src="/js/ourOwnBabylon.js"></script>
+    <script src="/js/Shared/Loading.js"></script>
+    <link href="sandbox.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="navbar" data-win-control="WinJS.UI.NavBar">
+        <div data-win-control="WinJS.UI.NavBarContainer">
+            <button class="backButton" data-win-control="WinJS.UI.BackButton"></button>
+            <div>
+                <input type="file" id="fileInput" multiple />
+            </div>            
+        </div>
+    </div>
+    <div id="babylonScene">
+        <canvas id="babylonCanvas"></canvas>
+    </div>
+</body>
+</html>

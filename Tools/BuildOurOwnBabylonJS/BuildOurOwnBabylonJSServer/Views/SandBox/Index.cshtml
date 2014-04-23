@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "Our Own BabylonJS";
+    ViewBag.BabylonJSFolder = "..\\..\\..\\";
+}
+<style>
+    #loadingInfos {
+        color: #888888;
+        cursor: default;
+        font-size: 30px;
+        height: 60px;
+        left: 0;
+        margin-top: -30px;
+        padding-top: 10px;
+        position: absolute;
+        text-align: center;
+        bottom: 0;
+        transition: transform 0.25s ease-in-out 0s;
+        width: calc(100% - 10px);
+        z-index: 3;
+        border: 5px dotted gray;
+        pointer-events: none;
+    }
+
+    #loadingInfos .content {
+        position: relative;
+        top: 50%;
+    }
+
+    .loadingInfos {
+        transform: translateX(120%);
+        -webkit-transform: translate(120%);
+    }
+</style>
+<div id="loadingInfos"><div class="content">Drag and drop your .babylon files inside, with associated assets</div></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var loading = new OURBABYLON.Loading(OURBABYLON.canvas.parentElement);
+
+        var loadingInfos = document.getElementById("loadingInfos");
+
+        loadingInfos.style.height = (OURBABYLON.canvas.height-20)+"px";
+        window.addEventListener('resize', function () {
+            loadingInfos.style.height = (OURBABYLON.canvas.height - 20) + "px";
+        });
+
+        var filesInput = new BABYLON.FilesInput(OURBABYLON.engine, OURBABYLON.currentScene, OURBABYLON.canvas, function (sceneFile, babylonScene) {
+            OURBABYLON.sceneInitialization(babylonScene, true);
+            loading.hide();
+        }, $.proxy(loading.onProgress, loading), null, null, function () {
+            loading.show();
+            loadingInfos.className = "loadingInfos";
+        });
+        filesInput.monitorElementForDragNDrop(OURBABYLON.canvas);
+    });
+</script>
