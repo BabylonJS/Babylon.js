@@ -12,6 +12,11 @@
             super(name, scene);
         }
 
+        public setDirectionToTarget(target: Vector3): Vector3 {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
+            return this.direction;
+        }
+
         //ANY
         public transferToEffect(effect, positionUniformName: string, directionUniformName: string): void {
             var normalizeDirection;

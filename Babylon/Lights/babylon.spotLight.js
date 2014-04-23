@@ -18,6 +18,11 @@ var BABYLON;
             this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
         }
+        SpotLight.prototype.setDirectionToTarget = function (target) {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
+            return this.direction;
+        };
+
         //ANY
         SpotLight.prototype.transferToEffect = function (effect, positionUniformName, directionUniformName) {
             var normalizeDirection;

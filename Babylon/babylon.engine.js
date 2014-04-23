@@ -72,9 +72,13 @@ var BABYLON = BABYLON || {};
         };
 
         this._compiledEffects = {};
+        this._lastVertexAttribIndex = 0;
 
-        this._gl.enable(this._gl.DEPTH_TEST);
-        this._gl.depthFunc(this._gl.LEQUAL);
+        // Depth buffer
+        this._depthMask = false;
+        this.setDepthBuffer(true);
+        this.setDepthFunctionToLessOrEqual();
+        this.setDepthWrite(true);
 
         // Fullscreen
         this.isFullscreen = false;
@@ -231,13 +235,15 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Engine.prototype.clear = function (color, backBuffer, depthStencil) {
         this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-        this._gl.clearDepth(1.0);
+        if (this._depthMask) {
+            this._gl.clearDepth(1.0);
+        }
         var mode = 0;
 
         if (backBuffer)
             mode |= this._gl.COLOR_BUFFER_BIT;
 
-        if (depthStencil)
+        if (depthStencil && this._depthMask)
             mode |= this._gl.DEPTH_BUFFER_BIT;
 
         this._gl.clear(mode);
@@ -498,15 +504,23 @@ var BABYLON = BABYLON || {};
         // Use program
         this._gl.useProgram(effect.getProgram());
 
-        for (var index = 0; index < effect.getAttributesCount() ; index++) {
+        var currentCount = effect.getAttributesCount();
+        var maxIndex = 0;
+        for (var index = 0; index < currentCount; index++) {
             // Attributes
             var order = effect.getAttribute(index);
 
             if (order >= 0) {
                 this._gl.enableVertexAttribArray(effect.getAttribute(index));
+                maxIndex = Math.max(maxIndex, order);
             }
         }
 
+        for (index = maxIndex + 1; index <= this._lastVertexAttribIndex; index++) {
+            this._gl.disableVertexAttribArray(index);
+        }
+
+        this._lastVertexAttribIndex = maxIndex;
         this._currentEffect = effect;
     };
     
@@ -605,6 +619,7 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Engine.prototype.setDepthWrite = function (enable) {
         this._gl.depthMask(enable);
+        this._depthMask = enable;
     };
 
     BABYLON.Engine.prototype.setColorWrite = function (enable) {
@@ -788,7 +803,7 @@ var BABYLON = BABYLON || {};
         this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
         this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? false : true); // Video are upside down by default
 
-        // Scale the video if it is a NPOT
+        // Scale the video if it is a NPOT using the current working canvas
         if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
             if (!texture._workingCanvas) {
                 texture._workingCanvas = document.createElement("canvas");
