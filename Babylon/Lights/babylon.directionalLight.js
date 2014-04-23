@@ -17,6 +17,11 @@ var BABYLON;
 
             this.position = direction.scale(-1);
         }
+        DirectionalLight.prototype.setDirectionToTarget = function (target) {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
+            return this.direction;
+        };
+
         DirectionalLight.prototype._computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {

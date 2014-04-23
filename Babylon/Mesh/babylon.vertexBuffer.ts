@@ -67,6 +67,11 @@
 
         // Methods
         public update(data: number[]): void {
+            if (!this._updatable) {
+                console.log("You cannot update a non-updatable vertex buffer");
+                return;
+            }
+
             this._engine.updateDynamicVertexBuffer(this._buffer, data);
             this._data = data;
 

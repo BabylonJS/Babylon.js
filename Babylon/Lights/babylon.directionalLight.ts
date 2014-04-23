@@ -15,6 +15,11 @@
             this.position = direction.scale(-1);
         }
 
+        public setDirectionToTarget(target: Vector3): Vector3 {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
+            return this.direction;
+        }
+
         public _computeTransformedPosition(): boolean {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
