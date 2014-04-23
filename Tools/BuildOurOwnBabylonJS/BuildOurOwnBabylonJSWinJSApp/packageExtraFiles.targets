@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- $(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\AppxPackage\Microsoft.AppxPackage.Targets
+    must be imported before this file -->
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="PackageExtraFiles" AfterTargets="GetPackagingOutputs">
+		<ItemGroup>
+            <_AddToPackageFiles Include="$(ProjectDir)\addToPackage\**\*" />
+            <PackagingOutputs Include="@(_AddToPackageFiles -> '%(Identity)')">
+				<OutputGroup>ExtraFiles</OutputGroup>
+				<ProjectName>$(ProjectName)</ProjectName>
+                <TargetPath>addToPackage\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+			</PackagingOutputs>
+        </ItemGroup>
+    </Target>
+</Project>

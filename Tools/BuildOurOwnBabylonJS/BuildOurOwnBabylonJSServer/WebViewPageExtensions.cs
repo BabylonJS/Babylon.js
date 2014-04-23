@@ -41,6 +41,24 @@ namespace BuildOurOwnBabylonJSServer.Extensions
             return page.Html.Raw(script.ToString(TagRenderMode.Normal));
         }
 
+        public static IHtmlString BabylonJSStyle(this WebViewPage page,
+            string relPathToBabylonJSFolder) 
+        {
+            if (page == null)
+                return null;
+
+            var type = "text/css";
+
+            var src = page.BabylonJSFile(relPathToBabylonJSFolder);
+
+            var script = new TagBuilder("link");
+            script.Attributes.Add("href", src);
+            script.Attributes.Add("type", type);
+            script.Attributes.Add("rel", "stylesheet");
+
+            return page.Html.Raw(script.ToString(TagRenderMode.Normal));
+        }
+
         public static string BabylonJSSamplesFile(this WebViewPage page,
             string relPathToBabylonJSSamplesFolder)
         {
@@ -55,6 +73,21 @@ namespace BuildOurOwnBabylonJSServer.Extensions
                                       new { rootPath = babylonJSSamplesDirFullPath, relPath = relPathToBabylonJSSamplesFolder },
                                       page.Request.Url.Scheme);
 
+            return url;
+        }
+
+
+        public static string BabylonJSSamplesFolder(this WebViewPage page)
+        {
+            if (page == null)
+                return null;
+
+            var babylonJSSamplesDirFullPath = Environment.GetEnvironmentVariable("BabylonJSSamplesDirFullPath") + "\\Scenes";
+
+            var url = page.Url.Action(BuildOurOwnBabylonJSController.GetBabylonScenesActionName,
+                                      "BuildOurOwnBabylonJS",
+                                      new { rootPath = babylonJSSamplesDirFullPath },
+                                      page.Request.Url.Scheme);
             return url;
         }
     }

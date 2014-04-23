@@ -6,10 +6,15 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+
+        var loading = new OURBABYLON.Loading(OURBABYLON.canvas.parentElement);
+
+        loading.show();
+
         BABYLON.SceneLoader.Load("@Html.Raw(this.BabylonJSSamplesFile("Scenes/" + (string)ViewBag.DemoFolderName))" + "@Url.Encode("/")", "@ViewBag.DemoFile", OURBABYLON.engine, function (scene) {
-            
+            OURBABYLON.sceneInitialization(scene);
             scene.activeCamera.attachControl(OURBABYLON.canvas);
-            
+
             // Render loop
             var renderLoop = function () {
                 scene.render();
@@ -18,7 +23,8 @@
             // Launch render loop
             scene.getEngine().runRenderLoop(renderLoop);
 
-            OURBABYLON.currentScene = scene;
-        });
+            loading.hide();
+
+        }, $.proxy(loading.onProgress, loading));
     });
 </script>
