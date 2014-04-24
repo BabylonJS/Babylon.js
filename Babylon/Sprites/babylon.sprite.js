@@ -1,81 +1,75 @@
-﻿"use strict";
+﻿var BABYLON;
+(function (BABYLON) {
+    var Sprite = (function () {
+        function Sprite(name, manager) {
+            this.name = name;
+            this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            this.size = 1.0;
+            this.angle = 0;
+            this.cellIndex = 0;
+            this.invertU = 0;
+            this.invertV = 0;
+            this._animationStarted = false;
+            this._loopAnimation = false;
+            this._fromIndex = 0;
+            this._toIndex = 0;
+            this._delay = 0;
+            this._direction = 1;
+            this._frameCount = 0;
+            this._time = 0;
+            this._manager = manager;
 
-var BABYLON = BABYLON || {};
+            this._manager.sprites.push(this);
 
-(function () {
-    BABYLON.Sprite = function (name, manager) {
-        this.name = name;
-        this._manager = manager;
+            this.position = BABYLON.Vector3.Zero();
+        }
+        Sprite.prototype.playAnimation = function (from, to, loop, delay) {
+            this._fromIndex = from;
+            this._toIndex = to;
+            this._loopAnimation = loop;
+            this._delay = delay;
+            this._animationStarted = true;
 
-        this._manager.sprites.push(this);
+            this._direction = from < to ? 1 : -1;
 
-        this.position = BABYLON.Vector3.Zero();
-        this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            this.cellIndex = from;
+            this._time = 0;
+        };
 
-        this._frameCount = 0;
-    };
+        Sprite.prototype.stopAnimation = function () {
+            this._animationStarted = false;
+        };
 
-    // Members
-    BABYLON.Sprite.prototype.position = null;
-    BABYLON.Sprite.prototype.size = 1.0;
-    BABYLON.Sprite.prototype.angle = 0;
-    BABYLON.Sprite.prototype.cellIndex = 0;
-    BABYLON.Sprite.prototype.invertU = 0;
-    BABYLON.Sprite.prototype.invertV = 0;
-    BABYLON.Sprite.prototype.disposeWhenFinishedAnimating = false;
+        Sprite.prototype._animate = function (deltaTime) {
+            if (!this._animationStarted)
+                return;
 
-    BABYLON.Sprite.prototype._animationStarted = false;
-    BABYLON.Sprite.prototype._loopAnimation = false;
-    BABYLON.Sprite.prototype._fromIndex = false;
-    BABYLON.Sprite.prototype._toIndex = false;
-    BABYLON.Sprite.prototype._delay = false;
-    BABYLON.Sprite.prototype._direction = 1;
-
-    // Methods
-    BABYLON.Sprite.prototype.playAnimation = function (from, to, loop, delay) {
-        this._fromIndex = from;
-        this._toIndex = to;
-        this._loopAnimation = loop;
-        this._delay = delay;
-        this._animationStarted = true;
-
-        this._direction = from < to ? 1 : -1;
-
-        this.cellIndex = from;
-        this._time = 0;
-    };
-
-    BABYLON.Sprite.prototype.stopAnimation = function () {
-        this._animationStarted = false;
-    };
-
-    BABYLON.Sprite.prototype._animate = function (deltaTime) {
-        if (!this._animationStarted)
-            return;
-
-        this._time += deltaTime;
-        if (this._time > this._delay) {
-            this._time = this._time % this._delay;
-            this.cellIndex += this._direction;
-            if (this.cellIndex == this._toIndex) {
-                if (this._loopAnimation) {
-                    this.cellIndex = this._fromIndex;
-                } else {
-                    this._animationStarted = false;
-                    if (this.disposeWhenFinishedAnimating) {
-                        this.dispose();
+            this._time += deltaTime;
+            if (this._time > this._delay) {
+                this._time = this._time % this._delay;
+                this.cellIndex += this._direction;
+                if (this.cellIndex == this._toIndex) {
+                    if (this._loopAnimation) {
+                        this.cellIndex = this._fromIndex;
+                    } else {
+                        this._animationStarted = false;
+                        if (this.disposeWhenFinishedAnimating) {
+                            this.dispose();
+                        }
                     }
                 }
             }
-        }
-    };
+        };
 
-    BABYLON.Sprite.prototype.dispose = function () {
-        for (var i = 0; i < this._manager.sprites.length; i++) {
-            if (this._manager.sprites[i] == this) {
-                this._manager.sprites.splice(i, 1);
+        Sprite.prototype.dispose = function () {
+            for (var i = 0; i < this._manager.sprites.length; i++) {
+                if (this._manager.sprites[i] == this) {
+                    this._manager.sprites.splice(i, 1);
+                }
             }
-        }
-    };
-
-})();
+        };
+        return Sprite;
+    })();
+    BABYLON.Sprite = Sprite;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.sprite.js.map

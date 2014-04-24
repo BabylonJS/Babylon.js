@@ -178,6 +178,7 @@
             return img;
         };
 
+        //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer) {
             var noIndexedDB = function () {
                 var request = new XMLHttpRequest();

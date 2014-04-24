@@ -25,9 +25,9 @@ var BABYLON;
             this.mode = Camera.PERSPECTIVE_CAMERA;
             this.isIntermediate = false;
             this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
+            this.subCameras = [];
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
-            this.subCameras = [];
             this._postProcesses = [];
             this._postProcessesTakenIndices = [];
 

@@ -9,7 +9,7 @@
         private _selection;
 
 
-        constructor(maxBlockCapacity: number) {
+        constructor(maxBlockCapacity?: number) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
             this._selection = new BABYLON.SmartArray(256);
         }

@@ -1,8 +1,15 @@
 ﻿module BABYLON {
-    declare var window;
-    declare var document;
 
     declare var FilesTextures; //ANY
+
+    export interface IAnimatable {
+        animations: Array<Animation>;
+    }
+
+    export interface ISize {
+        width: number;
+        height: number;
+    }
 
     // FPS
     var fpsRange = 60;
@@ -160,7 +167,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline) { //} && BABYLON.Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline) { //ANY } && BABYLON.Database.isUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -190,7 +197,8 @@
             return img;
         }
 
-        public static LoadFile(url: string, callback: (string) => void, progressCallBack: () => void, database, useArrayBuffer?: boolean): void {
+        //ANY
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean): void {
             var noIndexedDB = () => {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;

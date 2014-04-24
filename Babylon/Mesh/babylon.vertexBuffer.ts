@@ -2,7 +2,7 @@
     export class VertexBuffer {
         private _mesh; //ANY
         private _engine; //ANY
-        private _buffer;
+        private _buffer: WebGLBuffer;
         private _data: number[];
         private _updatable: boolean;
         private _kind: string;
@@ -59,6 +59,10 @@
 
         public getData(): number[] {
             return this._data;
+        }
+
+        public getBuffer(): WebGLBuffer {
+            return this._buffer;
         }
 
         public getStrideSize(): number {

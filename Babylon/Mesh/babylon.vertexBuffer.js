@@ -53,6 +53,10 @@
             return this._data;
         };
 
+        VertexBuffer.prototype.getBuffer = function () {
+            return this._buffer;
+        };
+
         VertexBuffer.prototype.getStrideSize = function () {
             return this._strideSize;
         };

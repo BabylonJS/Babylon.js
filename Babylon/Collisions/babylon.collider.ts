@@ -64,6 +64,8 @@
         public basePointWorld = BABYLON.Vector3.Zero();
         public velocityWorld = BABYLON.Vector3.Zero();
         public normalizedVelocity = BABYLON.Vector3.Zero();
+        public initialVelocity: Vector3;
+        public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
         public collidedMesh; //ANY

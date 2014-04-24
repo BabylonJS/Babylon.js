@@ -207,7 +207,7 @@ var BABYLON = BABYLON || {};
     BABYLON.ParticleSystem.prototype._getEffect = function () {
         var defines = [];
         
-        if (BABYLON.clipPlane) {
+        if (this._scene.clipPlane) {
             defines.push("#define CLIPPLANE");
         }
         
@@ -315,11 +315,12 @@ var BABYLON = BABYLON || {};
         effect.setMatrix("projection", this._scene.getProjectionMatrix());
         effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
-        if (BABYLON.clipPlane) {
+        if (this._scene.clipPlane) {
+            var clipPlane = this._scene.clipPlane;
             var invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);
-            effect.setFloat4("vClipPlane", BABYLON.clipPlane.normal.x, BABYLON.clipPlane.normal.y, BABYLON.clipPlane.normal.z, BABYLON.clipPlane.d);
+            effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
         }        
 
         // VBOs

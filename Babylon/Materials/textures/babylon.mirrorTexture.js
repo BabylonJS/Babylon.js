@@ -1,58 +1,57 @@
-﻿"use strict";
+﻿var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var MirrorTexture = (function (_super) {
+        __extends(MirrorTexture, _super);
+        //ANY
+        function MirrorTexture(name, size, scene, generateMipMaps) {
+            var _this = this;
+            _super.call(this, name, size, scene, generateMipMaps);
+            this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
+            this._transformMatrix = BABYLON.Matrix.Zero();
+            this._mirrorMatrix = BABYLON.Matrix.Zero();
 
-var BABYLON = BABYLON || {};
+            this.onBeforeRender = function () {
+                BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
+                _this._savedViewMatrix = scene.getViewMatrix();
 
-(function () {
-    BABYLON.MirrorTexture = function (name, size, scene, generateMipMaps) {
-        BABYLON.RenderTargetTexture.call(this, name, size, scene, generateMipMaps);
-        
-        // Internals
-        this._transformMatrix = BABYLON.Matrix.Zero();
-        this._mirrorMatrix = BABYLON.Matrix.Zero();
-    };
+                _this._mirrorMatrix.multiplyToRef(_this._savedViewMatrix, _this._transformMatrix);
 
-    BABYLON.MirrorTexture.prototype = Object.create(BABYLON.RenderTargetTexture.prototype);
-    
-    // Members
-    BABYLON.MirrorTexture.prototype.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
-    
-    // Method
-    BABYLON.MirrorTexture.prototype.onBeforeRender = function () {
-        var scene = this._scene;
+                scene.setTransformMatrix(_this._transformMatrix, scene.getProjectionMatrix());
 
-        BABYLON.Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-        this._savedViewMatrix = scene.getViewMatrix();
+                scene.clipPlane = _this.mirrorPlane;
 
-        this._mirrorMatrix.multiplyToRef(this._savedViewMatrix, this._transformMatrix);
+                scene.getEngine().cullBackFaces = false;
+            };
 
-        scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
+            this.onAfterRender = function () {
+                scene.setTransformMatrix(_this._savedViewMatrix, scene.getProjectionMatrix());
+                scene.getEngine().cullBackFaces = true;
 
-        BABYLON.clipPlane = this.mirrorPlane;
+                delete scene.clipPlane;
+            };
+        }
+        MirrorTexture.prototype.clone = function () {
+            var textureSize = this.getSize();
+            var newTexture = new BABYLON.MirrorTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
-        scene.getEngine().cullBackFaces = false;
-    };
+            // Base texture
+            newTexture.hasAlpha = this.hasAlpha;
+            newTexture.level = this.level;
 
-    BABYLON.MirrorTexture.prototype.onAfterRender = function () {
-        var scene = this._scene;
+            // Mirror Texture
+            newTexture.mirrorPlane = this.mirrorPlane.clone();
+            newTexture.renderList = this.renderList.slice(0);
 
-        scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());
-        scene.getEngine().cullBackFaces = true;
-
-        delete BABYLON.clipPlane;
-    };
-    
-    BABYLON.MirrorTexture.prototype.clone = function () {
-        var textureSize = this.getSize();
-        var newTexture = new BABYLON.MirrorTexture(this.name, textureSize.width, this._scene, this._generateMipMaps);
-
-        // Base texture
-        newTexture.hasAlpha = this.hasAlpha;
-        newTexture.level = this.level;
-
-        // Mirror Texture
-        newTexture.mirrorPlane = this.mirrorPlane.clone();
-        newTexture.renderList = this.renderList.slice(0);
-
-        return newTexture;
-    };
-})();
+            return newTexture;
+        };
+        return MirrorTexture;
+    })(BABYLON.RenderTargetTexture);
+    BABYLON.MirrorTexture = MirrorTexture;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.mirrorTexture.js.map

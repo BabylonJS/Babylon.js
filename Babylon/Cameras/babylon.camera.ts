@@ -17,11 +17,11 @@
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
         public viewport = new Viewport(0, 0, 1.0, 1.0);
+        public subCameras = [];
 
         private _computedViewMatrix = BABYLON.Matrix.Identity();
         private _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
-        private subCameras = [];
         public _postProcesses = [];
         public _postProcessesTakenIndices = [];
 

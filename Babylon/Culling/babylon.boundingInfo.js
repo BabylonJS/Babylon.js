@@ -31,10 +31,9 @@
             this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
         }
         // Methods
-        BoundingInfo.prototype._update = function (world, scale) {
-            if (typeof scale === "undefined") { scale = 1.0; }
+        BoundingInfo.prototype._update = function (world) {
             this.boundingBox._update(world);
-            this.boundingSphere._update(world, scale);
+            this.boundingSphere._update(world);
         };
 
         BoundingInfo.prototype.isInFrustum = function (frustumPlanes) {
