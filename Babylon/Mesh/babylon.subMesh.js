@@ -51,9 +51,8 @@
             return this._boundingInfo._checkCollision(collider);
         };
 
-        SubMesh.prototype.updateBoundingInfo = function (world, scale) {
-            if (typeof scale === "undefined") { scale = 1.0; }
-            this._boundingInfo._update(world, scale);
+        SubMesh.prototype.updateBoundingInfo = function (world) {
+            this._boundingInfo._update(world);
         };
 
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {

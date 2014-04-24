@@ -264,7 +264,6 @@ var BABYLON = BABYLON || {};
                             // Put the blob into the dabase
                             var addRequest = transaction.objectStore("textures").put(newTexture);
                             addRequest.onsuccess = function (event) {
-                                console.log("");
                             };
                             addRequest.onerror = function (event) {
                                 generateBlobUrl();
@@ -389,7 +388,6 @@ var BABYLON = BABYLON || {};
                 // Put the scene into the database
                 var addRequest = transaction.objectStore("versions").put(newVersion);
                 addRequest.onsuccess = function (event) {
-                    console.log("");
                 };
                 addRequest.onerror = function (event) {
                     console.log("Error in DB add version request in BABYLON.Database.");
@@ -507,7 +505,6 @@ var BABYLON = BABYLON || {};
                             // Put the scene into the database
                             var addRequest = transaction.objectStore("scenes").put(newScene);
                             addRequest.onsuccess = function (event) {
-                                console.log("");
                             };
                             addRequest.onerror = function (event) {
                                 console.log("Error in DB add scene request in BABYLON.Database.");

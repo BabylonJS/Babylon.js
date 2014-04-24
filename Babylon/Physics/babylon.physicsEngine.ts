@@ -164,7 +164,7 @@
             return body;
         }
 
-        public _registerCompound(options): void {
+        public _registerCompound(options): any {
             var compoundShape = new CANNON.Compound();
             var initialMesh = options.parts[0].mesh;
             var initialPosition = initialMesh.position;

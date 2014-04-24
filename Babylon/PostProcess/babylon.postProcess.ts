@@ -13,9 +13,9 @@
         private _engine; //ANY
         private _renderRatio: number;
         private _reusable = false;
-        private _textures = new BABYLON.SmartArray(2);
-        private _currentRenderTextureInd = 0;
-        private _effect; //ANY
+        public _textures = new BABYLON.SmartArray(2);
+        public _currentRenderTextureInd = 0;
+        private _effect: Effect;
 
         //ANY
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine, reusable?: boolean) {
@@ -85,7 +85,7 @@
             }
         }
 
-        public apply(): void {
+        public apply(): Effect {
             // Check
             if (!this._effect.isReady())
                 return null;

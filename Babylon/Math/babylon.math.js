@@ -2,6 +2,9 @@
 (function (BABYLON) {
     var Color3 = (function () {
         function Color3(r, g, b) {
+            if (typeof r === "undefined") { r = 0; }
+            if (typeof g === "undefined") { g = 0; }
+            if (typeof b === "undefined") { b = 0; }
             this.r = r;
             this.g = g;
             this.b = b;
@@ -1612,6 +1615,10 @@
         };
 
         // Methods
+        Plane.prototype.clone = function () {
+            return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
+        };
+
         Plane.prototype.normalize = function () {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;

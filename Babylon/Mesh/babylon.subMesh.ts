@@ -55,8 +55,8 @@
             return this._boundingInfo._checkCollision(collider);
         }
 
-        public updateBoundingInfo(world: Matrix, scale: number = 1.0): void {
-            this._boundingInfo._update(world, scale);
+        public updateBoundingInfo(world: Matrix): void {
+            this._boundingInfo._update(world);
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {

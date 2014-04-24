@@ -1,8 +1,4 @@
 ﻿module BABYLON {
-    export interface IAnimatable {
-         animations: Array<Animation>;
-    }
-
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};
@@ -121,7 +117,7 @@
             return this._keys[this._keys.length - 1].value;
         }
 
-        public animate(target, delay: number, from, to, loop: boolean, speedRatio: number): boolean {
+        public animate(target, delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 return false;
             }
@@ -224,6 +220,5 @@
         public static ANIMATIONLOOPMODE_RELATIVE = 0;
         public static ANIMATIONLOOPMODE_CYCLE = 1;
         public static ANIMATIONLOOPMODE_CONSTANT = 2;
-
     }
 } 

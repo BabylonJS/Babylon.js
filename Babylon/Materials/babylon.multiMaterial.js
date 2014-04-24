@@ -1,37 +1,44 @@
-﻿"use strict";
+﻿var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var MultiMaterial = (function (_super) {
+        __extends(MultiMaterial, _super);
+        //ANY
+        function MultiMaterial(name, scene) {
+            _super.call(this, name, scene, true);
+            this.subMaterials = new Array();
 
-var BABYLON = BABYLON || {};
-
-(function () {
-    BABYLON.MultiMaterial = function (name, scene) {
-        this.name = name;
-        this.id = name;
-        
-        this._scene = scene;
-        scene.multiMaterials.push(this);
-
-        this.subMaterials = [];
-    };
-
-    // Properties
-    BABYLON.MultiMaterial.prototype.getSubMaterial = function (index) {
-        if (index < 0 || index >= this.subMaterials.length) {
-            return this._scene.defaultMaterial;
+            scene.multiMaterials.push(this);
         }
-
-        return this.subMaterials[index];
-    };
-    
-    // Methods
-    BABYLON.MultiMaterial.prototype.isReady = function (mesh) {
-        var result = true;
-        for (var index = 0; index < this.subMaterials.length; index++) {
-            var subMaterial = this.subMaterials[index];
-            if (subMaterial) {
-                result &= this.subMaterials[index].isReady(mesh);
+        // Properties
+        MultiMaterial.prototype.getSubMaterial = function (index) {
+            if (index < 0 || index >= this.subMaterials.length) {
+                return this.getScene().defaultMaterial;
             }
-        }
 
-        return result;
-    };
-})();
+            return this.subMaterials[index];
+        };
+
+        // Methods
+        MultiMaterial.prototype.isReady = function (mesh) {
+            for (var index = 0; index < this.subMaterials.length; index++) {
+                var subMaterial = this.subMaterials[index];
+                if (subMaterial) {
+                    if (!this.subMaterials[index].isReady(mesh)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        };
+        return MultiMaterial;
+    })(BABYLON.Material);
+    BABYLON.MultiMaterial = MultiMaterial;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.multiMaterial.js.map

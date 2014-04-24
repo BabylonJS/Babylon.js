@@ -60,7 +60,6 @@
         private _delayInfo; //ANY
         private _vertexStrideSize = 0;
         private _animationStarted = false;
-        private _scaleFactor: number;
         private _vertexBuffers;
         private _indexBuffer;
         private _delayLoadingFunction: (any, Mesh) => void;
@@ -296,13 +295,7 @@
         public _updateBoundingInfo(): void {
             this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this._absolutePosition, this._absolutePosition);
 
-            this._scaleFactor = Math.max(this.scaling.x, this.scaling.y);
-            this._scaleFactor = Math.max(this._scaleFactor, this.scaling.z);
-
-            if (this.parent && this.parent instanceof Mesh)
-                this._scaleFactor = this._scaleFactor * (<any>this.parent)._scaleFactor;
-
-            this._boundingInfo._update(this._worldMatrix, this._scaleFactor);
+            this._boundingInfo._update(this._worldMatrix);
 
             if (!this.subMeshes) {
                 return;
@@ -311,7 +304,7 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this._worldMatrix, this._scaleFactor);
+                subMesh.updateBoundingInfo(this._worldMatrix);
             }
         }
 

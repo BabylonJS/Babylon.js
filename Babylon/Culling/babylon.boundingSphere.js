@@ -4,6 +4,7 @@
         function BoundingSphere(minimum, maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
+            this._tempRadiusVector = BABYLON.Vector3.Zero();
             var distance = BABYLON.Vector3.Distance(minimum, maximum);
 
             this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);
@@ -14,10 +15,10 @@
             this._update(BABYLON.Matrix.Identity());
         }
         // Methods
-        BoundingSphere.prototype._update = function (world, scale) {
-            if (typeof scale === "undefined") { scale = 1.0; }
+        BoundingSphere.prototype._update = function (world) {
             BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            this.radiusWorld = this.radius * scale;
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(1.0, 0, 0, world, this._tempRadiusVector);
+            this.radiusWorld = this._tempRadiusVector.length() * this.radius;
         };
 
         BoundingSphere.prototype.isInFrustum = function (frustumPlanes) {

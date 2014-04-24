@@ -39,10 +39,6 @@
 
         // Methods
         public addMesh(mesh: Mesh): void {
-            if (!mesh.subMeshes) {
-                return;
-            }
-
             if (this.blocks) {
                 for (var index = 0; index < this.blocks.length; index++) {
                     var block = this.blocks[index];
@@ -56,10 +52,12 @@
                 this.meshes.push(mesh);
 
                 this.subMeshes[localMeshIndex] = [];
-                for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                    var subMesh = mesh.subMeshes[subIndex];
-                    if (mesh.subMeshes.length === 1 || subMesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
-                        this.subMeshes[localMeshIndex].push(subMesh);
+                if (mesh.subMeshes) {
+                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        var subMesh = mesh.subMeshes[subIndex];
+                        if (mesh.subMeshes.length === 1 || subMesh.getBoundingInfo().boundingBox.intersectsMinMax(this._minPoint, this._maxPoint)) {
+                            this.subMeshes[localMeshIndex].push(subMesh);
+                        }
                     }
                 }
             }

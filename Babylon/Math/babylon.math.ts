@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class Color3 {
-        constructor(public r: number, public g: number, public b: number) {
+        constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
 
         public toString(): string {
@@ -1643,6 +1643,10 @@
         }
 
         // Methods
+        public clone(): Plane {
+            return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
+        }
+
         public normalize(): void {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;
