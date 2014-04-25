@@ -404,8 +404,8 @@ var BABYLON = BABYLON || {};
             }
 
             if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                serializationObject.matricesWeights = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
-                serializationObject.matricesWeights._isExpanded = true;
+                serializationObject.matricesIndices = mesh.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices._isExpanded = true;
             }
 
             serializationObject.indices = mesh.getIndices();
