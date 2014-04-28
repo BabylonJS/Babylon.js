@@ -14,7 +14,7 @@
         public _waitingRenderList: string[];
         private _doNotChangeAspectratio: boolean;
 
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectratio?: boolean) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectratio?: boolean) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
