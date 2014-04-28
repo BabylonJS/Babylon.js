@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var RenderingGroup = (function () {
-        //ANY
         function RenderingGroup(index, scene) {
             this.index = index;
             this._opaqueSubMeshes = new BABYLON.SmartArray(256);
@@ -65,14 +64,14 @@
                 });
 
                 // Rendering
-                engine.setAlphaMode(2); //ANY BABYLON.Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
                     this._activeVertices += submesh.verticesCount;
 
                     submesh.render();
                 }
-                engine.setAlphaMode(0); //ANY BABYLON.Engine.ALPHA_DISABLE);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
             return true;
         };

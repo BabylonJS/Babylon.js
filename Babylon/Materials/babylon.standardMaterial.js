@@ -8,16 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
-        //ANY
         function StandardMaterial(name, scene) {
+            var _this = this;
             _super.call(this, name, scene);
-            this.diffuseTexture = null;
-            this.ambientTexture = null;
-            this.opacityTexture = null;
-            this.reflectionTexture = null;
-            this.emissiveTexture = null;
-            this.specularTexture = null;
-            this.bumpTexture = null;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             this.specularColor = new BABYLON.Color3(1, 1, 1);
@@ -31,6 +24,16 @@ var BABYLON;
             this._baseColor = new BABYLON.Color3();
             this._scaledDiffuse = new BABYLON.Color3();
             this._scaledSpecular = new BABYLON.Color3();
+
+            this.getRenderTargetTextures = function () {
+                _this._renderTargets.reset();
+
+                if (_this.reflectionTexture && _this.reflectionTexture.isRenderTarget) {
+                    _this._renderTargets.push(_this.reflectionTexture);
+                }
+
+                return _this._renderTargets;
+            };
         }
         StandardMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0) || (this.opacityTexture != null);
@@ -58,7 +61,7 @@ var BABYLON;
 
             var engine = scene.getEngine();
             var defines = [];
-            var optionalDefines = [];
+            var optionalDefines = new Array();
 
             // Textures
             if (scene.texturesEnabled) {
@@ -255,16 +258,6 @@ var BABYLON;
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
             return true;
-        };
-
-        StandardMaterial.prototype.getRenderTargetTextures = function () {
-            this._renderTargets.reset();
-
-            if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
-                this._renderTargets.push(this.reflectionTexture);
-            }
-
-            return this._renderTargets;
         };
 
         StandardMaterial.prototype.unbind = function () {

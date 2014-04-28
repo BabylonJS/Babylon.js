@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var RenderingManager = (function () {
-        //ANY
         function RenderingManager(scene) {
             this._renderingGroups = new Array();
             this._scene = scene;

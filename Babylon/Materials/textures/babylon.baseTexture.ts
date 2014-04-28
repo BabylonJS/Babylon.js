@@ -1,32 +1,29 @@
 ﻿module BABYLON {
     export class BaseTexture {
-        public delayLoadState = 0; //ANY BABYLON.Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
         public hasAlpha = false;
         public level = 1;
         public isCube = false;
-        public _texture = null; //ANY
+        public _texture: WebGLTexture;
         public onDispose: () => void;
 
-        private _scene; //ANY
+        private _scene: Scene;
 
-        //ANY
-        constructor(scene) {
+        constructor(scene: Scene) {
             this._scene = scene;
             this._scene.textures.push(this);
         }
 
-        //ANY
-        public getScene() {
+        public getScene(): Scene {
             return this._scene;
-        }
+        } 
 
-        //ANY
-        public getInternalTexture() {
+        public getInternalTexture(): WebGLTexture {
             return this._texture;
         }
 
         public isReady(): boolean {
-            if (this.delayLoadState === 4) { //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return true;
             }
 
@@ -60,8 +57,7 @@
             return { width: this._texture._baseWidth, height: this._texture._baseHeight };
         }
 
-        //ANY
-        public _getFromCache(url: string, noMipmap: boolean) {
+        public _getFromCache(url: string, noMipmap: boolean): WebGLTexture {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];

@@ -2,8 +2,7 @@
     export class MultiMaterial extends Material {
         public subMaterials = new Array<Material>();
 
-        //ANY
-        constructor(name: string, scene) {
+        constructor(name: string, scene: Scene) {
             super(name, scene, true);
 
             scene.multiMaterials.push(this);

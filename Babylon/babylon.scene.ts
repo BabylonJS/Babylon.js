@@ -29,6 +29,7 @@
         public beforeRender: () => void;
         public afterRender: () => void;
         public forceWireframe = false;
+        public clipPlane: Plane;
 
         // Fog
         public fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -44,7 +45,7 @@
         // Cameras
         public cameras = new Array<Camera>();
         public activeCameras = new Array<Camera>();
-        public activeCamera = null;
+        public activeCamera: Camera;
 
         // Meshes
         public meshes = new Array<Mesh>();
@@ -55,23 +56,23 @@
 
         // Textures
         public texturesEnabled = true;
-        public textures = new Array<Texture>();
+        public textures = new Array<BaseTexture>();
 
         // Particles
         public particlesEnabled = true;
-        public particleSystems = [];//ANY
+        public particleSystems = new Array<ParticleSystem>();
 
         // Sprites
         public spriteManagers = new Array<SpriteManager>();
 
         // Layers
-        public layers = [];//ANY
+        public layers = new Array<Layer>();
 
         // Skeletons
-        public skeletons = [];//ANY
+        public skeletons = new Array<Skeleton>();
 
         // Lens flares
-        public lensFlareSystems = [];//ANY
+        public lensFlareSystems = new Array<LensFlareSystem>();
 
         // Collisions
         public collisionsEnabled = true;
@@ -85,24 +86,30 @@
         public renderTargetsEnabled = true;
         public customRenderTargets = [];
 
+        // Delay loading
+        public useDelayedTextureLoading: boolean;
+
+        // Database
+        public database; //ANY
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
-        private _activeVertices = 0;
-        private _activeParticles = 0;
+        public _activeVertices = 0;
+        public _activeParticles = 0;
         private _lastFrameDuration = 0;
         private _evaluateActiveMeshesDuration = 0;
         private _renderTargetsDuration = 0;
-        private _particlesDuration = 0;
+        public _particlesDuration = 0;
         private _renderDuration = 0;
-        private _spritesDuration = 0;
+        public _spritesDuration = 0;
         private _animationRatio = 0;
         private _animationStartDate: number;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
 
-        private _toBeDisposed = new SmartArray(256);
+        public _toBeDisposed = new SmartArray(256);
 
         private _onReadyCallbacks = new Array<() => void>();
         private _pendingData = [];//ANY
@@ -112,7 +119,7 @@
         private _activeMeshes = new SmartArray(256);
         private _processedMaterials = new SmartArray(256);
         private _renderTargets = new SmartArray(256);
-        private _activeParticleSystems = new SmartArray(256);
+        public _activeParticleSystems = new SmartArray(256);
         private _activeSkeletons = new SmartArray(32);
 
         private _renderingManager: RenderingManager;
@@ -490,8 +497,7 @@
             return null;
         }
 
-        //ANY
-        public getLastSkeletonByID(id: string) {
+        public getLastSkeletonByID(id: string): Skeleton {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
                     return this.skeletons[index];
@@ -501,8 +507,7 @@
             return null;
         }
 
-        //ANY
-        public getSkeletonById(id: string) {
+        public getSkeletonById(id: string): Skeleton {
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].id === id) {
                     return this.skeletons[index];
@@ -512,8 +517,7 @@
             return null;
         }
 
-        //ANY
-        public getSkeletonByName(name: string) {
+        public getSkeletonByName(name: string): Skeleton {
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].name === name) {
                     return this.skeletons[index];
@@ -662,6 +666,10 @@
             this._particlesDuration += new Date().getTime() - beforeParticlesDate;
         }
 
+        public updateTransformMatrix(force?: boolean): void {
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+        }
+
         private _renderForCamera(camera: Camera): void {
             var engine = this._engine;
 
@@ -675,7 +683,7 @@
 
             // Camera
             this._renderId++;
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            this.updateTransformMatrix();
 
             // Meshes
             var beforeEvaluateActiveMeshesDate = new Date().getTime();
@@ -817,7 +825,7 @@
                 var light = this.lights[lightIndex];
                 var shadowGenerator = light.getShadowGenerator();
 
-                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap()._scene.textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
+                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
                     this._renderTargets.push(shadowGenerator.getShadowMap());
                 }
             }
@@ -1060,6 +1068,10 @@
         }
 
         // Physics
+        public getPhysicsEngine(): PhysicsEngine {
+            return this._physicsEngine;
+        }
+
         public enablePhysics(gravity: Vector3, iterations: number): boolean {
             if (this._physicsEngine) {
                 return true;

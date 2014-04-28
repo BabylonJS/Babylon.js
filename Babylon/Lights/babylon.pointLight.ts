@@ -1,18 +1,13 @@
 ﻿module BABYLON {
     export class PointLight extends Light {
-        public diffuse = new Color3(1.0, 1.0, 1.0);
-        public specular = new Color3(1.0, 1.0, 1.0);
-
         private _worldMatrix: Matrix;
         private _transformedPosition: Vector3;
 
-        //ANY
-        constructor(name: string, public position: Vector3, scene) {
+        constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
         }
 
-        //ANY
-        public transferToEffect(effect, positionUniformName: string): void {
+        public transferToEffect(effect: Effect, positionUniformName: string): void {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
                     this._transformedPosition = BABYLON.Vector3.Zero();
@@ -27,8 +22,7 @@
             effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
         }
 
-        //ANY
-        public getShadowGenerator() {
+        public getShadowGenerator(): ShadowGenerator {
             return null;
         }
 

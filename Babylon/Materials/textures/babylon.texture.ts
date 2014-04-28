@@ -32,6 +32,7 @@
         public coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
         public anisotropicFilteringLevel = 4;
         public animations = new Array<Animation>();
+        public isRenderTarget = false;
 
         private _noMipmap: boolean;
         public _invertY: boolean;
@@ -52,8 +53,7 @@
         private _cachedWAng: number;
         private _cachedCoordinatesMode: number;
 
-        //ANY
-        constructor(url: string, scene, noMipmap?: boolean, invertY?: boolean) {
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean) {
             super(scene);
 
             this.name = url;
@@ -71,17 +71,17 @@
                 if (!scene.useDelayedTextureLoading) {
                     this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
                 } else {
-                    this.delayLoadState = 4; //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
         }
 
         public delayLoad(): void {
-            if (this.delayLoadState != 4) { //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = 1;//ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
@@ -104,7 +104,7 @@
             t.z += 0.5;
         }
 
-        private _computeTextureMatrix(): Matrix {
+        public _computeTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
@@ -149,7 +149,7 @@
             return this._cachedTextureMatrix;
         }
 
-        private _computeReflectionTextureMatrix(): Matrix {
+        public _computeReflectionTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&

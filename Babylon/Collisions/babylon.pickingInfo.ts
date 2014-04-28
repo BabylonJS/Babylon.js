@@ -1,4 +1,11 @@
 ﻿module BABYLON {
+    export class IntersectionInfo {
+        public faceId = 0;
+
+        constructor(public bu: number, public bv: number, public distance: number) {
+        }
+    }
+
     export class PickingInfo {
         public hit = false;
         public distance = 0;

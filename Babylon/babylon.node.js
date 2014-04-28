@@ -12,12 +12,10 @@
             this._scene = scene;
             this._initCache();
         }
-        //ANY
         Node.prototype.getScene = function () {
             return this._scene;
         };
 
-        //ANY
         Node.prototype.getEngine = function () {
             return this._scene.getEngine();
         };

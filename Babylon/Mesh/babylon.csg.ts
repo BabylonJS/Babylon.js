@@ -401,8 +401,7 @@
 
         // Build Raw mesh from CSG
         // Coordinates here are in world space
-        //ANY
-        public buildMeshGeometry(name: string, scene, keepSubMeshes: boolean): Mesh {
+        public buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh {
             var matrix = this.matrix.clone();
             matrix.invert();
 
@@ -517,8 +516,7 @@
         }
 
         // Build Mesh from CSG taking material and transforms into account
-        //ANY
-        public toMesh(name: string, material, scene, keepSubMeshes: boolean): Mesh {
+        public toMesh(name: string, material: Material, scene: Scene, keepSubMeshes: boolean): Mesh {
             var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 
             mesh.material = material;

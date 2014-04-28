@@ -9,16 +9,15 @@
 
         private _onDispose = null;
         private _camera: Camera;
-        private _scene; //ANY
-        private _engine; //ANY
+        private _scene: Scene;
+        private _engine: Engine;
         private _renderRatio: number;
         private _reusable = false;
         public _textures = new BABYLON.SmartArray(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
 
-        //ANY
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine, reusable?: boolean) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -30,7 +29,7 @@
             }
 
             this._renderRatio = ratio;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : 1; //ANY BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
 
             samplers = samplers || [];
@@ -42,14 +41,16 @@
                 samplers, "");
         }
 
-        // Methods
+        public isReusable(): boolean {
+            return this._reusable;
+        }
 
         public activate(camera: Camera): void {
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine._renderingCanvas.width * this._renderRatio;
-            var desiredHeight = this._engine._renderingCanvas.height * this._renderRatio;
+            var desiredWidth = this._engine.getRenderWidth() * this._renderRatio;
+            var desiredHeight = this._engine.getRenderHeight() * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -93,7 +94,7 @@
             // States
             this._engine.enableEffect(this._effect);
             this._engine.setState(false);
-            this._engine.setAlphaMode(0); //ANY BABYLON.Engine.ALPHA_DISABLE);
+            this._engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
 

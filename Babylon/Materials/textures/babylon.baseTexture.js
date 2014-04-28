@@ -1,28 +1,24 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var BaseTexture = (function () {
-        //ANY
         function BaseTexture(scene) {
-            this.delayLoadState = 0;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.hasAlpha = false;
             this.level = 1;
             this.isCube = false;
-            this._texture = null;
             this._scene = scene;
             this._scene.textures.push(this);
         }
-        //ANY
         BaseTexture.prototype.getScene = function () {
             return this._scene;
         };
 
-        //ANY
         BaseTexture.prototype.getInternalTexture = function () {
             return this._texture;
         };
 
         BaseTexture.prototype.isReady = function () {
-            if (this.delayLoadState === 4) {
+            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return true;
             }
 
@@ -56,7 +52,6 @@
             return { width: this._texture._baseWidth, height: this._texture._baseHeight };
         };
 
-        //ANY
         BaseTexture.prototype._getFromCache = function (url, noMipmap) {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {

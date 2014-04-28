@@ -2,12 +2,11 @@
     export class RenderingManager {
         public static MAX_RENDERINGGROUPS = 4;
 
-        private _scene; //ANY
+        private _scene: Scene;
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthBufferAlreadyCleaned: boolean;
 
-        //ANY
-        constructor(scene) {
+        constructor(scene: Scene) {
             this._scene = scene;
         }
 

@@ -62,7 +62,6 @@ var BABYLON;
 
     var AnaglyphFreeCamera = (function (_super) {
         __extends(AnaglyphFreeCamera, _super);
-        //ANY
         function AnaglyphFreeCamera(name, position, eyeSpace, scene) {
             _super.call(this, name, position, scene);
 

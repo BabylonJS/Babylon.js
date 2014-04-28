@@ -1936,11 +1936,7 @@
                 return null;
             }
 
-            return {
-                bu: bu,
-                bv: bv,
-                distance: Vector3.Dot(this._edge2, this._qvec) * invdet
-            };
+            return new IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
         };
 
         // Statics

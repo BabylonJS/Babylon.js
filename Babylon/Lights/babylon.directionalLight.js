@@ -8,12 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var DirectionalLight = (function (_super) {
         __extends(DirectionalLight, _super);
-        //ANY
         function DirectionalLight(name, direction, scene) {
             _super.call(this, name, scene);
             this.direction = direction;
-            this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
-            this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
 
             this.position = direction.scale(-1);
         }
@@ -35,7 +32,6 @@ var BABYLON;
             return false;
         };
 
-        //ANY
         DirectionalLight.prototype.transferToEffect = function (effect, directionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {

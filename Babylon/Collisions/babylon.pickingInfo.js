@@ -1,5 +1,16 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    var IntersectionInfo = (function () {
+        function IntersectionInfo(bu, bv, distance) {
+            this.bu = bu;
+            this.bv = bv;
+            this.distance = distance;
+            this.faceId = 0;
+        }
+        return IntersectionInfo;
+    })();
+    BABYLON.IntersectionInfo = IntersectionInfo;
+
     var PickingInfo = (function () {
         function PickingInfo() {
             this.hit = false;

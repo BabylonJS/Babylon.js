@@ -18,7 +18,7 @@
         private _program: WebGLProgram;
         private _valueCache = [];
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, optionalDefines?: string, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, optionalDefines?: string[], onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
@@ -137,7 +137,7 @@
             BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
-        public _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, optionalDefines?: string, useFallback?: boolean): void {
+        public _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, optionalDefines?: string[], useFallback?: boolean): void {
             try {
                 var engine = this._engine;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);

@@ -4,6 +4,7 @@ interface Window {
     mozRequestAnimationFrame(func: any): any;
     oRequestAnimationFrame(func: any): any;
     WebGLRenderingContext: WebGLRenderingContext;
+    MSGesture: MSGesture;
 }
 
 interface Document {
@@ -35,6 +36,7 @@ interface WebGLTexture {
     noMipmap: boolean;
     references: number;
     generateMipMaps: boolean;
+    _size: number;
     _baseWidth: number;
     _baseHeight: number;
     _width: number;
@@ -43,8 +45,22 @@ interface WebGLTexture {
     _workingContext: CanvasRenderingContext2D;
     _framebuffer: WebGLFramebuffer;
     _depthBuffer: WebGLRenderbuffer;
+    _cachedCoordinatesMode: number;
+    _cachedWrapU: number;
+    _cachedWrapV: number;
 }
 
 interface WebGLBuffer {
     references: number;
+}
+
+interface MouseEvent {
+    movementX: number;
+    movementY: number;
+    mozMovementX: number;
+    mozMovementY: number;
+    webkitMovementX: number;
+    webkitMovementY: number;
+    msMovementX: number;
+    msMovementY: number;
 }

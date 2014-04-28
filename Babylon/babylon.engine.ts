@@ -24,27 +24,26 @@
         return count;
     };
 
-    //ANY
-    var prepareWebGLTexture = (texture: WebGLTexture, scene, width: number, height: number, invertY: boolean, noMipmap: boolean,
+    var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean,
         processFunction: (width: number, height: number) => void) => {
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine._caps.maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine._caps.maxTextureSize);
+        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
-        engine._gl.bindTexture(engine._gl.TEXTURE_2D, texture);
-        engine._gl.pixelStorei(engine._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? true : invertY);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
         processFunction(potWidth, potHeight);
 
-        engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MAG_FILTER, engine._gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
         if (noMipmap) {
-            engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MIN_FILTER, engine._gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         } else {
-            engine._gl.texParameteri(engine._gl.TEXTURE_2D, engine._gl.TEXTURE_MIN_FILTER, engine._gl.LINEAR_MIPMAP_LINEAR);
-            engine._gl.generateMipmap(engine._gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.generateMipmap(gl.TEXTURE_2D);
         }
-        engine._gl.bindTexture(engine._gl.TEXTURE_2D, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
         texture._baseWidth = width;
@@ -79,6 +78,18 @@
         img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror, scene.database);
         scene._addPendingData(img);
     };
+
+    export class EngineCapabilities {
+        public maxTexturesImageUnits: number;
+        public maxTextureSize: number;
+        public maxCubemapTextureSize: number;
+        public maxRenderTextureSize: number;
+        public standardDerivatives: boolean;
+        public s3tc;
+        public textureFloat: boolean;
+        public textureAnisotropicFilterExtension;
+        public maxAnisotropy: number;
+    }
 
     export class Engine {
         // Statics
@@ -115,7 +126,7 @@
         private _onPointerLockChange: () => void;
 
         private _hardwareScalingLevel: number;
-        private _caps; //ANY create a caps class
+        private _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
 
@@ -123,9 +134,9 @@
         private _renderFunction: () => void;
 
         // Cache
-        private _loadedTexturesCache = []; //ANY
-        private _activeTexturesCache = []; //ANY
-        private _currentEffect; //ANY
+        private _loadedTexturesCache = new Array <WebGLTexture>();
+        public _activeTexturesCache = new Array<Texture>();
+        private _currentEffect: Effect;
         private _cullingState: boolean;
         private _compiledEffects = {};
         private _lastVertexAttribIndex = 0;
@@ -133,7 +144,8 @@
         private _cachedViewport: Viewport;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
-        private _cachedEffectForVertexBuffers; //ANY
+        private _cachedEffectForVertexBuffers: Effect;
+        private _currentRenderTarget: WebGLTexture;
 
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
@@ -176,7 +188,7 @@
             this.resize();
 
             // Caps
-            this._caps = {};
+            this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
@@ -242,14 +254,22 @@
 
         public getAspectRatio(camera: Camera): number {
             var viewport = camera.viewport;
-            return (this._renderingCanvas.width * viewport.width) / (this._renderingCanvas.height * viewport.height);
+            return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
         }
 
         public getRenderWidth(): number {
+            if (this._currentRenderTarget) {
+                return this._currentRenderTarget._width;
+            }
+
             return this._renderingCanvas.width;
         }
 
         public getRenderHeight(): number {
+            if (this._currentRenderTarget) {
+                return this._currentRenderTarget._height;
+            }
+
             return this._renderingCanvas.height;
         }
 
@@ -266,13 +286,11 @@
             return this._hardwareScalingLevel;
         }
 
-        //ANY
-        public getLoadedTexturesCache() {
+        public getLoadedTexturesCache():  WebGLTexture[] {
             return this._loadedTexturesCache;
         }
 
-        //ANY
-        public getCaps() {
+        public getCaps(): EngineCapabilities {
             return this._caps;
         }
 
@@ -390,6 +408,8 @@
         }
 
         public bindFramebuffer(texture: WebGLTexture): void {
+            this._currentRenderTarget = texture;
+
             var gl = this._gl;
             gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
             this._gl.viewport(0, 0, texture._width, texture._height);
@@ -398,6 +418,7 @@
         }
 
         public unBindFramebuffer(texture: WebGLTexture): void {
+            this._currentRenderTarget = null;
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -439,7 +460,7 @@
             return vbo;
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, length: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, length?: number): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
             if (length && length != vertices.length) {
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
@@ -463,8 +484,7 @@
             return vbo;
         }
 
-        //ANY
-        public bindBuffers(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect): void {
+        public bindBuffers(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
@@ -488,8 +508,7 @@
             }
         }
 
-        //ANY
-        public bindMultiBuffers(vertexBuffers: VertexBuffer[], indexBuffer: WebGLBuffer, effect): void {
+        public bindMultiBuffers(vertexBuffers: VertexBuffer[], indexBuffer: WebGLBuffer, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
@@ -536,8 +555,8 @@
             }
         }
 
-        public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, optionalDefines: string,
-            onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void): Effect {
+        public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, optionalDefines?: string[],
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
@@ -561,11 +580,12 @@
             this._gl.attachShader(shaderProgram, vertexShader);
             this._gl.attachShader(shaderProgram, fragmentShader);
 
-            this._gl.linkProgram(shaderProgram);
-
-            var error = this._gl.getProgramInfoLog(shaderProgram);
-            if (error) {
-                throw new Error(error);
+            var linked = this._gl.linkProgram(shaderProgram);
+            if (!linked) {
+                var error = this._gl.getProgramInfoLog(shaderProgram);
+                if (error) {
+                    throw new Error(error);
+                }
             }
 
             this._gl.deleteShader(vertexShader);
@@ -766,8 +786,7 @@
             this._cachedEffectForVertexBuffers = null;
         }
 
-        //ANY
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene): WebGLTexture {
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene): WebGLTexture {
             var texture = this._gl.createTexture();
             var isDDS = this.getCaps().s3tc && (url.substr(url.length - 4, 4).toLowerCase() === ".dds");
 
@@ -783,13 +802,13 @@
 
                     var loadMipmap = info.mipmapCount > 1 && !noMipmap;
 
-                    prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, (potWidth, potHeight) => {
+                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, () => {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, loadMipmap);
                     });
                 }, null, scene.database, true);
             } else {
                 var onload = (img) => {
-                    prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, (potWidth, potHeight) => {
+                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, (potWidth, potHeight) => {
                         var isPot = (img.width == potWidth && img.height == potHeight);
                         if (!isPot) {
                             this._workingCanvas.width = potWidth;
@@ -964,8 +983,7 @@
             return texture;
         }
 
-        //ANY
-        public createCubeTexture(rootUrl: string, scene, extensions: string[], noMipmap: boolean): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -974,13 +992,12 @@
             texture.references = 1;
             this._loadedTexturesCache.push(texture);
 
-            var that = this;
-            cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-                var width = getExponantOfTwo(imgs[0].width, that._caps.maxCubemapTextureSize);
+            cascadeLoad(rootUrl, 0, [], scene, imgs => {
+                var width = getExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                 var height = width;
 
-                that._workingCanvas.width = width;
-                that._workingCanvas.height = height;
+                this._workingCanvas.width = width;
+                this._workingCanvas.height = height;
 
                 var faces = [
                     gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
@@ -991,8 +1008,8 @@
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
                 for (var index = 0; index < faces.length; index++) {
-                    that._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                    gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, that._workingCanvas);
+                    this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
+                    gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._workingCanvas);
                 }
 
                 if (!noMipmap) {
@@ -1006,7 +1023,7 @@
 
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 
-                that._activeTexturesCache = [];
+                this._activeTexturesCache = [];
 
                 texture._width = width;
                 texture._height = height;
@@ -1103,8 +1120,10 @@
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, texture.coordinatesMode !== BABYLON.Texture.CUBIC_MODE ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, texture.coordinatesMode !== BABYLON.Texture.CUBIC_MODE ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE);
+                    // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
+                    var textureWrapMode = (texture.coordinatesMode !== BABYLON.Texture.CUBIC_MODE && texture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode);
+                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);

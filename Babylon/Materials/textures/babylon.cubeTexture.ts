@@ -8,8 +8,7 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
 
-        //ANY
-        constructor(rootUrl: string, scene, extensions: string[], noMipmap?: boolean) {
+        constructor(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean) {
             super(scene);
 
             this.name = rootUrl;
@@ -29,7 +28,7 @@
                 if (!scene.useDelayedTextureLoading) {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions, noMipmap);
                 } else {
-                    this.delayLoadState = 4; //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
 
@@ -40,11 +39,11 @@
 
         // Methods
         public delayLoad(): void {
-            if (this.delayLoadState != 4) { //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = 1; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {

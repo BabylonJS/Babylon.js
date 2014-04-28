@@ -1,29 +1,24 @@
 ﻿module BABYLON {
     export class Light extends Node {
+        public diffuse = new Color3(1.0, 1.0, 1.0);
+        public specular = new Color3(1.0, 1.0, 1.0);
         public intensity = 1.0;
-        public animations; //ANY
-        public excludedMeshes; //ANY
+        public excludedMeshes = new Array<Mesh>();
 
-        private _shadowGenerator; //ANY
+        public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
 
-        //ANY
-        constructor(name: string, scene) {
+        constructor(name: string, scene: Scene) {
             super(name, scene);
 
             scene.lights.push(this);
-
-            // Exclusions
-            this.excludedMeshes = [];
         }
 
-        //ANY
-        public getShadowGenerator() {
+        public getShadowGenerator(): ShadowGenerator {
             return this._shadowGenerator;
         }
 
-        // ANY
-        public transferToEffect(effect, uniformName0?: string, uniformName1?: string): void {
+        public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
         }
 
         public _getWorldMatrix(): Matrix {

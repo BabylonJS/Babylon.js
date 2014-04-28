@@ -1927,7 +1927,7 @@
             return temp <= rr;
         }
 
-        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3) {
+        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo {
             if (!this._edge1) {
                 this._edge1 = BABYLON.Vector3.Zero();
                 this._edge2 = BABYLON.Vector3.Zero();
@@ -1963,11 +1963,7 @@
                 return null;
             }
 
-            return {
-                bu: bu,
-                bv: bv,
-                distance: Vector3.Dot(this._edge2, this._qvec) * invdet
-            };
+            return new IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
         }
 
         // Statics

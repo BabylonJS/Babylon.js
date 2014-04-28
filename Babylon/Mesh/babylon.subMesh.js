@@ -20,7 +20,6 @@
             return this._mesh;
         };
 
-        //ANY
         SubMesh.prototype.getMaterial = function () {
             var rootMaterial = this._mesh.material;
 
@@ -63,7 +62,6 @@
             this._mesh.render(this);
         };
 
-        //ANY
         SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
@@ -82,7 +80,6 @@
             return ray.intersectsBox(this._boundingInfo.boundingBox);
         };
 
-        //ANY create intersectinfo class
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
 

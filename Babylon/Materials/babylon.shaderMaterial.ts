@@ -12,8 +12,7 @@
         private _matrices = new Array<Matrix>();
         private _cachedWorldViewMatrix = new BABYLON.Matrix();
 
-        //ANY
-        constructor(name: string, scene, shaderPath: string, options) {
+        constructor(name: string, scene: Scene, shaderPath: string, options) {
             super(name, scene);
             this._shaderPath = shaderPath;
 

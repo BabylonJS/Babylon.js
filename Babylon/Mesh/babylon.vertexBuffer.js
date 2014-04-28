@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var VertexBuffer = (function () {
-        //ANY
         function VertexBuffer(mesh, data, kind, updatable, engine) {
             this._mesh = mesh;
             this._engine = engine || mesh.getScene().getEngine();

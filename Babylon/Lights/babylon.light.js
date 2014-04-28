@@ -8,22 +8,19 @@ var BABYLON;
 (function (BABYLON) {
     var Light = (function (_super) {
         __extends(Light, _super);
-        //ANY
         function Light(name, scene) {
             _super.call(this, name, scene);
+            this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
+            this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.intensity = 1.0;
+            this.excludedMeshes = new Array();
 
             scene.lights.push(this);
-
-            // Exclusions
-            this.excludedMeshes = [];
         }
-        //ANY
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
         };
 
-        // ANY
         Light.prototype.transferToEffect = function (effect, uniformName0, uniformName1) {
         };
 

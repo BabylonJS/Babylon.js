@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var ShaderMaterial = (function (_super) {
         __extends(ShaderMaterial, _super);
-        //ANY
         function ShaderMaterial(name, scene, shaderPath, options) {
             _super.call(this, name, scene);
             this._textures = new Array();

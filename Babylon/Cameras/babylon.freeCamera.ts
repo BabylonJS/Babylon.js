@@ -35,17 +35,16 @@
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
 
-        private _onMouseDown; //ANY
-        private _onMouseUp; //ANY
-        private _onMouseOut; //ANY
-        private _onMouseMove; //ANY
-        private _onKeyDown; //ANY
-        private _onKeyUp; //ANY
-        private _onLostFocus; //ANY
-        private _reset; //ANY
+        private _onMouseDown: (e: MouseEvent) => any;
+        private _onMouseUp: (e: MouseEvent) => any;
+        private _onMouseOut: (e: MouseEvent) => any;
+        private _onMouseMove: (e: MouseEvent) => any;
+        private _onKeyDown: (e: KeyboardEvent) => any;
+        private _onKeyUp: (e: KeyboardEvent) => any;
+        private _onLostFocus: (e: FocusEvent) => any;
+        private _reset: () => void;
 
-        //ANY
-        constructor(name: string, position: Vector3, scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
         }
 
@@ -282,7 +281,7 @@
             this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-            if (this._diffPosition.length() > 0.001) {//ANY Engine.collisionEpsilon
+            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPosition);
                 if (this.onCollide) {
                     this.onCollide(this._collider.collidedMesh);
@@ -358,24 +357,28 @@
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < 0.001) //ANY: BABYLON.Engine.epsilon
+                if (Math.abs(this.cameraDirection.x) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.x = 0;
+                }
 
-                if (Math.abs(this.cameraDirection.y) < 0.001)
+                if (Math.abs(this.cameraDirection.y) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.y = 0;
+                }
 
-                if (Math.abs(this.cameraDirection.z) < 0.001)
+                if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.z = 0;
+                }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < 0.001)
+                if (Math.abs(this.cameraRotation.x) < BABYLON.Engine.Epsilon) {
                     this.cameraRotation.x = 0;
+                }
 
-                if (Math.abs(this.cameraRotation.y) < 0.001)
+                if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.Epsilon) {
                     this.cameraRotation.y = 0;
-
+                }
                 this.cameraRotation.scaleInPlace(this.inertia);
             }
         }

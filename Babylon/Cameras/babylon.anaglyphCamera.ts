@@ -61,8 +61,7 @@
         private _rightCamera: FreeCamera;
         private _transformMatrix: Matrix;
 
-        //ANY
-        constructor(name: string, position: Vector3, eyeSpace: number, scene) {
+        constructor(name: string, position: Vector3, eyeSpace: number, scene: Scene) {
             super(name, position, scene);
 
             this._eyeSpace = BABYLON.Tools.ToRadians(eyeSpace);
