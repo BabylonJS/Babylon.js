@@ -68,7 +68,7 @@
         public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
-        public collidedMesh; //ANY
+        public collidedMesh: Mesh
 
         private _collisionPoint = BABYLON.Vector3.Zero();
         private _planeIntersectionPoint = BABYLON.Vector3.Zero();
@@ -133,8 +133,7 @@
             return true;
         }
 
-        //ANY
-        public _testTriangle(faceIndex: number, subMesh, p1: Vector3, p2: Vector3, p3: Vector3): void {
+        public _testTriangle(faceIndex: number, subMesh: SubMesh, p1: Vector3, p2: Vector3, p3: Vector3): void {
             var t0;
             var embeddedInPlane = false;
 

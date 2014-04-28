@@ -403,7 +403,6 @@
 
         // Build Raw mesh from CSG
         // Coordinates here are in world space
-        //ANY
         CSG.prototype.buildMeshGeometry = function (name, scene, keepSubMeshes) {
             var matrix = this.matrix.clone();
             matrix.invert();
@@ -496,7 +495,6 @@
         };
 
         // Build Mesh from CSG taking material and transforms into account
-        //ANY
         CSG.prototype.toMesh = function (name, material, scene, keepSubMeshes) {
             var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 

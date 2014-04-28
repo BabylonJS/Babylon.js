@@ -14,6 +14,10 @@
         }
 
         // Methods   
+        public getKeys(): any[] {
+            return this._keys;
+        }
+
         public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number {
             return startValue + (endValue - startValue) * gradient;
         }

@@ -8,22 +8,18 @@ var BABYLON;
 (function (BABYLON) {
     var SpotLight = (function (_super) {
         __extends(SpotLight, _super);
-        //ANY
         function SpotLight(name, position, direction, angle, exponent, scene) {
             _super.call(this, name, scene);
             this.position = position;
             this.direction = direction;
             this.angle = angle;
             this.exponent = exponent;
-            this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
-            this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
         }
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         };
 
-        //ANY
         SpotLight.prototype.transferToEffect = function (effect, positionUniformName, directionUniformName) {
             var normalizeDirection;
 

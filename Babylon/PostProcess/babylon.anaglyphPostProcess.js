@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var AnaglyphPostProcess = (function (_super) {
         __extends(AnaglyphPostProcess, _super);
-        //ANY
         function AnaglyphPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
             _super.call(this, name, "anaglyph", null, ["leftSampler"], ratio, camera, samplingMode, engine, reusable);
         }

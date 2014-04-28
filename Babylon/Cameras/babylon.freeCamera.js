@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCamera = (function (_super) {
         __extends(FreeCamera, _super);
-        //ANY
         function FreeCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
@@ -267,7 +266,7 @@ var BABYLON;
             this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-            if (this._diffPosition.length() > 0.001) {
+            if (this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPosition);
                 if (this.onCollide) {
                     this.onCollide(this._collider.collidedMesh);
@@ -339,24 +338,28 @@ var BABYLON;
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < 0.001)
+                if (Math.abs(this.cameraDirection.x) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.x = 0;
+                }
 
-                if (Math.abs(this.cameraDirection.y) < 0.001)
+                if (Math.abs(this.cameraDirection.y) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.y = 0;
+                }
 
-                if (Math.abs(this.cameraDirection.z) < 0.001)
+                if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.Epsilon) {
                     this.cameraDirection.z = 0;
+                }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < 0.001)
+                if (Math.abs(this.cameraRotation.x) < BABYLON.Engine.Epsilon) {
                     this.cameraRotation.x = 0;
+                }
 
-                if (Math.abs(this.cameraRotation.y) < 0.001)
+                if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.Epsilon) {
                     this.cameraRotation.y = 0;
-
+                }
                 this.cameraRotation.scaleInPlace(this.inertia);
             }
         };

@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
-        //ANY
         function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable) {
             this.name = name;
             this.onApply = null;
@@ -23,7 +22,7 @@
             }
 
             this._renderRatio = ratio;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : 1; //ANY BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
 
             samplers = samplers || [];
@@ -31,13 +30,16 @@
 
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, "");
         }
-        // Methods
+        PostProcess.prototype.isReusable = function () {
+            return this._reusable;
+        };
+
         PostProcess.prototype.activate = function (camera) {
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine._renderingCanvas.width * this._renderRatio;
-            var desiredHeight = this._engine._renderingCanvas.height * this._renderRatio;
+            var desiredWidth = this._engine.getRenderWidth() * this._renderRatio;
+            var desiredHeight = this._engine.getRenderHeight() * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -80,7 +82,7 @@
             // States
             this._engine.enableEffect(this._effect);
             this._engine.setState(false);
-            this._engine.setAlphaMode(0); //ANY BABYLON.Engine.ALPHA_DISABLE);
+            this._engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
 

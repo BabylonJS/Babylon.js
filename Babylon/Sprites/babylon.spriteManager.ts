@@ -5,21 +5,20 @@
         public onDispose: () => void;
 
         private _capacity: number;
-        private _spriteTexture; //ANY
+        private _spriteTexture: Texture;
         private _epsilon: number;
 
-        private _scene; //ANY
+        private _scene: Scene;
 
         private _vertexDeclaration = [3, 4, 4, 4];
         private _vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
-        private _vertexBuffer; //ANY
-        private _indexBuffer; //ANY
+        private _vertexBuffer: WebGLBuffer
+        private _indexBuffer: WebGLBuffer;
         private _vertices: Float32Array;
-        private _effectBase; //ANY
-        private _effectFog; //ANY
+        private _effectBase: Effect;
+        private _effectFog: Effect;
 
-        //ANY
-        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene, epsilon?: number) {
+        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number) {
             this._capacity = capacity;
             this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -125,7 +124,7 @@
             // Render
             var effect = this._effectBase;
 
-            if (this._scene.fogMode !== 0) { //ANY BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 effect = this._effectFog;
             }
 
@@ -139,7 +138,7 @@
             effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
 
             // Fog
-            if (this._scene.fogMode !== 0) { //ANY BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
                 effect.setColor3("vFogColor", this._scene.fogColor);
             }
@@ -154,9 +153,9 @@
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
-            engine.setAlphaMode(2); //ANY BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             engine.draw(true, 0, max * 6);
-            engine.setAlphaMode(0); //BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {

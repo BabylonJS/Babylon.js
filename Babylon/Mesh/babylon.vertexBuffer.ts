@@ -1,15 +1,14 @@
 ﻿module BABYLON {
     export class VertexBuffer {
-        private _mesh; //ANY
-        private _engine; //ANY
+        private _mesh: Mesh;
+        private _engine: Engine;
         private _buffer: WebGLBuffer;
         private _data: number[];
         private _updatable: boolean;
         private _kind: string;
         private _strideSize: number;
 
-        //ANY
-        constructor(mesh, data: number[], kind: string, updatable: boolean, engine?) {
+        constructor(mesh: Mesh, data: number[], kind: string, updatable: boolean, engine?: Engine) {
             this._mesh = mesh;
             this._engine = engine || mesh.getScene().getEngine();
             this._updatable = updatable;

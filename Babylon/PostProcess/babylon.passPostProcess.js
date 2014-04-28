@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var PassPostProcess = (function (_super) {
         __extends(PassPostProcess, _super);
-        //ANY
         function PassPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
             _super.call(this, name, "pass", null, null, ratio, camera, samplingMode, engine, reusable);
         }

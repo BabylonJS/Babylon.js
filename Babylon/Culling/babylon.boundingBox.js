@@ -144,4 +144,4 @@
     })();
     BABYLON.BoundingBox = BoundingBox;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.BoundingBox.js.map
+//# sourceMappingURL=babylon.boundingBox.js.map

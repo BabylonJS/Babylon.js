@@ -6,9 +6,8 @@
         private _mirrorMatrix = BABYLON.Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
-        //ANY
-        constructor(name: string, size: number, scene, generateMipMaps?: boolean) {
-            super(name, size, scene, generateMipMaps);
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
+            super(name, size, scene, generateMipMaps, true);
 
             this.onBeforeRender = () => {
                 BABYLON.Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);

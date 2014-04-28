@@ -25,8 +25,7 @@
         public _postProcesses = [];
         public _postProcessesTakenIndices = [];
 
-        //ANY
-        constructor(name: string, public position: Vector3, scene) {
+        constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
             scene.cameras.push(this);
@@ -139,9 +138,8 @@
         public _update(): void {
         }
 
-        //ANY
-        public attachPostProcess(postProcess, insertAt: number = null): number {
-            if (!postProcess._reusable && this._postProcesses.indexOf(postProcess) > -1) {
+        public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
+            if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
                 console.error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
@@ -167,7 +165,7 @@
                 add = 1;
             }
 
-            for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
+            for (i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 if (this._postProcessesTakenIndices[i] < insertAt) {
                     continue;
                 }
@@ -191,8 +189,7 @@
             return result;
         }
 
-        //ANY
-        public detachPostProcess(postProcess, atIndices: any = null): number[] {
+        public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
             var result = [];
 
             if (!atIndices) {

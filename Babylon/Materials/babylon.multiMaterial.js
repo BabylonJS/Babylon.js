@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var MultiMaterial = (function (_super) {
         __extends(MultiMaterial, _super);
-        //ANY
         function MultiMaterial(name, scene) {
             _super.call(this, name, scene, true);
             this.subMaterials = new Array();

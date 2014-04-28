@@ -35,6 +35,13 @@
             return !BABYLON.Tools.IsEmpty(obj._tags);
         }
 
+        public static GetTags(obj: any): any {
+            if (!obj._tags) {
+                return null;
+            }
+            return obj._tags;
+        }
+
         // the tags 'true' and 'false' are reserved and cannot be used as tags
         // a tag cannot start with '||', '&&', and '!'
         // it cannot contain whitespaces

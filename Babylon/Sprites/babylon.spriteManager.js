@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var SpriteManager = (function () {
-        //ANY
         function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon) {
             this.name = name;
             this.cellSize = cellSize;
@@ -108,7 +107,7 @@
             // Render
             var effect = this._effectBase;
 
-            if (this._scene.fogMode !== 0) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 effect = this._effectFog;
             }
 
@@ -122,7 +121,7 @@
             effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
 
             // Fog
-            if (this._scene.fogMode !== 0) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
                 effect.setColor3("vFogColor", this._scene.fogColor);
             }
@@ -137,9 +136,9 @@
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
-            engine.setAlphaMode(2); //ANY BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             engine.draw(true, 0, max * 6);
-            engine.setAlphaMode(0); //BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         };
 
         SpriteManager.prototype.dispose = function () {

@@ -10,7 +10,6 @@ var BABYLON;
 
     var ArcRotateCamera = (function (_super) {
         __extends(ArcRotateCamera, _super);
-        //ANY
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
             this.alpha = alpha;
@@ -303,13 +302,13 @@ var BABYLON;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
 
-                if (Math.abs(this.inertialAlphaOffset) < 0.001)
+                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Engine.Epsilon)
                     this.inertialAlphaOffset = 0;
 
-                if (Math.abs(this.inertialBetaOffset) < 0.001)
+                if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.Epsilon)
                     this.inertialBetaOffset = 0;
 
-                if (Math.abs(this.inertialRadiusOffset) < 0.001)
+                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 

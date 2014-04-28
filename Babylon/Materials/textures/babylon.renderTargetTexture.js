@@ -8,34 +8,34 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        //ANY
-        function RenderTargetTexture(name, size, scene, generateMipMaps) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectratio) {
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;
             this.renderSprites = false;
-            this.isRenderTarget = true;
             this.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
 
             this.name = name;
+            this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
+            this._doNotChangeAspectratio = doNotChangeAspectratio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
         }
+        RenderTargetTexture.prototype.getRenderSize = function () {
+            return this._size;
+        };
+
         RenderTargetTexture.prototype.resize = function (size, generateMipMaps) {
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         };
 
         RenderTargetTexture.prototype.render = function () {
-            if (this.onBeforeRender) {
-                this.onBeforeRender();
-            }
-
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -50,9 +50,6 @@ var BABYLON;
             }
 
             if (!this.renderList || this.renderList.length == 0) {
-                if (this.onAfterRender) {
-                    this.onAfterRender();
-                }
                 return;
             }
 
@@ -76,16 +73,27 @@ var BABYLON;
                 }
             }
 
+            if (!this._doNotChangeAspectratio) {
+                scene.updateTransformMatrix(true);
+            }
+
+            if (this.onBeforeRender) {
+                this.onBeforeRender();
+            }
+
             // Render
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
-            //Call this before unBinding Framebuffer in case of manipulating texture with WebGL commands inside the onAfterRender method.
             if (this.onAfterRender) {
                 this.onAfterRender();
             }
 
             // Unbind
             engine.unBindFramebuffer(this._texture);
+
+            if (!this._doNotChangeAspectratio) {
+                scene.updateTransformMatrix(true);
+            }
         };
 
         RenderTargetTexture.prototype.clone = function () {

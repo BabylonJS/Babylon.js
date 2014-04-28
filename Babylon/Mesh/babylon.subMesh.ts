@@ -4,7 +4,7 @@
 
         private _mesh: Mesh;
         private _boundingInfo: BoundingInfo;
-        private _linesIndexBuffer; //ANY
+        private _linesIndexBuffer: WebGLBuffer;
         public _lastColliderWorldVertices: Vector3[];
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
@@ -24,8 +24,7 @@
             return this._mesh;
         }
 
-        //ANY
-        public getMaterial() {
+        public getMaterial(): Material {
             var rootMaterial = this._mesh.material;
 
             if (rootMaterial && rootMaterial.getSubMaterial) {
@@ -67,8 +66,7 @@
             this._mesh.render(this);
         }
 
-        //ANY
-        public getLinesIndexBuffer(indices: number[], engine) {
+        public getLinesIndexBuffer(indices: number[], engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
 
@@ -88,9 +86,8 @@
             return ray.intersectsBox(this._boundingInfo.boundingBox);
         }
 
-        //ANY create intersectinfo class
-        public intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean) {
-            var intersectInfo = null;
+        public intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean): IntersectionInfo {
+            var intersectInfo: IntersectionInfo = null;
 
             // Triangles test
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {

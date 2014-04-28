@@ -252,7 +252,7 @@
             return -1.401298E-45 <= num && num <= 1.401298E-45;
         }
 
-        public static DeepCopy(source, destination, doNotCopyList: string[], mustCopyList: string[]): void {
+        public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 
                 if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {

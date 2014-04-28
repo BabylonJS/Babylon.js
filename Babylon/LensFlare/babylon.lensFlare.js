@@ -1,32 +1,26 @@
-﻿"use strict";
+﻿var BABYLON;
+(function (BABYLON) {
+    var LensFlare = (function () {
+        function LensFlare(size, position, color, imgUrl, system) {
+            this.size = size;
+            this.position = position;
+            this.dispose = function () {
+                if (this.texture) {
+                    this.texture.dispose();
+                }
 
-var BABYLON = BABYLON || {};
+                // Remove from scene
+                var index = this._system.lensFlares.indexOf(this);
+                this._system.lensFlares.splice(index, 1);
+            };
+            this.color = color || new BABYLON.Color3(1, 1, 1);
+            this.texture = imgUrl ? new BABYLON.Texture(imgUrl, system.getScene(), true) : null;
+            this._system = system;
 
-(function () {
-    BABYLON.LensFlare = function (size, position, color, imgUrl, system) {
-        this.color = color || new BABYLON.Color3(1, 1, 1);
-        this.position = position;
-        this.size = size;
-        this.texture = imgUrl ? new BABYLON.Texture(imgUrl, system.getScene(), true) : null;
-        this._system = system;
-        
-        system.lensFlares.push(this);
-    };
-    
-    // Properties
-    BABYLON.LensFlare.prototype.position = 0;
-    BABYLON.LensFlare.prototype.size = 1.0;
-    BABYLON.LensFlare.prototype.texture = null;
-    
-    // Methods
-    BABYLON.LensFlare.prototype.dispose = function() {
-        if (this.texture) {
-            this.texture.dispose();
+            system.lensFlares.push(this);
         }
-        
-        // Remove from scene
-        var index = this._system.lensFlares.indexOf(this);
-        this._system.lensFlares.splice(index, 1);
-    };
-    
-})();
+        return LensFlare;
+    })();
+    BABYLON.LensFlare = LensFlare;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.lensFlare.js.map

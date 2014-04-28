@@ -1,14 +1,11 @@
 ﻿module BABYLON {
     export class SpotLight extends Light {
-        public diffuse = new Color3(1.0, 1.0, 1.0);
-        public specular = new Color3(1.0, 1.0, 1.0);
 
         private _transformedDirection: Vector3;
         private _transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
-        //ANY
-        constructor(name: string, public position: Vector3, public direction: Vector3, public angle: number, public exponent: number, scene) {
+        constructor(name: string, public position: Vector3, public direction: Vector3, public angle: number, public exponent: number, scene: Scene) {
             super(name, scene);
         }
 
@@ -17,8 +14,7 @@
             return this.direction;
         }
 
-        //ANY
-        public transferToEffect(effect, positionUniformName: string, directionUniformName: string): void {
+        public transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void {
             var normalizeDirection;
 
             if (this.parent && this.parent.getWorldMatrix) {

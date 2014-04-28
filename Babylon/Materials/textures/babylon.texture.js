@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        //ANY
         function Texture(url, scene, noMipmap, invertY) {
             _super.call(this, scene);
             this.uOffset = 0;
@@ -24,6 +23,7 @@ var BABYLON;
             this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
             this.anisotropicFilteringLevel = 4;
             this.animations = new Array();
+            this.isRenderTarget = false;
 
             this.name = url;
             this.url = url;
@@ -40,16 +40,16 @@ var BABYLON;
                 if (!scene.useDelayedTextureLoading) {
                     this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
                 } else {
-                    this.delayLoadState = 4; //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
         }
         Texture.prototype.delayLoad = function () {
-            if (this.delayLoadState != 4) {
+            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = 1; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {

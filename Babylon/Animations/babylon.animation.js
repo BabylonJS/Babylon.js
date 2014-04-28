@@ -14,6 +14,10 @@
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
         // Methods
+        Animation.prototype.getKeys = function () {
+            return this._keys;
+        };
+
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
             return startValue + (endValue - startValue) * gradient;
         };

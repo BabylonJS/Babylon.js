@@ -9,13 +9,13 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
+        public getRenderTargetTextures: () => SmartArray;
 
         public _effect = null;
         public _wasPreviouslyReady = false;
-        private _scene; //ANY
+        private _scene: Scene;
 
-        //ANY
-        constructor(public name: string, scene, doNotAdd?: boolean) {
+        constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
             this.id = name;
 
             this._scene = scene;
@@ -33,8 +33,7 @@
             return this._effect;
         }
 
-        //ANY
-        public getScene() {
+        public getScene(): Scene {
             return this._scene;
         }
 

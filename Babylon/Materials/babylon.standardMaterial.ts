@@ -1,12 +1,12 @@
 ﻿module BABYLON {
     export class StandardMaterial extends Material {
-        public diffuseTexture = null;
-        public ambientTexture = null;
-        public opacityTexture = null;
-        public reflectionTexture = null;
-        public emissiveTexture = null;
-        public specularTexture = null;
-        public bumpTexture = null;
+        public diffuseTexture: Texture;
+        public ambientTexture: Texture;
+        public opacityTexture: Texture;
+        public reflectionTexture: Texture;
+        public emissiveTexture: Texture;
+        public specularTexture: Texture;
+        public bumpTexture: Texture;
 
         public ambientColor = new BABYLON.Color3(0, 0, 0);
         public diffuseColor = new BABYLON.Color3(1, 1, 1);
@@ -24,9 +24,18 @@
         private _scaledSpecular = new BABYLON.Color3();
         private _renderId: number;
 
-        //ANY
-        constructor(name: string, scene) {
+        constructor(name: string, scene: Scene) {
             super(name, scene);
+
+            this.getRenderTargetTextures = (): SmartArray => {
+                this._renderTargets.reset();
+
+                if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
+                    this._renderTargets.push(this.reflectionTexture);
+                }
+
+                return this._renderTargets;
+            }
         }
 
         public needAlphaBlending(): boolean {
@@ -48,14 +57,14 @@
             var scene = this.getScene();
 
             if (!this.checkReadyOnEveryCall) {
-                if (this._renderId ===scene.getRenderId()) {
+                if (this._renderId === scene.getRenderId()) {
                     return true;
                 }
             }
 
-            var engine =scene.getEngine();
+            var engine = scene.getEngine();
             var defines = [];
-            var optionalDefines = [];
+            var optionalDefines = new Array<string>();
 
             // Textures
             if (scene.texturesEnabled) {
@@ -136,8 +145,8 @@
             var shadowsActivated = false;
             var lightIndex = 0;
             if (scene.lightsEnabled) {
-                for (var index = 0; index <scene.lights.length; index++) {
-                    var light =scene.lights[index];
+                for (var index = 0; index < scene.lights.length; index++) {
+                    var light = scene.lights[index];
 
                     if (!light.isEnabled()) {
                         continue;
@@ -230,7 +239,7 @@
                     shaderName = "legacydefault";
                 }
 
-                this._effect =scene.getEngine().createEffect(shaderName,
+                this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
                     ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                         "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
@@ -251,20 +260,11 @@
                 return false;
             }
 
-            this._renderId =scene.getRenderId();
+            this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
             return true;
         }
 
-        public getRenderTargetTextures(): SmartArray {
-            this._renderTargets.reset();
-
-            if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
-                this._renderTargets.push(this.reflectionTexture);
-            }
-
-            return this._renderTargets;
-        }
 
         public unbind(): void {
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
@@ -278,7 +278,7 @@
 
             // Matrices        
             this._effect.setMatrix("world", world);
-            this._effect.setMatrix("viewProjection",scene.getTransformMatrix());
+            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
             if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
@@ -334,7 +334,7 @@
                 this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
             }
 
-            if (this.bumpTexture &&scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
+            if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
                 this._effect.setTexture("bumpSampler", this.bumpTexture);
 
                 this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -342,9 +342,9 @@
             }
 
             // Colors
-           scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-            this._effect.setVector3("vEyePosition",scene.activeCamera.position);
+            this._effect.setVector3("vEyePosition", scene.activeCamera.position);
             this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
             this._effect.setColor4("vDiffuseColor", this._baseColor, this.alpha * mesh.visibility);
             this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
@@ -352,8 +352,8 @@
 
             if (scene.lightsEnabled) {
                 var lightIndex = 0;
-                for (var index = 0; index <scene.lights.length; index++) {
-                    var light =scene.lights[index];
+                for (var index = 0; index < scene.lights.length; index++) {
+                    var light = scene.lights[index];
 
                     if (!light.isEnabled()) {
                         continue;
@@ -399,19 +399,19 @@
             }
 
             if (scene.clipPlane) {
-                var clipPlane =scene.clipPlane;
+                var clipPlane = scene.clipPlane;
                 this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
 
             // View
             if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
-                this._effect.setMatrix("view",scene.getViewMatrix());
+                this._effect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
             if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos",scene.fogMode,scene.fogStart,scene.fogEnd,scene.fogDensity);
-                this._effect.setColor3("vFogColor",scene.fogColor);
+                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                this._effect.setColor3("vFogColor", scene.fogColor);
             }
         }
 

@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
-        //ANY
         function Mesh(name, scene) {
             _super.call(this, name, scene);
             // Members
@@ -16,7 +15,7 @@ var BABYLON;
             this.rotation = new BABYLON.Vector3(0, 0, 0);
             this.rotationQuaternion = null;
             this.scaling = new BABYLON.Vector3(1, 1, 1);
-            this.delayLoadState = 0;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.material = null;
             this.isVisible = true;
             this.isPickable = true;
@@ -342,7 +341,7 @@ var BABYLON;
                     zero = this.getScene().activeCamera.position;
                 } else {
                     if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_X)
-                        zero.x = localPosition.x + 0.001; //ANY:BABYLON.Engine.epsilon
+                        zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_Y)
                         zero.y = localPosition.y + 0.001;
                     if (this.billboardMode & BABYLON.Mesh.BILLBOARDMODE_Z)
@@ -517,9 +516,8 @@ var BABYLON;
             effectiveMaterial.unbind();
         };
 
-        //ANY
         Mesh.prototype.getEmittedParticleSystems = function () {
-            var results = [];
+            var results = new Array();
             for (var index = 0; index < this.getScene().particleSystems.length; index++) {
                 var particleSystem = this.getScene().particleSystems[index];
                 if (particleSystem.emitter === this) {
@@ -530,9 +528,8 @@ var BABYLON;
             return results;
         };
 
-        //ANY
         Mesh.prototype.getHierarchyEmittedParticleSystems = function () {
-            var results = [];
+            var results = new Array();
             var descendants = this.getDescendants();
             descendants.push(this);
 
@@ -560,19 +557,19 @@ var BABYLON;
 
         Mesh.prototype.isInFrustum = function (frustumPlanes) {
             var _this = this;
-            if (this.delayLoadState === 2) {
+            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
             var result = this._boundingInfo.isInFrustum(frustumPlanes);
 
-            if (result && this.delayLoadState === 4) {
-                this.delayLoadState = 2; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADING
+            if (result && this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
                 this.getScene()._addPendingData(this);
 
                 BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
                     _this._delayLoadingFunction(JSON.parse(data), _this);
-                    _this.delayLoadState = 1; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                    _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                     _this.getScene()._removePendingData(_this);
                 }, function () {
                 }, this.getScene().database);
@@ -921,7 +918,9 @@ var BABYLON;
 
         // Physics
         Mesh.prototype.setPhysicsState = function (options) {
-            if (!this.getScene()._physicsEngine) {
+            var physicsEngine = this.getScene().getPhysicsEngine();
+
+            if (!physicsEngine) {
                 return;
             }
 
@@ -936,11 +935,11 @@ var BABYLON;
             this._physicRestitution = options.restitution;
 
             if (options.impostor === BABYLON.PhysicsEngine.NoImpostor) {
-                this.getScene()._physicsEngine._unregisterMesh(this);
+                physicsEngine._unregisterMesh(this);
                 return;
             }
 
-            this.getScene()._physicsEngine._registerMesh(this, options);
+            physicsEngine._registerMesh(this, options);
         };
 
         Mesh.prototype.getPhysicsImpostor = function () {
@@ -980,7 +979,7 @@ var BABYLON;
                 return;
             }
 
-            this.getScene()._physicsEngine._applyImpulse(this, force, contactPoint);
+            this.getScene().getPhysicsEngine()._applyImpulse(this, force, contactPoint);
         };
 
         Mesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2) {
@@ -988,7 +987,7 @@ var BABYLON;
                 return;
             }
 
-            this.getScene()._physicsEngine._createLink(this, otherMesh, pivot1, pivot2);
+            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
         };
 
         // Geometric tools
@@ -1074,7 +1073,6 @@ var BABYLON;
         };
 
         // Statics
-        //ANY
         Mesh.CreateBox = function (name, size, scene, updatable) {
             var box = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateBox(size);
@@ -1084,7 +1082,6 @@ var BABYLON;
             return box;
         };
 
-        //ANY
         Mesh.CreateSphere = function (name, segments, diameter, scene, updatable) {
             var sphere = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter);
@@ -1095,7 +1092,6 @@ var BABYLON;
         };
 
         // Cylinder and cone (Code inspired by SharpDX.org)
-        //ANY
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
             var cylinder = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
@@ -1106,7 +1102,6 @@ var BABYLON;
         };
 
         // Torus  (Code from SharpDX.org)
-        //ANY
         Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
             var torus = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
@@ -1116,7 +1111,6 @@ var BABYLON;
             return torus;
         };
 
-        //ANY
         Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable) {
             var torusKnot = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
@@ -1127,7 +1121,6 @@ var BABYLON;
         };
 
         // Plane & ground
-        //ANY
         Mesh.CreatePlane = function (name, size, scene, updatable) {
             var plane = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(size);
@@ -1137,7 +1130,6 @@ var BABYLON;
             return plane;
         };
 
-        //ANY
         Mesh.CreateGround = function (name, width, height, subdivisions, scene, updatable) {
             var ground = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateGround(width, height, subdivisions);
@@ -1147,17 +1139,10 @@ var BABYLON;
             return ground;
         };
 
-        //ANY
         Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
             var ground = new BABYLON.Mesh(name, scene);
 
             var onload = function (img) {
-                var indices = [];
-                var positions = [];
-                var normals = [];
-                var uvs = [];
-                var row, col;
-
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
@@ -1168,52 +1153,11 @@ var BABYLON;
 
                 context.drawImage(img, 0, 0);
 
+                // Create VertexData from map data
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+                var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
-                for (row = 0; row <= subdivisions; row++) {
-                    for (col = 0; col <= subdivisions; col++) {
-                        var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
-
-                        // Compute height
-                        var heightMapX = (((position.x + width / 2) / width) * (heightMapWidth - 1)) | 0;
-                        var heightMapY = ((1.0 - (position.z + height / 2) / height) * (heightMapHeight - 1)) | 0;
-
-                        var pos = (heightMapX + heightMapY * heightMapWidth) * 4;
-                        var r = buffer[pos] / 255.0;
-                        var g = buffer[pos + 1] / 255.0;
-                        var b = buffer[pos + 2] / 255.0;
-
-                        var gradient = r * 0.3 + g * 0.59 + b * 0.11;
-
-                        position.y = minHeight + (maxHeight - minHeight) * gradient;
-
-                        // Add  vertex
-                        positions.push(position.x, position.y, position.z);
-                        normals.push(0, 0, 0);
-                        uvs.push(col / subdivisions, 1.0 - row / subdivisions);
-                    }
-                }
-
-                for (row = 0; row < subdivisions; row++) {
-                    for (col = 0; col < subdivisions; col++) {
-                        indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                        indices.push(col + 1 + row * (subdivisions + 1));
-                        indices.push(col + row * (subdivisions + 1));
-
-                        indices.push(col + (row + 1) * (subdivisions + 1));
-                        indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                        indices.push(col + row * (subdivisions + 1));
-                    }
-                }
-
-                // Normals
-                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-
-                // Transfer
-                ground.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
-                ground.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
-                ground.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
-                ground.setIndices(indices);
+                vertexData.applyToMesh(ground, updatable);
 
                 ground._isReady = true;
             };

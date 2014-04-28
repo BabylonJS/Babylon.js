@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var Camera = (function (_super) {
         __extends(Camera, _super);
-        //ANY
         function Camera(name, position, scene) {
             _super.call(this, name, scene);
             this.position = position;
@@ -129,10 +128,9 @@ var BABYLON;
         Camera.prototype._update = function () {
         };
 
-        //ANY
         Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
             if (typeof insertAt === "undefined") { insertAt = null; }
-            if (!postProcess._reusable && this._postProcesses.indexOf(postProcess) > -1) {
+            if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
                 console.error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
@@ -156,7 +154,7 @@ var BABYLON;
                 add = 1;
             }
 
-            for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
+            for (i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 if (this._postProcessesTakenIndices[i] < insertAt) {
                     continue;
                 }
@@ -180,7 +178,6 @@ var BABYLON;
             return result;
         };
 
-        //ANY
         Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
             if (typeof atIndices === "undefined") { atIndices = null; }
             var result = [];

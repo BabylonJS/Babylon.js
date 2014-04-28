@@ -36,7 +36,6 @@
             // Cameras
             this.cameras = new Array();
             this.activeCameras = new Array();
-            this.activeCamera = null;
             // Meshes
             this.meshes = new Array();
             this.materials = new Array();
@@ -47,15 +46,15 @@
             this.textures = new Array();
             // Particles
             this.particlesEnabled = true;
-            this.particleSystems = [];
+            this.particleSystems = new Array();
             // Sprites
             this.spriteManagers = new Array();
             // Layers
-            this.layers = [];
+            this.layers = new Array();
             // Skeletons
-            this.skeletons = [];
+            this.skeletons = new Array();
             // Lens flares
-            this.lensFlareSystems = [];
+            this.lensFlareSystems = new Array();
             // Collisions
             this.collisionsEnabled = true;
             this.gravity = new BABYLON.Vector3(0, -9.0, 0);
@@ -445,7 +444,6 @@
             return null;
         };
 
-        //ANY
         Scene.prototype.getLastSkeletonByID = function (id) {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
@@ -456,7 +454,6 @@
             return null;
         };
 
-        //ANY
         Scene.prototype.getSkeletonById = function (id) {
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].id === id) {
@@ -467,7 +464,6 @@
             return null;
         };
 
-        //ANY
         Scene.prototype.getSkeletonByName = function (name) {
             for (var index = 0; index < this.skeletons.length; index++) {
                 if (this.skeletons[index].name === name) {
@@ -617,6 +613,10 @@
             this._particlesDuration += new Date().getTime() - beforeParticlesDate;
         };
 
+        Scene.prototype.updateTransformMatrix = function (force) {
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+        };
+
         Scene.prototype._renderForCamera = function (camera) {
             var engine = this._engine;
 
@@ -630,7 +630,7 @@
 
             // Camera
             this._renderId++;
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            this.updateTransformMatrix();
 
             // Meshes
             var beforeEvaluateActiveMeshesDate = new Date().getTime();
@@ -768,7 +768,7 @@
                 var light = this.lights[lightIndex];
                 var shadowGenerator = light.getShadowGenerator();
 
-                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap()._scene.textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
+                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
                     this._renderTargets.push(shadowGenerator.getShadowMap());
                 }
             }
@@ -1005,6 +1005,10 @@
         };
 
         // Physics
+        Scene.prototype.getPhysicsEngine = function () {
+            return this._physicsEngine;
+        };
+
         Scene.prototype.enablePhysics = function (gravity, iterations) {
             if (this._physicsEngine) {
                 return true;

@@ -8,10 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var MirrorTexture = (function (_super) {
         __extends(MirrorTexture, _super);
-        //ANY
         function MirrorTexture(name, size, scene, generateMipMaps) {
             var _this = this;
-            _super.call(this, name, size, scene, generateMipMaps);
+            _super.call(this, name, size, scene, generateMipMaps, true);
             this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._mirrorMatrix = BABYLON.Matrix.Zero();

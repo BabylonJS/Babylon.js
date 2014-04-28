@@ -8,14 +8,10 @@ var BABYLON;
 (function (BABYLON) {
     var PointLight = (function (_super) {
         __extends(PointLight, _super);
-        //ANY
         function PointLight(name, position, scene) {
             _super.call(this, name, scene);
             this.position = position;
-            this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
-            this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
         }
-        //ANY
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
@@ -31,7 +27,6 @@ var BABYLON;
             effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
         };
 
-        //ANY
         PointLight.prototype.getShadowGenerator = function () {
             return null;
         };

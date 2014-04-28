@@ -8,7 +8,6 @@ var BABYLON;
 (function (BABYLON) {
     var CubeTexture = (function (_super) {
         __extends(CubeTexture, _super);
-        //ANY
         function CubeTexture(rootUrl, scene, extensions, noMipmap) {
             _super.call(this, scene);
             this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
@@ -30,7 +29,7 @@ var BABYLON;
                 if (!scene.useDelayedTextureLoading) {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions, noMipmap);
                 } else {
-                    this.delayLoadState = 4; //ANY BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
 
@@ -40,11 +39,11 @@ var BABYLON;
         }
         // Methods
         CubeTexture.prototype.delayLoad = function () {
-            if (this.delayLoadState != 4) {
+            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = 1; //ANY BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {

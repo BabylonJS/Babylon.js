@@ -11,7 +11,7 @@
         public _isReady = true;
         public _currentRenderId = -1;
 
-        private _scene;
+        private _scene: Scene;
         public _cache;
 
         constructor(name: string, scene) {
@@ -21,13 +21,11 @@
             this._initCache();
         }
 
-        //ANY
-        public getScene() {
+        public getScene(): Scene {
             return this._scene;
         }
 
-        //ANY
-        public getEngine() {
+        public getEngine(): Engine {
             return this._scene.getEngine();
         }
 

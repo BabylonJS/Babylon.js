@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    declare var window;
-
     var eventPrefix = Tools.GetPointerPrefix();
 
     export class ArcRotateCamera extends Camera {
@@ -25,21 +23,20 @@
         private _viewMatrix = new BABYLON.Matrix();
         private _attachedElement: HTMLElement;
 
-        private _onPointerDown; //ANY
-        private _onPointerUp; //ANY
-        private _onPointerMove; //ANY
-        private _wheel; //ANY
-        private _onMouseMove; //ANY
-        private _onKeyDown; //ANY
-        private _onKeyUp; //ANY
-        private _onLostFocus; //ANY
-        private _reset; //ANY
-        private _onGestureStart; //ANY
-        private _onGesture; //ANY
-        private _MSGestureHandler;
+        private _onPointerDown: (e: PointerEvent) => void;
+        private _onPointerUp: (e: PointerEvent) => void;
+        private _onPointerMove: (e: PointerEvent) => void;
+        private _wheel: (e: MouseWheelEvent) => void;
+        private _onMouseMove: (e: MouseEvent) => any;
+        private _onKeyDown: (e: KeyboardEvent) => any;
+        private _onKeyUp: (e: KeyboardEvent) => any;
+        private _onLostFocus: (e: FocusEvent) => any;
+        private _reset: () => void;
+        private _onGestureStart: (e: PointerEvent) => void;
+        private _onGesture: (e: MSGestureEvent) => void;
+        private _MSGestureHandler: MSGesture;
 
-        //ANY
-        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene) {
+        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, BABYLON.Vector3.Zero(), scene);
 
             this.getViewMatrix();
@@ -323,13 +320,13 @@
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
 
-                if (Math.abs(this.inertialAlphaOffset) < 0.001) //ANY BABYLON.Engine.epsilon
+                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Engine.Epsilon)
                     this.inertialAlphaOffset = 0;
 
-                if (Math.abs(this.inertialBetaOffset) < 0.001) //ANY BABYLON.Engine.epsilon
+                if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.Epsilon)
                     this.inertialBetaOffset = 0;
 
-                if (Math.abs(this.inertialRadiusOffset) < 0.001) //ANY BABYLON.Engine.epsilon
+                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 

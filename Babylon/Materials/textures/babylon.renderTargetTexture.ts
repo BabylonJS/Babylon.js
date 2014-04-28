@@ -3,29 +3,34 @@
         public renderList = new Array<Mesh>();
         public renderParticles = true;
         public renderSprites = false;
-        public isRenderTarget = true;
         public coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
-        public customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents: () => void) => void;
+        public customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents?: () => void) => void;
 
         private _size: number;
         public _generateMipMaps: boolean;
         private _renderingManager
-        public _waitingRenderList: number[];
+        public _waitingRenderList: string[];
+        private _doNotChangeAspectratio: boolean;
 
-        //ANY
-        constructor(name: string, size: number, scene, generateMipMaps?: boolean) {
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectratio?: boolean) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
+            this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
+            this._doNotChangeAspectratio = doNotChangeAspectratio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
+        }
+
+        public getRenderSize(): number {
+            return this._size;
         }
 
         public resize(size, generateMipMaps) {
@@ -34,11 +39,6 @@
         }
 
         public render() {
-
-            if (this.onBeforeRender) {
-                this.onBeforeRender();
-            }
-
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -53,9 +53,6 @@
             }
 
             if (!this.renderList || this.renderList.length == 0) {
-                if (this.onAfterRender) {
-                    this.onAfterRender();
-                }
                 return;
             }
 
@@ -79,16 +76,27 @@
                 }
             }
 
+            if (!this._doNotChangeAspectratio) {
+                scene.updateTransformMatrix(true);
+            }
+
+            if (this.onBeforeRender) {
+                this.onBeforeRender();
+            }
+
             // Render
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
-            //Call this before unBinding Framebuffer in case of manipulating texture with WebGL commands inside the onAfterRender method.
             if (this.onAfterRender) {
                 this.onAfterRender();
             }
 
             // Unbind
             engine.unBindFramebuffer(this._texture);
+
+            if (!this._doNotChangeAspectratio) {
+                scene.updateTransformMatrix(true);
+            }
         }
 
         public clone(): RenderTargetTexture {

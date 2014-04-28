@@ -124,7 +124,6 @@
             return true;
         };
 
-        //ANY
         Collider.prototype._testTriangle = function (faceIndex, subMesh, p1, p2, p3) {
             var t0;
             var embeddedInPlane = false;

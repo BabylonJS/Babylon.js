@@ -1,7 +1,6 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var Material = (function () {
-        //ANY
         function Material(name, scene, doNotAdd) {
             this.name = name;
             this.checkReadyOnEveryCall = true;
@@ -27,7 +26,6 @@
             return this._effect;
         };
 
-        //ANY
         Material.prototype.getScene = function () {
             return this._scene;
         };
