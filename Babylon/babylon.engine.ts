@@ -1176,6 +1176,11 @@
             }
         }
 
+        public ReadPixels(x: number, y: number, width: number, height: number) : Uint8Array {
+            var data = new Uint8Array(height * width * 4);
+            this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+            return data;
+        }
         // Dispose
         public dispose(): void {
             // Release scenes
