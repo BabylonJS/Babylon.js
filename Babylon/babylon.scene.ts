@@ -1072,16 +1072,19 @@
             return this._physicsEngine;
         }
 
-        public enablePhysics(gravity: Vector3, iterations: number): boolean {
+        public enablePhysics(gravity: Vector3, plugin?: PhysicsEnginePlugin): boolean {
             if (this._physicsEngine) {
                 return true;
             }
 
-            if (!PhysicsEngine.IsSupported()) {
+            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
+
+            if (!this._physicsEngine.isSupported()) {
+                this._physicsEngine = null;
                 return false;
             }
 
-            this._physicsEngine = new BABYLON.PhysicsEngine(gravity, iterations || 10);
+            this._physicsEngine._initialize(gravity);
 
             return true;
         }
@@ -1107,26 +1110,30 @@
             this._physicsEngine._setGravity(gravity);
         }
 
-        //ANY
-        public createCompoundImpostor(options): any {
+        public createCompoundImpostor(parts: any, options: PhysicsBodyCreationOptions): any {
+            if (parts.parts) { // Old API
+                options = parts;
+                parts = parts.parts;
+            }
+
             if (!this._physicsEngine) {
                 return null;
             }
 
-            for (var index = 0; index < options.parts.length; index++) {
-                var mesh = options.parts[index].mesh;
+            for (var index = 0; index < parts.length; index++) {
+                var mesh = parts[index].mesh;
 
-                mesh._physicImpostor = options.parts[index].impostor;
-                mesh._physicsMass = options.mass / options.parts.length;
+                mesh._physicImpostor = parts[index].impostor;
+                mesh._physicsMass = options.mass / parts.length;
                 mesh._physicsFriction = options.friction;
                 mesh._physicRestitution = options.restitution;
             }
 
-            return this._physicsEngine._registerCompound(options);
+            return this._physicsEngine._registerMeshesAsCompound(parts, options);
         }
 
         //ANY
-        public deleteCompoundImpostor(compound): void {
+        public deleteCompoundImpostor(compound: any): void {
             for (var index = 0; index < compound.parts.length; index++) {
                 var mesh = compound.parts[index].mesh;
                 mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;

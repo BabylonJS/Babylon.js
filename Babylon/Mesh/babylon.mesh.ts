@@ -45,10 +45,10 @@
         private _absolutePosition = BABYLON.Vector3.Zero();
 
         // Physics
-        private _physicImpostor = PhysicsEngine.NoImpostor;
-        private _physicsMass: number;
-        private _physicsFriction: number;
-        private _physicRestitution: number;
+        public _physicImpostor = PhysicsEngine.NoImpostor;
+        public _physicsMass: number;
+        public _physicsFriction: number;
+        public _physicRestitution: number;
 
         // Private
         private _boundingInfo: BoundingInfo;
@@ -894,7 +894,7 @@
 
             // Physics
             if (this.getPhysicsImpostor() != PhysicsEngine.NoImpostor) {
-                this.setPhysicsState({ impostor: PhysicsEngine.NoImpostor });
+                this.setPhysicsState(PhysicsEngine.NoImpostor);
             }
 
             // Remove from scene
@@ -936,29 +936,35 @@
         }
 
         // Physics
-        public setPhysicsState(options): void {
+        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): void {
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
                 return;
             }
 
-            options.impostor = options.impostor || PhysicsEngine.NoImpostor;
+            if (impostor.impostor) {
+                // Old API
+                options = impostor;
+                impostor = impostor.impostor;
+            }
+
+            impostor = impostor || PhysicsEngine.NoImpostor;
             options.mass = options.mass || 0;
             options.friction = options.friction || 0.2;
             options.restitution = options.restitution || 0.9;
 
-            this._physicImpostor = options.impostor;
+            this._physicImpostor = impostor;
             this._physicsMass = options.mass;
             this._physicsFriction = options.friction;
             this._physicRestitution = options.restitution;
 
-            if (options.impostor === BABYLON.PhysicsEngine.NoImpostor) {
+            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
                 return;
             }
 
-            physicsEngine._registerMesh(this, options);
+            physicsEngine._registerMesh(this, impostor, options);
         }
 
         public getPhysicsImpostor(): number {
@@ -1194,8 +1200,8 @@
 
         // Tools
         public static MinMax(meshes: Mesh[]): {min: Vector3; max: Vector3} {
-            var minVector;
-            var maxVector;
+            var minVector = null;
+            var maxVector = null;
             for (var i in meshes) {
                 var mesh = meshes[i];
                 var boundingBox = mesh.getBoundingInfo().boundingBox;

@@ -876,7 +876,7 @@ var BABYLON;
 
             // Physics
             if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
-                this.setPhysicsState({ impostor: BABYLON.PhysicsEngine.NoImpostor });
+                this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
 
             // Remove from scene
@@ -917,29 +917,35 @@ var BABYLON;
         };
 
         // Physics
-        Mesh.prototype.setPhysicsState = function (options) {
+        Mesh.prototype.setPhysicsState = function (impostor, options) {
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
                 return;
             }
 
-            options.impostor = options.impostor || BABYLON.PhysicsEngine.NoImpostor;
+            if (impostor.impostor) {
+                // Old API
+                options = impostor;
+                impostor = impostor.impostor;
+            }
+
+            impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
             options.mass = options.mass || 0;
             options.friction = options.friction || 0.2;
             options.restitution = options.restitution || 0.9;
 
-            this._physicImpostor = options.impostor;
+            this._physicImpostor = impostor;
             this._physicsMass = options.mass;
             this._physicsFriction = options.friction;
             this._physicRestitution = options.restitution;
 
-            if (options.impostor === BABYLON.PhysicsEngine.NoImpostor) {
+            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
                 return;
             }
 
-            physicsEngine._registerMesh(this, options);
+            physicsEngine._registerMesh(this, impostor, options);
         };
 
         Mesh.prototype.getPhysicsImpostor = function () {
@@ -1172,8 +1178,8 @@ var BABYLON;
 
         // Tools
         Mesh.MinMax = function (meshes) {
-            var minVector;
-            var maxVector;
+            var minVector = null;
+            var maxVector = null;
             for (var i in meshes) {
                 var mesh = meshes[i];
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
