@@ -312,6 +312,100 @@
                 fps = 1000.0 / (sum / (length - 1));
             }
         };
+
+        Tools.CreateScreenshot = function (engine, camera, size) {
+            var width;
+            var height;
+
+            //If a zoom value is specified
+            if (size.zoom) {
+                width = Math.round(engine.getRenderWidth() * size.zoom);
+                height = Math.round(width / engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            } else if (size.width && size.height) {
+                width = size.width;
+                height = size.height;
+            } else if (size.width && !size.height) {
+                width = size.width;
+                height = Math.round(width / engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            } else if (size.height && !size.width) {
+                height = size.height;
+                width = Math.round(height * engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            } else if (!isNaN(size)) {
+                height = size;
+                width = size;
+            } else {
+                console.error("Invalid 'size' parameter !");
+            }
+
+            var texture = new BABYLON.RenderTargetTexture("screenShot", size, engine.scenes[0]);
+            texture.renderList = engine.scenes[0].meshes;
+
+            texture.onAfterRender = function () {
+                // Read the contents of the framebuffer
+                var numberOfChannelsByLine = width * 4;
+                var halfHeight = height / 2;
+
+                //Reading datas from WebGL
+                var data = engine.ReadPixels(0, 0, width, height);
+
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
+                        ;
+
+                        var temp = data[currentCell];
+                        data[currentCell] = data[targetCell];
+                        data[targetCell] = temp;
+                    }
+                }
+
+                // Create a 2D canvas to store the result
+                if (!Tools._ScreenshotCanvas) {
+                    Tools._ScreenshotCanvas = document.createElement('canvas');
+                }
+                Tools._ScreenshotCanvas.width = width;
+                Tools._ScreenshotCanvas.height = height;
+                var context = Tools._ScreenshotCanvas.getContext('2d');
+
+                // Copy the pixels to a 2D canvas
+                var imageData = context.createImageData(width, height);
+                imageData.data.set(data);
+                context.putImageData(imageData, 0, 0);
+
+                var base64Image = Tools._ScreenshotCanvas.toDataURL();
+
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    var a = window.document.createElement("a");
+                    a.href = base64Image;
+                    var date = new Date();
+                    var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
+                    a.setAttribute("download", "screenshot-" + stringDate);
+
+                    window.document.body.appendChild(a);
+
+                    a.addEventListener("click", function () {
+                        a.parentElement.removeChild(a);
+                    });
+                    a.click();
+                    //Or opening a new tab with the image if it is not possible to automatically start download.
+                } else {
+                    var newWindow = window.open("");
+                    var img = newWindow.document.createElement("img");
+                    img.src = base64Image;
+                    newWindow.document.body.appendChild(img);
+                }
+            };
+
+            texture.render();
+
+            texture.dispose();
+        };
         Tools.BaseUrl = "";
         return Tools;
     })();
