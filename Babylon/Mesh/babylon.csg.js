@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     // Unique ID when we import meshes from Babylon to CSG
     var currentCSGMeshId = 0;
@@ -116,14 +116,18 @@ var BABYLON;
                     }
                     if (f.length >= 3) {
                         var poly = new Polygon(f, polygon.shared);
+
                         if (poly.plane)
                             front.push(poly);
                     }
+
                     if (b.length >= 3) {
-                        var poly = new Polygon(b, polygon.shared);
+                        poly = new Polygon(b, polygon.shared);
+
                         if (poly.plane)
                             back.push(poly);
                     }
+
                     break;
             }
         };
@@ -348,19 +352,6 @@ var BABYLON;
             return this.polygons;
         };
 
-        CSG.prototype.unionInPlace = function (csg) {
-            var a = new Node(this.polygons);
-            var b = new Node(csg.polygons);
-            a.clipTo(b);
-            b.clipTo(a);
-            b.invert();
-            b.clipTo(a);
-            b.invert();
-            a.build(b.allPolygons());
-
-            this.polygons = a.allPolygons();
-        },
-
         CSG.prototype.union = function (csg) {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -373,20 +364,19 @@ var BABYLON;
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         };
 
-        CSG.prototype.subtractInPlace = function (csg) {
+        CSG.prototype.unionInPlace = function (csg) {
             var a = new Node(this.polygons);
             var b = new Node(csg.polygons);
-            a.invert();
+
             a.clipTo(b);
             b.clipTo(a);
             b.invert();
             b.clipTo(a);
             b.invert();
             a.build(b.allPolygons());
-            a.invert();
-            
+
             this.polygons = a.allPolygons();
-        },
+        };
 
         CSG.prototype.subtract = function (csg) {
             var a = new Node(this.clone().polygons);
@@ -402,19 +392,21 @@ var BABYLON;
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         };
 
-        CSG.prototype.intersectInPlace = function (csg) {
+        CSG.prototype.subtractInPlace = function (csg) {
             var a = new Node(this.polygons);
             var b = new Node(csg.polygons);
+
             a.invert();
-            b.clipTo(a);
-            b.invert();
             a.clipTo(b);
             b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
             a.build(b.allPolygons());
             a.invert();
 
             this.polygons = a.allPolygons();
-        },
+        };
 
         CSG.prototype.intersect = function (csg) {
             var a = new Node(this.clone().polygons);
@@ -429,18 +421,33 @@ var BABYLON;
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         };
 
+        CSG.prototype.intersectInPlace = function (csg) {
+            var a = new Node(this.polygons);
+            var b = new Node(csg.polygons);
+
+            a.invert();
+            b.clipTo(a);
+            b.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            a.build(b.allPolygons());
+            a.invert();
+
+            this.polygons = a.allPolygons();
+        };
+
         // Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
         // not modified.
-        CSG.prototype.inverseInPlace = function () {
-            this.polygons.map(function (p) { p.flip(); });
-        }, 
-
         CSG.prototype.inverse = function () {
             var csg = this.clone();
-            csg.polygons.map(function (p) {
+            csg.inverseInPlace();
+            return csg;
+        };
+
+        CSG.prototype.inverseInPlace = function () {
+            this.polygons.map(function (p) {
                 p.flip();
             });
-            return csg;
         };
 
         // This is used to keep meshes transformations so they can be restored

@@ -237,6 +237,11 @@
             return result;
         };
 
+        Vector2.prototype.copyFrom = function (source) {
+            this.x = source.x;
+            this.y = source.y;
+        };
+
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
@@ -1936,7 +1941,7 @@
                 return null;
             }
 
-            return new IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
+            return new BABYLON.IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
         };
 
         // Statics

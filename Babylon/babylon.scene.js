@@ -1009,16 +1009,19 @@
             return this._physicsEngine;
         };
 
-        Scene.prototype.enablePhysics = function (gravity, iterations) {
+        Scene.prototype.enablePhysics = function (gravity, plugin) {
             if (this._physicsEngine) {
                 return true;
             }
 
-            if (!BABYLON.PhysicsEngine.IsSupported()) {
+            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
+
+            if (!this._physicsEngine.isSupported()) {
+                this._physicsEngine = null;
                 return false;
             }
 
-            this._physicsEngine = new BABYLON.PhysicsEngine(gravity, iterations || 10);
+            this._physicsEngine._initialize(gravity);
 
             return true;
         };
@@ -1044,22 +1047,26 @@
             this._physicsEngine._setGravity(gravity);
         };
 
-        //ANY
-        Scene.prototype.createCompoundImpostor = function (options) {
+        Scene.prototype.createCompoundImpostor = function (parts, options) {
+            if (parts.parts) {
+                options = parts;
+                parts = parts.parts;
+            }
+
             if (!this._physicsEngine) {
                 return null;
             }
 
-            for (var index = 0; index < options.parts.length; index++) {
-                var mesh = options.parts[index].mesh;
+            for (var index = 0; index < parts.length; index++) {
+                var mesh = parts[index].mesh;
 
-                mesh._physicImpostor = options.parts[index].impostor;
-                mesh._physicsMass = options.mass / options.parts.length;
+                mesh._physicImpostor = parts[index].impostor;
+                mesh._physicsMass = options.mass / parts.length;
                 mesh._physicsFriction = options.friction;
                 mesh._physicRestitution = options.restitution;
             }
 
-            return this._physicsEngine._registerCompound(options);
+            return this._physicsEngine._registerMeshesAsCompound(parts, options);
         };
 
         //ANY

@@ -56,7 +56,7 @@
                 return null;
             }
 
-            var n = Vector3.Normalize(Vector3.Cross(c.subtract(a), b.subtract(a)));
+            var n = Vector3.Normalize(Vector3.Cross(v0, v1));
             return new Plane(n, Vector3.Dot(n, a));
         }
 
@@ -65,7 +65,7 @@
         }
 
         public flip() {
-            this.normal = this.normal.scale(-1);
+            this.normal.scaleInPlace(-1);
             this.w = -this.w;
         }
 
@@ -117,8 +117,20 @@
                             b.push(v.clone());
                         }
                     }
-                    if (f.length >= 3) front.push(new Polygon(f, polygon.shared));
-                    if (b.length >= 3) back.push(new Polygon(b, polygon.shared));
+                    if (f.length >= 3) {
+                        var poly = new Polygon(f, polygon.shared);
+
+                        if (poly.plane)
+                            front.push(poly);
+                    }
+
+                    if (b.length >= 3) {
+                        poly = new Polygon(b, polygon.shared);
+
+                        if (poly.plane)
+                            back.push(poly);
+                    }
+
                     break;
             }
         }
@@ -188,7 +200,9 @@
             for (var i = 0; i < this.polygons.length; i++) {
                 this.polygons[i].flip();
             }
-            this.plane.flip();
+            if (this.plane) {
+                this.plane.flip();
+            }
             if (this.front) {
                 this.front.invert();
             }
@@ -295,8 +309,8 @@
                         normal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
                         uv = new BABYLON.Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
                         position = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
-                        position = BABYLON.Vector3.TransformCoordinates(position, matrix);
-                        normal = BABYLON.Vector3.TransformNormal(normal, matrix);
+                        BABYLON.Vector3.TransformCoordinatesToRef(position, matrix, position);
+                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
 
                         vertex = new Vertex(position, normal, uv);
                         vertices.push(vertex);
@@ -352,6 +366,20 @@
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         }
 
+        public unionInPlace(csg: CSG): void {
+            var a = new Node(this.polygons);
+            var b = new Node(csg.polygons);
+
+            a.clipTo(b);
+            b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
+            a.build(b.allPolygons());
+
+            this.polygons = a.allPolygons();
+        }
+
         public subtract(csg: CSG): CSG {
             var a = new Node(this.clone().polygons);
             var b = new Node(csg.clone().polygons);
@@ -364,6 +392,22 @@
             a.build(b.allPolygons());
             a.invert();
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
+        }
+
+        public subtractInPlace(csg: CSG): void {
+            var a = new Node(this.polygons);
+            var b = new Node(csg.polygons);
+
+            a.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
+            a.build(b.allPolygons());
+            a.invert();
+
+            this.polygons = a.allPolygons();
         }
 
         public intersect(csg: CSG): CSG {
@@ -379,12 +423,31 @@
             return CSG.FromPolygons(a.allPolygons()).copyTransformAttributes(this);
         }
 
+        public intersectInPlace(csg: CSG): void {
+            var a = new Node(this.polygons);
+            var b = new Node(csg.polygons);
+
+            a.invert();
+            b.clipTo(a);
+            b.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            a.build(b.allPolygons());
+            a.invert();
+
+            this.polygons = a.allPolygons();
+        }
+
         // Return a new BABYLON.CSG solid with solid and empty space switched. This solid is
         // not modified.
         public inverse(): CSG {
             var csg = this.clone();
-            csg.polygons.map(p => { p.flip(); });
+            csg.inverseInPlace();
             return csg;
+        }
+
+        public inverseInPlace(): void {
+            this.polygons.map(p => { p.flip(); });
         }
 
         // This is used to keep meshes transformations so they can be restored
@@ -410,15 +473,17 @@
                 indices = [],
                 normals = [],
                 uvs = [],
-                vertex, normal, uv,
+                vertex = BABYLON.Vector3.Zero(),
+                normal = BABYLON.Vector3.Zero(),
+                uv = BABYLON.Vector2.Zero(),
                 polygons = this.polygons,
-                polygonIndices = [0, 0, 0],
-                polygon,
+                polygonIndices = [0, 0, 0], polygon,
                 vertice_dict = {},
                 vertex_idx,
                 currentIndex = 0,
                 subMesh_dict = {},
                 subMesh_obj;
+
 
             if (keepSubMeshes) {
                 // Sort Polygons, since subMeshes are indices range
@@ -447,7 +512,6 @@
                 }
                 subMesh_obj = subMesh_dict[polygon.shared.meshId][polygon.shared.subMeshId];
 
-
                 for (var j = 2, jl = polygon.vertices.length; j < jl; j++) {
 
                     polygonIndices[0] = 0;
@@ -455,13 +519,13 @@
                     polygonIndices[2] = j;
 
                     for (var k = 0; k < 3; k++) {
-                        vertex = polygon.vertices[polygonIndices[k]].pos;
-                        normal = polygon.vertices[polygonIndices[k]].normal;
-                        uv = polygon.vertices[polygonIndices[k]].uv;
-                        vertex = new BABYLON.Vector3(vertex.x, vertex.y, vertex.z);
-                        normal = new BABYLON.Vector3(normal.x, normal.y, normal.z);
-                        vertex = BABYLON.Vector3.TransformCoordinates(vertex, matrix);
-                        normal = BABYLON.Vector3.TransformNormal(normal, matrix);
+                        vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
+                        normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
+                        uv.copyFrom(polygon.vertices[polygonIndices[k]].uv);
+                        BABYLON.Vector3.TransformCoordinatesToRef(vertex, matrix, vertex);
+                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
+
+
 
                         vertex_idx = vertice_dict[vertex.x + ',' + vertex.y + ',' + vertex.z];
 

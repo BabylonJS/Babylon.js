@@ -223,6 +223,11 @@
             return result;
         }
 
+        public copyFrom(source: Vector2): void {
+            this.x = source.x;
+            this.y = source.y;
+        }
+
         public add(otherVector: Vector2): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }

@@ -43,6 +43,10 @@
             return this._scene;
         };
 
+        LensFlareSystem.prototype.getEmitter = function () {
+            return this._emitter;
+        };
+
         LensFlareSystem.prototype.getEmitterPosition = function () {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
         };
