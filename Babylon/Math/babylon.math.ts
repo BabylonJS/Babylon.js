@@ -748,10 +748,10 @@
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = Vector3.TransformCoordinates(source, matrix);
+            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (Math.abs(num) < 1.0) {
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1833,7 +1833,7 @@
         }
 
         // Methods
-        public intersectsBox(box): boolean {
+        public intersectsBox(box: BoundingBox): boolean {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
 

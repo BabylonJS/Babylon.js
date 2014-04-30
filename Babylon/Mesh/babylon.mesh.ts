@@ -44,6 +44,7 @@
         private _collisionsTransformMatrix = BABYLON.Matrix.Zero();
         private _collisionsScalingMatrix = BABYLON.Matrix.Zero();
         private _absolutePosition = BABYLON.Vector3.Zero();
+        private _isDirty = false;
 
         // Physics
         public _physicImpostor = PhysicsEngine.NoImpostor;
@@ -217,6 +218,10 @@
         }
 
         public _isSynchronized(): boolean {
+            if (this._isDirty) {
+                return false;
+            }
+
             if (this.billboardMode !== Mesh.BILLBOARDMODE_NONE)
                 return false;
 
@@ -273,6 +278,7 @@
                 this.rotationQuaternion = null;
             }
             this._currentRenderId = Number.MAX_VALUE;
+            this._isDirty = true;
         }
 
         public refreshBoundingInfo(): void {
@@ -317,6 +323,7 @@
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
             this._currentRenderId = this.getScene().getRenderId();
+            this._isDirty = false;
 
             // Scaling
             BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);

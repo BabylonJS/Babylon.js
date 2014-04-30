@@ -3,12 +3,8 @@
     var PostProcess = (function () {
         function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable) {
             this.name = name;
-            this.onApply = null;
-            this.onSizeChanged = null;
-            this.onActivate = null;
             this.width = -1;
             this.height = -1;
-            this._onDispose = null;
             this._reusable = false;
             this._textures = new BABYLON.SmartArray(2);
             this._currentRenderTextureInd = 0;
@@ -38,8 +34,8 @@
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine.getRenderWidth() * this._renderRatio;
-            var desiredHeight = this._engine.getRenderHeight() * this._renderRatio;
+            var desiredWidth = this._engine.getRenderingCanvas().width * this._renderRatio;
+            var desiredHeight = this._engine.getRenderingCanvas().height * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -100,9 +96,6 @@
         PostProcess.prototype.dispose = function (camera) {
             camera = camera || this._camera;
 
-            if (this._onDispose) {
-                this._onDispose();
-            }
             if (this._textures.length > 0) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._engine._releaseTexture(this._textures.data[i]);

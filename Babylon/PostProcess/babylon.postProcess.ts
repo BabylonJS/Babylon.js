@@ -1,13 +1,12 @@
 ﻿module BABYLON {
     export class PostProcess {
-        public onApply = null;
-        public onSizeChanged = null;
-        public onActivate = null;
+        public onApply: (Effect) => void;
+        public onSizeChanged: () => void;
+        public onActivate: (Camera) => void;
         public width = -1;
         public height = -1;
         public renderTargetSamplingMode: number;
 
-        private _onDispose = null;
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
@@ -49,8 +48,8 @@
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine.getRenderWidth() * this._renderRatio;
-            var desiredHeight = this._engine.getRenderHeight() * this._renderRatio;
+            var desiredWidth = this._engine.getRenderingCanvas().width * this._renderRatio;
+            var desiredHeight = this._engine.getRenderingCanvas().height * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -112,9 +111,6 @@
         public dispose(camera: Camera): void {
             camera = camera || this._camera;
 
-            if (this._onDispose) {
-                this._onDispose();
-            }
             if (this._textures.length > 0) {
                 for (var i = 0; i < this._textures.length; i++) {
                     this._engine._releaseTexture(this._textures.data[i]);
