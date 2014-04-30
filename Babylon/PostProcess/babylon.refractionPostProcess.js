@@ -1,38 +1,42 @@
-﻿"use strict";
+﻿var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var RefractionPostProcess = (function (_super) {
+        __extends(RefractionPostProcess, _super);
+        function RefractionPostProcess(name, refractionTextureUrl, color, depth, colorLevel, ratio, camera, samplingMode, engine, reusable) {
+            var _this = this;
+            _super.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode, engine, reusable);
+            this.color = color;
+            this.depth = depth;
+            this.colorLevel = colorLevel;
 
-var BABYLON = BABYLON || {};
+            this.onActivate = function (cam) {
+                _this._refRexture = _this._refRexture || new BABYLON.Texture(refractionTextureUrl, cam.getScene());
+            };
 
-(function () {
-    BABYLON.RefractionPostProcess = function (name, refractionTextureUrl, color, depth, colorLevel, ratio, camera, samplingMode, engine, reusable) {
-        BABYLON.PostProcess.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode, engine, reusable);
+            this.onApply = function (effect) {
+                effect.setColor3("baseColor", _this.color);
+                effect.setFloat("depth", _this.depth);
+                effect.setFloat("colorLevel", _this.colorLevel);
 
-        this.color = color;
-        this.depth = depth;
-        this.colorLevel = colorLevel;
-        this._refRexture = null;
-        
-        var that = this;
-
-        this.onActivate = function (camera) {
-            that._refRexture = this._refRexture || new BABYLON.Texture(refractionTextureUrl, camera.getScene());
-        };
-
-        this.onApply = function (effect) {
-            effect.setColor3("baseColor", that.color);
-            effect.setFloat("depth", that.depth);
-            effect.setFloat("colorLevel", that.colorLevel);
-
-            effect.setTexture("refractionSampler", that._refRexture);
-        };
-    };
-    
-    BABYLON.RefractionPostProcess.prototype = Object.create(BABYLON.PostProcess.prototype);
-    
-    // Methods
-    BABYLON.RefractionPostProcess.prototype._onDispose = function () {
-        if (this._refRexture) {
-            this._refRexture.dispose();
+                effect.setTexture("refractionSampler", _this._refRexture);
+            };
         }
-    };
+        // Methods
+        RefractionPostProcess.prototype.dispose = function (camera) {
+            if (this._refRexture) {
+                this._refRexture.dispose();
+            }
 
-})();
+            _super.prototype.dispose.call(this, camera);
+        };
+        return RefractionPostProcess;
+    })(BABYLON.PostProcess);
+    BABYLON.RefractionPostProcess = RefractionPostProcess;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.refractionPostProcess.js.map

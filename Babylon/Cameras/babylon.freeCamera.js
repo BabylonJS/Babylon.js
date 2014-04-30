@@ -260,7 +260,15 @@ var BABYLON;
         };
 
         FreeCamera.prototype._collideWithWorld = function (velocity) {
-            this.position.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
+            var globalPosition;
+
+            if (this.parent) {
+                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
+            } else {
+                globalPosition = this.position;
+            }
+
+            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
             this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);

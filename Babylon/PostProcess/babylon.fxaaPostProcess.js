@@ -1,18 +1,27 @@
-﻿"use strict";
+﻿var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var FxaaPostProcess = (function (_super) {
+        __extends(FxaaPostProcess, _super);
+        function FxaaPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
+            var _this = this;
+            _super.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
 
-var BABYLON = BABYLON || {};
-
-(function () {
-    BABYLON.FxaaPostProcess = function (name, ratio, camera, samplingMode, engine, reusable) {
-        BABYLON.PostProcess.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
-    };
-    
-    BABYLON.FxaaPostProcess.prototype = Object.create(BABYLON.PostProcess.prototype);
-    BABYLON.FxaaPostProcess.prototype.onSizeChanged = function () {
-        this.texelWidth = 1.0 / this.width;
-        this.texelHeight = 1.0 / this.height;
-    };
-    BABYLON.FxaaPostProcess.prototype.onApply = function (effect) {
-        effect.setFloat2("texelSize", this.texelWidth, this.texelHeight);
-    };
-})();
+            this.onSizeChanged = function () {
+                _this.texelWidth = 1.0 / _this.width;
+                _this.texelHeight = 1.0 / _this.height;
+            };
+            this.onApply = function (effect) {
+                effect.setFloat2("texelSize", _this.texelWidth, _this.texelHeight);
+            };
+        }
+        return FxaaPostProcess;
+    })(BABYLON.PostProcess);
+    BABYLON.FxaaPostProcess = FxaaPostProcess;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.fxaaPostProcess.js.map

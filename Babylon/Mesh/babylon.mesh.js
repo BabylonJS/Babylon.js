@@ -43,6 +43,7 @@ var BABYLON;
             this._collisionsTransformMatrix = BABYLON.Matrix.Zero();
             this._collisionsScalingMatrix = BABYLON.Matrix.Zero();
             this._absolutePosition = BABYLON.Vector3.Zero();
+            this._isDirty = false;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             this._totalVertices = 0;
@@ -198,6 +199,10 @@ var BABYLON;
         };
 
         Mesh.prototype._isSynchronized = function () {
+            if (this._isDirty) {
+                return false;
+            }
+
             if (this.billboardMode !== Mesh.BILLBOARDMODE_NONE)
                 return false;
 
@@ -254,6 +259,7 @@ var BABYLON;
                 this.rotationQuaternion = null;
             }
             this._currentRenderId = Number.MAX_VALUE;
+            this._isDirty = true;
         };
 
         Mesh.prototype.refreshBoundingInfo = function () {
@@ -298,6 +304,7 @@ var BABYLON;
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
             this._currentRenderId = this.getScene().getRenderId();
+            this._isDirty = false;
 
             // Scaling
             BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
