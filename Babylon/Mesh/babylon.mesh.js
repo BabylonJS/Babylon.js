@@ -253,7 +253,7 @@ var BABYLON;
             if (property === "rotation") {
                 this.rotationQuaternion = null;
             }
-            this._currentRenderId = -1;
+            this._currentRenderId = Number.MAX_VALUE;
         };
 
         Mesh.prototype.refreshBoundingInfo = function () {

@@ -11,7 +11,7 @@
         public onDispose: () => void;
         public getRenderTargetTextures: () => SmartArray;
 
-        public _effect = null;
+        public _effect: Effect;
         public _wasPreviouslyReady = false;
         private _scene: Scene;
 

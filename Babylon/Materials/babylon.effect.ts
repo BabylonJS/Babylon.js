@@ -170,6 +170,7 @@
                     console.error("Unable to compile effect: " + this.name);
                     console.error("Defines: " + defines);
                     console.error("Optional defines: " + optionalDefines);
+                    console.error("Error: " + e.message);
                     this._compilationError = e.message;
 
                     if (this.onError) {

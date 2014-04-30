@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Actions/babylon.condition.js"></script>
+  <script src="Babylon/Actions/babylon.action.js"></script>
+  <script src="Babylon/Actions/babylon.actionManager.js"></script>
+  <script src="Babylon/Actions/babylon.interpolateValueAction.js"></script>
+  <script src="Babylon/Actions/babylon.directActions.js"></script>
   <script src="Babylon/Rendering/babylon.boundingBoxRenderer.js"></script>
   <script src="Babylon/Materials/babylon.shaderMaterial.js"></script>
   <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>

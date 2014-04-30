@@ -29,6 +29,9 @@
         if (light.intensity) {
             serializationObject.intensity = light.intensity;
         }
+
+        serializationObject.range = light.range;
+
         serializationObject.diffuse = light.diffuse.asArray();
         serializationObject.specular = light.specular.asArray();
 
@@ -370,6 +373,7 @@
         serializationObject.isEnabled = mesh.isEnabled();
         serializationObject.isVisible = mesh.isVisible;
         serializationObject.infiniteDistance = mesh.infiniteDistance;
+        serializationObject.pickable = mesh.isPickable;
 
         serializationObject.receiveShadows = mesh.receiveShadows;
 

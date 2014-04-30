@@ -153,7 +153,8 @@ var BABYLON;
             }
 
             for (name in this._colors4) {
-                this._effect.setColor4(name, this._colors4[name]);
+                var color = this._colors4[name];
+                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
             for (name in this._vectors2) {

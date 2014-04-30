@@ -291,6 +291,11 @@ var BABYLON = BABYLON || {};
         if (parsedLight.intensity) {
             light.intensity = parsedLight.intensity;
         }
+
+        if (parsedLight.range) {
+            light.range = parsedLight.range;
+        }
+
         light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
         light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
     };
@@ -368,6 +373,10 @@ var BABYLON = BABYLON || {};
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
         mesh.infiniteDistance = parsedMesh.infiniteDistance;
+
+        if (parsedMesh.pickable !== undefined) {
+            mesh.isPickable = parsedMesh.pickable;
+        }
 
         mesh.receiveShadows = parsedMesh.receiveShadows;
 
