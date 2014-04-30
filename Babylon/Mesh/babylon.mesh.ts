@@ -28,6 +28,7 @@
         public showBoundingBox = false;
         public subMeshes: SubMesh[];
         public delayLoadingFile: string;
+        public actionManager: ActionManager;
 
         // Cache
         private _positions = null;
@@ -271,7 +272,7 @@
             if (property === "rotation") {
                 this.rotationQuaternion = null;
             }
-            this._currentRenderId = -1;
+            this._currentRenderId = Number.MAX_VALUE;
         }
 
         public refreshBoundingInfo(): void {

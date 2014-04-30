@@ -13,6 +13,7 @@ var BABYLON;
             this.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.intensity = 1.0;
+            this.range = Number.MAX_VALUE;
             this.excludedMeshes = new Array();
 
             scene.lights.push(this);

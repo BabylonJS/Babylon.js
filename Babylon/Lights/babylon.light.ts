@@ -3,6 +3,7 @@
         public diffuse = new Color3(1.0, 1.0, 1.0);
         public specular = new Color3(1.0, 1.0, 1.0);
         public intensity = 1.0;
+        public range = Number.MAX_VALUE;
         public excludedMeshes = new Array<Mesh>();
 
         public _shadowGenerator: ShadowGenerator;

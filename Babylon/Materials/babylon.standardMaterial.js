@@ -373,7 +373,7 @@ var BABYLON;
 
                     light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
                     light.specular.scaleToRef(light.intensity, this._scaledSpecular);
-                    this._effect.setColor3("vLightDiffuse" + lightIndex, this._scaledDiffuse);
+                    this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
                     this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
 
                     // Shadows

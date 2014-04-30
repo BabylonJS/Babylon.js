@@ -8,7 +8,6 @@
             this.alpha = 1.0;
             this.wireframe = false;
             this.backFaceCulling = true;
-            this._effect = null;
             this._wasPreviouslyReady = false;
             this.id = name;
 

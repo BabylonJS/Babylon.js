@@ -27,7 +27,7 @@ varying vec3 vColor;
 // Lights
 #ifdef LIGHT0
 uniform vec4 vLightData0;
-uniform vec3 vLightDiffuse0;
+uniform vec4 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
@@ -44,7 +44,7 @@ uniform vec3 vLightGround0;
 
 #ifdef LIGHT1
 uniform vec4 vLightData1;
-uniform vec3 vLightDiffuse1;
+uniform vec4 vLightDiffuse1;
 uniform vec3 vLightSpecular1;
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
@@ -61,7 +61,7 @@ uniform vec3 vLightGround1;
 
 #ifdef LIGHT2
 uniform vec4 vLightData2;
-uniform vec3 vLightDiffuse2;
+uniform vec4 vLightDiffuse2;
 uniform vec3 vLightSpecular2;
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
@@ -78,7 +78,7 @@ uniform vec3 vLightGround2;
 
 #ifdef LIGHT3
 uniform vec4 vLightData3;
-uniform vec3 vLightDiffuse3;
+uniform vec4 vLightDiffuse3;
 uniform vec3 vLightSpecular3;
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
@@ -317,13 +317,17 @@ struct lightingInfo
 	vec3 specular;
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range) {
 	lightingInfo result;
 
 	vec3 lightVectorW;
+	float attenuation = 1.0;
 	if (lightData.w == 0.)
 	{
-		lightVectorW = normalize(lightData.xyz - vPositionW);
+		vec3 direction = lightData.xyz - vPositionW;
+
+		attenuation =  max(0., 1.0 - length(direction) / range);
+		lightVectorW = normalize(direction);
 	}
 	else
 	{
@@ -338,16 +342,18 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, max(1., vSpecularColor.a));
 
-	result.diffuse = ndl * diffuseColor;
-	result.specular = specComp * specularColor;
+	result.diffuse = ndl * diffuseColor * attenuation;
+	result.specular = specComp * specularColor * attenuation;
 
 	return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range) {
 	lightingInfo result;
 
-	vec3 lightVectorW = normalize(lightData.xyz - vPositionW);
+	vec3 direction = lightData.xyz - vPositionW;
+	vec3 lightVectorW = normalize(direction);
+	float attenuation = max(0., 1.0 - length(direction) / range);
 
 	// diffuse
 	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));
@@ -366,8 +372,8 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, vSpecularColor.a);
 
-		result.diffuse = ndl * spotAtten * diffuseColor;
-		result.specular = specComp * specularColor * spotAtten;
+		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;
+		result.specular = specComp * specularColor * spotAtten * attenuation;
 
 		return result;
 	}
@@ -450,7 +456,7 @@ void main(void) {
 	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0, vLightSpecular0, vLightGround0);
 #endif
 #ifdef POINTDIRLIGHT0
-	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0, vLightSpecular0);
+	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
@@ -473,7 +479,7 @@ void main(void) {
 	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1, vLightSpecular1, vLightGround1);
 #endif
 #ifdef POINTDIRLIGHT1
-	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1, vLightSpecular1);
+	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -496,7 +502,7 @@ void main(void) {
 	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2, vLightSpecular2, vLightGround2);
 #endif
 #ifdef POINTDIRLIGHT2
-	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2, vLightSpecular2);
+	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -519,7 +525,7 @@ void main(void) {
 	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3, vLightSpecular3, vLightGround3);
 #endif
 #ifdef POINTDIRLIGHT3
-	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3, vLightSpecular3);
+	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3

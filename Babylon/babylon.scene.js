@@ -262,6 +262,16 @@
             }
         };
 
+        Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
+            if (speedRatio === undefined) {
+                speedRatio = 1.0;
+            }
+
+            var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd, animations);
+
+            this._activeAnimatables.push(animatable);
+        };
+
         Scene.prototype.stopAnimation = function (target) {
             // Local animations
             if (target.animations) {
@@ -376,6 +386,16 @@
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].name === name) {
                     return this.cameras[index];
+                }
+            }
+
+            return null;
+        };
+
+        Scene.prototype.getLightByName = function (name) {
+            for (var index = 0; index < this.lights.length; index++) {
+                if (this.lights[index].name === name) {
+                    return this.lights[index];
                 }
             }
 

@@ -2,7 +2,7 @@
 (function (BABYLON) {
     (function (Internals) {
         var Animatable = (function () {
-            function Animatable(target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd) {
+            function Animatable(target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations) {
                 if (typeof fromFrame === "undefined") { fromFrame = 0; }
                 if (typeof toFrame === "undefined") { toFrame = 100; }
                 if (typeof loopAnimation === "undefined") { loopAnimation = false; }
@@ -14,6 +14,7 @@
                 this.speedRatio = speedRatio;
                 this.onAnimationEnd = onAnimationEnd;
                 this.animationStarted = false;
+                this._animations = animations;
             }
             // Methods
             Animatable.prototype._animate = function (delay) {
@@ -23,7 +24,7 @@
 
                 // Animating
                 var running = false;
-                var animations = this.target.animations;
+                var animations = this._animations || this.target.animations;
                 for (var index = 0; index < animations.length; index++) {
                     var isRunning = animations[index].animate(this.target, delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                     running = running || isRunning;
