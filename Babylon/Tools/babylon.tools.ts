@@ -83,7 +83,7 @@
             };
         }
 
-        public static MakeArray(obj, allowsNullUndefined: boolean): Array<any> {
+        public static MakeArray(obj, allowsNullUndefined?: boolean): Array<any> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
 

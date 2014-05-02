@@ -62,7 +62,7 @@
             this.postProcessesEnabled = true;
             // Customs render targets
             this.renderTargetsEnabled = true;
-            this.customRenderTargets = [];
+            this.customRenderTargets = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -962,7 +962,14 @@
 
                 camera = this.activeCamera;
             }
-            var viewport = camera.viewport.toGlobal(engine);
+
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine);
+
+            // Moving coordinates to local viewport world
+            x = x - viewport.x;
+            y = y - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+
             return BABYLON.Ray.CreateNew(x * this._engine.getHardwareScalingLevel(), y * this._engine.getHardwareScalingLevel(), viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         };
 

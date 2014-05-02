@@ -84,7 +84,7 @@
 
         // Customs render targets
         public renderTargetsEnabled = true;
-        public customRenderTargets = [];
+        public customRenderTargets = new Array<RenderTargetTexture>();
 
         // Delay loading
         public useDelayedTextureLoading: boolean;
@@ -1029,7 +1029,14 @@
 
                 camera = this.activeCamera;
             }
-            var viewport = camera.viewport.toGlobal(engine);
+
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine);
+
+            // Moving coordinates to local viewport world
+            x = x - viewport.x;
+            y = y - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+
             return BABYLON.Ray.CreateNew(x * this._engine.getHardwareScalingLevel(), y * this._engine.getHardwareScalingLevel(), viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         }
 

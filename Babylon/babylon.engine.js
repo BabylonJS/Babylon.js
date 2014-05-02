@@ -487,11 +487,7 @@
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount) {
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
 
-            var error = this._gl.getError();
-
-            if (error) {
-                console.log(error);
-            }
+            this._gl.getError();
         };
 
         // Shaders
