@@ -246,8 +246,8 @@ var BABYLON;
             element.addEventListener("MSGestureChange", this._onGesture, false);
             window.addEventListener("keydown", this._onKeyDown, false);
             window.addEventListener("keyup", this._onKeyUp, false);
-            window.addEventListener('mousewheel', this._wheel, false);
-            window.addEventListener('DOMMouseScroll', this._wheel, false);
+            element.addEventListener('mousewheel', this._wheel, false);
+            element.addEventListener('DOMMouseScroll', this._wheel, false);
             window.addEventListener("blur", this._onLostFocus, false);
         };
 
@@ -265,8 +265,8 @@ var BABYLON;
             element.removeEventListener("MSGestureChange", this._onGesture);
             window.removeEventListener("keydown", this._onKeyDown);
             window.removeEventListener("keyup", this._onKeyUp);
-            window.removeEventListener('mousewheel', this._wheel);
-            window.removeEventListener('DOMMouseScroll', this._wheel);
+            element.removeEventListener('mousewheel', this._wheel);
+            element.removeEventListener('DOMMouseScroll', this._wheel);
             window.removeEventListener("blur", this._onLostFocus);
 
             this._MSGestureHandler = null;
