@@ -134,7 +134,7 @@
         private _renderFunction: () => void;
 
         // Cache
-        private _loadedTexturesCache = new Array <WebGLTexture>();
+        private _loadedTexturesCache = new Array<WebGLTexture>();
         public _activeTexturesCache = new Array<Texture>();
         private _currentEffect: Effect;
         private _cullingState: boolean;
@@ -286,7 +286,7 @@
             return this._hardwareScalingLevel;
         }
 
-        public getLoadedTexturesCache():  WebGLTexture[] {
+        public getLoadedTexturesCache(): WebGLTexture[] {
             return this._loadedTexturesCache;
         }
 
@@ -1174,6 +1174,12 @@
                 this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
                 texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
             }
+        }
+
+        public readPixels(x: number, y: number, width: number, height: number): Uint8Array {
+            var data = new Uint8Array(height * width * 4);
+            this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+            return data;
         }
 
         // Dispose
