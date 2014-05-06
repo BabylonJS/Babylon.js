@@ -11,32 +11,32 @@ var BABYLON;
         __extends(VirtualJoysticksCamera, _super);
         function VirtualJoysticksCamera(name, position, scene) {
             _super.call(this, name, position, scene);
-            this.leftjoystick = new BABYLON.VirtualJoystick(true);
-            this.leftjoystick.setAxisForUD(2 /* Z */);
-            this.leftjoystick.setAxisForLR(0 /* X */);
-            this.leftjoystick.setJoystickSensibility(0.15);
-            this.rightjoystick = new BABYLON.VirtualJoystick(false);
-            this.rightjoystick.setAxisForUD(0 /* X */);
-            this.rightjoystick.setAxisForLR(1 /* Y */);
-            this.rightjoystick.reverseUpDown = true;
-            this.rightjoystick.setJoystickSensibility(0.05);
-            this.rightjoystick.setJoystickColor("yellow");
+            this._leftjoystick = new BABYLON.VirtualJoystick(true);
+            this._leftjoystick.setAxisForUpDown(2 /* Z */);
+            this._leftjoystick.setAxisForLeftRight(0 /* X */);
+            this._leftjoystick.setJoystickSensibility(0.15);
+            this._rightjoystick = new BABYLON.VirtualJoystick(false);
+            this._rightjoystick.setAxisForUpDown(0 /* X */);
+            this._rightjoystick.setAxisForLeftRight(1 /* Y */);
+            this._rightjoystick.reverseUpDown = true;
+            this._rightjoystick.setJoystickSensibility(0.05);
+            this._rightjoystick.setJoystickColor("yellow");
         }
         VirtualJoysticksCamera.prototype._checkInputs = function () {
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(this.leftjoystick.deltaPosition, cameraTransform);
+            var deltaTransform = BABYLON.Vector3.TransformCoordinates(this._leftjoystick.deltaPosition, cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
-            this.cameraRotation = this.cameraRotation.add(this.rightjoystick.deltaPosition);
-            if (!this.leftjoystick.pressed) {
-                this.leftjoystick.deltaPosition = this.leftjoystick.deltaPosition.scale(0.9);
+            this.cameraRotation = this.cameraRotation.add(this._rightjoystick.deltaPosition);
+            if (!this._leftjoystick.pressed) {
+                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
             }
-            if (!this.rightjoystick.pressed) {
-                this.rightjoystick.deltaPosition = this.rightjoystick.deltaPosition.scale(0.9);
+            if (!this._rightjoystick.pressed) {
+                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
             }
         };
 
         VirtualJoysticksCamera.prototype.dispose = function () {
-            this.leftjoystick.releaseCanvas();
+            this._leftjoystick.releaseCanvas();
         };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);

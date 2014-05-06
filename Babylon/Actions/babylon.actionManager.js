@@ -12,6 +12,13 @@
         };
 
         ActionManager.prototype.registerAction = function (action) {
+            if (action.trigger === ActionManager.OnEveryFrameTrigger) {
+                if (this.getScene().actionManager !== this) {
+                    console.warn("OnEveryFrameTrigger can only be used with scene.actionManager");
+                    return null;
+                }
+            }
+
             this.actions.push(action);
 
             action._actionManager = this;
@@ -30,25 +37,6 @@
             }
         };
 
-        ActionManager.prototype._getTarget = function (targetType, targetName) {
-            var scene = this._scene;
-
-            switch (targetType) {
-                case ActionManager.SceneTarget:
-                    return scene;
-                case ActionManager.MeshTarget:
-                    return scene.getMeshByName(targetName);
-                case ActionManager.LightTarget:
-                    return scene.getLightByName(targetName);
-                case ActionManager.CameraTarget:
-                    return scene.getCameraByName(targetName);
-                case ActionManager.MaterialTarget:
-                    return scene.getMaterialByName(targetName);
-            }
-
-            return null;
-        };
-
         ActionManager.prototype._getEffectiveTarget = function (target, propertyPath) {
             var properties = propertyPath.split(".");
 
@@ -64,14 +52,11 @@
 
             return properties[properties.length - 1];
         };
-        ActionManager.AlwaysTrigger = 0;
+        ActionManager.NoneTrigger = 0;
         ActionManager.OnPickTrigger = 1;
-
-        ActionManager.SceneTarget = 0;
-        ActionManager.MeshTarget = 1;
-        ActionManager.LightTarget = 2;
-        ActionManager.CameraTarget = 3;
-        ActionManager.MaterialTarget = 4;
+        ActionManager.OnPointerOverTrigger = 2;
+        ActionManager.OnPointerOutTrigger = 3;
+        ActionManager.OnEveryFrameTrigger = 4;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;

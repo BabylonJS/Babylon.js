@@ -320,9 +320,9 @@
             var width;
             var height;
 
-            //If a zoom value is specified
-            if (size.zoom) {
-                width = Math.round(engine.getRenderWidth() * size.zoom);
+            //If a precision value is specified
+            if (size.precision) {
+                width = Math.round(engine.getRenderWidth() * size.precision);
                 height = Math.round(width / engine.getAspectRatio(camera));
                 size = { width: width, height: height };
             } else if (size.width && size.height) {
@@ -341,8 +341,10 @@
                 width = size;
             } else {
                 console.error("Invalid 'size' parameter !");
+                return;
             }
 
+            //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, engine.scenes[0]);
             texture.renderList = engine.scenes[0].meshes;
 
@@ -359,7 +361,6 @@
                         var currentCell = j + i * numberOfChannelsByLine;
                         var targetLine = height - i - 1;
                         var targetCell = j + targetLine * numberOfChannelsByLine;
-                        ;
 
                         var temp = data[currentCell];
                         data[currentCell] = data[targetCell];

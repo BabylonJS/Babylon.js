@@ -8,14 +8,12 @@ var BABYLON;
 (function (BABYLON) {
     var SwitchBooleanAction = (function (_super) {
         __extends(SwitchBooleanAction, _super);
-        function SwitchBooleanAction(trigger, targetType, targetName, propertyPath, condition) {
+        function SwitchBooleanAction(trigger, target, propertyPath, condition) {
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
             this.propertyPath = propertyPath;
+            this._target = target;
         }
         SwitchBooleanAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
@@ -29,15 +27,13 @@ var BABYLON;
 
     var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
-        function SetValueAction(trigger, targetType, targetName, propertyPath, value, condition) {
+        function SetValueAction(trigger, target, propertyPath, value, condition) {
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
             this.propertyPath = propertyPath;
             this.value = value;
+            this._target = target;
         }
         SetValueAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
@@ -49,18 +45,40 @@ var BABYLON;
     })(BABYLON.Action);
     BABYLON.SetValueAction = SetValueAction;
 
+    var IncrementValueAction = (function (_super) {
+        __extends(IncrementValueAction, _super);
+        function IncrementValueAction(trigger, target, propertyPath, value, condition) {
+            _super.call(this, trigger, condition);
+            this.propertyPath = propertyPath;
+            this.value = value;
+            this._target = target;
+        }
+        IncrementValueAction.prototype._prepare = function () {
+            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._property = this._getProperty(this.propertyPath);
+
+            if (typeof this._target[this._property] !== "number") {
+                console.warn("Warning: IncrementValueAction can only be used with number values");
+            }
+        };
+
+        IncrementValueAction.prototype.execute = function () {
+            this._target[this._property] += this.value;
+        };
+        return IncrementValueAction;
+    })(BABYLON.Action);
+    BABYLON.IncrementValueAction = IncrementValueAction;
+
     var PlayAnimationAction = (function (_super) {
         __extends(PlayAnimationAction, _super);
-        function PlayAnimationAction(trigger, targetType, targetName, from, to, loop, condition) {
+        function PlayAnimationAction(trigger, target, from, to, loop, condition) {
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
             this.from = from;
             this.to = to;
             this.loop = loop;
+            this._target = target;
         }
         PlayAnimationAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
         };
 
         PlayAnimationAction.prototype.execute = function () {
@@ -73,13 +91,11 @@ var BABYLON;
 
     var StopAnimationAction = (function (_super) {
         __extends(StopAnimationAction, _super);
-        function StopAnimationAction(trigger, targetType, targetName, condition) {
+        function StopAnimationAction(trigger, target, condition) {
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
+            this._target = target;
         }
         StopAnimationAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
         };
 
         StopAnimationAction.prototype.execute = function () {
@@ -89,6 +105,40 @@ var BABYLON;
         return StopAnimationAction;
     })(BABYLON.Action);
     BABYLON.StopAnimationAction = StopAnimationAction;
+
+    var DoNothingAction = (function (_super) {
+        __extends(DoNothingAction, _super);
+        function DoNothingAction(trigger, condition) {
+            if (typeof trigger === "undefined") { trigger = BABYLON.ActionManager.NoneTrigger; }
+            _super.call(this, trigger, condition);
+        }
+        DoNothingAction.prototype.execute = function () {
+        };
+        return DoNothingAction;
+    })(BABYLON.Action);
+    BABYLON.DoNothingAction = DoNothingAction;
+
+    var CombineAction = (function (_super) {
+        __extends(CombineAction, _super);
+        function CombineAction(trigger, children, condition) {
+            _super.call(this, trigger, condition);
+            this.children = children;
+        }
+        CombineAction.prototype._prepare = function () {
+            for (var index = 0; index < this.children.length; index++) {
+                this.children[index]._actionManager = this._actionManager;
+                this.children[index]._prepare();
+            }
+        };
+
+        CombineAction.prototype.execute = function () {
+            for (var index = 0; index < this.children.length; index++) {
+                this.children[index].execute();
+            }
+        };
+        return CombineAction;
+    })(BABYLON.Action);
+    BABYLON.CombineAction = CombineAction;
 
     var ExecuteCodeAction = (function (_super) {
         __extends(ExecuteCodeAction, _super);
@@ -105,16 +155,12 @@ var BABYLON;
 
     var SetParentAction = (function (_super) {
         __extends(SetParentAction, _super);
-        function SetParentAction(trigger, targetType, targetName, parentType, parentName, condition) {
+        function SetParentAction(trigger, target, parent, condition) {
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
-            this.parentType = parentType;
-            this.parentName = parentName;
+            this._target = target;
+            this._parent = parent;
         }
         SetParentAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
-            this._parent = this._getTarget(this.parentType, this.parentName);
         };
 
         SetParentAction.prototype.execute = function () {

@@ -108,6 +108,31 @@
 
             return new Color3(r, g, b);
         };
+
+        Color3.Red = function () {
+            return new Color3(1, 0, 0);
+        };
+        Color3.Green = function () {
+            return new Color3(0, 1, 0);
+        };
+        Color3.Blue = function () {
+            return new Color3(0, 0, 1);
+        };
+        Color3.Black = function () {
+            return new Color3(0, 0, 0);
+        };
+        Color3.White = function () {
+            return new Color3(1, 1, 1);
+        };
+        Color3.Purple = function () {
+            return new Color3(0.5, 0, 0.5);
+        };
+        Color3.Magenta = function () {
+            return new Color3(1, 0, 1);
+        };
+        Color3.Yellow = function () {
+            return new Color3(1, 1, 0);
+        };
         return Color3;
     })();
     BABYLON.Color3 = Color3;

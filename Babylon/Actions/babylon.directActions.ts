@@ -3,12 +3,12 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, public propertyPath: string, condition?: Condition) {
+        constructor(trigger: number, target: any, public propertyPath: string, condition?: Condition) {
             super(trigger, condition);
+            this._target = target;
         }
 
         public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
@@ -22,12 +22,12 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, public propertyPath: string, public value: any, condition?: Condition) {
+        constructor(trigger: number, target: any, public propertyPath: string, public value: any, condition?: Condition) {
             super(trigger, condition);
+            this._target = target;
         }
 
         public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
@@ -37,15 +37,38 @@
         }
     }
 
-    export class PlayAnimationAction extends Action {
+    export class IncrementValueAction extends Action {
         private _target: any;
+        private _property: string;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, public from: number, public to: number, public loop?: boolean, condition?: Condition) {
+        constructor(trigger: number, target: any, public propertyPath: string, public value: any, condition?: Condition) {
             super(trigger, condition);
+            this._target = target;
         }
 
         public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
+            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._property = this._getProperty(this.propertyPath);
+
+            if (typeof this._target[this._property] !== "number") {
+                console.warn("Warning: IncrementValueAction can only be used with number values");
+            }
+        }
+
+        public execute(): void {
+            this._target[this._property] += this.value;
+        }
+    }
+
+    export class PlayAnimationAction extends Action {
+        private _target: any;
+
+        constructor(trigger: number, target: any, public from: number, public to: number, public loop?: boolean, condition?: Condition) {
+            super(trigger, condition);
+            this._target = target;
+        }
+
+        public _prepare(): void {
         }
 
         public execute(): void {
@@ -57,17 +80,45 @@
     export class StopAnimationAction extends Action {
         private _target: any;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, condition?: Condition) {
+        constructor(trigger: number, target: any, condition?: Condition) {
             super(trigger, condition);
+            this._target = target;
         }
 
-        public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
+        public _prepare(): void {           
         }
 
         public execute(): void {
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
+        }
+    }
+
+    export class DoNothingAction extends Action {
+        constructor(trigger: number = ActionManager.NoneTrigger, condition?: Condition) {
+            super(trigger, condition);
+        }
+
+        public execute(): void {
+        }
+    }
+
+    export class CombineAction extends Action {
+        constructor(trigger: number, public children: Action[], condition?: Condition) {
+            super(trigger, condition);
+        }
+
+        public _prepare(): void {
+            for (var index = 0; index < this.children.length; index++) {
+                this.children[index]._actionManager = this._actionManager;
+                this.children[index]._prepare();
+            }
+        }
+
+        public execute(): void {
+            for (var index = 0; index < this.children.length; index++) {
+                this.children[index].execute();
+            }
         }
     }
 
@@ -85,13 +136,13 @@
         private _parent: any;
         private _target: any;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, public parentType: number, public parentName: string, condition?: Condition) {
+        constructor(trigger: number, target: any, parent: any, condition?: Condition) {
             super(trigger, condition);
+            this._target = target;
+            this._parent = parent;
         }
 
         public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
-            this._parent = this._getTarget(this.parentType, this.parentName);
         }
 
         public execute(): void {

@@ -97,6 +97,8 @@
             this.postProcessManager = new BABYLON.PostProcessManager(this);
 
             this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
+
+            this.attachControl();
         }
         // Properties
         Scene.prototype.getBoundingBoxRenderer = function () {
@@ -154,6 +156,49 @@
 
         Scene.prototype.getRenderId = function () {
             return this._renderId;
+        };
+
+        // Pointers handling
+        Scene.prototype.attachControl = function () {
+            var _this = this;
+            this._onPointerMove = function (evt) {
+                var canvas = _this._engine.getRenderingCanvas();
+                var pickResult = _this.pick(evt.clientX, evt.clientY, function (mesh) {
+                    return mesh.actionManager && mesh.isPickable;
+                });
+
+                if (pickResult.hit) {
+                    _this.setPointerOverMesh(pickResult.pickedMesh);
+                    canvas.style.cursor = "pointer";
+                } else {
+                    _this.setPointerOverMesh(null);
+                    canvas.style.cursor = "";
+                }
+            };
+
+            this._onPointerDown = function (evt) {
+                var pickResult = _this.pick(evt.clientX, evt.clientY);
+
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
+                    }
+                }
+
+                if (_this.onPointerDown) {
+                    _this.onPointerDown(evt, pickResult);
+                }
+            };
+
+            var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+        };
+
+        Scene.prototype.detachControl = function () {
+            var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
         };
 
         // Ready
@@ -762,6 +807,11 @@
             this._totalVertices = 0;
             this._activeVertices = 0;
 
+            // Actions
+            if (this.actionManager) {
+                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger);
+            }
+
             // Before render
             if (this.beforeRender) {
                 this.beforeRender();
@@ -826,6 +876,9 @@
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
+
+            // Events
+            this.detachControl();
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -1029,6 +1082,25 @@
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
+        };
+
+        Scene.prototype.setPointerOverMesh = function (mesh) {
+            if (this._pointerOverMesh === mesh) {
+                return;
+            }
+
+            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
+                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger);
+            }
+
+            this._pointerOverMesh = mesh;
+            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
+                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger);
+            }
+        };
+
+        Scene.prototype.getPointerOverMesh = function () {
+            return this._pointerOverMesh;
         };
 
         // Physics

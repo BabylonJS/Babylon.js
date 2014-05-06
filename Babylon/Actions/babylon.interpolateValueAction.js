@@ -8,17 +8,17 @@ var BABYLON;
 (function (BABYLON) {
     var InterpolateValueAction = (function (_super) {
         __extends(InterpolateValueAction, _super);
-        function InterpolateValueAction(trigger, targetType, targetName, propertyPath, value, duration, condition) {
+        function InterpolateValueAction(trigger, target, propertyPath, value, duration, condition, stopOtherAnimations) {
             if (typeof duration === "undefined") { duration = 1000; }
             _super.call(this, trigger, condition);
-            this.targetType = targetType;
-            this.targetName = targetName;
             this.propertyPath = propertyPath;
             this.value = value;
             this.duration = duration;
+            this.stopOtherAnimations = stopOtherAnimations;
+
+            this._target = target;
         }
         InterpolateValueAction.prototype._prepare = function () {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
@@ -35,9 +35,11 @@ var BABYLON;
                 }
             ];
 
-            var dataType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
+            var dataType;
 
-            if (this.value instanceof BABYLON.Color3) {
+            if (typeof this.value === "number") {
+                dataType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
+            } else if (this.value instanceof BABYLON.Color3) {
                 dataType = BABYLON.Animation.ANIMATIONTYPE_COLOR3;
             } else if (this.value instanceof BABYLON.Vector3) {
                 dataType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
@@ -45,11 +47,18 @@ var BABYLON;
                 dataType = BABYLON.Animation.ANIMATIONTYPE_MATRIX;
             } else if (this.value instanceof BABYLON.Quaternion) {
                 dataType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
+            } else {
+                console.warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
+                return;
             }
 
             var animation = new BABYLON.Animation("InterpolateValueAction", this._property, 100 * (1000.0 / this.duration), dataType, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
 
             animation.setKeys(keys);
+
+            if (this.stopOtherAnimations) {
+                scene.stopAnimation(this._target);
+            }
 
             scene.beginDirectAnimation(this._target, [animation], 0, 100);
         };
