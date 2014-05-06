@@ -235,9 +235,9 @@
 
                 // Legacy browser patch
                 var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
+           //     if (!scene.getEngine().getCaps().standardDerivatives) {
                     shaderName = "legacydefault";
-                }
+             //   }
 
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
