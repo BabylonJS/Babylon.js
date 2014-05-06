@@ -11,6 +11,9 @@
         height: number;
     }
 
+    // Screenshots
+    var screenshotCanvas: HTMLCanvasElement;
+
     // FPS
     var fpsRange = 60;
     var previousFramesDuration = [];
@@ -35,7 +38,6 @@
 
     export class Tools {
         public static BaseUrl = "";
-        private static _ScreenshotCanvas: HTMLCanvasElement;
 
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");
@@ -84,7 +86,7 @@
             };
         }
 
-        public static MakeArray(obj, allowsNullUndefined?: boolean): Array<any> {
+        public static MakeArray(obj, allowsNullUndefined: boolean): Array<any> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
 
@@ -373,13 +375,13 @@
             var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0]);
             texture.renderList = engine.scenes[0].meshes;
 
-            texture.onAfterRender = function () {
+            texture.onAfterRender = () => {
                 // Read the contents of the framebuffer
                 var numberOfChannelsByLine = width * 4;
                 var halfHeight = height / 2;
 
                 //Reading datas from WebGL
-                var data = engine.ReadPixels(0, 0, width, height);
+                var data = engine.readPixels(0, 0, width, height);
 
 
                 //To flip image on Y axis.
@@ -396,19 +398,19 @@
                 }
 
                 // Create a 2D canvas to store the result
-                if (!Tools._ScreenshotCanvas) {
-                    Tools._ScreenshotCanvas = document.createElement('canvas');
+                if (!screenshotCanvas) {
+                    screenshotCanvas = document.createElement('canvas');
                 }
-                Tools._ScreenshotCanvas.width = width;
-                Tools._ScreenshotCanvas.height = height;
-                var context = Tools._ScreenshotCanvas.getContext('2d');
+                screenshotCanvas.width = width;
+                screenshotCanvas.height = height;
+                var context = screenshotCanvas.getContext('2d');
 
                 // Copy the pixels to a 2D canvas
                 var imageData = context.createImageData(width, height);
                 imageData.data.set(data);
                 context.putImageData(imageData, 0, 0);
 
-                var base64Image = Tools._ScreenshotCanvas.toDataURL();
+                var base64Image = screenshotCanvas.toDataURL();
 
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
@@ -420,7 +422,7 @@
 
                     window.document.body.appendChild(a);
 
-                    a.addEventListener("click", function () {
+                    a.addEventListener("click", () => {
                         a.parentElement.removeChild(a);
                     });
                     a.click();
@@ -436,7 +438,6 @@
             };
 
             texture.render();
-
             texture.dispose();
         }
     }

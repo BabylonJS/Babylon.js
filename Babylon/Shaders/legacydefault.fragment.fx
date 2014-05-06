@@ -22,7 +22,7 @@ varying vec3 vColor;
 // Lights
 #ifdef LIGHT0
 uniform vec4 vLightData0;
-uniform vec3 vLightDiffuse0;
+uniform vec4 vLightDiffuse0;
 uniform vec3 vLightSpecular0;
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
@@ -38,7 +38,7 @@ uniform vec3 vLightGround0;
 
 #ifdef LIGHT1
 uniform vec4 vLightData1;
-uniform vec3 vLightDiffuse1;
+uniform vec4 vLightDiffuse1;
 uniform vec3 vLightSpecular1;
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
@@ -54,7 +54,7 @@ uniform vec3 vLightGround1;
 
 #ifdef LIGHT2
 uniform vec4 vLightData2;
-uniform vec3 vLightDiffuse2;
+uniform vec4 vLightDiffuse2;
 uniform vec3 vLightSpecular2;
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
@@ -70,7 +70,7 @@ uniform vec3 vLightGround2;
 
 #ifdef LIGHT3
 uniform vec4 vLightData3;
-uniform vec3 vLightDiffuse3;
+uniform vec4 vLightDiffuse3;
 uniform vec3 vLightSpecular3;
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
@@ -229,7 +229,7 @@ float CalcFogFactor()
 #endif
 
 // Light Computing
-mat3 computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor) {
+mat3 computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 diffuseColor, vec3 specularColor) {
 	mat3 result;
 
 	vec3 lightVectorW;
@@ -250,14 +250,14 @@ mat3 computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 dif
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = max(0., pow(specComp, max(1.0, vSpecularColor.a)));
 
-	result[0] = ndl * diffuseColor;
+	result[0] = ndl * diffuseColor.rgb;
 	result[1] = specComp * specularColor;
 	result[2] = vec3(0.);
 
 	return result;
 }
 
-mat3 computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor) {
+mat3 computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec4 diffuseColor, vec3 specularColor) {
 	mat3 result;
 
 	vec3 lightVectorW = normalize(lightData.xyz - vPositionW);
@@ -279,7 +279,7 @@ mat3 computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, vSpecularColor.a);
 
-		result[0] = ndl * spotAtten * diffuseColor;
+		result[0] = ndl * spotAtten * diffuseColor.rgb;
 		result[1] = specComp * specularColor * spotAtten;
 		result[2] = vec3(0.);
 
@@ -293,7 +293,7 @@ mat3 computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4
 	return result;
 }
 
-mat3 computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor) {
+mat3 computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 diffuseColor, vec3 specularColor, vec3 groundColor) {
 	mat3 result;
 
 	// Diffuse
@@ -304,7 +304,7 @@ mat3 computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDat
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
-	result[0] = mix(groundColor, diffuseColor, ndl);
+	result[0] = mix(groundColor, diffuseColor.rgb, ndl);
 	result[1] = specComp * specularColor;
 	result[2] = vec3(0.);
 

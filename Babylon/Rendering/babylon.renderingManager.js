@@ -58,7 +58,7 @@
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
             var _this = this;
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
-                this._depthBufferAlreadyCleaned = index == 0;
+                this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
 
                 if (renderingGroup) {

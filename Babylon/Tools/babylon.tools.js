@@ -1,5 +1,8 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    // Screenshots
+    var screenshotCanvas;
+
     // FPS
     var fpsRange = 60;
     var previousFramesDuration = [];
@@ -349,7 +352,7 @@
                 var halfHeight = height / 2;
 
                 //Reading datas from WebGL
-                var data = engine.ReadPixels(0, 0, width, height);
+                var data = engine.readPixels(0, 0, width, height);
 
                 for (var i = 0; i < halfHeight; i++) {
                     for (var j = 0; j < numberOfChannelsByLine; j++) {
@@ -365,19 +368,19 @@
                 }
 
                 // Create a 2D canvas to store the result
-                if (!Tools._ScreenshotCanvas) {
-                    Tools._ScreenshotCanvas = document.createElement('canvas');
+                if (!screenshotCanvas) {
+                    screenshotCanvas = document.createElement('canvas');
                 }
-                Tools._ScreenshotCanvas.width = width;
-                Tools._ScreenshotCanvas.height = height;
-                var context = Tools._ScreenshotCanvas.getContext('2d');
+                screenshotCanvas.width = width;
+                screenshotCanvas.height = height;
+                var context = screenshotCanvas.getContext('2d');
 
                 // Copy the pixels to a 2D canvas
                 var imageData = context.createImageData(width, height);
                 imageData.data.set(data);
                 context.putImageData(imageData, 0, 0);
 
-                var base64Image = Tools._ScreenshotCanvas.toDataURL();
+                var base64Image = screenshotCanvas.toDataURL();
 
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
@@ -403,7 +406,6 @@
             };
 
             texture.render();
-
             texture.dispose();
         };
         Tools.BaseUrl = "";

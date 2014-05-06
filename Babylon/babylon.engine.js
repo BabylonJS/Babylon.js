@@ -1121,7 +1121,7 @@
             }
         };
 
-        Engine.prototype.ReadPixels = function (x, y, width, height) {
+        Engine.prototype.readPixels = function (x, y, width, height) {
             var data = new Uint8Array(height * width * 4);
             this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
