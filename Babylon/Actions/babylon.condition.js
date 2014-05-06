@@ -14,10 +14,6 @@ var BABYLON;
             return true;
         };
 
-        Condition.prototype._getTarget = function (targetType, targetName) {
-            return this._actionManager._getTarget(targetType, targetName);
-        };
-
         Condition.prototype._getProperty = function (propertyPath) {
             return this._actionManager._getProperty(propertyPath);
         };
@@ -31,17 +27,14 @@ var BABYLON;
 
     var StateCondition = (function (_super) {
         __extends(StateCondition, _super);
-        function StateCondition(actionManager, targetType, targetName, propertyPath, value, operator) {
+        function StateCondition(actionManager, target, propertyPath, value, operator) {
             if (typeof operator === "undefined") { operator = StateCondition.IsEqual; }
             _super.call(this, actionManager);
-            this.targetType = targetType;
-            this.targetName = targetName;
             this.propertyPath = propertyPath;
             this.value = value;
             this.operator = operator;
 
-            this._target = this._getTarget(this.targetType, this.targetName);
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._target = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
         // Methods

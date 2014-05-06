@@ -17,8 +17,22 @@
 
         public _executeCurrent(): void {
             if (this._condition) {
-                if (!this._condition.isValid()) {
-                    return;
+                var currentRenderId = this._actionManager.getScene().getRenderId();
+
+                // We cache the current evaluation for the current frame
+                if (this._condition._evaluationId === currentRenderId) {
+                    if (!this._condition._currentResult) {
+                        return;
+                    }
+                } else {
+                    this._condition._evaluationId = currentRenderId;
+
+                    if (!this._condition.isValid()) {
+                        this._condition._currentResult = false;
+                        return;
+                    }
+
+                    this._condition._currentResult = true;
                 }
             }
 
@@ -42,10 +56,6 @@
             action._prepare();
 
             return action;
-        }
-
-        public _getTarget(targetType: number, targetName: string): any {
-            return this._actionManager._getTarget(targetType, targetName);
         }
 
         public _getProperty(propertyPath: string): string {

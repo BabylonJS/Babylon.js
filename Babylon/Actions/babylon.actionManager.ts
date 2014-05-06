@@ -1,14 +1,11 @@
 ﻿module BABYLON {
     export class ActionManager {
         // Statics
-        public static AlwaysTrigger = 0;
+        public static NoneTrigger = 0;
         public static OnPickTrigger = 1;
-
-        public static SceneTarget = 0;
-        public static MeshTarget = 1;
-        public static LightTarget = 2;
-        public static CameraTarget = 3;
-        public static MaterialTarget = 4;
+        public static OnPointerOverTrigger = 2;
+        public static OnPointerOutTrigger = 3;
+        public static OnEveryFrameTrigger = 4;
 
         // Members
         public actions = new Array<Action>();
@@ -25,6 +22,14 @@
         }
 
         public registerAction(action: Action): Action {
+            if (action.trigger === ActionManager.OnEveryFrameTrigger) {
+                if (this.getScene().actionManager !== this) {
+                    console.warn("OnEveryFrameTrigger can only be used with scene.actionManager");
+                    return null;
+                }
+            }
+
+
             this.actions.push(action);
 
             action._actionManager = this;
@@ -41,25 +46,6 @@
                     action._executeCurrent();
                 }
             }
-        }
-
-        public _getTarget(targetType: number, targetName: string): any {
-            var scene = this._scene;
-
-            switch (targetType) {
-                case ActionManager.SceneTarget:
-                    return scene;
-                case ActionManager.MeshTarget:
-                    return scene.getMeshByName(targetName);
-                case ActionManager.LightTarget:
-                    return scene.getLightByName(targetName);
-                case ActionManager.CameraTarget:
-                    return scene.getCameraByName(targetName);
-                case ActionManager.MaterialTarget:
-                    return scene.getMaterialByName(targetName);
-            }
-
-            return null;
         }
 
         public _getEffectiveTarget(target: any, propertyPath: string): any {

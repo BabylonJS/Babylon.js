@@ -102,6 +102,15 @@
 
             return new Color3(r, g, b);
         }
+
+        public static Red(): Color3 { return new Color3(1, 0, 0); }
+        public static Green(): Color3 { return new Color3(0, 1, 0); }
+        public static Blue(): Color3 { return new Color3(0, 0, 1); }
+        public static Black(): Color3 { return new Color3(0, 0, 0); }
+        public static White(): Color3 { return new Color3(1, 1, 1); }
+        public static Purple(): Color3 { return new Color3(0.5, 0, 0.5); }
+        public static Magenta(): Color3 { return new Color3(1, 0, 1); }
+        public static Yellow(): Color3 { return new Color3(1, 1, 0); }
     }
 
     export class Color4 {

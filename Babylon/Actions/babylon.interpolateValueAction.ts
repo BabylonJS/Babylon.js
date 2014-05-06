@@ -3,12 +3,13 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, public targetType: number, public targetName: string, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition) {
+        constructor(trigger: number, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean) {
             super(trigger, condition);
+
+            this._target = target;
         }
 
         public _prepare(): void {
-            this._target = this._getTarget(this.targetType, this.targetName);
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
@@ -25,9 +26,11 @@
                 }
             ];
 
-            var dataType: number = Animation.ANIMATIONTYPE_FLOAT;
+            var dataType: number;
 
-            if (this.value instanceof Color3) {
+            if (typeof this.value === "number") {
+                dataType = Animation.ANIMATIONTYPE_FLOAT;
+            } else if (this.value instanceof Color3) {
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
             } else if (this.value instanceof Vector3) {
                 dataType = Animation.ANIMATIONTYPE_VECTOR3;
@@ -35,11 +38,18 @@
                 dataType = Animation.ANIMATIONTYPE_MATRIX;
             } else if (this.value instanceof Quaternion) {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
-            } 
+            } else {
+                console.warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
+                return;
+            }
 
             var animation = new BABYLON.Animation("InterpolateValueAction", this._property, 100 * (1000.0 / this.duration), dataType, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
             animation.setKeys(keys);
+
+            if (this.stopOtherAnimations) {
+                scene.stopAnimation(this._target);
+            }
 
             scene.beginDirectAnimation(this._target, [animation], 0, 100);
         }

@@ -2,16 +2,15 @@
     export class Condition {
         public _actionManager: ActionManager;
 
+        public _evaluationId: number;
+        public _currentResult: boolean;
+
         constructor(actionManager: ActionManager) {
             this._actionManager = actionManager;
         }
 
         public isValid(): boolean {
             return true;
-        }
-
-        public _getTarget(targetType: number, targetName: string): any {
-            return this._actionManager._getTarget(targetType, targetName);
         }
 
         public _getProperty(propertyPath: string): string {
@@ -36,11 +35,10 @@
         private _target: any;
         private _property: string;
 
-        constructor(actionManager: ActionManager, public targetType: number, public targetName: string, public propertyPath: string, public value: any, public operator: number = StateCondition.IsEqual) {
+        constructor(actionManager: ActionManager, target: any, public propertyPath: string, public value: any, public operator: number = StateCondition.IsEqual) {
             super(actionManager);
 
-            this._target = this._getTarget(this.targetType, this.targetName);
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._target = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 

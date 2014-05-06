@@ -10,6 +10,12 @@ module BABYLON {
     }
 
     export class VirtualJoystick {
+        public reverseLeftRight: boolean;
+        public reverseUpDown: boolean;
+        public deltaPosition: Vector3;
+        public pressed: boolean;
+
+        // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         private static _globalJoystickIndex: number = 0;
         private static vjCanvas: HTMLCanvasElement;
         private static vjCanvasContext: CanvasRenderingContext2D;
@@ -18,26 +24,22 @@ module BABYLON {
         private static halfWidth: number; 
         private static halfHeight: number;
 
-        private _leftJoystick: boolean;
-        private joystickIndex: number;
-        public reverseLeftRight: boolean;
-        public reverseUpDown: boolean;
-        private _touches: BABYLON.VirtualJoystick.Collection<any>;
-        public deltaPosition: Vector3;
+        private _action: () => any;
         private _axisTargetedByLeftAndRight: JoystickAxis;
-        private _axisTargetedByUpAndDown: JoystickAxis; 
+        private _axisTargetedByUpAndDown: JoystickAxis;
         private _joystickSensibility: number;
         private _inversedSensibility: number;
         private _rotationSpeed: number;
         private _inverseRotationSpeed: number;
         private _rotateOnAxisRelativeToMesh: boolean;
-        private joystickPointerID: number;
+        private _joystickPointerID: number;
         private _joystickColor: string;
-        private joystickPointerPos: Vector2;
-        private joystickPointerStartPos: Vector2;
-        private deltaJoystickVector: Vector2;
-        public pressed: boolean;
-        private _action: () => any;
+        private _joystickPointerPos: Vector2;
+        private _joystickPointerStartPos: Vector2;
+        private _deltaJoystickVector: Vector2;
+        private _leftJoystick: boolean;
+        private _joystickIndex: number;
+        private _touches: BABYLON.VirtualJoystick.Collection<PointerEvent>;
 
         constructor(leftJoystick?: boolean) {
             if (leftJoystick) {
@@ -47,7 +49,7 @@ module BABYLON {
                 this._leftJoystick = false;
             }
 
-            this.joystickIndex = VirtualJoystick._globalJoystickIndex;
+            this._joystickIndex = VirtualJoystick._globalJoystickIndex;
             VirtualJoystick._globalJoystickIndex++;
 
             // By default left & right arrow keys are moving the X
@@ -59,7 +61,7 @@ module BABYLON {
             this.reverseUpDown = false;
 
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection<any>();
+            this._touches = new BABYLON.VirtualJoystick.Collection<PointerEvent>();
             this.deltaPosition = BABYLON.Vector3.Zero();
 
             this._joystickSensibility = 25;
@@ -102,29 +104,29 @@ module BABYLON {
             // default joystick color
             this._joystickColor = "cyan";
 
-            this.joystickPointerID = -1;
+            this._joystickPointerID = -1;
             // current joystick position
-            this.joystickPointerPos = new BABYLON.Vector2(0, 0);
+            this._joystickPointerPos = new BABYLON.Vector2(0, 0);
             // origin joystick position
-            this.joystickPointerStartPos = new BABYLON.Vector2(0, 0);
-            this.deltaJoystickVector = new BABYLON.Vector2(0, 0);
+            this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
+            this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
 
             VirtualJoystick.vjCanvas.addEventListener('pointerdown', (evt) => {
-                this.onPointerDown(evt);
+                this._onPointerDown(evt);
             }, false);
             VirtualJoystick.vjCanvas.addEventListener('pointermove', (evt) => {
-                this.onPointerMove(evt);
+                this._onPointerMove(evt);
             }, false);
             VirtualJoystick.vjCanvas.addEventListener('pointerup',  (evt) => {
-                this.onPointerUp(evt);
+                this._onPointerUp(evt);
             }, false);
             VirtualJoystick.vjCanvas.addEventListener('pointerout', (evt) => {
-                this.onPointerUp(evt);
+                this._onPointerUp(evt);
             }, false);
             VirtualJoystick.vjCanvas.addEventListener("contextmenu", (evt) => {
                 evt.preventDefault();    // Disables system menu
             }, false);
-            requestAnimationFrame(() => { this.drawVirtualJoystick(); });
+            requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
         public setJoystickSensibility (newJoystickSensibility: number) {
@@ -132,10 +134,11 @@ module BABYLON {
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
         }
 
-        private onPointerDown (e: PointerEvent) {
-            e.preventDefault();
-            var newPointer = { identifier: e.pointerId, x: e.clientX, y: e.clientY, type: this.givePointerType(e) };
+        private _onPointerDown (e: PointerEvent) {
             var positionOnScreenCondition: boolean;
+
+            e.preventDefault();
+
             if (this._leftJoystick === true) {
                 positionOnScreenCondition = (e.clientX < VirtualJoystick.halfWidth);
             }
@@ -143,36 +146,36 @@ module BABYLON {
                 positionOnScreenCondition = (e.clientX > VirtualJoystick.halfWidth);
             }
 
-            if (positionOnScreenCondition && this.joystickPointerID < 0) {
+            if (positionOnScreenCondition && this._joystickPointerID < 0) {
                 // First contact will be dedicated to the virtual joystick
-                this.joystickPointerID = e.pointerId;
-                this.joystickPointerStartPos.x = e.clientX;
-                this.joystickPointerStartPos.y = e.clientY;
-                this.joystickPointerPos = this.joystickPointerStartPos.clone();
-                this.deltaJoystickVector.x = 0;
-                this.deltaJoystickVector.y = 0;
+                this._joystickPointerID = e.pointerId;
+                this._joystickPointerStartPos.x = e.clientX;
+                this._joystickPointerStartPos.y = e.clientY;
+                this._joystickPointerPos = this._joystickPointerStartPos.clone();
+                this._deltaJoystickVector.x = 0;
+                this._deltaJoystickVector.y = 0;
                 this.pressed = true;
-                this._touches.add(e.pointerId.toString(), newPointer);
+                this._touches.add(e.pointerId.toString(), e);
             }
             else {
                 // You can only trigger the action buttons with a joystick declared
                 if (VirtualJoystick._globalJoystickIndex < 2 && this._action) {
                     this._action();
-                    this._touches.add(e.pointerId.toString(), newPointer);
+                    this._touches.add(e.pointerId.toString(), e);
                 }
             }
         }
 
-        private onPointerMove (e: PointerEvent) {
+        private _onPointerMove (e: PointerEvent) {
             // If the current pointer is the one associated to the joystick (first touch contact)
-            if (this.joystickPointerID == e.pointerId) {
-                this.joystickPointerPos.x = e.clientX;
-                this.joystickPointerPos.y = e.clientY;
-                this.deltaJoystickVector = this.joystickPointerPos.clone();
-                this.deltaJoystickVector = this.deltaJoystickVector.subtract(this.joystickPointerStartPos);
+            if (this._joystickPointerID == e.pointerId) {
+                this._joystickPointerPos.x = e.clientX;
+                this._joystickPointerPos.y = e.clientY;
+                this._deltaJoystickVector = this._joystickPointerPos.clone();
+                this._deltaJoystickVector = this._deltaJoystickVector.subtract(this._joystickPointerStartPos);
 
                 var directionLeftRight = this.reverseLeftRight ? -1 : 1;
-                var deltaJoystickX = directionLeftRight * this.deltaJoystickVector.x / this._inversedSensibility;
+                var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
                 switch (this._axisTargetedByLeftAndRight) {
                     case JoystickAxis.X:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickX));
@@ -185,7 +188,7 @@ module BABYLON {
                         break;
                 }
                 var directionUpDown = this.reverseUpDown ? 1 : -1;
-                var deltaJoystickY = directionUpDown * this.deltaJoystickVector.y / this._inversedSensibility;
+                var deltaJoystickY = directionUpDown * this._deltaJoystickVector.y / this._inversedSensibility;
                 switch (this._axisTargetedByUpAndDown) {
                     case JoystickAxis.X:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickY));
@@ -206,17 +209,22 @@ module BABYLON {
             }
         }
 
-       private onPointerUp (e: PointerEvent) {
-            if (this.joystickPointerID == e.pointerId) {
-                this.joystickPointerID = -1;
+        private _onPointerUp(e: PointerEvent) {
+            this._clearCanvas();
+            if (this._joystickPointerID == e.pointerId) {
+                this._joystickPointerID = -1;
                 this.pressed = false;
             }
-            this.deltaJoystickVector.x = 0;
-            this.deltaJoystickVector.y = 0;
+            this._deltaJoystickVector.x = 0;
+            this._deltaJoystickVector.y = 0;
 
            this._touches.remove(e.pointerId.toString());
         }
 
+        /**
+        * Change the color of the virtual joystick
+        * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
+        */
         public setJoystickColor (newColor: string) {
             this._joystickColor = newColor;
         }
@@ -226,7 +234,7 @@ module BABYLON {
         }
 
         // Define which axis you'd like to control for left & right 
-        public setAxisForLR(axis: JoystickAxis) {
+        public setAxisForLeftRight(axis: JoystickAxis) {
             switch (axis) {
                 case JoystickAxis.X:
                 case JoystickAxis.Y:
@@ -242,7 +250,7 @@ module BABYLON {
         }
 
         // Define which axis you'd like to control for up & down 
-        public setAxisForUD(axis: JoystickAxis) {
+        public setAxisForUpDown(axis: JoystickAxis) {
             switch (axis) {
                 case JoystickAxis.X:
                 case JoystickAxis.Y:
@@ -255,55 +263,47 @@ module BABYLON {
             }
         }
 
-        private drawVirtualJoystick () {
+        private _clearCanvas(): void {
             if (this._leftJoystick) {
                 VirtualJoystick.vjCanvasContext.clearRect(0, 0, VirtualJoystick.vjCanvasWidth / 2, VirtualJoystick.vjCanvasHeight);
             }
             else {
                 VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
-            }
-            this._touches.forEach((touch) => {
-                if (touch.identifier === this.joystickPointerID) {
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.lineWidth = 6;
-                    VirtualJoystick.vjCanvasContext.arc(this.joystickPointerStartPos.x, this.joystickPointerStartPos.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.lineWidth = 2;
-                    VirtualJoystick.vjCanvasContext.arc(this.joystickPointerStartPos.x, this.joystickPointerStartPos.y, 60, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.arc(this.joystickPointerPos.x, this.joystickPointerPos.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                }
-                else {
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.fillStyle = "white";
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = "red";
-                    VirtualJoystick.vjCanvasContext.lineWidth = 6;
-                    VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                };
-            });
-            requestAnimationFrame(() => { this.drawVirtualJoystick(); });
+            } 
         }
 
-        private givePointerType (event) {
-            switch (event.pointerType) {
-                case event.POINTER_TYPE_MOUSE:
-                    return "MOUSE";
-                    break;
-                case event.POINTER_TYPE_PEN:
-                    return "PEN";
-                    break;
-                case event.POINTER_TYPE_TOUCH:
-                    return "TOUCH";
-                    break;
+        private _drawVirtualJoystick() {
+            if (this.pressed) {
+                this._clearCanvas();
+                this._touches.forEach((touch: PointerEvent) => {
+                    if (touch.pointerId === this._joystickPointerID) {
+                        VirtualJoystick.vjCanvasContext.beginPath();
+                        VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+                        VirtualJoystick.vjCanvasContext.lineWidth = 6;
+                        VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 40, 0, Math.PI * 2, true);
+                        VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.beginPath();
+                        VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+                        VirtualJoystick.vjCanvasContext.lineWidth = 2;
+                        VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 60, 0, Math.PI * 2, true);
+                        VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.beginPath();
+                        VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+                        VirtualJoystick.vjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
+                        VirtualJoystick.vjCanvasContext.stroke();
+                    }
+                    else {
+                        VirtualJoystick.vjCanvasContext.beginPath();
+                        VirtualJoystick.vjCanvasContext.fillStyle = "white";
+                        VirtualJoystick.vjCanvasContext.beginPath();
+                        VirtualJoystick.vjCanvasContext.strokeStyle = "red";
+                        VirtualJoystick.vjCanvasContext.lineWidth = 6;
+                        VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
+                        VirtualJoystick.vjCanvasContext.stroke();
+                    };
+                });
             }
+            requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
         public releaseCanvas () {
@@ -317,39 +317,43 @@ module BABYLON {
 
 module BABYLON.VirtualJoystick {
     export class Collection<T> {
-        private count: number;
-        private collection: Array<T>;
+        private _count: number;
+        private _collection: Array<T>;
 
         constructor() {
-            this.count = 0;
-            this.collection = new Array<T>();
+            this._count = 0;
+            this._collection = new Array<T>();
+        }
+
+        public Count(): number {
+            return this._count;
         }
 
         public add<T>(key: string, item: T): number {
-            if (this.collection[key] != undefined) {
+            if (this._collection[key] != undefined) {
                 return undefined;
             }
-            this.collection[key] = item;
-            return ++this.count;
+            this._collection[key] = item;
+            return ++this._count;
         }
 
         public remove(key: string): number {
-            if (this.collection[key] == undefined) {
+            if (this._collection[key] == undefined) {
                 return undefined;
             }
-            delete this.collection[key];
-            return --this.count;
+            delete this._collection[key];
+            return --this._count;
         }
 
         public item(key: string) {
-            return this.collection[key];
+            return this._collection[key];
         }
 
-        public forEach<T>(block: (T) => any) {
+        public forEach<T>(block: (item: T) => void) {
             var key: string;
-            for (key in this.collection) {
-                if (this.collection.hasOwnProperty(key)) {
-                    block(this.collection[key]);
+            for (key in this._collection) {
+                if (this._collection.hasOwnProperty(key)) {
+                    block(this._collection[key]);
                 }
             }
         }

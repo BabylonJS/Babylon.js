@@ -31,6 +31,11 @@
         public forceWireframe = false;
         public clipPlane: Plane;
 
+        // Pointers
+        private _onPointerMove: (evt: PointerEvent) => void;
+        private _onPointerDown: (evt: PointerEvent) => void;
+        public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+
         // Fog
         public fogMode = BABYLON.Scene.FOGMODE_NONE;
         public fogColor = new Color3(0.2, 0.2, 0.3);
@@ -92,6 +97,9 @@
         // Database
         public database; //ANY
 
+        // Actions
+        public actionManager: ActionManager;
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
@@ -141,6 +149,8 @@
 
         private _selectionOctree: Octree;
 
+        private _pointerOverMesh: Mesh;
+
         // Constructor
         constructor(engine: Engine) {
             this._engine = engine;
@@ -152,6 +162,8 @@
             this.postProcessManager = new PostProcessManager(this);
 
             this._boundingBoxRenderer = new BoundingBoxRenderer(this);
+
+            this.attachControl();
         }
 
         // Properties 
@@ -210,6 +222,47 @@
 
         public getRenderId(): number {
             return this._renderId;
+        }
+
+        // Pointers handling
+        public attachControl() {
+            this._onPointerMove = (evt: PointerEvent) => {
+                var canvas = this._engine.getRenderingCanvas();
+                var pickResult = this.pick(evt.clientX, evt.clientY, mesh => mesh.actionManager && mesh.isPickable);
+
+                if (pickResult.hit) {
+                    this.setPointerOverMesh(pickResult.pickedMesh);
+                    canvas.style.cursor = "pointer";
+                } else {
+                    this.setPointerOverMesh(null);
+                    canvas.style.cursor = "";
+                }
+            };
+
+            this._onPointerDown = (evt: PointerEvent) => {
+                var pickResult = this.pick(evt.clientX, evt.clientY);
+
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
+                    }
+                }
+
+                if (this.onPointerDown) {
+                    this.onPointerDown(evt, pickResult);
+                }
+            };
+
+
+            var eventPrefix = Tools.GetPointerPrefix();
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+        }
+
+        public detachControl() {
+            var eventPrefix = Tools.GetPointerPrefix();
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
         }
 
         // Ready
@@ -818,6 +871,11 @@
             this._totalVertices = 0;
             this._activeVertices = 0;
 
+            // Actions
+            if (this.actionManager) {
+                this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger);
+            }
+
             // Before render
             if (this.beforeRender) {
                 this.beforeRender();
@@ -884,6 +942,9 @@
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
+
+            // Events
+            this.detachControl();
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -1074,7 +1135,7 @@
             return pickingInfo || new BABYLON.PickingInfo();
         }
 
-        public pick(x: number, y: number, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
+        public pick(x: number, y: number, predicate?: (mesh: Mesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
             /// <param name="x">X position on screen</param>
             /// <param name="y">Y position on screen</param>
@@ -1092,6 +1153,25 @@
                 world.invertToRef(this._pickWithRayInverseMatrix);
                 return BABYLON.Ray.Transform(ray, this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
+        }
+
+        public setPointerOverMesh(mesh: Mesh): void {
+            if (this._pointerOverMesh === mesh) {
+                return;
+            }
+
+            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger);
+            }
+
+            this._pointerOverMesh = mesh;
+            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger);
+            }
+        }
+
+        public getPointerOverMesh(): Mesh {
+            return this._pointerOverMesh;
         }
 
         // Physics
