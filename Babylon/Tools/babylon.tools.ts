@@ -305,6 +305,28 @@
             return true;
         }
 
+        public static RegisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+            for (var index = 0; index < events.length; index++) {
+                var event = events[index];
+                window.addEventListener(event.name, event.handler, false);
+
+                if (window.parent) {
+                    window.parent.addEventListener(event.name, event.handler, false);
+                }
+            }
+        }
+
+        public static UnregisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+            for (var index = 0; index < events.length; index++) {
+                var event = events[index];
+                window.removeEventListener(event.name, event.handler);
+
+                if (window.parent) {
+                    window.parent.removeEventListener(event.name, event.handler);
+                }
+            }
+        }
+
         public static GetFps(): number {
             return fps;
         }

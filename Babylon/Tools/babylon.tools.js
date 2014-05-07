@@ -285,6 +285,28 @@
             return true;
         };
 
+        Tools.RegisterTopRootEvents = function (events) {
+            for (var index = 0; index < events.length; index++) {
+                var event = events[index];
+                window.addEventListener(event.name, event.handler, false);
+
+                if (window.parent) {
+                    window.parent.addEventListener(event.name, event.handler, false);
+                }
+            }
+        };
+
+        Tools.UnregisterTopRootEvents = function (events) {
+            for (var index = 0; index < events.length; index++) {
+                var event = events[index];
+                window.removeEventListener(event.name, event.handler);
+
+                if (window.parent) {
+                    window.parent.removeEventListener(event.name, event.handler);
+                }
+            }
+        };
+
         Tools.GetFps = function () {
             return fps;
         };

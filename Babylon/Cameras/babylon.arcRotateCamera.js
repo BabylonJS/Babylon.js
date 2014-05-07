@@ -247,9 +247,11 @@ var BABYLON;
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
 
-            window.addEventListener("keydown", this._onKeyDown, false);
-            window.addEventListener("keyup", this._onKeyUp, false);
-            window.addEventListener("blur", this._onLostFocus, false);
+            BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
         };
 
         ArcRotateCamera.prototype.detachControl = function (element) {
@@ -267,9 +269,11 @@ var BABYLON;
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
 
-            window.removeEventListener("keydown", this._onKeyDown);
-            window.removeEventListener("keyup", this._onKeyUp);
-            window.removeEventListener("blur", this._onLostFocus);
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
 
             this._MSGestureHandler = null;
             this._attachedElement = null;
