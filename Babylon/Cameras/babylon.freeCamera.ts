@@ -250,9 +250,11 @@
             element.addEventListener("mouseup", this._onMouseUp, false);
             element.addEventListener("mouseout", this._onMouseOut, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
-            window.addEventListener("keydown", this._onKeyDown, false);
-            window.addEventListener("keyup", this._onKeyUp, false);
-            window.addEventListener("blur", this._onLostFocus, false);
+
+            var root = window.parent || window;
+            root.addEventListener("keydown", this._onKeyDown, false);
+            root.addEventListener("keyup", this._onKeyUp, false);
+            root.addEventListener("blur", this._onLostFocus, false);
         }
 
         public detachControl(element: HTMLElement): void {
@@ -264,9 +266,11 @@
             element.removeEventListener("mouseup", this._onMouseUp);
             element.removeEventListener("mouseout", this._onMouseOut);
             element.removeEventListener("mousemove", this._onMouseMove);
-            window.removeEventListener("keydown", this._onKeyDown);
-            window.removeEventListener("keyup", this._onKeyUp);
-            window.removeEventListener("blur", this._onLostFocus);
+
+            var root = window.parent || window;
+            root.removeEventListener("keydown", this._onKeyDown);
+            root.removeEventListener("keyup", this._onKeyUp);
+            root.removeEventListener("blur", this._onLostFocus);
 
             this._attachedElement = null;
             if (this._reset) {
