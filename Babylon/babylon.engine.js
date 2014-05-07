@@ -1129,6 +1129,8 @@
 
         // Dispose
         Engine.prototype.dispose = function () {
+            this.stopRenderLoop();
+
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }

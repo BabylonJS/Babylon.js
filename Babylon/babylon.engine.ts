@@ -1184,6 +1184,8 @@
 
         // Dispose
         public dispose(): void {
+            this.stopRenderLoop();
+
             // Release scenes
             while (this.scenes.length) {
                 this.scenes[0].dispose();
