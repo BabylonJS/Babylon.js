@@ -43,6 +43,7 @@
             var data = this._mesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
+                this._boundingInfo = this._mesh._boundingInfo;
                 return;
             }
 
