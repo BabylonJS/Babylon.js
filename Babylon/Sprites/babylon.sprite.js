@@ -9,6 +9,7 @@
             this.cellIndex = 0;
             this.invertU = 0;
             this.invertV = 0;
+            this.animations = new Array();
             this._animationStarted = false;
             this._loopAnimation = false;
             this._fromIndex = 0;

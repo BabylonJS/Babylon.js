@@ -8,6 +8,11 @@
             super(name, scene);
         }
 
+        public setDirectionToTarget(target: Vector3): Vector3 {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(Vector3.Zero()));
+            return this.direction;
+        }
+
         public getShadowGenerator(): ShadowGenerator {
             return null;
         }

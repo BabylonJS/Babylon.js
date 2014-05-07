@@ -13,6 +13,11 @@ var BABYLON;
             this.direction = direction;
             this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
         }
+        HemisphericLight.prototype.setDirectionToTarget = function (target) {
+            this.direction = BABYLON.Vector3.Normalize(target.subtract(BABYLON.Vector3.Zero()));
+            return this.direction;
+        };
+
         HemisphericLight.prototype.getShadowGenerator = function () {
             return null;
         };
