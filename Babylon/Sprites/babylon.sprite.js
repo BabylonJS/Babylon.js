@@ -13,6 +13,9 @@ var BABYLON = BABYLON || {};
         this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
 
         this._frameCount = 0;
+
+        // Animations
+        this.animations = [];
     };
 
     // Members
