@@ -43,10 +43,7 @@
       <Link>%(Filename)%(Extension)</Link>
     </Resource>
     <Resource Include="..\..\..\Babylon\**\*.js">
-      <Link>Babylon\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Resource>
-    <Resource Include="..\..\..\Typescript\**\*.*">
-      <Link>Typescript\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Link>Babylon\%(RecursiveDir)js\%(Filename)%(Extension)</Link>
     </Resource>
   </ItemGroup>
   <ItemGroup>
