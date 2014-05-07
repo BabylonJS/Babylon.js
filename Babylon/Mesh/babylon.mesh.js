@@ -51,7 +51,6 @@ var BABYLON;
             this._indices = [];
             this._renderId = 0;
             this._onBeforeRenderCallbacks = [];
-            this._vertexStrideSize = 0;
             this._animationStarted = false;
 
             scene.meshes.push(this);
@@ -183,10 +182,6 @@ var BABYLON;
 
         Mesh.prototype.getIndices = function () {
             return this._indices;
-        };
-
-        Mesh.prototype.getVertexStrideSize = function () {
-            return this._vertexStrideSize;
         };
 
         Mesh.prototype.setPivotMatrix = function (matrix) {
