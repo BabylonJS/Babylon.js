@@ -60,7 +60,6 @@
         private _renderId = 0;
         private _onBeforeRenderCallbacks = [];
         private _delayInfo; //ANY
-        private _vertexStrideSize = 0;
         private _animationStarted = false;
         private _vertexBuffers;
         private _indexBuffer;
@@ -202,10 +201,6 @@
 
         public getIndices(): number[] {
             return this._indices;
-        }
-
-        public getVertexStrideSize(): number {
-            return this._vertexStrideSize;
         }
 
         public setPivotMatrix(matrix: Matrix): void {
