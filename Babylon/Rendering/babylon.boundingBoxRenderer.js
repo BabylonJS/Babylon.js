@@ -14,7 +14,7 @@
 
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
-            this._vb = new BABYLON.VertexBuffer(null, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false, engine);
+            this._vb = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
             this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         }
         BoundingBoxRenderer.prototype.reset = function () {

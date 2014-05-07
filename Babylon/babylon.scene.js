@@ -38,6 +38,8 @@
             this.activeCameras = new Array();
             // Meshes
             this.meshes = new Array();
+            // Geometries
+            this._geometries = new Array();
             this.materials = new Array();
             this.multiMaterials = new Array();
             this.defaultMaterial = new BABYLON.StandardMaterial("default material", this);
@@ -205,6 +207,14 @@
         Scene.prototype.isReady = function () {
             if (this._pendingData.length > 0) {
                 return false;
+            }
+
+            for (var index = 0; index < this._geometries.length; index++) {
+                var geometry = this._geometries[index];
+
+                if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+                    return false;
+                }
             }
 
             for (var index = 0; index < this.meshes.length; index++) {
@@ -455,6 +465,30 @@
             }
 
             return null;
+        };
+
+        Scene.prototype.getGeometryByID = function (id) {
+            for (var index = 0; index < this._geometries.length; index++) {
+                if (this._geometries[index].id === id) {
+                    return this._geometries[index];
+                }
+            }
+
+            return null;
+        };
+
+        Scene.prototype.pushGeometry = function (geometry, force) {
+            if (!force && this.getGeometryByID(geometry.id)) {
+                return false;
+            }
+
+            this._geometries.push(geometry);
+
+            return true;
+        };
+
+        Scene.prototype.getGeometries = function () {
+            return this._geometries;
         };
 
         Scene.prototype.getMeshByID = function (id) {
