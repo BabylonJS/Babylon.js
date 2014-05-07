@@ -99,7 +99,9 @@ var BABYLON = BABYLON || {};
         canvas.addEventListener("pointerout", this._onPointerUp);
         canvas.addEventListener("pointermove", this._onPointerMove);
 
-        window.addEventListener("blur", this._onLostFocus);
+        Tools.RegisterTopRootEvents([
+            { name: "blur", handler: this._onLostFocus }
+        ]);
     };
 
     BABYLON.TouchCamera.prototype.detachControl = function (canvas) {
@@ -112,7 +114,9 @@ var BABYLON = BABYLON || {};
         canvas.removeEventListener("pointerout", this._onPointerUp);
         canvas.removeEventListener("pointermove", this._onPointerMove);
 
-        window.removeEventListener("blur", this._onLostFocus);
+        Tools.UnregisterTopRootEvents([
+            { name: "blur", handler: this._onLostFocus }
+        ]);
         
         this._attachedCanvas = null;
     };
