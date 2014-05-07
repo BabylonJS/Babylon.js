@@ -442,19 +442,25 @@
 
                 var scene = this.getScene();
 
-                this._geometry = new BABYLON.Geometry(Geometry.RandomId(), scene.getEngine(), vertexData, updatable, this);
-                scene.pushGeometry(this._geometry);
+                new BABYLON.Geometry(Geometry.RandomId(), scene.getEngine(), vertexData, updatable, this);
             }
             else {
                 this._geometry.setVerticesData(data, kind, updatable);
             }
         }
 
-        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
+        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
-            this._geometry.updateVerticesData(kind, data, updateExtends);
+            if (!makeItUnique) {
+                this._geometry.updateVerticesData(kind, data, updateExtends);
+            }
+            else {
+                var geometry = this._geometry.copy(Geometry.RandomId());
+                geometry.applyToMesh(this);
+                this.updateVerticesData(kind, data, updateExtends, false);
+            }
         }
 
         public setIndices(indices: number[]): void {
@@ -464,8 +470,7 @@
 
                 var scene = this.getScene();
 
-                this._geometry = new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, false, this);
-                scene.pushGeometry(this._geometry);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, false, this);
             }
             else {
                 this._geometry.setIndices(indices);
