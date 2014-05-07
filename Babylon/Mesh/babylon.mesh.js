@@ -423,18 +423,23 @@ var BABYLON;
 
                 var scene = this.getScene();
 
-                this._geometry = new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, updatable, this);
-                scene.pushGeometry(this._geometry);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, updatable, this);
             } else {
                 this._geometry.setVerticesData(data, kind, updatable);
             }
         };
 
-        Mesh.prototype.updateVerticesData = function (kind, data, updateExtends) {
+        Mesh.prototype.updateVerticesData = function (kind, data, updateExtends, makeItUnique) {
             if (!this._geometry) {
                 return;
             }
-            this._geometry.updateVerticesData(kind, data, updateExtends);
+            if (!makeItUnique) {
+                this._geometry.updateVerticesData(kind, data, updateExtends);
+            } else {
+                var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
+                geometry.applyToMesh(this);
+                this.updateVerticesData(kind, data, updateExtends, false);
+            }
         };
 
         Mesh.prototype.setIndices = function (indices) {
@@ -444,8 +449,7 @@ var BABYLON;
 
                 var scene = this.getScene();
 
-                this._geometry = new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, false, this);
-                scene.pushGeometry(this._geometry);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, false, this);
             } else {
                 this._geometry.setIndices(indices);
             }

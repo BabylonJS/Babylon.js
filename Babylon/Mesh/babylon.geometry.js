@@ -230,6 +230,8 @@ var BABYLON;
             // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
             mesh._geometry = this;
 
+            mesh.getScene().pushGeometry(this);
+
             meshes.push(mesh);
 
             if (this.isReady()) {
@@ -337,7 +339,7 @@ var BABYLON;
 
         Geometry.prototype.copy = function (id) {
             var vertexData = new BABYLON.VertexData();
-            vertexData.indices = this.getIndices();
+            vertexData.indices = this.getIndices(); // todo: clone
 
             var updatable = false;
             var stopChecking = false;
