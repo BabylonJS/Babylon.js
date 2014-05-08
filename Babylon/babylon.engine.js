@@ -25,7 +25,7 @@
         return count;
     };
 
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, processFunction) {
+    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction) {
         var engine = scene.getEngine();
         var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
@@ -41,7 +41,10 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         } else {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-            gl.generateMipmap(gl.TEXTURE_2D);
+
+            if (!isCompressed) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -747,13 +750,13 @@
 
                     var loadMipmap = info.mipmapCount > 1 && !noMipmap;
 
-                    prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, function () {
+                    prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, true, function () {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, loadMipmap);
                     });
                 }, null, scene.database, true);
             } else {
                 var onload = function (img) {
-                    prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, function (potWidth, potHeight) {
+                    prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {
                         var isPot = (img.width == potWidth && img.height == potHeight);
                         if (!isPot) {
                             _this._workingCanvas.width = potWidth;
