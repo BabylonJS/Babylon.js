@@ -99,7 +99,7 @@ var BABYLON = BABYLON || {};
         canvas.addEventListener("pointerout", this._onPointerUp);
         canvas.addEventListener("pointermove", this._onPointerMove);
 
-        Tools.RegisterTopRootEvents([
+        BABYLON.Tools.RegisterTopRootEvents([
             { name: "blur", handler: this._onLostFocus }
         ]);
     };
@@ -114,7 +114,7 @@ var BABYLON = BABYLON || {};
         canvas.removeEventListener("pointerout", this._onPointerUp);
         canvas.removeEventListener("pointermove", this._onPointerMove);
 
-        Tools.UnregisterTopRootEvents([
+        BABYLON.Tools.UnregisterTopRootEvents([
             { name: "blur", handler: this._onLostFocus }
         ]);
         

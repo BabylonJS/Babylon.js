@@ -953,6 +953,12 @@
             }
 
             impostor = impostor || PhysicsEngine.NoImpostor;
+
+            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
+                physicsEngine._unregisterMesh(this);
+                return;
+            }
+
             options.mass = options.mass || 0;
             options.friction = options.friction || 0.2;
             options.restitution = options.restitution || 0.9;
@@ -962,10 +968,6 @@
             this._physicsFriction = options.friction;
             this._physicRestitution = options.restitution;
 
-            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
-                physicsEngine._unregisterMesh(this);
-                return;
-            }
 
             physicsEngine._registerMesh(this, impostor, options);
         }
