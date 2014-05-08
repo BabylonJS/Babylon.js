@@ -24,7 +24,7 @@
         return count;
     };
 
-    var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean,
+    var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void) => {
         var engine = scene.getEngine();
         var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
@@ -41,7 +41,10 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         } else {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-            gl.generateMipmap(gl.TEXTURE_2D);
+
+            if (!isCompressed) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -804,13 +807,13 @@
 
                     var loadMipmap = info.mipmapCount > 1 && !noMipmap;
 
-                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, () => {
+                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, true, () => {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, loadMipmap);
                     });
                 }, null, scene.database, true);
             } else {
                 var onload = (img) => {
-                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, (potWidth, potHeight) => {
+                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
                         var isPot = (img.width == potWidth && img.height == potHeight);
                         if (!isPot) {
                             this._workingCanvas.width = potWidth;
