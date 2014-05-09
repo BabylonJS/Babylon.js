@@ -546,8 +546,6 @@
 
         public draw(useTriangles: boolean, indexStart: number, indexCount: number): void {
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
-
-            this._gl.getError();
         }
 
         // Shaders
