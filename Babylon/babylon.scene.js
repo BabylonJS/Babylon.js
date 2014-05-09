@@ -163,7 +163,7 @@
             var _this = this;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
-                var pickResult = _this.pick(evt.clientX, evt.clientY, function (mesh) {
+                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, function (mesh) {
                     return mesh.actionManager && mesh.isPickable;
                 });
 
@@ -177,7 +177,7 @@
             };
 
             this._onPointerDown = function (evt) {
-                var pickResult = _this.pick(evt.clientX, evt.clientY);
+                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {

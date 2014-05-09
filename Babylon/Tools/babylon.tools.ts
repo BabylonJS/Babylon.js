@@ -310,8 +310,12 @@
                 var event = events[index];
                 window.addEventListener(event.name, event.handler, false);
 
-                if (window.parent) {
-                    window.parent.addEventListener(event.name, event.handler, false);
+                try {
+                    if (window.parent) {
+                        window.parent.addEventListener(event.name, event.handler, false);
+                    }
+                } catch (e) {
+                    // Silently fails...
                 }
             }
         }
@@ -321,8 +325,12 @@
                 var event = events[index];
                 window.removeEventListener(event.name, event.handler);
 
-                if (window.parent) {
-                    window.parent.removeEventListener(event.name, event.handler);
+                try {
+                    if (window.parent) {
+                        window.parent.removeEventListener(event.name, event.handler);
+                    }
+                } catch (e) {
+                    // Silently fails...
                 }
             }
         }
