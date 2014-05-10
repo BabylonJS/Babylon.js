@@ -339,7 +339,13 @@ var BABYLON;
 
         Geometry.prototype.copy = function (id) {
             var vertexData = new BABYLON.VertexData();
-            vertexData.indices = this.getIndices(); // todo: clone
+
+            vertexData.indices = [];
+
+            var indices = this.getIndices();
+            for (var index = 0; index < indices.length; index++) {
+                vertexData.indices.push(indices[index]);
+            }
 
             var updatable = false;
             var stopChecking = false;

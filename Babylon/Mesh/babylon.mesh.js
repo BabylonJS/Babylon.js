@@ -271,15 +271,15 @@ var BABYLON;
         Mesh.prototype.refreshBoundingInfo = function () {
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
-            if (!data) {
-                return;
+            if (data) {
+                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
             }
 
-            var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
-            this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
-
-            for (var index = 0; index < this.subMeshes.length; index++) {
-                this.subMeshes[index].refreshBoundingInfo();
+            if (this.subMeshes) {
+                for (var index = 0; index < this.subMeshes.length; index++) {
+                    this.subMeshes[index].refreshBoundingInfo();
+                }
             }
 
             this._updateBoundingInfo();
@@ -436,10 +436,17 @@ var BABYLON;
             if (!makeItUnique) {
                 this._geometry.updateVerticesData(kind, data, updateExtends);
             } else {
-                var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
-                geometry.applyToMesh(this);
+                this.makeGeometryUnique();
                 this.updateVerticesData(kind, data, updateExtends, false);
             }
+        };
+
+        Mesh.prototype.makeGeometryUnique = function () {
+            if (!this._geometry) {
+                return;
+            }
+            var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
+            geometry.applyToMesh(this);
         };
 
         Mesh.prototype.setIndices = function (indices) {
