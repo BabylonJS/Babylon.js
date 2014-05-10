@@ -83,7 +83,7 @@ namespace BuildOurOwnBabylonJSServer.Controllers
 
                     foreach (var file in babylonFiles)
                     {
-                        var linkName = directory.Name + (file.Name.Contains(".incremental.babylon") ? " - Incremental" : "");
+                        var linkName = directory.Name + "/" + Path.GetFileNameWithoutExtension(file.Name);
                         files.Add(new JObject(
                             new JProperty("url", Url.Action("Index", "BabylonJSDemo", new { demoFolderName = directory.Name, demoFile = file.Name })),
                             new JProperty("linkName", linkName)
