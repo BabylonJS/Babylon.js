@@ -56,6 +56,9 @@
         }
 
         public updateBoundingInfo(world: Matrix): void {
+            if (!this._boundingInfo) {
+                this.refreshBoundingInfo();
+            }
             this._boundingInfo._update(world);
         }
 
