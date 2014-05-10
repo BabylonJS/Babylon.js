@@ -6,6 +6,8 @@
 };
 var BABYLON;
 (function (BABYLON) {
+    var maxSimultaneousLights = 4;
+
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -196,7 +198,7 @@ var BABYLON;
                     }
 
                     lightIndex++;
-                    if (lightIndex == 4)
+                    if (lightIndex == maxSimultaneousLights)
                         break;
                 }
             }
@@ -387,7 +389,7 @@ var BABYLON;
 
                     lightIndex++;
 
-                    if (lightIndex == 4)
+                    if (lightIndex == maxSimultaneousLights)
                         break;
                 }
             }

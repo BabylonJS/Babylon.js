@@ -236,10 +236,11 @@ var BABYLON;
             element.addEventListener("mouseout", this._onMouseOut, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
 
-            var root = window.parent || window;
-            root.addEventListener("keydown", this._onKeyDown, false);
-            root.addEventListener("keyup", this._onKeyUp, false);
-            root.addEventListener("blur", this._onLostFocus, false);
+            BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
         };
 
         FreeCamera.prototype.detachControl = function (element) {
@@ -252,10 +253,11 @@ var BABYLON;
             element.removeEventListener("mouseout", this._onMouseOut);
             element.removeEventListener("mousemove", this._onMouseMove);
 
-            var root = window.parent || window;
-            root.removeEventListener("keydown", this._onKeyDown);
-            root.removeEventListener("keyup", this._onKeyUp);
-            root.removeEventListener("blur", this._onLostFocus);
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
 
             this._attachedElement = null;
             if (this._reset) {
