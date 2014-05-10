@@ -63,6 +63,8 @@
             // Customs render targets
             this.renderTargetsEnabled = true;
             this.customRenderTargets = new Array();
+            // Imported meshes
+            this.importedMeshesFiles = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;

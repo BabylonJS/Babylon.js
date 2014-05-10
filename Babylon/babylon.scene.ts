@@ -94,6 +94,9 @@
         // Delay loading
         public useDelayedTextureLoading: boolean;
 
+        // Imported meshes
+        public importedMeshesFiles = new Array<String>();
+
         // Database
         public database; //ANY
 

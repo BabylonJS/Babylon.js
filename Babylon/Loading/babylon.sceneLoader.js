@@ -48,6 +48,7 @@ var BABYLON = BABYLON || {};
                 }
 
                 if (onsuccess) {
+                    scene.importedMeshesFiles.push(rootUrl + sceneFilename);
                     onsuccess(meshes, particleSystems, skeletons);
                 }
             }, progressCallBack, database);
