@@ -1,4 +1,6 @@
 ﻿module BABYLON {
+    var maxSimultaneousLights = 4;
+
     export class StandardMaterial extends Material {
         public diffuseTexture: Texture;
         public ambientTexture: Texture;
@@ -199,7 +201,7 @@
                     }
 
                     lightIndex++;
-                    if (lightIndex == 4)
+                    if (lightIndex == maxSimultaneousLights)
                         break;
                 }
             }
@@ -393,7 +395,7 @@
 
                     lightIndex++;
 
-                    if (lightIndex == 4)
+                    if (lightIndex == maxSimultaneousLights)
                         break;
                 }
             }

@@ -97,6 +97,9 @@
         // Delay loading
         public useDelayedTextureLoading: boolean;
 
+        // Imported meshes
+        public importedMeshesFiles = new Array<String>();
+
         // Database
         public database; //ANY
 
@@ -231,7 +234,7 @@
         public attachControl() {
             this._onPointerMove = (evt: PointerEvent) => {
                 var canvas = this._engine.getRenderingCanvas();
-                var pickResult = this.pick(evt.clientX, evt.clientY, mesh => mesh.actionManager && mesh.isPickable);
+                var pickResult = this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, mesh => mesh.actionManager && mesh.isPickable);
 
                 if (pickResult.hit) {
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -243,7 +246,7 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
-                var pickResult = this.pick(evt.clientX, evt.clientY);
+                var pickResult = this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {

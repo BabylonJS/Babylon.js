@@ -65,6 +65,8 @@
             // Customs render targets
             this.renderTargetsEnabled = true;
             this.customRenderTargets = new Array();
+            // Imported meshes
+            this.importedMeshesFiles = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -165,7 +167,7 @@
             var _this = this;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
-                var pickResult = _this.pick(evt.clientX, evt.clientY, function (mesh) {
+                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, function (mesh) {
                     return mesh.actionManager && mesh.isPickable;
                 });
 
@@ -179,7 +181,7 @@
             };
 
             this._onPointerDown = function (evt) {
-                var pickResult = _this.pick(evt.clientX, evt.clientY);
+                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
