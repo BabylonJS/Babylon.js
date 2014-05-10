@@ -52,6 +52,9 @@
         };
 
         SubMesh.prototype.updateBoundingInfo = function (world) {
+            if (!this._boundingInfo) {
+                this.refreshBoundingInfo();
+            }
             this._boundingInfo._update(world);
         };
 
