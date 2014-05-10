@@ -362,7 +362,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a box...
         }
 
-        var box = new BABYLON.Geometry.Primitives.Box(parsedBox.id, scene.getEngine(), parsedBox.canBeRegenerated, parsedBox.size, null);
+        var box = new BABYLON.Geometry.Primitives.Box(parsedBox.id, scene.getEngine(), parsedBox.size, parsedBox.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(box, parsedBox.tags);
 
         scene.pushGeometry(box, true);
@@ -375,7 +375,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a sphere...
         }
 
-        var sphere = new BABYLON.Geometry.Primitives.Sphere(parsedSphere.id, scene.getEngine(), parsedSphere.canBeRegenerated, parsedSphere.segments, parsedSphere.diameter, null);
+        var sphere = new BABYLON.Geometry.Primitives.Sphere(parsedSphere.id, scene.getEngine(), parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(sphere, parsedSphere.tags);
 
         scene.pushGeometry(sphere, true);
@@ -388,7 +388,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a cylinder...
         }
 
-        var cylinder = new BABYLON.Geometry.Primitives.Cylinder(parsedCylinder.id, scene.getEngine(), parsedCylinder.canBeRegenerated, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, null);
+        var cylinder = new BABYLON.Geometry.Primitives.Cylinder(parsedCylinder.id, scene.getEngine(), parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(cylinder, parsedCylinder.tags);
 
         scene.pushGeometry(cylinder, true);
@@ -401,7 +401,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a torus...
         }
 
-        var torus = new BABYLON.Geometry.Primitives.Torus(parsedTorus.id, scene.getEngine(), parsedTorus.canBeRegenerated, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, null);
+        var torus = new BABYLON.Geometry.Primitives.Torus(parsedTorus.id, scene.getEngine(), parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(torus, parsedTorus.tags);
 
         scene.pushGeometry(torus, true);
@@ -414,7 +414,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a ground...
         }
 
-        var ground = new BABYLON.Geometry.Primitives.Ground(parsedGround.id, scene.getEngine(), parsedGround.canBeRegenerated, parsedGround.width, parsedGround.height, parsedGround.subdivisions, null);
+        var ground = new BABYLON.Geometry.Primitives.Ground(parsedGround.id, scene.getEngine(), parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(ground, parsedGround.tags);
 
         scene.pushGeometry(ground, true);
@@ -427,7 +427,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a plane...
         }
 
-        var plane = new BABYLON.Geometry.Primitives.Plane(parsedPlane.id, scene.getEngine(), parsedPlane.canBeRegenerated, parsedPlane.size, null);
+        var plane = new BABYLON.Geometry.Primitives.Plane(parsedPlane.id, scene.getEngine(), parsedPlane.size, parsedPlane.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(plane, parsedPlane.tags);
 
         scene.pushGeometry(plane, true);
@@ -440,7 +440,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be something else than a torusKnot...
         }
 
-        var torusKnot = new BABYLON.Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene.getEngine(), parsedTorusKnot.canBeRegenerated, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, null);
+        var torusKnot = new BABYLON.Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene.getEngine(), parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
         BABYLON.Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
 
         scene.pushGeometry(torusKnot, true);
