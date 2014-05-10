@@ -464,7 +464,7 @@ var BABYLON;
 
         // ANY
         Mesh.prototype.bindAndDraw = function (subMesh, effect, wireframe) {
-            if (!this._geometry) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
 

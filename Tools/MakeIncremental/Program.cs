@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace MakeIncremental
 {
@@ -43,44 +44,143 @@ namespace MakeIncremental
             ProcessSourceFile(input);
         }
 
-        static string CreateDelayLoadingFile(dynamic mesh, string outputDir, string rootFilename)
+        static void Extract(dynamic meshOrGeometry, string outputDir, string rootFilename, bool mesh = true)
         {
-            var encodedMeshName = mesh.name.ToString().Replace("+", "_").Replace(" ", "_");
-            var outputPath = Path.Combine(outputDir, rootFilename + "." + encodedMeshName + ".babylonmeshdata");
+            Console.WriteLine("Extracting " + (mesh ? meshOrGeometry.name : meshOrGeometry.id));
+
+            if (meshOrGeometry.positions != null && meshOrGeometry.normals != null && meshOrGeometry.indices != null)
+            {
+                meshOrGeometry.delayLoadingFile = CreateDelayLoadingFile(meshOrGeometry, outputDir, rootFilename, mesh);
+                Console.WriteLine("Delay loading file: " + meshOrGeometry.delayLoadingFile);
+
+                // Compute bounding boxes
+                var positions = ((JArray)meshOrGeometry.positions).Select(v => v.Value<float>()).ToArray();
+                var minimum = new[] { float.MaxValue, float.MaxValue, float.MaxValue };
+                var maximum = new[] { float.MinValue, float.MinValue, float.MinValue };
+
+                for (var index = 0; index < positions.Length; index += 3)
+                {
+                    var x = positions[index];
+                    var y = positions[index + 1];
+                    var z = positions[index + 2];
+
+                    if (x < minimum[0])
+                    {
+                        minimum[0] = x;
+                    }
+                    if (x > maximum[0])
+                    {
+                        maximum[0] = x;
+                    }
+
+                    if (y < minimum[1])
+                    {
+                        minimum[1] = y;
+                    }
+                    if (y > maximum[1])
+                    {
+                        maximum[1] = y;
+                    }
+
+                    if (z < minimum[2])
+                    {
+                        minimum[2] = z;
+                    }
+                    if (z > maximum[2])
+                    {
+                        maximum[2] = z;
+                    }
+                }
+
+                meshOrGeometry["boundingBoxMinimum"] = new JArray(minimum);
+                meshOrGeometry["boundingBoxMaximum"] = new JArray(maximum);
+
+                // Erasing infos
+                meshOrGeometry.positions = null;
+                meshOrGeometry.normals = null;
+                meshOrGeometry.indices = null;
+
+                if (meshOrGeometry.uvs != null)
+                {
+                    meshOrGeometry["hasUVs"] = true;
+                    meshOrGeometry.uvs = null;
+                }
+
+                if (meshOrGeometry.uvs2 != null)
+                {
+                    meshOrGeometry["hasUVs2"] = true;
+                    meshOrGeometry.uvs2 = null;
+                }
+
+                if (meshOrGeometry.colors != null)
+                {
+                    meshOrGeometry["hasColors"] = true;
+                    meshOrGeometry.colors = null;
+                }
+
+                if (meshOrGeometry.matricesIndices != null)
+                {
+                    meshOrGeometry["hasMatricesIndices"] = true;
+                    meshOrGeometry.matricesIndices = null;
+                }
+
+                if (meshOrGeometry.matricesWeights != null)
+                {
+                    meshOrGeometry["hasMatricesWeights"] = true;
+                    meshOrGeometry.matricesWeights = null;
+                }
+
+                if (mesh && meshOrGeometry.subMeshes != null)
+                {
+                    meshOrGeometry.subMeshes = null;
+                }
+            }
+        }
+
+        static string CreateDelayLoadingFile(dynamic meshOrGeometry, string outputDir, string rootFilename, bool mesh = true)
+        {
+            string encodedName;
+            if(mesh)
+                encodedName = meshOrGeometry.name.ToString();
+            else
+                encodedName = meshOrGeometry.id.ToString();
+
+            encodedName = encodedName.Replace("+", "_").Replace(" ", "_");
+            var outputPath = Path.Combine(outputDir, rootFilename + "." + encodedName + (mesh ? ".babylonmeshdata" : ".babylongeometrydata"));
 
             var result = new JObject();
-            result["positions"] = mesh.positions;
-            result["indices"] = mesh.indices;
-            result["normals"] = mesh.normals;
+            result["positions"] = meshOrGeometry.positions;
+            result["indices"] = meshOrGeometry.indices;
+            result["normals"] = meshOrGeometry.normals;
 
-            if (mesh.uvs != null)
+            if (meshOrGeometry.uvs != null)
             {
-                result["uvs"] = mesh.uvs;
+                result["uvs"] = meshOrGeometry.uvs;
             }
 
-            if (mesh.uvs2 != null)
+            if (meshOrGeometry.uvs2 != null)
             {
-                result["uvs2"] = mesh.uvs2;
+                result["uvs2"] = meshOrGeometry.uvs2;
             }
 
-            if (mesh.colors != null)
+            if (meshOrGeometry.colors != null)
             {
-                result["colors"] = mesh.colors;
+                result["colors"] = meshOrGeometry.colors;
             }
 
-            if (mesh.matricesIndices != null)
+            if (meshOrGeometry.matricesIndices != null)
             {
-                result["matricesIndices"] = mesh.matricesIndices;
+                result["matricesIndices"] = meshOrGeometry.matricesIndices;
             }
 
-            if (mesh.matricesWeights != null)
+            if (meshOrGeometry.matricesWeights != null)
             {
-                result["matricesWeights"] = mesh.matricesWeights;
+                result["matricesWeights"] = meshOrGeometry.matricesWeights;
             }
 
-            if (mesh.subMeshes != null)
+            if (mesh && meshOrGeometry.subMeshes != null)
             {
-                result["subMeshes"] = mesh.subMeshes;
+                result["subMeshes"] = meshOrGeometry.subMeshes;
             }
 
             string json = result.ToString(Formatting.None);
@@ -118,103 +218,35 @@ namespace MakeIncremental
                 scene["autoClear"] = true;
                 scene["useDelayedTextureLoading"] = true;
 
+                var doNotDelayLoadingForGeometries = new List<string>();
+
                 // Parsing meshes
                 var meshes = (JArray)scene.meshes;
                 foreach (dynamic mesh in meshes)
                 {
                     if (mesh.checkCollisions.Value) // Do not delay load collisions object
                     {
+                        if (mesh.geometryId != null)
+                            doNotDelayLoadingForGeometries.Add(mesh.geometryId.Value);
                         continue;
                     }
 
-                    Console.WriteLine("Extracting " + mesh.name);
+                    Extract(mesh, outputDir, rootFilename);
+                }
 
-                    if (mesh.positions != null && mesh.normals != null && mesh.indices != null)
+                // Parsing vertexData
+                var geometries = scene.geometries;
+                if (geometries != null)
+                {
+                    var vertexData = (JArray)geometries.vertexData;
+                    foreach (dynamic geometry in vertexData)
                     {
-                        mesh.delayLoadingFile = CreateDelayLoadingFile(mesh, outputDir, rootFilename);
-                        Console.WriteLine("Delay loading file: " + mesh.delayLoadingFile);
+                        var id = geometry.id.Value;
 
-                        // Compute bounding boxes
-                        var positions = ((JArray) mesh.positions).Select(v=>v.Value<float>()).ToArray();
-                        var minimum = new[] {float.MaxValue, float.MaxValue, float.MaxValue};
-                        var maximum = new[] {float.MinValue, float.MinValue, float.MinValue};
+                        if (doNotDelayLoadingForGeometries.Any(g => g == id))
+                            continue;
 
-                        for (var index = 0; index < positions.Length; index += 3)
-                        {
-                            var x = positions[index];
-                            var y = positions[index + 1];
-                            var z = positions[index + 2];
-
-                            if (x < minimum[0])
-                            {
-                                minimum[0] = x;
-                            }
-                            if (x > maximum[0])
-                            {
-                                maximum[0] = x;
-                            }
-
-                            if (y < minimum[1])
-                            {
-                                minimum[1] = y;
-                            }
-                            if (y > maximum[1])
-                            {
-                                maximum[1] = y;
-                            }
-
-                            if (z < minimum[2])
-                            {
-                                minimum[2] = z;
-                            }
-                            if (z > maximum[2])
-                            {
-                                maximum[2] = z;
-                            }
-                        }
-
-                        mesh["boundingBoxMinimum"] = new JArray(minimum);
-                        mesh["boundingBoxMaximum"] = new JArray(maximum);
-
-                        // Erasing infos
-                        mesh.positions = null;
-                        mesh.normals = null;
-                        mesh.indices = null;
-
-                        if (mesh.uvs != null)
-                        {
-                            mesh["hasUVs"] = true;
-                            mesh.uvs = null;
-                        }
-
-                        if (mesh.uvs2 != null)
-                        {
-                            mesh["hasUVs2"] = true;
-                            mesh.uvs2 = null;
-                        }
-
-                        if (mesh.colors != null)
-                        {
-                            mesh["hasColors"] = true;
-                            mesh.colors = null;
-                        }
-
-                        if (mesh.matricesIndices != null)
-                        {
-                            mesh["hasMatricesIndices"] = true;
-                            mesh.matricesIndices = null;
-                        }
-
-                        if (mesh.matricesWeights != null)
-                        {
-                            mesh["hasMatricesWeights"] = true;
-                            mesh.matricesWeights = null;
-                        }
-
-                        if (mesh.subMeshes != null)
-                        {
-                            mesh.subMeshes = null;
-                        }
+                        Extract(geometry, outputDir, rootFilename, false);
                     }
                 }
 

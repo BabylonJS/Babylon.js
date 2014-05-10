@@ -486,7 +486,7 @@
 
         // ANY
         public bindAndDraw(subMesh: SubMesh, effect, wireframe?: boolean): void {
-            if (!this._geometry) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
 
