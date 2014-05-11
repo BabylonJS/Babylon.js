@@ -172,7 +172,7 @@
                         }
                         img.src = blobURL;
                     } catch (e) {
-                        console.log("Error while trying to load texture: " + textureName);
+                        Tools.Log("Error while trying to load texture: " + textureName);
                         img.src = null;
                     }
                 }
@@ -370,7 +370,7 @@
                 height = size;
                 width = size;
             } else {
-                console.error("Invalid 'size' parameter !");
+                Tools.Error("Invalid 'size' parameter !");
                 return;
             }
 
@@ -438,6 +438,28 @@
 
             texture.render();
             texture.dispose();
+        };
+
+        // Logs
+        Tools._FormatMessage = function (message) {
+            var padStr = function (i) {
+                return (i < 10) ? "0" + i : "" + i;
+            };
+
+            var date = new Date();
+            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]:" + message;
+        };
+
+        Tools.Log = function (message) {
+            console.log(Tools._FormatMessage(message));
+        };
+
+        Tools.Warn = function (message) {
+            console.warn(Tools._FormatMessage(message));
+        };
+
+        Tools.Error = function (message) {
+            console.error(Tools._FormatMessage(message));
         };
         Tools.BaseUrl = "";
         return Tools;

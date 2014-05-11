@@ -48,7 +48,7 @@ var BABYLON;
             } else if (this.value instanceof BABYLON.Quaternion) {
                 dataType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
             } else {
-                console.warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
+                BABYLON.Tools.Warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
                 return;
             }
 

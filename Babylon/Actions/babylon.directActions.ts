@@ -51,7 +51,7 @@
             this._property = this._getProperty(this.propertyPath);
 
             if (typeof this._target[this._property] !== "number") {
-                console.warn("Warning: IncrementValueAction can only be used with number values");
+                Tools.Warn("Warning: IncrementValueAction can only be used with number values");
             }
         }
 

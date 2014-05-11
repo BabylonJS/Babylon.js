@@ -39,7 +39,7 @@
             } else if (this.value instanceof Quaternion) {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
             } else {
-                console.warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
+                Tools.Warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
                 return;
             }
 

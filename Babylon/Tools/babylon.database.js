@@ -42,7 +42,7 @@ var BABYLON = BABYLON || {};
 
     BABYLON.Database.prototype.checkManifestFile = function () {
         function noManifestFile() {
-            console.log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
+            BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
             that.enableSceneOffline = false;
             that.enableTexturesOffline = false;
         };
@@ -81,7 +81,7 @@ var BABYLON = BABYLON || {};
             xhr.send();
         }
         catch (ex) {
-            console.log("Error on XHR send request.");
+            BABYLON.Tools.Error("Error on XHR send request.");
         }
     };
 
@@ -112,7 +112,7 @@ var BABYLON = BABYLON || {};
 
                 // executes when a version change transaction cannot complete due to other active transactions
                 request.onblocked = function (event) {
-                    console.log("IDB request blocked. Please reload the page.");
+                    BABYLON.Tools.Error("IDB request blocked. Please reload the page.");
                     handleError();
                 };
 
@@ -131,7 +131,7 @@ var BABYLON = BABYLON || {};
                         var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
                     }
                     catch (ex) {
-                        console.log("Error while creating object stores. Exception: " + ex.message);
+                        BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
                         handleError();
                     }
                 };
@@ -195,12 +195,12 @@ var BABYLON = BABYLON || {};
                 texture = event.target.result;
             };
             getRequest.onerror = function (event) {
-                console.log("Error loading texture " + url + " from DB.");
+                BABYLON.Tools.Error("Error loading texture " + url + " from DB.");
                 image.src = url;
             };
         }
         else {
-            console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             image.src = url;
         }
     };
@@ -283,7 +283,7 @@ var BABYLON = BABYLON || {};
                 }, false);
 
                 xhr.addEventListener("error", function (event) {
-                    console.log("Error in XHR request in BABYLON.Database.");
+                    BABYLON.Tools.Error("Error in XHR request in BABYLON.Database.");
                     image.src = url;
                 }, false);
 
@@ -294,7 +294,7 @@ var BABYLON = BABYLON || {};
             }
         }
         else {
-            console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             image.src = url;
         }
     };
@@ -344,17 +344,17 @@ var BABYLON = BABYLON || {};
                     version = event.target.result;
                 };
                 getRequest.onerror = function (event) {
-                    console.log("Error loading version for scene " + url + " from DB.");
+                    BABYLON.Tools.Error("Error loading version for scene " + url + " from DB.");
                     callback(-1);
                 };
             }
             catch (ex) {
-                console.log("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
+                BABYLON.Tools.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
                 callback(-1);
             }
         }
         else {
-            console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             callback(-1);
         }
     };
@@ -390,11 +390,11 @@ var BABYLON = BABYLON || {};
                 addRequest.onsuccess = function (event) {
                 };
                 addRequest.onerror = function (event) {
-                    console.log("Error in DB add version request in BABYLON.Database.");
+                    BABYLON.Tools.Error("Error in DB add version request in BABYLON.Database.");
                 };
             }
             catch (ex) {
-                console.log("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
+                BABYLON.Tools.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
                 callback(-1);
             }
         }
@@ -452,12 +452,12 @@ var BABYLON = BABYLON || {};
                 scene = event.target.result;
             };
             getRequest.onerror = function (event) {
-                console.log("Error loading scene " + url + " from DB.");
+                BABYLON.Tools.Error("Error loading scene " + url + " from DB.");
                 notInDBCallback();
             };
         }
         else {
-            console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             callback();
         }
     };
@@ -507,7 +507,7 @@ var BABYLON = BABYLON || {};
                             addRequest.onsuccess = function (event) {
                             };
                             addRequest.onerror = function (event) {
-                                console.log("Error in DB add scene request in BABYLON.Database.");
+                                BABYLON.Tools.Error("Error in DB add scene request in BABYLON.Database.");
                             };
                         }
                         catch (ex) {
@@ -524,14 +524,14 @@ var BABYLON = BABYLON || {};
             }, false);
 
             xhr.addEventListener("error", function (event) {
-                console.log("error on XHR request.");
+                BABYLON.Tools.Error("error on XHR request.");
                 callback();
             }, false);
 
             xhr.send();
         }
         else {
-            console.log("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
             callback();
         }
     };

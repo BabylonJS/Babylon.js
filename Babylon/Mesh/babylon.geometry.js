@@ -146,7 +146,7 @@ var BABYLON;
                     result.push(kind);
                 }
             } else {
-                for (var kind in this._vertexBuffers) {
+                for (kind in this._vertexBuffers) {
                     result.push(kind);
                 }
             }
@@ -225,7 +225,6 @@ var BABYLON;
             }
 
             var meshes = this._meshes;
-            var numOfMeshes = meshes.length + 1;
 
             // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
             mesh._geometry = this;
@@ -270,6 +269,7 @@ var BABYLON;
         };
 
         Geometry.prototype.load = function (scene, onLoaded) {
+            var _this = this;
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return;
             }
@@ -284,21 +284,18 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
 
             scene._addPendingData(this);
-
-            var that = this;
-
             BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
-                that._delayLoadingFunction(JSON.parse(data), that);
+                _this._delayLoadingFunction(JSON.parse(data), _this);
 
-                that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
-                that._delayInfo = [];
+                _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                _this._delayInfo = [];
 
-                scene._removePendingData(that);
+                scene._removePendingData(_this);
 
-                var meshes = that._meshes;
+                var meshes = _this._meshes;
                 var numOfMeshes = meshes.length;
                 for (var index = 0; index < numOfMeshes; index++) {
-                    that._applyToMesh(meshes[index]);
+                    _this._applyToMesh(meshes[index]);
                 }
 
                 if (onLoaded) {
@@ -365,7 +362,7 @@ var BABYLON;
             geometry.delayLoadingFile = this.delayLoadingFile;
             geometry._delayLoadingFunction = this._delayLoadingFunction;
 
-            for (var kind in this._delayInfo) {
+            for (kind in this._delayInfo) {
                 geometry._delayInfo = geometry._delayInfo || [];
                 geometry._delayInfo.push(kind);
             }
@@ -434,7 +431,7 @@ var BABYLON;
                     if (!this._beingRegenerated) {
                         return;
                     }
-                    return _super.prototype.setAllVerticesData.call(this, vertexData, false);
+                    _super.prototype.setAllVerticesData.call(this, vertexData, false);
                 };
 
                 _Primitive.prototype.setVerticesData = function (data, kind, updatable) {

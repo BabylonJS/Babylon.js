@@ -91,12 +91,12 @@
                 byteArray, mipmapCount, i;
 
             if (header[off_magic] != DDS_MAGIC) {
-                console.error("Invalid magic number in DDS header");
+                Tools.Error("Invalid magic number in DDS header");
                 return;
             }
 
             if ((header[off_pfFlags] & DDPF_FOURCC) !== DDPF_FOURCC) {
-                console.error("Unsupported format, must contain a FourCC code");
+                Tools.Error("Unsupported format, must contain a FourCC code");
                 return;
             }
 
