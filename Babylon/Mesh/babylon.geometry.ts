@@ -155,7 +155,7 @@
                     result.push(kind);
                 }
             } else {
-                for (var kind in this._vertexBuffers) {
+                for (kind in this._vertexBuffers) {
                     result.push(kind);
                 }
             }
@@ -234,7 +234,6 @@
             }
 
             var meshes = this._meshes;
-            var numOfMeshes = meshes.length + 1;
 
             // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
             mesh._geometry = this;
@@ -295,27 +294,24 @@
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
 
             scene._addPendingData(this);
+            BABYLON.Tools.LoadFile(this.delayLoadingFile, data => {
+                this._delayLoadingFunction(JSON.parse(data), this);
 
-            var that = this;
+                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                this._delayInfo = [];
 
-            BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
-                that._delayLoadingFunction(JSON.parse(data), that);
+                scene._removePendingData(this);
 
-                that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
-                that._delayInfo = [];
-
-                scene._removePendingData(that);
-
-                var meshes = that._meshes;
+                var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
                 for (var index = 0; index < numOfMeshes; index++) {
-                    that._applyToMesh(meshes[index]);
+                    this._applyToMesh(meshes[index]);
                 }
 
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, function () { }, scene.database);
+            }, () => { }, scene.database);
         }
 
         public dispose(): void {
@@ -375,7 +371,7 @@
             geometry.delayLoadingFile = this.delayLoadingFile;
             geometry._delayLoadingFunction = this._delayLoadingFunction;
 
-            for (var kind in this._delayInfo) {
+            for (kind in this._delayInfo) {
                 geometry._delayInfo = geometry._delayInfo || [];
                 geometry._delayInfo.push(kind);
             }
@@ -401,7 +397,7 @@
         // from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
         // be aware Math.random() could cause collisions
         public static RandomId(): string {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
@@ -442,14 +438,14 @@
             }
 
             // overrides
-            public setAllVerticesData(vertexData: VertexData, updatable?: boolean) {
+            public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }
-                return super.setAllVerticesData(vertexData, false);
+                super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(data: number[], kind: string, updatable?: boolean) {
+            public setVerticesData(data: number[], kind: string, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }

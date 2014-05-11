@@ -140,7 +140,7 @@
 
         public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
-                console.error("You're trying to reuse a post process not defined as reusable.");
+                Tools.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
 

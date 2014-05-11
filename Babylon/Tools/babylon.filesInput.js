@@ -119,7 +119,7 @@ var BABYLON = BABYLON || {};
                 });
             }
             else {
-                console.log("Please provide a valid .babylon file.");
+                BABYLON.Tools.Error("Please provide a valid .babylon file.");
             }
         }
     };

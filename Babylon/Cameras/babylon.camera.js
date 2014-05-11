@@ -131,7 +131,7 @@ var BABYLON;
         Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
             if (typeof insertAt === "undefined") { insertAt = null; }
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
-                console.error("You're trying to reuse a post process not defined as reusable.");
+                BABYLON.Tools.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
 

@@ -63,12 +63,12 @@
                 var header = new Int32Array(arrayBuffer, 0, headerLengthInt), fourCC, blockBytes, internalFormat, width, height, dataLength, dataOffset, byteArray, mipmapCount, i;
 
                 if (header[off_magic] != DDS_MAGIC) {
-                    console.error("Invalid magic number in DDS header");
+                    BABYLON.Tools.Error("Invalid magic number in DDS header");
                     return;
                 }
 
                 if ((header[off_pfFlags] & DDPF_FOURCC) !== DDPF_FOURCC) {
-                    console.error("Unsupported format, must contain a FourCC code");
+                    BABYLON.Tools.Error("Unsupported format, must contain a FourCC code");
                     return;
                 }
 

@@ -14,7 +14,7 @@
         ActionManager.prototype.registerAction = function (action) {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
-                    console.warn("OnEveryFrameTrigger can only be used with scene.actionManager");
+                    BABYLON.Tools.Warn("OnEveryFrameTrigger can only be used with scene.actionManager");
                     return null;
                 }
             }
