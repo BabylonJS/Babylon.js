@@ -352,6 +352,148 @@ var BABYLON = BABYLON || {};
         return camera;
     };
 
+    var parseGeometry = function (parsedGeometry, scene) {
+        var id = parsedGeometry.id;
+        return scene.getGeometryByID(id);
+    };
+
+    var parseBox = function (parsedBox, scene) {
+        if (parseGeometry(parsedBox, scene)) {
+            return null; // null since geometry could be something else than a box...
+        }
+
+        var box = new BABYLON.Geometry.Primitives.Box(parsedBox.id, scene.getEngine(), parsedBox.size, parsedBox.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(box, parsedBox.tags);
+
+        scene.pushGeometry(box, true);
+
+        return box;
+    };
+
+    var parseSphere = function (parsedSphere, scene) {
+        if (parseGeometry(parsedSphere, scene)) {
+            return null; // null since geometry could be something else than a sphere...
+        }
+
+        var sphere = new BABYLON.Geometry.Primitives.Sphere(parsedSphere.id, scene.getEngine(), parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(sphere, parsedSphere.tags);
+
+        scene.pushGeometry(sphere, true);
+
+        return sphere;
+    };
+
+    var parseCylinder = function (parsedCylinder, scene) {
+        if (parseGeometry(parsedCylinder, scene)) {
+            return null; // null since geometry could be something else than a cylinder...
+        }
+
+        var cylinder = new BABYLON.Geometry.Primitives.Cylinder(parsedCylinder.id, scene.getEngine(), parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+
+        scene.pushGeometry(cylinder, true);
+
+        return cylinder;
+    };
+
+    var parseTorus = function (parsedTorus, scene) {
+        if (parseGeometry(parsedTorus, scene)) {
+            return null; // null since geometry could be something else than a torus...
+        }
+
+        var torus = new BABYLON.Geometry.Primitives.Torus(parsedTorus.id, scene.getEngine(), parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(torus, parsedTorus.tags);
+
+        scene.pushGeometry(torus, true);
+
+        return torus;
+    };
+
+    var parseGround = function (parsedGround, scene) {
+        if (parseGeometry(parsedGround, scene)) {
+            return null; // null since geometry could be something else than a ground...
+        }
+
+        var ground = new BABYLON.Geometry.Primitives.Ground(parsedGround.id, scene.getEngine(), parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(ground, parsedGround.tags);
+
+        scene.pushGeometry(ground, true);
+
+        return ground;
+    };
+
+    var parsePlane = function (parsedPlane, scene) {
+        if (parseGeometry(parsedPlane, scene)) {
+            return null; // null since geometry could be something else than a plane...
+        }
+
+        var plane = new BABYLON.Geometry.Primitives.Plane(parsedPlane.id, scene.getEngine(), parsedPlane.size, parsedPlane.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(plane, parsedPlane.tags);
+
+        scene.pushGeometry(plane, true);
+
+        return plane;
+    };
+
+    var parseTorusKnot = function (parsedTorusKnot, scene) {
+        if (parseGeometry(parsedTorusKnot, scene)) {
+            return null; // null since geometry could be something else than a torusKnot...
+        }
+
+        var torusKnot = new BABYLON.Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene.getEngine(), parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
+        BABYLON.Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+
+        scene.pushGeometry(torusKnot, true);
+
+        return torusKnot;
+    };
+
+    var parseVertexData = function (parsedVertexData, scene, rootUrl) {
+        if (parseGeometry(parsedVertexData, scene)) {
+            return null; // null since geometry could be a primitive
+        }
+
+        var geometry = new BABYLON.Geometry(parsedVertexData.id, scene.getEngine());
+
+        BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
+
+        if (parsedVertexData.delayLoadingFile) {
+            geometry.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+            geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
+            geometry._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Vector3.FromArray(parsedVertexData.boundingBoxMinimum), BABYLON.Vector3.FromArray(parsedVertexData.boundingBoxMaximum));
+
+            geometry._delayInfo = [];
+            if (parsedVertexData.hasUVs) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UVKind);
+            }
+
+            if (parsedVertexData.hasUVs2) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
+            }
+
+            if (parsedVertexData.hasColors) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
+            }
+
+            if (parsedVertexData.hasMatricesIndices) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+            }
+
+            if (parsedVertexData.hasMatricesWeights) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+            }
+
+            geometry._delayLoadingFunction = importVertexData;
+
+        } else {
+            importVertexData(parsedVertexData, geometry);
+        }
+
+        scene.pushGeometry(geometry, true);
+
+        return geometry;
+    };
+
     var parseMesh = function (parsedMesh, scene, rootUrl) {
         var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
@@ -489,9 +631,73 @@ var BABYLON = BABYLON || {};
         return false;
     };
 
+    var importVertexData = function (parsedVertexData, geometry) {
+        var vertexData = new BABYLON.VertexData();
+
+        // positions
+        var positions = parsedVertexData.positions;
+        if (positions) {
+            vertexData.set(positions, BABYLON.VertexBuffer.PositionKind);
+        }
+
+        // normals
+        var normals = parsedVertexData.normals;
+        if (normals) {
+            vertexData.set(normals, BABYLON.VertexBuffer.NormalKind);
+        }
+
+        // uvs
+        var uvs = parsedVertexData.uvs;
+        if (uvs) {
+            vertexData.set(uvs, BABYLON.VertexBuffer.UVKind);
+        }
+
+        // uv2s
+        var uv2s = parsedVertexData.uv2s;
+        if (uv2s) {
+            vertexData.set(uv2s, BABYLON.VertexBuffer.UV2Kind);
+        }
+
+        // colors
+        var colors = parsedVertexData.colors;
+        if (colors) {
+            vertexData.set(colors, BABYLON.VertexBuffer.ColorKind);
+        }
+
+        // matricesIndices
+        var matricesIndices = parsedVertexData.matricesIndices;
+        if (matricesIndices) {
+            vertexData.set(matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind);
+        }
+
+        // matricesWeights
+        var matricesWeights = parsedVertexData.matricesWeights;
+        if (matricesWeights) {
+            vertexData.set(matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind);
+        }
+
+        // indices
+        var indices = parsedVertexData.indices;
+        if (indices) {
+            vertexData.indices = indices;
+        }
+
+        geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
+    };
+
     var importGeometry = function (parsedGeometry, mesh) {
+        var scene = mesh.getScene();
+
         // Geometry
-        if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
+        var geometryId = parsedGeometry.geometryId;
+        if (geometryId) {
+            var geometry = scene.getGeometryByID(geometryId);
+            if (geometry) {
+                geometry.applyToMesh(mesh);
+            }
+        }
+
+        else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
             mesh.setVerticesData(parsedGeometry.positions, BABYLON.VertexBuffer.PositionKind, false);
             mesh.setVerticesData(parsedGeometry.normals, BABYLON.VertexBuffer.NormalKind, false);
 
@@ -553,7 +759,6 @@ var BABYLON = BABYLON || {};
             delete mesh._shouldGenerateFlatShading;
         }
 
-        var scene = mesh.getScene();
         if (scene._selectionOctree) {
             scene._selectionOctree.addMesh(mesh);
         }
@@ -693,6 +898,82 @@ var BABYLON = BABYLON || {};
                 for (var index = 0; index < parsedData.skeletons.length; index++) {
                     var parsedSkeleton = parsedData.skeletons[index];
                     parseSkeleton(parsedSkeleton, scene);
+                }
+            }
+
+            // Geometries
+            var geometries = parsedData.geometries;
+            if (geometries) {
+                // Boxes
+                var boxes = geometries.boxes;
+                if (boxes) {
+                    for (var index = 0; index < boxes.length; index++) {
+                        var parsedBox = boxes[index];
+                        parseBox(parsedBox, scene);
+                    }
+                }
+
+                // Spheres
+                var spheres = geometries.spheres;
+                if (spheres) {
+                    for (var index = 0; index < spheres.length; index++) {
+                        var parsedSphere = spheres[index];
+                        parseSphere(parsedSphere, scene);
+                    }
+                }
+
+                // Cylinders
+                var cylinders = geometries.cylinders;
+                if (cylinders) {
+                    for (var index = 0; index < cylinders.length; index++) {
+                        var parsedCylinder = cylinders[index];
+                        parseCylinder(parsedCylinder, scene);
+                    }
+                }
+
+                // Toruses
+                var toruses = geometries.toruses;
+                if (toruses) {
+                    for (var index = 0; index < toruses.length; index++) {
+                        var parsedTorus = toruses[index];
+                        parseTorus(parsedTorus, scene);
+                    }
+                }
+
+                // Grounds
+                var grounds = geometries.grounds;
+                if (grounds) {
+                    for (var index = 0; index < grounds.length; index++) {
+                        var parsedGround = grounds[index];
+                        parseGround(parsedGround, scene);
+                    }
+                }
+
+                // Planes
+                var planes = geometries.planes;
+                if (planes) {
+                    for (var index = 0; index < planes.length; index++) {
+                        var parsedPlane = planes[index];
+                        parsePlane(parsedPlane, scene);
+                    }
+                }
+
+                // TorusKnots
+                var torusKnots = geometries.torusKnots;
+                if (torusKnots) {
+                    for (var index = 0; index < torusKnots.length; index++) {
+                        var parsedTorusKnot = torusKnots[index];
+                        parseTorusKnot(parsedTorusKnot, scene);
+                    }
+                }
+
+                // VertexData
+                var vertexData = geometries.vertexData;
+                if (vertexData) {
+                    for (var index = 0; index < vertexData.length; index++) {
+                        var parsedVertexData = vertexData[index];
+                        parseVertexData(parsedVertexData, scene, rootUrl);
+                    }
                 }
             }
 
