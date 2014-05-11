@@ -1,27 +1,26 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var VertexBuffer = (function () {
-        function VertexBuffer(mesh, data, kind, updatable, engine) {
-            this._mesh = mesh;
-            this._engine = engine || mesh.getScene().getEngine();
-            this._updatable = updatable;
-
-            if (updatable) {
-                this._buffer = this._engine.createDynamicVertexBuffer(data.length * 4);
-                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+        function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation) {
+            if (engine instanceof BABYLON.Mesh) {
+                this._engine = engine.getScene().getEngine();
             } else {
-                this._buffer = this._engine.createVertexBuffer(data);
+                this._engine = engine;
             }
 
+            this._updatable = updatable;
+
             this._data = data;
+
+            if (!postponeInternalCreation) {
+                this.create();
+            }
+
             this._kind = kind;
 
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this._strideSize = 3;
-                    if (this._mesh) {
-                        this._mesh._resetPointsArrayCache();
-                    }
                     break;
                 case VertexBuffer.NormalKind:
                     this._strideSize = 3;
@@ -61,22 +60,38 @@
         };
 
         // Methods
-        VertexBuffer.prototype.update = function (data) {
-            if (!this._updatable) {
-                console.log("You cannot update a non-updatable vertex buffer");
+        VertexBuffer.prototype.create = function (data) {
+            if (!data && this._buffer) {
                 return;
             }
 
-            this._engine.updateDynamicVertexBuffer(this._buffer, data);
-            this._data = data;
+            data = data || this._data;
 
-            if (this._kind === BABYLON.VertexBuffer.PositionKind && this._mesh) {
-                this._mesh._resetPointsArrayCache();
+            if (!this._buffer) {
+                if (this._updatable) {
+                    this._buffer = this._engine.createDynamicVertexBuffer(data.length * 4);
+                } else {
+                    this._buffer = this._engine.createVertexBuffer(data);
+                }
+            }
+
+            if (this._updatable) {
+                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+                this._data = data;
             }
         };
 
+        VertexBuffer.prototype.update = function (data) {
+            this.create(data);
+        };
+
         VertexBuffer.prototype.dispose = function () {
-            this._engine._releaseBuffer(this._buffer);
+            if (!this._buffer) {
+                return;
+            }
+            if (this._engine._releaseBuffer(this._buffer)) {
+                this._buffer = null;
+            }
         };
 
         VertexBuffer.PositionKind = "position";

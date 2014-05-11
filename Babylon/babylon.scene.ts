@@ -55,6 +55,9 @@
         // Meshes
         public meshes = new Array<Mesh>();
 
+        // Geometries
+        private _geometries = new Array<Geometry>();
+
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
         public defaultMaterial = new BABYLON.StandardMaterial("default material", this);
@@ -272,6 +275,14 @@
         public isReady(): boolean {
             if (this._pendingData.length > 0) {
                 return false;
+            }
+
+            for (var index = 0; index < this._geometries.length; index++) {
+                var geometry = this._geometries[index];
+
+                if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+                    return false;
+                }
             }
 
             for (var index = 0; index < this.meshes.length; index++) {
@@ -519,6 +530,30 @@
             }
 
             return null;
+        }
+
+        public getGeometryByID(id: string): Geometry {
+            for (var index = 0; index < this._geometries.length; index++) {
+                if (this._geometries[index].id === id) {
+                    return this._geometries[index];
+                }
+            }
+
+            return null;
+        }
+
+        public pushGeometry(geometry: Geometry, force?: boolean): boolean {
+            if (!force && this.getGeometryByID(geometry.id)) {
+                return false;
+            }
+
+            this._geometries.push(geometry);
+
+            return true;
+        }
+
+        public getGeometries(): Geometry[] {
+            return this._geometries;
         }
 
         public getMeshByID(id: string): Mesh {

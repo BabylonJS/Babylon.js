@@ -39,6 +39,7 @@
             var data = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
             if (!data) {
+                this._boundingInfo = this._mesh._boundingInfo;
                 return;
             }
 
@@ -51,6 +52,9 @@
         };
 
         SubMesh.prototype.updateBoundingInfo = function (world) {
+            if (!this._boundingInfo) {
+                this.refreshBoundingInfo();
+            }
             this._boundingInfo._update(world);
         };
 
