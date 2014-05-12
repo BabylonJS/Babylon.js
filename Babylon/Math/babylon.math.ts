@@ -1767,8 +1767,8 @@
         }
 
         public toGlobal(engine) {
-            var width = engine.getRenderWidth() * engine.getHardwareScalingLevel();
-            var height = engine.getRenderHeight() * engine.getHardwareScalingLevel();
+            var width = engine.getRenderWidth();
+            var height = engine.getRenderHeight();
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
         }
     }

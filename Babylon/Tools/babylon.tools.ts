@@ -474,22 +474,37 @@
         }
 
         // Logs
+        public static MessageLogLevel = 0;
+        public static WarningLogLevel = 1;
+        public static ErrorLogLevel = 2;
+        public static NoneLogLevel = 3;
+        public static CurrentLogLevel = Tools.MessageLogLevel;
+
         private static _FormatMessage(message: string): string {
             var padStr = i => (i < 10) ? "0" + i : "" + i;
 
             var date = new Date();
-            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) +  ":" + padStr(date.getSeconds()) + "]:" + message;
+            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) +  ":" + padStr(date.getSeconds()) + "]: " + message;
         }
 
         public static Log(message: string): void {
+            if (Tools.CurrentLogLevel > Tools.MessageLogLevel) {
+                return;
+            }
             console.log(Tools._FormatMessage(message));
         }
 
         public static Warn(message: string): void {
+            if (Tools.CurrentLogLevel > Tools.WarningLogLevel) {
+                return;
+            }
             console.warn(Tools._FormatMessage(message));
         }
 
         public static Error(message: string): void {
+            if (Tools.CurrentLogLevel > Tools.ErrorLogLevel) {
+                return;
+            }
             console.error(Tools._FormatMessage(message));
         }
     }

@@ -1133,10 +1133,10 @@
             var viewport = cameraViewport.toGlobal(engine);
 
             // Moving coordinates to local viewport world
-            x = x - viewport.x;
-            y = y - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+            x = x / this._engine.getHardwareScalingLevel() - viewport.x;
+            y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
 
-            return BABYLON.Ray.CreateNew(x * this._engine.getHardwareScalingLevel(), y * this._engine.getHardwareScalingLevel(), viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo {
