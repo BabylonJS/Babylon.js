@@ -537,7 +537,9 @@
             this._gl.attachShader(shaderProgram, vertexShader);
             this._gl.attachShader(shaderProgram, fragmentShader);
 
-            var linked = this._gl.linkProgram(shaderProgram);
+            this._gl.linkProgram(shaderProgram);
+            
+            var linked = this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS);
             if (!linked) {
                 var error = this._gl.getProgramInfoLog(shaderProgram);
                 if (error) {
