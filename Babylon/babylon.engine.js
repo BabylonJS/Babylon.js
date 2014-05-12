@@ -538,8 +538,8 @@
             this._gl.attachShader(shaderProgram, fragmentShader);
 
             this._gl.linkProgram(shaderProgram);
-            
             var linked = this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS);
+
             if (!linked) {
                 var error = this._gl.getProgramInfoLog(shaderProgram);
                 if (error) {
@@ -752,6 +752,7 @@
         Engine.prototype.createTexture = function (url, noMipmap, invertY, scene) {
             var _this = this;
             var texture = this._gl.createTexture();
+
             var isDDS = this.getCaps().s3tc && (url.substr(url.length - 4, 4).toLowerCase() === ".dds");
 
             scene._addPendingData(texture);

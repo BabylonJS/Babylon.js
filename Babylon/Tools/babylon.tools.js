@@ -440,28 +440,42 @@
             texture.dispose();
         };
 
-        // Logs
         Tools._FormatMessage = function (message) {
             var padStr = function (i) {
                 return (i < 10) ? "0" + i : "" + i;
             };
 
             var date = new Date();
-            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]:" + message;
+            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
         };
 
         Tools.Log = function (message) {
+            if (Tools.CurrentLogLevel > Tools.MessageLogLevel) {
+                return;
+            }
             console.log(Tools._FormatMessage(message));
         };
 
         Tools.Warn = function (message) {
+            if (Tools.CurrentLogLevel > Tools.WarningLogLevel) {
+                return;
+            }
             console.warn(Tools._FormatMessage(message));
         };
 
         Tools.Error = function (message) {
+            if (Tools.CurrentLogLevel > Tools.ErrorLogLevel) {
+                return;
+            }
             console.error(Tools._FormatMessage(message));
         };
         Tools.BaseUrl = "";
+
+        Tools.MessageLogLevel = 0;
+        Tools.WarningLogLevel = 1;
+        Tools.ErrorLogLevel = 2;
+        Tools.NoneLogLevel = 3;
+        Tools.CurrentLogLevel = Tools.MessageLogLevel;
         return Tools;
     })();
     BABYLON.Tools = Tools;
