@@ -474,11 +474,30 @@
         }
 
         // Logs
-        public static MessageLogLevel = 0;
-        public static WarningLogLevel = 1;
-        public static ErrorLogLevel = 2;
-        public static NoneLogLevel = 3;
-        public static CurrentLogLevel = Tools.MessageLogLevel;
+        private static _NoneLogLevel = 0;
+        private static _MessageLogLevel = 1;
+        private static _WarningLogLevel = 2;
+        private static _ErrorLogLevel = 4;
+
+        static get NoneLogLevel(): number {
+            return Tools._NoneLogLevel;
+        }
+
+        static get MessageLogLevel(): number {
+            return Tools._MessageLogLevel;
+        }
+
+        static get WarningLogLevel(): number {
+            return Tools._WarningLogLevel;
+        }
+
+        static get ErrorLogLevel(): number {
+            return Tools._ErrorLogLevel;
+        }
+
+        static get AllLogLevel(): number {
+            return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;;
+        }
 
         private static _FormatMessage(message: string): string {
             var padStr = i => (i < 10) ? "0" + i : "" + i;
@@ -487,25 +506,54 @@
             return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) +  ":" + padStr(date.getSeconds()) + "]: " + message;
         }
 
-        public static Log(message: string): void {
-            if (Tools.CurrentLogLevel > Tools.MessageLogLevel) {
-                return;
-            }
+        public static Log: (message: string) => void = Tools._LogEnabled;
+
+        private static _LogDisabled(message: string): void {
+            // nothing to do
+        }
+        private static _LogEnabled(message: string): void {
             console.log(Tools._FormatMessage(message));
         }
 
-        public static Warn(message: string): void {
-            if (Tools.CurrentLogLevel > Tools.WarningLogLevel) {
-                return;
-            }
+        public static Warn: (message: string) => void = Tools._WarnEnabled;
+
+        private static _WarnDisabled(message: string): void {
+            // nothing to do
+        }
+        private static _WarnEnabled(message: string): void {
             console.warn(Tools._FormatMessage(message));
         }
 
-        public static Error(message: string): void {
-            if (Tools.CurrentLogLevel > Tools.ErrorLogLevel) {
-                return;
-            }
+        public static Error: (message: string) => void = Tools._ErrorEnabled;
+
+        private static _ErrorDisabled(message: string): void {
+            // nothing to do
+        }
+        private static _ErrorEnabled(message: string): void {
             console.error(Tools._FormatMessage(message));
+        }
+        
+        public static set LogLevels(level: number) {
+            if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
+                Tools.Log = Tools._LogEnabled;
+            }
+            else {
+                Tools.Log = Tools._LogDisabled;
+            }
+
+            if ((level & Tools.WarningLogLevel) === Tools.WarningLogLevel) {
+                Tools.Warn = Tools._WarnEnabled;
+            }
+            else {
+                Tools.Warn = Tools._WarnDisabled;
+            }
+
+            if ((level & Tools.ErrorLogLevel) === Tools.ErrorLogLevel) {
+                Tools.Error = Tools._ErrorEnabled;
+            }
+            else {
+                Tools.Error = Tools._ErrorDisabled;
+            }
         }
     }
 } 
