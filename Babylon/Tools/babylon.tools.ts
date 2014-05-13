@@ -474,9 +474,31 @@
         }
 
         // Logs
-        public static MessageLogLevel = 1;
-        public static WarningLogLevel = 2;
-        public static ErrorLogLevel = 4;
+        private static _NoneLogLevel = 0;
+        private static _MessageLogLevel = 1;
+        private static _WarningLogLevel = 2;
+        private static _ErrorLogLevel = 4;
+        private static _AllLogLevel = Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
+
+        static get NoneLogLevel(): number {
+            return Tools._NoneLogLevel;
+        }
+
+        static get MessageLogLevel(): number {
+            return Tools._MessageLogLevel;
+        }
+
+        static get WarningLogLevel(): number {
+            return Tools._WarningLogLevel;
+        }
+
+        static get ErrorLogLevel(): number {
+            return Tools._ErrorLogLevel;
+        }
+
+        static get AllLogLevel(): number {
+            return Tools._AllLogLevel;
+        }
 
         private static _FormatMessage(message: string): string {
             var padStr = i => (i < 10) ? "0" + i : "" + i;
@@ -512,7 +534,9 @@
             console.error(Tools._FormatMessage(message));
         }
 
-        public static SetLogLevels(level: number) {
+        private static _LogLevels;
+
+        public static set LogLevels(level: number) {
             if (level & Tools.MessageLogLevel) {
                 Tools.Log = Tools._LogEnabled;
             }
