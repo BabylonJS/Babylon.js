@@ -195,6 +195,62 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
         }
+        Object.defineProperty(Engine, "ALPHA_DISABLE", {
+            get: function () {
+                return Engine._ALPHA_DISABLE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "ALPHA_ADD", {
+            get: function () {
+                return Engine._ALPHA_ADD;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "ALPHA_COMBINE", {
+            get: function () {
+                return Engine._ALPHA_COMBINE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "DELAYLOADSTATE_NONE", {
+            get: function () {
+                return Engine._DELAYLOADSTATE_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "DELAYLOADSTATE_LOADED", {
+            get: function () {
+                return Engine._DELAYLOADSTATE_LOADED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "DELAYLOADSTATE_LOADING", {
+            get: function () {
+                return Engine._DELAYLOADSTATE_LOADING;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "DELAYLOADSTATE_NOTLOADED", {
+            get: function () {
+                return Engine._DELAYLOADSTATE_NOTLOADED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
@@ -1183,19 +1239,18 @@
                 return false;
             }
         };
-        Engine.ShadersRepository = "Babylon/Shaders/";
+        Engine._ALPHA_DISABLE = 0;
+        Engine._ALPHA_ADD = 1;
+        Engine._ALPHA_COMBINE = 2;
 
-        Engine.ALPHA_DISABLE = 0;
-        Engine.ALPHA_ADD = 1;
-        Engine.ALPHA_COMBINE = 2;
-
-        Engine.DELAYLOADSTATE_NONE = 0;
-        Engine.DELAYLOADSTATE_LOADED = 1;
-        Engine.DELAYLOADSTATE_LOADING = 2;
-        Engine.DELAYLOADSTATE_NOTLOADED = 4;
+        Engine._DELAYLOADSTATE_NONE = 0;
+        Engine._DELAYLOADSTATE_LOADED = 1;
+        Engine._DELAYLOADSTATE_LOADING = 2;
+        Engine._DELAYLOADSTATE_NOTLOADED = 4;
 
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
+        Engine.ShadersRepository = "Babylon/Shaders/";
         return Engine;
     })();
     BABYLON.Engine = Engine;

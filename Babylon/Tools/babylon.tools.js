@@ -474,7 +474,8 @@
 
         Object.defineProperty(Tools, "AllLogLevel", {
             get: function () {
-                return Tools._AllLogLevel;
+                return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
+                ;
             },
             enumerable: true,
             configurable: true
@@ -512,19 +513,19 @@
 
         Object.defineProperty(Tools, "LogLevels", {
             set: function (level) {
-                if (level & Tools.MessageLogLevel) {
+                if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
                     Tools.Log = Tools._LogEnabled;
                 } else {
                     Tools.Log = Tools._LogDisabled;
                 }
 
-                if (level & Tools.WarningLogLevel) {
+                if ((level & Tools.WarningLogLevel) === Tools.WarningLogLevel) {
                     Tools.Warn = Tools._WarnEnabled;
                 } else {
                     Tools.Warn = Tools._WarnDisabled;
                 }
 
-                if (level & Tools.ErrorLogLevel) {
+                if ((level & Tools.ErrorLogLevel) === Tools.ErrorLogLevel) {
                     Tools.Error = Tools._ErrorEnabled;
                 } else {
                     Tools.Error = Tools._ErrorDisabled;
@@ -539,7 +540,6 @@
         Tools._MessageLogLevel = 1;
         Tools._WarningLogLevel = 2;
         Tools._ErrorLogLevel = 4;
-        Tools._AllLogLevel = Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
 
         Tools.Log = Tools._LogEnabled;
 

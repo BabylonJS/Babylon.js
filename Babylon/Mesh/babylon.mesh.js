@@ -53,6 +53,46 @@ var BABYLON;
 
             scene.meshes.push(this);
         }
+        Object.defineProperty(Mesh, "BILLBOARDMODE_NONE", {
+            get: function () {
+                return Mesh._BILLBOARDMODE_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Mesh, "BILLBOARDMODE_X", {
+            get: function () {
+                return Mesh._BILLBOARDMODE_X;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Mesh, "BILLBOARDMODE_Y", {
+            get: function () {
+                return Mesh._BILLBOARDMODE_Y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Mesh, "BILLBOARDMODE_Z", {
+            get: function () {
+                return Mesh._BILLBOARDMODE_Z;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Mesh, "BILLBOARDMODE_ALL", {
+            get: function () {
+                return Mesh._BILLBOARDMODE_ALL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Mesh.prototype.getBoundingInfo = function () {
             return this._boundingInfo;
         };
@@ -1210,11 +1250,11 @@ var BABYLON;
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
-        Mesh.BILLBOARDMODE_NONE = 0;
-        Mesh.BILLBOARDMODE_X = 1;
-        Mesh.BILLBOARDMODE_Y = 2;
-        Mesh.BILLBOARDMODE_Z = 4;
-        Mesh.BILLBOARDMODE_ALL = 7;
+        Mesh._BILLBOARDMODE_NONE = 0;
+        Mesh._BILLBOARDMODE_X = 1;
+        Mesh._BILLBOARDMODE_Y = 2;
+        Mesh._BILLBOARDMODE_Z = 4;
+        Mesh._BILLBOARDMODE_ALL = 7;
         return Mesh;
     })(BABYLON.Node);
     BABYLON.Mesh = Mesh;

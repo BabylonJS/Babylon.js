@@ -46,7 +46,7 @@ var BABYLON;
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         };
 
-        StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function(){
+        StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         };
 
@@ -140,7 +140,7 @@ var BABYLON;
                 defines.push("#define ALPHATEST");
             }
 
-            if(this._shouldUseAlphaFromDiffuseTexture()) {
+            if (this._shouldUseAlphaFromDiffuseTexture()) {
                 defines.push("#define ALPHAFROMDIFFUSE");
             }
 
