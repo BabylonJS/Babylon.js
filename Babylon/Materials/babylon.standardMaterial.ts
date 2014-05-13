@@ -15,6 +15,7 @@
         public specularColor = new BABYLON.Color3(1, 1, 1);
         public specularPower = 64;
         public emissiveColor = new BABYLON.Color3(0, 0, 0);
+        public useAlphaFromDiffuseTexture = false;
 
         private _cachedDefines = null;
         private _renderTargets = new BABYLON.SmartArray(16);
@@ -41,11 +42,15 @@
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this.opacityTexture != null);
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture();
         }
 
         public needAlphaTesting(): boolean {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+        }
+
+        private _shouldUseAlphaFromDiffuseTexture(): boolean {
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         }
 
         // Methods   
@@ -136,6 +141,10 @@
 
             if (engine.getAlphaTesting()) {
                 defines.push("#define ALPHATEST");
+            }
+
+            if (this._shouldUseAlphaFromDiffuseTexture()) {
+                defines.push("#define ALPHAFROMDIFFUSE");
             }
 
             // Fog
