@@ -478,7 +478,6 @@
         private static _MessageLogLevel = 1;
         private static _WarningLogLevel = 2;
         private static _ErrorLogLevel = 4;
-        private static _AllLogLevel = Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
 
         static get NoneLogLevel(): number {
             return Tools._NoneLogLevel;
@@ -497,7 +496,7 @@
         }
 
         static get AllLogLevel(): number {
-            return Tools._AllLogLevel;
+            return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;;
         }
 
         private static _FormatMessage(message: string): string {
@@ -533,25 +532,23 @@
         private static _ErrorEnabled(message: string): void {
             console.error(Tools._FormatMessage(message));
         }
-
-        private static _LogLevels;
-
+        
         public static set LogLevels(level: number) {
-            if (level & Tools.MessageLogLevel) {
+            if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
                 Tools.Log = Tools._LogEnabled;
             }
             else {
                 Tools.Log = Tools._LogDisabled;
             }
 
-            if (level & Tools.WarningLogLevel) {
+            if ((level & Tools.WarningLogLevel) === Tools.WarningLogLevel) {
                 Tools.Warn = Tools._WarnEnabled;
             }
             else {
                 Tools.Warn = Tools._WarnDisabled;
             }
 
-            if (level & Tools.ErrorLogLevel) {
+            if ((level & Tools.ErrorLogLevel) === Tools.ErrorLogLevel) {
                 Tools.Error = Tools._ErrorEnabled;
             }
             else {
