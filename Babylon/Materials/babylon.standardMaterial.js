@@ -39,11 +39,15 @@ var BABYLON;
             };
         }
         StandardMaterial.prototype.needAlphaBlending = function () {
-            return (this.alpha < 1.0) || (this.opacityTexture != null) || (this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture);
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture();
         };
 
         StandardMaterial.prototype.needAlphaTesting = function () {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+        };
+
+        StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function(){
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         };
 
         // Methods
@@ -136,7 +140,7 @@ var BABYLON;
                 defines.push("#define ALPHATEST");
             }
 
-            if( this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture) {
+            if(this._shouldUseAlphaFromDiffuseTexture()) {
                 defines.push("#define ALPHAFROMDIFFUSE");
             }
 
