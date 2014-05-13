@@ -42,11 +42,15 @@
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this.opacityTexture != null) || (this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture);
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture();
         }
 
         public needAlphaTesting(): boolean {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+        }
+
+        private _shouldUseAlphaFromDiffuseTexture(): boolean {
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         }
 
         // Methods   
@@ -139,7 +143,7 @@
                 defines.push("#define ALPHATEST");
             }
 
-            if( this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture) {
+            if (this._shouldUseAlphaFromDiffuseTexture()) {
                 defines.push("#define ALPHAFROMDIFFUSE");
             }
 
