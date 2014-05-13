@@ -414,6 +414,9 @@ void main(void) {
 	vec4 baseColor = vec4(1., 1., 1., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
 
+	// Alpha
+	float alpha = vDiffuseColor.a;
+
 #ifdef VERTEXCOLOR
 	diffuseColor *= vColor;
 #endif
@@ -424,6 +427,10 @@ void main(void) {
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
 		discard;
+#endif
+
+#ifdef ALPHAFROMDIFFUSE
+	alpha *= baseColor.a;
 #endif
 
 	baseColor.rgb *= vDiffuseInfos.y;
@@ -564,9 +571,6 @@ void main(void) {
 		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y;
 	}
 #endif
-
-	// Alpha
-	float alpha = vDiffuseColor.a;
 
 #ifdef OPACITY
 	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
