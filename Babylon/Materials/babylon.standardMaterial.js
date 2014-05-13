@@ -18,6 +18,7 @@ var BABYLON;
             this.specularColor = new BABYLON.Color3(1, 1, 1);
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
+            this.useAlphaFromDiffuseTexture = false;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -38,7 +39,7 @@ var BABYLON;
             };
         }
         StandardMaterial.prototype.needAlphaBlending = function () {
-            return (this.alpha < 1.0) || (this.opacityTexture != null);
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || (this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture);
         };
 
         StandardMaterial.prototype.needAlphaTesting = function () {
@@ -133,6 +134,10 @@ var BABYLON;
 
             if (engine.getAlphaTesting()) {
                 defines.push("#define ALPHATEST");
+            }
+
+            if( this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture) {
+                defines.push("#define ALPHAFROMDIFFUSE");
             }
 
             // Fog
