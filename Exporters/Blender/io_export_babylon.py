@@ -165,6 +165,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         Export_babylon.write_float(file_handler, "type", light_type)
         if light_type == 0:
             Export_babylon.write_vector(file_handler, "position", object.location)
+            if object.data.use_sphere:
+                Export_babylon.write_float(file_handler, "range", object.data.distance)
         elif light_type == 1:
             direction = Export_babylon.getDirection(object.matrix_world)
             Export_babylon.write_vector(file_handler, "position", object.location)
@@ -175,6 +177,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             Export_babylon.write_vector(file_handler, "direction", direction)
             Export_babylon.write_float(file_handler, "angle", object.data.spot_size)
             Export_babylon.write_float(file_handler, "exponent", object.data.spot_blend * 2)
+            if object.data.use_sphere:
+                Export_babylon.write_float(file_handler, "range", object.data.distance)
         else:
             matrix_world = object.matrix_world.copy()
             matrix_world.translation = mathutils.Vector((0, 0, 0))
