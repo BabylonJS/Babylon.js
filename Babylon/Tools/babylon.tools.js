@@ -419,7 +419,7 @@
                     a.href = base64Image;
                     var date = new Date();
                     var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                    a.setAttribute("download", "screenshot-" + stringDate);
+                    a.setAttribute("download", "screenshot-" + stringDate + ".png");
 
                     window.document.body.appendChild(a);
 
