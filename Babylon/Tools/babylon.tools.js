@@ -349,8 +349,10 @@
         Tools.CreateScreenshot = function (engine, camera, size) {
             var width;
             var height;
-            var scene = engine.scenes[0];
+
+            var scene = camera.getScene();
             var previousCamera = null;
+
             if (scene.activeCamera !== camera) {
                 previousCamera = scene.activeCamera;
                 scene.activeCamera = camera;
@@ -442,15 +444,12 @@
                 }
             };
 
-            scene.afterRender = function () {
-                texture.render();
-                texture.dispose();
-                if (previousCamera) {
-                    scene.activeCamera = previousCamera;
-                }
-                scene.afterRender = function () {
-                };
-            };
+            texture.render();
+            texture.dispose();
+
+            if (previousCamera) {
+                scene.activeCamera = previousCamera;
+            }
         };
 
         Object.defineProperty(Tools, "NoneLogLevel", {

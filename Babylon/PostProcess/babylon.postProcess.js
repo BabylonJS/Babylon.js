@@ -34,8 +34,8 @@
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine.getRenderingCanvas().width * this._renderRatio;
-            var desiredHeight = this._engine.getRenderingCanvas().height * this._renderRatio;
+            var desiredWidth = this._engine.getRenderWidth() * this._renderRatio;
+            var desiredHeight = this._engine.getRenderHeight() * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {

@@ -54,7 +54,9 @@ var BABYLON;
             }
 
             // Bind
-            engine.bindFramebuffer(this._texture);
+            if (!scene.postProcessManager._prepareFrame()) {
+                engine.bindFramebuffer(this._texture);
+            }
 
             // Clear
             engine.clear(scene.clearColor, true, true);
@@ -83,6 +85,8 @@ var BABYLON;
 
             // Render
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
+
+            scene.postProcessManager._finalizeFrame(false, this._texture);
 
             if (this.onAfterRender) {
                 this.onAfterRender();
