@@ -370,7 +370,12 @@
         public static CreateScreenshot(engine: Engine, camera: Camera, size: any): void {
             var width: number;
             var height: number;
-
+            var scene = engine.scenes[0];
+            var previousCamera: BABYLON.Camera = null;
+            if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
+            }
             //If a precision value is specified
             if (size.precision) {
                 width = Math.round(engine.getRenderWidth() * size.precision);
@@ -402,7 +407,6 @@
                 Tools.Error("Invalid 'size' parameter !");
                 return;
             }
-
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0]);
             texture.renderList = engine.scenes[0].meshes;
@@ -468,9 +472,12 @@
                 }
 
             };
-
+            
             texture.render();
             texture.dispose();
+            if (previousCamera) {
+                scene.activeCamera = previousCamera;
+            }
         }
 
         // Logs

@@ -349,6 +349,12 @@
         Tools.CreateScreenshot = function (engine, camera, size) {
             var width;
             var height;
+            var scene = engine.scenes[0];
+            var previousCamera = null;
+            if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
+            }
 
             //If a precision value is specified
             if (size.precision) {
@@ -436,8 +442,15 @@
                 }
             };
 
-            texture.render();
-            texture.dispose();
+            scene.afterRender = function () {
+                texture.render();
+                texture.dispose();
+                if (previousCamera) {
+                    scene.activeCamera = previousCamera;
+                }
+                scene.afterRender = function () {
+                };
+            };
         };
 
         Object.defineProperty(Tools, "NoneLogLevel", {
