@@ -35,7 +35,7 @@ var BABYLON;
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         };
 
-        RenderTargetTexture.prototype.render = function () {
+        RenderTargetTexture.prototype.render = function (useCameraPostProcess) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -54,7 +54,7 @@ var BABYLON;
             }
 
             // Bind
-            if (!scene.postProcessManager._prepareFrame()) {
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame()) {
                 engine.bindFramebuffer(this._texture);
             }
 
@@ -86,7 +86,9 @@ var BABYLON;
             // Render
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
-            scene.postProcessManager._finalizeFrame(false, this._texture);
+            if (useCameraPostProcess) {
+                scene.postProcessManager._finalizeFrame(false, this._texture);
+            }
 
             if (this.onAfterRender) {
                 this.onAfterRender();

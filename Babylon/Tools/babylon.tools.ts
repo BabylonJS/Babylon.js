@@ -477,7 +477,7 @@
 
             };
 
-            texture.render();
+            texture.render(true);
             texture.dispose();
 
             if (previousCamera) {
