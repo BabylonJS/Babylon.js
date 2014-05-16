@@ -32,13 +32,15 @@
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
 
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
-                return;
+                return false;
             }
 
             postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
+
+            return true;
         };
 
-        PostProcessManager.prototype._finalizeFrame = function (doNotPresent) {
+        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture) {
             var postProcesses = this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
@@ -51,7 +53,11 @@
                 if (index < postProcessesTakenIndices.length - 1) {
                     postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
                 } else {
-                    engine.restoreDefaultFramebuffer();
+                    if (targetTexture) {
+                        engine.bindFramebuffer(targetTexture);
+                    } else {
+                        engine.restoreDefaultFramebuffer();
+                    }
                 }
 
                 if (doNotPresent) {
