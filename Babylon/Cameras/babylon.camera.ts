@@ -22,7 +22,7 @@
         private _computedViewMatrix = BABYLON.Matrix.Identity();
         private _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
-        public _postProcesses = [];
+        public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
 
         constructor(name: string, public position: Vector3, scene: Scene) {

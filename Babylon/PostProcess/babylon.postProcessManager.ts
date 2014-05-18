@@ -31,7 +31,7 @@
         }
 
         // Methods
-        public _prepareFrame(): boolean {
+        public _prepareFrame(sourceTexture?: WebGLTexture): boolean {
             var postProcesses = this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
 
@@ -39,7 +39,7 @@
                 return false;
             }
 
-            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
+            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
 
             return true;
         }
