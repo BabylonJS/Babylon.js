@@ -8,7 +8,7 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectratio) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio) {
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;
@@ -19,7 +19,7 @@ var BABYLON;
             this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
-            this._doNotChangeAspectratio = doNotChangeAspectratio;
+            this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
@@ -54,7 +54,7 @@ var BABYLON;
             }
 
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame()) {
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
                 engine.bindFramebuffer(this._texture);
             }
 
@@ -75,7 +75,7 @@ var BABYLON;
                 }
             }
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -97,7 +97,7 @@ var BABYLON;
             // Unbind
             engine.unBindFramebuffer(this._texture);
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
         };

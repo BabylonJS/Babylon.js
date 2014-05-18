@@ -27,7 +27,7 @@ var BABYLON;
             this.subCameras = [];
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
-            this._postProcesses = [];
+            this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
 
             scene.cameras.push(this);

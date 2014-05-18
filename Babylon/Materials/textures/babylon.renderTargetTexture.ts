@@ -12,16 +12,16 @@
         public _generateMipMaps: boolean;
         private _renderingManager
         public _waitingRenderList: string[];
-        private _doNotChangeAspectratio: boolean;
+        private _doNotChangeAspectRatio: boolean;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectratio?: boolean) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
             this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
-            this._doNotChangeAspectratio = doNotChangeAspectratio;
+            this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
@@ -57,7 +57,7 @@
             }
 
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame()) {
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
                 engine.bindFramebuffer(this._texture);
             }
 
@@ -78,7 +78,7 @@
                 }
             }
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -101,7 +101,7 @@
             // Unbind
             engine.unBindFramebuffer(this._texture);
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
         }

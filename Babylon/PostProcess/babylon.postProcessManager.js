@@ -27,7 +27,7 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
         // Methods
-        PostProcessManager.prototype._prepareFrame = function () {
+        PostProcessManager.prototype._prepareFrame = function (sourceTexture) {
             var postProcesses = this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
 
@@ -35,7 +35,7 @@
                 return false;
             }
 
-            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
+            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
 
             return true;
         };
