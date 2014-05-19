@@ -350,6 +350,14 @@
             var width;
             var height;
 
+            var scene = camera.getScene();
+            var previousCamera = null;
+
+            if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
+            }
+
             //If a precision value is specified
             if (size.precision) {
                 width = Math.round(engine.getRenderWidth() * size.precision);
@@ -419,7 +427,7 @@
                     a.href = base64Image;
                     var date = new Date();
                     var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                    a.setAttribute("download", "screenshot-" + stringDate);
+                    a.setAttribute("download", "screenshot-" + stringDate + ".png");
 
                     window.document.body.appendChild(a);
 
@@ -436,9 +444,54 @@
                 }
             };
 
-            texture.render();
+            texture.render(true);
             texture.dispose();
+
+            if (previousCamera) {
+                scene.activeCamera = previousCamera;
+            }
         };
+
+        Object.defineProperty(Tools, "NoneLogLevel", {
+            get: function () {
+                return Tools._NoneLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "MessageLogLevel", {
+            get: function () {
+                return Tools._MessageLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "WarningLogLevel", {
+            get: function () {
+                return Tools._WarningLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "ErrorLogLevel", {
+            get: function () {
+                return Tools._ErrorLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "AllLogLevel", {
+            get: function () {
+                return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
+                ;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
         Tools._FormatMessage = function (message) {
             var padStr = function (i) {
@@ -449,33 +502,62 @@
             return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
         };
 
-        Tools.Log = function (message) {
-            if (Tools.CurrentLogLevel > Tools.MessageLogLevel) {
-                return;
-            }
+        Tools._LogDisabled = function (message) {
+            // nothing to do
+        };
+        Tools._LogEnabled = function (message) {
             console.log(Tools._FormatMessage(message));
         };
 
-        Tools.Warn = function (message) {
-            if (Tools.CurrentLogLevel > Tools.WarningLogLevel) {
-                return;
-            }
+        Tools._WarnDisabled = function (message) {
+            // nothing to do
+        };
+        Tools._WarnEnabled = function (message) {
             console.warn(Tools._FormatMessage(message));
         };
 
-        Tools.Error = function (message) {
-            if (Tools.CurrentLogLevel > Tools.ErrorLogLevel) {
-                return;
-            }
+        Tools._ErrorDisabled = function (message) {
+            // nothing to do
+        };
+        Tools._ErrorEnabled = function (message) {
             console.error(Tools._FormatMessage(message));
         };
+
+        Object.defineProperty(Tools, "LogLevels", {
+            set: function (level) {
+                if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
+                    Tools.Log = Tools._LogEnabled;
+                } else {
+                    Tools.Log = Tools._LogDisabled;
+                }
+
+                if ((level & Tools.WarningLogLevel) === Tools.WarningLogLevel) {
+                    Tools.Warn = Tools._WarnEnabled;
+                } else {
+                    Tools.Warn = Tools._WarnDisabled;
+                }
+
+                if ((level & Tools.ErrorLogLevel) === Tools.ErrorLogLevel) {
+                    Tools.Error = Tools._ErrorEnabled;
+                } else {
+                    Tools.Error = Tools._ErrorDisabled;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Tools.BaseUrl = "";
 
-        Tools.MessageLogLevel = 0;
-        Tools.WarningLogLevel = 1;
-        Tools.ErrorLogLevel = 2;
-        Tools.NoneLogLevel = 3;
-        Tools.CurrentLogLevel = Tools.MessageLogLevel;
+        Tools._NoneLogLevel = 0;
+        Tools._MessageLogLevel = 1;
+        Tools._WarningLogLevel = 2;
+        Tools._ErrorLogLevel = 4;
+
+        Tools.Log = Tools._LogEnabled;
+
+        Tools.Warn = Tools._WarnEnabled;
+
+        Tools.Error = Tools._ErrorEnabled;
         return Tools;
     })();
     BABYLON.Tools = Tools;

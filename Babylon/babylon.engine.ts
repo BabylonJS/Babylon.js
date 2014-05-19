@@ -95,20 +95,49 @@
     }
 
     export class Engine {
-        // Statics
-        public static ShadersRepository = "Babylon/Shaders/";
+        // Const statics
+        private static _ALPHA_DISABLE = 0;
+        private static _ALPHA_ADD = 1;
+        private static _ALPHA_COMBINE = 2;
 
-        public static ALPHA_DISABLE = 0;
-        public static ALPHA_ADD = 1;
-        public static ALPHA_COMBINE = 2;
+        private static _DELAYLOADSTATE_NONE = 0;
+        private static _DELAYLOADSTATE_LOADED = 1;
+        private static _DELAYLOADSTATE_LOADING = 2;
+        private static _DELAYLOADSTATE_NOTLOADED = 4;
 
-        public static DELAYLOADSTATE_NONE = 0;
-        public static DELAYLOADSTATE_LOADED = 1;
-        public static DELAYLOADSTATE_LOADING = 2;
-        public static DELAYLOADSTATE_NOTLOADED = 4;
+        public static get ALPHA_DISABLE(): number {
+            return Engine._ALPHA_DISABLE;
+        }
 
+        public static get ALPHA_ADD(): number {
+            return Engine._ALPHA_ADD;
+        }
+
+        public static get ALPHA_COMBINE(): number {
+            return Engine._ALPHA_COMBINE;
+        }
+
+        public static get DELAYLOADSTATE_NONE(): number {
+            return Engine._DELAYLOADSTATE_NONE;
+        }
+
+        public static get DELAYLOADSTATE_LOADED(): number {
+            return Engine._DELAYLOADSTATE_LOADED;
+        }
+
+        public static get DELAYLOADSTATE_LOADING(): number {
+            return Engine._DELAYLOADSTATE_LOADING;
+        }
+
+        public static get DELAYLOADSTATE_NOTLOADED(): number {
+            return Engine._DELAYLOADSTATE_NOTLOADED;
+        }
+
+        // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
+        public static ShadersRepository = "Babylon/Shaders/";
+
 
         // Public members
         public isFullscreen = false;

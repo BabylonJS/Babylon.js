@@ -22,7 +22,7 @@
         private _computedViewMatrix = BABYLON.Matrix.Identity();
         private _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
-        public _postProcesses = [];
+        public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
 
         constructor(name: string, public position: Vector3, scene: Scene) {
@@ -286,6 +286,10 @@
 
             var engine = this.getEngine();
             if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+                if (this.minZ <= 0) {
+                    this.minZ = Engine.Epsilon;
+                }
+
                 BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
                 return this._projectionMatrix;
             }

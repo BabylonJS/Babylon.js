@@ -8,7 +8,7 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectratio) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio) {
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;
@@ -19,7 +19,7 @@ var BABYLON;
             this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
-            this._doNotChangeAspectratio = doNotChangeAspectratio;
+            this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
@@ -35,7 +35,7 @@ var BABYLON;
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         };
 
-        RenderTargetTexture.prototype.render = function () {
+        RenderTargetTexture.prototype.render = function (useCameraPostProcess) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -54,7 +54,9 @@ var BABYLON;
             }
 
             // Bind
-            engine.bindFramebuffer(this._texture);
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                engine.bindFramebuffer(this._texture);
+            }
 
             // Clear
             engine.clear(scene.clearColor, true, true);
@@ -73,7 +75,7 @@ var BABYLON;
                 }
             }
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -84,6 +86,10 @@ var BABYLON;
             // Render
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
+            if (useCameraPostProcess) {
+                scene.postProcessManager._finalizeFrame(false, this._texture);
+            }
+
             if (this.onAfterRender) {
                 this.onAfterRender();
             }
@@ -91,7 +97,7 @@ var BABYLON;
             // Unbind
             engine.unBindFramebuffer(this._texture);
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
         };

@@ -94,13 +94,68 @@
             }
         };
 
-        VertexBuffer.PositionKind = "position";
-        VertexBuffer.NormalKind = "normal";
-        VertexBuffer.UVKind = "uv";
-        VertexBuffer.UV2Kind = "uv2";
-        VertexBuffer.ColorKind = "color";
-        VertexBuffer.MatricesIndicesKind = "matricesIndices";
-        VertexBuffer.MatricesWeightsKind = "matricesWeights";
+        Object.defineProperty(VertexBuffer, "PositionKind", {
+            get: function () {
+                return VertexBuffer._PositionKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "NormalKind", {
+            get: function () {
+                return VertexBuffer._NormalKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "UVKind", {
+            get: function () {
+                return VertexBuffer._UVKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "UV2Kind", {
+            get: function () {
+                return VertexBuffer._UV2Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "ColorKind", {
+            get: function () {
+                return VertexBuffer._ColorKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "MatricesIndicesKind", {
+            get: function () {
+                return VertexBuffer._MatricesIndicesKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer, "MatricesWeightsKind", {
+            get: function () {
+                return VertexBuffer._MatricesWeightsKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        VertexBuffer._PositionKind = "position";
+        VertexBuffer._NormalKind = "normal";
+        VertexBuffer._UVKind = "uv";
+        VertexBuffer._UV2Kind = "uv2";
+        VertexBuffer._ColorKind = "color";
+        VertexBuffer._MatricesIndicesKind = "matricesIndices";
+        VertexBuffer._MatricesWeightsKind = "matricesWeights";
         return VertexBuffer;
     })();
     BABYLON.VertexBuffer = VertexBuffer;

@@ -31,18 +31,20 @@
         }
 
         // Methods
-        public _prepareFrame(): void {
+        public _prepareFrame(sourceTexture?: WebGLTexture): boolean {
             var postProcesses = this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
 
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
-                return;
+                return false;
             }
 
-            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera);
+            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
+
+            return true;
         }
 
-        public _finalizeFrame(doNotPresent?: boolean): void {
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture): void {
             var postProcesses = this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
@@ -55,7 +57,11 @@
                 if (index < postProcessesTakenIndices.length - 1) {
                     postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
                 } else {
-                    engine.restoreDefaultFramebuffer();
+                    if (targetTexture) {
+                        engine.bindFramebuffer(targetTexture);
+                    } else {
+                        engine.restoreDefaultFramebuffer();
+                    }
                 }
 
                 if (doNotPresent) {

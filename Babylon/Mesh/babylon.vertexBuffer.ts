@@ -104,12 +104,40 @@
         }
 
         // Enums
-        public static PositionKind = "position";
-        public static NormalKind = "normal";
-        public static UVKind = "uv";
-        public static UV2Kind = "uv2";
-        public static ColorKind = "color";
-        public static MatricesIndicesKind = "matricesIndices";
-        public static MatricesWeightsKind = "matricesWeights";
+        private static _PositionKind = "position";
+        private static _NormalKind = "normal";
+        private static _UVKind = "uv";
+        private static _UV2Kind = "uv2";
+        private static _ColorKind = "color";
+        private static _MatricesIndicesKind = "matricesIndices";
+        private static _MatricesWeightsKind = "matricesWeights";
+
+        public static get PositionKind(): string {
+            return VertexBuffer._PositionKind;
+        }
+
+        public static get NormalKind(): string {
+            return VertexBuffer._NormalKind;
+        }
+
+        public static get UVKind(): string {
+            return VertexBuffer._UVKind;
+        }
+
+        public static get UV2Kind(): string {
+            return VertexBuffer._UV2Kind;
+        }
+
+        public static get ColorKind(): string {
+            return VertexBuffer._ColorKind;
+        }
+
+        public static get MatricesIndicesKind(): string {
+            return VertexBuffer._MatricesIndicesKind;
+        }
+
+        public static get MatricesWeightsKind(): string {
+            return VertexBuffer._MatricesWeightsKind;
+        }
     }
 } 

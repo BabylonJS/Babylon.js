@@ -98,6 +98,8 @@ var BABYLON;
 
             camera.fov = this.fov;
 
+            camera.viewport = this.viewport;
+
             camera.setTarget(this.getTarget());
         };
         return AnaglyphFreeCamera;
