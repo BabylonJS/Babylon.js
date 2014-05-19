@@ -1,11 +1,31 @@
 ﻿module BABYLON {
     export class ActionManager {
         // Statics
-        public static NoneTrigger = 0;
-        public static OnPickTrigger = 1;
-        public static OnPointerOverTrigger = 2;
-        public static OnPointerOutTrigger = 3;
-        public static OnEveryFrameTrigger = 4;
+        private static _NoneTrigger = 0;
+        private static _OnPickTrigger = 1;
+        private static _OnPointerOverTrigger = 2;
+        private static _OnPointerOutTrigger = 3;
+        private static _OnEveryFrameTrigger = 4;
+
+        public static get NoneTrigger(): number {
+            return ActionManager._NoneTrigger;
+        }
+
+        public static get OnPickTrigger(): number {
+            return ActionManager._OnPickTrigger;
+        }
+
+        public static get OnPointerOverTrigger(): number {
+            return ActionManager._OnPointerOverTrigger;
+        }
+
+        public static get OnPointerOutTrigger(): number {
+            return ActionManager._OnPointerOutTrigger;
+        }
+
+        public static get OnEveryFrameTrigger(): number {
+            return ActionManager._OnEveryFrameTrigger;
+        }
 
         // Members
         public actions = new Array<Action>();

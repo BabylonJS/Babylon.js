@@ -63,7 +63,7 @@
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
-                    return this._createBox(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.z), this._checkWithEpsilon(box.y), mesh, options);
+                    return this._createBox(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z), mesh, options);
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                     return this._createPlane(mesh, options);
                 case BABYLON.PhysicsEngine.MeshImpostor:

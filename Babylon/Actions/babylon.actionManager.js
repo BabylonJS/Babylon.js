@@ -6,6 +6,46 @@
             this.actions = new Array();
             this._scene = scene;
         }
+        Object.defineProperty(ActionManager, "NoneTrigger", {
+            get: function () {
+                return ActionManager._NoneTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnPickTrigger", {
+            get: function () {
+                return ActionManager._OnPickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnPointerOverTrigger", {
+            get: function () {
+                return ActionManager._OnPointerOverTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnPointerOutTrigger", {
+            get: function () {
+                return ActionManager._OnPointerOutTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnEveryFrameTrigger", {
+            get: function () {
+                return ActionManager._OnEveryFrameTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
         ActionManager.prototype.getScene = function () {
             return this._scene;
@@ -52,11 +92,11 @@
 
             return properties[properties.length - 1];
         };
-        ActionManager.NoneTrigger = 0;
-        ActionManager.OnPickTrigger = 1;
-        ActionManager.OnPointerOverTrigger = 2;
-        ActionManager.OnPointerOutTrigger = 3;
-        ActionManager.OnEveryFrameTrigger = 4;
+        ActionManager._NoneTrigger = 0;
+        ActionManager._OnPickTrigger = 1;
+        ActionManager._OnPointerOverTrigger = 2;
+        ActionManager._OnPointerOutTrigger = 3;
+        ActionManager._OnEveryFrameTrigger = 4;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;

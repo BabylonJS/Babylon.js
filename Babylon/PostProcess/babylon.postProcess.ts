@@ -44,12 +44,12 @@
             return this._reusable;
         }
 
-        public activate(camera: Camera): void {
+        public activate(camera: Camera, sourceTexture?: WebGLTexture): void {
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = this._engine.getRenderingCanvas().width * this._renderRatio;
-            var desiredHeight = this._engine.getRenderingCanvas().height * this._renderRatio;
+            var desiredWidth =  (sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio;
+            var desiredHeight = (sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio;
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {

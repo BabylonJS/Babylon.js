@@ -12,16 +12,16 @@
         public _generateMipMaps: boolean;
         private _renderingManager
         public _waitingRenderList: string[];
-        private _doNotChangeAspectratio: boolean;
+        private _doNotChangeAspectRatio: boolean;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectratio?: boolean) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
             this.isRenderTarget = true;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
-            this._doNotChangeAspectratio = doNotChangeAspectratio;
+            this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
 
@@ -38,7 +38,7 @@
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
 
-        public render() {
+        public render(useCameraPostProcess?: boolean) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -57,7 +57,9 @@
             }
 
             // Bind
-            engine.bindFramebuffer(this._texture);
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                engine.bindFramebuffer(this._texture);
+            }
 
             // Clear
             engine.clear(scene.clearColor, true, true);
@@ -76,7 +78,7 @@
                 }
             }
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
 
@@ -85,7 +87,12 @@
             }
 
             // Render
+
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
+
+            if (useCameraPostProcess) {
+                scene.postProcessManager._finalizeFrame(false, this._texture);
+            }
 
             if (this.onAfterRender) {
                 this.onAfterRender();
@@ -94,7 +101,7 @@
             // Unbind
             engine.unBindFramebuffer(this._texture);
 
-            if (!this._doNotChangeAspectratio) {
+            if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
         }

@@ -213,15 +213,77 @@
             return returnValue;
         };
 
-        Animation.ANIMATIONTYPE_FLOAT = 0;
-        Animation.ANIMATIONTYPE_VECTOR3 = 1;
-        Animation.ANIMATIONTYPE_QUATERNION = 2;
-        Animation.ANIMATIONTYPE_MATRIX = 3;
-        Animation.ANIMATIONTYPE_COLOR3 = 4;
+        Object.defineProperty(Animation, "ANIMATIONTYPE_FLOAT", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_FLOAT;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
-        Animation.ANIMATIONLOOPMODE_RELATIVE = 0;
-        Animation.ANIMATIONLOOPMODE_CYCLE = 1;
-        Animation.ANIMATIONLOOPMODE_CONSTANT = 2;
+        Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR3", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_VECTOR3;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONTYPE_QUATERNION", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_QUATERNION;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONTYPE_MATRIX", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_MATRIX;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONTYPE_COLOR3", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_COLOR3;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONLOOPMODE_RELATIVE", {
+            get: function () {
+                return Animation._ANIMATIONLOOPMODE_RELATIVE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONLOOPMODE_CYCLE", {
+            get: function () {
+                return Animation._ANIMATIONLOOPMODE_CYCLE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONLOOPMODE_CONSTANT", {
+            get: function () {
+                return Animation._ANIMATIONLOOPMODE_CONSTANT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Animation._ANIMATIONTYPE_FLOAT = 0;
+        Animation._ANIMATIONTYPE_VECTOR3 = 1;
+        Animation._ANIMATIONTYPE_QUATERNION = 2;
+        Animation._ANIMATIONTYPE_MATRIX = 3;
+        Animation._ANIMATIONTYPE_COLOR3 = 4;
+        Animation._ANIMATIONLOOPMODE_RELATIVE = 0;
+        Animation._ANIMATIONLOOPMODE_CYCLE = 1;
+        Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
         return Animation;
     })();
     BABYLON.Animation = Animation;

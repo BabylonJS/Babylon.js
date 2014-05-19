@@ -501,11 +501,13 @@ var BABYLON = BABYLON || {};
         BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
-        if (parsedMesh.rotation) {
-            mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
-        } else if (parsedMesh.rotationQuaternion) {
+
+        if (parsedMesh.rotationQuaternion) {
             mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
+        } else if (parsedMesh.rotation) {
+            mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
         }
+
         mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
 
         if (parsedMesh.localMatrix) {
