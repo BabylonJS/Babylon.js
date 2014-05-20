@@ -517,10 +517,10 @@
 
         serializationObject.position = mesh.position.asArray();
 
-        if (mesh.rotation) {
-            serializationObject.rotation = mesh.rotation.asArray();
-        } else if (mesh.rotationQuaternion) {
+        if (mesh.rotationQuaternion) {
             serializationObject.rotationQuaternion = mesh.rotationQuaternion.asArray();
+        } else if (mesh.rotation) {
+            serializationObject.rotation = mesh.rotation.asArray();
         }
 
         serializationObject.scaling = mesh.scaling.asArray();

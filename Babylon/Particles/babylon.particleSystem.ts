@@ -52,6 +52,9 @@
         public color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new BABYLON.Color4(0, 0, 0, 1.0);
         public textureMask = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
+        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+
         private particles = new Array<Particle>();
 
         private _capacity: number;
@@ -104,6 +107,23 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
             this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+
+            // Default behaviors
+            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3): void => {
+                var randX = randomNumber(this.direction1.x, this.direction2.x);
+                var randY = randomNumber(this.direction1.y, this.direction2.y);
+                var randZ = randomNumber(this.direction1.z, this.direction2.z);
+
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            }
+
+            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3): void => {
+                var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
+                var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
+                var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
+
+                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+            }
         }
 
         public getCapacity(): number {
@@ -192,22 +212,14 @@
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                var randX = randomNumber(this.direction1.x, this.direction2.x);
-                var randY = randomNumber(this.direction1.y, this.direction2.y);
-                var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, particle.direction);
+                this.startDirectionFunction(emitPower, worldMatrix, particle.direction);
 
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, particle.position);
+                this.startPositionFunction(worldMatrix, particle.position);
 
                 var step = randomNumber(0, 1.0);
 
