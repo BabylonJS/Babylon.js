@@ -28,6 +28,8 @@
         public ambientColor = new BABYLON.Color3(0, 0, 0);
         public beforeRender: () => void;
         public afterRender: () => void;
+        public beforeCameraRender: (camera:Camera) => void;
+        public afterCameraRender: (camera: Camera) => void;
         public forceWireframe = false;
         public clipPlane: Plane;
 
@@ -796,6 +798,10 @@
             this._renderId++;
             this.updateTransformMatrix();
 
+            if (this.beforeCameraRender) {
+                this.beforeCameraRender(this.activeCamera);
+            }
+
             // Meshes
             var beforeEvaluateActiveMeshesDate = new Date().getTime();
             this._evaluateActiveMeshes();
@@ -879,6 +885,11 @@
 
             // Reset some special arrays
             this._renderTargets.reset();
+
+            if (this.afterCameraRender) {
+                this.afterCameraRender(this.activeCamera);
+            }
+
         }
 
         private _processSubCameras(camera: Camera): void {
