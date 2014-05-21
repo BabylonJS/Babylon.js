@@ -89,6 +89,7 @@
         // Postprocesses
         public postProcessesEnabled = true;
         public postProcessManager: PostProcessManager;
+        public postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
 
         // Customs render targets
         public renderTargetsEnabled = true;
@@ -166,6 +167,8 @@
             this._renderingManager = new RenderingManager(this);
 
             this.postProcessManager = new PostProcessManager(this);
+
+            this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
 
             this._boundingBoxRenderer = new BoundingBoxRenderer(this);
 
@@ -945,6 +948,9 @@
                     this._renderTargets.push(shadowGenerator.getShadowMap());
                 }
             }
+
+            // RenderPipeline
+            this.postProcessRenderPipelineManager.update();
 
             // Multi-cameras?
             if (this.activeCameras.length > 0) {

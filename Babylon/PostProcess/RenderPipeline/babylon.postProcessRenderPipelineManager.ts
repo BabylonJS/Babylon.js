@@ -1,14 +1,16 @@
-var BABYLON;
-(function (BABYLON) {
-    var PostProcessRenderPipelineManager = (function () {
-        function PostProcessRenderPipelineManager() {
+module BABYLON {
+    export class PostProcessRenderPipelineManager {
+        private _renderPipelines: PostProcessRenderPipeline[];
+
+        constructor() {
             this._renderPipelines = [];
         }
-        PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
-            this._renderPipelines[renderPipeline.name] = renderPipeline;
-        };
 
-        PostProcessRenderPipelineManager.prototype.attachCamerasToRenderPipeline = function (renderPipelineName, cameras, unique) {
+        public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
+            this._renderPipelines[renderPipeline.name] = renderPipeline;
+        }
+
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras, unique): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -16,9 +18,9 @@ var BABYLON;
             }
 
             renderPipeline.attachCameras(cameras, unique);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.detachCameraFromRenderPipeline = function (renderPipelineName, cameras) {
+        public detachCameraFromRenderPipeline(renderPipelineName: string, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -26,9 +28,9 @@ var BABYLON;
             }
 
             renderPipeline.detachCameras(cameras);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.enableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -36,9 +38,9 @@ var BABYLON;
             }
 
             renderPipeline.enableEffect(renderEffectName, cameras);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.disableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
+        public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -46,9 +48,9 @@ var BABYLON;
             }
 
             renderPipeline.disableEffect(renderEffectName, cameras);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.enableDisplayOnlyPassInPipeline = function (renderPipelineName, passName, cameras) {
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -56,9 +58,9 @@ var BABYLON;
             }
 
             renderPipeline.enableDisplayOnlyPass(passName, cameras);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.disableDisplayOnlyPassInPipeline = function (renderPipelineName, cameras) {
+        public disableDisplayOnlyPassInPipeline(renderPipelineName, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -66,15 +68,12 @@ var BABYLON;
             }
 
             renderPipeline.disableDisplayOnlyPass(cameras);
-        };
+        }
 
-        PostProcessRenderPipelineManager.prototype.update = function () {
+        public update(): void {
             for (var renderPipelineName in this._renderPipelines) {
                 this._renderPipelines[renderPipelineName]._update();
             }
-        };
-        return PostProcessRenderPipelineManager;
-    })();
-    BABYLON.PostProcessRenderPipelineManager = PostProcessRenderPipelineManager;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcessRenderPipelineManager.js.map
+        }
+    }
+}

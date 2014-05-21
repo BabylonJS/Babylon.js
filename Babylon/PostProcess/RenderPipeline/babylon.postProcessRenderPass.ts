@@ -1,12 +1,15 @@
 ﻿module BABYLON {
     export class PostProcessRenderPass {
-        private _enabled = true;
+        private _enabled: boolean = true;
         private _renderList: Mesh[];
         private _renderTexture: RenderTargetTexture;
         private _scene: Scene;
-        private _refCount = 0;
+        private _refCount: number = 0;
+
+        public m_name: string;
 
         constructor(scene: Scene, public name: string, size: number, renderList: Mesh[], beforeRender: () => void, afterRender: () => void) {
+            this.name = name;
 
             this._renderTexture = new RenderTargetTexture(name, size, scene);
             this.setRenderList(renderList);
