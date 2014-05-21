@@ -733,6 +733,10 @@
             this._renderId++;
             this.updateTransformMatrix();
 
+            if (this.beforeCameraRender) {
+                this.beforeCameraRender(this.activeCamera);
+            }
+
             // Meshes
             var beforeEvaluateActiveMeshesDate = new Date().getTime();
             this._evaluateActiveMeshes();
@@ -814,6 +818,10 @@
 
             // Reset some special arrays
             this._renderTargets.reset();
+
+            if (this.afterCameraRender) {
+                this.afterCameraRender(this.activeCamera);
+            }
         };
 
         Scene.prototype._processSubCameras = function (camera) {
