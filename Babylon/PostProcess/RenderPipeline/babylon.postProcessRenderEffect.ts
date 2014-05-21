@@ -1,7 +1,26 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var PostProcessRenderEffect = (function () {
-        function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+module BABYLON {
+    export class PostProcessRenderEffect {
+        private _engine: Engine;
+        private _name: string;
+
+        private _postProcesses: PostProcess[];
+        private _postProcessType;
+
+        private _ratio: number;
+        private _samplingMode: number;
+        private _singleInstance: boolean;
+
+        private _cameras: Camera[];
+        private _indicesForCamera: number[];
+
+        private _renderPasses: PostProcessRenderPass[];
+        private _renderEffectAsPasses: PostProcessRenderEffect[];
+
+        public name: string;
+        public parameters: (effect) => void;
+
+
+        constructor(engine: Engine, name: string, postProcessType, ratio: number, samplingMode: number, singleInstance: boolean) {
             this.name = name;
             this._engine = engine;
             this._name = name;
@@ -18,10 +37,10 @@
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
 
-            this.parameters = function () {
-            };
+            this.parameters = function () { };
         }
-        PostProcessRenderEffect.getInstance = function (engine, postProcessType, ratio, samplingMode) {
+
+        public static getInstance(engine: Engine, postProcessType, ratio: number, samplingMode: number): PostProcess {
             var tmpClass;
             var instance;
             var args = new Array();
@@ -53,17 +72,16 @@
                 }
             }
 
-            tmpClass = function () {
-            };
+            tmpClass = function () { };
             tmpClass.prototype = postProcessType.prototype;
 
             instance = new tmpClass();
             postProcessType.apply(instance, args);
 
             return instance;
-        };
+        }
 
-        PostProcessRenderEffect.getParametersNames = function (func) {
+        public static getParametersNames(func): string[] {
             var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             var functWithoutComments = eval(func).toString().replace(commentsRegex, '');
 
@@ -72,56 +90,57 @@
             if (parameters === null)
                 parameters = [];
             return parameters;
-        };
+        }
 
-        PostProcessRenderEffect.prototype._update = function () {
+        public _update(): void {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.addPass = function (renderPass) {
+        public addPass(renderPass: PostProcessRenderPass): void {
             this._renderPasses[renderPass.name] = renderPass;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.removePass = function (renderPass) {
+        public removePass(renderPass: PostProcessRenderPass): void {
             delete this._renderPasses[renderPass.name];
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.addRenderEffectAsPass = function (renderEffect) {
+        public addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void {
             this._renderEffectAsPasses[renderEffect.name] = renderEffect;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.getPass = function (passName) {
+        public getPass(passName: string): void {
             for (var renderPassName in this._renderPasses) {
                 if (renderPassName == passName) {
                     return this._renderPasses[passName];
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.emptyPasses = function () {
+        public emptyPasses(): void {
             this._renderPasses.length = 0;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.attachCameras = function (cameras) {
+        public attachCameras(cameras: Camera[]): void {
             var postProcess = null;
 
-            cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {
                 if (this._singleInstance) {
                     postProcess = this._postProcesses[0] || PostProcessRenderEffect.getInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
                     this._postProcesses[0] = postProcess;
-                } else {
+                }
+                else {
                     postProcess = this._postProcesses[cameras[i].name] || PostProcessRenderEffect.getInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
                     this._postProcesses[cameras[i].name] = postProcess;
                 }
@@ -143,15 +162,16 @@
             }
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.detachCamera = function (cameras) {
-            cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        public detachCamera(cameras): void {
+            cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {
                 if (this._singleInstance) {
                     cameras[i].detachPostProcess(this._postProcesses[0], this._indicesForCamera[cameras[i].name]);
-                } else {
+                }
+                else {
                     cameras[i].detachPostProcess(this._postProcesses[cameras[i].name], this._indicesForCamera[cameras[i].name]);
                 }
 
@@ -164,17 +184,18 @@
                     this._renderPasses[passName].decRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.enable = function (cameras) {
-            cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        public enable(cameras: Camera[]): void {
+            cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {
                 for (var j = 0; j < this._indicesForCamera[cameras[i].name].length; j++) {
                     if (cameras[i]._postProcesses[this._indicesForCamera[cameras[i].name][j]] === undefined) {
                         if (this._singleInstance) {
                             cameras[i].attachPostProcess(this._postProcesses[0], this._indicesForCamera[cameras[i].name][j]);
-                        } else {
+                        }
+                        else {
                             cameras[i].attachPostProcess(this._postProcesses[cameras[i].name], this._indicesForCamera[cameras[i].name][j]);
                         }
                     }
@@ -184,15 +205,16 @@
                     this._renderPasses[passName].incRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.disable = function (cameras) {
-            cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        public disable(cameras: Camera[]): void {
+            cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {
                 if (this._singleInstance) {
                     cameras[i].detachPostProcess(this._postProcesses[0], this._indicesForCamera[cameras[i].name]);
-                } else {
+                }
+                else {
                     cameras[i].detachPostProcess(this._postProcesses[cameras[i].name], this._indicesForCamera[cameras[i].name]);
                 }
 
@@ -200,13 +222,13 @@
                     this._renderPasses[passName].decRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.getPostProcess = function () {
+        public getPostProcess(): PostProcess {
             return this._postProcesses[0];
-        };
+        }
 
-        PostProcessRenderEffect.prototype._linkParameters = function () {
+        private _linkParameters(): void {
             var that = this;
             for (var index in this._postProcesses) {
                 this._postProcesses[index].onApply = function (effect) {
@@ -214,9 +236,9 @@
                     that._linkTextures(effect);
                 };
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype._linkTextures = function (effect) {
+        private _linkTextures(effect): void {
             for (var renderPassName in this._renderPasses) {
                 effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
             }
@@ -224,9 +246,6 @@
             for (var renderEffectName in this._renderEffectAsPasses) {
                 effect.setTextureFromPostProcess(renderEffectName + "Sampler", this._renderEffectAsPasses[renderEffectName].getPostProcess());
             }
-        };
-        return PostProcessRenderEffect;
-    })();
-    BABYLON.PostProcessRenderEffect = PostProcessRenderEffect;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcessRenderEffect.js.map
+        }
+    }
+}

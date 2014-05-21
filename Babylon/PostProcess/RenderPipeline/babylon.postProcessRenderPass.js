@@ -5,6 +5,8 @@
             this.name = name;
             this._enabled = true;
             this._refCount = 0;
+            this.name = name;
+
             this._renderTexture = new BABYLON.RenderTargetTexture(name, size, scene);
             this.setRenderList(renderList);
 
