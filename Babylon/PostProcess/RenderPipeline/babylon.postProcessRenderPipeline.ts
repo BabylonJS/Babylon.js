@@ -57,7 +57,7 @@ module BABYLON {
 
             for (var i = 0; i < cameras.length; i++) {
                 if (this._cameras.indexOf(cameras[i]) == -1) {
-                    this._cameras.push(cameras[i]);
+                    this._cameras[cameras[i].name] = cameras[i];
                 }
                 else if (unique) {
                     indicesToDelete.push(i);
@@ -73,11 +73,11 @@ module BABYLON {
             }
         }
 
-        public detachCamera(cameras): void {
+        public detachCameras(cameras): void {
             cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var renderEffectName in this._renderEffects) {
-                this._renderEffects[renderEffectName].detachCamera(cameras);
+                this._renderEffects[renderEffectName].detachCameras(cameras);
             }
 
             for (var i = 0; i < cameras.length; i++) {
