@@ -22,8 +22,10 @@
             serializationObject.angle = spotLight.angle;
             serializationObject.exponent = spotLight.exponent;
         } else if (light instanceof BABYLON.HemisphericLight) {
-            serializationObject.type = 2;
-            serializationObject.groundColor = (<HemisphericLight>light).groundColor.asArray();
+            serializationObject.type = 3;
+            var hemisphericLight = <HemisphericLight>light;
+            serializationObject.direction = hemisphericLight.direction.asArray();
+            serializationObject.groundColor = hemisphericLight.groundColor.asArray();
         }
 
         if (light.intensity) {
