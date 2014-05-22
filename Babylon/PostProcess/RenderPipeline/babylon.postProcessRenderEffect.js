@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderEffect = (function () {
         function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
@@ -18,11 +18,11 @@
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
 
-            this.parameters = function () {
+            this.parameters = function (effect) {
             };
         }
         PostProcessRenderEffect.getInstance = function (engine, postProcessType, ratio, samplingMode) {
-            var tmpClass;
+            var postProcess;
             var instance;
             var args = new Array();
 
@@ -53,11 +53,11 @@
                 }
             }
 
-            tmpClass = function () {
+            postProcess = function () {
             };
-            tmpClass.prototype = postProcessType.prototype;
+            postProcess.prototype = postProcessType.prototype;
 
-            instance = new tmpClass();
+            instance = new postProcess();
             postProcessType.apply(instance, args);
 
             return instance;
@@ -134,7 +134,7 @@
                 this._indicesForCamera[cameras[i].name].push(index);
 
                 if (this._cameras.indexOf(cameras[i]) == -1) {
-                    this._cameras.push(cameras[i]);
+                    this._cameras[cameras[i].name] = cameras[i];
                 }
 
                 for (var passName in this._renderPasses) {
@@ -145,7 +145,7 @@
             this._linkParameters();
         };
 
-        PostProcessRenderEffect.prototype.detachCamera = function (cameras) {
+        PostProcessRenderEffect.prototype.detachCameras = function (cameras) {
             cameras = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {

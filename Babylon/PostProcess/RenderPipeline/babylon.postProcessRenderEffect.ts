@@ -37,11 +37,11 @@ module BABYLON {
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
 
-            this.parameters = function () { };
+            this.parameters = function (effect) { };
         }
 
         public static getInstance(engine: Engine, postProcessType, ratio: number, samplingMode: number): PostProcess {
-            var tmpClass;
+            var postProcess;
             var instance;
             var args = new Array();
 
@@ -72,10 +72,10 @@ module BABYLON {
                 }
             }
 
-            tmpClass = function () { };
-            tmpClass.prototype = postProcessType.prototype;
+            postProcess = function () { };
+            postProcess.prototype = postProcessType.prototype;
 
-            instance = new tmpClass();
+            instance = new postProcess();
             postProcessType.apply(instance, args);
 
             return instance;
@@ -153,7 +153,7 @@ module BABYLON {
                 this._indicesForCamera[cameras[i].name].push(index);
 
                 if (this._cameras.indexOf(cameras[i]) == -1) {
-                    this._cameras.push(cameras[i]);
+                    this._cameras[cameras[i].name] = cameras[i];
                 }
 
                 for (var passName in this._renderPasses) {
@@ -164,7 +164,7 @@ module BABYLON {
             this._linkParameters();
         }
 
-        public detachCamera(cameras): void {
+        public detachCameras(cameras): void {
             cameras = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < cameras.length; i++) {

@@ -18,7 +18,7 @@ var BABYLON;
             renderPipeline.attachCameras(cameras, unique);
         };
 
-        PostProcessRenderPipelineManager.prototype.detachCameraFromRenderPipeline = function (renderPipelineName, cameras) {
+        PostProcessRenderPipelineManager.prototype.detachCamerasFromRenderPipeline = function (renderPipelineName, cameras) {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {

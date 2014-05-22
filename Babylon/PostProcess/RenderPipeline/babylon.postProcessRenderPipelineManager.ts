@@ -20,7 +20,7 @@ module BABYLON {
             renderPipeline.attachCameras(cameras, unique);
         }
 
-        public detachCameraFromRenderPipeline(renderPipelineName: string, cameras): void {
+        public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
