@@ -1,13 +1,15 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var SubMesh = (function () {
-        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh) {
+        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh) {
             this.materialIndex = materialIndex;
             this.verticesStart = verticesStart;
             this.verticesCount = verticesCount;
             this.indexStart = indexStart;
             this.indexCount = indexCount;
+            this._renderId = 0;
             this._mesh = mesh;
+            this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);
 
             this.refreshBoundingInfo();
@@ -20,11 +22,16 @@
             return this._mesh;
         };
 
-        SubMesh.prototype.getMaterial = function () {
-            var rootMaterial = this._mesh.material;
+        SubMesh.prototype.getRenderingMesh = function () {
+            return this._renderingMesh;
+        };
 
-            if (rootMaterial && rootMaterial.getSubMaterial) {
-                return rootMaterial.getSubMaterial(this.materialIndex);
+        SubMesh.prototype.getMaterial = function () {
+            var rootMaterial = this._renderingMesh.material;
+
+            if (rootMaterial && rootMaterial instanceof BABYLON.MultiMaterial) {
+                var multiMaterial = rootMaterial;
+                return multiMaterial.getSubMaterial(this.materialIndex);
             }
 
             if (!rootMaterial) {
@@ -36,7 +43,7 @@
 
         // Methods
         SubMesh.prototype.refreshBoundingInfo = function () {
-            var data = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
@@ -63,7 +70,7 @@
         };
 
         SubMesh.prototype.render = function () {
-            this._mesh.render(this);
+            this._renderingMesh.render(this);
         };
 
         SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
@@ -110,16 +117,29 @@
         };
 
         // Clone
-        SubMesh.prototype.clone = function (newMesh) {
-            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh);
+        SubMesh.prototype.clone = function (newMesh, newRenderingMesh) {
+            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh);
+        };
+
+        // Dispose
+        SubMesh.prototype.dispose = function () {
+            if (this._linesIndexBuffer) {
+                this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
+                this._linesIndexBuffer = null;
+            }
+
+            // Remove from mesh
+            var index = this._mesh.subMeshes.indexOf(this);
+            this._mesh.subMeshes.splice(index, 1);
         };
 
         // Statics
-        SubMesh.CreateFromIndices = function (materialIndex, startIndex, indexCount, mesh) {
+        SubMesh.CreateFromIndices = function (materialIndex, startIndex, indexCount, mesh, renderingMesh) {
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
 
-            var indices = mesh.getIndices();
+            renderingMesh = renderingMesh || mesh;
+            var indices = renderingMesh.getIndices();
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];
@@ -130,7 +150,7 @@
                     maxVertexIndex = vertexIndex;
             }
 
-            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh);
+            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh, renderingMesh);
         };
         return SubMesh;
     })();

@@ -148,7 +148,14 @@
         }
 
         // External files
+        public static CleanUrl(url: string): string {
+            url = url.replace(/#/mg, "%23");
+            return url;
+        }
+
         public static LoadImage(url: string, onload, onerror, database): HTMLImageElement {
+            url = Tools.CleanUrl(url);
+
             var img = new Image();
             img.crossOrigin = 'anonymous';
 
@@ -202,6 +209,8 @@
 
         //ANY
         public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean): void {
+            url = Tools.CleanUrl(url);
+
             var noIndexedDB = () => {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;

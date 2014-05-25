@@ -4,6 +4,7 @@
         getVerticesData(kind: string): number[];
         getIndices(): number[];
         setVerticesData(data: number[], kind: string, updatable?: boolean): void;
+        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: number[]): void;
     }
 
@@ -51,6 +52,14 @@
             this._applyTo(geometry, updatable);
         }
 
+        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): void {
+            this._update(mesh);
+        }
+
+        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): void {
+            this._update(geometry);
+        }
+
         private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean) {
             if (this.positions) {
                 meshOrGeometry.setVerticesData(this.positions, BABYLON.VertexBuffer.PositionKind, updatable);
@@ -78,6 +87,40 @@
 
             if (this.matricesWeights) {
                 meshOrGeometry.setVerticesData(this.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, updatable);
+            }
+
+            if (this.indices) {
+                meshOrGeometry.setIndices(this.indices);
+            }
+        }
+
+        private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean) {
+            if (this.positions) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
+            }
+
+            if (this.normals) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+            }
+
+            if (this.uvs) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
+            }
+
+            if (this.uv2s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            }
+
+            if (this.colors) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesIndices) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesWeights) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
             }
 
             if (this.indices) {

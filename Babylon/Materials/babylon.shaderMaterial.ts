@@ -97,7 +97,7 @@
             return this;
         }
 
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(): boolean {
             var engine = this.getScene().getEngine();
 
             this._effect = engine.createEffect(this._shaderPath,

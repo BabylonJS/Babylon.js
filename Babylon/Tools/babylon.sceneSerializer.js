@@ -692,10 +692,13 @@
             // Meshes
             serializationObject.meshes = [];
             for (index = 0; index < scene.meshes.length; index++) {
-                var mesh = scene.meshes[index];
+                var abstractMesh = scene.meshes[index];
 
-                if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
-                    serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                if (abstractMesh instanceof BABYLON.Mesh) {
+                    var mesh = abstractMesh;
+                    if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                    }
                 }
             }
 

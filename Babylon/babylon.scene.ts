@@ -15,6 +15,10 @@
             max.z = v.z;
     };
 
+    export interface IDisposable {
+        dispose(): void;
+    }
+
     export class Scene {
         // Statics
         public static FOGMODE_NONE = 0;
@@ -28,7 +32,7 @@
         public ambientColor = new BABYLON.Color3(0, 0, 0);
         public beforeRender: () => void;
         public afterRender: () => void;
-        public beforeCameraRender: (camera:Camera) => void;
+        public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
         public forceWireframe = false;
         public clipPlane: Plane;
@@ -55,7 +59,7 @@
         public activeCamera: Camera;
 
         // Meshes
-        public meshes = new Array<Mesh>();
+        public meshes = new Array<AbstractMesh>();
 
         // Geometries
         private _geometries = new Array<Geometry>();
@@ -125,18 +129,18 @@
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
 
-        public _toBeDisposed = new SmartArray(256);
+        public _toBeDisposed = new SmartArray<IDisposable>(256);
 
         private _onReadyCallbacks = new Array<() => void>();
         private _pendingData = [];//ANY
 
         private _onBeforeRenderCallbacks = new Array<() => void>();
 
-        private _activeMeshes = new SmartArray(256);
-        private _processedMaterials = new SmartArray(256);
-        private _renderTargets = new SmartArray(256);
-        public _activeParticleSystems = new SmartArray(256);
-        private _activeSkeletons = new SmartArray(32);
+        private _activeMeshes = new SmartArray<Mesh>(256);
+        private _processedMaterials = new SmartArray<Material>(256);
+        private _renderTargets = new SmartArray<RenderTargetTexture>(256);
+        public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
+        private _activeSkeletons = new SmartArray<Skeleton>(32);
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
@@ -204,7 +208,7 @@
             return this._evaluateActiveMeshesDuration;
         }
 
-        public getActiveMeshes(): SmartArray {
+        public getActiveMeshes(): SmartArray<Mesh> {
             return this._activeMeshes;
         }
 
@@ -287,19 +291,20 @@
                 }
             }
 
-            for (var index = 0; index < this.meshes.length; index++) {
+            for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
-                var mat = mesh.material;
-
-                if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+                
+                if (!mesh.isReady()) {
                     return false;
                 }
 
+                var mat = mesh.material;
                 if (mat) {
                     if (!mat.isReady(mesh)) {
                         return false;
                     }
                 }
+
             }
 
             return true;
@@ -558,7 +563,7 @@
             return this._geometries;
         }
 
-        public getMeshByID(id: string): Mesh {
+        public getMeshByID(id: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
@@ -568,7 +573,7 @@
             return null;
         }
 
-        public getLastMeshByID(id: string): Mesh {
+        public getLastMeshByID(id: string): AbstractMesh {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
@@ -600,7 +605,7 @@
             return null;
         }
 
-        public getMeshByName(name: string): Mesh {
+        public getMeshByName(name: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].name === name) {
                     return this.meshes[index];
@@ -644,7 +649,7 @@
             return (this._activeMeshes.indexOf(mesh) !== -1);
         }
 
-        private _evaluateSubMesh(subMesh: SubMesh, mesh: Mesh): void {
+        private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
             if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
@@ -661,6 +666,11 @@
                     // Dispatch
                     this._activeVertices += subMesh.verticesCount;
                     this._renderingManager.dispatch(subMesh);
+                }
+
+                if (mesh instanceof InstancedMesh) {
+                    var instance = <InstancedMesh>mesh;
+                    instance.sourceMesh._visibleInstances.pushNoDuplicate(instance);
                 }
             }
         }
@@ -744,6 +754,7 @@
 
                     if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
                         this._activeMeshes.push(mesh);
+                        mesh._activate(this._renderId);
 
                         if (mesh.skeleton) {
                             this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
@@ -1150,7 +1161,7 @@
             return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         }
 
-        private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo {
+        private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): PickingInfo {
             var pickingInfo = null;
 
             for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -1168,7 +1179,7 @@
                 var ray = rayFunction(world);
 
                 var result = mesh.intersects(ray, fastCheck);
-                if (!result.hit)
+                if (! result || !result.hit)
                     continue;
 
                 if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
@@ -1228,7 +1239,7 @@
             return this._physicsEngine;
         }
 
-        public enablePhysics(gravity: Vector3, plugin?: PhysicsEnginePlugin): boolean {
+        public enablePhysics(gravity: Vector3, plugin?: IPhysicsEnginePlugin): boolean {
             if (this._physicsEngine) {
                 return true;
             }

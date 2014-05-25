@@ -18,7 +18,7 @@
         public useAlphaFromDiffuseTexture = false;
 
         private _cachedDefines = null;
-        private _renderTargets = new BABYLON.SmartArray(16);
+        private _renderTargets = new BABYLON.SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = BABYLON.Matrix.Zero();
         private _lightMatrix = BABYLON.Matrix.Zero();
         private _globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -30,7 +30,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            this.getRenderTargetTextures = (): SmartArray => {
+            this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
 
                 if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
@@ -54,7 +54,7 @@
         }
 
         // Methods   
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(mesh?: AbstractMesh): boolean {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
                     return true;

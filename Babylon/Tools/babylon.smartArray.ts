@@ -1,6 +1,6 @@
 ﻿module BABYLON {
-    export class SmartArray {
-        public data: Array<any>;
+    export class SmartArray<T> {
+        public data: Array<T>;
         public length: number = 0;
 
         constructor(capacity: number) {
@@ -30,7 +30,7 @@
             this.length = 0;
         }
 
-        public concat(array: SmartArray): void {
+        public concat(array: SmartArray<T>): void {
             if (array.length === 0) {
                 return;
             }
@@ -43,7 +43,7 @@
             }
         }
 
-        public concatWithNoDuplicate(array: SmartArray): void {
+        public concatWithNoDuplicate(array: SmartArray<T>): void {
             if (array.length === 0) {
                 return;
             }

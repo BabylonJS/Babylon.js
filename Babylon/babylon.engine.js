@@ -809,7 +809,9 @@
             var _this = this;
             var texture = this._gl.createTexture();
 
-            var isDDS = this.getCaps().s3tc && (url.substr(url.length - 4, 4).toLowerCase() === ".dds");
+            var extension = url.substr(url.length - 4, 4).toLowerCase();
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
             texture.url = url;
@@ -817,7 +819,17 @@
             texture.references = 1;
             this._loadedTexturesCache.push(texture);
 
-            if (isDDS) {
+            if (isTGA) {
+                BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
+                    var data = new Uint8Array(arrayBuffer);
+
+                    var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
+
+                    prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
+                        BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
+                    });
+                }, null, scene.database, true);
+            } else if (isDDS) {
                 BABYLON.Tools.LoadFile(url, function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 

@@ -24,10 +24,26 @@
 
     export class StateCondition extends Condition {
         // Statics
-        public static IsEqual = 0;
-        public static IsDifferent = 1;
-        public static IsGreater= 2;
-        public static IsLesser = 3;
+        private static _IsEqual = 0;
+        private static _IsDifferent = 1;
+        private static _IsGreater = 2;
+        private static _IsLesser = 3;
+
+        public static get IsEqual(): number {
+            return StateCondition._IsEqual;
+        }
+
+        public static get IsDifferent(): number {
+            return StateCondition._IsDifferent;
+        }
+
+        public static get IsGreater(): number {
+            return StateCondition._IsGreater;
+        }
+
+        public static get IsLesser(): number {
+            return StateCondition._IsLesser;
+        }
 
         // Members
         public _actionManager: ActionManager;

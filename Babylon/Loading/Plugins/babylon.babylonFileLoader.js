@@ -484,7 +484,6 @@ var BABYLON = BABYLON || {};
             }
 
             geometry._delayLoadingFunction = importVertexData;
-
         } else {
             importVertexData(parsedVertexData, geometry);
         }
@@ -566,6 +565,10 @@ var BABYLON = BABYLON || {};
             }
 
             mesh._delayLoadingFunction = importGeometry;
+
+            if (BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental) {
+                mesh._checkDelayState();
+            }
 
         } else {
             importGeometry(parsedMesh, mesh);
@@ -849,7 +852,7 @@ var BABYLON = BABYLON || {};
             var parsedData = JSON.parse(data);
 
             // Scene
-            scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading;
+            scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
             scene.autoClear = parsedData.autoClear;
             scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
             scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);

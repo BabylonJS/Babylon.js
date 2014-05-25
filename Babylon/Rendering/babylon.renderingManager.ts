@@ -60,7 +60,7 @@
             this._depthBufferAlreadyCleaned = true;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents: () => void) => void,
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void,
             activeMeshes: Mesh[], renderParticles: boolean, renderSprites: boolean): void {
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;

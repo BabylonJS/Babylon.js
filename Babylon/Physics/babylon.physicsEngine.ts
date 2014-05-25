@@ -1,15 +1,15 @@
 ﻿module BABYLON {
     declare var CANNON;
 
-    export interface PhysicsEnginePlugin {
+    export interface IPhysicsEnginePlugin {
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;
         runOneStep(delta: number): void;
-        registerMesh(mesh: Mesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
         registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        unregisterMesh(mesh: Mesh);
-        applyImpulse(mesh: Mesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: Mesh, mesh2: Mesh, pivot1: Vector3, pivot2: Vector3): boolean;
+        unregisterMesh(mesh: AbstractMesh);
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
         dispose(): void;
         isSupported(): boolean;
     }
@@ -28,9 +28,9 @@
     export class PhysicsEngine {
         public gravity: Vector3;
 
-        private _currentPlugin: PhysicsEnginePlugin;
+        private _currentPlugin: IPhysicsEnginePlugin;
 
-        constructor(plugin?: PhysicsEnginePlugin) {
+        constructor(plugin?: IPhysicsEnginePlugin) {
             this._currentPlugin = plugin || new CannonJSPlugin();
         }
 
@@ -54,7 +54,7 @@
             this._currentPlugin.setGravity(this.gravity);
         }
 
-        public _registerMesh(mesh: Mesh, impostor: number, options: PhysicsBodyCreationOptions): any {
+        public _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
             return this._currentPlugin.registerMesh(mesh, impostor, options);
         }
 
@@ -62,15 +62,15 @@
             return this._currentPlugin.registerMeshesAsCompound(parts, options);
         }
 
-        public _unregisterMesh(mesh: Mesh): void {
+        public _unregisterMesh(mesh: AbstractMesh): void {
             this._currentPlugin.unregisterMesh(mesh);
         }
 
-        public _applyImpulse(mesh: Mesh, force: Vector3, contactPoint: Vector3): void {
+        public _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void {
             this._currentPlugin.applyImpulse(mesh, force, contactPoint);
         }
 
-        public _createLink(mesh1: Mesh, mesh2: Mesh, pivot1: Vector3, pivot2: Vector3): boolean {
+        public _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean {
             return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2);
         }
 

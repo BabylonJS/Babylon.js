@@ -101,7 +101,7 @@ var BABYLON;
             return this;
         };
 
-        ShaderMaterial.prototype.isReady = function (mesh) {
+        ShaderMaterial.prototype.isReady = function () {
             var engine = this.getScene().getEngine();
 
             this._effect = engine.createEffect(this._shaderPath, this._options.attributes, this._options.uniforms, this._options.samplers, "", null, this.onCompiled, this.onError);

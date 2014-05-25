@@ -11,7 +11,7 @@
 
         constructor(maxBlockCapacity?: number) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selection = new BABYLON.SmartArray(256);
+            this._selection = new BABYLON.SmartArray<OctreeBlock>(256);
         }
 
         // Methods
@@ -26,7 +26,7 @@
             }
         }
 
-        public select(frustumPlanes: Plane[]) {
+        public select(frustumPlanes: Plane[]): SmartArray<OctreeBlock> {
             this._selection.reset();
 
             for (var index = 0; index < this.blocks.length; index++) {

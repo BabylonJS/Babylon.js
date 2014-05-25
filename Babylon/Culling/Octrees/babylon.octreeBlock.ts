@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class OctreeBlock {
-        public meshes = new Array<Mesh>();
+        public meshes = new Array<AbstractMesh>();
         public subMeshes = new Array <Array<SubMesh>>();
         public blocks: Array<OctreeBlock>;
 

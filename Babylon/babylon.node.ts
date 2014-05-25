@@ -92,7 +92,7 @@
         }
 
         public isEnabled(): boolean {
-            if (!this.isReady() || !this._isEnabled) {
+            if (!this._isEnabled) {
                 return false;
             }
 

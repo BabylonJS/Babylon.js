@@ -37,6 +37,14 @@
             this._applyTo(geometry, updatable);
         };
 
+        VertexData.prototype.updateMesh = function (mesh, updateExtends, makeItUnique) {
+            this._update(mesh);
+        };
+
+        VertexData.prototype.updateGeometry = function (geometry, updateExtends, makeItUnique) {
+            this._update(geometry);
+        };
+
         VertexData.prototype._applyTo = function (meshOrGeometry, updatable) {
             if (this.positions) {
                 meshOrGeometry.setVerticesData(this.positions, BABYLON.VertexBuffer.PositionKind, updatable);
@@ -64,6 +72,40 @@
 
             if (this.matricesWeights) {
                 meshOrGeometry.setVerticesData(this.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, updatable);
+            }
+
+            if (this.indices) {
+                meshOrGeometry.setIndices(this.indices);
+            }
+        };
+
+        VertexData.prototype._update = function (meshOrGeometry, updateExtends, makeItUnique) {
+            if (this.positions) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
+            }
+
+            if (this.normals) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+            }
+
+            if (this.uvs) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
+            }
+
+            if (this.uv2s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            }
+
+            if (this.colors) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesIndices) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesWeights) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
             }
 
             if (this.indices) {

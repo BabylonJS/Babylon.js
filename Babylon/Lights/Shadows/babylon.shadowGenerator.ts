@@ -33,7 +33,7 @@
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
-                var mesh = subMesh.getMesh();
+                var mesh = subMesh.getRenderingMesh();
                 var world = mesh.getWorldMatrix();
                 var engine = this._scene.getEngine();
 
@@ -56,7 +56,7 @@
                 }
             };
 
-            this._shadowMap.customRenderFunction = (opaqueSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, transparentSubMeshes: SmartArray): void => {
+            this._shadowMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var index;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
