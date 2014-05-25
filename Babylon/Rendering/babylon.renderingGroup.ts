@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class RenderingGroup {
         private _scene: Scene
-        private _opaqueSubMeshes = new BABYLON.SmartArray(256);
-        private _transparentSubMeshes = new BABYLON.SmartArray(256);
-        private _alphaTestSubMeshes = new BABYLON.SmartArray(256);
+        private _opaqueSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
+        private _transparentSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
+        private _alphaTestSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
         private _activeVertices: number;
 
         constructor(public index: number, scene: Scene) {
             this._scene = scene;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents: () => void) => void,
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void,
                       beforeTransparents): boolean {
             if (customRenderFunction) {
                 customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
@@ -22,8 +22,9 @@
             }
             var engine = this._scene.getEngine();
             // Opaque
-            var subIndex;
-            var submesh;
+            var subIndex: number;
+            var submesh: SubMesh;
+
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
                 this._activeVertices += submesh.verticesCount;

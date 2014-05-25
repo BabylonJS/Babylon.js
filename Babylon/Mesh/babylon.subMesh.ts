@@ -2,15 +2,20 @@
     export class SubMesh {
         public linesIndexCount: number;
 
-        private _mesh: Mesh;
+        private _mesh: AbstractMesh;
+        private _renderingMesh: Mesh;
         private _boundingInfo: BoundingInfo;
         private _linesIndexBuffer: WebGLBuffer;
         public _lastColliderWorldVertices: Vector3[];
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
 
-        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: Mesh) {
+        public _renderId = 0;
+        public _distanceToCamera: number;
+
+        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh) {
             this._mesh = mesh;
+            this._renderingMesh = renderingMesh || <Mesh>mesh;
             mesh.subMeshes.push(this);
 
             this.refreshBoundingInfo();
@@ -20,15 +25,20 @@
             return this._boundingInfo;
         }
 
-        public getMesh(): Mesh {
+        public getMesh(): AbstractMesh {
             return this._mesh;
         }
 
-        public getMaterial(): Material {
-            var rootMaterial = this._mesh.material;
+        public getRenderingMesh(): Mesh {
+            return this._renderingMesh;
+        }
 
-            if (rootMaterial && rootMaterial.getSubMaterial) {
-                return rootMaterial.getSubMaterial(this.materialIndex);
+        public getMaterial(): Material {
+            var rootMaterial = this._renderingMesh.material;
+
+            if (rootMaterial && rootMaterial instanceof MultiMaterial) {
+                var multiMaterial = <MultiMaterial>rootMaterial;
+                return multiMaterial.getSubMaterial(this.materialIndex);
             }
 
             if (!rootMaterial) {
@@ -40,7 +50,7 @@
 
         // Methods
         public refreshBoundingInfo(): void {
-            var data = this._mesh.getVerticesData(VertexBuffer.PositionKind);
+            var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
@@ -67,7 +77,7 @@
         }
 
         public render(): void {
-            this._mesh.render(this);
+            this._renderingMesh.render(this);
         }
 
         public getLinesIndexBuffer(indices: number[], engine): WebGLBuffer {
@@ -117,16 +127,29 @@
         }
 
         // Clone    
-        public clone(newMesh: Mesh): SubMesh {
-            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh);
+        public clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh {
+            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh);
+        }
+
+        // Dispose
+        public dispose() {
+            if (this._linesIndexBuffer) {
+                this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
+                this._linesIndexBuffer = null;
+            }
+
+            // Remove from mesh
+            var index = this._mesh.subMeshes.indexOf(this);
+            this._mesh.subMeshes.splice(index, 1);
         }
 
         // Statics
-        public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: Mesh): SubMesh {
+        public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh {
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
 
-            var indices = mesh.getIndices();
+            renderingMesh = renderingMesh || <Mesh>mesh;
+            var indices = renderingMesh.getIndices();
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];
@@ -137,7 +160,7 @@
                     maxVertexIndex = vertexIndex;
             }
 
-            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh);
+            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh, renderingMesh);
         }
     }
 }

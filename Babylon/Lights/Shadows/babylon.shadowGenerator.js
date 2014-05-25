@@ -24,7 +24,7 @@
 
             // Custom render function
             var renderSubMesh = function (subMesh) {
-                var mesh = subMesh.getMesh();
+                var mesh = subMesh.getRenderingMesh();
                 var world = mesh.getWorldMatrix();
                 var engine = _this._scene.getEngine();
 

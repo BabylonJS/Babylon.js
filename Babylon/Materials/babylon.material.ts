@@ -9,7 +9,7 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
-        public getRenderTargetTextures: () => SmartArray;
+        public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
@@ -25,7 +25,7 @@
             }
         }
 
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(mesh?: AbstractMesh): boolean {
             return true;
         }
 

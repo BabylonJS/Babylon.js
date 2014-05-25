@@ -1,12 +1,12 @@
 ﻿module BABYLON {
     export class RenderTargetTexture extends Texture {
-        public renderList = new Array<Mesh>();
+        public renderList = new Array<AbstractMesh>();
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
-        public customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents?: () => void) => void;
+        public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
         private _size: number;
         public _generateMipMaps: boolean;

@@ -219,14 +219,14 @@
                 }
             }
 
-            for (var index = 0; index < this.meshes.length; index++) {
+            for (index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
-                var mat = mesh.material;
 
-                if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+                if (!mesh.isReady()) {
                     return false;
                 }
 
+                var mat = mesh.material;
                 if (mat) {
                     if (!mat.isReady(mesh)) {
                         return false;
@@ -597,6 +597,11 @@
                     this._activeVertices += subMesh.verticesCount;
                     this._renderingManager.dispatch(subMesh);
                 }
+
+                if (mesh instanceof BABYLON.InstancedMesh) {
+                    var instance = mesh;
+                    instance.sourceMesh._visibleInstances.pushNoDuplicate(instance);
+                }
             }
         };
 
@@ -679,6 +684,7 @@
 
                     if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
                         this._activeMeshes.push(mesh);
+                        mesh._activate(this._renderId);
 
                         if (mesh.skeleton) {
                             this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
@@ -1088,7 +1094,7 @@
                 var ray = rayFunction(world);
 
                 var result = mesh.intersects(ray, fastCheck);
-                if (!result.hit)
+                if (!result || !result.hit)
                     continue;
 
                 if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)

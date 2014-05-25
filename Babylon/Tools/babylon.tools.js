@@ -134,7 +134,14 @@
         };
 
         // External files
+        Tools.CleanUrl = function (url) {
+            url = url.replace(/#/mg, "%23");
+            return url;
+        };
+
         Tools.LoadImage = function (url, onload, onerror, database) {
+            url = Tools.CleanUrl(url);
+
             var img = new Image();
             img.crossOrigin = 'anonymous';
 
@@ -183,6 +190,8 @@
 
         //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer) {
+            url = Tools.CleanUrl(url);
+
             var noIndexedDB = function () {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;

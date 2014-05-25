@@ -9,7 +9,7 @@
         return ((random * (max - min)) + min);
     }
 
-    export class ParticleSystem {
+    export class ParticleSystem implements IDisposable {
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;

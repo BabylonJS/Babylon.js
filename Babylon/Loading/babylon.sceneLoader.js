@@ -6,7 +6,7 @@ var BABYLON = BABYLON || {};
     BABYLON.SceneLoader = {
         _registeredPlugins: [],
 
-        _getPluginForFilename: function (sceneFilename) {
+        _getPluginForFilename: function(sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var extension = sceneFilename.substring(dotPosition).toLowerCase();
 
@@ -18,8 +18,11 @@ var BABYLON = BABYLON || {};
                 }
             }
 
-            throw new Error("No plugin found to load this file: " + sceneFilename);
+            return this._registeredPlugins[this._registeredPlugins.length - 1];
         },
+
+        // Flags
+        ForceFullSceneLoadingForIncremental: false,
 
         // Public functions
         RegisterPlugin: function (plugin) {

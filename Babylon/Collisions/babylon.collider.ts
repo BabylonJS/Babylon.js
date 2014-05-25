@@ -68,7 +68,7 @@
         public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
-        public collidedMesh: Mesh
+        public collidedMesh: AbstractMesh
 
         private _collisionPoint = BABYLON.Vector3.Zero();
         private _planeIntersectionPoint = BABYLON.Vector3.Zero();

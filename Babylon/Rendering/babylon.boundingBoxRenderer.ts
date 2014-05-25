@@ -3,7 +3,7 @@
         public frontColor = new BABYLON.Color3(1, 1, 1);
         public backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         public showBackLines = true;
-        public renderList = new BABYLON.SmartArray(32);
+        public renderList = new BABYLON.SmartArray<Mesh>(32);
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;

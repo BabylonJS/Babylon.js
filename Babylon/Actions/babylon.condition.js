@@ -37,6 +37,38 @@ var BABYLON;
             this._target = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
+        Object.defineProperty(StateCondition, "IsEqual", {
+            get: function () {
+                return StateCondition._IsEqual;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(StateCondition, "IsDifferent", {
+            get: function () {
+                return StateCondition._IsDifferent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(StateCondition, "IsGreater", {
+            get: function () {
+                return StateCondition._IsGreater;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(StateCondition, "IsLesser", {
+            get: function () {
+                return StateCondition._IsLesser;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
         StateCondition.prototype.isValid = function () {
             switch (this.operator) {
@@ -58,10 +90,10 @@ var BABYLON;
 
             return false;
         };
-        StateCondition.IsEqual = 0;
-        StateCondition.IsDifferent = 1;
-        StateCondition.IsGreater = 2;
-        StateCondition.IsLesser = 3;
+        StateCondition._IsEqual = 0;
+        StateCondition._IsDifferent = 1;
+        StateCondition._IsGreater = 2;
+        StateCondition._IsLesser = 3;
         return StateCondition;
     })(Condition);
     BABYLON.StateCondition = StateCondition;

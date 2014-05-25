@@ -133,6 +133,9 @@
         Color3.Yellow = function () {
             return new Color3(1, 1, 0);
         };
+        Color3.Gray = function () {
+            return new Color3(0.5, 0.5, 0.5);
+        };
         return Color3;
     })();
     BABYLON.Color3 = Color3;
