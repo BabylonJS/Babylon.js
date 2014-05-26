@@ -14,7 +14,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.instances = new Array();
             this._onBeforeRenderCallbacks = [];
-            this._visibleInstances = new BABYLON.SmartArray(32);
+            this._visibleInstances = {};
             this._renderIdForInstances = -1;
         }
         Mesh.prototype.getTotalVertices = function () {
@@ -88,9 +88,22 @@ var BABYLON;
         };
 
         // Methods
-        Mesh.prototype._activate = function (renderId) {
-            this._visibleInstances.reset();
-            _super.prototype._activate.call(this, renderId);
+        Mesh.prototype._preActivate = function () {
+            this._visibleInstances = null;
+        };
+
+        Mesh.prototype._registerInstanceForRenderId = function (instance, renderId) {
+            if (!this._visibleInstances) {
+                this._visibleInstances = {};
+                this._visibleInstances.defaultRenderId = renderId;
+                this._visibleInstances.selfDefaultRenderId = this._renderId;
+            }
+
+            if (!this._visibleInstances[renderId]) {
+                this._visibleInstances[renderId] = new Array();
+            }
+
+            this._visibleInstances[renderId].push(instance);
         };
 
         Mesh.prototype.refreshBoundingInfo = function () {
@@ -117,7 +130,6 @@ var BABYLON;
             }
 
             this.releaseSubMeshes();
-            this.subMeshes = [];
             return new BABYLON.SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
         };
 
@@ -131,7 +143,6 @@ var BABYLON;
             var offset = 0;
 
             this.releaseSubMeshes();
-            this.subMeshes = [];
             for (var index = 0; index < count; index++) {
                 BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, totalIndices - offset), this);
 
@@ -235,16 +246,28 @@ var BABYLON;
             var scene = this.getScene();
 
             // Managing instances
-            if (this._visibleInstances.length) {
-                if (this._renderIdForInstances === scene.getRenderId()) {
-                    return;
+            if (this._visibleInstances) {
+                var currentRenderId = scene.getRenderId();
+                var visibleInstances = this._visibleInstances[currentRenderId];
+                var selfRenderId = this._renderId;
+
+                if (!visibleInstances && this._visibleInstances.defaultRenderId) {
+                    visibleInstances = this._visibleInstances[this._visibleInstances.defaultRenderId];
+                    currentRenderId = this._visibleInstances.defaultRenderId;
+                    selfRenderId = this._visibleInstances.selfDefaultRenderId;
                 }
 
-                if (scene.getRenderId() !== this._renderId) {
-                    renderSelf = false;
+                if (visibleInstances && visibleInstances.length) {
+                    if (this._renderIdForInstances === currentRenderId) {
+                        return;
+                    }
+
+                    if (currentRenderId !== selfRenderId) {
+                        renderSelf = false;
+                    }
                 }
+                this._renderIdForInstances = currentRenderId;
             }
-            this._renderIdForInstances = scene.getRenderId();
 
             // Checking geometry state
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
@@ -279,15 +302,17 @@ var BABYLON;
                 this._draw(subMesh, !wireFrame);
             }
 
-            for (var instanceIndex = 0; instanceIndex < this._visibleInstances.length; instanceIndex++) {
-                var instance = this._visibleInstances.data[instanceIndex];
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
 
-                // World
-                world = instance.getWorldMatrix();
-                effectiveMaterial.bind(world, this);
+                    // World
+                    world = instance.getWorldMatrix();
+                    effectiveMaterial.bind(world, this);
 
-                // Draw
-                this._draw(subMesh, !wireFrame);
+                    // Draw
+                    this._draw(subMesh, !wireFrame);
+                }
             }
 
             // Unbind
@@ -586,7 +611,6 @@ var BABYLON;
             }
 
             // Updating submeshes
-            this.subMeshes = [];
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];

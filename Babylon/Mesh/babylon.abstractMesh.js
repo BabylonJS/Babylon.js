@@ -107,6 +107,9 @@ var BABYLON;
             return this._boundingInfo;
         };
 
+        AbstractMesh.prototype._preActivate = function () {
+        };
+
         AbstractMesh.prototype._activate = function (renderId) {
             this._renderId = renderId;
         };
@@ -630,6 +633,8 @@ var BABYLON;
                 while (this.subMeshes.length) {
                     this.subMeshes[0].dispose();
                 }
+            } else {
+                this.subMeshes = new Array();
             }
         };
 

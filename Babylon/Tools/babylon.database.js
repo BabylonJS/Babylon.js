@@ -471,7 +471,7 @@ var BABYLON = BABYLON || {};
             xhr.open("GET", url, true);
 
             xhr.onprogress = progressCallback;
-
+            
             xhr.addEventListener("load", function () {
                 if (xhr.status === 200) {
                     // Blob as response (XHR2)

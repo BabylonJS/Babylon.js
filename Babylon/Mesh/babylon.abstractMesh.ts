@@ -102,6 +102,9 @@
             return this._boundingInfo;
         }
 
+        public _preActivate(): void {
+        }
+
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }
@@ -620,6 +623,8 @@
                 while (this.subMeshes.length) {
                     this.subMeshes[0].dispose();
                 }
+            } else {
+                this.subMeshes = new Array<SubMesh>();
             }
         }
 

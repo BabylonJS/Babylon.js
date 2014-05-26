@@ -1,11 +1,28 @@
-﻿
-var BABYLON;
-(function (BABYLON) {
+﻿// ANY
+declare module BABYLON {
+    export class SceneLoader {
+        static Load: (param1: any, param2: any, param3: any, param4: any, param5: any) => void;
+    }
+}
+
+module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
-    var FilesInput = (function () {
+    export class FilesInput {
+        private engine: BABYLON.Engine;
+        private currentScene: BABYLON.Scene;
+        private canvas: HTMLCanvasElement;
+        private sceneLoadedCallback;
+        private progressCallback;
+        private additionnalRenderLoopLogicCallback;
+        private textureLoadingCallback;
+        private startingProcessingFilesCallback;
+        private elementToMonitor: HTMLElement;
+        public static FilesTextures: any[] = new Array();
+
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
         /// loading progress callback and optionnal addionnal logic to call in the rendering loop
-        function FilesInput(p_engine, p_scene, p_canvas, p_sceneLoadedCallback, p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
+        constructor(p_engine: BABYLON.Engine, p_scene: BABYLON.Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback,
+            p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
             this.engine = p_engine;
             this.canvas = p_canvas;
             this.currentScene = p_scene;
@@ -15,23 +32,17 @@ var BABYLON;
             this.textureLoadingCallback = p_textureLoadingCallback;
             this.startingProcessingFilesCallback = p_startingProcessingFilesCallback;
         }
-        FilesInput.prototype.monitorElementForDragNDrop = function (p_elementToMonitor) {
-            var _this = this;
+
+        public monitorElementForDragNDrop(p_elementToMonitor: HTMLElement): void {
             if (p_elementToMonitor) {
                 this.elementToMonitor = p_elementToMonitor;
-                this.elementToMonitor.addEventListener("dragenter", function (e) {
-                    _this.drag(e);
-                }, false);
-                this.elementToMonitor.addEventListener("dragover", function (e) {
-                    _this.drag(e);
-                }, false);
-                this.elementToMonitor.addEventListener("drop", function (e) {
-                    _this.drop(e);
-                }, false);
+                this.elementToMonitor.addEventListener("dragenter", (e) => { this.drag(e); }, false);
+                this.elementToMonitor.addEventListener("dragover", (e) => { this.drag(e); }, false);
+                this.elementToMonitor.addEventListener("drop", (e) => { this.drop(e); }, false);
             }
-        };
+        }
 
-        FilesInput.prototype.renderFunction = function () {
+        private renderFunction(): void {
             if (this.additionnalRenderLoopLogicCallback) {
                 this.additionnalRenderLoopLogicCallback();
             }
@@ -46,27 +57,26 @@ var BABYLON;
                 }
                 this.currentScene.render();
             }
-        };
+        }
 
-        FilesInput.prototype.drag = function (e) {
+        private drag(e): void {
             e.stopPropagation();
             e.preventDefault();
-        };
+        }
 
-        FilesInput.prototype.drop = function (eventDrop) {
+        private drop(eventDrop): void {
             eventDrop.stopPropagation();
             eventDrop.preventDefault();
 
             this.loadFiles(eventDrop);
-        };
+        }
 
-        FilesInput.prototype.loadFiles = function (event) {
+        private loadFiles(event): void {
             var that = this;
-            if (this.startingProcessingFilesCallback)
-                this.startingProcessingFilesCallback();
+            if (this.startingProcessingFilesCallback) this.startingProcessingFilesCallback();
 
-            var sceneFileToLoad;
-            var filesToLoad;
+            var sceneFileToLoad: File;
+            var filesToLoad: File[];
 
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
@@ -80,9 +90,12 @@ var BABYLON;
 
             if (filesToLoad && filesToLoad.length > 0) {
                 for (var i = 0; i < filesToLoad.length; i++) {
-                    if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
+                    if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1
+                        && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
+                        && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
                         sceneFileToLoad = filesToLoad[i];
-                    } else {
+                    }
+                    else {
                         if (filesToLoad[i].type.indexOf("image/jpeg") == 0 || filesToLoad[i].type.indexOf("image/png") == 0) {
                             BABYLON.FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
                         }
@@ -96,7 +109,7 @@ var BABYLON;
                         this.currentScene.dispose();
                     }
 
-                    BABYLON.SceneLoader.Load("file:", sceneFileToLoad, this.engine, function (newScene) {
+                    BABYLON.SceneLoader.Load("file:", sceneFileToLoad, this.engine, (newScene) => {
                         that.currentScene = newScene;
 
                         // Wait for textures and shaders to be ready
@@ -108,23 +121,18 @@ var BABYLON;
                             if (that.sceneLoadedCallback) {
                                 that.sceneLoadedCallback(sceneFileToLoad, that.currentScene);
                             }
-                            that.engine.runRenderLoop(function () {
-                                that.renderFunction();
-                            });
+                            that.engine.runRenderLoop(function () { that.renderFunction() });
                         });
                     }, function (progress) {
                         if (that.progressCallback) {
                             that.progressCallback(progress);
-                        }
-                    });
-                } else {
+                            }
+                        });
+                }
+                else {
                     BABYLON.Tools.Error("Please provide a valid .babylon file.");
                 }
             }
-        };
-        FilesInput.FilesTextures = new Array();
-        return FilesInput;
-    })();
-    BABYLON.FilesInput = FilesInput;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.filesInput.js.map
+        }
+    }
+}

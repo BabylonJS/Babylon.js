@@ -106,9 +106,12 @@ var BABYLON;
             this._updateBoundingInfo();
         };
 
+        InstancedMesh.prototype._activate = function (renderId) {
+            this.sourceMesh._registerInstanceForRenderId(this, renderId);
+        };
+
         InstancedMesh.prototype._syncSubMeshes = function () {
             this.releaseSubMeshes();
-            this.subMeshes = [];
             for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
                 this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
             }

@@ -67,6 +67,8 @@ var BABYLON;
                 var mesh = this.renderList[meshIndex];
 
                 if (mesh && mesh.isEnabled() && mesh.isVisible && mesh.subMeshes) {
+                    mesh._activate(scene.getRenderId());
+
                     for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                         var subMesh = mesh.subMeshes[subIndex];
                         scene._activeVertices += subMesh.verticesCount;

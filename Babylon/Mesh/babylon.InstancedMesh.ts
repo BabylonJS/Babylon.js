@@ -77,9 +77,12 @@
             this._updateBoundingInfo();
         }
 
+        public _activate(renderId: number): void {
+            this.sourceMesh._registerInstanceForRenderId(this, renderId);
+        }
+
         public _syncSubMeshes(): void {
             this.releaseSubMeshes();
-            this.subMeshes = [];
             for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
                 this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
             }
