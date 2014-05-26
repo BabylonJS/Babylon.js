@@ -3,15 +3,15 @@
   "version": "1.9.0",
   "description": "",
   "main": "",
-  "dependencies": {
-    "through": "^2.3.4"
-  },
   "devDependencies": {
-    "gulp-rename": "^1.2.0",
+    "gulp": "^3.6.2",
+    "gulp-clean": "^0.3.0",
     "gulp-concat": "^2.2.0",
-    "gulp-clean": "^0.2.4",
-    "gulp": "^3.5.6",
-    "gulp-uglify": "^0.2.1",
-    "gulp-util": "^2.2.14"
+    "gulp-filter": "^0.4.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-tsc": "^0.8.0",
+    "gulp-uglify": "^0.3.0",
+    "gulp-util": "^2.2.14",
+    "through": "^2.3.4"
   }
 }
