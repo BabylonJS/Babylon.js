@@ -1,5 +1,8 @@
-﻿var BABYLON;
+﻿
+var BABYLON;
 (function (BABYLON) {
+    
+
     // Screenshots
     var screenshotCanvas;
 
@@ -162,7 +165,7 @@
             };
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline) {
+            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             } else {
                 if (url.indexOf("file:") === -1) {
@@ -172,10 +175,10 @@
                         var textureName = url.substring(5);
                         var blobURL;
                         try  {
-                            blobURL = URL.createObjectURL(FilesTextures[textureName], { oneTimeOnly: true });
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
                         } catch (ex) {
                             // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(FilesTextures[textureName]);
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName]);
                         }
                         img.src = blobURL;
                     } catch (e) {

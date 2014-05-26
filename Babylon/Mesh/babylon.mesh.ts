@@ -10,7 +10,7 @@
         private _onBeforeRenderCallbacks = [];
         private _delayInfo; //ANY
         private _delayLoadingFunction: (any, Mesh) => void;
-        public _visibleInstances = new SmartArray<InstancedMesh>(32);
+        public _visibleInstances: any = {};
         private _renderIdForInstances = -1;
 
         constructor(name: string, scene: Scene) {
@@ -24,7 +24,7 @@
             return this._geometry.getTotalVertices();
         }
 
-        public getVerticesData(kind:  string): number[] {
+        public getVerticesData(kind: string): number[] {
             if (!this._geometry) {
                 return null;
             }
@@ -88,9 +88,22 @@
         }
 
         // Methods  
-        public _activate(renderId: number): void {
-            this._visibleInstances.reset();
-            super._activate(renderId);
+        public _preActivate(): void {
+            this._visibleInstances = null;
+        }
+
+        public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number) {
+            if (!this._visibleInstances) {
+                this._visibleInstances = {};
+                this._visibleInstances.defaultRenderId = renderId;
+                this._visibleInstances.selfDefaultRenderId = this._renderId;
+            }
+
+            if (!this._visibleInstances[renderId]) {
+                this._visibleInstances[renderId] = new Array<InstancedMesh>();
+            }
+
+            this._visibleInstances[renderId].push(instance);
         }
 
         public refreshBoundingInfo(): void {
@@ -117,7 +130,6 @@
             }
 
             this.releaseSubMeshes();
-            this.subMeshes = [];
             return new BABYLON.SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
         }
 
@@ -131,7 +143,6 @@
             var offset = 0;
 
             this.releaseSubMeshes();
-            this.subMeshes = [];
             for (var index = 0; index < count; index++) {
                 BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, totalIndices - offset), this);
 
@@ -238,17 +249,29 @@
             var scene = this.getScene();
 
             // Managing instances
-            if (this._visibleInstances.length) {
-                if (this._renderIdForInstances === scene.getRenderId()) {
-                    return;
+            if (this._visibleInstances) {
+                var currentRenderId = scene.getRenderId();
+                var visibleInstances = this._visibleInstances[currentRenderId];
+                var selfRenderId = this._renderId;
+
+                if (!visibleInstances && this._visibleInstances.defaultRenderId) {
+                    visibleInstances = this._visibleInstances[this._visibleInstances.defaultRenderId];
+                    currentRenderId = this._visibleInstances.defaultRenderId;
+                    selfRenderId = this._visibleInstances.selfDefaultRenderId;
                 }
 
-                if (scene.getRenderId() !== this._renderId) {
-                    renderSelf = false;
-                }
+                if (visibleInstances && visibleInstances.length) {
+                    if (this._renderIdForInstances === currentRenderId) {
+                        return;
+                    }
 
+                    if (currentRenderId !== selfRenderId) {
+                        renderSelf = false;
+                    }
+
+                }
+                this._renderIdForInstances = currentRenderId;
             }
-            this._renderIdForInstances = scene.getRenderId();
 
             // Checking geometry state
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
@@ -283,15 +306,17 @@
                 this._draw(subMesh, !wireFrame);
             }
 
-            for (var instanceIndex = 0; instanceIndex < this._visibleInstances.length; instanceIndex++) {
-                var instance = this._visibleInstances.data[instanceIndex];
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
 
-                // World
-                world = instance.getWorldMatrix();
-                effectiveMaterial.bind(world, this);
+                    // World
+                    world = instance.getWorldMatrix();
+                    effectiveMaterial.bind(world, this);
 
-                // Draw
-                this._draw(subMesh, !wireFrame);
+                    // Draw
+                    this._draw(subMesh, !wireFrame);
+                }
             }
 
             // Unbind
@@ -430,7 +455,7 @@
             this.setVerticesData(temp, BABYLON.VertexBuffer.NormalKind, this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable());
         }
 
-     
+
 
         // Cache
         public _resetPointsArrayCache(): void {
@@ -454,7 +479,7 @@
             }
 
             return true;
-        }     
+        }
 
         // Clone
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh {
@@ -598,7 +623,6 @@
             }
 
             // Updating submeshes
-            this.subMeshes = [];
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
@@ -710,7 +734,7 @@
                 ground._isReady = true;
             };
 
-            Tools.LoadImage(url, onload, () => {}, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
 
             ground._isReady = false;
 
@@ -718,7 +742,7 @@
         }
 
         // Tools
-        public static MinMax(meshes: AbstractMesh[]): {min: Vector3; max: Vector3} {
+        public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector = null;
             var maxVector = null;
             for (var i in meshes) {

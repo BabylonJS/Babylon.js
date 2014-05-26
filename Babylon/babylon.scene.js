@@ -597,11 +597,6 @@
                     this._activeVertices += subMesh.verticesCount;
                     this._renderingManager.dispatch(subMesh);
                 }
-
-                if (mesh instanceof BABYLON.InstancedMesh) {
-                    var instance = mesh;
-                    instance.sourceMesh._visibleInstances.pushNoDuplicate(instance);
-                }
             }
         };
 
@@ -638,11 +633,13 @@
 
                             mesh.computeWorldMatrix();
                             mesh._renderId = 0;
+                            mesh._preActivate();
                         }
 
                         if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes))) {
                             if (mesh._renderId === 0) {
                                 this._activeMeshes.push(mesh);
+                                mesh._activate(this._renderId);
                             }
                             mesh._renderId = this._renderId;
 
@@ -681,6 +678,7 @@
                     }
 
                     mesh.computeWorldMatrix();
+                    mesh._preActivate();
 
                     if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
                         this._activeMeshes.push(mesh);
@@ -766,6 +764,7 @@
                     this._renderId++;
                     renderTarget.render();
                 }
+                this._renderId++;
             }
 
             if (this._renderTargets.length > 0) {

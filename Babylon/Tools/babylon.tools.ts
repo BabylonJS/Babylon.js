@@ -1,6 +1,13 @@
-﻿module BABYLON {
+﻿// ANY
+declare module BABYLON {
+    export class Database {
+        static isUASupportingBlobStorage:  boolean;
+    }
+}
 
-    declare var FilesTextures; //ANY
+module BABYLON {
+
+    //class FilesTextures { } //ANY
 
     export interface IAnimatable {
         animations: Array<Animation>;
@@ -177,7 +184,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline) { //ANY } && BABYLON.Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) { 
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -189,11 +196,11 @@
                         var textureName = url.substring(5);
                         var blobURL;
                         try {
-                            blobURL = URL.createObjectURL(FilesTextures[textureName], { oneTimeOnly: true });
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
                         }
                         catch (ex) {
                             // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(FilesTextures[textureName]);
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName]);
                         }
                         img.src = blobURL;
                     }

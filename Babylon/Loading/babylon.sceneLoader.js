@@ -56,7 +56,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            if (sceneFilename.substr(0, 5) === "data:") {
+            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
                 // Direct load
                 importMeshFromData(sceneFilename.substr(5));
                 return;
@@ -95,7 +95,7 @@ var BABYLON = BABYLON || {};
                 }
             };
 
-            if (sceneFilename.substr(0, 5) === "data:") {
+            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
                 // Direct load
                 loadSceneFromData(sceneFilename.substr(5));
                 return;

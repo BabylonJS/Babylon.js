@@ -87,7 +87,7 @@ var BABYLON;
                 var palettes;
 
                 if (use_pal) {
-                    palettes = data.subarray(offset, offset += header.colormap_length * pixel_size);
+                    palettes = data.subarray(offset, offset += header.colormap_length * (header.colormap_size >> 3));
                 }
 
                 // Read LRE
