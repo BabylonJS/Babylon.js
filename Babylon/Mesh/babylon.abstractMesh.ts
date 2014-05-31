@@ -45,6 +45,7 @@
         public material: Material;
         public receiveShadows = false;
         public actionManager: ActionManager;
+        public layerMask: number = 0xFFFFFFFF;
 
         // Physics
         public _physicImpostor = PhysicsEngine.NoImpostor;

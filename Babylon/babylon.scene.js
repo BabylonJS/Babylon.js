@@ -636,7 +636,7 @@
                             mesh._preActivate();
                         }
 
-                        if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes))) {
+                        if (mesh._renderId === this._renderId || (mesh._renderId === 0 && mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes) && ((mesh.layerMask & this.activeCamera.layerMask) != 0))) {
                             if (mesh._renderId === 0) {
                                 this._activeMeshes.push(mesh);
                                 mesh._activate(this._renderId);
@@ -680,7 +680,7 @@
                     mesh.computeWorldMatrix();
                     mesh._preActivate();
 
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
+                    if (mesh.isEnabled() && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isVisible && mesh.visibility > 0 && mesh.isInFrustum(this._frustumPlanes)) {
                         this._activeMeshes.push(mesh);
                         mesh._activate(this._renderId);
 

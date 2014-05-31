@@ -66,7 +66,7 @@ var BABYLON;
             for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
                 var mesh = this.renderList[meshIndex];
 
-                if (mesh && mesh.isEnabled() && mesh.isVisible && mesh.subMeshes) {
+                if (mesh && mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
                     mesh._activate(scene.getRenderId());
 
                     for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
