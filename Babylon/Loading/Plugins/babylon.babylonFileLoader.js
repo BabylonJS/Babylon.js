@@ -303,7 +303,7 @@ var BABYLON = BABYLON || {};
     var parseCamera = function (parsedCamera, scene) {
         var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
         camera.id = parsedCamera.id;
-
+        
         BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
 
         // Parent
@@ -349,6 +349,14 @@ var BABYLON = BABYLON || {};
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
         }
 
+        
+        // Layer Mask
+        if (parsedCamera.layerMask && (parseInt(parsedCamera.layerMask) != NaN)) {
+          camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
+        } else {
+          camera.layerMask = 0xFFFFFFFF;
+        }
+        
         return camera;
     };
 
@@ -496,7 +504,7 @@ var BABYLON = BABYLON || {};
     var parseMesh = function (parsedMesh, scene, rootUrl) {
         var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
-
+        
         BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
@@ -536,7 +544,7 @@ var BABYLON = BABYLON || {};
         if (parsedMesh.parentId) {
             mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
         }
-
+        
         // Geometry
         if (parsedMesh.delayLoadingFile) {
             mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
@@ -613,6 +621,13 @@ var BABYLON = BABYLON || {};
 
         if (parsedMesh.autoAnimate) {
             scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+        }
+
+        // Layer Mask
+        if (parsedMesh.layerMask && (parseInt(parsedMesh.layerMask) != NaN)) {
+          mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
+        } else {
+          mesh.layerMask = 0xFFFFFFFF;
         }
 
         return mesh;
