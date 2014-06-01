@@ -77,6 +77,9 @@
         // Animations
         appendAnimations(camera, serializationObject);
 
+        // Layer mask
+        serializationObject.layerMask = camera.layerMask;
+
         return serializationObject;
     };
 
@@ -232,19 +235,21 @@
             }
         }
 
+        var regularTexture = texture;
+
         serializationObject.name = texture.name;
         serializationObject.hasAlpha = texture.hasAlpha;
         serializationObject.level = texture.level;
 
         serializationObject.coordinatesIndex = texture.coordinatesIndex;
         serializationObject.coordinatesMode = texture.coordinatesMode;
-        serializationObject.uOffset = texture.uOffset;
-        serializationObject.vOffset = texture.vOffset;
-        serializationObject.uScale = texture.uScale;
-        serializationObject.vScale = texture.vScale;
-        serializationObject.uAng = texture.uAng;
-        serializationObject.vAng = texture.vAng;
-        serializationObject.wAng = texture.wAng;
+        serializationObject.uOffset = regularTexture.uOffset;
+        serializationObject.vOffset = regularTexture.vOffset;
+        serializationObject.uScale = regularTexture.uScale;
+        serializationObject.vScale = regularTexture.vScale;
+        serializationObject.uAng = regularTexture.uAng;
+        serializationObject.vAng = regularTexture.vAng;
+        serializationObject.wAng = regularTexture.wAng;
 
         serializationObject.wrapU = texture.wrapU;
         serializationObject.wrapV = texture.wrapV;
@@ -601,6 +606,9 @@
 
         // Animations
         appendAnimations(mesh, serializationObject);
+
+        // Layer mask
+        serializationObject.layerMask = mesh.layerMask;
 
         return serializationObject;
     };

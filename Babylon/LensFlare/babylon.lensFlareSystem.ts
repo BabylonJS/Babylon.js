@@ -20,7 +20,7 @@
             this._emitter = emitter;
             scene.lensFlareSystems.push(this);
 
-            this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.checkCollisions;
+            this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.checkCollisions && ((m.layerMask & scene.activeCamera.layerMask) != 0);
 
             // VBO
             var vertices = [];

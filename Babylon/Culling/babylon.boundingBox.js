@@ -42,6 +42,10 @@
             this._update(BABYLON.Matrix.Identity());
         }
         // Methods
+        BoundingBox.prototype.getWorldMatrix = function () {
+            return this._worldMatrix;
+        };
+
         BoundingBox.prototype._update = function (world) {
             BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
@@ -72,6 +76,8 @@
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 0, this.directions[0]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 4, this.directions[1]);
             BABYLON.Vector3.FromFloatArrayToRef(world.m, 8, this.directions[2]);
+
+            this._worldMatrix = world;
         };
 
         BoundingBox.prototype.isInFrustum = function (frustumPlanes) {
@@ -94,9 +100,7 @@
         };
 
         BoundingBox.prototype.intersectsSphere = function (sphere) {
-            var vector = BABYLON.Vector3.Clamp(sphere.centerWorld, this.minimumWorld, this.maximumWorld);
-            var num = BABYLON.Vector3.DistanceSquared(sphere.centerWorld, vector);
-            return (num <= (sphere.radiusWorld * sphere.radiusWorld));
+            return BoundingBox.IntersectsSphere(this.minimumWorld, this.maximumWorld, sphere.centerWorld, sphere.radiusWorld);
         };
 
         BoundingBox.prototype.intersectsMinMax = function (min, max) {
@@ -124,6 +128,12 @@
                 return false;
 
             return true;
+        };
+
+        BoundingBox.IntersectsSphere = function (minPoint, maxPoint, sphereCenter, sphereRadius) {
+            var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
+            var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
+            return (num <= (sphereRadius * sphereRadius));
         };
 
         BoundingBox.IsInFrustum = function (boundingVectors, frustumPlanes) {

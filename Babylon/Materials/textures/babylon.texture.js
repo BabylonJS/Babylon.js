@@ -17,13 +17,6 @@ var BABYLON;
             this.uAng = 0;
             this.vAng = 0;
             this.wAng = 0;
-            this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-            this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-            this.coordinatesIndex = 0;
-            this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
-            this.anisotropicFilteringLevel = 4;
-            this.animations = new Array();
-            this.isRenderTarget = false;
 
             this.name = url;
             this.url = url;
@@ -72,7 +65,7 @@ var BABYLON;
             t.z += 0.5;
         };
 
-        Texture.prototype._computeTextureMatrix = function () {
+        Texture.prototype.getTextureMatrix = function () {
             if (this.uOffset === this._cachedUOffset && this.vOffset === this._cachedVOffset && this.uScale === this._cachedUScale && this.vScale === this._cachedVScale && this.uAng === this._cachedUAng && this.vAng === this._cachedVAng && this.wAng === this._cachedWAng) {
                 return this._cachedTextureMatrix;
             }
@@ -116,7 +109,7 @@ var BABYLON;
             return this._cachedTextureMatrix;
         };
 
-        Texture.prototype._computeReflectionTextureMatrix = function () {
+        Texture.prototype.getReflectionTextureMatrix = function () {
             if (this.uOffset === this._cachedUOffset && this.vOffset === this._cachedVOffset && this.uScale === this._cachedUScale && this.vScale === this._cachedVScale && this.coordinatesMode === this._cachedCoordinatesMode) {
                 return this._cachedTextureMatrix;
             }
@@ -167,6 +160,10 @@ var BABYLON;
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
             newTexture.level = this.level;
+            newTexture.wrapU = this.wrapU;
+            newTexture.wrapV = this.wrapV;
+            newTexture.coordinatesIndex = this.coordinatesIndex;
+            newTexture.coordinatesMode = this.coordinatesMode;
 
             // Texture
             newTexture.uOffset = this.uOffset;
@@ -176,10 +173,6 @@ var BABYLON;
             newTexture.uAng = this.uAng;
             newTexture.vAng = this.vAng;
             newTexture.wAng = this.wAng;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
 
             return newTexture;
         };

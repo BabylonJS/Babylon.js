@@ -1,13 +1,22 @@
 ﻿module BABYLON {
     export class BaseTexture {
+        public name: string;
         public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
         public hasAlpha = false;
         public level = 1;
-        public isCube = false;
-        public _texture: WebGLTexture;
+        public isCube = false
+        public isRenderTarget = false;
+        public animations = new Array<Animation>();
         public onDispose: () => void;
+        public coordinatesIndex = 0;
+        public coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
+        public wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+        public wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+        public anisotropicFilteringLevel = 4;
+        public _cachedAnisotropicFilteringLevel: number;
 
         private _scene: Scene;
+        public _texture: WebGLTexture;
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -16,7 +25,15 @@
 
         public getScene(): Scene {
             return this._scene;
-        } 
+        }
+
+        public getTextureMatrix(): Matrix {
+            return null;
+        }
+
+        public getReflectionTextureMatrix(): Matrix {
+            return null;
+        }
 
         public getInternalTexture(): WebGLTexture {
             return this._texture;
@@ -90,6 +107,10 @@
 
                 delete this._texture;
             }
+        }
+
+        public clone(): BaseTexture {
+            return null;
         }
 
         public dispose(): void {

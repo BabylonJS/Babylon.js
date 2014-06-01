@@ -111,8 +111,7 @@
         Collider.prototype._canDoCollision = function (sphereCenter, sphereRadius, vecMin, vecMax) {
             var distance = BABYLON.Vector3.Distance(this.basePointWorld, sphereCenter);
 
-            var max = Math.max(this.radius.x, this.radius.y);
-            max = Math.max(max, this.radius.z);
+            var max = Math.max(this.radius.x, this.radius.y, this.radius.z);
 
             if (distance > this.velocityWorldLength + max + sphereRadius) {
                 return false;

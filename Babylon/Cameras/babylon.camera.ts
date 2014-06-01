@@ -17,8 +17,8 @@
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
         public viewport = new Viewport(0, 0, 1.0, 1.0);
-        public layerMask: number = 0xFFFFFFFF;
         public subCameras = [];
+        public layerMask: number = 0xFFFFFFFF;
 
         private _computedViewMatrix = BABYLON.Matrix.Identity();
         private _projectionMatrix = new BABYLON.Matrix();

@@ -22,28 +22,67 @@
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
 
+            var effectiveRender = function (useBones, mesh, renderMesh, subMesh) {
+                // World
+                var world = mesh.getWorldMatrix();
+                if (useBones) {
+                    _this._effect.setMatrix("world", world);
+                } else {
+                    world.multiplyToRef(_this.getTransformMatrix(), _this._worldViewProjection);
+                    _this._effect.setMatrix("worldViewProjection", _this._worldViewProjection);
+                }
+
+                // Draw
+                renderMesh._draw(subMesh, true);
+            };
+
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
-                var world = mesh.getWorldMatrix();
-                var engine = _this._scene.getEngine();
+                var scene = _this._scene;
+                var engine = scene.getEngine();
 
                 if (_this.isReady(mesh)) {
+                    // Managing instances
+                    var batch = mesh._getInstancesRenderList();
+
+                    if (batch.mustReturn) {
+                        return;
+                    }
+
                     engine.enableEffect(_this._effect);
+                    mesh._bind(subMesh, _this._effect, false);
+
+                    // Alpha test
+                    if (mesh.material && mesh.material.needAlphaTesting()) {
+                        var alphaTexture = mesh.material.getAlphaTestTexture();
+                        _this._effect.setTexture("diffuseSampler", alphaTexture);
+                        _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
 
                     // Bones
-                    if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                        _this._effect.setMatrix("world", world);
+                    var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+
+                    if (useBones) {
                         _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
 
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-                    } else {
-                        world.multiplyToRef(_this.getTransformMatrix(), _this._worldViewProjection);
-                        _this._effect.setMatrix("worldViewProjection", _this._worldViewProjection);
                     }
 
-                    // Bind and draw
-                    mesh.bindAndDraw(subMesh, _this._effect, false);
+                    if (batch.renderSelf) {
+                        effectiveRender(useBones, mesh, mesh, subMesh);
+                    }
+
+                    if (batch.visibleInstances) {
+                        for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                            var instance = batch.visibleInstances[instanceIndex];
+
+                            effectiveRender(useBones, instance, mesh, subMesh);
+                        }
+                    }
+                } else {
+                    // Need to reset refresh rate of the shadowMap
+                    _this._shadowMap.resetRefreshCounter();
                 }
             };
 
@@ -73,6 +112,21 @@
             }
 
             var attribs = [BABYLON.VertexBuffer.PositionKind];
+
+            // Alpha test
+            if (mesh.material && mesh.material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Bones
             if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
@@ -84,7 +138,7 @@
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "worldViewProjection"], [], join);
+                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "worldViewProjection", "diffuseMatrix"], ["diffuseSampler"], join);
             }
 
             return this._effect.isReady();

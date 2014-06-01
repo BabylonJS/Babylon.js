@@ -1,7 +1,7 @@
 ﻿// ANY
 declare module BABYLON {
     export class Database {
-        static isUASupportingBlobStorage:  boolean;
+        static isUASupportingBlobStorage: boolean;
     }
 }
 
@@ -74,6 +74,23 @@ module BABYLON {
 
         public static ToRadians(angle: number): number {
             return angle * Math.PI / 180;
+        }
+
+        public static ExtractMinAndMaxIndexed(positions: number[], indices: number[], indexStart:number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+            var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+            for (var index = indexStart; index < indexStart + indexCount; index ++) {
+                var current = new Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
+
+                minimum = BABYLON.Vector3.Minimize(current, minimum);
+                maximum = BABYLON.Vector3.Maximize(current, maximum);
+            }
+
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
         }
 
         public static ExtractMinAndMax(positions: number[], start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
@@ -184,7 +201,7 @@ module BABYLON {
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) { 
+            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -266,6 +283,23 @@ module BABYLON {
         }
 
         // Misc.        
+
+        public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
+            if (v.x < min.x)
+                min.x = v.x;
+            if (v.y < min.y)
+                min.y = v.y;
+            if (v.z < min.z)
+                min.z = v.z;
+
+            if (v.x > max.x)
+                max.x = v.x;
+            if (v.y > max.y)
+                max.y = v.y;
+            if (v.z > max.z)
+                max.z = v.z;
+        }
+
         public static WithinEpsilon(a: number, b: number): boolean {
             var num = a - b;
             return -1.401298E-45 <= num && num <= 1.401298E-45;

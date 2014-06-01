@@ -184,7 +184,7 @@
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
-        public setTexture(channel: string, texture: Texture): void {
+        public setTexture(channel: string, texture: BaseTexture): void {
             this._engine.setTexture(this._samplers.indexOf(channel), texture);
         }
 

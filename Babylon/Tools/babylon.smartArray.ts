@@ -30,7 +30,7 @@
             this.length = 0;
         }
 
-        public concat(array: SmartArray<T>): void {
+        public concat(array: any): void {
             if (array.length === 0) {
                 return;
             }
@@ -43,7 +43,7 @@
             }
         }
 
-        public concatWithNoDuplicate(array: SmartArray<T>): void {
+        public concatWithNoDuplicate(array: any): void {
             if (array.length === 0) {
                 return;
             }

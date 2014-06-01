@@ -113,7 +113,7 @@
             return true;
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix): void {
             // Std values
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);

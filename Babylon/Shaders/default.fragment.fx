@@ -555,7 +555,7 @@ void main(void) {
 
 	if (vReflectionInfos.z != 0.0)
 	{
-		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;
+		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y * shadow;
 	}
 	else
 	{
@@ -568,7 +568,7 @@ void main(void) {
 
 		coords.y = 1.0 - coords.y;
 
-		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y;
+		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;
 	}
 #endif
 

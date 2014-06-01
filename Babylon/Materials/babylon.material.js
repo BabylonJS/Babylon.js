@@ -37,6 +37,10 @@
             return false;
         };
 
+        Material.prototype.getAlphaTestTexture = function () {
+            return null;
+        };
+
         Material.prototype.trackCreation = function (onCompiled, onError) {
         };
 

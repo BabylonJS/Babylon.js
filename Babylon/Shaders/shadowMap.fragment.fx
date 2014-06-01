@@ -26,8 +26,18 @@ vec2 packHalf(float depth)
 varying vec4 vPosition;
 #endif
 
+#ifdef ALPHATEST
+varying vec2 vUV;
+uniform sampler2D diffuseSampler;
+#endif
+
 void main(void)
 {
+#ifdef ALPHATEST
+	if (texture2D(diffuseSampler, vUV).a < 0.4)
+		discard;
+#endif
+
 #ifdef VSM
 	float moment1 = gl_FragCoord.z / gl_FragCoord.w;
 	float moment2 = moment1 * moment1;

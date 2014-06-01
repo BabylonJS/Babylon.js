@@ -113,7 +113,7 @@ var BABYLON;
             return true;
         };
 
-        ShaderMaterial.prototype.bind = function (world, mesh) {
+        ShaderMaterial.prototype.bind = function (world) {
             // Std values
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);

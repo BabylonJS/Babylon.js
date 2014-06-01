@@ -26,7 +26,7 @@
         public boundingBox: BoundingBox;
         public boundingSphere: BoundingSphere;
 
-        constructor(minimum: Vector3, maximum: Vector3) {
+        constructor(public minimum: Vector3, public maximum: Vector3) {
             this.boundingBox = new BABYLON.BoundingBox(minimum, maximum);
             this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
         }

@@ -22,6 +22,17 @@ uniform mat4 worldViewProjection;
 varying vec4 vPosition;
 #endif
 
+#ifdef ALPHATEST
+varying vec2 vUV;
+uniform mat4 diffuseMatrix;
+#ifdef UV1
+attribute vec2 uv;
+#endif
+#ifdef UV2
+attribute vec2 uv2;
+#endif
+#endif
+
 void main(void)
 {
 #ifdef BONES
@@ -36,5 +47,14 @@ void main(void)
 	vPosition = worldViewProjection * vec4(position, 1.0);
 #endif
 	gl_Position = worldViewProjection * vec4(position, 1.0);
+#endif
+
+#ifdef ALPHATEST
+#ifdef UV1
+	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+#endif
+#ifdef UV2
+	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+#endif
 #endif
 }

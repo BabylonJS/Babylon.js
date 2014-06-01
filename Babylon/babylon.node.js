@@ -126,6 +126,22 @@
 
             return results;
         };
+
+        Node.prototype._setReady = function (state) {
+            if (state == this._isReady) {
+                return;
+            }
+
+            if (!state) {
+                this._isReady = false;
+                return;
+            }
+
+            this._isReady = true;
+            if (this.onReady) {
+                this.onReady(this);
+            }
+        };
         return Node;
     })();
     BABYLON.Node = Node;

@@ -14,6 +14,8 @@ var BABYLON;
             this.renderParticles = true;
             this.renderSprites = false;
             this.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
+            this._currentRefreshId = -1;
+            this._refreshRate = 1;
 
             this.name = name;
             this.isRenderTarget = true;
@@ -26,6 +28,39 @@ var BABYLON;
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
         }
+        RenderTargetTexture.prototype.resetRefreshCounter = function () {
+            this._currentRefreshId = -1;
+        };
+
+        Object.defineProperty(RenderTargetTexture.prototype, "refreshRate", {
+            get: function () {
+                return this._refreshRate;
+            },
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            set: function (value) {
+                this._refreshRate = value;
+                this.resetRefreshCounter();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        RenderTargetTexture.prototype._shouldRender = function () {
+            if (this._currentRefreshId === -1) {
+                this._currentRefreshId = 1;
+                return true;
+            }
+
+            if (this.refreshRate == this._currentRefreshId) {
+                this._currentRefreshId = 1;
+                return true;
+            }
+
+            this._currentRefreshId++;
+            return false;
+        };
+
         RenderTargetTexture.prototype.getRenderSize = function () {
             return this._size;
         };
@@ -66,13 +101,21 @@ var BABYLON;
             for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
                 var mesh = this.renderList[meshIndex];
 
-                if (mesh && mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
-                    mesh._activate(scene.getRenderId());
+                if (mesh) {
+                    if (!mesh.isReady() || (mesh.material && !mesh.material.isReady())) {
+                        // Reset _currentRefreshId
+                        this.resetRefreshCounter();
+                        continue;
+                    }
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-                        scene._activeVertices += subMesh.verticesCount;
-                        this._renderingManager.dispatch(subMesh);
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
+                        mesh._activate(scene.getRenderId());
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            scene._activeVertices += subMesh.verticesCount;
+                            this._renderingManager.dispatch(subMesh);
+                        }
                     }
                 }
             }

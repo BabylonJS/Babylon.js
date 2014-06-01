@@ -167,7 +167,7 @@
 
         // Cache
         private _loadedTexturesCache = new Array<WebGLTexture>();
-        public _activeTexturesCache = new Array<Texture>();
+        public _activeTexturesCache = new Array<BaseTexture>();
         private _currentEffect: Effect;
         private _cullingState: boolean;
         private _compiledEffects = {};
@@ -499,15 +499,15 @@
 
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, length?: number): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-            if (length && length != vertices.length) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
-            } else {
+            //if (length && length != vertices.length) {
+            //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
+            //} else {
                 if (vertices instanceof Float32Array) {
                     this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
                 } else {
                     this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
                 }
-            }
+          //  }
 
             this._resetVertexBufferBinding();
         }
@@ -1147,7 +1147,7 @@
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
         }
 
-        public setTexture(channel: number, texture: Texture): void {
+        public setTexture(channel: number, texture: BaseTexture): void {
             if (channel < 0) {
                 return;
             }
@@ -1230,7 +1230,7 @@
             }
         }
 
-        public _setAnisotropicLevel(key: number, texture: Texture) {
+        public _setAnisotropicLevel(key: number, texture: BaseTexture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
 
             if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
