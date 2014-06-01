@@ -50,7 +50,7 @@
             this._scaledDirection = BABYLON.Vector3.Zero();
             this._scaledGravity = BABYLON.Vector3.Zero();
             this._currentRenderId = -1;
-            this._started = true;
+            this._started = false;
             this._stopped = false;
             this._actualFrame = 0;
             this.id = name;
@@ -102,6 +102,10 @@
 
         ParticleSystem.prototype.isAlive = function () {
             return this._alive;
+        };
+
+        ParticleSystem.prototype.isStarted = function () {
+            return this._started;
         };
 
         ParticleSystem.prototype.start = function () {

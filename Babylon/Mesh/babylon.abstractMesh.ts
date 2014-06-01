@@ -38,6 +38,7 @@
         public isVisible = true;
         public isPickable = true;
         public showBoundingBox = false;
+        public showSubMeshesBoundingBox = false;
         public onDispose = null;
         public checkCollisions = false;
         public skeleton: Skeleton;
@@ -45,6 +46,11 @@
         public material: Material;
         public receiveShadows = false;
         public actionManager: ActionManager;
+
+        public useOctreeForRenderingSelection = true;
+        public useOctreeForPicking = true;
+        public useOctreeForCollisions = true;
+
         public layerMask: number = 0xFFFFFFFF;
 
         // Physics
@@ -73,8 +79,11 @@
         private _pivotMatrix = BABYLON.Matrix.Identity();
         public _isDisposed = false;
         public _renderId = 0;
+        public _traversalId = -1;
+        private _collisionTraversalId = 0;
 
         public subMeshes: SubMesh[];
+        public _submeshesOctree: Octree<SubMesh>;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -510,6 +519,24 @@
             this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
         }
 
+        // Submeshes octree
+
+        /**
+        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
+        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
+        */
+        public createOrUpdateSubmeshesOctree(capacity?: number): void {
+            if (!this._submeshesOctree) {
+                this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, capacity);
+            }
+
+            this.computeWorldMatrix(true);            
+
+            // Update octree
+            var bbox = this.getBoundingInfo().boundingBox;
+            this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
+        }
+
         // Collisions
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): void {
             this._generatePointsArray();
@@ -528,12 +555,35 @@
             collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
         }
 
-        public _processCollisionsForSubModels(collider: Collider, transformMatrix: Matrix): void {
-            for (var index = 0; index < this.subMeshes.length; index++) {
-                var subMesh = this.subMeshes[index];
+        public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {
+            var subMeshes: SubMesh[];
+            var len: number;            
+
+            // Octrees
+            if (this._submeshesOctree && this.useOctreeForCollisions) {
+                var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
+                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius, true);
+
+                len = intersections.length;
+                subMeshes = intersections.data;
+            } else {
+                subMeshes = this.subMeshes;
+                len = subMeshes.length;
+            }
+
+            this._collisionTraversalId++;
+
+            for (var index = 0; index < len; index++) {
+                var subMesh = subMeshes[index];
+
+                if (subMesh._collisionTraversalId === this._collisionTraversalId) {
+                    continue;
+                }
+
+                subMesh._collisionTraversalId = this._collisionTraversalId;
 
                 // Bounding test
-                if (this.subMeshes.length > 1 && !subMesh._checkCollision(collider))
+                if (len > 1 && !subMesh._checkCollision(collider))
                     continue;
 
                 this._collideForSubMesh(subMesh, transformMatrix, collider);
@@ -549,7 +599,7 @@
             BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
 
-            this._processCollisionsForSubModels(collider, this._collisionsTransformMatrix);
+            this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
         }
 
         // Picking
@@ -570,11 +620,26 @@
 
             var intersectInfo: IntersectionInfo = null;
 
-            for (var index = 0; index < this.subMeshes.length; index++) {
-                var subMesh = this.subMeshes[index];
+            // Octrees
+            var subMeshes: SubMesh[];
+            var len: number;
+
+            if (this._submeshesOctree && this.useOctreeForPicking) {
+                var worldRay = Ray.Transform(ray, this.getWorldMatrix());
+                var intersections = this._submeshesOctree.intersectsRay(worldRay);
+
+                len = intersections.length;
+                subMeshes = intersections.data;
+            } else {
+                subMeshes = this.subMeshes;
+                len = subMeshes.length;
+            }
+
+            for (var index = 0; index < len; index++) {
+                var subMesh = subMeshes[index];
 
                 // Bounding test
-                if (this.subMeshes.length > 1 && !subMesh.canIntersects(ray))
+                if (len > 1 && !subMesh.canIntersects(ray))
                     continue;
 
                 var currentIntersectInfo = subMesh.intersects(ray, this._positions, this.getIndices(), fastCheck);

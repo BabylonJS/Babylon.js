@@ -76,7 +76,7 @@
         private _currentRenderId = -1;
 
         private _alive: boolean;
-        private _started = true;
+        private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
@@ -132,6 +132,10 @@
 
         public isAlive(): boolean {
             return this._alive;
+        }
+
+        public isStarted(): boolean {
+            return this._started;
         }
 
         public start(): void {

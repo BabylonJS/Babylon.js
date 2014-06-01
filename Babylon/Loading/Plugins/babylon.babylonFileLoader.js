@@ -303,7 +303,7 @@ var BABYLON = BABYLON || {};
     var parseCamera = function (parsedCamera, scene) {
         var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
         camera.id = parsedCamera.id;
-        
+
         BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
 
         // Parent
@@ -349,14 +349,13 @@ var BABYLON = BABYLON || {};
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
         }
 
-        
         // Layer Mask
-        if (parsedCamera.layerMask && (parseInt(parsedCamera.layerMask) != NaN)) {
-          camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
+        if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
+            camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
         } else {
-          camera.layerMask = 0xFFFFFFFF;
+            camera.layerMask = 0xFFFFFFFF;
         }
-        
+
         return camera;
     };
 
@@ -504,7 +503,7 @@ var BABYLON = BABYLON || {};
     var parseMesh = function (parsedMesh, scene, rootUrl) {
         var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
-        
+
         BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
 
         mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
@@ -544,7 +543,7 @@ var BABYLON = BABYLON || {};
         if (parsedMesh.parentId) {
             mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
         }
-        
+
         // Geometry
         if (parsedMesh.delayLoadingFile) {
             mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
@@ -624,10 +623,10 @@ var BABYLON = BABYLON || {};
         }
 
         // Layer Mask
-        if (parsedMesh.layerMask && (parseInt(parsedMesh.layerMask) != NaN)) {
-          mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
+        if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {
+            mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
         } else {
-          mesh.layerMask = 0xFFFFFFFF;
+            mesh.layerMask = 0xFFFFFFFF;
         }
 
         return mesh;
@@ -718,19 +717,19 @@ var BABYLON = BABYLON || {};
         }
 
         else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
-            mesh.setVerticesData(parsedGeometry.positions, BABYLON.VertexBuffer.PositionKind, false);
-            mesh.setVerticesData(parsedGeometry.normals, BABYLON.VertexBuffer.NormalKind, false);
+            mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, parsedGeometry.positions, false);
+            mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, parsedGeometry.normals, false);
 
             if (parsedGeometry.uvs) {
-                mesh.setVerticesData(parsedGeometry.uvs, BABYLON.VertexBuffer.UVKind, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, parsedGeometry.uvs, false);
             }
 
             if (parsedGeometry.uvs2) {
-                mesh.setVerticesData(parsedGeometry.uvs2, BABYLON.VertexBuffer.UV2Kind, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
             }
 
             if (parsedGeometry.colors) {
-                mesh.setVerticesData(parsedGeometry.colors, BABYLON.VertexBuffer.ColorKind, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, parsedGeometry.colors, false);
             }
 
             if (parsedGeometry.matricesIndices) {
@@ -746,15 +745,15 @@ var BABYLON = BABYLON || {};
                         floatIndices.push(matricesIndex >> 24);
                     }
 
-                    mesh.setVerticesData(floatIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, floatIndices, false);
                 } else {
                     delete parsedGeometry.matricesIndices._isExpanded;
-                    mesh.setVerticesData(parsedGeometry.matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind, false);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, false);
                 }
             }
 
             if (parsedGeometry.matricesWeights) {
-                mesh.setVerticesData(parsedGeometry.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, false);
             }
 
             mesh.setIndices(parsedGeometry.indices);

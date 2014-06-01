@@ -1,7 +1,6 @@
 ﻿
 var BABYLON;
 (function (BABYLON) {
-    // We're mainly based on the logic defined into the FreeCamera code
     var FilesInput = (function () {
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
         /// loading progress callback and optionnal addionnal logic to call in the rendering loop
@@ -61,6 +60,7 @@ var BABYLON;
         };
 
         FilesInput.prototype.loadFiles = function (event) {
+            var _this = this;
             var that = this;
             if (this.startingProcessingFilesCallback)
                 this.startingProcessingFilesCallback();
@@ -113,8 +113,8 @@ var BABYLON;
                             });
                         });
                     }, function (progress) {
-                        if (that.progressCallback) {
-                            that.progressCallback(progress);
+                        if (_this.progressCallback) {
+                            _this.progressCallback(progress);
                         }
                     });
                 } else {

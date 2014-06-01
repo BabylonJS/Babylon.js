@@ -1843,19 +1843,19 @@
         }
 
         // Methods
-        public intersectsBox(box: BoundingBox): boolean {
+        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
 
             if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < box.minimum.x || this.origin.x > box.maximum.x) {
+                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             }
             else {
                 var inv = 1.0 / this.direction.x;
-                var min = (box.minimum.x - this.origin.x) * inv;
-                var max = (box.maximum.x - this.origin.x) * inv;
+                var min = (minimum.x - this.origin.x) * inv;
+                var max = (maximum.x - this.origin.x) * inv;
 
                 if (min > max) {
                     var temp = min;
@@ -1872,14 +1872,14 @@
             }
 
             if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < box.minimum.y || this.origin.y > box.maximum.y) {
+                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.y;
-                min = (box.minimum.y - this.origin.y) * inv;
-                max = (box.maximum.y - this.origin.y) * inv;
+                min = (minimum.y - this.origin.y) * inv;
+                max = (maximum.y - this.origin.y) * inv;
 
                 if (min > max) {
                     temp = min;
@@ -1896,14 +1896,14 @@
             }
 
             if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < box.minimum.z || this.origin.z > box.maximum.z) {
+                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
                     return false;
                 }
             }
             else {
                 inv = 1.0 / this.direction.z;
-                min = (box.minimum.z - this.origin.z) * inv;
-                max = (box.maximum.z - this.origin.z) * inv;
+                min = (minimum.z - this.origin.z) * inv;
+                max = (maximum.z - this.origin.z) * inv;
 
                 if (min > max) {
                     temp = min;
@@ -1919,6 +1919,10 @@
                 }
             }
             return true;
+        }
+
+        public intersectsBox(box: BoundingBox): boolean {
+            return this.intersectsBoxMinMax(box.minimum, box.maximum);
         }
 
         public intersectsSphere(sphere): boolean {

@@ -45,6 +45,10 @@
             return false;
         }
 
+        public getAlphaTestTexture(): BaseTexture {
+            return null;
+        }
+
         public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
         }
 

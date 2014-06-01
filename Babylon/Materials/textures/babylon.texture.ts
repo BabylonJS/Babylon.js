@@ -17,7 +17,6 @@
         public static MIRROR_ADDRESSMODE = 2;
 
         // Members
-        public name: string;
         public url: string;
         public uOffset = 0;
         public vOffset = 0;
@@ -26,13 +25,6 @@
         public uAng = 0;
         public vAng = 0;
         public wAng = 0;
-        public wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-        public wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-        public coordinatesIndex = 0;
-        public coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
-        public anisotropicFilteringLevel = 4;
-        public animations = new Array<Animation>();
-        public isRenderTarget = false;
 
         private _noMipmap: boolean;
         public _invertY: boolean;
@@ -43,7 +35,6 @@
         private _t1: Vector3;
         private _t2: Vector3;
 
-        public _cachedAnisotropicFilteringLevel: number;
         private _cachedUOffset: number;
         private _cachedVOffset: number;
         private _cachedUScale: number;
@@ -104,7 +95,7 @@
             t.z += 0.5;
         }
 
-        public _computeTextureMatrix(): Matrix {
+        public getTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
@@ -149,7 +140,7 @@
             return this._cachedTextureMatrix;
         }
 
-        public _computeReflectionTextureMatrix(): Matrix {
+        public getReflectionTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
                 this.vOffset === this._cachedVOffset &&
@@ -205,6 +196,10 @@
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
             newTexture.level = this.level;
+            newTexture.wrapU = this.wrapU;
+            newTexture.wrapV = this.wrapV;
+            newTexture.coordinatesIndex = this.coordinatesIndex;
+            newTexture.coordinatesMode = this.coordinatesMode;
 
             // Texture
             newTexture.uOffset = this.uOffset;
@@ -214,10 +209,6 @@
             newTexture.uAng = this.uAng;
             newTexture.vAng = this.vAng;
             newTexture.wAng = this.wAng;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
 
             return newTexture;
         }

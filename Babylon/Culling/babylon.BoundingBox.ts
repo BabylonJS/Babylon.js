@@ -8,6 +8,8 @@
         public minimumWorld: Vector3;
         public maximumWorld: Vector3;
 
+        private _worldMatrix: Matrix;
+
         constructor(public minimum: Vector3, public maximum: Vector3) {
             // Bounding vectors            
             this.vectors.push(this.minimum.clone());
@@ -47,6 +49,10 @@
         }
 
         // Methods
+        public getWorldMatrix(): Matrix {
+            return this._worldMatrix;
+        }
+
         public _update(world: Matrix): void {
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
@@ -77,6 +83,8 @@
             Vector3.FromFloatArrayToRef(world.m, 0, this.directions[0]);
             Vector3.FromFloatArrayToRef(world.m, 4, this.directions[1]);
             Vector3.FromFloatArrayToRef(world.m, 8, this.directions[2]);
+
+            this._worldMatrix = world;
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
@@ -99,9 +107,7 @@
         }
 
         public intersectsSphere(sphere: BoundingSphere): boolean {
-            var vector = BABYLON.Vector3.Clamp(sphere.centerWorld, this.minimumWorld, this.maximumWorld);
-            var num = BABYLON.Vector3.DistanceSquared(sphere.centerWorld, vector);
-            return (num <= (sphere.radiusWorld * sphere.radiusWorld));
+            return BoundingBox.IntersectsSphere(this.minimumWorld, this.maximumWorld, sphere.centerWorld, sphere.radiusWorld);
         }
 
         public intersectsMinMax(min: Vector3, max: Vector3): boolean {
@@ -129,6 +135,12 @@
                 return false;
 
             return true;
+        }
+
+        public static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean {
+            var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
+            var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
+            return (num <= (sphereRadius * sphereRadius));
         }
 
         public static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {

@@ -50,6 +50,10 @@ var BABYLON;
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         };
 
+        StandardMaterial.prototype.getAlphaTestTexture = function () {
+            return this.diffuseTexture;
+        };
+
         // Methods
         StandardMaterial.prototype.isReady = function (mesh) {
             if (this.checkReadyOnlyOnce) {
@@ -295,7 +299,7 @@ var BABYLON;
                 this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
                 this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                this._effect.setMatrix("diffuseMatrix", this.diffuseTexture._computeTextureMatrix());
+                this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
 
                 this._baseColor.copyFromFloats(1, 1, 1);
             }
@@ -304,14 +308,14 @@ var BABYLON;
                 this._effect.setTexture("ambientSampler", this.ambientTexture);
 
                 this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
-                this._effect.setMatrix("ambientMatrix", this.ambientTexture._computeTextureMatrix());
+                this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
             }
 
             if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
                 this._effect.setTexture("opacitySampler", this.opacityTexture);
 
                 this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                this._effect.setMatrix("opacityMatrix", this.opacityTexture._computeTextureMatrix());
+                this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
             }
 
             if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
@@ -321,7 +325,7 @@ var BABYLON;
                     this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                 }
 
-                this._effect.setMatrix("reflectionMatrix", this.reflectionTexture._computeReflectionTextureMatrix());
+                this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
                 this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
             }
 
@@ -329,21 +333,21 @@ var BABYLON;
                 this._effect.setTexture("emissiveSampler", this.emissiveTexture);
 
                 this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                this._effect.setMatrix("emissiveMatrix", this.emissiveTexture._computeTextureMatrix());
+                this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
             }
 
             if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
                 this._effect.setTexture("specularSampler", this.specularTexture);
 
                 this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
+                this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
             }
 
             if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
                 this._effect.setTexture("bumpSampler", this.bumpTexture);
 
                 this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
-                this._effect.setMatrix("bumpMatrix", this.bumpTexture._computeTextureMatrix());
+                this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
             }
 
             // Colors

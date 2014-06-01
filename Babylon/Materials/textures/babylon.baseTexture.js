@@ -6,11 +6,26 @@
             this.hasAlpha = false;
             this.level = 1;
             this.isCube = false;
+            this.isRenderTarget = false;
+            this.animations = new Array();
+            this.coordinatesIndex = 0;
+            this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
+            this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+            this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            this.anisotropicFilteringLevel = 4;
             this._scene = scene;
             this._scene.textures.push(this);
         }
         BaseTexture.prototype.getScene = function () {
             return this._scene;
+        };
+
+        BaseTexture.prototype.getTextureMatrix = function () {
+            return null;
+        };
+
+        BaseTexture.prototype.getReflectionTextureMatrix = function () {
+            return null;
         };
 
         BaseTexture.prototype.getInternalTexture = function () {
@@ -85,6 +100,10 @@
 
                 delete this._texture;
             }
+        };
+
+        BaseTexture.prototype.clone = function () {
+            return null;
         };
 
         BaseTexture.prototype.dispose = function () {

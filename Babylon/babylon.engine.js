@@ -468,16 +468,17 @@
 
         Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-            if (length && length != vertices.length) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
+
+            //if (length && length != vertices.length) {
+            //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
+            //} else {
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
             } else {
-                if (vertices instanceof Float32Array) {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
-                } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
-                }
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
             }
 
+            //  }
             this._resetVertexBufferBinding();
         };
 

@@ -61,6 +61,23 @@ var BABYLON;
             return angle * Math.PI / 180;
         };
 
+        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
+            var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+            for (var index = indexStart; index < indexStart + indexCount; index++) {
+                var current = new BABYLON.Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
+
+                minimum = BABYLON.Vector3.Minimize(current, minimum);
+                maximum = BABYLON.Vector3.Maximize(current, maximum);
+            }
+
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        };
+
         Tools.ExtractMinAndMax = function (positions, start, count) {
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -243,6 +260,22 @@ var BABYLON;
         };
 
         // Misc.
+        Tools.CheckExtends = function (v, min, max) {
+            if (v.x < min.x)
+                min.x = v.x;
+            if (v.y < min.y)
+                min.y = v.y;
+            if (v.z < min.z)
+                min.z = v.z;
+
+            if (v.x > max.x)
+                max.x = v.x;
+            if (v.y > max.y)
+                max.y = v.y;
+            if (v.z > max.z)
+                max.z = v.z;
+        };
+
         Tools.WithinEpsilon = function (a, b) {
             var num = a - b;
             return -1.401298E-45 <= num && num <= 1.401298E-45;

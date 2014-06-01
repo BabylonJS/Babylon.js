@@ -1,18 +1,23 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var SubMesh = (function () {
-        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh) {
+        function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox) {
+            if (typeof createBoundingBox === "undefined") { createBoundingBox = true; }
             this.materialIndex = materialIndex;
             this.verticesStart = verticesStart;
             this.verticesCount = verticesCount;
             this.indexStart = indexStart;
             this.indexCount = indexCount;
             this._renderId = 0;
+            this._traversalId = -1;
+            this._collisionTraversalId = -1;
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);
 
-            this.refreshBoundingInfo();
+            if (createBoundingBox) {
+                this.refreshBoundingInfo();
+            }
         }
         SubMesh.prototype.getBoundingInfo = function () {
             return this._boundingInfo;
@@ -50,7 +55,14 @@
                 return;
             }
 
-            var extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+            var indices = this._renderingMesh.getIndices();
+            var extend;
+
+            if (this.indexStart === 0 && this.indexCount === indices.length) {
+                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+            } else {
+                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
+            }
             this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
         };
 
@@ -118,7 +130,11 @@
 
         // Clone
         SubMesh.prototype.clone = function (newMesh, newRenderingMesh) {
-            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh);
+            var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
+
+            result._boundingInfo = new BABYLON.BoundingInfo(this._boundingInfo.minimum, this._boundingInfo.maximum);
+
+            return result;
         };
 
         // Dispose
@@ -150,7 +166,7 @@
                     maxVertexIndex = vertexIndex;
             }
 
-            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh, renderingMesh);
+            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         };
         return SubMesh;
     })();

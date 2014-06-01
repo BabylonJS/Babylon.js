@@ -6,9 +6,11 @@
 
         public animations = new Array<Animation>();
 
+        public onReady: (node: Node) => void;
+
         private _childrenFlag = -1;
         private _isEnabled = true;
-        public _isReady = true;
+        private _isReady = true;
         public _currentRenderId = -1;
 
         private _scene: Scene;
@@ -135,6 +137,22 @@
             this._getDescendants(this._scene.cameras, results);
 
             return results;
+        }
+
+        public _setReady(state: boolean): void {
+            if (state == this._isReady) {
+                return;
+            }
+
+            if (!state) {
+                this._isReady = false;
+                return;
+            }
+
+            this._isReady = true;
+            if (this.onReady) {
+                this.onReady(this);
+            }
         }
     }
 } 

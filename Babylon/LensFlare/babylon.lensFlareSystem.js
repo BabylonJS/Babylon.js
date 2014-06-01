@@ -12,7 +12,7 @@
             scene.lensFlareSystems.push(this);
 
             this.meshesSelectionPredicate = function (m) {
-                return m.material && m.isVisible && m.isEnabled() && m.checkCollisions;
+                return m.material && m.isVisible && m.isEnabled() && m.checkCollisions && ((m.layerMask & scene.activeCamera.layerMask) != 0);
             };
 
             // VBO

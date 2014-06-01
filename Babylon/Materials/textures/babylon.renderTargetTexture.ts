@@ -10,9 +10,11 @@
 
         private _size: number;
         public _generateMipMaps: boolean;
-        private _renderingManager
+        private _renderingManager: RenderingManager;
         public _waitingRenderList: string[];
         private _doNotChangeAspectRatio: boolean;
+        private _currentRefreshId = -1;
+        private _refreshRate = 1;
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean) {
             super(null, scene, !generateMipMaps);
@@ -27,6 +29,35 @@
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
+        }
+
+        public resetRefreshCounter(): void {
+            this._currentRefreshId = -1;
+        }
+
+        public get refreshRate(): number {
+            return this._refreshRate;
+        }
+
+        // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+        public set refreshRate(value: number) {
+            this._refreshRate = value;
+            this.resetRefreshCounter();
+        }
+
+        public _shouldRender(): boolean {
+            if (this._currentRefreshId === -1) { // At least render once
+                this._currentRefreshId = 1;
+                return true;
+            }
+
+            if (this.refreshRate == this._currentRefreshId) {
+                this._currentRefreshId = 1;
+                return true;
+            }
+
+            this._currentRefreshId++;
+            return false;
         }
 
         public getRenderSize(): number {
@@ -69,13 +100,21 @@
             for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
                 var mesh = this.renderList[meshIndex];
 
-                if (mesh && mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
-                    mesh._activate(scene.getRenderId());
+                if (mesh) {
+                    if (!mesh.isReady() || (mesh.material && !mesh.material.isReady())) {
+                        // Reset _currentRefreshId
+                        this.resetRefreshCounter();
+                        continue;
+                    }
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-                        scene._activeVertices += subMesh.verticesCount;
-                        this._renderingManager.dispatch(subMesh);
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
+                        mesh._activate(scene.getRenderId());
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            scene._activeVertices += subMesh.verticesCount;
+                            this._renderingManager.dispatch(subMesh);
+                        }
                     }
                 }
             }
@@ -89,7 +128,6 @@
             }
 
             // Render
-
             this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {

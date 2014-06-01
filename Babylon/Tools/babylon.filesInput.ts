@@ -6,7 +6,6 @@ declare module BABYLON {
 }
 
 module BABYLON {
-    // We're mainly based on the logic defined into the FreeCamera code
     export class FilesInput {
         private engine: BABYLON.Engine;
         private currentScene: BABYLON.Scene;
@@ -113,7 +112,7 @@ module BABYLON {
                         that.currentScene = newScene;
 
                         // Wait for textures and shaders to be ready
-                        that.currentScene.executeWhenReady(function () {
+                        that.currentScene.executeWhenReady(() => {
                             // Attach camera to canvas inputs
                             if (that.currentScene.activeCamera) {
                                 that.currentScene.activeCamera.attachControl(that.canvas);
@@ -121,13 +120,13 @@ module BABYLON {
                             if (that.sceneLoadedCallback) {
                                 that.sceneLoadedCallback(sceneFileToLoad, that.currentScene);
                             }
-                            that.engine.runRenderLoop(function () { that.renderFunction() });
+                            that.engine.runRenderLoop(() => { that.renderFunction(); });
                         });
-                    }, function (progress) {
-                        if (that.progressCallback) {
-                            that.progressCallback(progress);
-                            }
-                        });
+                    }, progress => {
+                        if (this.progressCallback) {
+                            this.progressCallback(progress);
+                        }
+                    });
                 }
                 else {
                     BABYLON.Tools.Error("Please provide a valid .babylon file.");

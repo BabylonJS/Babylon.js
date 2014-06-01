@@ -3,7 +3,7 @@
         public frontColor = new BABYLON.Color3(1, 1, 1);
         public backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         public showBackLines = true;
-        public renderList = new BABYLON.SmartArray<Mesh>(32);
+        public renderList = new BABYLON.SmartArray<BoundingBox>(32);
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;
@@ -39,8 +39,7 @@
             engine.setDepthWrite(false);
             this._colorShader._preBind();
             for (var boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
-                var mesh = this.renderList.data[boundingBoxIndex];
-                var boundingBox = mesh.getBoundingInfo().boundingBox;
+                var boundingBox = this.renderList.data[boundingBoxIndex];
                 var min = boundingBox.minimum;
                 var max = boundingBox.maximum;
                 var diff = max.subtract(min);
@@ -48,7 +47,7 @@
 
                 var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
                     .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
-                    .multiply(mesh.getWorldMatrix());
+                    .multiply(boundingBox.getWorldMatrix());
 
                 // VBOs
                 engine.bindBuffers(this._vb.getBuffer(), this._ib, [3], 3 * 4, this._colorShader.getEffect());
@@ -57,7 +56,7 @@
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
                     this._colorShader.setColor3("color", this.backColor);
-                    this._colorShader.bind(worldMatrix, mesh);
+                    this._colorShader.bind(worldMatrix);
 
                     // Draw order
                     engine.draw(false, 0, 24);
@@ -66,7 +65,7 @@
                 // Front
                 engine.setDepthFunctionToLess();
                 this._colorShader.setColor3("color", this.frontColor);
-                this._colorShader.bind(worldMatrix, mesh);
+                this._colorShader.bind(worldMatrix);
 
                 // Draw order
                 engine.draw(false, 0, 24);
