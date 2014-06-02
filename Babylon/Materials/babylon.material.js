@@ -5,6 +5,7 @@
             this.name = name;
             this.checkReadyOnEveryCall = true;
             this.checkReadyOnlyOnce = false;
+            this.state = "";
             this.alpha = 1.0;
             this.wireframe = false;
             this.backFaceCulling = true;

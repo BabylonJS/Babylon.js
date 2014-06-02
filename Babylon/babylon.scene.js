@@ -62,7 +62,6 @@
             this._spritesDuration = 0;
             this._animationRatio = 0;
             this._renderId = 0;
-            this._traversalId = 0;
             this._executeWhenReadyTimeoutId = -1;
             this._toBeDisposed = new BABYLON.SmartArray(256);
             this._onReadyCallbacks = new Array();
@@ -200,6 +199,17 @@
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
+                        switch (evt.buttons) {
+                            case 1:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger);
+                                break;
+                            case 2:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger);
+                                break;
+                            case 3:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger);
+                                break;
+                        }
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
                     }
                 }
@@ -311,27 +321,31 @@
         };
 
         // Animations
-        Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd) {
+        Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
 
+            this.stopAnimation(target);
+
+            if (!animatable) {
+                animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+            }
+
             // Local animations
             if (target.animations) {
-                this.stopAnimation(target);
-
-                var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd);
-
-                this._activeAnimatables.push(animatable);
+                animatable.appendAnimations(target.animations);
             }
 
             // Children animations
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+
+            return animatable;
         };
 
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
@@ -339,28 +353,26 @@
                 speedRatio = 1.0;
             }
 
-            var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd, animations);
+            var animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
 
-            this._activeAnimatables.push(animatable);
+            return animatable;
         };
 
-        Scene.prototype.stopAnimation = function (target) {
-            // Local animations
-            if (target.animations) {
-                for (var index = 0; index < this._activeAnimatables.length; index++) {
-                    if (this._activeAnimatables[index].target === target) {
-                        this._activeAnimatables.splice(index, 1);
-                        return;
-                    }
+        Scene.prototype.getAnimatableByTarget = function (target) {
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    return this._activeAnimatables[index];
                 }
             }
 
-            // Children animations
-            if (target.getAnimatables) {
-                var animatables = target.getAnimatables();
-                for (index = 0; index < animatables.length; index++) {
-                    this.stopAnimation(animatables[index]);
-                }
+            return null;
+        };
+
+        Scene.prototype.stopAnimation = function (target) {
+            var animatable = this.getAnimatableByTarget(target);
+
+            if (animatable) {
+                animatable.stop();
             }
         };
 
@@ -638,7 +650,7 @@
             var len;
 
             if (this._selectionOctree) {
-                var selection = this._selectionOctree.select(this._frustumPlanes, true);
+                var selection = this._selectionOctree.select(this._frustumPlanes);
                 meshes = selection.data;
                 len = selection.length;
             } else {
@@ -646,15 +658,8 @@
                 meshes = this.meshes;
             }
 
-            this._traversalId++;
             for (var meshIndex = 0; meshIndex < len; meshIndex++) {
                 var mesh = meshes[meshIndex];
-
-                if (mesh._traversalId === this._traversalId) {
-                    continue;
-                }
-
-                mesh._traversalId = this._traversalId;
 
                 this._totalVertices += mesh.getTotalVertices();
 
@@ -707,7 +712,7 @@
                 var subMeshes;
 
                 if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes, true);
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
@@ -718,12 +723,6 @@
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
-
-                    if (mesh._traversalId === subMesh._traversalId) {
-                        continue;
-                    }
-
-                    subMesh._traversalId = mesh._traversalId;
 
                     this._evaluateSubMesh(subMesh, mesh);
                 }
@@ -1067,6 +1066,8 @@
 
             // Update octree
             this._selectionOctree.update(min, max, this.meshes);
+
+            return this._selectionOctree;
         };
 
         // Picking

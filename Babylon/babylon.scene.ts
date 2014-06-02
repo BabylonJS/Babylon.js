@@ -114,7 +114,6 @@
         private _animationStartDate: number;
 
         private _renderId = 0;
-        private _traversalId = 0;
         private _executeWhenReadyTimeoutId = -1;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
@@ -133,7 +132,7 @@
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
 
-        private _activeAnimatables = new Array<Internals.Animatable>();
+        public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
         private _pickWithRayInverseMatrix: Matrix;
@@ -262,6 +261,17 @@
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
+                        switch (evt.buttons) {
+                            case 1:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger);
+                                break;
+                            case 2:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger);
+                                break;
+                            case 3:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger);
+                                break;
+                        }
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
                     }
                 }
@@ -373,56 +383,58 @@
         }
 
         // Animations
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
 
+            this.stopAnimation(target);
+
+            if (!animatable) {
+                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+            }
+
             // Local animations
             if (target.animations) {
-                this.stopAnimation(target);
-
-                var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd);
-
-                this._activeAnimatables.push(animatable);
+                animatable.appendAnimations(target.animations);
             }
 
             // Children animations
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+
+            return animatable;
         }
 
-        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
 
-            var animatable = new BABYLON.Internals.Animatable(target, from, to, loop, speedRatio, onAnimationEnd, animations);
+            var animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
 
-            this._activeAnimatables.push(animatable);
+            return animatable;
         }
 
-        public stopAnimation(target: any): void {
-            // Local animations
-            if (target.animations) {
-                for (var index = 0; index < this._activeAnimatables.length; index++) {
-                    if (this._activeAnimatables[index].target === target) {
-                        this._activeAnimatables.splice(index, 1);
-                        return;
-                    }
+        public getAnimatableByTarget(target: any): Animatable {
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    return this._activeAnimatables[index];
                 }
             }
 
-            // Children animations
-            if (target.getAnimatables) {
-                var animatables = target.getAnimatables();
-                for (index = 0; index < animatables.length; index++) {
-                    this.stopAnimation(animatables[index]);
-                }
+            return null;
+        }
+
+        public stopAnimation(target: any): void {
+            var animatable = this.getAnimatableByTarget(target);
+
+            if (animatable) {
+                animatable.stop();
             }
         }
 
@@ -699,7 +711,7 @@
             var len: number;
 
             if (this._selectionOctree) { // Octree
-                var selection = this._selectionOctree.select(this._frustumPlanes, true);
+                var selection = this._selectionOctree.select(this._frustumPlanes);
                 meshes = selection.data;
                 len = selection.length;
             } else { // Full scene traversal
@@ -707,15 +719,8 @@
                 meshes = this.meshes;
             }
 
-            this._traversalId++;
             for (var meshIndex = 0; meshIndex < len; meshIndex++) {
                 var mesh = meshes[meshIndex];
-
-                if (mesh._traversalId === this._traversalId) {
-                    continue;
-                }
-
-                mesh._traversalId = this._traversalId;
 
                 this._totalVertices += mesh.getTotalVertices();
 
@@ -768,7 +773,7 @@
                 var subMeshes: SubMesh[];
 
                 if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes, true);
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
@@ -779,12 +784,6 @@
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
-
-                    if (mesh._traversalId === subMesh._traversalId) {
-                        continue;
-                    }
-
-                    subMesh._traversalId = mesh._traversalId;
 
                     this._evaluateSubMesh(subMesh, mesh);
                 }
@@ -1123,7 +1122,7 @@
         }
 
         // Octrees
-        public createOrUpdateSelectionOctree(): void {
+        public createOrUpdateSelectionOctree(): Octree<AbstractMesh> {
             if (!this._selectionOctree) {
                 this._selectionOctree = new BABYLON.Octree<AbstractMesh>(Octree.CreationFuncForMeshes);
             }
@@ -1143,6 +1142,8 @@
 
             // Update octree
             this._selectionOctree.update(min, max, this.meshes);
+
+            return this._selectionOctree;
         }
 
         // Picking

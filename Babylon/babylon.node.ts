@@ -3,6 +3,7 @@
         public parent: Node;
         public name: string;
         public id: string;
+        public state = "";
 
         public animations = new Array<Animation>();
 

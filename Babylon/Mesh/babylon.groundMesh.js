@@ -25,7 +25,7 @@ var BABYLON;
             if (state) {
                 this.subdivide(this._subdivisions);
 
-                this.createOrUpdateSubmeshesOctree(32);
+                this.createOrUpdateSubmeshesOctree();
             }
 
             _super.prototype._setReady.call(this, state);

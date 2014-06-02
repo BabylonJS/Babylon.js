@@ -48,8 +48,6 @@ var BABYLON;
             this._pivotMatrix = BABYLON.Matrix.Identity();
             this._isDisposed = false;
             this._renderId = 0;
-            this._traversalId = -1;
-            this._collisionTraversalId = 0;
 
             scene.meshes.push(this);
         }
@@ -539,6 +537,8 @@ var BABYLON;
             // Update octree
             var bbox = this.getBoundingInfo().boundingBox;
             this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
+
+            return this._submeshesOctree;
         };
 
         // Collisions
@@ -568,7 +568,7 @@ var BABYLON;
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
                 var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
-                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius, true);
+                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
 
                 len = intersections.length;
                 subMeshes = intersections.data;
@@ -577,16 +577,8 @@ var BABYLON;
                 len = subMeshes.length;
             }
 
-            this._collisionTraversalId++;
-
             for (var index = 0; index < len; index++) {
                 var subMesh = subMeshes[index];
-
-                if (subMesh._collisionTraversalId === this._collisionTraversalId) {
-                    continue;
-                }
-
-                subMesh._collisionTraversalId = this._collisionTraversalId;
 
                 // Bounding test
                 if (len > 1 && !subMesh._checkCollision(collider))
