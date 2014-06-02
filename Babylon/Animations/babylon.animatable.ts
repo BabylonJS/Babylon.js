@@ -9,7 +9,7 @@
 
         constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
             if (animations) {
-                this.appendAnimations(animations);
+                this.appendAnimations(target, animations);
             }
 
             this._scene = scene;
@@ -17,8 +17,13 @@
         }
 
         // Methods
-        public appendAnimations(animations: Animation[]): void {
-            this._animations = this._animations.concat(animations);
+        public appendAnimations(target: any, animations: Animation[]): void {
+            for (var index = 0; index < animations.length; index++) {
+                var animation = animations[index];
+
+                animation._target = target;
+                this._animations.push(animation);    
+            }            
         }
 
         public getAnimationByTargetProperty(property: string) {
@@ -68,7 +73,7 @@
 
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-                var isRunning = animation.animate(this.target, delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
 

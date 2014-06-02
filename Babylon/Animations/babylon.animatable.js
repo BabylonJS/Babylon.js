@@ -16,15 +16,20 @@
             this._paused = false;
             this.animationStarted = false;
             if (animations) {
-                this.appendAnimations(animations);
+                this.appendAnimations(target, animations);
             }
 
             this._scene = scene;
             scene._activeAnimatables.push(this);
         }
         // Methods
-        Animatable.prototype.appendAnimations = function (animations) {
-            this._animations = this._animations.concat(animations);
+        Animatable.prototype.appendAnimations = function (target, animations) {
+            for (var index = 0; index < animations.length; index++) {
+                var animation = animations[index];
+
+                animation._target = target;
+                this._animations.push(animation);
+            }
         };
 
         Animatable.prototype.getAnimationByTargetProperty = function (property) {
@@ -74,7 +79,7 @@
 
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-                var isRunning = animation.animate(this.target, delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
 

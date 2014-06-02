@@ -18,7 +18,7 @@
                 scene.materials.push(this);
             }
         }
-        Material.prototype.isReady = function (mesh) {
+        Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };
 
@@ -53,6 +53,9 @@
         };
 
         Material.prototype.bind = function (world, mesh) {
+        };
+
+        Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
 
         Material.prototype.unbind = function () {

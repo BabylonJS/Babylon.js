@@ -20,7 +20,13 @@ attribute vec4 matricesWeights;
 #endif
 
 // Uniforms
+
+#ifdef INSTANCES
+attribute mat4 world;
+#else
 uniform mat4 world;
+#endif
+
 uniform mat4 view;
 uniform mat4 viewProjection;
 
@@ -219,16 +225,16 @@ void main(void) {
 	// Shadows
 #ifdef SHADOWS
 #ifdef LIGHT0
-	vPositionFromLight0 = lightMatrix0 * vec4(position, 1.0);
+	vPositionFromLight0 = lightMatrix0 * worldPos;
 #endif
 #ifdef LIGHT1
-	vPositionFromLight1 = lightMatrix1 * vec4(position, 1.0);
+	vPositionFromLight1 = lightMatrix1 * worldPos;
 #endif
 #ifdef LIGHT2
-	vPositionFromLight2 = lightMatrix2 * vec4(position, 1.0);
+	vPositionFromLight2 = lightMatrix2 * worldPos;
 #endif
 #ifdef LIGHT3
-	vPositionFromLight3 = lightMatrix3 * vec4(position, 1.0);
+	vPositionFromLight3 = lightMatrix3 * worldPos;
 #endif
 #endif
 

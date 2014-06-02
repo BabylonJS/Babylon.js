@@ -26,7 +26,7 @@
             }
         }
 
-        public isReady(mesh?: AbstractMesh): boolean {
+        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             return true;
         }
 
@@ -61,6 +61,9 @@
         }
 
         public bind(world: Matrix, mesh: Mesh): void {
+        }
+
+        public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         public unbind(): void {

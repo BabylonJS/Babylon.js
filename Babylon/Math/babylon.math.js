@@ -1145,6 +1145,13 @@
             }
         };
 
+        Matrix.prototype.copyToArray = function (array, offset) {
+            if (typeof offset === "undefined") { offset = 0; }
+            for (var index = 0; index < 16; index++) {
+                array[offset + index] = this.m[index];
+            }
+        };
+
         Matrix.prototype.multiplyToRef = function (other, result) {
             this.multiplyToArray(other, result.m, 0);
         };

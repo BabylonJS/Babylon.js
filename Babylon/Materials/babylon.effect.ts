@@ -60,7 +60,13 @@
             return this._attributesNames;
         }
 
-        public getAttribute(index: number): number {
+        public getAttributeLocation(index: number): number {
+            return this._attributes[index];
+        }
+
+        public getAttributeLocationByName(name: string): number {
+            var index = this._attributesNames.indexOf(name);
+
             return this._attributes[index];
         }
 

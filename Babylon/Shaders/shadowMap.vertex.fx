@@ -10,12 +10,15 @@ attribute vec4 matricesWeights;
 #endif
 
 // Uniform
-#ifdef BONES
-uniform mat4 world;
-uniform mat4 mBones[BonesPerMesh];
-uniform mat4 viewProjection;
+#ifdef INSTANCES
+attribute mat4 world;
 #else
-uniform mat4 worldViewProjection;
+uniform mat4 world;
+#endif
+
+uniform mat4 viewProjection;
+#ifdef BONES
+uniform mat4 mBones[BonesPerMesh];
 #endif
 
 #ifndef VSM
@@ -44,9 +47,9 @@ void main(void)
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
 #ifndef VSM
-	vPosition = worldViewProjection * vec4(position, 1.0);
+	vPosition = viewProjection * world * vec4(position, 1.0);
 #endif
-	gl_Position = worldViewProjection * vec4(position, 1.0);
+	gl_Position = viewProjection * world * vec4(position, 1.0);
 #endif
 
 #ifdef ALPHATEST

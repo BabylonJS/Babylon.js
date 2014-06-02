@@ -19,6 +19,8 @@
         public _visibleInstances: any = {};
         private _renderIdForInstances = -1;
         private _batchCache = new _InstancesBatch();
+        private _worldMatricesInstancesBuffer: WebGLBuffer;
+        private _worldMatricesInstancesArray: Float32Array;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -231,7 +233,7 @@
             engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         }
 
-        public _draw(subMesh: SubMesh, useTriangles: boolean): void {
+        public _draw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
@@ -239,13 +241,7 @@
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount);
-        }
-
-        public bindAndDraw(subMesh: SubMesh, effect: Effect): void {
-            this._bind(subMesh, effect, false);
-
-            this._draw(subMesh, true);
+            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
         }
 
         public registerBeforeRender(func: () => void): void {
@@ -294,6 +290,38 @@
             return this._batchCache;
         }
 
+        public _renderWithInstances(subMesh: SubMesh, wireFrame: boolean, batch: _InstancesBatch, effect: Effect, engine: Engine): void {
+            if (!this._worldMatricesInstancesBuffer) {
+                var matricesCount = this.instances.length + 1;
+                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(matricesCount * 16 * 4);
+                this._worldMatricesInstancesArray = new Float32Array(16 * matricesCount);
+            }
+
+            var offset = 0;
+            var instancesCount = 0;
+
+            var world = this.getWorldMatrix();
+            if (batch.renderSelf) {
+                world.copyToArray(this._worldMatricesInstancesArray, offset);
+                offset += 16;
+                instancesCount++;
+            }
+
+            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                var instance = batch.visibleInstances[instanceIndex];
+                instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
+                offset += 16;
+                instancesCount++;
+            }
+
+            var offsetLocation = effect.getAttributeLocationByName("world");
+            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocation);
+
+            this._draw(subMesh, !wireFrame, instancesCount);
+
+            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocation);
+        }
+
         public render(subMesh: SubMesh): void {
             var scene = this.getScene();
 
@@ -313,43 +341,48 @@
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
+            var engine = scene.getEngine();
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null); 
+
             // Material
             var effectiveMaterial = subMesh.getMaterial();
 
-            if (!effectiveMaterial || !effectiveMaterial.isReady(this)) {
+            if (!effectiveMaterial || !effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return;
             }
 
-            var engine = scene.getEngine();
+            effectiveMaterial._preBind();
             var effect = effectiveMaterial.getEffect();
 
             // Bind
             var wireFrame = engine.forceWireframe || effectiveMaterial.wireframe;
             this._bind(subMesh, effect, wireFrame);
-            effectiveMaterial._preBind();
 
-            if (batch.renderSelf) {
-                // World
-                var world = this.getWorldMatrix();
-                effectiveMaterial.bind(world, this);
+            var world = this.getWorldMatrix();
+            effectiveMaterial.bind(world, this);
 
-                // Draw
-                this._draw(subMesh, !wireFrame);
-            }
-
-            if (batch.visibleInstances) {
-                for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
-                    var instance = batch.visibleInstances[instanceIndex];
-
-                    // World
-                    world = instance.getWorldMatrix();
-                    effectiveMaterial.bind(world, this);
-
+            // Instances rendering
+            if (hardwareInstancedRendering) {
+                this._renderWithInstances(subMesh, wireFrame, batch, effect, engine);
+            } else {
+                if (batch.renderSelf) {
                     // Draw
                     this._draw(subMesh, !wireFrame);
                 }
-            }
 
+                if (batch.visibleInstances) {
+                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                        var instance = batch.visibleInstances[instanceIndex];
+
+                        // World
+                        world = instance.getWorldMatrix();
+                        effectiveMaterial.bindOnlyWorldMatrix(world);
+
+                        // Draw
+                        this._draw(subMesh, !wireFrame);
+                    }
+                }
+            }
             // Unbind
             effectiveMaterial.unbind();
         }

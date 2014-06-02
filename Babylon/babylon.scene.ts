@@ -396,7 +396,7 @@
 
             // Local animations
             if (target.animations) {
-                animatable.appendAnimations(target.animations);
+                animatable.appendAnimations(target, target.animations);
             }
 
             // Children animations

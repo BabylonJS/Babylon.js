@@ -125,7 +125,7 @@
             return this._keys[this._keys.length - 1].value;
         };
 
-        Animation.prototype.animate = function (target, delay, from, to, loop, speedRatio) {
+        Animation.prototype.animate = function (delay, from, to, loop, speedRatio) {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
@@ -201,7 +201,7 @@
 
             // Set value
             if (this.targetPropertyPath.length > 1) {
-                var property = target[this.targetPropertyPath[0]];
+                var property = this._target[this.targetPropertyPath[0]];
 
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];
@@ -209,11 +209,11 @@
 
                 property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
             } else {
-                target[this.targetPropertyPath[0]] = currentValue;
+                this._target[this.targetPropertyPath[0]] = currentValue;
             }
 
-            if (target.markAsDirty) {
-                target.markAsDirty(this.targetProperty);
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
             }
 
             if (!returnValue) {
