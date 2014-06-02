@@ -17,6 +17,7 @@
 
         do {
             count *= 2;
+            count *= 2;
         } while(count < value);
 
         if (count > max)
@@ -152,6 +153,7 @@
             this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
+            this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
 
             // Depth buffer
             this.setDepthBuffer(true);
@@ -505,7 +507,7 @@
 
                 var offset = 0;
                 for (var index = 0; index < vertexDeclaration.length; index++) {
-                    var order = effect.getAttribute(index);
+                    var order = effect.getAttributeLocation(index);
 
                     if (order >= 0) {
                         this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
@@ -528,10 +530,13 @@
                 var attributes = effect.getAttributesNames();
 
                 for (var index = 0; index < attributes.length; index++) {
-                    var order = effect.getAttribute(index);
+                    var order = effect.getAttributeLocation(index);
 
                     if (order >= 0) {
                         var vertexBuffer = vertexBuffers[attributes[index]];
+                        if (!vertexBuffer) {
+                            continue;
+                        }
                         var stride = vertexBuffer.getStrideSize();
                         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer.getBuffer());
                         this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
@@ -556,7 +561,38 @@
             return false;
         };
 
-        Engine.prototype.draw = function (useTriangles, indexStart, indexCount) {
+        Engine.prototype.createInstancesBuffer = function (capacity) {
+            var buffer = this._gl.createBuffer();
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+            return buffer;
+        };
+
+        Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocation) {
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+
+            for (var index = 0; index < 4; index++) {
+                this._gl.enableVertexAttribArray(offsetLocation + index);
+                this._gl.vertexAttribPointer(offsetLocation + index, 4, this._gl.FLOAT, false, 64, index * 16);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 1);
+            }
+        };
+
+        Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocation) {
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
+            for (var index = 0; index < 4; index++) {
+                this._gl.disableVertexAttribArray(offsetLocation + index);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 0);
+            }
+        };
+
+        Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+            if (instancesCount) {
+                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
+                return;
+            }
+
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
         };
 
@@ -655,7 +691,7 @@
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
                 // Attributes
-                var order = effect.getAttribute(index);
+                var order = effect.getAttributeLocation(index);
 
                 if (order >= 0) {
                     this._vertexAttribArrays[order] = true;

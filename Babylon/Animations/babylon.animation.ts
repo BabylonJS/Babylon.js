@@ -4,6 +4,7 @@
         private _offsetsCache = {};
         private _highLimitsCache = {};
         private _stopped = false;
+        public _target;
 
         public targetPropertyPath: string[];
         public currentFrame: number;
@@ -126,7 +127,7 @@
             return this._keys[this._keys.length - 1].value;
         }
 
-        public animate(target, delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
@@ -202,7 +203,7 @@
 
             // Set value
             if (this.targetPropertyPath.length > 1) {
-                var property = target[this.targetPropertyPath[0]];
+                var property = this._target[this.targetPropertyPath[0]];
 
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];
@@ -210,11 +211,11 @@
 
                 property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
             } else {
-                target[this.targetPropertyPath[0]] = currentValue;
+                this._target[this.targetPropertyPath[0]] = currentValue;
             }
 
-            if (target.markAsDirty) {
-                target.markAsDirty(this.targetProperty);
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
             }
 
             if (!returnValue) {

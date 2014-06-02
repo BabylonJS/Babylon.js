@@ -22,36 +22,26 @@
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
 
-            var effectiveRender = function (useBones, mesh, renderMesh, subMesh) {
-                // World
-                var world = mesh.getWorldMatrix();
-                if (useBones) {
-                    _this._effect.setMatrix("world", world);
-                } else {
-                    world.multiplyToRef(_this.getTransformMatrix(), _this._worldViewProjection);
-                    _this._effect.setMatrix("worldViewProjection", _this._worldViewProjection);
-                }
-
-                // Draw
-                renderMesh._draw(subMesh, true);
-            };
-
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
                 var scene = _this._scene;
                 var engine = scene.getEngine();
 
-                if (_this.isReady(mesh)) {
-                    // Managing instances
-                    var batch = mesh._getInstancesRenderList();
+                // Managing instances
+                var batch = mesh._getInstancesRenderList();
 
-                    if (batch.mustReturn) {
-                        return;
-                    }
+                if (batch.mustReturn) {
+                    return;
+                }
 
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
+
+                if (_this.isReady(mesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, false);
+
+                    _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
 
                     // Alpha test
                     if (mesh.material && mesh.material.needAlphaTesting()) {
@@ -64,20 +54,28 @@
                     var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
 
                     if (useBones) {
-                        _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
-
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
-                    if (batch.renderSelf) {
-                        effectiveRender(useBones, mesh, mesh, subMesh);
-                    }
+                    if (hardwareInstancedRendering) {
+                        mesh._renderWithInstances(subMesh, false, batch, _this._effect, engine);
+                    } else {
+                        if (batch.renderSelf) {
+                            _this._effect.setMatrix("world", mesh.getWorldMatrix());
 
-                    if (batch.visibleInstances) {
-                        for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
-                            var instance = batch.visibleInstances[instanceIndex];
+                            // Draw
+                            mesh._draw(subMesh, true);
+                        }
 
-                            effectiveRender(useBones, instance, mesh, subMesh);
+                        if (batch.visibleInstances) {
+                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                                var instance = batch.visibleInstances[instanceIndex];
+
+                                _this._effect.setMatrix("world", instance.getWorldMatrix());
+
+                                // Draw
+                                mesh._draw(subMesh, true);
+                            }
                         }
                     }
                 } else {
@@ -104,7 +102,7 @@
                 }
             };
         }
-        ShadowGenerator.prototype.isReady = function (mesh) {
+        ShadowGenerator.prototype.isReady = function (mesh, useInstances) {
             var defines = [];
 
             if (this.useVarianceShadowMap) {
@@ -134,11 +132,17 @@
                 defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
             }
 
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world");
+            }
+
             // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "worldViewProjection", "diffuseMatrix"], ["diffuseSampler"], join);
+                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix"], ["diffuseSampler"], join);
             }
 
             return this._effect.isReady();

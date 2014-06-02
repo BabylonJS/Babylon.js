@@ -16,6 +16,7 @@
 
         do {
             count *= 2;
+            count *= 2;
         } while (count < value);
 
         if (count > max)
@@ -92,6 +93,7 @@
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension;
         public maxAnisotropy: number;
+        public instancedArrays;
     }
 
     export class Engine {
@@ -232,6 +234,7 @@
             this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
+            this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
 
             // Depth buffer
             this.setDepthBuffer(true);
@@ -502,12 +505,12 @@
             //if (length && length != vertices.length) {
             //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
             //} else {
-                if (vertices instanceof Float32Array) {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
-                } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
-                }
-          //  }
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            }
+            //  }
 
             this._resetVertexBufferBinding();
         }
@@ -535,7 +538,7 @@
 
                 var offset = 0;
                 for (var index = 0; index < vertexDeclaration.length; index++) {
-                    var order = effect.getAttribute(index);
+                    var order = effect.getAttributeLocation(index);
 
                     if (order >= 0) {
                         this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
@@ -558,10 +561,13 @@
                 var attributes = effect.getAttributesNames();
 
                 for (var index = 0; index < attributes.length; index++) {
-                    var order = effect.getAttribute(index);
+                    var order = effect.getAttributeLocation(index);
 
                     if (order >= 0) {
                         var vertexBuffer = vertexBuffers[attributes[index]];
+                        if (!vertexBuffer) {
+                            continue;
+                        }
                         var stride = vertexBuffer.getStrideSize();
                         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer.getBuffer());
                         this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
@@ -586,7 +592,39 @@
             return false;
         }
 
-        public draw(useTriangles: boolean, indexStart: number, indexCount: number): void {
+        public createInstancesBuffer(capacity: number): WebGLBuffer {
+            var buffer = this._gl.createBuffer();
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+            return buffer;
+        }
+
+
+        public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocation: number): void {
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+
+            for (var index = 0; index < 4; index++) {
+                this._gl.enableVertexAttribArray(offsetLocation + index);
+                this._gl.vertexAttribPointer(offsetLocation + index, 4, this._gl.FLOAT, false, 64, index * 16);                
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 1);
+            }
+        }
+
+        public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocation: number): void {
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
+            for (var index = 0; index < 4; index++) {
+                this._gl.disableVertexAttribArray(offsetLocation + index);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 0);
+            }
+        }
+
+        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+            if (instancesCount) {
+                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
+                return;
+            }
+
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
         }
 
@@ -686,7 +724,7 @@
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
                 // Attributes
-                var order = effect.getAttribute(index);
+                var order = effect.getAttributeLocation(index);
 
                 if (order >= 0) {
                     this._vertexAttribArrays[order] = true;

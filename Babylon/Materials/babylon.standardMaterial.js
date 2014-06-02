@@ -22,7 +22,6 @@ var BABYLON;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._lightMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             this._baseColor = new BABYLON.Color3();
             this._scaledDiffuse = new BABYLON.Color3();
@@ -55,7 +54,7 @@ var BABYLON;
         };
 
         // Methods
-        StandardMaterial.prototype.isReady = function (mesh) {
+        StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -238,6 +237,12 @@ var BABYLON;
                     defines.push("#define BONES4");
                     optionalDefines.push(defines[defines.length - 1]);
                 }
+
+                // Instances
+                if (useInstances) {
+                    defines.push("#define INSTANCES");
+                    attribs.push("world");
+                }
             }
 
             // Get correct effect
@@ -281,12 +286,16 @@ var BABYLON;
             }
         };
 
+        StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
+            this._effect.setMatrix("world", world);
+        };
+
         StandardMaterial.prototype.bind = function (world, mesh) {
             var scene = this.getScene();
             this._baseColor.copyFrom(this.diffuseColor);
 
             // Matrices
-            this._effect.setMatrix("world", world);
+            this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
@@ -394,8 +403,7 @@ var BABYLON;
                     // Shadows
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh.receiveShadows && shadowGenerator) {
-                        world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
-                        this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
+                        this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
                         this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
                         this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
                     }

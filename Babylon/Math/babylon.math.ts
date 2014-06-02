@@ -1119,6 +1119,12 @@
             }
         }
 
+        public copyToArray(array: Float32Array, offset: number = 0): void {
+            for (var index = 0; index < 16; index++) {
+                array[offset + index] = this.m[index];
+            }
+        }
+
         public multiplyToRef(other: Matrix, result: Matrix): void {
             this.multiplyToArray(other, result.m, 0);
         }

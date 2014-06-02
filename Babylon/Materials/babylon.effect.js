@@ -46,7 +46,13 @@
             return this._attributesNames;
         };
 
-        Effect.prototype.getAttribute = function (index) {
+        Effect.prototype.getAttributeLocation = function (index) {
+            return this._attributes[index];
+        };
+
+        Effect.prototype.getAttributeLocationByName = function (name) {
+            var index = this._attributesNames.indexOf(name);
+
             return this._attributes[index];
         };
 
