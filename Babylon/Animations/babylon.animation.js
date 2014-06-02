@@ -9,11 +9,16 @@
             this.loopMode = loopMode;
             this._offsetsCache = {};
             this._highLimitsCache = {};
+            this._stopped = false;
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
         // Methods
+        Animation.prototype.isStopped = function () {
+            return this._stopped;
+        };
+
         Animation.prototype.getKeys = function () {
             return this._keys;
         };
@@ -122,6 +127,7 @@
 
         Animation.prototype.animate = function (target, delay, from, to, loop, speedRatio) {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
+                this._stopped = true;
                 return false;
             }
 
@@ -208,6 +214,10 @@
 
             if (target.markAsDirty) {
                 target.markAsDirty(this.targetProperty);
+            }
+
+            if (!returnValue) {
+                this._stopped = true;
             }
 
             return returnValue;

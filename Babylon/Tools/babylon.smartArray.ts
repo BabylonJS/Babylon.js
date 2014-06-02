@@ -3,8 +3,12 @@
         public data: Array<T>;
         public length: number = 0;
 
+        private _id: number;
+        private _duplicateId = 0;
+
         constructor(capacity: number) {
             this.data = new Array(capacity);
+            this._id = SmartArray._GlobalId++;
         }
 
         public push(value): void {
@@ -13,10 +17,16 @@
             if (this.length > this.data.length) {
                 this.data.length *= 2;
             }
+
+            if (!value.__smartArrayFlags) {
+                value.__smartArrayFlags = {};
+            }
+
+            value.__smartArrayFlags[this._id] = this._duplicateId;
         }
 
         public pushNoDuplicate(value): void {
-            if (this.indexOf(value) > -1) {
+            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
                 return;
             }
             this.push(value);
@@ -28,6 +38,7 @@
 
         public reset(): void {
             this.length = 0;
+            this._duplicateId++;
         }
 
         public concat(array: any): void {
@@ -53,11 +64,7 @@
 
             for (var index = 0; index < array.length; index++) {
                 var item = (array.data || array)[index];
-                var pos = this.data.indexOf(item);
-
-                if (pos === -1 || pos >= this.length) {
-                    this.data[this.length++] = item;
-                }
+                this.pushNoDuplicate(item);
             }
         }
 
@@ -70,5 +77,8 @@
 
             return position;
         }
+
+        // Statics
+        private static _GlobalId = 0;
     }
 } 

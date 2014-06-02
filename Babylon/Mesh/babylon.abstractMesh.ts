@@ -79,8 +79,6 @@
         private _pivotMatrix = BABYLON.Matrix.Identity();
         public _isDisposed = false;
         public _renderId = 0;
-        public _traversalId = -1;
-        private _collisionTraversalId = 0;
 
         public subMeshes: SubMesh[];
         public _submeshesOctree: Octree<SubMesh>;
@@ -525,7 +523,7 @@
         * This function will create an octree to help select the right submeshes for rendering, picking and collisions
         * Please note that you must have a decent number of submeshes to get performance improvements when using octree
         */
-        public createOrUpdateSubmeshesOctree(capacity?: number): void {
+        public createOrUpdateSubmeshesOctree(capacity?: number): Octree<SubMesh> {
             if (!this._submeshesOctree) {
                 this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, capacity);
             }
@@ -535,6 +533,8 @@
             // Update octree
             var bbox = this.getBoundingInfo().boundingBox;
             this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
+
+            return this._submeshesOctree;
         }
 
         // Collisions
@@ -562,7 +562,7 @@
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
                 var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
-                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius, true);
+                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
 
                 len = intersections.length;
                 subMeshes = intersections.data;
@@ -571,16 +571,8 @@
                 len = subMeshes.length;
             }
 
-            this._collisionTraversalId++;
-
             for (var index = 0; index < len; index++) {
                 var subMesh = subMeshes[index];
-
-                if (subMesh._collisionTraversalId === this._collisionTraversalId) {
-                    continue;
-                }
-
-                subMesh._collisionTraversalId = this._collisionTraversalId;
 
                 // Bounding test
                 if (len > 1 && !subMesh._checkCollision(collider))

@@ -2,6 +2,7 @@
 (function (BABYLON) {
     var Node = (function () {
         function Node(name, scene) {
+            this.state = "";
             this.animations = new Array();
             this._childrenFlag = -1;
             this._isEnabled = true;

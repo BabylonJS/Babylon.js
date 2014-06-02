@@ -3,6 +3,7 @@
         private _keys: Array<any>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
+        private _stopped = false;
 
         public targetPropertyPath: string[];
         public currentFrame: number;
@@ -14,6 +15,10 @@
         }
 
         // Methods   
+        public isStopped(): boolean {
+            return this._stopped;
+        }
+
         public getKeys(): any[] {
             return this._keys;
         }
@@ -123,6 +128,7 @@
 
         public animate(target, delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
+                this._stopped = true;
                 return false;
             }
 
@@ -209,6 +215,10 @@
 
             if (target.markAsDirty) {
                 target.markAsDirty(this.targetProperty);
+            }
+
+            if (!returnValue) {
+                this._stopped = true;
             }
 
             return returnValue;

@@ -9,8 +9,6 @@
             this.indexStart = indexStart;
             this.indexCount = indexCount;
             this._renderId = 0;
-            this._traversalId = -1;
-            this._collisionTraversalId = -1;
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);

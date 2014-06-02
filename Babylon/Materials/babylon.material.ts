@@ -3,6 +3,7 @@
         public id: string;
         public checkReadyOnEveryCall = true;
         public checkReadyOnlyOnce = false;
+        public state = "";
         public alpha = 1.0;
         public wireframe = false;
         public backFaceCulling = true;

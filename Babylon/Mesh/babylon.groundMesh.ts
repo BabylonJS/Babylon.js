@@ -17,7 +17,7 @@
             if (state) {
                 this.subdivide(this._subdivisions);
 
-                this.createOrUpdateSubmeshesOctree(32);
+                this.createOrUpdateSubmeshesOctree();
             }
 
             super._setReady(state);

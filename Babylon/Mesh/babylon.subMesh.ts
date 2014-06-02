@@ -11,8 +11,6 @@
         public _lastColliderTransformMatrix: Matrix;
 
         public _renderId = 0;
-        public _traversalId = -1;
-        public _collisionTraversalId = -1;
         public _distanceToCamera: number;
 
         constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {

@@ -6,9 +6,9 @@
             this.actions = new Array();
             this._scene = scene;
         }
-        Object.defineProperty(ActionManager, "NoneTrigger", {
+        Object.defineProperty(ActionManager, "NothingTrigger", {
             get: function () {
-                return ActionManager._NoneTrigger;
+                return ActionManager._NothingTrigger;
             },
             enumerable: true,
             configurable: true
@@ -17,6 +17,30 @@
         Object.defineProperty(ActionManager, "OnPickTrigger", {
             get: function () {
                 return ActionManager._OnPickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnLeftPickTrigger", {
+            get: function () {
+                return ActionManager._OnLeftPickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnRightPickTrigger", {
+            get: function () {
+                return ActionManager._OnRightPickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnCenterPickTrigger", {
+            get: function () {
+                return ActionManager._OnCenterPickTrigger;
             },
             enumerable: true,
             configurable: true
@@ -92,11 +116,14 @@
 
             return properties[properties.length - 1];
         };
-        ActionManager._NoneTrigger = 0;
+        ActionManager._NothingTrigger = 0;
         ActionManager._OnPickTrigger = 1;
-        ActionManager._OnPointerOverTrigger = 2;
-        ActionManager._OnPointerOutTrigger = 3;
-        ActionManager._OnEveryFrameTrigger = 4;
+        ActionManager._OnLeftPickTrigger = 2;
+        ActionManager._OnRightPickTrigger = 3;
+        ActionManager._OnCenterPickTrigger = 4;
+        ActionManager._OnPointerOverTrigger = 5;
+        ActionManager._OnPointerOutTrigger = 6;
+        ActionManager._OnEveryFrameTrigger = 7;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;
