@@ -13,14 +13,14 @@
             return this._subdivisions;
         }
 
-        public _setReady(state: boolean): void {
-            if (state) {
-                this.subdivide(this._subdivisions);
-
-                this.createOrUpdateSubmeshesOctree();
+        public optimize(subdivisions?: number): void {
+            if (this.getTotalVertices() < 2000) {
+                Tools.Warn("Optimizing GroundMesh requires at least 2000 vertices.");
             }
 
-            super._setReady(state);
+            this.subdivide(subdivisions || this._subdivisions);
+
+            this.createOrUpdateSubmeshesOctree();
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {

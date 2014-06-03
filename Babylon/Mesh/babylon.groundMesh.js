@@ -21,14 +21,14 @@ var BABYLON;
             configurable: true
         });
 
-        GroundMesh.prototype._setReady = function (state) {
-            if (state) {
-                this.subdivide(this._subdivisions);
-
-                this.createOrUpdateSubmeshesOctree();
+        GroundMesh.prototype.optimize = function (subdivisions) {
+            if (this.getTotalVertices() < 2000) {
+                BABYLON.Tools.Warn("Optimizing GroundMesh requires at least 2000 vertices.");
             }
 
-            _super.prototype._setReady.call(this, state);
+            this.subdivide(subdivisions || this._subdivisions);
+
+            this.createOrUpdateSubmeshesOctree();
         };
 
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
