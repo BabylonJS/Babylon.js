@@ -33,6 +33,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
  - Selection octrees
  - Offline mode (Assets are saved locally to prevent reloading them)
  - Incremental loading
+ - Hardware accelerated instances
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture
@@ -71,6 +72,7 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
  - Touch camera
  - Virtual Joysticks camera
  - Oculus Rift camera
+ - Gamepad camera
 -  Meshes: 
  - Mesh cloning
  - Dynamic meshes
