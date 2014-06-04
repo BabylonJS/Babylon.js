@@ -45,6 +45,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
     filename_ext = ".babylon"
     filepath = ""
+
+    alreadyExportedMeshAsInstance = []
     
     # global_scale = FloatProperty(name="Scale", min=0.01, max=1000.0, default=1.0)
 
@@ -85,8 +87,10 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
     def write_color(file_handler, name, color):
         file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f"%(color.r,color.g,color.b) + "]")
 
-    def write_vector(file_handler, name, vector):
-        file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f"%(vector.x,vector.z,vector.y) + "]")
+    def write_vector(file_handler, name, vector, noComma=False):
+        if noComma == False:
+            file_handler.write(",")
+        file_handler.write("\""+name+"\":[" + "%.4f,%.4f,%.4f"%(vector.x,vector.z,vector.y) + "]")
 
     def write_quaternion(file_handler, name, quaternion):
         file_handler.write(",\""+name+"\":[" + "%.4f,%.4f,%.4f,%.4f"%(quaternion.x,quaternion.z,quaternion.y, -quaternion.w) + "]")
@@ -695,8 +699,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             first = False
         file_handler.write("]")
 
-        #Export Animations
-        
+        # Export Animations        
         rotAnim = False
         locAnim = False
         scaAnim = False
@@ -722,6 +725,27 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                 Export_babylon.write_int(file_handler, "autoAnimateTo", bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1)
                 Export_babylon.write_bool(file_handler, "autoAnimateLoop", True)
 
+        # Instances
+        first = True
+        file_handler.write(",\"instances\":[")
+        for other in [object for object in scene.objects]:
+            if other.type == 'MESH' and other != object: 
+                if other.data.name == object.data.name:
+                    Export_babylon.alreadyExportedMeshAsInstance.append(object.data.name)
+                    if first == False:
+                        file_handler.write(",")
+                    file_handler.write("{")
+                    world = other.matrix_world
+
+                    loc, rot, scale = world.decompose()
+                    Export_babylon.write_string(file_handler, "name", other.name, True)
+                    Export_babylon.write_vector(file_handler, "position", loc)
+                    Export_babylon.write_vectorScaled(file_handler, "rotation", rot.to_euler("XYZ"), -1)
+                    Export_babylon.write_vector(file_handler, "scaling", scale)
+
+                    file_handler.write("}")
+                    first = False
+        file_handler.write("]")
 
         # Closing
         file_handler.write("}")
@@ -902,6 +926,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         bpy.ops.screen.animation_cancel()
         currentFrame = bpy.context.scene.frame_current
         bpy.context.scene.frame_set(0)
+
+        Export_babylon.alreadyExportedMeshAsInstance = []
     
         file_handler.write("{")
         file_handler.write("\"autoClear\":true")
@@ -960,8 +986,11 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         file_handler.write(",\"meshes\":[")
         multiMaterials = []
         first = True
-        for object in [object for object in scene.objects]:
+        for object in [object for object in reversed(scene.objects)]:
             if object.type == 'MESH' or object.type == 'EMPTY':
+                if object.data and object.data.name in Export_babylon.alreadyExportedMeshAsInstance:
+                    continue
+
                 if first != True:
                     file_handler.write(",")
 
