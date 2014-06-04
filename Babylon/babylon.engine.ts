@@ -16,7 +16,6 @@
 
         do {
             count *= 2;
-            count *= 2;
         } while (count < value);
 
         if (count > max)
