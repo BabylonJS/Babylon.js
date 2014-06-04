@@ -523,9 +523,9 @@
         * This function will create an octree to help select the right submeshes for rendering, picking and collisions
         * Please note that you must have a decent number of submeshes to get performance improvements when using octree
         */
-        public createOrUpdateSubmeshesOctree(capacity?: number): Octree<SubMesh> {
+        public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
             if (!this._submeshesOctree) {
-                this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, capacity);
+                this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
             }
 
             this.computeWorldMatrix(true);            

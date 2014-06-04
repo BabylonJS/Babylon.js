@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     export class GroundMesh extends Mesh {
-        public chunkSize = 128; // Aiming to get around 128 indices per submesh
         private _worldInverse = new BABYLON.Matrix();
 
         public _subdivisions: number;
@@ -13,14 +12,16 @@
             return this._subdivisions;
         }
 
-        public optimize(subdivisions?: number): void {
-            if (this.getTotalVertices() < 2000) {
-                Tools.Warn("Optimizing GroundMesh requires at least 2000 vertices.");
+        public _setReady(state: boolean): void {
+            if (state) {
+                if (this._subdivisions > 10) {
+                    this.subdivide(this._subdivisions);
+
+                    this.createOrUpdateSubmeshesOctree(32);
+                }
             }
 
-            this.subdivide(subdivisions || this._subdivisions);
-
-            this.createOrUpdateSubmeshesOctree();
+            super._setReady(state);
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {

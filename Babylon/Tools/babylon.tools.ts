@@ -462,7 +462,7 @@ module BABYLON {
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0]);
+            var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0], false, false);
             texture.renderList = engine.scenes[0].meshes;
 
             texture.onAfterRender = () => {

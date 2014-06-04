@@ -1,8 +1,9 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var Octree = (function () {
-        function Octree(creationFunc, maxBlockCapacity) {
-            this.maxDepth = 2;
+        function Octree(creationFunc, maxBlockCapacity, maxDepth) {
+            if (typeof maxDepth === "undefined") { maxDepth = 2; }
+            this.maxDepth = maxDepth;
             this.dynamicContent = new Array();
             this._maxBlockCapacity = maxBlockCapacity || 64;
             this._selectionContent = new BABYLON.SmartArray(1024);

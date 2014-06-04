@@ -1122,9 +1122,9 @@
         }
 
         // Octrees
-        public createOrUpdateSelectionOctree(): Octree<AbstractMesh> {
+        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
             if (!this._selectionOctree) {
-                this._selectionOctree = new BABYLON.Octree<AbstractMesh>(Octree.CreationFuncForMeshes);
+                this._selectionOctree = new BABYLON.Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
             }
 
             var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);

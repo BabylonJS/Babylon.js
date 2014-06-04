@@ -1046,9 +1046,11 @@
         };
 
         // Octrees
-        Scene.prototype.createOrUpdateSelectionOctree = function () {
+        Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity, maxDepth) {
+            if (typeof maxCapacity === "undefined") { maxCapacity = 64; }
+            if (typeof maxDepth === "undefined") { maxDepth = 2; }
             if (!this._selectionOctree) {
-                this._selectionOctree = new BABYLON.Octree(BABYLON.Octree.CreationFuncForMeshes);
+                this._selectionOctree = new BABYLON.Octree(BABYLON.Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
             }
 
             var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
