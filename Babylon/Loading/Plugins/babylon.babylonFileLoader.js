@@ -634,6 +634,9 @@ var BABYLON = BABYLON || {};
             for (var index = 0; index < parsedMesh.instances.length; index++) {
                 var parsedInstance = parsedMesh.instances[index];
                 var instance = mesh.createInstance(parsedInstance.name);
+
+                BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
+
                 instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
 
                 if (parsedInstance.rotationQuaternion) {
