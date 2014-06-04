@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Babylon.js",
     "author": "David Catuhe",
-    "version": (1, 1),
-    "blender": (2, 67, 0),
+    "version": (1, 2),
+    "blender": (2, 69, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
     "warning": "",
@@ -630,8 +630,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
             Export_babylon.write_vector(file_handler, "position", mathutils.Vector((0, 0, 0)))
             Export_babylon.write_vectorScaled(file_handler, "rotation", mathutils.Vector((0, 0, 0)), 1)
             Export_babylon.write_vector(file_handler, "scaling", mathutils.Vector((1, 1, 1)))
-
-        Export_babylon.write_bool(file_handler, "isVisible", object.is_visible(scene))
+		
+        Export_babylon.write_bool(file_handler, "isVisible", not object.hide_render)
         Export_babylon.write_bool(file_handler, "isEnabled", True)
         Export_babylon.write_bool(file_handler, "useFlatShading", object.data.useFlatShading)
         Export_babylon.write_bool(file_handler, "checkCollisions", object.data.checkCollisions)
