@@ -9,6 +9,7 @@ var BABYLON;
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
         function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio) {
+            if (typeof doNotChangeAspectRatio === "undefined") { doNotChangeAspectRatio = true; }
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;

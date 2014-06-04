@@ -10,7 +10,6 @@ var BABYLON;
         __extends(GroundMesh, _super);
         function GroundMesh(name, scene) {
             _super.call(this, name, scene);
-            this.chunkSize = 128;
             this._worldInverse = new BABYLON.Matrix();
         }
         Object.defineProperty(GroundMesh.prototype, "subdivisions", {
@@ -21,14 +20,16 @@ var BABYLON;
             configurable: true
         });
 
-        GroundMesh.prototype.optimize = function (subdivisions) {
-            if (this.getTotalVertices() < 2000) {
-                BABYLON.Tools.Warn("Optimizing GroundMesh requires at least 2000 vertices.");
+        GroundMesh.prototype._setReady = function (state) {
+            if (state) {
+                if (this._subdivisions > 10) {
+                    this.subdivide(this._subdivisions);
+
+                    this.createOrUpdateSubmeshesOctree(32);
+                }
             }
 
-            this.subdivide(subdivisions || this._subdivisions);
-
-            this.createOrUpdateSubmeshesOctree();
+            _super.prototype._setReady.call(this, state);
         };
 
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
