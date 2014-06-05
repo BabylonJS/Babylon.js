@@ -45,8 +45,6 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
     filename_ext = ".babylon"
     filepath = ""
-
-    alreadyExportedMeshAsInstance = []
     
     # global_scale = FloatProperty(name="Scale", min=0.01, max=1000.0, default=1.0)
 
@@ -731,7 +729,6 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         for other in [object for object in scene.objects]:
             if other.type == 'MESH' and other != object: 
                 if other.data.name == object.data.name:
-                    Export_babylon.alreadyExportedMeshAsInstance.append(object.data.name)
                     if first == False:
                         file_handler.write(",")
                     file_handler.write("{")
@@ -986,9 +983,22 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         file_handler.write(",\"meshes\":[")
         multiMaterials = []
         first = True
-        for object in [object for object in reversed(scene.objects)]:
+        for object in [object for object in scene.objects]:
             if object.type == 'MESH' or object.type == 'EMPTY':
-                if object.data and object.data.name in Export_babylon.alreadyExportedMeshAsInstance:
+                # Check if current object is an instance
+                currentFound = False
+                mustSkipThisOne = False
+                for other in [object for object in scene.objects]:
+                    if other.type == 'MESH': 
+                        if other == object:
+                            currentFound = True
+                            continue
+
+                        if currentFound and other.data.name == object.data.name:
+                            mustSkipThisOne = True
+                            break
+
+                if mustSkipThisOne:
                     continue
 
                 if first != True:
