@@ -170,7 +170,15 @@
             this.synchronizeInstances();
         }
 
-        public setVerticesData(kind: string, data: number[], updatable?: boolean): void {
+        public setVerticesData(kind: any, data: any, updatable?: boolean): void {
+            if (kind instanceof Array) {
+                var temp = data;
+                data = kind;
+                kind = temp;
+
+                Tools.Warn("Deprecated usage of setVerticesData detected (since v1.12). Current signature is setVerticesData(kind, data, updatable).");
+            }
+
             if (!this._geometry) {
                 var vertexData = new BABYLON.VertexData();
                 vertexData.set(data, kind);
@@ -314,12 +322,18 @@
                 instancesCount++;
             }
 
-            var offsetLocation = effect.getAttributeLocationByName("world");
-            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocation);
+            var offsetLocation0 = effect.getAttributeLocationByName("world0");
+            var offsetLocation1 = effect.getAttributeLocationByName("world1");
+            var offsetLocation2 = effect.getAttributeLocationByName("world2");
+            var offsetLocation3 = effect.getAttributeLocationByName("world3");
+
+            var offsetLocations = [offsetLocation0, offsetLocation1, offsetLocation2, offsetLocation3];
+
+            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
 
             this._draw(subMesh, !wireFrame, instancesCount);
 
-            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocation);
+            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         }
 
         public render(subMesh: SubMesh): void {

@@ -22,7 +22,10 @@ attribute vec4 matricesWeights;
 // Uniforms
 
 #ifdef INSTANCES
-attribute mat4 world;
+attribute vec4 world0;
+attribute vec4 world1;
+attribute vec4 world2;
+attribute vec4 world3;
 #else
 uniform mat4 world;
 #endif
@@ -130,7 +133,11 @@ void main(void) {
 #endif 
 
 #else
+#ifdef INSTANCES
+	finalWorld = mat4(world0, world1, world2, world3);
+#else
 	finalWorld = world;
+#endif
 #endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
