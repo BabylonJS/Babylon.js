@@ -1,7 +1,8 @@
 ﻿module BABYLON {
     export class GroundMesh extends Mesh {
-        private _worldInverse = new BABYLON.Matrix();
+        public generateOctree = false;
 
+        private _worldInverse = new BABYLON.Matrix();
         public _subdivisions: number;
 
         constructor(name: string, scene: Scene) {
@@ -12,16 +13,9 @@
             return this._subdivisions;
         }
 
-        public _setReady(state: boolean): void {
-            if (state) {
-                if (this._subdivisions > 10) {
-                    this.subdivide(this._subdivisions);
-
-                    this.createOrUpdateSubmeshesOctree(32);
-                }
-            }
-
-            super._setReady(state);
+        public optimize(chunksCount: number): void {
+            this.subdivide(this._subdivisions);
+            this.createOrUpdateSubmeshesOctree(32);
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {

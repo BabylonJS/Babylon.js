@@ -567,22 +567,24 @@
             return buffer;
         };
 
-        Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocation) {
+        Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
 
             for (var index = 0; index < 4; index++) {
-                this._gl.enableVertexAttribArray(offsetLocation + index);
-                this._gl.vertexAttribPointer(offsetLocation + index, 4, this._gl.FLOAT, false, 64, index * 16);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 1);
+                var offsetLocation = offsetLocations[index];
+                this._gl.enableVertexAttribArray(offsetLocation);
+                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
             }
         };
 
-        Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocation) {
+        Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
             for (var index = 0; index < 4; index++) {
-                this._gl.disableVertexAttribArray(offsetLocation + index);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation + index, 0);
+                var offsetLocation = offsetLocations[index];
+                this._gl.disableVertexAttribArray(offsetLocation);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
             }
         };
 

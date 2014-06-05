@@ -11,7 +11,10 @@ attribute vec4 matricesWeights;
 
 // Uniform
 #ifdef INSTANCES
-attribute mat4 world;
+attribute vec4 world0;
+attribute vec4 world1;
+attribute vec4 world2;
+attribute vec4 world3;
 #else
 uniform mat4 world;
 #endif
@@ -38,18 +41,24 @@ attribute vec2 uv2;
 
 void main(void)
 {
+#ifdef INSTANCES
+	mat4 finalWorld = mat4(world0, world1, world2, world3);
+#else
+	mat4 finalWorld = world;
+#endif
+
 #ifdef BONES
 	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
 	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
 	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
 	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	mat4 finalWorld = world * (m0 + m1 + m2 + m3);
+	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
 #ifndef VSM
-	vPosition = viewProjection * world * vec4(position, 1.0);
+	vPosition = viewProjection * finalWorld * vec4(position, 1.0);
 #endif
-	gl_Position = viewProjection * world * vec4(position, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #endif
 
 #ifdef ALPHATEST

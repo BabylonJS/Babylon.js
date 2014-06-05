@@ -135,7 +135,10 @@
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
-                attribs.push("world");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
             }
 
             // Get correct effect

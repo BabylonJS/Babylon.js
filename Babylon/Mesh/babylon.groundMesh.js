@@ -10,6 +10,7 @@ var BABYLON;
         __extends(GroundMesh, _super);
         function GroundMesh(name, scene) {
             _super.call(this, name, scene);
+            this.generateOctree = false;
             this._worldInverse = new BABYLON.Matrix();
         }
         Object.defineProperty(GroundMesh.prototype, "subdivisions", {
@@ -20,16 +21,9 @@ var BABYLON;
             configurable: true
         });
 
-        GroundMesh.prototype._setReady = function (state) {
-            if (state) {
-                if (this._subdivisions > 10) {
-                    this.subdivide(this._subdivisions);
-
-                    this.createOrUpdateSubmeshesOctree(32);
-                }
-            }
-
-            _super.prototype._setReady.call(this, state);
+        GroundMesh.prototype.optimize = function (chunksCount) {
+            this.subdivide(this._subdivisions);
+            this.createOrUpdateSubmeshesOctree(32);
         };
 
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
