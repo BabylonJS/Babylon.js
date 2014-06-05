@@ -606,7 +606,7 @@
             for (var index = 0; index < 4; index++) {
                 var offsetLocation = offsetLocations[index];
                 this._gl.enableVertexAttribArray(offsetLocation);
-                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);                
+                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                 this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
             }
         }
@@ -875,6 +875,28 @@
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
+        }
+
+        public setSamplingMode(texture: WebGLTexture, samplingMode: number): void {
+            var gl = this._gl;
+
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            var magFilter = gl.NEAREST;
+            var minFilter = gl.NEAREST;
+
+            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR;
+            } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            }
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
+
+            gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene): WebGLTexture {

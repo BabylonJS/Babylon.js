@@ -65,6 +65,10 @@ var BABYLON;
             t.z += 0.5;
         };
 
+        Texture.prototype.forceSamplingMode = function (mode) {
+            this.getScene().getEngine().setSamplingMode(this._texture, mode);
+        };
+
         Texture.prototype.getTextureMatrix = function () {
             if (this.uOffset === this._cachedUOffset && this.vOffset === this._cachedVOffset && this.uScale === this._cachedUScale && this.vScale === this._cachedVScale && this.uAng === this._cachedUAng && this.vAng === this._cachedVAng && this.wAng === this._cachedWAng) {
                 return this._cachedTextureMatrix;

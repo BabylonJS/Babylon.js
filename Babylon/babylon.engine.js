@@ -843,6 +843,28 @@
             this._cachedEffectForVertexBuffers = null;
         };
 
+        Engine.prototype.setSamplingMode = function (texture, samplingMode) {
+            var gl = this._gl;
+
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            var magFilter = gl.NEAREST;
+            var minFilter = gl.NEAREST;
+
+            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR;
+            } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+                magFilter = gl.LINEAR;
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            }
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
+
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        };
+
         Engine.prototype.createTexture = function (url, noMipmap, invertY, scene) {
             var _this = this;
             var texture = this._gl.createTexture();

@@ -95,6 +95,10 @@
             t.z += 0.5;
         }
 
+        public forceSamplingMode(mode: number): void {
+            this.getScene().getEngine().setSamplingMode(this._texture, mode);
+        }
+
         public getTextureMatrix(): Matrix {
             if (
                 this.uOffset === this._cachedUOffset &&
