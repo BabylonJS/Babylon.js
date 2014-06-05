@@ -72,6 +72,7 @@
                     mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
                     mesh._createGlobalSubMesh();
+                    mesh.computeWorldMatrix(true);
                 }
             }
         }
