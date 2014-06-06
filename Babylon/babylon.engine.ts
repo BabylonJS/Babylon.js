@@ -11,6 +11,38 @@
         return shader;
     };
 
+    var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
+        var magFilter = gl.NEAREST;
+        var minFilter = gl.NEAREST;
+        if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+        } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+        } else if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+            magFilter = gl.NEAREST;
+            if (generateMipMaps) {
+                minFilter = gl.NEAREST_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.NEAREST;
+            }
+        }
+
+        return {
+            min: minFilter,
+            mag: magFilter
+        }
+    }
+
     var getExponantOfTwo = (value: number, max: number): number => {
         var count = 1;
 
@@ -25,7 +57,7 @@
     };
 
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-        processFunction: (width: number, height: number) => void) => {
+        processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
         var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
@@ -35,17 +67,15 @@
 
         processFunction(potWidth, potHeight);
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
 
-        if (noMipmap) {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        } else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
 
-            if (!isCompressed) {
-                gl.generateMipmap(gl.TEXTURE_2D);
-            }
+        if (!noMipmap && !isCompressed) {
+            gl.generateMipmap(gl.TEXTURE_2D);
         }
+
         gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
@@ -906,7 +936,7 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene): WebGLTexture {
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): WebGLTexture {
             var texture = this._gl.createTexture();
 
             var extension = url.substr(url.length - 4, 4).toLowerCase();
@@ -927,7 +957,7 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
-                    });
+                    }, samplingMode);
                 }, null, scene.database, true);
             } else if (isDDS) {
                 BABYLON.Tools.LoadFile(url, data => {
@@ -937,7 +967,7 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, true, () => {
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, loadMipmap);
-                    });
+                    }, samplingMode);
                 }, null, scene.database, true);
             } else {
                 var onload = (img) => {
@@ -952,7 +982,7 @@
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
 
-                    });
+                    }, samplingMode);
                 };
 
                 var onerror = () => {
@@ -965,20 +995,18 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
 
             width = getExponantOfTwo(width, this._caps.maxTextureSize);
             height = getExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
 
-            if (!generateMipMaps) {
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
-            } else {
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR_MIPMAP_LINEAR);
-            }
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
 
             this._activeTexturesCache = [];
@@ -1057,25 +1085,11 @@
 
             var width = size.width || size;
             var height = size.height || size;
-            var magFilter = gl.NEAREST;
-            var minFilter = gl.NEAREST;
-            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-            } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-            }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
+
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);

@@ -43,14 +43,16 @@
         private _cachedVAng: number;
         private _cachedWAng: number;
         private _cachedCoordinatesMode: number;
+        private _samplingMode: number;
 
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean) {
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(scene);
 
             this.name = url;
             this.url = url;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
+            this._samplingMode = samplingMode;
 
             if (!url) {
                 return;
@@ -60,7 +62,7 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode);
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -76,7 +78,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene());
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode);
             }
         }
 
@@ -93,10 +95,6 @@
             t.x += 0.5;
             t.y += 0.5;
             t.z += 0.5;
-        }
-
-        public forceSamplingMode(mode: number): void {
-            this.getScene().getEngine().setSamplingMode(this._texture, mode);
         }
 
         public getTextureMatrix(): Matrix {

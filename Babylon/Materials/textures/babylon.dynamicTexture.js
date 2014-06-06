@@ -8,7 +8,8 @@ var BABYLON;
 (function (BABYLON) {
     var DynamicTexture = (function (_super) {
         __extends(DynamicTexture, _super);
-        function DynamicTexture(name, options, scene, generateMipMaps) {
+        function DynamicTexture(name, options, scene, generateMipMaps, samplingMode) {
+            if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps);
 
             this.name = name;
@@ -20,14 +21,14 @@ var BABYLON;
 
             if (options.getContext) {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             } else {
                 this._canvas = document.createElement("canvas");
 
                 if (options.width) {
-                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 } else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps);
+                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
 
