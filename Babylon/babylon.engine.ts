@@ -593,9 +593,16 @@
 
         public createInstancesBuffer(capacity: number): WebGLBuffer {
             var buffer = this._gl.createBuffer();
+
+            buffer.capacity = capacity;
+
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
             return buffer;
+        }
+
+        public deleteInstancesBuffer(buffer: WebGLBuffer): void {
+            this._gl.deleteBuffer(buffer);
         }
 
 
