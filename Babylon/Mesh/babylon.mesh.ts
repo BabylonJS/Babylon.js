@@ -21,6 +21,7 @@
         private _batchCache = new _InstancesBatch();
         private _worldMatricesInstancesBuffer: WebGLBuffer;
         private _worldMatricesInstancesArray: Float32Array;
+        private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -299,9 +300,19 @@
         }
 
         public _renderWithInstances(subMesh: SubMesh, wireFrame: boolean, batch: _InstancesBatch, effect: Effect, engine: Engine): void {
-            if (!this._worldMatricesInstancesBuffer) {
-                var matricesCount = this.instances.length + 1;
-                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(matricesCount * 16 * 4);
+            var matricesCount = this.instances.length + 1;
+            var bufferSize = matricesCount * 16 * 4;
+
+            while (this._instancesBufferSize < bufferSize) {
+                this._instancesBufferSize *= 2;
+            }
+
+            if (!this._worldMatricesInstancesBuffer || this._worldMatricesInstancesBuffer.capacity < this._instancesBufferSize) {
+                if (this._worldMatricesInstancesBuffer) {
+                    engine.deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
+                }
+
+                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
                 this._worldMatricesInstancesArray = new Float32Array(16 * matricesCount);
             }
 
@@ -609,6 +620,11 @@
             }
 
             // Instances
+            if (this._worldMatricesInstancesBuffer) {
+                this.getEngine().deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
+                this._worldMatricesInstancesBuffer = null;
+            }
+
             while (this.instances.length) {
                 this.instances[0].dispose();
             }

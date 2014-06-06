@@ -562,9 +562,16 @@
 
         Engine.prototype.createInstancesBuffer = function (capacity) {
             var buffer = this._gl.createBuffer();
+
+            buffer.capacity = capacity;
+
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
             return buffer;
+        };
+
+        Engine.prototype.deleteInstancesBuffer = function (buffer) {
+            this._gl.deleteBuffer(buffer);
         };
 
         Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {

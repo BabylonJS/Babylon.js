@@ -26,6 +26,7 @@ var BABYLON;
             this._visibleInstances = {};
             this._renderIdForInstances = -1;
             this._batchCache = new _InstancesBatch();
+            this._instancesBufferSize = 32 * 16 * 4;
         }
         Mesh.prototype.getTotalVertices = function () {
             if (!this._geometry) {
@@ -295,9 +296,19 @@ var BABYLON;
         };
 
         Mesh.prototype._renderWithInstances = function (subMesh, wireFrame, batch, effect, engine) {
-            if (!this._worldMatricesInstancesBuffer) {
-                var matricesCount = this.instances.length + 1;
-                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(matricesCount * 16 * 4);
+            var matricesCount = this.instances.length + 1;
+            var bufferSize = matricesCount * 16 * 4;
+
+            while (this._instancesBufferSize < bufferSize) {
+                this._instancesBufferSize *= 2;
+            }
+
+            if (!this._worldMatricesInstancesBuffer || this._worldMatricesInstancesBuffer.capacity < this._instancesBufferSize) {
+                if (this._worldMatricesInstancesBuffer) {
+                    engine.deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
+                }
+
+                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
                 this._worldMatricesInstancesArray = new Float32Array(16 * matricesCount);
             }
 
@@ -600,6 +611,12 @@ var BABYLON;
         Mesh.prototype.dispose = function (doNotRecurse) {
             if (this._geometry) {
                 this._geometry.releaseForMesh(this);
+            }
+
+            // Instances
+            if (this._worldMatricesInstancesBuffer) {
+                this.getEngine().deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
+                this._worldMatricesInstancesBuffer = null;
             }
 
             while (this.instances.length) {
