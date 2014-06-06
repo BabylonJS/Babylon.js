@@ -8,7 +8,8 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(url, scene, noMipmap, invertY) {
+        function Texture(url, scene, noMipmap, invertY, samplingMode) {
+            if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, scene);
             this.uOffset = 0;
             this.vOffset = 0;
@@ -22,6 +23,7 @@ var BABYLON;
             this.url = url;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
+            this._samplingMode = samplingMode;
 
             if (!url) {
                 return;
@@ -31,7 +33,7 @@ var BABYLON;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode);
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -46,7 +48,7 @@ var BABYLON;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene());
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode);
             }
         };
 
@@ -63,10 +65,6 @@ var BABYLON;
             t.x += 0.5;
             t.y += 0.5;
             t.z += 0.5;
-        };
-
-        Texture.prototype.forceSamplingMode = function (mode) {
-            this.getScene().getEngine().setSamplingMode(this._texture, mode);
         };
 
         Texture.prototype.getTextureMatrix = function () {

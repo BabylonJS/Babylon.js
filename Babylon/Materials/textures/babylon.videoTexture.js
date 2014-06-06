@@ -8,7 +8,8 @@ var BABYLON;
 (function (BABYLON) {
     var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
-        function VideoTexture(name, urls, size, scene, generateMipMaps, invertY) {
+        function VideoTexture(name, urls, size, scene, generateMipMaps, invertY, samplingMode) {
+            if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var _this = this;
             _super.call(this, null, scene, !generateMipMaps, invertY);
             this._autoLaunch = true;
@@ -18,7 +19,7 @@ var BABYLON;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
 
-            this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps);
+            this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps, samplingMode);
             var textureSize = this.getSize();
 
             this.video = document.createElement("video");
