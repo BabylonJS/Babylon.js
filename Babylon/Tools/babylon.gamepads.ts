@@ -1,10 +1,10 @@
 ﻿module BABYLON {
     export class Gamepads {
-        private gamepads: Array<Gamepad> = [];
+        private babylonGamepads: Array<Gamepad> = [];
         private oneGamepadConnected: boolean = false;
 
         private isMonitoring: boolean = false;
-        private gamepadEventSupported: boolean = 'gamepadconnected' in window; //&& 'gamepaddisconnected' in window;
+        private gamepadEventSupported: boolean = 'GamepadEvent' in window;
         private gamepadSupportAvailable: boolean = <boolean> (navigator.getGamepads ||
         !!navigator.webkitGetGamepads || !!navigator.msGetGamepads || !!navigator.webkitGamepads);
 
@@ -113,21 +113,21 @@
             else {
                 newGamepad = new BABYLON.GenericPad(gamepad.id, gamepad.index, gamepad);
             }
-            this.gamepads.push(newGamepad);
+            this.babylonGamepads.push(newGamepad);
             return newGamepad;
         }
 
         private _onGamepadDisconnected(evt) {
             // Remove the gamepad from the list of gamepads to monitor.
-            for (var i in this.gamepads) {
-                if (this.gamepads[i].index == evt.gamepad.index) {
-                    this.gamepads.splice(i, 1);
+            for (var i in this.babylonGamepads) {
+                if (this.babylonGamepads[i].index == evt.gamepad.index) {
+                    this.babylonGamepads.splice(i, 1);
                     break;
                 }
             }
 
             // If no gamepads are left, stop the polling loop.
-            if (this.gamepads.length == 0) {
+            if (this.babylonGamepads.length == 0) {
                 this._stopMonitoringGamepads();
             }
         }
@@ -144,12 +144,11 @@
         }
 
         private _checkGamepadsStatus() {
-            if (!this.gamepadEventSupported) {
-                this._checkGamepads();
-            }
+            // updating gamepad objects
+            this._updateGamepadObjects();
 
-            for (var i in this.gamepads) {
-                this.gamepads[i].update();
+            for (var i in this.babylonGamepads) {
+                this.babylonGamepads[i].update();
             }
 
             if (this.isMonitoring) {
@@ -166,15 +165,18 @@
         // This function is called only on Chrome, which does not yet support
         // connection/disconnection events, but requires you to monitor
         // an array for changes.
-        private _checkGamepads() {
+        private _updateGamepadObjects() {
             var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
             for (var i = 0; i < gamepads.length; i++) {
                 if (gamepads[i]) {
-                    if (!(gamepads[i].index in this.gamepads)) {
+                    if (!(gamepads[i].index in this.babylonGamepads)) {
                         var newGamepad = this._addNewGamepad(gamepads[i]);
                         if (this._callbackGamepadConnected) {
                             this._callbackGamepadConnected(newGamepad);
                         }
+                    }
+                    else {
+                        this.babylonGamepads[i].browserGamepad = gamepads[i];
                     }
                 }
             }
@@ -191,12 +193,12 @@
         private _onleftstickchanged: (values: StickValues) => void;
         private _onrightstickchanged: (values: StickValues) => void;
 
-        constructor(public id: string, public index: number, public gamepad) {
-            if (gamepad.axes.length >= 2) {
-                this._leftStick = { x: this.gamepad.axes[0], y: this.gamepad.axes[1] };
+        constructor(public id: string, public index: number, public browserGamepad) {
+            if (this.browserGamepad.axes.length >= 2) {
+                this._leftStick = { x: this.browserGamepad.axes[0], y: this.browserGamepad.axes[1] };
             }
-            if (gamepad.axes.length >= 4) {
-                this._rightStick = { x: this.gamepad.axes[2], y: this.gamepad.axes[3] };
+            if (this.browserGamepad.axes.length >= 4) {
+                this._rightStick = { x: this.browserGamepad.axes[2], y: this.browserGamepad.axes[3] };
             }
         }
 
@@ -229,10 +231,10 @@
 
         public update() {
             if (this._leftStick) {
-                this.leftStick = { x: this.gamepad.axes[0], y: this.gamepad.axes[1] };
+                this.leftStick = { x: this.browserGamepad.axes[0], y: this.browserGamepad.axes[1] };
             }
             if (this._rightStick) {
-                this.rightStick = { x: this.gamepad.axes[2], y: this.gamepad.axes[3] };
+                this.rightStick = { x: this.browserGamepad.axes[2], y: this.browserGamepad.axes[3] };
             }
         }
     }
@@ -473,22 +475,22 @@
         }
         public update() {
             super.update();
-            this.buttonA = this.gamepad.buttons[0].value;
-            this.buttonB = this.gamepad.buttons[1].value;
-            this.buttonX = this.gamepad.buttons[2].value;
-            this.buttonY = this.gamepad.buttons[3].value;
-            this.buttonLB = this.gamepad.buttons[4].value;
-            this.buttonRB = this.gamepad.buttons[5].value;
-            this.leftTrigger = this.gamepad.buttons[6].value;
-            this.rightTrigger = this.gamepad.buttons[7].value;
-            this.buttonBack = this.gamepad.buttons[8].value;
-            this.buttonStart = this.gamepad.buttons[9].value;
-            this.buttonLeftStick = this.gamepad.buttons[10].value;
-            this.buttonRightStick = this.gamepad.buttons[11].value;
-            this.dPadUp = this.gamepad.buttons[12].value;
-            this.dPadDown = this.gamepad.buttons[13].value;
-            this.dPadLeft = this.gamepad.buttons[14].value;
-            this.dPadRight = this.gamepad.buttons[15].value;
+            this.buttonA = this.browserGamepad.buttons[0].value;
+            this.buttonB = this.browserGamepad.buttons[1].value;
+            this.buttonX = this.browserGamepad.buttons[2].value;
+            this.buttonY = this.browserGamepad.buttons[3].value;
+            this.buttonLB = this.browserGamepad.buttons[4].value;
+            this.buttonRB = this.browserGamepad.buttons[5].value;
+            this.leftTrigger = this.browserGamepad.buttons[6].value;
+            this.rightTrigger = this.browserGamepad.buttons[7].value;
+            this.buttonBack = this.browserGamepad.buttons[8].value;
+            this.buttonStart = this.browserGamepad.buttons[9].value;
+            this.buttonLeftStick = this.browserGamepad.buttons[10].value;
+            this.buttonRightStick = this.browserGamepad.buttons[11].value;
+            this.dPadUp = this.browserGamepad.buttons[12].value;
+            this.dPadDown = this.browserGamepad.buttons[13].value;
+            this.dPadLeft = this.browserGamepad.buttons[14].value;
+            this.dPadRight = this.browserGamepad.buttons[15].value;
         }
     }
 }
