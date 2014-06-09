@@ -646,6 +646,16 @@ var BABYLON = BABYLON || {};
                 }
 
                 instance.scaling = BABYLON.Vector3.FromArray(parsedInstance.scaling);
+
+                instance.checkCollisions = mesh.checkCollisions;
+
+                if (parsedMesh.animations) {
+                    for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                        parsedAnimation = parsedMesh.animations[animationIndex];
+
+                        instance.animations.push(parseAnimation(parsedAnimation));
+                    }
+                }
             }
         }
 

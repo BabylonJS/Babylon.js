@@ -272,7 +272,7 @@ var BABYLON;
             var engine = this.getEngine();
             if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
-                    this.minZ = BABYLON.Engine.Epsilon;
+                    this.minZ = 0.1;
                 }
 
                 BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);

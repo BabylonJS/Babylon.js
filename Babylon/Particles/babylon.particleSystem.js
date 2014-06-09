@@ -151,10 +151,10 @@
                     if (particle.color.a < 0)
                         particle.color.a = 0;
 
+                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+
                     particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
                     particle.position.addInPlace(this._scaledDirection);
-
-                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
                     this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                     particle.direction.addInPlace(this._scaledGravity);
