@@ -309,7 +309,7 @@ var BABYLON;
                 }
 
                 this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
-                this._worldMatricesInstancesArray = new Float32Array(16 * matricesCount);
+                this._worldMatricesInstancesArray = new Float32Array(this._instancesBufferSize / 4);
             }
 
             var offset = 0;
