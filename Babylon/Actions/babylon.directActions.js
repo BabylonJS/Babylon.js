@@ -25,6 +25,20 @@ var BABYLON;
     })(BABYLON.Action);
     BABYLON.SwitchBooleanAction = SwitchBooleanAction;
 
+    var SetStateAction = (function (_super) {
+        __extends(SetStateAction, _super);
+        function SetStateAction(trigger, target, value, condition) {
+            _super.call(this, trigger, condition);
+            this.value = value;
+            this._target = target;
+        }
+        SetStateAction.prototype.execute = function () {
+            this._target.state = this.value;
+        };
+        return SetStateAction;
+    })(BABYLON.Action);
+    BABYLON.SetStateAction = SetStateAction;
+
     var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
         function SetValueAction(trigger, target, propertyPath, value, condition) {
@@ -109,7 +123,7 @@ var BABYLON;
     var DoNothingAction = (function (_super) {
         __extends(DoNothingAction, _super);
         function DoNothingAction(trigger, condition) {
-            if (typeof trigger === "undefined") { trigger = BABYLON.ActionManager.NoneTrigger; }
+            if (typeof trigger === "undefined") { trigger = BABYLON.ActionManager.NothingTrigger; }
             _super.call(this, trigger, condition);
         }
         DoNothingAction.prototype.execute = function () {

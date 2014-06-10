@@ -18,7 +18,7 @@
         }
 
         // Methods
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(mesh?: AbstractMesh): boolean {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {

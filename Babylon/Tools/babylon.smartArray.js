@@ -3,7 +3,9 @@
     var SmartArray = (function () {
         function SmartArray(capacity) {
             this.length = 0;
+            this._duplicateId = 0;
             this.data = new Array(capacity);
+            this._id = SmartArray._GlobalId++;
         }
         SmartArray.prototype.push = function (value) {
             this.data[this.length++] = value;
@@ -11,10 +13,16 @@
             if (this.length > this.data.length) {
                 this.data.length *= 2;
             }
+
+            if (!value.__smartArrayFlags) {
+                value.__smartArrayFlags = {};
+            }
+
+            value.__smartArrayFlags[this._id] = this._duplicateId;
         };
 
         SmartArray.prototype.pushNoDuplicate = function (value) {
-            if (this.indexOf(value) > -1) {
+            if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
                 return;
             }
             this.push(value);
@@ -26,6 +34,7 @@
 
         SmartArray.prototype.reset = function () {
             this.length = 0;
+            this._duplicateId++;
         };
 
         SmartArray.prototype.concat = function (array) {
@@ -51,11 +60,7 @@
 
             for (var index = 0; index < array.length; index++) {
                 var item = (array.data || array)[index];
-                var pos = this.data.indexOf(item);
-
-                if (pos === -1 || pos >= this.length) {
-                    this.data[this.length++] = item;
-                }
+                this.pushNoDuplicate(item);
             }
         };
 
@@ -68,6 +73,8 @@
 
             return position;
         };
+
+        SmartArray._GlobalId = 0;
         return SmartArray;
     })();
     BABYLON.SmartArray = SmartArray;

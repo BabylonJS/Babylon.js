@@ -1,5 +1,8 @@
-﻿var BABYLON;
+﻿
+var BABYLON;
 (function (BABYLON) {
+    
+
     // Screenshots
     var screenshotCanvas;
 
@@ -56,6 +59,23 @@
 
         Tools.ToRadians = function (angle) {
             return angle * Math.PI / 180;
+        };
+
+        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
+            var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+            for (var index = indexStart; index < indexStart + indexCount; index++) {
+                var current = new BABYLON.Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
+
+                minimum = BABYLON.Vector3.Minimize(current, minimum);
+                maximum = BABYLON.Vector3.Maximize(current, maximum);
+            }
+
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
         };
 
         Tools.ExtractMinAndMax = function (positions, start, count) {
@@ -134,7 +154,14 @@
         };
 
         // External files
+        Tools.CleanUrl = function (url) {
+            url = url.replace(/#/mg, "%23");
+            return url;
+        };
+
         Tools.LoadImage = function (url, onload, onerror, database) {
+            url = Tools.CleanUrl(url);
+
             var img = new Image();
             img.crossOrigin = 'anonymous';
 
@@ -155,7 +182,7 @@
             };
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline) {
+            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             } else {
                 if (url.indexOf("file:") === -1) {
@@ -165,10 +192,10 @@
                         var textureName = url.substring(5);
                         var blobURL;
                         try  {
-                            blobURL = URL.createObjectURL(FilesTextures[textureName], { oneTimeOnly: true });
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
                         } catch (ex) {
                             // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(FilesTextures[textureName]);
+                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName]);
                         }
                         img.src = blobURL;
                     } catch (e) {
@@ -183,6 +210,8 @@
 
         //ANY
         Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer) {
+            url = Tools.CleanUrl(url);
+
             var noIndexedDB = function () {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
@@ -231,6 +260,22 @@
         };
 
         // Misc.
+        Tools.CheckExtends = function (v, min, max) {
+            if (v.x < min.x)
+                min.x = v.x;
+            if (v.y < min.y)
+                min.y = v.y;
+            if (v.z < min.z)
+                min.z = v.z;
+
+            if (v.x > max.x)
+                max.x = v.x;
+            if (v.y > max.y)
+                max.y = v.y;
+            if (v.z > max.z)
+                max.z = v.z;
+        };
+
         Tools.WithinEpsilon = function (a, b) {
             var num = a - b;
             return -1.401298E-45 <= num && num <= 1.401298E-45;
@@ -383,7 +428,7 @@
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new BABYLON.RenderTargetTexture("screenShot", size, engine.scenes[0]);
+            var texture = new BABYLON.RenderTargetTexture("screenShot", size, engine.scenes[0], false, false);
             texture.renderList = engine.scenes[0].meshes;
 
             texture.onAfterRender = function () {

@@ -40,7 +40,7 @@ var BABYLON;
             vertexData.applyToGeometry(this, updatable);
         };
 
-        Geometry.prototype.setVerticesData = function (data, kind, updatable) {
+        Geometry.prototype.setVerticesData = function (kind, data, updatable) {
             this._vertexBuffers = this._vertexBuffers || {};
 
             if (this._vertexBuffers[kind]) {
@@ -64,6 +64,7 @@ var BABYLON;
                     mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
                     mesh._createGlobalSubMesh();
+                    mesh.computeWorldMatrix(true);
                 }
             }
         };
@@ -434,11 +435,11 @@ var BABYLON;
                     _super.prototype.setAllVerticesData.call(this, vertexData, false);
                 };
 
-                _Primitive.prototype.setVerticesData = function (data, kind, updatable) {
+                _Primitive.prototype.setVerticesData = function (kind, data, updatable) {
                     if (!this._beingRegenerated) {
                         return;
                     }
-                    _super.prototype.setVerticesData.call(this, data, kind, false);
+                    _super.prototype.setVerticesData.call(this, kind, data, false);
                 };
 
                 // to override

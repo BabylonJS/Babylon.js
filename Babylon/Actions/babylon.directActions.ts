@@ -18,6 +18,19 @@
         }
     }
 
+    export class SetStateAction extends Action {
+        private _target: any;
+
+        constructor(trigger: number, target: any, public value: string, condition?: Condition) {
+            super(trigger, condition);
+            this._target = target;
+        }
+
+        public execute(): void {
+            this._target.state = this.value;
+        }
+    }
+
     export class SetValueAction extends Action {
         private _target: any;
         private _property: string;
@@ -95,7 +108,7 @@
     }
 
     export class DoNothingAction extends Action {
-        constructor(trigger: number = ActionManager.NoneTrigger, condition?: Condition) {
+        constructor(trigger: number = ActionManager.NothingTrigger, condition?: Condition) {
             super(trigger, condition);
         }
 

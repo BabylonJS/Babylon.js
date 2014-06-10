@@ -22,12 +22,28 @@
         }
     }
 
-    export class StateCondition extends Condition {
+    export class ValueCondition extends Condition {
         // Statics
-        public static IsEqual = 0;
-        public static IsDifferent = 1;
-        public static IsGreater= 2;
-        public static IsLesser = 3;
+        private static _IsEqual = 0;
+        private static _IsDifferent = 1;
+        private static _IsGreater = 2;
+        private static _IsLesser = 3;
+
+        public static get IsEqual(): number {
+            return ValueCondition._IsEqual;
+        }
+
+        public static get IsDifferent(): number {
+            return ValueCondition._IsDifferent;
+        }
+
+        public static get IsGreater(): number {
+            return ValueCondition._IsGreater;
+        }
+
+        public static get IsLesser(): number {
+            return ValueCondition._IsLesser;
+        }
 
         // Members
         public _actionManager: ActionManager;
@@ -35,7 +51,7 @@
         private _target: any;
         private _property: string;
 
-        constructor(actionManager: ActionManager, target: any, public propertyPath: string, public value: any, public operator: number = StateCondition.IsEqual) {
+        constructor(actionManager: ActionManager, target: any, public propertyPath: string, public value: any, public operator: number = ValueCondition.IsEqual) {
             super(actionManager);
 
             this._target = this._getEffectiveTarget(target, this.propertyPath);
@@ -45,12 +61,12 @@
         // Methods
         public isValid(): boolean {
             switch (this.operator) {
-                case StateCondition.IsGreater:
+                case ValueCondition.IsGreater:
                     return this._target[this._property] > this.value;
-                case StateCondition.IsLesser:
+                case ValueCondition.IsLesser:
                     return this._target[this._property] < this.value;
-                case StateCondition.IsEqual:
-                case StateCondition.IsDifferent:
+                case ValueCondition.IsEqual:
+                case ValueCondition.IsDifferent:
                     var check: boolean;
 
                     if (this.value.equals) {
@@ -58,7 +74,7 @@
                     } else {
                         check = this.value === this._target[this._property];
                     }
-                    return this.operator === StateCondition.IsEqual ? check: !check;
+                    return this.operator === ValueCondition.IsEqual ? check : !check;
             }
 
             return false;
@@ -78,4 +94,23 @@
             return this.predicate();
         }
     }
+
+    export class StateCondition extends Condition {
+        // Members
+        public _actionManager: ActionManager;
+
+        private _target: any;
+
+        constructor(actionManager: ActionManager, target: any, public value: string) {
+            super(actionManager);
+
+            this._target = target;
+        }
+
+        // Methods
+        public isValid(): boolean {
+            return this._target.state === this.value;
+        }
+    }
+
 }

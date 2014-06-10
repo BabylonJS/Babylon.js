@@ -553,9 +553,9 @@
 
             }
 
-            mesh.setVerticesData(vertices, BABYLON.VertexBuffer.PositionKind);
-            mesh.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind);
-            mesh.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind);
+            mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, vertices);
+            mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+            mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
             mesh.setIndices(indices);
 
             if (keepSubMeshes) {

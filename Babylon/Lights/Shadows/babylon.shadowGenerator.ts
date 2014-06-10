@@ -30,33 +30,69 @@
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
 
-
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
-                var mesh = subMesh.getMesh();
-                var world = mesh.getWorldMatrix();
-                var engine = this._scene.getEngine();
+                var mesh = subMesh.getRenderingMesh();
+                var scene = this._scene;
+                var engine = scene.getEngine();
 
-                if (this.isReady(mesh)) {
+                // Managing instances
+                var batch = mesh._getInstancesRenderList();
+
+                if (batch.mustReturn) {
+                    return;
+                }
+
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
+
+                if (this.isReady(mesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
+                    mesh._bind(subMesh, this._effect, false);
 
-                    // Bones
-                    if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                        this._effect.setMatrix("world", world);
-                        this._effect.setMatrix("viewProjection", this.getTransformMatrix());
+                    this._effect.setMatrix("viewProjection", this.getTransformMatrix());
 
-                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-                    } else {
-                        world.multiplyToRef(this.getTransformMatrix(), this._worldViewProjection);
-                        this._effect.setMatrix("worldViewProjection", this._worldViewProjection);
+                    // Alpha test
+                    if (mesh.material && mesh.material.needAlphaTesting()) {
+                        var alphaTexture = mesh.material.getAlphaTestTexture();
+                        this._effect.setTexture("diffuseSampler", alphaTexture);
+                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
 
-                    // Bind and draw
-                    mesh.bindAndDraw(subMesh, this._effect, false);
+                    // Bones
+                    var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+
+                    if (useBones) {
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                    }
+
+                    if (hardwareInstancedRendering) {
+                        mesh._renderWithInstances(subMesh, false, batch, this._effect, engine);
+                    } else {
+                        if (batch.renderSelf) {
+                            this._effect.setMatrix("world", mesh.getWorldMatrix());
+
+                            // Draw
+                            mesh._draw(subMesh, true);
+                        }
+
+                        if (batch.visibleInstances) {
+                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                                var instance = batch.visibleInstances[instanceIndex];
+
+                                this._effect.setMatrix("world", instance.getWorldMatrix());
+
+                                // Draw
+                                mesh._draw(subMesh, true);
+                            }
+                        }
+                    }
+                } else {
+                    // Need to reset refresh rate of the shadowMap
+                    this._shadowMap.resetRefreshCounter();
                 }
             };
 
-            this._shadowMap.customRenderFunction = (opaqueSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, transparentSubMeshes: SmartArray): void => {
+            this._shadowMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var index;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -76,7 +112,7 @@
 
         }
 
-        public isReady(mesh: Mesh): boolean {
+        public isReady(mesh: Mesh, useInstances: boolean): boolean {
             var defines = [];
 
             if (this.useVarianceShadowMap) {
@@ -84,11 +120,35 @@
             }
 
             var attribs = [BABYLON.VertexBuffer.PositionKind];
+
+            // Alpha test
+            if (mesh.material && mesh.material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Bones
             if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
                 defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
             }
 
             // Get correct effect      
@@ -97,8 +157,8 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "worldViewProjection"],
-                    [], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["diffuseSampler"], join);
             }
 
             return this._effect.isReady();
@@ -108,7 +168,7 @@
             return this._shadowMap;
         }
 
-        public getLight() : DirectionalLight{
+        public getLight(): DirectionalLight {
             return this._light;
         }
 

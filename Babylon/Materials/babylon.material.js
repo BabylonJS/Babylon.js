@@ -5,6 +5,7 @@
             this.name = name;
             this.checkReadyOnEveryCall = true;
             this.checkReadyOnlyOnce = false;
+            this.state = "";
             this.alpha = 1.0;
             this.wireframe = false;
             this.backFaceCulling = true;
@@ -17,7 +18,7 @@
                 scene.materials.push(this);
             }
         }
-        Material.prototype.isReady = function (mesh) {
+        Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };
 
@@ -37,6 +38,10 @@
             return false;
         };
 
+        Material.prototype.getAlphaTestTexture = function () {
+            return null;
+        };
+
         Material.prototype.trackCreation = function (onCompiled, onError) {
         };
 
@@ -48,6 +53,9 @@
         };
 
         Material.prototype.bind = function (world, mesh) {
+        };
+
+        Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
 
         Material.prototype.unbind = function () {

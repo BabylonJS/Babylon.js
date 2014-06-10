@@ -37,33 +37,75 @@
             this._applyTo(geometry, updatable);
         };
 
+        VertexData.prototype.updateMesh = function (mesh, updateExtends, makeItUnique) {
+            this._update(mesh);
+        };
+
+        VertexData.prototype.updateGeometry = function (geometry, updateExtends, makeItUnique) {
+            this._update(geometry);
+        };
+
         VertexData.prototype._applyTo = function (meshOrGeometry, updatable) {
             if (this.positions) {
-                meshOrGeometry.setVerticesData(this.positions, BABYLON.VertexBuffer.PositionKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updatable);
             }
 
             if (this.normals) {
-                meshOrGeometry.setVerticesData(this.normals, BABYLON.VertexBuffer.NormalKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updatable);
             }
 
             if (this.uvs) {
-                meshOrGeometry.setVerticesData(this.uvs, BABYLON.VertexBuffer.UVKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updatable);
             }
 
             if (this.uv2s) {
-                meshOrGeometry.setVerticesData(this.uv2s, BABYLON.VertexBuffer.UV2Kind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updatable);
             }
 
             if (this.colors) {
-                meshOrGeometry.setVerticesData(this.colors, BABYLON.VertexBuffer.ColorKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updatable);
             }
 
             if (this.matricesIndices) {
-                meshOrGeometry.setVerticesData(this.matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
             }
 
             if (this.matricesWeights) {
-                meshOrGeometry.setVerticesData(this.matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind, updatable);
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
+            }
+
+            if (this.indices) {
+                meshOrGeometry.setIndices(this.indices);
+            }
+        };
+
+        VertexData.prototype._update = function (meshOrGeometry, updateExtends, makeItUnique) {
+            if (this.positions) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
+            }
+
+            if (this.normals) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+            }
+
+            if (this.uvs) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
+            }
+
+            if (this.uv2s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            }
+
+            if (this.colors) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesIndices) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesWeights) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
             }
 
             if (this.indices) {

@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     export class CubeTexture extends BaseTexture {
-        public name: string;
         public url: string;
         public coordinatesMode = BABYLON.Texture.CUBIC_MODE;
 
@@ -37,6 +36,19 @@
             this._textureMatrix = BABYLON.Matrix.Identity();
         }
 
+        public clone(): CubeTexture {
+            var newTexture = new BABYLON.CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
+
+            // Base texture
+            newTexture.level = this.level;
+            newTexture.wrapU = this.wrapU;
+            newTexture.wrapV = this.wrapV;
+            newTexture.coordinatesIndex = this.coordinatesIndex;
+            newTexture.coordinatesMode = this.coordinatesMode;
+
+            return newTexture;
+        }
+
         // Methods
         public delayLoad(): void {
             if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -51,7 +63,7 @@
             }
         }
 
-        public _computeReflectionTextureMatrix(): Matrix {
+        public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
     }

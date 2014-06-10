@@ -24,26 +24,63 @@
 
             // Custom render function
             var renderSubMesh = function (subMesh) {
-                var mesh = subMesh.getMesh();
-                var world = mesh.getWorldMatrix();
-                var engine = _this._scene.getEngine();
+                var mesh = subMesh.getRenderingMesh();
+                var scene = _this._scene;
+                var engine = scene.getEngine();
 
-                if (_this.isReady(mesh)) {
+                // Managing instances
+                var batch = mesh._getInstancesRenderList();
+
+                if (batch.mustReturn) {
+                    return;
+                }
+
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
+
+                if (_this.isReady(mesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
+                    mesh._bind(subMesh, _this._effect, false);
 
-                    // Bones
-                    if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                        _this._effect.setMatrix("world", world);
-                        _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
+                    _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
 
-                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-                    } else {
-                        world.multiplyToRef(_this.getTransformMatrix(), _this._worldViewProjection);
-                        _this._effect.setMatrix("worldViewProjection", _this._worldViewProjection);
+                    // Alpha test
+                    if (mesh.material && mesh.material.needAlphaTesting()) {
+                        var alphaTexture = mesh.material.getAlphaTestTexture();
+                        _this._effect.setTexture("diffuseSampler", alphaTexture);
+                        _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
 
-                    // Bind and draw
-                    mesh.bindAndDraw(subMesh, _this._effect, false);
+                    // Bones
+                    var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+
+                    if (useBones) {
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                    }
+
+                    if (hardwareInstancedRendering) {
+                        mesh._renderWithInstances(subMesh, false, batch, _this._effect, engine);
+                    } else {
+                        if (batch.renderSelf) {
+                            _this._effect.setMatrix("world", mesh.getWorldMatrix());
+
+                            // Draw
+                            mesh._draw(subMesh, true);
+                        }
+
+                        if (batch.visibleInstances) {
+                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
+                                var instance = batch.visibleInstances[instanceIndex];
+
+                                _this._effect.setMatrix("world", instance.getWorldMatrix());
+
+                                // Draw
+                                mesh._draw(subMesh, true);
+                            }
+                        }
+                    }
+                } else {
+                    // Need to reset refresh rate of the shadowMap
+                    _this._shadowMap.resetRefreshCounter();
                 }
             };
 
@@ -65,7 +102,7 @@
                 }
             };
         }
-        ShadowGenerator.prototype.isReady = function (mesh) {
+        ShadowGenerator.prototype.isReady = function (mesh, useInstances) {
             var defines = [];
 
             if (this.useVarianceShadowMap) {
@@ -73,6 +110,21 @@
             }
 
             var attribs = [BABYLON.VertexBuffer.PositionKind];
+
+            // Alpha test
+            if (mesh.material && mesh.material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Bones
             if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
@@ -80,11 +132,20 @@
                 defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
             }
 
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
+            }
+
             // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "worldViewProjection"], [], join);
+                this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix"], ["diffuseSampler"], join);
             }
 
             return this._effect.isReady();

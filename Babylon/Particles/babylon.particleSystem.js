@@ -12,6 +12,7 @@
 
     var ParticleSystem = (function () {
         function ParticleSystem(name, capacity, scene) {
+            var _this = this;
             this.name = name;
             this.renderingGroupId = 0;
             this.emitter = null;
@@ -49,7 +50,7 @@
             this._scaledDirection = BABYLON.Vector3.Zero();
             this._scaledGravity = BABYLON.Vector3.Zero();
             this._currentRenderId = -1;
-            this._started = true;
+            this._started = false;
             this._stopped = false;
             this._actualFrame = 0;
             this.id = name;
@@ -77,6 +78,23 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
             this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+
+            // Default behaviors
+            this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate) {
+                var randX = randomNumber(_this.direction1.x, _this.direction2.x);
+                var randY = randomNumber(_this.direction1.y, _this.direction2.y);
+                var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
+
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            };
+
+            this.startPositionFunction = function (worldMatrix, positionToUpdate) {
+                var randX = randomNumber(_this.minEmitBox.x, _this.maxEmitBox.x);
+                var randY = randomNumber(_this.minEmitBox.y, _this.maxEmitBox.y);
+                var randZ = randomNumber(_this.minEmitBox.z, _this.maxEmitBox.z);
+
+                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+            };
         }
         ParticleSystem.prototype.getCapacity = function () {
             return this._capacity;
@@ -84,6 +102,10 @@
 
         ParticleSystem.prototype.isAlive = function () {
             return this._alive;
+        };
+
+        ParticleSystem.prototype.isStarted = function () {
+            return this._started;
         };
 
         ParticleSystem.prototype.start = function () {
@@ -129,10 +151,10 @@
                     if (particle.color.a < 0)
                         particle.color.a = 0;
 
+                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+
                     particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
                     particle.position.addInPlace(this._scaledDirection);
-
-                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
                     this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                     particle.direction.addInPlace(this._scaledGravity);
@@ -163,22 +185,14 @@
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                var randX = randomNumber(this.direction1.x, this.direction2.x);
-                var randY = randomNumber(this.direction1.y, this.direction2.y);
-                var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, particle.direction);
+                this.startDirectionFunction(emitPower, worldMatrix, particle.direction);
 
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, particle.position);
+                this.startPositionFunction(worldMatrix, particle.position);
 
                 var step = randomNumber(0, 1.0);
 

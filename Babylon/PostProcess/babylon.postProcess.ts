@@ -12,7 +12,7 @@
         private _engine: Engine;
         private _renderRatio: number;
         private _reusable = false;
-        public _textures = new BABYLON.SmartArray(2);
+        public _textures = new BABYLON.SmartArray<WebGLTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
 

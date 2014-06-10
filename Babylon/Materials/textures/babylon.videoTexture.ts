@@ -5,7 +5,7 @@
         private _autoLaunch = true;
         private _lastUpdate: number;
 
-        constructor(name: string, urls, size, scene, generateMipMaps, invertY) {
+        constructor(name: string, urls: string[], size: number, scene: Scene, generateMipMaps: boolean, invertY: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
 
             this.name = name;
@@ -13,7 +13,7 @@
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
 
-            this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps);
+            this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps, samplingMode);
             var textureSize = this.getSize();
 
             this.video = document.createElement("video");

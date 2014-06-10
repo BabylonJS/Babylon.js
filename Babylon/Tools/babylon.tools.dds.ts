@@ -69,7 +69,7 @@
     var off_pfFourCC = 21;
 
     export class DDSTools {
-        public static GetDDSInfo(arrayBuffer): { width: number; height: number; mipmapCount: number } {
+        public static GetDDSInfo(arrayBuffer: any): { width: number; height: number; mipmapCount: number } {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
 
             var mipmapCount = 1;
@@ -84,7 +84,7 @@
             };
         }
 
-        public static UploadDDSLevels(gl, ext, arrayBuffer, loadMipmaps?: boolean): void {
+        public static UploadDDSLevels(gl: WebGLRenderingContext, ext: any, arrayBuffer: any, loadMipmaps?: boolean): void {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
                 fourCC, blockBytes, internalFormat,
                 width, height, dataLength, dataOffset,

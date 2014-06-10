@@ -11,12 +11,12 @@ var BABYLON = BABYLON || {};
         this._offsetY = null;
         this._pointerCount = 0;
         this._pointerPressed = [];
+
+        this.angularSensibility = 200000.0;
+        this.moveSensibility = 500.0;
     };
 
     BABYLON.TouchCamera.prototype = Object.create(BABYLON.FreeCamera.prototype);
-
-    BABYLON.TouchCamera.prototype.angularSensibility = 200000.0;
-    BABYLON.TouchCamera.prototype.moveSensibility = 500.0;
 
 
     // Controls

@@ -68,7 +68,7 @@
         public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
-        public collidedMesh: Mesh
+        public collidedMesh: AbstractMesh
 
         private _collisionPoint = BABYLON.Vector3.Zero();
         private _planeIntersectionPoint = BABYLON.Vector3.Zero();
@@ -120,8 +120,7 @@
         public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
             var distance = BABYLON.Vector3.Distance(this.basePointWorld, sphereCenter);
 
-            var max = Math.max(this.radius.x, this.radius.y);
-            max = Math.max(max, this.radius.z);
+            var max = Math.max(this.radius.x, this.radius.y, this.radius.z);
 
             if (distance > this.velocityWorldLength + max + sphereRadius) {
                 return false;

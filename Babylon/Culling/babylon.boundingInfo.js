@@ -27,6 +27,8 @@
 
     var BoundingInfo = (function () {
         function BoundingInfo(minimum, maximum) {
+            this.minimum = minimum;
+            this.maximum = maximum;
             this.boundingBox = new BABYLON.BoundingBox(minimum, maximum);
             this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
         }
