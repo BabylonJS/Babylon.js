@@ -38,6 +38,7 @@ var BABYLON = BABYLON || {};
 
         texture.name = parsedTexture.name;
         texture.hasAlpha = parsedTexture.hasAlpha;
+        texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
         texture.level = parsedTexture.level;
 
         texture.coordinatesIndex = parsedTexture.coordinatesIndex;

@@ -45,7 +45,7 @@
         }
 
         public needAlphaTesting(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && !this.diffuseTexture.getAlphaFromRGB;
         }
 
         private _shouldUseAlphaFromDiffuseTexture(): boolean {
@@ -99,6 +99,10 @@
                         return false;
                     } else {
                         defines.push("#define OPACITY");
+
+                        if (this.opacityTexture.getAlphaFromRGB) {
+                            defines.push("#define OPACITYRGB");
+                        }
                     }
                 }
 

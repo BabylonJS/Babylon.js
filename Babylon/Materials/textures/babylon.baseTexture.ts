@@ -3,6 +3,7 @@
         public name: string;
         public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
         public hasAlpha = false;
+        public getAlphaFromRGB = false;
         public level = 1;
         public isCube = false
         public isRenderTarget = false;
