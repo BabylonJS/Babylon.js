@@ -60,7 +60,13 @@
             return this._attributesNames;
         }
 
-        public getAttribute(index: number): number {
+        public getAttributeLocation(index: number): number {
+            return this._attributes[index];
+        }
+
+        public getAttributeLocationByName(name: string): number {
+            var index = this._attributesNames.indexOf(name);
+
             return this._attributes[index];
         }
 
@@ -184,7 +190,7 @@
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
-        public setTexture(channel: string, texture: Texture): void {
+        public setTexture(channel: string, texture: BaseTexture): void {
             this._engine.setTexture(this._samplers.indexOf(channel), texture);
         }
 

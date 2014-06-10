@@ -2,33 +2,45 @@
     export class SubMesh {
         public linesIndexCount: number;
 
-        private _mesh: Mesh;
+        private _mesh: AbstractMesh;
+        private _renderingMesh: Mesh;
         private _boundingInfo: BoundingInfo;
         private _linesIndexBuffer: WebGLBuffer;
         public _lastColliderWorldVertices: Vector3[];
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
 
-        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: Mesh) {
+        public _renderId = 0;
+        public _distanceToCamera: number;
+
+        constructor(public materialIndex: number, public verticesStart: number, public verticesCount: number, public indexStart, public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
             this._mesh = mesh;
+            this._renderingMesh = renderingMesh || <Mesh>mesh;
             mesh.subMeshes.push(this);
 
-            this.refreshBoundingInfo();
+            if (createBoundingBox) {
+                this.refreshBoundingInfo();
+            }
         }
 
         public getBoundingInfo(): BoundingInfo {
             return this._boundingInfo;
         }
 
-        public getMesh(): Mesh {
+        public getMesh(): AbstractMesh {
             return this._mesh;
         }
 
-        public getMaterial(): Material {
-            var rootMaterial = this._mesh.material;
+        public getRenderingMesh(): Mesh {
+            return this._renderingMesh;
+        }
 
-            if (rootMaterial && rootMaterial.getSubMaterial) {
-                return rootMaterial.getSubMaterial(this.materialIndex);
+        public getMaterial(): Material {
+            var rootMaterial = this._renderingMesh.material;
+
+            if (rootMaterial && rootMaterial instanceof MultiMaterial) {
+                var multiMaterial = <MultiMaterial>rootMaterial;
+                return multiMaterial.getSubMaterial(this.materialIndex);
             }
 
             if (!rootMaterial) {
@@ -40,14 +52,21 @@
 
         // Methods
         public refreshBoundingInfo(): void {
-            var data = this._mesh.getVerticesData(VertexBuffer.PositionKind);
+            var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
                 return;
             }
 
-            var extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+            var indices = this._renderingMesh.getIndices();
+            var extend;
+
+            if (this.indexStart === 0 && this.indexCount === indices.length) {
+                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+            } else {
+                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
+            }
             this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
         }
 
@@ -67,7 +86,7 @@
         }
 
         public render(): void {
-            this._mesh.render(this);
+            this._renderingMesh.render(this);
         }
 
         public getLinesIndexBuffer(indices: number[], engine): WebGLBuffer {
@@ -117,16 +136,33 @@
         }
 
         // Clone    
-        public clone(newMesh: Mesh): SubMesh {
-            return new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh);
+        public clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh {
+            var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
+
+            result._boundingInfo = new BoundingInfo(this._boundingInfo.minimum, this._boundingInfo.maximum);
+
+            return result;
+        }
+
+        // Dispose
+        public dispose() {
+            if (this._linesIndexBuffer) {
+                this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
+                this._linesIndexBuffer = null;
+            }
+
+            // Remove from mesh
+            var index = this._mesh.subMeshes.indexOf(this);
+            this._mesh.subMeshes.splice(index, 1);
         }
 
         // Statics
-        public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: Mesh): SubMesh {
+        public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh {
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
 
-            var indices = mesh.getIndices();
+            renderingMesh = renderingMesh || <Mesh>mesh;
+            var indices = renderingMesh.getIndices();
 
             for (var index = startIndex; index < startIndex + indexCount; index++) {
                 var vertexIndex = indices[index];
@@ -137,7 +173,7 @@
                     maxVertexIndex = vertexIndex;
             }
 
-            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex, startIndex, indexCount, mesh);
+            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         }
     }
 }

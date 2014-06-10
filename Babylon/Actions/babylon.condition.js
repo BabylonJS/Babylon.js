@@ -25,10 +25,10 @@ var BABYLON;
     })();
     BABYLON.Condition = Condition;
 
-    var StateCondition = (function (_super) {
-        __extends(StateCondition, _super);
-        function StateCondition(actionManager, target, propertyPath, value, operator) {
-            if (typeof operator === "undefined") { operator = StateCondition.IsEqual; }
+    var ValueCondition = (function (_super) {
+        __extends(ValueCondition, _super);
+        function ValueCondition(actionManager, target, propertyPath, value, operator) {
+            if (typeof operator === "undefined") { operator = ValueCondition.IsEqual; }
             _super.call(this, actionManager);
             this.propertyPath = propertyPath;
             this.value = value;
@@ -37,15 +37,47 @@ var BABYLON;
             this._target = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
+        Object.defineProperty(ValueCondition, "IsEqual", {
+            get: function () {
+                return ValueCondition._IsEqual;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ValueCondition, "IsDifferent", {
+            get: function () {
+                return ValueCondition._IsDifferent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ValueCondition, "IsGreater", {
+            get: function () {
+                return ValueCondition._IsGreater;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ValueCondition, "IsLesser", {
+            get: function () {
+                return ValueCondition._IsLesser;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
-        StateCondition.prototype.isValid = function () {
+        ValueCondition.prototype.isValid = function () {
             switch (this.operator) {
-                case StateCondition.IsGreater:
+                case ValueCondition.IsGreater:
                     return this._target[this._property] > this.value;
-                case StateCondition.IsLesser:
+                case ValueCondition.IsLesser:
                     return this._target[this._property] < this.value;
-                case StateCondition.IsEqual:
-                case StateCondition.IsDifferent:
+                case ValueCondition.IsEqual:
+                case ValueCondition.IsDifferent:
                     var check;
 
                     if (this.value.equals) {
@@ -53,18 +85,18 @@ var BABYLON;
                     } else {
                         check = this.value === this._target[this._property];
                     }
-                    return this.operator === StateCondition.IsEqual ? check : !check;
+                    return this.operator === ValueCondition.IsEqual ? check : !check;
             }
 
             return false;
         };
-        StateCondition.IsEqual = 0;
-        StateCondition.IsDifferent = 1;
-        StateCondition.IsGreater = 2;
-        StateCondition.IsLesser = 3;
-        return StateCondition;
+        ValueCondition._IsEqual = 0;
+        ValueCondition._IsDifferent = 1;
+        ValueCondition._IsGreater = 2;
+        ValueCondition._IsLesser = 3;
+        return ValueCondition;
     })(Condition);
-    BABYLON.StateCondition = StateCondition;
+    BABYLON.ValueCondition = ValueCondition;
 
     var PredicateCondition = (function (_super) {
         __extends(PredicateCondition, _super);
@@ -78,5 +110,21 @@ var BABYLON;
         return PredicateCondition;
     })(Condition);
     BABYLON.PredicateCondition = PredicateCondition;
+
+    var StateCondition = (function (_super) {
+        __extends(StateCondition, _super);
+        function StateCondition(actionManager, target, value) {
+            _super.call(this, actionManager);
+            this.value = value;
+
+            this._target = target;
+        }
+        // Methods
+        StateCondition.prototype.isValid = function () {
+            return this._target.state === this.value;
+        };
+        return StateCondition;
+    })(Condition);
+    BABYLON.StateCondition = StateCondition;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.condition.js.map

@@ -20,7 +20,16 @@ attribute vec4 matricesWeights;
 #endif
 
 // Uniforms
+
+#ifdef INSTANCES
+attribute vec4 world0;
+attribute vec4 world1;
+attribute vec4 world2;
+attribute vec4 world3;
+#else
 uniform mat4 world;
+#endif
+
 uniform mat4 view;
 uniform mat4 viewProjection;
 
@@ -124,7 +133,11 @@ void main(void) {
 #endif 
 
 #else
+#ifdef INSTANCES
+	finalWorld = mat4(world0, world1, world2, world3);
+#else
 	finalWorld = world;
+#endif
 #endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
@@ -219,16 +232,16 @@ void main(void) {
 	// Shadows
 #ifdef SHADOWS
 #ifdef LIGHT0
-	vPositionFromLight0 = lightMatrix0 * vec4(position, 1.0);
+	vPositionFromLight0 = lightMatrix0 * worldPos;
 #endif
 #ifdef LIGHT1
-	vPositionFromLight1 = lightMatrix1 * vec4(position, 1.0);
+	vPositionFromLight1 = lightMatrix1 * worldPos;
 #endif
 #ifdef LIGHT2
-	vPositionFromLight2 = lightMatrix2 * vec4(position, 1.0);
+	vPositionFromLight2 = lightMatrix2 * worldPos;
 #endif
 #ifdef LIGHT3
-	vPositionFromLight3 = lightMatrix3 * vec4(position, 1.0);
+	vPositionFromLight3 = lightMatrix3 * worldPos;
 #endif
 #endif
 

@@ -18,6 +18,7 @@
         public isIntermediate = false;
         public viewport = new Viewport(0, 0, 1.0, 1.0);
         public subCameras = [];
+        public layerMask: number = 0xFFFFFFFF;
 
         private _computedViewMatrix = BABYLON.Matrix.Identity();
         private _projectionMatrix = new BABYLON.Matrix();
@@ -287,7 +288,7 @@
             var engine = this.getEngine();
             if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
-                    this.minZ = Engine.Epsilon;
+                    this.minZ = 0.1;
                 }
 
                 BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);

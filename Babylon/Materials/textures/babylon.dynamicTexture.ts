@@ -4,7 +4,7 @@
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
 
-        constructor(name, options, scene, generateMipMaps) {
+        constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -16,14 +16,14 @@
 
             if (options.getContext) {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             } else {
                 this._canvas = document.createElement("canvas");
 
                 if (options.width) {
-                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps);
+                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 } else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps);
+                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
 

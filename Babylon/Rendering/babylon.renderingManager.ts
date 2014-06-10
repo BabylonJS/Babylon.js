@@ -10,7 +10,7 @@
             this._scene = scene;
         }
 
-        private _renderParticles(index: number, activeMeshes: Mesh[]): void {
+        private _renderParticles(index: number, activeMeshes: AbstractMesh[]): void {
             if (this._scene._activeParticleSystems.length === 0) {
                 return;
             }
@@ -60,8 +60,8 @@
             this._depthBufferAlreadyCleaned = true;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray, transparentSubMeshes: SmartArray, alphaTestSubMeshes: SmartArray, beforeTransparents: () => void) => void,
-            activeMeshes: Mesh[], renderParticles: boolean, renderSprites: boolean): void {
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void,
+            activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];

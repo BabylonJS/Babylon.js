@@ -48,7 +48,7 @@
             vertexData.applyToGeometry(this, updatable);
         }
 
-        public setVerticesData(data: number[], kind: string, updatable?: boolean): void {
+        public setVerticesData(kind: string, data: number[], updatable?: boolean): void {
             this._vertexBuffers = this._vertexBuffers || {};
 
             if (this._vertexBuffers[kind]) {
@@ -72,6 +72,7 @@
                     mesh._resetPointsArrayCache();
                     mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
                     mesh._createGlobalSubMesh();
+                    mesh.computeWorldMatrix(true);
                 }
             }
         }
@@ -445,11 +446,11 @@
                 super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(data: number[], kind: string, updatable?: boolean): void {
+            public setVerticesData(kind: string, data: number[], updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }
-                super.setVerticesData(data, kind, false);
+                super.setVerticesData(kind, data, false);
             }
 
             // to override

@@ -101,7 +101,7 @@ var BABYLON;
             return this;
         };
 
-        ShaderMaterial.prototype.isReady = function (mesh) {
+        ShaderMaterial.prototype.isReady = function () {
             var engine = this.getScene().getEngine();
 
             this._effect = engine.createEffect(this._shaderPath, this._options.attributes, this._options.uniforms, this._options.samplers, "", null, this.onCompiled, this.onError);
@@ -113,7 +113,7 @@ var BABYLON;
             return true;
         };
 
-        ShaderMaterial.prototype.bind = function (world, mesh) {
+        ShaderMaterial.prototype.bind = function (world) {
             // Std values
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);

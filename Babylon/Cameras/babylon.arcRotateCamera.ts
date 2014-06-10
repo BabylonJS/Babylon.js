@@ -380,7 +380,7 @@
             return this._viewMatrix;
         }
 
-        public zoomOn(meshes?: Mesh[]): void {
+        public zoomOn(meshes?: AbstractMesh[]): void {
             meshes = meshes || this.getScene().meshes;
 
             var minMaxVector = BABYLON.Mesh.MinMax(meshes);

@@ -2,7 +2,7 @@
     declare var CANNON;
     declare var window;
 
-    export class CannonJSPlugin {
+    export class CannonJSPlugin implements IPhysicsEnginePlugin {
         public checkWithEpsilon: (value: number) => number;
 
         private _world: any;
@@ -48,7 +48,7 @@
             this._world.gravity.set(gravity.x, gravity.z, gravity.y);
         }
 
-        public registerMesh(mesh: Mesh, impostor: number, options?: PhysicsBodyCreationOptions): any {
+        public registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any {
             this.unregisterMesh(mesh);
 
             mesh.computeWorldMatrix(true);
@@ -79,7 +79,7 @@
             return null;
         }
 
-        private _createSphere(radius: number, mesh: Mesh, options?: PhysicsBodyCreationOptions): any {
+        private _createSphere(radius: number, mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
             var shape = new CANNON.Sphere(radius);
 
             if (!options) {
@@ -89,7 +89,7 @@
             return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         }
 
-        private _createBox(x: number, y: number, z: number, mesh: Mesh, options?: PhysicsBodyCreationOptions): any {
+        private _createBox(x: number, y: number, z: number, mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
             var shape = new CANNON.Box(new CANNON.Vec3(x, z, y));
 
             if (!options) {
@@ -99,7 +99,7 @@
             return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         }
 
-        private _createPlane(mesh: Mesh, options?: PhysicsBodyCreationOptions): any {
+        private _createPlane(mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
             var shape = new CANNON.Plane();
 
             if (!options) {
@@ -109,7 +109,7 @@
             return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         }
 
-        private _createConvexPolyhedron(rawVerts: number[], rawFaces: number[], mesh: Mesh, options?: PhysicsBodyCreationOptions): any {
+        private _createConvexPolyhedron(rawVerts: number[], rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
             var verts = [], faces = [];
 
             mesh.computeWorldMatrix(true);
@@ -166,7 +166,7 @@
             return currentMat;
         }
 
-        private _createRigidBodyFromShape(shape: any, mesh: Mesh, mass: number, friction: number, restitution: number): any {
+        private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
             var initialRotation: Quaternion = null;
 
             if (mesh.rotationQuaternion) {
@@ -225,7 +225,7 @@
             }
         }
 
-        public unregisterMesh(mesh: Mesh): void {
+        public unregisterMesh(mesh: AbstractMesh): void {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
 
@@ -243,7 +243,7 @@
             }
         }
 
-        public applyImpulse(mesh: Mesh, force: Vector3, contactPoint: Vector3): void {
+        public applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.z, contactPoint.y);
             var impulse = new CANNON.Vec3(force.x, force.z, force.y);
 
@@ -257,7 +257,7 @@
             }
         }
 
-        public createLink(mesh1: Mesh, mesh2: Mesh, pivot1: Vector3, pivot2: Vector3): boolean {
+        public createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean {
             var body1 = null, body2 = null;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];

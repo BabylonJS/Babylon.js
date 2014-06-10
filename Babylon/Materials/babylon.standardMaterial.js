@@ -22,7 +22,6 @@ var BABYLON;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._lightMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             this._baseColor = new BABYLON.Color3();
             this._scaledDiffuse = new BABYLON.Color3();
@@ -50,8 +49,12 @@ var BABYLON;
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
         };
 
+        StandardMaterial.prototype.getAlphaTestTexture = function () {
+            return this.diffuseTexture;
+        };
+
         // Methods
-        StandardMaterial.prototype.isReady = function (mesh) {
+        StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -234,6 +237,15 @@ var BABYLON;
                     defines.push("#define BONES4");
                     optionalDefines.push(defines[defines.length - 1]);
                 }
+
+                // Instances
+                if (useInstances) {
+                    defines.push("#define INSTANCES");
+                    attribs.push("world0");
+                    attribs.push("world1");
+                    attribs.push("world2");
+                    attribs.push("world3");
+                }
             }
 
             // Get correct effect
@@ -277,12 +289,16 @@ var BABYLON;
             }
         };
 
+        StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
+            this._effect.setMatrix("world", world);
+        };
+
         StandardMaterial.prototype.bind = function (world, mesh) {
             var scene = this.getScene();
             this._baseColor.copyFrom(this.diffuseColor);
 
             // Matrices
-            this._effect.setMatrix("world", world);
+            this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
@@ -295,7 +311,7 @@ var BABYLON;
                 this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
                 this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                this._effect.setMatrix("diffuseMatrix", this.diffuseTexture._computeTextureMatrix());
+                this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
 
                 this._baseColor.copyFromFloats(1, 1, 1);
             }
@@ -304,14 +320,14 @@ var BABYLON;
                 this._effect.setTexture("ambientSampler", this.ambientTexture);
 
                 this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
-                this._effect.setMatrix("ambientMatrix", this.ambientTexture._computeTextureMatrix());
+                this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
             }
 
             if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
                 this._effect.setTexture("opacitySampler", this.opacityTexture);
 
                 this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                this._effect.setMatrix("opacityMatrix", this.opacityTexture._computeTextureMatrix());
+                this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
             }
 
             if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
@@ -321,7 +337,7 @@ var BABYLON;
                     this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                 }
 
-                this._effect.setMatrix("reflectionMatrix", this.reflectionTexture._computeReflectionTextureMatrix());
+                this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
                 this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
             }
 
@@ -329,21 +345,21 @@ var BABYLON;
                 this._effect.setTexture("emissiveSampler", this.emissiveTexture);
 
                 this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                this._effect.setMatrix("emissiveMatrix", this.emissiveTexture._computeTextureMatrix());
+                this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
             }
 
             if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
                 this._effect.setTexture("specularSampler", this.specularTexture);
 
                 this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                this._effect.setMatrix("specularMatrix", this.specularTexture._computeTextureMatrix());
+                this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
             }
 
             if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
                 this._effect.setTexture("bumpSampler", this.bumpTexture);
 
                 this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
-                this._effect.setMatrix("bumpMatrix", this.bumpTexture._computeTextureMatrix());
+                this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
             }
 
             // Colors
@@ -390,8 +406,7 @@ var BABYLON;
                     // Shadows
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh.receiveShadows && shadowGenerator) {
-                        world.multiplyToRef(shadowGenerator.getTransformMatrix(), this._lightMatrix);
-                        this._effect.setMatrix("lightMatrix" + lightIndex, this._lightMatrix);
+                        this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
                         this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
                         this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
                     }

@@ -61,7 +61,7 @@
 
             // Texture
             this._effect.setTexture("textureSampler", this.texture);
-            this._effect.setMatrix("textureMatrix", this.texture._computeTextureMatrix());
+            this._effect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
 
             // Color
             this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);

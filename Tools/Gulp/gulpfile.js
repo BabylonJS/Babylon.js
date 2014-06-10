@@ -3,8 +3,13 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
     clean = require('gulp-clean'),
-    shaders = require('./gulp-shaders');
+    typescript = require('gulp-tsc'),
+    shaders = require('./gulp-shaders')
+    gulpFilter = require('gulp-filter');
 
+/**
+ * Concat all fx files into one js file.
+ */
 gulp.task('shaders', function() {
   return gulp.src(['../../Babylon/Shaders/*.fx'])
     .pipe(shaders('shaders.js'))
@@ -12,11 +17,41 @@ gulp.task('shaders', function() {
 
 });
 
+/**
+ * Compile typescript files to their js respective files
+ */
+gulp.task('typescript-to-js', function() {
+  //Compile all ts file into their respective js file.
+  return gulp.src(['../../Babylon/**/*.ts'])
+    .pipe(typescript({ target: 'ES5', sourcemap: true }))
+    .pipe(gulp.dest('../../Babylon/'));
+});
+
+/**
+ * Compile the declaration file babylon.d.ts
+ */
+gulp.task('typescript-declaration', function() {
+  var declarationFilter = gulpFilter('**/*.d.ts');
+
+  return gulp.src(['../../Babylon/**/*.ts'])
+    .pipe(typescript({ target: 'ES5', declaration: true, out: 'tmp.js' }))
+    .pipe(declarationFilter)
+    .pipe(rename('babylon.d.ts'))
+    .pipe(gulp.dest('build/'));
+});
+
+/**
+ * Concat all js files in order into one big js file and minify it.
+ * The list is based on https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version
+ * Do not hesistate to update it if you need to add your own files.
+ */
 gulp.task('scripts', ['shaders'] ,function() {
   return gulp.src([
       '../../Babylon/Math/babylon.math.js',
       '../../Babylon/Tools/babylon.database.js',
+      '../../Babylon/Tools/babylon.tools.tga.js',
       '../../Babylon/Tools/babylon.tools.dds.js',
+      '../../Babylon/Tools/babylon.smartArray.js',
       '../../Babylon/Tools/babylon.tools.js',
       '../../Babylon/babylon.engine.js',
       '../../Babylon/babylon.node.js',
@@ -25,6 +60,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Culling/babylon.boundingSphere.js',
       '../../Babylon/Culling/babylon.boundingBox.js',
       '../../Babylon/Culling/babylon.boundingInfo.js',
+      '../../Babylon/Mesh/babylon.abstractMesh.js',
       '../../Babylon/Lights/babylon.light.js',
       '../../Babylon/Lights/babylon.pointLight.js',
       '../../Babylon/Lights/babylon.spotLight.js',
@@ -42,6 +78,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Rendering/babylon.renderingGroup.js',
       '../../Babylon/babylon.scene.js',
       '../../Babylon/Mesh/babylon.vertexBuffer.js',
+      '../../Babylon/Mesh/babylon.InstancedMesh.js',
       '../../Babylon/Mesh/babylon.mesh.js',
       '../../Babylon/Mesh/babylon.subMesh.js',
       '../../Babylon/Materials/textures/babylon.baseTexture.js',
@@ -58,7 +95,6 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Materials/babylon.multiMaterial.js',
       '../../Babylon/Loading/babylon.sceneLoader.js',
       '../../Babylon/Loading/Plugins/babylon.babylonFileLoader.js',
-      '../../Babylon/Tools/babylon.database.js',
       '../../Babylon/Sprites/babylon.spriteManager.js',
       '../../Babylon/Sprites/babylon.sprite.js',
       '../../Babylon/Layer/babylon.layer.js',
@@ -69,6 +105,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Culling/Octrees/babylon.octree.js',
       '../../Babylon/Culling/Octrees/babylon.octreeBlock.js',
       '../../Babylon/Bones/babylon.bone.js',
+      '../../Babylon/Bones/babylon.skeleton.js',
       '../../Babylon/Bones/babylon.skeleton.js',
       '../../Babylon/PostProcess/babylon.postProcess.js',
       '../../Babylon/PostProcess/babylon.postProcessManager.js',
@@ -81,9 +118,9 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/PostProcess/babylon.fxaaPostProcess.js',
       '../../Babylon/LensFlare/babylon.lensFlare.js',
       '../../Babylon/LensFlare/babylon.lensFlareSystem.js',
+      '../../Babylon/Physics/Plugins/babylon.cannonJSPlugin.js',
       '../../Babylon/Physics/babylon.physicsEngine.js',
       '../../Babylon/Tools/babylon.sceneSerializer.js',
-      '../../Babylon/Math/babylon.axis.js',
       '../../Babylon/Mesh/babylon.csg.js',
       '../../Babylon/PostProcess/babylon.oculusDistortionCorrectionPostProcess.js',
       '../../Babylon/Tools/babylon.virtualJoystick.js',
@@ -96,6 +133,26 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Cameras/Controllers/babylon.globalAxisFactorsFilter.js',
       '../../Babylon/Materials/babylon.shaderMaterial.js',
       '../../Babylon/Mesh/babylon.mesh.vertexData.js',
+      '../../Babylon/Cameras/babylon.anaglyphCamera.js',
+      '../../Babylon/PostProcess/babylon.anaglyphPostProcess.js',
+      '../../Babylon/Tools/babylon.tags.js',
+      '../../Babylon/Tools/babylon.andOrNotEvaluator.js',
+      '../../Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPass.js',
+      '../../Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js',
+      '../../Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js',
+      '../../Babylon/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js',
+      '../../Babylon/PostProcess/babylon.displayPassPostProcess.js',
+      '../../Babylon/Rendering/babylon.boundingBoxRenderer.js',
+      '../../Babylon/Actions/babylon.condition.js',
+      '../../Babylon/Actions/babylon.action.js',
+      '../../Babylon/Actions/babylon.actionManager.js',
+      '../../Babylon/Actions/babylon.interpolateValueAction.js',
+      '../../Babylon/Actions/babylon.directActions.js',
+      '../../Babylon/Mesh/babylon.geometry.js',
+      '../../Babylon/Mesh/babylon.groundMesh.js',
+      '../../Babylon/Mesh/babylon.instancedMesh.js',
+      '../../Babylon/Tools/babylon.gamepads.js',
+      '../../Babylon/Cameras/babylon.gamepadCamera.js',
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))
@@ -106,15 +163,39 @@ gulp.task('scripts', ['shaders'] ,function() {
 
 });
 
+/**
+ * Clean temporary files
+ * Called after the task scripts
+ */
 gulp.task('clean', ['scripts'], function() {
   return gulp.src(['build/shaders.js'], {read: false})
     .pipe(clean());
 });
 
+/**
+ * The defaut task, call the tasks: shaders, scripts, clean
+ */
 gulp.task('default', function() {
     gulp.start('shaders','scripts', 'clean');
 });
 
+/**
+ * The defaut typescript task, call the tasks: shaders, scripts, clean AFTER the task typescript-to-js
+ */
+gulp.task('typescript', ['typescript-to-js', 'typescript-declaration'], function() {
+    gulp.start('shaders','scripts', 'clean');
+});
+
+/**
+ * Watch task, will call the default task if a js file is updated.
+ */
 gulp.task('watch', function() {
   gulp.watch('src/**/*.js', ['default']);
+});
+
+/**
+ * Watch typescript task, will call the default typescript task if a typescript file is updated.
+ */
+gulp.task('watch-typescript', function() {
+  gulp.watch('src/**/*.ts', ['typescript']);
 });

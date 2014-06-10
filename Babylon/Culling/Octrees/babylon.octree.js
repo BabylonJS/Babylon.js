@@ -1,36 +1,75 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var Octree = (function () {
-        function Octree(maxBlockCapacity) {
+        function Octree(creationFunc, maxBlockCapacity, maxDepth) {
+            if (typeof maxDepth === "undefined") { maxDepth = 2; }
+            this.maxDepth = maxDepth;
+            this.dynamicContent = new Array();
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selection = new BABYLON.SmartArray(256);
+            this._selectionContent = new BABYLON.SmartArray(1024);
+            this._creationFunc = creationFunc;
         }
         // Methods
-        Octree.prototype.update = function (worldMin, worldMax, meshes) {
-            Octree._CreateBlocks(worldMin, worldMax, meshes, this._maxBlockCapacity, this);
+        Octree.prototype.update = function (worldMin, worldMax, entries) {
+            Octree._CreateBlocks(worldMin, worldMax, entries, this._maxBlockCapacity, 0, this.maxDepth, this, this._creationFunc);
         };
 
-        Octree.prototype.addMesh = function (mesh) {
+        Octree.prototype.addMesh = function (entry) {
             for (var index = 0; index < this.blocks.length; index++) {
                 var block = this.blocks[index];
-                block.addMesh(mesh);
+                block.addEntry(entry);
             }
         };
 
-        Octree.prototype.select = function (frustumPlanes) {
-            this._selection.reset();
+        Octree.prototype.select = function (frustumPlanes, allowDuplicate) {
+            this._selectionContent.reset();
 
             for (var index = 0; index < this.blocks.length; index++) {
                 var block = this.blocks[index];
-                block.select(frustumPlanes, this._selection);
+                block.select(frustumPlanes, this._selectionContent, allowDuplicate);
             }
 
-            return this._selection;
+            if (allowDuplicate) {
+                this._selectionContent.concat(this.dynamicContent);
+            } else {
+                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
+            }
+
+            return this._selectionContent;
         };
 
-        // Statics
-        Octree._CreateBlocks = function (worldMin, worldMax, meshes, maxBlockCapacity, target) {
-            target.blocks = [];
+        Octree.prototype.intersects = function (sphereCenter, sphereRadius, allowDuplicate) {
+            this._selectionContent.reset();
+
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.intersects(sphereCenter, sphereRadius, this._selectionContent, allowDuplicate);
+            }
+
+            if (allowDuplicate) {
+                this._selectionContent.concat(this.dynamicContent);
+            } else {
+                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
+            }
+
+            return this._selectionContent;
+        };
+
+        Octree.prototype.intersectsRay = function (ray) {
+            this._selectionContent.reset();
+
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.intersectsRay(ray, this._selectionContent);
+            }
+
+            this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
+
+            return this._selectionContent;
+        };
+
+        Octree._CreateBlocks = function (worldMin, worldMax, entries, maxBlockCapacity, currentDepth, maxDepth, target, creationFunc) {
+            target.blocks = new Array();
             var blockSize = new BABYLON.Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
 
             for (var x = 0; x < 2; x++) {
@@ -39,11 +78,23 @@
                         var localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
                         var localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
 
-                        var block = new BABYLON.OctreeBlock(localMin, localMax, maxBlockCapacity);
-                        block.addEntries(meshes);
+                        var block = new BABYLON.OctreeBlock(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
+                        block.addEntries(entries);
                         target.blocks.push(block);
                     }
                 }
+            }
+        };
+
+        Octree.CreationFuncForMeshes = function (entry, block) {
+            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+                block.entries.push(entry);
+            }
+        };
+
+        Octree.CreationFuncForSubMeshes = function (entry, block) {
+            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+                block.entries.push(entry);
             }
         };
         return Octree;

@@ -133,6 +133,9 @@
         Color3.Yellow = function () {
             return new Color3(1, 1, 0);
         };
+        Color3.Gray = function () {
+            return new Color3(0.5, 0.5, 0.5);
+        };
         return Color3;
     })();
     BABYLON.Color3 = Color3;
@@ -1142,6 +1145,13 @@
             }
         };
 
+        Matrix.prototype.copyToArray = function (array, offset) {
+            if (typeof offset === "undefined") { offset = 0; }
+            for (var index = 0; index < 16; index++) {
+                array[offset + index] = this.m[index];
+            }
+        };
+
         Matrix.prototype.multiplyToRef = function (other, result) {
             this.multiplyToArray(other, result.m, 0);
         };
@@ -1834,18 +1844,18 @@
             this.direction = direction;
         }
         // Methods
-        Ray.prototype.intersectsBox = function (box) {
+        Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
 
             if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < box.minimum.x || this.origin.x > box.maximum.x) {
+                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             } else {
                 var inv = 1.0 / this.direction.x;
-                var min = (box.minimum.x - this.origin.x) * inv;
-                var max = (box.maximum.x - this.origin.x) * inv;
+                var min = (minimum.x - this.origin.x) * inv;
+                var max = (maximum.x - this.origin.x) * inv;
 
                 if (min > max) {
                     var temp = min;
@@ -1862,13 +1872,13 @@
             }
 
             if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < box.minimum.y || this.origin.y > box.maximum.y) {
+                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
                     return false;
                 }
             } else {
                 inv = 1.0 / this.direction.y;
-                min = (box.minimum.y - this.origin.y) * inv;
-                max = (box.maximum.y - this.origin.y) * inv;
+                min = (minimum.y - this.origin.y) * inv;
+                max = (maximum.y - this.origin.y) * inv;
 
                 if (min > max) {
                     temp = min;
@@ -1885,13 +1895,13 @@
             }
 
             if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < box.minimum.z || this.origin.z > box.maximum.z) {
+                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
                     return false;
                 }
             } else {
                 inv = 1.0 / this.direction.z;
-                min = (box.minimum.z - this.origin.z) * inv;
-                max = (box.maximum.z - this.origin.z) * inv;
+                min = (minimum.z - this.origin.z) * inv;
+                max = (maximum.z - this.origin.z) * inv;
 
                 if (min > max) {
                     temp = min;
@@ -1907,6 +1917,10 @@
                 }
             }
             return true;
+        };
+
+        Ray.prototype.intersectsBox = function (box) {
+            return this.intersectsBoxMinMax(box.minimum, box.maximum);
         };
 
         Ray.prototype.intersectsSphere = function (sphere) {

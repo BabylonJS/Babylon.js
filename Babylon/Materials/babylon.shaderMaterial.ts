@@ -97,7 +97,7 @@
             return this;
         }
 
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(): boolean {
             var engine = this.getScene().getEngine();
 
             this._effect = engine.createEffect(this._shaderPath,
@@ -113,7 +113,7 @@
             return true;
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix): void {
             // Std values
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);

@@ -20,8 +20,8 @@
         // Methods
         public _update(world: Matrix): void {
             BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            BABYLON.Vector3.TransformNormalFromFloatsToRef(1.0, 0, 0, world, this._tempRadiusVector);
-            this.radiusWorld = this._tempRadiusVector.length() * this.radius;
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, this._tempRadiusVector);
+            this.radiusWorld = Math.max(Math.abs(this._tempRadiusVector.x), Math.abs(this._tempRadiusVector.y), Math.abs(this._tempRadiusVector.z)) * this.radius;
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {

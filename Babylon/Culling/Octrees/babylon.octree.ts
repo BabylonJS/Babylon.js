@@ -1,45 +1,83 @@
 ﻿module BABYLON {
-    export interface IOctreeContainer {
-        blocks: Array<OctreeBlock>;
+    export interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
     }
 
-    export class Octree {
-        public blocks: Array<OctreeBlock>;
+    export class Octree<T> {
+        public blocks: Array<OctreeBlock<T>>;
+        public dynamicContent = new Array<T>();
+
         private _maxBlockCapacity: number;
-        private _selection;
+        private _selectionContent: SmartArray<T>;       
+        private _creationFunc: (entry: T, block: OctreeBlock<T>) => void;
 
-
-        constructor(maxBlockCapacity?: number) {
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, public maxDepth = 2) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selection = new BABYLON.SmartArray(256);
+            this._selectionContent = new BABYLON.SmartArray<T>(1024);
+            this._creationFunc = creationFunc;
         }
 
         // Methods
-        public update(worldMin: Vector3, worldMax: Vector3, meshes): void {
-            Octree._CreateBlocks(worldMin, worldMax, meshes, this._maxBlockCapacity, this);
+        public update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void {
+            Octree._CreateBlocks(worldMin, worldMax, entries, this._maxBlockCapacity, 0, this.maxDepth, this, this._creationFunc);
         }
 
-        public addMesh(mesh): void {
+        public addMesh(entry: T): void {
             for (var index = 0; index < this.blocks.length; index++) {
                 var block = this.blocks[index];
-                block.addMesh(mesh);
+                block.addEntry(entry);
             }
         }
 
-        public select(frustumPlanes: Plane[]) {
-            this._selection.reset();
+        public select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T> {
+            this._selectionContent.reset();
 
             for (var index = 0; index < this.blocks.length; index++) {
                 var block = this.blocks[index];
-                block.select(frustumPlanes, this._selection);
+                block.select(frustumPlanes, this._selectionContent, allowDuplicate);
             }
 
-            return this._selection;
+            if (allowDuplicate) {
+                this._selectionContent.concat(this.dynamicContent);
+            } else {
+                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);                
+            }
+
+            return this._selectionContent;
         }
 
-        // Statics
-        static _CreateBlocks(worldMin: Vector3, worldMax: Vector3, meshes, maxBlockCapacity: number, target: IOctreeContainer): void {
-            target.blocks = [];
+        public intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T> {
+            this._selectionContent.reset();
+
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.intersects(sphereCenter, sphereRadius, this._selectionContent, allowDuplicate);
+            }
+
+            if (allowDuplicate) {
+                this._selectionContent.concat(this.dynamicContent);
+            } else {
+                this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
+            }
+
+            return this._selectionContent;
+        }
+
+        public intersectsRay(ray: Ray): SmartArray<T> {
+            this._selectionContent.reset();
+
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.intersectsRay(ray, this._selectionContent);
+            }
+
+            this._selectionContent.concatWithNoDuplicate(this.dynamicContent);
+
+            return this._selectionContent;
+        }
+
+        public static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void {
+            target.blocks = new Array<OctreeBlock<T>>();
             var blockSize = new BABYLON.Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
 
             // Segmenting space
@@ -49,11 +87,23 @@
                         var localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
                         var localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
 
-                        var block = new BABYLON.OctreeBlock(localMin, localMax, maxBlockCapacity);
-                        block.addEntries(meshes);
+                        var block = new BABYLON.OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
+                        block.addEntries(entries);
                         target.blocks.push(block);
                     }
                 }
+            }
+        }
+
+        public static CreationFuncForMeshes = (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>): void => {
+            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+                block.entries.push(entry);
+            }
+        }
+
+        public static CreationFuncForSubMeshes = (entry: SubMesh, block: OctreeBlock<SubMesh>): void => {
+            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+                block.entries.push(entry);
             }
         }
     }

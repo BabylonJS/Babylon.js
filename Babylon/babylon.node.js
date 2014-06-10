@@ -2,6 +2,7 @@
 (function (BABYLON) {
     var Node = (function () {
         function Node(name, scene) {
+            this.state = "";
             this.animations = new Array();
             this._childrenFlag = -1;
             this._isEnabled = true;
@@ -83,7 +84,7 @@
         };
 
         Node.prototype.isEnabled = function () {
-            if (!this.isReady() || !this._isEnabled) {
+            if (!this._isEnabled) {
                 return false;
             }
 
@@ -125,6 +126,22 @@
             this._getDescendants(this._scene.cameras, results);
 
             return results;
+        };
+
+        Node.prototype._setReady = function (state) {
+            if (state == this._isReady) {
+                return;
+            }
+
+            if (!state) {
+                this._isReady = false;
+                return;
+            }
+
+            this._isReady = true;
+            if (this.onReady) {
+                this.onReady(this);
+            }
         };
         return Node;
     })();

@@ -22,6 +22,7 @@
             // Opaque
             var subIndex;
             var submesh;
+
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
                 this._activeVertices += submesh.verticesCount;

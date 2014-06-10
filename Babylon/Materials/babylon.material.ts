@@ -3,13 +3,14 @@
         public id: string;
         public checkReadyOnEveryCall = true;
         public checkReadyOnlyOnce = false;
+        public state = "";
         public alpha = 1.0;
         public wireframe = false;
         public backFaceCulling = true;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
-        public getRenderTargetTextures: () => SmartArray;
+        public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
@@ -25,7 +26,7 @@
             }
         }
 
-        public isReady(mesh?: Mesh): boolean {
+        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             return true;
         }
 
@@ -45,6 +46,10 @@
             return false;
         }
 
+        public getAlphaTestTexture(): BaseTexture {
+            return null;
+        }
+
         public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
         }
 
@@ -56,6 +61,9 @@
         }
 
         public bind(world: Matrix, mesh: Mesh): void {
+        }
+
+        public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         public unbind(): void {

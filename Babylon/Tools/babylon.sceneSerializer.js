@@ -22,8 +22,10 @@
             serializationObject.angle = spotLight.angle;
             serializationObject.exponent = spotLight.exponent;
         } else if (light instanceof BABYLON.HemisphericLight) {
-            serializationObject.type = 2;
-            serializationObject.groundColor = light.groundColor.asArray();
+            serializationObject.type = 3;
+            var hemisphericLight = light;
+            serializationObject.direction = hemisphericLight.direction.asArray();
+            serializationObject.groundColor = hemisphericLight.groundColor.asArray();
         }
 
         if (light.intensity) {
@@ -74,6 +76,9 @@
 
         // Animations
         appendAnimations(camera, serializationObject);
+
+        // Layer mask
+        serializationObject.layerMask = camera.layerMask;
 
         return serializationObject;
     };
@@ -230,19 +235,21 @@
             }
         }
 
+        var regularTexture = texture;
+
         serializationObject.name = texture.name;
         serializationObject.hasAlpha = texture.hasAlpha;
         serializationObject.level = texture.level;
 
         serializationObject.coordinatesIndex = texture.coordinatesIndex;
         serializationObject.coordinatesMode = texture.coordinatesMode;
-        serializationObject.uOffset = texture.uOffset;
-        serializationObject.vOffset = texture.vOffset;
-        serializationObject.uScale = texture.uScale;
-        serializationObject.vScale = texture.vScale;
-        serializationObject.uAng = texture.uAng;
-        serializationObject.vAng = texture.vAng;
-        serializationObject.wAng = texture.wAng;
+        serializationObject.uOffset = regularTexture.uOffset;
+        serializationObject.vOffset = regularTexture.vOffset;
+        serializationObject.uScale = regularTexture.uScale;
+        serializationObject.vScale = regularTexture.vScale;
+        serializationObject.uAng = regularTexture.uAng;
+        serializationObject.vAng = regularTexture.vAng;
+        serializationObject.wAng = regularTexture.wAng;
 
         serializationObject.wrapU = texture.wrapU;
         serializationObject.wrapV = texture.wrapV;
@@ -517,10 +524,10 @@
 
         serializationObject.position = mesh.position.asArray();
 
-        if (mesh.rotation) {
-            serializationObject.rotation = mesh.rotation.asArray();
-        } else if (mesh.rotationQuaternion) {
+        if (mesh.rotationQuaternion) {
             serializationObject.rotationQuaternion = mesh.rotationQuaternion.asArray();
+        } else if (mesh.rotation) {
+            serializationObject.rotation = mesh.rotation.asArray();
         }
 
         serializationObject.scaling = mesh.scaling.asArray();
@@ -599,6 +606,9 @@
 
         // Animations
         appendAnimations(mesh, serializationObject);
+
+        // Layer mask
+        serializationObject.layerMask = mesh.layerMask;
 
         return serializationObject;
     };
@@ -690,10 +700,13 @@
             // Meshes
             serializationObject.meshes = [];
             for (index = 0; index < scene.meshes.length; index++) {
-                var mesh = scene.meshes[index];
+                var abstractMesh = scene.meshes[index];
 
-                if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
-                    serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                if (abstractMesh instanceof BABYLON.Mesh) {
+                    var mesh = abstractMesh;
+                    if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                    }
                 }
             }
 
