@@ -7,10 +7,12 @@ module BABYLON {
         }
 
         public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
-            this._renderPipelines[renderPipeline.name] = renderPipeline;
+            this._renderPipelines[renderPipeline._name] = renderPipeline;
         }
 
-        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras, unique): void {
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean);
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean);
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique?:boolean): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -20,7 +22,9 @@ module BABYLON {
             renderPipeline.attachCameras(cameras, unique);
         }
 
-        public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras): void {
+        public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera);
+        public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[]);
+        public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -30,7 +34,9 @@ module BABYLON {
             renderPipeline.detachCameras(cameras);
         }
 
-        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras): void {
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera)
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[])
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -40,7 +46,9 @@ module BABYLON {
             renderPipeline.enableEffect(renderEffectName, cameras);
         }
 
-        public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras): void {
+        public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera);
+        public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]);
+        public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -50,7 +58,9 @@ module BABYLON {
             renderPipeline.disableEffect(renderEffectName, cameras);
         }
 
-        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras): void {
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera)
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[])
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras:any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -60,7 +70,9 @@ module BABYLON {
             renderPipeline.enableDisplayOnlyPass(passName, cameras);
         }
 
-        public disableDisplayOnlyPassInPipeline(renderPipelineName, cameras): void {
+        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera)
+        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[])
+        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {

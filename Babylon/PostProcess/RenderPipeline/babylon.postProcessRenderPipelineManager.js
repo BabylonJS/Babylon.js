@@ -5,7 +5,7 @@ var BABYLON;
             this._renderPipelines = [];
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
-            this._renderPipelines[renderPipeline.name] = renderPipeline;
+            this._renderPipelines[renderPipeline._name] = renderPipeline;
         };
 
         PostProcessRenderPipelineManager.prototype.attachCamerasToRenderPipeline = function (renderPipelineName, cameras, unique) {
