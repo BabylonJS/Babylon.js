@@ -574,8 +574,15 @@ void main(void) {
 
 #ifdef OPACITY
 	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
-	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11) * opacityMap.a;
+
+#ifdef OPACITYRGB
+	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
 	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
+#else
+	alpha *= opacityMap.a * vOpacityInfos.y;
+#endif
+
+
 #endif
 
 	// Emissive

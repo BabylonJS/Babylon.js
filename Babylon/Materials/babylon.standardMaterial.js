@@ -42,7 +42,7 @@ var BABYLON;
         };
 
         StandardMaterial.prototype.needAlphaTesting = function () {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && !this.diffuseTexture.getAlphaFromRGB;
         };
 
         StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
@@ -96,6 +96,10 @@ var BABYLON;
                         return false;
                     } else {
                         defines.push("#define OPACITY");
+
+                        if (this.opacityTexture.getAlphaFromRGB) {
+                            defines.push("#define OPACITYRGB");
+                        }
                     }
                 }
 
