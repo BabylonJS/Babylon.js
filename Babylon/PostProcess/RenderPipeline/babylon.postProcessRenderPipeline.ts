@@ -27,9 +27,11 @@ module BABYLON {
             this._renderEffects[renderEffect._name] = renderEffect;
         }
 
-        public enableEffect(renderEffectName: string, cameras: Camera);
-        public enableEffect(renderEffectName: string, cameras: Camera[]);
-        public enableEffect(renderEffectName: string, cameras: any): void {
+        // private
+
+        public _enableEffect(renderEffectName: string, cameras: Camera);
+        public _enableEffect(renderEffectName: string, cameras: Camera[]);
+        public _enableEffect(renderEffectName: string, cameras: any): void {
             var renderEffects = this._renderEffects[renderEffectName];
 
             if (!renderEffects) {
@@ -39,9 +41,9 @@ module BABYLON {
             renderEffects.enable(Tools.MakeArray(cameras || this._cameras));
         }
 
-        public disableEffect(renderEffectName: string, cameras: Camera);
-        public disableEffect(renderEffectName: string, cameras: Camera[]);
-        public disableEffect(renderEffectName: string, cameras): void {
+        public _disableEffect(renderEffectName: string, cameras: Camera);
+        public _disableEffect(renderEffectName: string, cameras: Camera[]);
+        public _disableEffect(renderEffectName: string, cameras): void {
             var renderEffects = this._renderEffects[renderEffectName];
 
             if (!renderEffects) {
@@ -51,9 +53,9 @@ module BABYLON {
             renderEffects.disable(Tools.MakeArray(cameras || this._cameras));
         }
 
-        public attachCameras(cameras: Camera, unique: boolean);
-        public attachCameras(cameras: Camera[], unique: boolean);
-        public attachCameras(cameras: any, unique: boolean): void {
+        public _attachCameras(cameras: Camera, unique: boolean);
+        public _attachCameras(cameras: Camera[], unique: boolean);
+        public _attachCameras(cameras: any, unique: boolean): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             var indicesToDelete = [];
@@ -79,10 +81,9 @@ module BABYLON {
             }
         }
 
-        // todo
-        public detachCameras(cameras: Camera);
-        public detachCameras(cameras: Camera[]);
-        public detachCameras(cameras: any): void {
+        public _detachCameras(cameras: Camera);
+        public _detachCameras(cameras: Camera[]);
+        public _detachCameras(cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var renderEffectName in this._renderEffects) {
@@ -94,9 +95,9 @@ module BABYLON {
             }
         }
 
-        public enableDisplayOnlyPass(passName, cameras: Camera);
-        public enableDisplayOnlyPass(passName, cameras: Camera[]);
-        public enableDisplayOnlyPass(passName, cameras: any): void {
+        public _enableDisplayOnlyPass(passName, cameras: Camera);
+        public _enableDisplayOnlyPass(passName, cameras: Camera[]);
+        public _enableDisplayOnlyPass(passName, cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             var pass = null;
@@ -109,7 +110,7 @@ module BABYLON {
                 }
             }
 
-            if (pass == null) {
+            if (pass === null) {
                 return;
             }
 
@@ -120,21 +121,27 @@ module BABYLON {
             pass._name = PostProcessRenderPipeline.PASS_SAMPLER_NAME;
 
             for (var i = 0; i < _cam.length; i++) {
-                this._renderEffectsForIsolatedPass[_cam[i].name] = this._renderEffectsForIsolatedPass[_cam[i].name] || new PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
-                this._renderEffectsForIsolatedPass[_cam[i].name].emptyPasses();
-                this._renderEffectsForIsolatedPass[_cam[i].name].addPass(pass);
-                this._renderEffectsForIsolatedPass[_cam[i].name]._attachCameras(_cam[i]);
+                var camera = _cam[i];
+                var cameraName = camera.name;
+
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
+                this._renderEffectsForIsolatedPass[cameraName].emptyPasses();
+                this._renderEffectsForIsolatedPass[cameraName].addPass(pass);
+                this._renderEffectsForIsolatedPass[cameraName]._attachCameras(camera);
             }
         }
 
-        public disableDisplayOnlyPass(cameras: Camera);
-        public disableDisplayOnlyPass(cameras: Camera[]);
-        public disableDisplayOnlyPass(cameras: any): void {
+        public _disableDisplayOnlyPass(cameras: Camera);
+        public _disableDisplayOnlyPass(cameras: Camera[]);
+        public _disableDisplayOnlyPass(cameras: any): void {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
-                this._renderEffectsForIsolatedPass[_cam[i].name] = this._renderEffectsForIsolatedPass[_cam[i].name] || new PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
-                this._renderEffectsForIsolatedPass[_cam[i].name]._disable(_cam[i]);
+                var camera = _cam[i];
+                var cameraName = camera.name;
+
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
+                this._renderEffectsForIsolatedPass[cameraName]._disable(camera);
             }
 
             for (var renderEffectName in this._renderEffects) {
@@ -148,8 +155,9 @@ module BABYLON {
             }
 
             for (var i = 0; i < this._cameras.length; i++) {
-                if (this._renderEffectsForIsolatedPass[this._cameras[i].name]) {
-                    this._renderEffectsForIsolatedPass[this._cameras[i].name]._update();
+                var cameraName = this._cameras[i].name;
+                if (this._renderEffectsForIsolatedPass[cameraName]) {
+                    this._renderEffectsForIsolatedPass[cameraName]._update();
                 }
             }
         }

@@ -64,12 +64,13 @@ var BABYLON;
 
         PostProcessRenderEffect._GetParametersNames = function (func) {
             var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            var functWithoutComments = eval(func).toString().replace(commentsRegex, '');
+            var functWithoutComments = func.toString().replace(commentsRegex, '');
 
             var parameters = functWithoutComments.slice(functWithoutComments.indexOf('(') + 1, functWithoutComments.indexOf(')')).match(/([^\s,]+)/g);
 
             if (parameters === null)
                 parameters = [];
+
             return parameters;
         };
 
@@ -130,13 +131,13 @@ var BABYLON;
 
                 var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
 
-                if (this._indicesForCamera[cameraName] == null) {
+                if (this._indicesForCamera[cameraName] === null) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
                 this._indicesForCamera[cameraName].push(index);
 
-                if (this._cameras.indexOf(camera) == -1) {
+                if (this._cameras.indexOf(camera) === -1) {
                     this._cameras[cameraName] = camera;
                 }
 
@@ -153,7 +154,7 @@ var BABYLON;
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
-                var cameraName = camera.Name;
+                var cameraName = camera.name;
 
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
 
@@ -173,7 +174,7 @@ var BABYLON;
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
-                var cameraName = camera.Name;
+                var cameraName = camera.name;
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined) {
@@ -202,8 +203,12 @@ var BABYLON;
             }
         };
 
-        PostProcessRenderEffect.prototype.getPostProcess = function () {
-            return this._postProcesses[0];
+        PostProcessRenderEffect.prototype.getPostProcess = function (camera) {
+            if (this._singleInstance) {
+                return this._postProcesses[0];
+            } else {
+                return this._postProcesses[camera.name];
+            }
         };
 
         PostProcessRenderEffect.prototype._linkParameters = function () {

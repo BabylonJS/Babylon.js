@@ -82,12 +82,13 @@ module BABYLON {
 
         private static _GetParametersNames(func): string[] {
             var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            var functWithoutComments = eval(func).toString().replace(commentsRegex, ''); //TODO: delete eval
+            var functWithoutComments = func.toString().replace(commentsRegex, '');
 
             var parameters = functWithoutComments.slice(functWithoutComments.indexOf('(') + 1, functWithoutComments.indexOf(')')).match(/([^\s,]+)/g);
 
             if (parameters === null)
                 parameters = [];
+
             return parameters;
         }
 
@@ -152,13 +153,13 @@ module BABYLON {
 
                 var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
 
-                if (this._indicesForCamera[cameraName] == null) {
+                if (this._indicesForCamera[cameraName] === null) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
                 this._indicesForCamera[cameraName].push(index);
 
-                if (this._cameras.indexOf(camera) == -1) {
+                if (this._cameras.indexOf(camera) === -1) {
                     this._cameras[cameraName] = camera;
                 }
 
@@ -178,7 +179,7 @@ module BABYLON {
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
-                var cameraName = camera.Name;
+                var cameraName = camera.name;
 
                 camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
 
@@ -201,7 +202,7 @@ module BABYLON {
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
-                var cameraName = camera.Name;
+                var cameraName = camera.name;
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined) {
@@ -233,8 +234,13 @@ module BABYLON {
             }
         }
 
-        public getPostProcess(): PostProcess {
-            return this._postProcesses[0]; // todo: always 0?
+        public getPostProcess(camera?: Camera): PostProcess {
+            if (this._singleInstance) {
+                return this._postProcesses[0];
+            }
+            else {
+                return this._postProcesses[camera.name];
+            }
         }
 
         private _linkParameters(): void {
