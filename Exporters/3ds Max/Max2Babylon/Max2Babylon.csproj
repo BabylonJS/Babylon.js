@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DD7C931A-8FAF-4318-BB74-71DC858CC489}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Max2Babylon</RootNamespace>
+    <AssemblyName>Max2Babylon</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>C:\Program Files\Autodesk\3ds Max 2013\bin\assemblies\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autodesk.Max">
+      <HintPath>Refs\Autodesk.Max.dll</HintPath>
+    </Reference>
+    <Reference Include="MaxCustomControls">
+      <HintPath>Refs\MaxCustomControls.dll</HintPath>
+    </Reference>
+    <Reference Include="MaxSharp">
+      <HintPath>Refs\MaxSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>Refs\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BabylonActionCallback.cs" />
+    <Compile Include="BabylonPropertiesActionItem.cs" />
+    <Compile Include="Exporter\BabylonExporter.ShadowGenerator.cs" />
+    <Compile Include="Forms\CameraPropertiesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CameraPropertiesForm.Designer.cs">
+      <DependentUpon>CameraPropertiesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Descriptor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Forms\ExporterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ExporterForm.Designer.cs">
+      <DependentUpon>ExporterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exporter\BabylonExporter.Texture.cs" />
+    <Compile Include="Exporter\BabylonExporter.Material.cs" />
+    <Compile Include="Exporter\BabylonExporter.Light.cs" />
+    <Compile Include="Exporter\BabylonExporter.cs" />
+    <Compile Include="Exporter\BabylonExporter.Camera.cs" />
+    <Compile Include="Exporter\BabylonExporter.Mesh.cs" />
+    <Compile Include="Exporter\GlobalVertex.cs" />
+    <Compile Include="GlobalUtility.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="BabylonExportActionItem.cs" />
+    <Compile Include="Forms\ObjectPropertiesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ObjectPropertiesForm.Designer.cs">
+      <DependentUpon>ObjectPropertiesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ScenePropertiesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ScenePropertiesForm.Designer.cs">
+      <DependentUpon>ScenePropertiesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tools.cs" />
+    <Compile Include="Forms\Vector3Control.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Vector3Control.Designer.cs">
+      <DependentUpon>Vector3Control.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Refs\Autodesk.Max.dll" />
+    <Content Include="Refs\ManagedServices.dll" />
+    <Content Include="Refs\MaxCustomControls.dll" />
+    <Content Include="Refs\MaxSharp.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\CameraPropertiesForm.resx">
+      <DependentUpon>CameraPropertiesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ExporterForm.resx">
+      <DependentUpon>ExporterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ObjectPropertiesForm.resx">
+      <DependentUpon>ObjectPropertiesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ScenePropertiesForm.resx">
+      <DependentUpon>ScenePropertiesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Vector3Control.resx">
+      <DependentUpon>Vector3Control.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BabylonExport.Entities\BabylonExport.Entities.csproj">
+      <Project>{6150965a-658c-4263-89ad-4f980eb0675d}</Project>
+      <Name>BabylonExport.Entities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
