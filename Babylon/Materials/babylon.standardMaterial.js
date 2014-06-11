@@ -42,7 +42,7 @@ var BABYLON;
         };
 
         StandardMaterial.prototype.needAlphaTesting = function () {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && !this.diffuseTexture.getAlphaFromRGB;
         };
 
         StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
@@ -96,6 +96,10 @@ var BABYLON;
                         return false;
                     } else {
                         defines.push("#define OPACITY");
+
+                        if (this.opacityTexture.getAlphaFromRGB) {
+                            defines.push("#define OPACITYRGB");
+                        }
                     }
                 }
 
@@ -161,6 +165,18 @@ var BABYLON;
 
                     if (!light.isEnabled()) {
                         continue;
+                    }
+
+                    if (light._excludedMeshesIds.length > 0) {
+                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
+                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
+
+                            if (excludedMesh) {
+                                light.excludedMeshes.push(excludedMesh);
+                            }
+                        }
+
+                        light._excludedMeshesIds = [];
                     }
 
                     if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {

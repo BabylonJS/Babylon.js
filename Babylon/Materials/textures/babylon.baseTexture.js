@@ -4,6 +4,7 @@
         function BaseTexture(scene) {
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.hasAlpha = false;
+            this.getAlphaFromRGB = false;
             this.level = 1;
             this.isCube = false;
             this.isRenderTarget = false;
