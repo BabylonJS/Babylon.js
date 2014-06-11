@@ -15,6 +15,7 @@ var BABYLON;
             this.intensity = 1.0;
             this.range = Number.MAX_VALUE;
             this.excludedMeshes = new Array();
+            this._excludedMeshesIds = new Array();
 
             scene.lights.push(this);
         }
