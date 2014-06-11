@@ -149,7 +149,7 @@
 
         private _selectionOctree: Octree<AbstractMesh>;
 
-        private _pointerOverMesh: Mesh;
+        private _pointerOverMesh: AbstractMesh;
 
         // Constructor
         constructor(engine: Engine) {
@@ -266,16 +266,16 @@
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.buttons) {
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, pickResult.pickedMesh);
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, pickResult.pickedMesh);
                                 break;
                             case 3:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, pickResult.pickedMesh);
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, pickResult.pickedMesh);
                     }
                 }
 
@@ -838,7 +838,7 @@
             var beforeRenderTargetDate = new Date().getTime();
             if (this.renderTargetsEnabled) {
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                    renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         renderTarget.render();
@@ -940,7 +940,7 @@
 
             // Actions
             if (this.actionManager) {
-                this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger);
+                this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger, null);
             }
 
             // Before render
@@ -1227,22 +1227,22 @@
             }, predicate, fastCheck);
         }
 
-        public setPointerOverMesh(mesh: Mesh): void {
+        public setPointerOverMesh(mesh: AbstractMesh): void {
             if (this._pointerOverMesh === mesh) {
                 return;
             }
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger);
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, this._pointerOverMesh);
             }
 
             this._pointerOverMesh = mesh;
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger);
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, this._pointerOverMesh);
             }
         }
 
-        public getPointerOverMesh(): Mesh {
+        public getPointerOverMesh(): AbstractMesh {
             return this._pointerOverMesh;
         }
 

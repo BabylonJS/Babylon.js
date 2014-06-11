@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Json;
+using System.Text;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
+using Newtonsoft.Json;
 using Animatable = MaxSharp.Animatable;
 
 namespace Max2Babylon
@@ -27,7 +30,7 @@ namespace Max2Babylon
             }
         }
 
-        void RaiseError(string error, bool asChild = false)
+        void RaiseError(string error, bool asChild = true)
         {
             if (OnError != null)
             {
@@ -141,14 +144,19 @@ namespace Max2Babylon
 
             // Output
             babylonScene.Prepare(false);
-            using (var outputStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+            var jsonSerializer = JsonSerializer.Create();
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
+            using (var jsonWriter = new JsonTextWriterOptimized(sw))
             {
-                var ser = new DataContractJsonSerializer(typeof(BabylonScene));
-                ser.WriteObject(outputStream, babylonScene);
+                jsonWriter.Formatting = Formatting.None;
+                jsonSerializer.Serialize(jsonWriter, babylonScene);
             }
+            File.WriteAllText(outputFile, sb.ToString());
+
             ReportProgressChanged(100);
 
             RaiseMessage("Exportation done");
-        }             
+        }
     }
 }

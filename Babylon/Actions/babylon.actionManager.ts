@@ -73,12 +73,12 @@
             return action;
         }
 
-        public processTrigger(trigger: number): void {
+        public processTrigger(trigger: number, source: AbstractMesh): void {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    action._executeCurrent();
+                    action._executeCurrent(source);
                 }
             }
         }

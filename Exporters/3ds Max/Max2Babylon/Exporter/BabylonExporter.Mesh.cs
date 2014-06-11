@@ -74,11 +74,11 @@ namespace Max2Babylon
             }
 
             // Pivot
-            //var pivotMatrix = Matrix3.Identity._IMatrix3;
-            //pivotMatrix.PreTranslate(meshNode._Node.ObjOffsetPos);
-            //Loader.Global.PreRotateMatrix(pivotMatrix, meshNode._Node.ObjOffsetRot);
-            //Loader.Global.ApplyScaling(pivotMatrix, meshNode._Node.ObjOffsetScale);
-            //babylonMesh.localMatrix = pivotMatrix.ToArray();
+            var pivotMatrix = Matrix3.Identity._IMatrix3;
+            pivotMatrix.PreTranslate(meshNode._Node.ObjOffsetPos);
+            Loader.Global.PreRotateMatrix(pivotMatrix, meshNode._Node.ObjOffsetRot);
+            Loader.Global.ApplyScaling(pivotMatrix, meshNode._Node.ObjOffsetScale);
+            babylonMesh.pivotMatrix = pivotMatrix.ToArray();
 
             // Mesh
             var objectState = meshNode._Node.EvalWorldState(0, false);
@@ -129,12 +129,19 @@ namespace Max2Babylon
                 var hasUV = mesh.NumTVerts > 0;
                 var hasUV2 = mesh.GetNumMapVerts(2) > 0;
 
+                var noOptimize = meshNode._Node.GetBoolProperty("babylonjs_nooptimize");
+                
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, noOptimize));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, noOptimize));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, noOptimize));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
+                }
+
+                if (vertices.Count >= 65536)
+                {
+                    RaiseError(string.Format("Mesh {0} has too many vertices: {1} (limit is 65535)", babylonMesh.name, vertices.Count));
                 }
 
                 // Buffers
@@ -207,13 +214,17 @@ namespace Max2Babylon
                             }
                         }
                     }
-                    subMesh.indexCount = indexCount;
-                    subMesh.verticesStart = minVertexIndex;
-                    subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
+                    if (indexCount != 0)
+                    {
 
-                    indexStart += indexCount;
+                        subMesh.indexCount = indexCount;
+                        subMesh.verticesStart = minVertexIndex;
+                        subMesh.verticesCount = maxVertexIndex - minVertexIndex + 1;
 
-                    subMeshes.Add(subMesh);
+                        indexStart += indexCount;
+
+                        subMeshes.Add(subMesh);
+                    }
                 }
                 babylonMesh.subMeshes = subMeshes.ToArray();
 
@@ -227,7 +238,7 @@ namespace Max2Babylon
             return babylonMesh;
         }
 
-        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2)
+        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool noOptimize)
         {
             var vertexIndex = (int)mesh.Faces[face].V[facePart];
 
@@ -250,12 +261,14 @@ namespace Max2Babylon
                 vertex.UV2 = Loader.Global.Point2.Create(mesh.MapVerts(2)[tvertexIndex].X, mesh.MapVerts(2)[tvertexIndex].Y);
             }
 
-
-            var index = vertices.IndexOf(vertex);
-
-            if (index > -1)
+            if (!noOptimize)
             {
-                return index;
+                var index = vertices.IndexOf(vertex);
+
+                if (index > -1)
+                {
+                    return index;
+                }
             }
 
             vertices.Add(vertex);

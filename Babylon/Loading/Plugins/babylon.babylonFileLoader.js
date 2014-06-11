@@ -523,6 +523,8 @@ var BABYLON = BABYLON || {};
 
         if (parsedMesh.localMatrix) {
             mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.localMatrix));
+        } else if (parsedMesh.pivotMatrix) {
+            mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.pivotMatrix));
         }
 
         mesh.setEnabled(parsedMesh.isEnabled);

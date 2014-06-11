@@ -39,7 +39,7 @@ namespace BabylonExport.Entities
         public float[] rotationQuaternion { get; set; }
 
         [DataMember]
-        public float[] localMatrix { get; set; }
+        public float[] pivotMatrix { get; set; }
 
         [DataMember]
         public float[] positions { get; set; }
