@@ -203,16 +203,16 @@
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.buttons) {
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, pickResult.pickedMesh);
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, pickResult.pickedMesh);
                                 break;
                             case 3:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger);
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, pickResult.pickedMesh);
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger);
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, pickResult.pickedMesh);
                     }
                 }
 
@@ -774,7 +774,7 @@
             var beforeRenderTargetDate = new Date().getTime();
             if (this.renderTargetsEnabled) {
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                    renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         renderTarget.render();
@@ -874,7 +874,7 @@
 
             // Actions
             if (this.actionManager) {
-                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger);
+                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
             }
 
             // Before render
@@ -1162,12 +1162,12 @@
             }
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger);
+                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, this._pointerOverMesh);
             }
 
             this._pointerOverMesh = mesh;
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger);
+                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, this._pointerOverMesh);
             }
         };
 

@@ -5,11 +5,33 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using Autodesk.Max.IMXSDebugger;
 using MaxSharp;
+using SharpDX;
+using Color = MaxSharp.Color;
 
 namespace Max2Babylon
 {
     public static class Tools
     {
+        public static float[] ToArray(this IMatrix3 value)
+        {
+            var row0 = value.GetRow(0).ToArraySwitched();
+            var row1 = value.GetRow(1).ToArraySwitched();
+            var row2 = value.GetRow(2).ToArraySwitched();
+            var row3 = value.GetRow(3).ToArraySwitched();
+
+            return new[]
+            {
+                row0[0], row0[1], row0[2], 0,
+                row2[0], row2[1], row2[2], 0,
+                row1[0], row1[1], row1[2], 0,
+                row3[0], row3[1], row3[2], 1
+            };
+        }
+
+        public static Quaternion ToQuat(this IQuat value)
+        {
+            return new Quaternion(value.X, value.Z, value.Y, value.W );
+        }
         public static float[] ToArray(this IQuat value)
         {
             return new[] { value.X, value.Z, value.Y, value.W };

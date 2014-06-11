@@ -34,6 +34,7 @@
             this.butOK = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.chkPickable = new System.Windows.Forms.CheckBox();
+            this.chkNoOptimize = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -87,11 +88,12 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.chkNoOptimize);
             this.groupBox2.Controls.Add(this.chkPickable);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox2.Location = new System.Drawing.Point(12, 77);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(319, 59);
+            this.groupBox2.Size = new System.Drawing.Size(319, 113);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Misc.";
@@ -106,6 +108,17 @@
             this.chkPickable.Text = "Pickable";
             this.chkPickable.ThreeState = true;
             this.chkPickable.UseVisualStyleBackColor = true;
+            // 
+            // chkNoOptimize
+            // 
+            this.chkNoOptimize.AutoSize = true;
+            this.chkNoOptimize.Location = new System.Drawing.Point(21, 51);
+            this.chkNoOptimize.Name = "chkNoOptimize";
+            this.chkNoOptimize.Size = new System.Drawing.Size(165, 17);
+            this.chkNoOptimize.TabIndex = 1;
+            this.chkNoOptimize.Text = "Do not try to optimize vertices";
+            this.chkNoOptimize.ThreeState = true;
+            this.chkNoOptimize.UseVisualStyleBackColor = true;
             // 
             // ObjectPropertiesForm
             // 
@@ -139,5 +152,6 @@
         private System.Windows.Forms.Button butOK;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox chkPickable;
+        private System.Windows.Forms.CheckBox chkNoOptimize;
     }
 }

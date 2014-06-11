@@ -91,12 +91,12 @@
             return action;
         };
 
-        ActionManager.prototype.processTrigger = function (trigger) {
+        ActionManager.prototype.processTrigger = function (trigger, source) {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    action._executeCurrent();
+                    action._executeCurrent(source);
                 }
             }
         };

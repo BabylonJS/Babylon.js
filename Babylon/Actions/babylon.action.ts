@@ -2,8 +2,8 @@
     export class Action {
         public _actionManager: ActionManager;
 
-        private _nextActiveAction;
-        private _child;
+        private _nextActiveAction: Action;
+        private _child: Action;
         private _condition: Condition;
 
         constructor(public trigger: number, condition?: Condition) {
@@ -15,7 +15,7 @@
         public _prepare(): void {
         }
 
-        public _executeCurrent(): void {
+        public _executeCurrent(source: AbstractMesh): void {
             if (this._condition) {
                 var currentRenderId = this._actionManager.getScene().getRenderId();
 
@@ -36,7 +36,7 @@
                 }
             }
 
-            this._nextActiveAction.execute();
+            this._nextActiveAction.execute(source);
 
             if (this._nextActiveAction._child) {
                 this._nextActiveAction = this._nextActiveAction._child;
@@ -45,7 +45,7 @@
             }
         }
 
-        public execute(): void {
+        public execute(source: AbstractMesh): void {
 
         }
 

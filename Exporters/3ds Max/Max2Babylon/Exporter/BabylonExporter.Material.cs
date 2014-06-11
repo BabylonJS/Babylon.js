@@ -48,6 +48,7 @@ namespace Max2Babylon
                 babylonMultimaterial.materials = guids.ToArray();
 
                 babylonScene.MultiMaterialsList.Add(babylonMultimaterial);
+                return;
             }
 
 

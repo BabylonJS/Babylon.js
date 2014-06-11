@@ -9,8 +9,8 @@
     export class PickingInfo {
         public hit = false;
         public distance = 0;
-        public pickedPoint = null;
-        public pickedMesh = null;
+        public pickedPoint: Vector3 = null;
+        public pickedMesh: AbstractMesh = null;
         public bu = 0;
         public bv = 0;
         public faceId = -1;
