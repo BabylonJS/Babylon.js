@@ -1,7 +1,26 @@
-var BABYLON;
-(function (BABYLON) {
-    var PostProcessRenderEffect = (function () {
-        function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+module BABYLON {
+    export class PostProcessRenderEffect {
+        private _engine: Engine;
+
+        private _postProcesses: PostProcess[];
+        private _postProcessType; //The type must inherit from PostProcess (example: BABYLON.BlackAndWhitePostProcess, like this without quotes).
+
+        private _ratio: number;
+        private _samplingMode: number;
+        private _singleInstance: boolean;
+
+        private _cameras: Camera[];
+        private _indicesForCamera: number[][];
+
+        private _renderPasses: PostProcessRenderPass[];
+        private _renderEffectAsPasses: PostProcessRenderEffect[];
+
+        // private
+        public _name: string;
+
+        public parameters: (effect: Effect) => void;
+
+        constructor(engine: Engine, name: string, postProcessType, ratio?: number, samplingMode?: number, singleInstance?: boolean) {
             this._engine = engine;
             this._name = name;
             this._postProcessType = postProcessType;
@@ -17,10 +36,10 @@ var BABYLON;
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
 
-            this.parameters = function (effect) {
-            };
+            this.parameters = (effect: Effect) => { };
         }
-        PostProcessRenderEffect._GetInstance = function (engine, postProcessType, ratio, samplingMode) {
+
+        private static _GetInstance(engine: Engine, postProcessType, ratio: number, samplingMode: number): PostProcess {
             var postProcess;
             var instance;
             var args = [];
@@ -52,17 +71,16 @@ var BABYLON;
                 }
             }
 
-            postProcess = function () {
-            };
+            postProcess = function () { };
             postProcess.prototype = postProcessType.prototype;
 
             instance = new postProcess();
             postProcessType.apply(instance, args);
 
             return instance;
-        };
+        }
 
-        PostProcessRenderEffect._GetParametersNames = function (func) {
+        private static _GetParametersNames(func): string[] {
             var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             var functWithoutComments = func.toString().replace(commentsRegex, '');
 
@@ -72,50 +90,53 @@ var BABYLON;
                 parameters = [];
 
             return parameters;
-        };
+        }
 
-        PostProcessRenderEffect.prototype._update = function () {
+        public _update(): void {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.addPass = function (renderPass) {
+        public addPass(renderPass: PostProcessRenderPass): void {
             this._renderPasses[renderPass._name] = renderPass;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.removePass = function (renderPass) {
+        public removePass(renderPass: PostProcessRenderPass): void {
             delete this._renderPasses[renderPass._name];
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.addRenderEffectAsPass = function (renderEffect) {
+        public addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void {
             this._renderEffectAsPasses[renderEffect._name] = renderEffect;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype.getPass = function (passName) {
+        public getPass(passName: string): void {
             for (var renderPassName in this._renderPasses) {
                 if (renderPassName === passName) {
                     return this._renderPasses[passName];
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.emptyPasses = function () {
+        public emptyPasses(): void {
             this._renderPasses.length = 0;
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype._attachCameras = function (cameras) {
+        // private
+        public _attachCameras(cameras: Camera);
+        public _attachCameras(cameras: Camera[]);
+        public _attachCameras(cameras: any): void {
             var cameraKey;
 
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+            var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
@@ -123,7 +144,8 @@ var BABYLON;
 
                 if (this._singleInstance) {
                     cameraKey = 0;
-                } else {
+                }
+                else {
                     cameraKey = cameraName;
                 }
 
@@ -147,10 +169,13 @@ var BABYLON;
             }
 
             this._linkParameters();
-        };
+        }
 
-        PostProcessRenderEffect.prototype._detachCameras = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        // private
+        public _detachCameras(cameras: Camera);
+        public _detachCameras(cameras: Camera[]);
+        public _detachCameras(cameras: any): void {
+            var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
@@ -167,10 +192,13 @@ var BABYLON;
                     this._renderPasses[passName]._decRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype._enable = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        // private
+        public _enable(cameras: Camera);
+        public _enable(cameras: Camera[]);
+        public _enable(cameras: any): void {
+            var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
@@ -186,10 +214,13 @@ var BABYLON;
                     this._renderPasses[passName]._incRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype._disable = function (cameras) {
-            var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
+        // private
+        public _disable(cameras: Camera);
+        public _disable(cameras: Camera[]);
+        public _disable(cameras: any): void {
+            var _cam = Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
@@ -201,27 +232,27 @@ var BABYLON;
                     this._renderPasses[passName]._decRefCount();
                 }
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype.getPostProcess = function (camera) {
+        public getPostProcess(camera?: Camera): PostProcess {
             if (this._singleInstance) {
                 return this._postProcesses[0];
-            } else {
+            }
+            else {
                 return this._postProcesses[camera.name];
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype._linkParameters = function () {
-            var _this = this;
+        private _linkParameters(): void {
             for (var index in this._postProcesses) {
-                this._postProcesses[index].onApply = function (effect) {
-                    _this.parameters(effect);
-                    _this._linkTextures(effect);
+                this._postProcesses[index].onApply = (effect: Effect) => {
+                    this.parameters(effect);
+                    this._linkTextures(effect);
                 };
             }
-        };
+        }
 
-        PostProcessRenderEffect.prototype._linkTextures = function (effect) {
+        private _linkTextures(effect): void {
             for (var renderPassName in this._renderPasses) {
                 effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
             }
@@ -229,9 +260,6 @@ var BABYLON;
             for (var renderEffectName in this._renderEffectAsPasses) {
                 effect.setTextureFromPostProcess(renderEffectName + "Sampler", this._renderEffectAsPasses[renderEffectName].getPostProcess());
             }
-        };
-        return PostProcessRenderEffect;
-    })();
-    BABYLON.PostProcessRenderEffect = PostProcessRenderEffect;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcessRenderEffect.js.map
+        }
+    }
+}

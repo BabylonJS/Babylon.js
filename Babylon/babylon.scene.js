@@ -84,6 +84,8 @@
 
             this.postProcessManager = new BABYLON.PostProcessManager(this);
 
+            this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
+
             this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
 
             this.attachControl();
@@ -905,6 +907,9 @@
                     this._renderTargets.push(shadowGenerator.getShadowMap());
                 }
             }
+
+            // RenderPipeline
+            this.postProcessRenderPipelineManager.update();
 
             // Multi-cameras?
             if (this.activeCameras.length > 0) {
