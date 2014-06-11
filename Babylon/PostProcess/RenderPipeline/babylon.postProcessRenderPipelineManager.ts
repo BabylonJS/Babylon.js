@@ -12,7 +12,7 @@ module BABYLON {
 
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean);
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean);
-        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique?:boolean): void {
+        public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique?: boolean): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -34,8 +34,8 @@ module BABYLON {
             renderPipeline.detachCameras(cameras);
         }
 
-        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera)
-        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[])
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera);
+        public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]);
         public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
@@ -58,9 +58,9 @@ module BABYLON {
             renderPipeline.disableEffect(renderEffectName, cameras);
         }
 
-        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera)
-        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[])
-        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras:any): void {
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera);
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[]);
+        public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
@@ -70,8 +70,8 @@ module BABYLON {
             renderPipeline.enableDisplayOnlyPass(passName, cameras);
         }
 
-        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera)
-        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[])
+        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera);
+        public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]);
         public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: any): void {
             var renderPipeline = this._renderPipelines[renderPipelineName];
 

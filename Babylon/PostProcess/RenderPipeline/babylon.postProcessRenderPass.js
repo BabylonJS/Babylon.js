@@ -16,7 +16,7 @@
         }
         // private
         PostProcessRenderPass.prototype._incRefCount = function () {
-            if (this._refCount == 0) {
+            if (this._refCount === 0) {
                 this._scene.customRenderTargets.push(this._renderTexture);
             }
 
