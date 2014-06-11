@@ -4,11 +4,11 @@
 This exporter is designed for 3ds Max 2013+. You just have to unzip the content of the archive to [3ds max folder\bin\assemblies]
 
 ## Supported features
-- Scene
+- *Scene*
  - Clear color
  - Ambient color
  - Fog
-- Cameras
+- *Cameras*
  - Fov
  - MinZ
  - MaxZ
@@ -17,7 +17,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Collisions (*)
  - Position
  - Target / Rotation
-- Lights
+- *Lights*
  - Omni / spot / directional / Ambient(Hemispheric)
  - Shadows maps for directional lights
  - Inclusion / exclusion lists
@@ -25,7 +25,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Intensity
  - Diffuse
  - Specular
-- Meshes
+- *Meshes*
  - Visibility
  - Renderable
  - Shadows
@@ -33,7 +33,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Pickable (*)
  - Position / rotation / scaling
  - Geometry (position, normal, texture coordinates (2 channels))
-- Materials
+- *Materials*
  - Multi-materials
  - Alpha
  - Diffuse color and texture
@@ -43,7 +43,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Emissive color and texture
  - Opacity texture
  - Reflection texture
-- Textures
+- *Textures*
  - UV offset / scaling / angle
  - Level
  - Coordinates mode (Spherical, planar, explicit)
