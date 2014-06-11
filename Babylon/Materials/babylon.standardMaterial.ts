@@ -170,6 +170,18 @@
                         continue;
                     }
 
+                    if (light._excludedMeshesIds.length > 0) {
+                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
+                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
+
+                            if (excludedMesh) {
+                                light.excludedMeshes.push(excludedMesh);
+                            }
+                        }
+
+                        light._excludedMeshesIds = [];
+                    }
+
                     if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {
                         continue;
                     }

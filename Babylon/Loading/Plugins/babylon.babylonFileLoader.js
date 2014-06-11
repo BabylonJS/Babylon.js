@@ -299,6 +299,10 @@ var BABYLON = BABYLON || {};
 
         light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
         light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
+
+        if (parsedLight.excludedMeshesIds) {
+            light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+        }
     };
 
     var parseCamera = function (parsedCamera, scene) {
