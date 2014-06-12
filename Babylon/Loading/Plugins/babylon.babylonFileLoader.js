@@ -303,6 +303,19 @@ var BABYLON = BABYLON || {};
         if (parsedLight.excludedMeshesIds) {
             light._excludedMeshesIds = parsedLight.excludedMeshesIds;
         }
+
+        // Animations
+        if (parsedLight.animations) {
+            for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                var parsedAnimation = parsedLight.animations[animationIndex];
+
+                light.animations.push(parseAnimation(parsedAnimation));
+            }
+        }
+
+        if (parsedLight.autoAnimate) {
+            scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+        }
     };
 
     var parseCamera = function (parsedCamera, scene) {

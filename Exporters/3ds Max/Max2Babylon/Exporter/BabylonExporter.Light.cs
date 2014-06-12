@@ -106,6 +106,43 @@ namespace Max2Babylon
                 babylonLight.range = maxLight.GetAttenuation(0, 1, Interval.Forever);
             }
 
+            // Animations
+            var animations = new List<BabylonAnimation>();
+            ExportVector3Animation("position", animations, key =>
+            {
+                var worldMatrix = lightNode.GetWorldMatrix(key, lightNode.HasParent());
+                return worldMatrix.Trans.ToArraySwitched();
+            });
+
+            ExportVector3Animation("direction", animations, key =>
+            {
+                var targetNode = lightNode._Node.Target;
+                if (targetNode != null)
+                {
+                    var targetWm = target.GetObjTMBeforeWSM(0, Interval.Forever._IInterval);
+                    var targetPosition = targetWm.Trans;
+
+                    var direction = targetPosition.Subtract(position);
+                    return direction.ToArraySwitched();
+                }
+                
+                var dir = wm.GetRow(2).MultiplyBy(directionScale);
+                return dir.ToArraySwitched();
+            });
+
+            ExportFloatAnimation("intensity", animations, key => new[] { maxLight.GetIntensity(key, Interval.Forever) });
+
+
+            babylonLight.animations = animations.ToArray();
+
+            if (lightNode._Node.GetBoolProperty("babylonjs_autoanimate"))
+            {
+                babylonLight.autoAnimate = true;
+                babylonLight.autoAnimateFrom = (int)lightNode._Node.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonLight.autoAnimateTo = (int)lightNode._Node.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonLight.autoAnimateLoop = lightNode._Node.GetBoolProperty("babylonjs_autoanimateloop");
+            }
+
             babylonScene.LightsList.Add(babylonLight);
             return babylonLight;
         }

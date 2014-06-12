@@ -866,6 +866,10 @@
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
         };
 
+        Quaternion.prototype.subtract = function (other) {
+            return new Quaternion(this.x - other.x, this.y - other.y, this.z - other.z, this.w - other.w);
+        };
+
         Quaternion.prototype.scale = function (value) {
             return new Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
         };

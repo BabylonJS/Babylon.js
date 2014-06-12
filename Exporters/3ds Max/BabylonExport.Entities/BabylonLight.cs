@@ -44,6 +44,21 @@ namespace BabylonExport.Entities
         [DataMember]
         public string[] excludedMeshesIds { get; set; }
 
+        [DataMember]
+        public bool autoAnimate { get; set; }
+
+        [DataMember]
+        public int autoAnimateFrom { get; set; }
+
+        [DataMember]
+        public int autoAnimateTo { get; set; }
+
+        [DataMember]
+        public bool autoAnimateLoop { get; set; }
+
+        [DataMember]
+        public BabylonAnimation[] animations { get; set; }
+
         public BabylonLight()
         {
             diffuse = new[] {1.0f, 1.0f, 1.0f};

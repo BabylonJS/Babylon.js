@@ -238,43 +238,46 @@ namespace Max2Babylon
                 babylonMesh.indices = sortedIndices.ToArray();
             }
 
-            // Animations - Position
-            const int ticks = 160;
-            var start = Loader.Core.AnimRange.Start;
-            var end = Loader.Core.AnimRange.End;
 
-            IPoint3 previousPosition = null;
-            var keys = new List<BabylonAnimationKey>();
-            for (var key = start; key <= end; key += ticks)
+            // Animations
+            var animations = new List<BabylonAnimation>();
+            ExportVector3Animation("position", animations, key =>
             {
                 var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
-                var currentPosition = worldMatrix.Trans;
+                return worldMatrix.Trans.ToArraySwitched();
+            });
 
-                if (key == start || key == end || (previousPosition.Equals(currentPosition, Tools.Epsilon) != 0))
-                {
-                    keys.Add(new BabylonAnimationKey()
-                    {
-                        frame = key,
-                        values = currentPosition.ToArraySwitched()
-                    });
-                }
-
-                previousPosition = currentPosition;
-            }
-
-            if (keys.Count > 0)
+            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
             {
-                var babylonAnimation = new BabylonAnimation
-                {
-                    dataType = BabylonAnimation.DataType.Vector3,
-                    name = "Position animation",
-                    keys = keys.ToArray(),
-                    framePerSecond = Loader.Global.FrameRate,
-                    loopBehavior = BabylonAnimation.LoopBehavior.Relative,
-                    property = "position"
-                };
+                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
 
-                babylonMesh.animations = new[] {babylonAnimation};
+                var affineParts = Loader.Global.AffineParts.Create();
+                Loader.Global.DecompAffine(worldMatrix, affineParts);
+
+                return affineParts.Q.ToArray();
+            });
+
+            ExportVector3Animation("scaling", animations, key =>
+            {
+                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
+
+                var affineParts = Loader.Global.AffineParts.Create();
+                Loader.Global.DecompAffine(worldMatrix, affineParts);
+
+                return affineParts.K.ToArraySwitched();
+            });
+
+            ExportFloatAnimation("visibility", animations, key => new []{meshNode._Node.GetVisibility(key, Interval.Forever._IInterval)});
+
+
+            babylonMesh.animations = animations.ToArray();
+
+            if (meshNode._Node.GetBoolProperty("babylonjs_autoanimate"))
+            {
+                babylonMesh.autoAnimate = true;
+                babylonMesh.autoAnimateFrom = (int)meshNode._Node.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonMesh.autoAnimateTo = (int)meshNode._Node.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonMesh.autoAnimateLoop = meshNode._Node.GetBoolProperty("babylonjs_autoanimateloop");
             }
 
             babylonScene.MeshesList.Add(babylonMesh);

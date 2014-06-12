@@ -36,6 +36,15 @@ namespace Max2Babylon
                 }
             }
 
+            if (firstNode.ObjectRef != null && firstNode.ObjectRef.SuperClassID == SClass_ID.Light)
+            {
+                using (var frm = new LightPropertiesForm())
+                {
+                    frm.ShowDialog();
+                    return true;
+                }
+            }
+
             Loader.Core.PushPrompt("Selected entity does not have Babylon.js specific properties");
 
             return true;

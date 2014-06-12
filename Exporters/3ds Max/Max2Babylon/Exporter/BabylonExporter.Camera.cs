@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BabylonExport.Entities;
 using MaxSharp;
 
@@ -52,6 +53,27 @@ namespace Max2Babylon
             {
                 var dir = wm.GetRow(2).MultiplyBy(-1);
                 babylonCamera.target = dir.ToArraySwitched();
+            }
+
+            // Animations
+            var animations = new List<BabylonAnimation>();
+            ExportVector3Animation("position", animations, key =>
+            {
+                var worldMatrix = cameraNode.GetWorldMatrix(key, cameraNode.HasParent());
+                return worldMatrix.Trans.ToArraySwitched();
+            });
+
+            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFov(maxCamera.GetFOV(key, Interval.Forever._IInterval)) });
+
+
+            babylonCamera.animations = animations.ToArray();
+
+            if (cameraNode._Node.GetBoolProperty("babylonjs_autoanimate"))
+            {
+                babylonCamera.autoAnimate = true;
+                babylonCamera.autoAnimateFrom = (int)cameraNode._Node.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonCamera.autoAnimateTo = (int)cameraNode._Node.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonCamera.autoAnimateLoop = cameraNode._Node.GetBoolProperty("babylonjs_autoanimateloop");
             }
 
             babylonScene.CamerasList.Add(babylonCamera);

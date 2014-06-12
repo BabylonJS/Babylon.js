@@ -21,6 +21,11 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
             Tools.UpdateCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
             Tools.UpdateCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
+
+            Tools.UpdateCheckBox(chkAutoAnimate, objects, "babylonjs_autoanimate");
+            Tools.UpdateCheckBox(chkLoop, objects, "babylonjs_autoanimateloop");
+            Tools.UpdateNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
+            Tools.UpdateNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to");
         }
 
         private void ObjectPropertiesForm_Load(object sender, EventArgs e)
@@ -40,6 +45,16 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
             Tools.PrepareCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
             Tools.PrepareCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
+
+            Tools.PrepareCheckBox(chkAutoAnimate, objects, "babylonjs_autoanimate");
+            Tools.PrepareCheckBox(chkLoop, objects, "babylonjs_autoanimateloop");
+            Tools.PrepareNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
+            Tools.PrepareNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to", 100.0f);
+        }
+
+        private void chkAutoAnimate_CheckedChanged(object sender, EventArgs e)
+        {
+            grpAutoAnimate.Enabled = chkAutoAnimate.Checked;
         }
     }
 }
