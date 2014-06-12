@@ -58,8 +58,8 @@ namespace Max2Babylon
 
             babylonMaterial.ambient = materialNode.GetAmbient(0).ToArray();
             babylonMaterial.diffuse = materialNode.GetDiffuse(0).ToArray();
-            babylonMaterial.specular = materialNode.GetSpecular(0).Scale(materialNode.GetShininess(0));
-            babylonMaterial.specularPower = materialNode.GetShinyStrength(0);
+            babylonMaterial.specular = materialNode.GetSpecular(0).Scale(materialNode.GetShinyStrength(0));
+            babylonMaterial.specularPower = materialNode.GetShininess(0) * 256;
 
             babylonMaterial.emissive = materialNode.SelfIlluminationColorOn ? materialNode.GetSelfIllumColor(0).ToArray() : materialNode.GetDiffuse(0).Scale(materialNode.GetSelfIllumination(0));
             babylonMaterial.alpha = 1.0f - materialNode.GetTransparency(0);

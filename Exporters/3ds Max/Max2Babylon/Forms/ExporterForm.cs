@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MaxCustomControls;
@@ -10,6 +11,7 @@ namespace Max2Babylon
     public partial class ExporterForm : MaxForm
     {
         private readonly BabylonExportActionItem babylonExportAction;
+        private CancellationTokenSource cancellationToken;
 
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
@@ -83,7 +85,28 @@ namespace Max2Babylon
                 }
             }));
 
-            await Task.Run(() => exporter.Export(txtFilename.Text));
+            butExport.Enabled = false;
+            butCancel.Enabled = true;
+
+            cancellationToken = new CancellationTokenSource();
+            var token = cancellationToken.Token;
+
+            try
+            {
+                await Task.Run(() => exporter.Export(txtFilename.Text, token), token);
+            }
+            catch
+            {
+                previousNode = new TreeNode("Exportation cancelled") { ForeColor = Color.Red };
+
+                currentNode = CreateTreeNode(false, currentNode, previousNode);
+
+                previousNode.EnsureVisible();
+                progressBar.Value = 0;
+            }
+
+            butCancel.Enabled = false;
+            butExport.Enabled = true;
         }
 
         private TreeNode CreateTreeNode(bool asChild, TreeNode currentNode, TreeNode treeNode)
@@ -112,6 +135,11 @@ namespace Max2Babylon
         private void txtFilename_TextChanged(object sender, EventArgs e)
         {
             butExport.Enabled = !string.IsNullOrEmpty(txtFilename.Text.Trim());
+        }
+
+        private void butCancel_Click(object sender, EventArgs e)
+        {
+            cancellationToken.Cancel();
         }
     }
 }
