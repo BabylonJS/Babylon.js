@@ -15,6 +15,7 @@ namespace Max2Babylon
             if (form == null)
                 form = new ExporterForm(this);
             form.Show();
+            form.BringToFront();
 
             return true;
         }

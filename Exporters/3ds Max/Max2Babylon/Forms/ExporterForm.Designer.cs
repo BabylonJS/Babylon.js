@@ -35,6 +35,7 @@
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.treeView = new System.Windows.Forms.TreeView();
+            this.butCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // butExport
@@ -93,7 +94,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(12, 486);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(699, 23);
+            this.progressBar.Size = new System.Drawing.Size(613, 23);
             this.progressBar.TabIndex = 5;
             // 
             // treeView
@@ -106,11 +107,25 @@
             this.treeView.Size = new System.Drawing.Size(699, 401);
             this.treeView.TabIndex = 6;
             // 
+            // butCancel
+            // 
+            this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.butCancel.Enabled = false;
+            this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.butCancel.Location = new System.Drawing.Point(631, 486);
+            this.butCancel.Name = "butCancel";
+            this.butCancel.Size = new System.Drawing.Size(80, 23);
+            this.butCancel.TabIndex = 7;
+            this.butCancel.Text = "Cancel";
+            this.butCancel.UseVisualStyleBackColor = true;
+            this.butCancel.Click += new System.EventHandler(this.butCancel_Click);
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(723, 525);
+            this.Controls.Add(this.butCancel);
             this.Controls.Add(this.treeView);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.butExport);
@@ -139,5 +154,6 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.TreeView treeView;
+        private System.Windows.Forms.Button butCancel;
     }
 }

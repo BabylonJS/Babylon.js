@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Threading;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
@@ -54,7 +55,7 @@ namespace Max2Babylon
             }
         }
 
-        public void Export(string outputFile)
+        public void Export(string outputFile, CancellationToken token)
         {
             RaiseMessage("Exportation started");
             ReportProgressChanged(25);
@@ -124,7 +125,8 @@ namespace Max2Babylon
             RaiseMessage("Exporting meshes");
             foreach (var meshNode in maxScene.NodesListBySuperClass(SuperClassID.GeometricObject))
             {
-                ExportMesh(meshNode, babylonScene);
+                ExportMesh(meshNode, babylonScene, token);
+                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 
             // Materials
@@ -133,6 +135,7 @@ namespace Max2Babylon
             foreach (var mat in matsToExport)
             {
                 ExportMaterial(mat, babylonScene);
+                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 
             // Lights
@@ -140,6 +143,7 @@ namespace Max2Babylon
             foreach (var lightNode in maxScene.NodesListBySuperClass(SuperClassID.Light))
             {
                 ExportLight(lightNode, babylonScene);
+                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 
             if (babylonScene.LightsList.Count == 0)

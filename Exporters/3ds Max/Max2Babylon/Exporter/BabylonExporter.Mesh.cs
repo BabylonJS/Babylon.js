@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
@@ -10,7 +11,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonMesh ExportMesh(Node meshNode, BabylonScene babylonScene)
+        private BabylonMesh ExportMesh(Node meshNode, BabylonScene babylonScene, CancellationToken token)
         {
             var babylonMesh = new BabylonMesh();
             int vx1, vx2, vx3;
@@ -139,6 +140,7 @@ namespace Max2Babylon
                     indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, noOptimize));
                     indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, noOptimize));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
+                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
                 }
 
                 if (vertices.Count >= 65536)
@@ -227,6 +229,7 @@ namespace Max2Babylon
 
                         subMeshes.Add(subMesh);
                     }
+                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
                 }
                 babylonMesh.subMeshes = subMeshes.ToArray();
 
