@@ -15,7 +15,7 @@ namespace BabylonExport.Entities
         public DataType dataType { get; set; }
 
         [DataMember]
-        public int loopBehavior { get; set; }
+        public LoopBehavior loopBehavior { get; set; }
 
         [DataMember]
         public int framePerSecond { get; set; }
@@ -29,6 +29,13 @@ namespace BabylonExport.Entities
             Vector3 = 1,
             Quaternion = 2,
             Matrix = 3
+        }
+
+        public enum LoopBehavior
+        {
+            Relative = 0,
+            Cycle = 1,
+            Constant = 2
         }
     }
 }

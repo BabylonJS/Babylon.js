@@ -27,9 +27,11 @@ namespace Max2Babylon
             babylonMesh.isVisible = meshNode._Node.Renderable == 1;
             babylonMesh.pickable = meshNode._Node.GetBoolProperty("babylonjs_checkpickable");
             babylonMesh.receiveShadows = meshNode._Node.RcvShadows == 1;
+            babylonMesh.showBoundingBox = meshNode._Node.GetBoolProperty("babylonjs_showboundingbox");
+            babylonMesh.showSubMeshesBoundingBox = meshNode._Node.GetBoolProperty("babylonjs_showsubmeshesboundingbox");
 
             // Collisions
-            babylonMesh.checkCollisions = meshNode._Node.GetBoolProperty("babylonjs_checkcollisions");            
+            babylonMesh.checkCollisions = meshNode._Node.GetBoolProperty("babylonjs_checkcollisions");
 
             // Position / rotation / scaling
             var wm = meshNode.GetWorldMatrix(0, meshNode.HasParent());
@@ -130,7 +132,7 @@ namespace Max2Babylon
                 var hasUV2 = mesh.GetNumMapVerts(2) > 0;
 
                 var noOptimize = meshNode._Node.GetBoolProperty("babylonjs_nooptimize");
-                
+
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
                     indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, noOptimize));
@@ -169,14 +171,14 @@ namespace Max2Babylon
 
                     subMesh.indexStart = indexStart;
                     subMesh.materialIndex = index;
-                    
+
                     for (var face = 0; face < matIDs.Count; face++)
                     {
                         if (matIDs[face] == index)
                         {
-                            var a = indices[3*face];
-                            var b = indices[3*face + 1];
-                            var c = indices[3*face + 2];
+                            var a = indices[3 * face];
+                            var b = indices[3 * face + 1];
+                            var c = indices[3 * face + 2];
 
                             sortedIndices.Add(a);
                             sortedIndices.Add(b);
@@ -187,7 +189,7 @@ namespace Max2Babylon
                             {
                                 minVertexIndex = a;
                             }
-                            
+
                             if (b < minVertexIndex)
                             {
                                 minVertexIndex = b;
@@ -231,6 +233,45 @@ namespace Max2Babylon
 
                 // Buffers - Indices
                 babylonMesh.indices = sortedIndices.ToArray();
+            }
+
+            // Animations - Position
+            const int ticks = 160;
+            var start = Loader.Core.AnimRange.Start;
+            var end = Loader.Core.AnimRange.End;
+
+            IPoint3 previousPosition = null;
+            var keys = new List<BabylonAnimationKey>();
+            for (var key = start; key <= end; key += ticks)
+            {
+                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
+                var currentPosition = worldMatrix.Trans;
+
+                if (key == start || key == end || (previousPosition.Equals(currentPosition, Tools.Epsilon) != 0))
+                {
+                    keys.Add(new BabylonAnimationKey()
+                    {
+                        frame = key,
+                        values = currentPosition.ToArraySwitched()
+                    });
+                }
+
+                previousPosition = currentPosition;
+            }
+
+            if (keys.Count > 0)
+            {
+                var babylonAnimation = new BabylonAnimation
+                {
+                    dataType = BabylonAnimation.DataType.Vector3,
+                    name = "Position animation",
+                    keys = keys.ToArray(),
+                    framePerSecond = Loader.Global.FrameRate,
+                    loopBehavior = BabylonAnimation.LoopBehavior.Relative,
+                    property = "position"
+                };
+
+                babylonMesh.animations = new[] {babylonAnimation};
             }
 
             babylonScene.MeshesList.Add(babylonMesh);

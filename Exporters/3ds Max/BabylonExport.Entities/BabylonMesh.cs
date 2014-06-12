@@ -101,6 +101,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
 
+        [DataMember]
+        public bool showBoundingBox { get; set; }
+
+        [DataMember]
+        public bool showSubMeshesBoundingBox { get; set; }
+
         public BabylonMesh()
         {
             isEnabled = true;

@@ -142,6 +142,11 @@ namespace Max2Babylon
                 ExportLight(lightNode, babylonScene);
             }
 
+            if (babylonScene.LightsList.Count == 0)
+            {
+                RaiseWarning("No light defined", true);
+            }
+
             // Output
             babylonScene.Prepare(false);
             var jsonSerializer = JsonSerializer.Create();
