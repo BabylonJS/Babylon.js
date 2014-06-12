@@ -1,5 +1,20 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    var ActionEvent = (function () {
+        function ActionEvent(source, pointerX, pointerY, meshUnderPointer) {
+            this.source = source;
+            this.pointerX = pointerX;
+            this.pointerY = pointerY;
+            this.meshUnderPointer = meshUnderPointer;
+        }
+        ActionEvent.CreateNew = function (source) {
+            var scene = source.getScene();
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+        };
+        return ActionEvent;
+    })();
+    BABYLON.ActionEvent = ActionEvent;
+
     var ActionManager = (function () {
         function ActionManager(scene) {
             // Members
@@ -91,12 +106,12 @@
             return action;
         };
 
-        ActionManager.prototype.processTrigger = function (trigger, source) {
+        ActionManager.prototype.processTrigger = function (trigger, evt) {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    action._executeCurrent(source);
+                    action._executeCurrent(evt);
                 }
             }
         };

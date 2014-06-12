@@ -10,7 +10,7 @@
         Action.prototype._prepare = function () {
         };
 
-        Action.prototype._executeCurrent = function (source) {
+        Action.prototype._executeCurrent = function (evt) {
             if (this._condition) {
                 var currentRenderId = this._actionManager.getScene().getRenderId();
 
@@ -31,7 +31,7 @@
                 }
             }
 
-            this._nextActiveAction.execute(source);
+            this._nextActiveAction.execute(evt);
 
             if (this._nextActiveAction._child) {
                 this._nextActiveAction = this._nextActiveAction._child;
@@ -40,7 +40,7 @@
             }
         };
 
-        Action.prototype.execute = function (source) {
+        Action.prototype.execute = function (evt) {
         };
 
         Action.prototype.then = function (action) {

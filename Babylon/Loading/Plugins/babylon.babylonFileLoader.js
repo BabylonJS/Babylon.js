@@ -289,7 +289,7 @@ var BABYLON = BABYLON || {};
 
         BABYLON.Tags.AddTagsTo(light, parsedLight.tags);
 
-        if (parsedLight.intensity) {
+        if (parsedLight.intensity !== undefined) {
             light.intensity = parsedLight.intensity;
         }
 
@@ -530,6 +530,9 @@ var BABYLON = BABYLON || {};
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
         mesh.infiniteDistance = parsedMesh.infiniteDistance;
+
+        mesh.showBoundingBox = parsedMesh.showBoundingBox;
+        mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
 
         if (parsedMesh.pickable !== undefined) {
             mesh.isPickable = parsedMesh.pickable;

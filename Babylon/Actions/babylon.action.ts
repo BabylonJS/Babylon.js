@@ -15,7 +15,7 @@
         public _prepare(): void {
         }
 
-        public _executeCurrent(source: AbstractMesh): void {
+        public _executeCurrent(evt: ActionEvent): void {
             if (this._condition) {
                 var currentRenderId = this._actionManager.getScene().getRenderId();
 
@@ -36,7 +36,7 @@
                 }
             }
 
-            this._nextActiveAction.execute(source);
+            this._nextActiveAction.execute(evt);
 
             if (this._nextActiveAction._child) {
                 this._nextActiveAction = this._nextActiveAction._child;
@@ -45,7 +45,7 @@
             }
         }
 
-        public execute(source: AbstractMesh): void {
+        public execute(evt: ActionEvent): void {
 
         }
 

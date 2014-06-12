@@ -145,9 +145,9 @@ var BABYLON;
             }
         };
 
-        CombineAction.prototype.execute = function (source) {
+        CombineAction.prototype.execute = function (evt) {
             for (var index = 0; index < this.children.length; index++) {
-                this.children[index].execute(source);
+                this.children[index].execute(evt);
             }
         };
         return CombineAction;
@@ -160,8 +160,8 @@ var BABYLON;
             _super.call(this, trigger, condition);
             this.func = func;
         }
-        ExecuteCodeAction.prototype.execute = function (source) {
-            this.func(source);
+        ExecuteCodeAction.prototype.execute = function (evt) {
+            this.func(evt);
         };
         return ExecuteCodeAction;
     })(BABYLON.Action);

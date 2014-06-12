@@ -248,6 +248,7 @@
                     this._keys = [];
                     this.inertialAlphaOffset = 0;
                     this.inertialBetaOffset = 0;
+                    this.inertialRadiusOffset = 0;
                     previousPosition = null;
                     pointerId = null;
                 };
