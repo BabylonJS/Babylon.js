@@ -52,7 +52,7 @@ namespace Max2Babylon
             else
             {
                 var dir = wm.GetRow(2).MultiplyBy(-1);
-                babylonCamera.target = dir.ToArraySwitched();
+                babylonCamera.target = position.Add(dir).ToArraySwitched();
             }
 
             // Animations
@@ -64,7 +64,6 @@ namespace Max2Babylon
             });
 
             ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFov(maxCamera.GetFOV(key, Interval.Forever._IInterval)) });
-
 
             babylonCamera.animations = animations.ToArray();
 
