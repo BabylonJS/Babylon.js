@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Max;
-using Autodesk.Max.IMXSDebugger;
 using MaxSharp;
 using SharpDX;
 using Color = MaxSharp.Color;
@@ -13,6 +12,17 @@ namespace Max2Babylon
     public static class Tools
     {
         public const float Epsilon = 0.001f;
+
+        public static bool IsEqualTo(this float[] value, float[] other)
+        {
+            if (value.Length != other.Length)
+            {
+                return false;
+            }
+
+            return !value.Where((t, i) => Math.Abs(t - other[i]) > Epsilon).Any();
+        }
+
         public static float[] ToArray(this IMatrix3 value)
         {
             var row0 = value.GetRow(0).ToArraySwitched();

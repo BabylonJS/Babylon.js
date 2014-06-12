@@ -17,6 +17,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Collisions (*)
  - Position
  - Target / Rotation
+ - Animations: Position, Fov
 - *Lights*
  - Omni / spot / directional / Ambient(Hemispheric)
  - Shadows maps for directional lights
@@ -25,6 +26,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Intensity
  - Diffuse
  - Specular
+ - Animations: Position, Direction, intensity 
 - *Meshes*
  - Visibility
  - Renderable
@@ -33,6 +35,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Pickable (*)
  - Position / rotation / scaling
  - Geometry (position, normal, texture coordinates (2 channels))
+ - Animations: Position, scaling, rotation, visibility
 - *Materials*
  - Multi-materials
  - Alpha

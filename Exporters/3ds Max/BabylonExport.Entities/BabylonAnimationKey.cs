@@ -6,7 +6,7 @@ namespace BabylonExport.Entities
     public class BabylonAnimationKey
     {
         [DataMember]
-        public float frame { get; set; }
+        public int frame { get; set; }
 
         [DataMember]
         public float[] values { get; set; }

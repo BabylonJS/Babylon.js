@@ -33,6 +33,11 @@ namespace Max2Babylon
             Tools.PrepareNumericUpDown(nupInertia, cameras, "babylonjs_inertia", 0.9f);
 
             Tools.PrepareVector3Control(ellipsoidControl, cameras[0], "babylonjs_ellipsoid", 0.5f, 1.0f, 0.5f);
+
+            Tools.PrepareCheckBox(chkAutoAnimate, cameras, "babylonjs_autoanimate");
+            Tools.PrepareCheckBox(chkLoop, cameras, "babylonjs_autoanimateloop");
+            Tools.PrepareNumericUpDown(nupFrom, cameras, "babylonjs_autoanimate_from");
+            Tools.PrepareNumericUpDown(nupTo, cameras, "babylonjs_autoanimate_to", 100.0f);
         }
 
         private void butOK_Click(object sender, EventArgs e)
@@ -44,6 +49,16 @@ namespace Max2Babylon
             Tools.UpdateNumericUpDown(nupInertia, cameras, "babylonjs_inertia");
 
             Tools.UpdateVector3Control(ellipsoidControl, cameras, "babylonjs_ellipsoid");
+
+            Tools.UpdateCheckBox(chkAutoAnimate, cameras, "babylonjs_autoanimate");
+            Tools.UpdateCheckBox(chkLoop, cameras, "babylonjs_autoanimateloop");
+            Tools.UpdateNumericUpDown(nupFrom, cameras, "babylonjs_autoanimate_from");
+            Tools.UpdateNumericUpDown(nupTo, cameras, "babylonjs_autoanimate_to");
+        }
+
+        private void chkAutoAnimate_CheckedChanged(object sender, EventArgs e)
+        {
+            grpAutoAnimate.Enabled = chkAutoAnimate.Checked;
         }
     }
 }
