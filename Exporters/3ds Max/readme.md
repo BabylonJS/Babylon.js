@@ -35,6 +35,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Pickable (*)
  - Position / rotation / scaling
  - Geometry (position, normal, texture coordinates (2 channels))
+ - Show Bounding box and submeshes bounding boxes (*)
  - Animations: Position, scaling, rotation, visibility
 - *Materials*
  - Multi-materials
@@ -51,10 +52,11 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Level
  - Coordinates mode (Spherical, planar, explicit)
  - Wrapping (Clamp, mirror, wrap)
+- Hierarchies are exported
 
 (*): Through custom UI
 
-Hierarchies are supported.
+Cameras, lights and meshes have custom properties (Right-click and select "Babylon properties" menu) to automatically launch animations at startup.
 
 ## Apache License 2.0 (Apache)
 

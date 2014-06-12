@@ -18,7 +18,7 @@ namespace Max2Babylon
             var babylonTexture = new BabylonTexture();
 
             var texMap = stdMat.GetSubTexmap(index);
-            var texture = (IBitmapTex) texMap.GetParamBlock(0).Owner;
+            var texture = texMap.GetParamBlock(0).Owner as IBitmapTex;
 
             if (texture == null)
             {
@@ -87,6 +87,19 @@ namespace Max2Babylon
 
             babylonTexture.name = Path.GetFileName(texture.MapName);
 
+            // Animations
+            var animations = new List<BabylonAnimation>();
+            ExportFloatAnimation("uOffset", animations, key => new []{uvGen.GetUOffs(key)});
+            ExportFloatAnimation("vOffset", animations, key => new[] { uvGen.GetVOffs(key) });
+            ExportFloatAnimation("uScale", animations, key => new[] { uvGen.GetUScl(key) });
+            ExportFloatAnimation("vScale", animations, key => new[] { uvGen.GetVScl(key) });
+            ExportFloatAnimation("uAng", animations, key => new[] { uvGen.GetUAng(key) });
+            ExportFloatAnimation("vAng", animations, key => new[] { uvGen.GetVAng(key) });
+            ExportFloatAnimation("wAng", animations, key => new[] { uvGen.GetWAng(key) });
+
+            babylonTexture.animations = animations.ToArray();
+
+            // Copy texture to output
             try
             {
                 if (File.Exists(texture.MapName))
