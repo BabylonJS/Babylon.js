@@ -232,6 +232,7 @@ var BABYLON;
                     _this._keys = [];
                     _this.inertialAlphaOffset = 0;
                     _this.inertialBetaOffset = 0;
+                    _this.inertialRadiusOffset = 0;
                     previousPosition = null;
                     pointerId = null;
                 };

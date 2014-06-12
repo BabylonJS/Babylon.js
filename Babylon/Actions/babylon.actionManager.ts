@@ -1,4 +1,16 @@
 ﻿module BABYLON {
+
+    export class ActionEvent {
+        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh) {
+            
+        }
+
+        public static CreateNew(source: AbstractMesh): ActionEvent {
+            var scene = source.getScene();
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+        }
+    }
+
     export class ActionManager {
         // Statics
         private static _NothingTrigger = 0;
@@ -73,12 +85,12 @@
             return action;
         }
 
-        public processTrigger(trigger: number, source: AbstractMesh): void {
+        public processTrigger(trigger: number, evt: ActionEvent): void {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    action._executeCurrent(source);
+                    action._executeCurrent(evt);
                 }
             }
         }

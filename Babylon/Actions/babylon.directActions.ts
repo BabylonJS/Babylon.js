@@ -128,20 +128,20 @@
             }
         }
 
-        public execute(source: AbstractMesh): void {
+        public execute(evt: ActionEvent): void {
             for (var index = 0; index < this.children.length; index++) {
-                this.children[index].execute(source);
+                this.children[index].execute(evt);
             }
         }
     }
 
     export class ExecuteCodeAction extends Action {
-        constructor(trigger: number, public func: (source: AbstractMesh) => void, condition?: Condition) {
+        constructor(trigger: number, public func: (evt: ActionEvent) => void, condition?: Condition) {
             super(trigger, condition);
         }
 
-        public execute(source: AbstractMesh): void {
-            this.func(source);
+        public execute(evt: ActionEvent): void {
+            this.func(evt);
         }
     }
 
