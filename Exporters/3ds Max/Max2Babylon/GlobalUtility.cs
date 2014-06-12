@@ -1,4 +1,5 @@
-﻿using Autodesk.Max;
+﻿using System;
+using Autodesk.Max;
 using Autodesk.Max.IQuadMenuContext;
 using Autodesk.Max.Plugins;
 using MaxSharp;
@@ -16,21 +17,28 @@ namespace Max2Babylon
 
         public override void Stop()
         {
-            if (actionTable != null)
+            try
             {
-                Loader.Global.COREInterface.ActionManager.DeactivateActionTable(actionCallback, idActionTable);
+                if (actionTable != null)
+                {
+                    Loader.Global.COREInterface.ActionManager.DeactivateActionTable(actionCallback, idActionTable);
+                }
+
+                // Clean up menu
+                if (menu != null)
+                {
+                    Loader.Global.COREInterface.MenuManager.UnRegisterMenu(menu);
+                    Loader.Global.ReleaseIMenu(menu);
+                    Loader.Global.ReleaseIMenuItem(menuItemBabylon);
+                    Loader.Global.ReleaseIMenuItem(menuItem);
+
+                    menu = null;
+                    menuItem = null;
+                }
             }
-
-            // Clean up menu
-            if (menu != null)
+            catch
             {
-                Loader.Global.COREInterface.MenuManager.UnRegisterMenu(menu);
-                Loader.Global.ReleaseIMenu(menu);
-                Loader.Global.ReleaseIMenuItem(menuItemBabylon);
-                Loader.Global.ReleaseIMenuItem(menuItem);
-
-                menu = null;
-                menuItem = null;
+                // Fails silently
             }
         }
 

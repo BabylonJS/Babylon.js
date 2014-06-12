@@ -19,6 +19,8 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkCollisions, objects, "babylonjs_checkcollisions");
             Tools.UpdateCheckBox(chkPickable, objects, "babylonjs_checkpickable");   
             Tools.UpdateCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
+            Tools.UpdateCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
+            Tools.UpdateCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
         }
 
         private void ObjectPropertiesForm_Load(object sender, EventArgs e)
@@ -36,6 +38,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkCollisions, objects, "babylonjs_checkcollisions");
             Tools.PrepareCheckBox(chkPickable, objects, "babylonjs_checkpickable");
             Tools.PrepareCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
+            Tools.PrepareCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
+            Tools.PrepareCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
         }
     }
 }

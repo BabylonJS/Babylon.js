@@ -56,6 +56,11 @@ namespace Max2Babylon
             babylonTexture.uScale = uvGen.GetUScl(0);
             babylonTexture.vScale = uvGen.GetVScl(0);
 
+            if (Path.GetExtension(texture.MapName).ToLower() == ".dds")
+            {
+                babylonTexture.vScale *= -1; // Need to invert Y-axis for DDS texture
+            }
+
             babylonTexture.uAng = uvGen.GetUAng(0);
             babylonTexture.vAng = uvGen.GetVAng(0);
             babylonTexture.wAng = uvGen.GetWAng(0);

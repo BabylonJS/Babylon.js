@@ -12,6 +12,7 @@ namespace Max2Babylon
 {
     public static class Tools
     {
+        public const float Epsilon = 0.001f;
         public static float[] ToArray(this IMatrix3 value)
         {
             var row0 = value.GetRow(0).ToArraySwitched();
@@ -54,6 +55,11 @@ namespace Max2Babylon
         public static float[] ToArray(this IPoint2 value)
         {
             return new[] { value.X, value.Y };
+        }
+
+        public static float[] ToArraySwitched(this IPoint2 value)
+        {
+            return new[] { value.X, 1.0f - value.Y };
         }
 
         public static float[] ToArraySwitched(this IPoint3 value)
