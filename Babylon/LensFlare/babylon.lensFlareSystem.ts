@@ -13,6 +13,7 @@
         private _effect: Effect;
         private _positionX: number;
         private _positionY: number;
+        private _isEnabled = true;
 
         constructor(public name: string, emitter: any, scene: Scene) {
 
@@ -50,6 +51,14 @@
                 ["textureSampler"], "");
         }
 
+        public get isEnabled(): boolean {
+            return this._isEnabled;
+        }
+
+        public set isEnabled(value: boolean) {
+            this._isEnabled = value;
+        }
+
         public getScene(): Scene {
             return this._scene;
         }
@@ -83,6 +92,10 @@
         }
 
         public _isVisible(): boolean {
+            if (!this._isEnabled) {
+                return false;
+            }
+
             var emitterPosition = this.getEmitterPosition();
             var direction = emitterPosition.subtract(this._scene.activeCamera.position);
             var distance = direction.length();
