@@ -56,7 +56,10 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
 
 (*): Through custom UI
 
+## Animations
 Cameras, lights and meshes have custom properties (Right-click and select "Babylon properties" menu) to automatically launch animations at startup.
+
+Animations are exported by sampling keyframes which can generate a lot of data. To reduce file size, you can opt to use linear interpolation instead of bezier or TCB.
 
 ## Apache License 2.0 (Apache)
 
