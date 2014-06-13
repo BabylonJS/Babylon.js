@@ -7,13 +7,14 @@
 var BABYLON;
 (function (BABYLON) {
     var Geometry = (function () {
-        function Geometry(id, engine, vertexData, updatable, mesh) {
+        function Geometry(id, scene, vertexData, updatable, mesh) {
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._totalVertices = 0;
             this._indices = [];
             this.id = id;
-            this._engine = engine;
+            this._engine = scene.getEngine();
             this._meshes = [];
+            this._scene = scene;
 
             // vertexData
             if (vertexData) {
@@ -28,6 +29,10 @@ var BABYLON;
                 this.applyToMesh(mesh);
             }
         }
+        Geometry.prototype.getScene = function () {
+            return this._scene;
+        };
+
         Geometry.prototype.getEngine = function () {
             return this._engine;
         };
@@ -194,7 +199,7 @@ var BABYLON;
             return this._indexBuffer;
         };
 
-        Geometry.prototype.releaseForMesh = function (mesh) {
+        Geometry.prototype.releaseForMesh = function (mesh, shouldDispose) {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
 
@@ -213,6 +218,10 @@ var BABYLON;
             meshes.splice(index, 1);
 
             mesh._geometry = null;
+
+            if (meshes.length == 0 && shouldDispose) {
+                this.dispose();
+            }
         };
 
         Geometry.prototype.applyToMesh = function (mesh) {
@@ -230,7 +239,7 @@ var BABYLON;
             // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
             mesh._geometry = this;
 
-            mesh.getScene().pushGeometry(this);
+            this._scene.pushGeometry(this);
 
             meshes.push(mesh);
 
@@ -333,6 +342,13 @@ var BABYLON;
             this._delayInfo = [];
 
             this._boundingInfo = null; // todo: .dispose()
+
+            var geometries = this._scene.getGeometries();
+            index = geometries.indexOf(this);
+
+            if (index > -1) {
+                geometries.splice(index, 1);
+            }
         };
 
         Geometry.prototype.copy = function (id) {
@@ -357,7 +373,7 @@ var BABYLON;
                 }
             }
 
-            var geometry = new BABYLON.Geometry(id, this._engine, vertexData, updatable, null);
+            var geometry = new BABYLON.Geometry(id, this._scene, vertexData, updatable, null);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -404,10 +420,10 @@ var BABYLON;
             /// Abstract class
             var _Primitive = (function (_super) {
                 __extends(_Primitive, _super);
-                function _Primitive(id, engine, vertexData, canBeRegenerated, mesh) {
+                function _Primitive(id, scene, vertexData, canBeRegenerated, mesh) {
                     this._beingRegenerated = true;
                     this._canBeRegenerated = canBeRegenerated;
-                    _super.call(this, id, engine, vertexData, false, mesh); // updatable = false to be sure not to update vertices
+                    _super.call(this, id, scene, vertexData, false, mesh); // updatable = false to be sure not to update vertices
                     this._beingRegenerated = false;
                 }
                 _Primitive.prototype.canBeRegenerated = function () {
@@ -457,17 +473,17 @@ var BABYLON;
 
             var Box = (function (_super) {
                 __extends(Box, _super);
-                function Box(id, engine, size, canBeRegenerated, mesh) {
+                function Box(id, scene, size, canBeRegenerated, mesh) {
                     this.size = size;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Box.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateBox(this.size);
                 };
 
                 Box.prototype.copy = function (id) {
-                    return new Box(id, this.getEngine(), this.size, this.canBeRegenerated(), null);
+                    return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null);
                 };
                 return Box;
             })(_Primitive);
@@ -475,18 +491,18 @@ var BABYLON;
 
             var Sphere = (function (_super) {
                 __extends(Sphere, _super);
-                function Sphere(id, engine, segments, diameter, canBeRegenerated, mesh) {
+                function Sphere(id, scene, segments, diameter, canBeRegenerated, mesh) {
                     this.segments = segments;
                     this.diameter = diameter;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Sphere.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateSphere(this.segments, this.diameter);
                 };
 
                 Sphere.prototype.copy = function (id) {
-                    return new Sphere(id, this.getEngine(), this.segments, this.diameter, this.canBeRegenerated(), null);
+                    return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null);
                 };
                 return Sphere;
             })(_Primitive);
@@ -494,20 +510,20 @@ var BABYLON;
 
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
-                function Cylinder(id, engine, height, diameterTop, diameterBottom, tessellation, canBeRegenerated, mesh) {
+                function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, canBeRegenerated, mesh) {
                     this.height = height;
                     this.diameterTop = diameterTop;
                     this.diameterBottom = diameterBottom;
                     this.tessellation = tessellation;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Cylinder.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation);
                 };
 
                 Cylinder.prototype.copy = function (id) {
-                    return new Cylinder(id, this.getEngine(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
+                    return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
                 };
                 return Cylinder;
             })(_Primitive);
@@ -515,19 +531,19 @@ var BABYLON;
 
             var Torus = (function (_super) {
                 __extends(Torus, _super);
-                function Torus(id, engine, diameter, thickness, tessellation, canBeRegenerated, mesh) {
+                function Torus(id, scene, diameter, thickness, tessellation, canBeRegenerated, mesh) {
                     this.diameter = diameter;
                     this.thickness = thickness;
                     this.tessellation = tessellation;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Torus.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation);
                 };
 
                 Torus.prototype.copy = function (id) {
-                    return new Torus(id, this.getEngine(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
+                    return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
                 };
                 return Torus;
             })(_Primitive);
@@ -535,19 +551,19 @@ var BABYLON;
 
             var Ground = (function (_super) {
                 __extends(Ground, _super);
-                function Ground(id, engine, width, height, subdivisions, canBeRegenerated, mesh) {
+                function Ground(id, scene, width, height, subdivisions, canBeRegenerated, mesh) {
                     this.width = width;
                     this.height = height;
                     this.subdivisions = subdivisions;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Ground.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateGround(this.width, this.height, this.subdivisions);
                 };
 
                 Ground.prototype.copy = function (id) {
-                    return new Ground(id, this.getEngine(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
+                    return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
                 };
                 return Ground;
             })(_Primitive);
@@ -555,17 +571,17 @@ var BABYLON;
 
             var Plane = (function (_super) {
                 __extends(Plane, _super);
-                function Plane(id, engine, size, canBeRegenerated, mesh) {
+                function Plane(id, scene, size, canBeRegenerated, mesh) {
                     this.size = size;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Plane.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreatePlane(this.size);
                 };
 
                 Plane.prototype.copy = function (id) {
-                    return new Plane(id, this.getEngine(), this.size, this.canBeRegenerated(), null);
+                    return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null);
                 };
                 return Plane;
             })(_Primitive);
@@ -573,7 +589,7 @@ var BABYLON;
 
             var TorusKnot = (function (_super) {
                 __extends(TorusKnot, _super);
-                function TorusKnot(id, engine, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh) {
+                function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh) {
                     this.radius = radius;
                     this.tube = tube;
                     this.radialSegments = radialSegments;
@@ -581,14 +597,14 @@ var BABYLON;
                     this.p = p;
                     this.q = q;
 
-                    _super.call(this, id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TorusKnot.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q);
                 };
 
                 TorusKnot.prototype.copy = function (id) {
-                    return new TorusKnot(id, this.getEngine(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
+                    return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
                 };
                 return TorusKnot;
             })(_Primitive);
