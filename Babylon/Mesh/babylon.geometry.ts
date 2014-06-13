@@ -6,6 +6,7 @@
         public delayLoadingFile: string;
 
         // Private
+        private _scene: Scene;
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
@@ -16,11 +17,12 @@
         private _boundingInfo: BoundingInfo;
         private _delayLoadingFunction: (any, Geometry) => void;
 
-        constructor(id: string, engine: Engine, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
+        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;
-            this._engine = engine;
+            this._engine = scene.getEngine();
             this._meshes = [];
-
+            this._scene = scene;
+            
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -34,6 +36,10 @@
             if (mesh) {
                 this.applyToMesh(mesh);
             }
+        }
+
+        public getScene(): Scene {
+            return this._scene;
         }
 
         public getEngine(): Engine {
@@ -203,7 +209,7 @@
             return this._indexBuffer;
         }
 
-        public releaseForMesh(mesh: Mesh): void {
+        public releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
 
@@ -222,6 +228,10 @@
             meshes.splice(index, 1);
 
             mesh._geometry = null;
+
+            if (meshes.length == 0 && shouldDispose) {
+                this.dispose();
+            }
         }
 
         public applyToMesh(mesh: Mesh): void {
@@ -239,7 +249,7 @@
             // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
             mesh._geometry = this;
 
-            mesh.getScene().pushGeometry(this);
+            this._scene.pushGeometry(this);
 
             meshes.push(mesh);
 
@@ -342,6 +352,13 @@
             this._delayInfo = [];
 
             this._boundingInfo = null; // todo: .dispose()
+
+            var geometries = this._scene.getGeometries();
+            index = geometries.indexOf(this);
+
+            if (index > -1) {
+                geometries.splice(index, 1);
+            }
         }
 
         public copy(id: string): Geometry {
@@ -366,7 +383,7 @@
                 }
             }
 
-            var geometry = new BABYLON.Geometry(id, this._engine, vertexData, updatable, null);
+            var geometry = new BABYLON.Geometry(id, this._scene, vertexData, updatable, null);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -414,10 +431,10 @@
             private _beingRegenerated: boolean;
             private _canBeRegenerated: boolean;
 
-            constructor(id: string, engine: Engine, vertexData?: VertexData, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, vertexData?: VertexData, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this._beingRegenerated = true;
                 this._canBeRegenerated = canBeRegenerated;
-                super(id, engine, vertexData, false, mesh); // updatable = false to be sure not to update vertices
+                super(id, scene, vertexData, false, mesh); // updatable = false to be sure not to update vertices
                 this._beingRegenerated = false;
             }
 
@@ -468,10 +485,10 @@
             // Members
             public size: number;
 
-            constructor(id: string, engine: Engine, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.size = size;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -479,7 +496,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Box(id, this.getEngine(), this.size, this.canBeRegenerated(), null);
+                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null);
             }
         }
 
@@ -488,11 +505,11 @@
             public segments: number;
             public diameter: number;
 
-            constructor(id: string, engine: Engine, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.segments = segments;
                 this.diameter = diameter;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -500,7 +517,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Sphere(id, this.getEngine(), this.segments, this.diameter, this.canBeRegenerated(), null);
+                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null);
             }
         }
 
@@ -511,13 +528,13 @@
             public diameterBottom: number;
             public tessellation: number;
 
-            constructor(id: string, engine: Engine, height: number, diameterTop: number, diameterBottom: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.height = height;
                 this.diameterTop = diameterTop;
                 this.diameterBottom = diameterBottom;
                 this.tessellation = tessellation;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -525,7 +542,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Cylinder(id, this.getEngine(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
+                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
             }
         }
 
@@ -535,12 +552,12 @@
             public thickness: number;
             public tessellation: number;
 
-            constructor(id: string, engine: Engine, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.diameter = diameter;
                 this.thickness = thickness;
                 this.tessellation = tessellation;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -548,7 +565,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Torus(id, this.getEngine(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
+                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
             }
         }
 
@@ -558,12 +575,12 @@
             public height: number;
             public subdivisions: number;
 
-            constructor(id: string, engine: Engine, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.width = width;
                 this.height = height;
                 this.subdivisions = subdivisions;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -571,7 +588,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Ground(id, this.getEngine(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
+                return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
             }
         }
 
@@ -579,10 +596,10 @@
             // Members
             public size: number;
 
-            constructor(id: string, engine: Engine, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.size = size;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -590,7 +607,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new Plane(id, this.getEngine(), this.size, this.canBeRegenerated(), null);
+                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null);
             }
         }
 
@@ -603,7 +620,7 @@
             public p: number;
             public q: number;
 
-            constructor(id: string, engine: Engine, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.radius = radius;
                 this.tube = tube;
                 this.radialSegments = radialSegments;
@@ -611,7 +628,7 @@
                 this.p = p;
                 this.q = q;
 
-                super(id, engine, this._regenerateVertexData(), canBeRegenerated, mesh);
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -619,7 +636,7 @@
             }
 
             public copy(id: string): Geometry {
-                return new TorusKnot(id, this.getEngine(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
+                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
             }
         }
     }

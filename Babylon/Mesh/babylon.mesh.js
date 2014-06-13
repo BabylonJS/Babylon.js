@@ -186,7 +186,7 @@ var BABYLON;
 
                 var scene = this.getScene();
 
-                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, updatable, this);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, updatable, this);
             } else {
                 this._geometry.setVerticesData(kind, data, updatable);
             }
@@ -219,7 +219,7 @@ var BABYLON;
 
                 var scene = this.getScene();
 
-                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene.getEngine(), vertexData, false, this);
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, false, this);
             } else {
                 this._geometry.setIndices(indices);
             }
@@ -610,7 +610,7 @@ var BABYLON;
         // Dispose
         Mesh.prototype.dispose = function (doNotRecurse) {
             if (this._geometry) {
-                this._geometry.releaseForMesh(this);
+                this._geometry.releaseForMesh(this, true);
             }
 
             // Instances

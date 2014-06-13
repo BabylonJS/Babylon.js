@@ -14,7 +14,7 @@
             this.scaling.copyFrom(source.scaling);
 
             if (source.rotationQuaternion) {
-                this.rotationQuaternion.copyFrom(source.rotationQuaternion);
+                this.rotationQuaternion = source.rotationQuaternion.clone();
             }
 
             this.infiniteDistance = source.infiniteDistance;
