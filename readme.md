@@ -11,6 +11,8 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 
 Online [playground](http://www.babylonjs.com/playground) where you can interactively learn how to use babylon.js
 
+Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
+
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
