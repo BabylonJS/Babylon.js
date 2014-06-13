@@ -340,7 +340,7 @@ void main(void) {
 #endif
 
 	// Bump
-	vec3 normalW = vNormalW;
+	vec3 normalW = normalize(vNormalW);
 
 	// Ambient color
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
