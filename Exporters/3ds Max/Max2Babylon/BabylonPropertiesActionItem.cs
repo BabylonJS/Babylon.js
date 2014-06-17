@@ -18,7 +18,7 @@ namespace Max2Babylon
 
             var firstNode = Loader.Core.GetSelNode(0);
 
-            if (firstNode.ObjectRef != null && firstNode.ObjectRef.SuperClassID == SClass_ID.Camera)
+            if (firstNode.ObjectRef != null && firstNode.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Camera)
             {
                 using (var frm = new CameraPropertiesForm())
                 {
@@ -27,7 +27,7 @@ namespace Max2Babylon
                 }
             }
 
-            if (firstNode.ObjectRef != null && firstNode.ObjectRef.SuperClassID == SClass_ID.Geomobject)
+            if (firstNode.ObjectRef != null && firstNode.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
             {
                 using (var frm = new ObjectPropertiesForm())
                 {
@@ -36,7 +36,7 @@ namespace Max2Babylon
                 }
             }
 
-            if (firstNode.ObjectRef != null && firstNode.ObjectRef.SuperClassID == SClass_ID.Light)
+            if (firstNode.ObjectRef != null && firstNode.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Light)
             {
                 using (var frm = new LightPropertiesForm())
                 {

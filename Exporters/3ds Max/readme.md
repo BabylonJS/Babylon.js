@@ -34,6 +34,7 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Collisions (*)
  - Pickable (*)
  - Position / rotation / scaling
+ - Smoothing groups
  - Geometry (position, normal, texture coordinates (2 channels))
  - Show Bounding box and submeshes bounding boxes (*)
  - Animations: Position, scaling, rotation, visibility

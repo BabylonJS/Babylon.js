@@ -27,28 +27,39 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>C:\Program Files\Autodesk\3ds Max 2013\bin\assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autodesk.Max">
+    <Reference Include="Autodesk.Max, Version=15.6.164.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Refs\Autodesk.Max.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="MaxCustomControls">
+    <Reference Include="MaxCustomControls, Version=15.6.164.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Refs\MaxCustomControls.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="MaxSharp">
+    <Reference Include="MaxSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Refs\MaxSharp.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>Refs\SharpDX.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BabylonExport.Core\Refs\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,6 +74,13 @@
   <ItemGroup>
     <Compile Include="BabylonActionCallback.cs" />
     <Compile Include="BabylonPropertiesActionItem.cs" />
+    <Compile Include="Forms\LightPropertiesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LightPropertiesForm.Designer.cs">
+      <DependentUpon>LightPropertiesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exporter\BabylonExporter.Animation.cs" />
     <Compile Include="Exporter\BabylonExporter.ShadowGenerator.cs" />
     <Compile Include="Forms\CameraPropertiesForm.cs">
       <SubType>Form</SubType>
@@ -87,6 +105,7 @@
     <Compile Include="Exporter\BabylonExporter.Mesh.cs" />
     <Compile Include="Exporter\GlobalVertex.cs" />
     <Compile Include="GlobalUtility.cs" />
+    <Compile Include="JsonTextWriterOptimized.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="BabylonExportActionItem.cs" />
     <Compile Include="Forms\ObjectPropertiesForm.cs">
@@ -107,13 +126,14 @@
     <Compile Include="Forms\ScenePropertiesForm.Designer.cs">
       <DependentUpon>ScenePropertiesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tools.cs" />
+    <Compile Include="Tools\Tools.cs" />
     <Compile Include="Forms\Vector3Control.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\Vector3Control.Designer.cs">
       <DependentUpon>Vector3Control.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tools\VNormal.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
@@ -122,6 +142,9 @@
     <Content Include="Refs\MaxSharp.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Forms\LightPropertiesForm.resx">
+      <DependentUpon>LightPropertiesForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\CameraPropertiesForm.resx">
       <DependentUpon>CameraPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Autodesk.Max;
 using BabylonExport.Entities;
@@ -11,12 +10,16 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonMesh ExportMesh(Node meshNode, BabylonScene babylonScene, CancellationToken token)
+        private void ExportMesh(Node meshNode, BabylonScene babylonScene, CancellationToken token)
         {
+            if (meshNode._Node.GetBoolProperty("babylonjs_noexport"))
+            {
+                return;
+            }
+
             var babylonMesh = new BabylonMesh();
             int vx1, vx2, vx3;
-
-            RaiseMessage(meshNode.Name, true);
+           
             babylonMesh.name = meshNode.Name;
             babylonMesh.id = meshNode.GetGuid().ToString();
             if (meshNode.HasParent())
@@ -85,8 +88,12 @@ namespace Max2Babylon
 
             // Mesh
             var objectState = meshNode._Node.EvalWorldState(0, false);
-            var mesh = objectState.Obj.GetMesh();
+            bool mustBeDeleted;
+            var triObject = objectState.Obj.GetMesh(out mustBeDeleted);
+            var mesh = triObject != null ? triObject.Mesh : null;
             var computedMesh = meshNode.GetMesh();
+
+            RaiseMessage(meshNode.Name, mesh == null ? System.Drawing.Color.Gray : System.Drawing.Color.Black, true);
 
             if (mesh != null)
             {
@@ -132,13 +139,26 @@ namespace Max2Babylon
                 var hasUV = mesh.NumTVerts > 0;
                 var hasUV2 = mesh.GetNumMapVerts(2) > 0;
 
-                var noOptimize = meshNode._Node.GetBoolProperty("babylonjs_nooptimize");
+                var optimizeVertices = meshNode._Node.GetBoolProperty("babylonjs_optimizevertices");
+
+                // Compute normals
+                VNormal[] vnorms = null;
+                List<GlobalVertex>[] verticesAlreadyExported = null;
+
+                if (!optimizeVertices)
+                {
+                    vnorms = Tools.ComputeNormals(mesh);
+                }
+                else
+                {
+                    verticesAlreadyExported = new List<GlobalVertex>[mesh.NumVerts];
+                }
 
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, noOptimize));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, noOptimize));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, noOptimize));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
                     if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
                 }
@@ -146,7 +166,14 @@ namespace Max2Babylon
                 if (vertices.Count >= 65536)
                 {
                     RaiseError(string.Format("Mesh {0} has too many vertices: {1} (limit is 65535)", babylonMesh.name, vertices.Count));
+
+                    if (!optimizeVertices)
+                    {
+                        RaiseError("You can try to optimize your object using [Try to optimize vertices] option");
+                    }
                 }
+
+                RaiseMessage(string.Format("{0} vertices, {1} faces", vertices.Count, indices.Count / 3), true, false, true);
 
                 // Buffers
                 babylonMesh.positions = vertices.SelectMany(v => v.Position.ToArraySwitched()).ToArray();
@@ -236,39 +263,56 @@ namespace Max2Babylon
 
                 // Buffers - Indices
                 babylonMesh.indices = sortedIndices.ToArray();
+
+                if (mustBeDeleted)
+                {
+                    triObject.DeleteMe();
+                }
             }
 
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            ExportVector3Animation("position", animations, key =>
+
+            if (!ExportVector3Controller(meshNode._Node.TMController.PositionController, "position", animations))
             {
-                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
-                return worldMatrix.Trans.ToArraySwitched();
-            });
+                ExportVector3Animation("position", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
+                    return worldMatrix.Trans.ToArraySwitched();
+                });
+            }
 
-            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+            if (!ExportQuaternionController(meshNode._Node.TMController.RotationController, "rotationQuaternion", animations))
             {
-                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
+                ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
 
-                var affineParts = Loader.Global.AffineParts.Create();
-                Loader.Global.DecompAffine(worldMatrix, affineParts);
+                    var affineParts = Loader.Global.AffineParts.Create();
+                    Loader.Global.DecompAffine(worldMatrix, affineParts);
 
-                return affineParts.Q.ToArray();
-            });
+                    return affineParts.Q.ToArray();
+                });
+            }
 
-            ExportVector3Animation("scaling", animations, key =>
+            if (!ExportVector3Controller(meshNode._Node.TMController.ScaleController, "scaling", animations))
             {
-                var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
+                ExportVector3Animation("scaling", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetWorldMatrix(key, meshNode.HasParent());
 
-                var affineParts = Loader.Global.AffineParts.Create();
-                Loader.Global.DecompAffine(worldMatrix, affineParts);
+                    var affineParts = Loader.Global.AffineParts.Create();
+                    Loader.Global.DecompAffine(worldMatrix, affineParts);
 
-                return affineParts.K.ToArraySwitched();
-            });
+                    return affineParts.K.ToArraySwitched();
+                });
+            }
 
-            ExportFloatAnimation("visibility", animations, key => new []{meshNode._Node.GetVisibility(key, Interval.Forever._IInterval)});
-
+            if (!ExportFloatController(meshNode._Node.VisController, "visibility", animations))
+            {
+                ExportFloatAnimation("visibility", animations, key => new[] {meshNode._Node.GetVisibility(key, Interval.Forever._IInterval)});
+            }
 
             babylonMesh.animations = animations.ToArray();
 
@@ -281,19 +325,18 @@ namespace Max2Babylon
             }
 
             babylonScene.MeshesList.Add(babylonMesh);
-
-            return babylonMesh;
         }
 
-        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool noOptimize)
+        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported)
         {
-            var vertexIndex = (int)mesh.Faces[face].V[facePart];
-
+            var faceObject = mesh.Faces[face];
+            var vertexIndex = (int)faceObject.V[facePart];
 
             var vertex = new GlobalVertex
             {
+                BaseIndex = vertexIndex,
                 Position = mesh.Verts[vertexIndex],
-                Normal = computedMesh.vnormals[vertexIndex]._IPoint3
+                Normal = (vnorms != null) ? vnorms[vertexIndex].GetNormal(faceObject.SmGroup) : computedMesh.vnormals[vertexIndex]._IPoint3
             };
 
             if (hasUV)
@@ -308,14 +351,24 @@ namespace Max2Babylon
                 vertex.UV2 = Loader.Global.Point2.Create(mesh.MapVerts(2)[tvertexIndex].X, mesh.MapVerts(2)[tvertexIndex].Y);
             }
 
-            if (!noOptimize)
+            if (verticesAlreadyExported != null)
             {
-                var index = vertices.IndexOf(vertex);
-
-                if (index > -1)
+                if (verticesAlreadyExported[vertexIndex] != null)
                 {
-                    return index;
+                    var index = verticesAlreadyExported[vertexIndex].IndexOf(vertex);
+
+                    if (index > -1)
+                    {
+                        return verticesAlreadyExported[vertexIndex][index].CurrentIndex;
+                    }
                 }
+                else
+                {
+                    verticesAlreadyExported[vertexIndex] = new List<GlobalVertex>();
+                }
+
+                vertex.CurrentIndex = vertices.Count;
+                verticesAlreadyExported[vertexIndex].Add(vertex);
             }
 
             vertices.Add(vertex);

@@ -16,9 +16,10 @@ namespace Max2Babylon
 
         private void butOK_Click(object sender, EventArgs e)
         {
+            Tools.UpdateCheckBox(chkNoExport, objects, "babylonjs_noexport");
             Tools.UpdateCheckBox(chkCollisions, objects, "babylonjs_checkcollisions");
-            Tools.UpdateCheckBox(chkPickable, objects, "babylonjs_checkpickable");   
-            Tools.UpdateCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
+            Tools.UpdateCheckBox(chkPickable, objects, "babylonjs_checkpickable");
+            Tools.UpdateCheckBox(chkOptimize, objects, "babylonjs_optimizevertices");
             Tools.UpdateCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
             Tools.UpdateCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
 
@@ -34,15 +35,16 @@ namespace Max2Babylon
             {
                 var node = Loader.Core.GetSelNode(index);
 
-                if (node.ObjectRef != null && node.ObjectRef.SuperClassID == SClass_ID.Geomobject)
+                if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
                 {
                     objects.Add(node);
                 }
             }
 
+            Tools.PrepareCheckBox(chkNoExport, objects, "babylonjs_noexport");
             Tools.PrepareCheckBox(chkCollisions, objects, "babylonjs_checkcollisions");
             Tools.PrepareCheckBox(chkPickable, objects, "babylonjs_checkpickable");
-            Tools.PrepareCheckBox(chkNoOptimize, objects, "babylonjs_nooptimize");
+            Tools.PrepareCheckBox(chkOptimize, objects, "babylonjs_optimizevertices");
             Tools.PrepareCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
             Tools.PrepareCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
 
