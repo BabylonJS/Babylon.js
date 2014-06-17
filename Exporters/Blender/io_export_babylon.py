@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Babylon.js",
     "author": "David Catuhe",
-    "version": (1, 2),
+    "version": (1, 3),
     "blender": (2, 69, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -46,9 +46,11 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
     filename_ext = ".babylon"
     filepath = ""
     
+    materialsNameSpace = None
+    
     # global_scale = FloatProperty(name="Scale", min=0.01, max=1000.0, default=1.0)
 
-    def execute(self, context):
+    def execute(self, context):            
            return Export_babylon.save(self, context, **self.as_keywords(ignore=("check_existing", "filter_glob", "global_scale")))
            
     def mesh_triangulate(mesh):
@@ -261,8 +263,8 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         
     def export_material(material, scene, file_handler, filepath):       
         file_handler.write("{")
-        Export_babylon.write_string(file_handler, "name", material.name, True)      
-        Export_babylon.write_string(file_handler, "id", material.name)
+        Export_babylon.write_string(file_handler, "name", Export_babylon.materialsNameSpace + material.name, True)      
+        Export_babylon.write_string(file_handler, "id", Export_babylon.materialsNameSpace + material.name)
         Export_babylon.write_color(file_handler, "ambient", material.ambient * material.diffuse_color)
         Export_babylon.write_color(file_handler, "diffuse", material.diffuse_intensity * material.diffuse_color)
         Export_babylon.write_color(file_handler, "specular", material.specular_intensity * material.specular_color)
@@ -299,14 +301,14 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
     def export_multimaterial(multimaterial, scene, file_handler):       
         file_handler.write("{")
         Export_babylon.write_string(file_handler, "name", multimaterial.name, True)
-        Export_babylon.write_string(file_handler, "id", multimaterial.name)
+        Export_babylon.write_string(file_handler, "id"  , multimaterial.name)
         
         file_handler.write(",\"materials\":[")
         first = True
         for materialName in multimaterial.materials:
             if first != True:
                 file_handler.write(",")
-            file_handler.write("\"" + materialName +"\"")
+            file_handler.write("\"" + Export_babylon.materialsNameSpace + materialName +"\"")
             first = False
         file_handler.write("]")
         file_handler.write("}")
@@ -605,7 +607,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         
         if len(object.material_slots) == 1:
             material = object.material_slots[0].material
-            Export_babylon.write_string(file_handler, "materialId", object.material_slots[0].name)
+            Export_babylon.write_string(file_handler, "materialId", Export_babylon.materialsNameSpace + object.material_slots[0].name)
             
             if material.game_settings.face_orientation != "BILLBOARD":
                 billboardMode = 0
@@ -613,7 +615,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
                 billboardMode = 7
         elif len(object.material_slots) > 1:
             multimat = MultiMaterial()
-            multimat.name = "Multimaterial#" + str(len(multiMaterials))
+            multimat.name = Export_babylon.materialsNameSpace + "Multimaterial#" + str(len(multiMaterials))
             multimat.materials = []
             Export_babylon.write_string(file_handler, "materialId", multimat.name)
             for mat in object.material_slots:
@@ -905,6 +907,13 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         use_triangulate=True,
         use_compress=False):
 
+        # assign materialsNameSpace, based on OS
+        filepathMinusExtension = filepath.rpartition('.')[0]
+        if filepathMinusExtension.find('\\') != -1:
+            Export_babylon.materialsNameSpace = filepathMinusExtension.rpartition('\\')[2] + '.'
+        else:
+            Export_babylon.materialsNameSpace = filepathMinusExtension.rpartition('/')[2] + '.'
+                
         # Open file
         file_handler = open(filepath, 'w')  
             
