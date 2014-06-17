@@ -20,12 +20,13 @@ namespace Max2Babylon
             {
                 var node = Loader.Core.GetSelNode(index);
 
-                if (node.ObjectRef != null && node.ObjectRef.SuperClassID == SClass_ID.Camera)
+                if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Camera)
                 {
                     cameras.Add(node);
                 }
             }
 
+            Tools.PrepareCheckBox(chkNoExport, cameras, "babylonjs_noexport");
             Tools.PrepareCheckBox(chkCollisions, cameras, "babylonjs_checkcollisions");
             Tools.PrepareCheckBox(chkGravity, cameras, "babylonjs_applygravity");
 
@@ -42,6 +43,7 @@ namespace Max2Babylon
 
         private void butOK_Click(object sender, EventArgs e)
         {
+            Tools.UpdateCheckBox(chkNoExport, cameras, "babylonjs_noexport");
             Tools.UpdateCheckBox(chkCollisions, cameras, "babylonjs_checkcollisions");
             Tools.UpdateCheckBox(chkGravity, cameras, "babylonjs_applygravity");
 

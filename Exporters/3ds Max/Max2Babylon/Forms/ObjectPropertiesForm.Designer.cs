@@ -33,9 +33,10 @@
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.chkShowSubMeshesBoundingBox = new System.Windows.Forms.CheckBox();
             this.chkShowBoundingBox = new System.Windows.Forms.CheckBox();
-            this.chkNoOptimize = new System.Windows.Forms.CheckBox();
+            this.chkOptimize = new System.Windows.Forms.CheckBox();
             this.chkPickable = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.grpAutoAnimate = new System.Windows.Forms.GroupBox();
@@ -81,7 +82,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 509);
+            this.butCancel.Location = new System.Drawing.Point(174, 419);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 6;
@@ -93,7 +94,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 509);
+            this.butOK.Location = new System.Drawing.Point(93, 419);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 5;
@@ -103,23 +104,36 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.chkNoExport);
             this.groupBox2.Controls.Add(this.chkShowSubMeshesBoundingBox);
             this.groupBox2.Controls.Add(this.chkShowBoundingBox);
-            this.groupBox2.Controls.Add(this.chkNoOptimize);
+            this.groupBox2.Controls.Add(this.chkOptimize);
             this.groupBox2.Controls.Add(this.chkPickable);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox2.Location = new System.Drawing.Point(12, 77);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(319, 143);
+            this.groupBox2.Size = new System.Drawing.Size(319, 154);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Misc.";
+            // 
+            // chkNoExport
+            // 
+            this.chkNoExport.AutoSize = true;
+            this.chkNoExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkNoExport.Location = new System.Drawing.Point(21, 28);
+            this.chkNoExport.Name = "chkNoExport";
+            this.chkNoExport.Size = new System.Drawing.Size(87, 17);
+            this.chkNoExport.TabIndex = 4;
+            this.chkNoExport.Text = "Do not export";
+            this.chkNoExport.ThreeState = true;
+            this.chkNoExport.UseVisualStyleBackColor = true;
             // 
             // chkShowSubMeshesBoundingBox
             // 
             this.chkShowSubMeshesBoundingBox.AutoSize = true;
             this.chkShowSubMeshesBoundingBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkShowSubMeshesBoundingBox.Location = new System.Drawing.Point(21, 97);
+            this.chkShowSubMeshesBoundingBox.Location = new System.Drawing.Point(21, 120);
             this.chkShowSubMeshesBoundingBox.Name = "chkShowSubMeshesBoundingBox";
             this.chkShowSubMeshesBoundingBox.Size = new System.Drawing.Size(184, 17);
             this.chkShowSubMeshesBoundingBox.TabIndex = 3;
@@ -131,7 +145,7 @@
             // 
             this.chkShowBoundingBox.AutoSize = true;
             this.chkShowBoundingBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkShowBoundingBox.Location = new System.Drawing.Point(21, 74);
+            this.chkShowBoundingBox.Location = new System.Drawing.Point(21, 97);
             this.chkShowBoundingBox.Name = "chkShowBoundingBox";
             this.chkShowBoundingBox.Size = new System.Drawing.Size(117, 17);
             this.chkShowBoundingBox.TabIndex = 2;
@@ -139,23 +153,23 @@
             this.chkShowBoundingBox.ThreeState = true;
             this.chkShowBoundingBox.UseVisualStyleBackColor = true;
             // 
-            // chkNoOptimize
+            // chkOptimize
             // 
-            this.chkNoOptimize.AutoSize = true;
-            this.chkNoOptimize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkNoOptimize.Location = new System.Drawing.Point(21, 51);
-            this.chkNoOptimize.Name = "chkNoOptimize";
-            this.chkNoOptimize.Size = new System.Drawing.Size(162, 17);
-            this.chkNoOptimize.TabIndex = 1;
-            this.chkNoOptimize.Text = "Do not try to optimize vertices";
-            this.chkNoOptimize.ThreeState = true;
-            this.chkNoOptimize.UseVisualStyleBackColor = true;
+            this.chkOptimize.AutoSize = true;
+            this.chkOptimize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkOptimize.Location = new System.Drawing.Point(21, 74);
+            this.chkOptimize.Name = "chkOptimize";
+            this.chkOptimize.Size = new System.Drawing.Size(131, 17);
+            this.chkOptimize.TabIndex = 1;
+            this.chkOptimize.Text = "Try to optimize vertices";
+            this.chkOptimize.ThreeState = true;
+            this.chkOptimize.UseVisualStyleBackColor = true;
             // 
             // chkPickable
             // 
             this.chkPickable.AutoSize = true;
             this.chkPickable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkPickable.Location = new System.Drawing.Point(21, 28);
+            this.chkPickable.Location = new System.Drawing.Point(21, 51);
             this.chkPickable.Name = "chkPickable";
             this.chkPickable.Size = new System.Drawing.Size(64, 17);
             this.chkPickable.TabIndex = 0;
@@ -168,7 +182,7 @@
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox3.Location = new System.Drawing.Point(12, 226);
+            this.groupBox3.Location = new System.Drawing.Point(12, 237);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(319, 156);
             this.groupBox3.TabIndex = 4;
@@ -262,7 +276,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 544);
+            this.ClientSize = new System.Drawing.Size(343, 454);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butCancel);
@@ -295,7 +309,7 @@
         private System.Windows.Forms.Button butOK;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox chkPickable;
-        private System.Windows.Forms.CheckBox chkNoOptimize;
+        private System.Windows.Forms.CheckBox chkOptimize;
         private System.Windows.Forms.CheckBox chkShowSubMeshesBoundingBox;
         private System.Windows.Forms.CheckBox chkShowBoundingBox;
         private System.Windows.Forms.GroupBox groupBox3;
@@ -306,5 +320,6 @@
         private System.Windows.Forms.NumericUpDown nupFrom;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkAutoAnimate;
+        private System.Windows.Forms.CheckBox chkNoExport;
     }
 }

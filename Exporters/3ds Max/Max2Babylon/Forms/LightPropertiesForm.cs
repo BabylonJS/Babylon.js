@@ -20,12 +20,13 @@ namespace Max2Babylon
             {
                 var node = Loader.Core.GetSelNode(index);
 
-                if (node.ObjectRef != null && node.ObjectRef.SuperClassID == SClass_ID.Light)
+                if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Light)
                 {
                     lights.Add(node);
                 }
             }
 
+            Tools.PrepareCheckBox(chkNoExport, lights, "babylonjs_noexport");
             Tools.PrepareCheckBox(chkAutoAnimate, lights, "babylonjs_autoanimate");
             Tools.PrepareCheckBox(chkLoop, lights, "babylonjs_autoanimateloop");
             Tools.PrepareNumericUpDown(nupFrom, lights, "babylonjs_autoanimate_from");
@@ -34,6 +35,7 @@ namespace Max2Babylon
 
         private void butOK_Click(object sender, EventArgs e)
         {
+            Tools.UpdateCheckBox(chkNoExport, lights, "babylonjs_noexport");
             Tools.UpdateCheckBox(chkAutoAnimate, lights, "babylonjs_autoanimate");
             Tools.UpdateCheckBox(chkLoop, lights, "babylonjs_autoanimateloop");
             Tools.UpdateNumericUpDown(nupFrom, lights, "babylonjs_autoanimate_from");

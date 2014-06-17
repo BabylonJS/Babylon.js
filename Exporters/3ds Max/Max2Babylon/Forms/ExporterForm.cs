@@ -43,12 +43,12 @@ namespace Max2Babylon
 
             treeView.Nodes.Clear();
 
-            exporter.OnImportProgressChanged += progress => Invoke(new Action(() =>
+            exporter.OnImportProgressChanged += progress => BeginInvoke(new Action(() =>
             {
                 progressBar.Value = progress;
             }));
 
-            exporter.OnWarning += (warning, asChild) => Invoke(new Action(() =>
+            exporter.OnWarning += (warning, asChild) => BeginInvoke(new Action(() =>
             {
                 previousNode = new TreeNode(warning) { ForeColor = Color.Orange };
 
@@ -57,7 +57,7 @@ namespace Max2Babylon
                 previousNode.EnsureVisible();
             }));
 
-            exporter.OnError += (error, asChild) => Invoke(new Action(() =>
+            exporter.OnError += (error, asChild) => BeginInvoke(new Action(() =>
             {
                 previousNode = new TreeNode(error) { ForeColor = Color.Red };
 
@@ -66,11 +66,12 @@ namespace Max2Babylon
                 previousNode.EnsureVisible();
             }));
 
-            exporter.OnMessage += (message, asChild, emphasis, embed) => Invoke(new Action(() =>
+            exporter.OnMessage += (message, asChild, emphasis, embed, color) => BeginInvoke(new Action(() =>
             {
                 var oldPrevious = previousNode;
 
                 previousNode = new TreeNode(message);
+                previousNode.ForeColor = color;
 
                 if (emphasis)
                 {

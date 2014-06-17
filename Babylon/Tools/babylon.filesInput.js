@@ -80,12 +80,20 @@ var BABYLON;
 
             if (filesToLoad && filesToLoad.length > 0) {
                 for (var i = 0; i < filesToLoad.length; i++) {
-                    if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
-                        sceneFileToLoad = filesToLoad[i];
-                    } else {
-                        if (filesToLoad[i].type.indexOf("image/jpeg") == 0 || filesToLoad[i].type.indexOf("image/png") == 0) {
+                    switch (filesToLoad[i].type) {
+                        case "image/jpeg":
+                        case "image/png":
                             BABYLON.FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
-                        }
+                            break;
+                        case "image/targa":
+                        case "image/vnd.ms-dds":
+                            BABYLON.FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
+                            break;
+                        default:
+                            if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
+                                sceneFileToLoad = filesToLoad[i];
+                            }
+                            break;
                     }
                 }
 
@@ -123,6 +131,7 @@ var BABYLON;
             }
         };
         FilesInput.FilesTextures = new Array();
+        FilesInput.FilesToLoad = new Array();
         return FilesInput;
     })();
     BABYLON.FilesInput = FilesInput;

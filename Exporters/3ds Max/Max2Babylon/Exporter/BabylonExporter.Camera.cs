@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BabylonExport.Entities;
 using MaxSharp;
 
@@ -7,8 +6,13 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonCamera ExportCamera(Node cameraNode, BabylonScene babylonScene)
+        private void ExportCamera(Node cameraNode, BabylonScene babylonScene)
         {
+            if (cameraNode._Node.GetBoolProperty("babylonjs_noexport"))
+            {
+                return;
+            }
+
             var maxCamera = (cameraNode.Object as Camera)._Camera;
             var babylonCamera = new BabylonCamera();
 
@@ -57,13 +61,16 @@ namespace Max2Babylon
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            ExportVector3Animation("position", animations, key =>
+            if (!ExportVector3Controller(cameraNode._Node.TMController.PositionController, "position", animations))
             {
-                var worldMatrix = cameraNode.GetWorldMatrix(key, cameraNode.HasParent());
-                return worldMatrix.Trans.ToArraySwitched();
-            });
+                ExportVector3Animation("position", animations, key =>
+                {
+                    var worldMatrix = cameraNode.GetWorldMatrix(key, cameraNode.HasParent());
+                    return worldMatrix.Trans.ToArraySwitched();
+                });
+            }
 
-            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFov(maxCamera.GetFOV(key, Interval.Forever._IInterval)) });
+            ExportFloatAnimation("fov", animations, key => new[] {Tools.ConvertFov(maxCamera.GetFOV(key, Interval.Forever._IInterval))});
 
             babylonCamera.animations = animations.ToArray();
 
@@ -76,7 +83,6 @@ namespace Max2Babylon
             }
 
             babylonScene.CamerasList.Add(babylonCamera);
-            return babylonCamera;
         }
     }
 }

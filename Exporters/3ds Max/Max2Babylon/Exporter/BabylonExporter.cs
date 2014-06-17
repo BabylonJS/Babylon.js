@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Json;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Autodesk.Max;
@@ -11,6 +10,7 @@ using BabylonExport.Entities;
 using MaxSharp;
 using Newtonsoft.Json;
 using Animatable = MaxSharp.Animatable;
+using Color = System.Drawing.Color;
 
 namespace Max2Babylon
 {
@@ -18,7 +18,7 @@ namespace Max2Babylon
     {
         public event Action<int> OnImportProgressChanged;
         public event Action<string, bool> OnWarning;
-        public event Action<string, bool, bool, bool> OnMessage;
+        public event Action<string, bool, bool, bool, Color> OnMessage;
         public event Action<string, bool> OnError;
 
         readonly List<string> alreadyExportedTextures = new List<string>();
@@ -49,16 +49,21 @@ namespace Max2Babylon
 
         void RaiseMessage(string message, bool asChild = false, bool emphasis = false, bool embed = false)
         {
+            RaiseMessage(message, Color.Black, asChild, emphasis, embed);
+        }
+
+        void RaiseMessage(string message, Color color, bool asChild = false, bool emphasis = false, bool embed = false)
+        {
             if (OnMessage != null)
             {
-                OnMessage(message, asChild, emphasis, embed);
+                OnMessage(message, asChild, emphasis, embed, color);
             }
         }
 
         public void Export(string outputFile, CancellationToken token)
         {
             RaiseMessage("Exportation started");
-            ReportProgressChanged(25);
+            ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
             var maxScene = Kernel.Scene;
             alreadyExportedTextures.Clear();
@@ -83,11 +88,11 @@ namespace Max2Babylon
             RaiseMessage("Exporting cameras");
             foreach (var cameraNode in maxScene.NodesListBySuperClass(SuperClassID.Camera))
             {
-                var babylonCamera = ExportCamera(cameraNode, babylonScene);
+                ExportCamera(cameraNode, babylonScene);
 
-                if (mainCamera == null)
+                if (mainCamera == null && babylonScene.CamerasList.Count > 0)
                 {
-                    mainCamera = babylonCamera;
+                    mainCamera = babylonScene.CamerasList[0];
                     babylonScene.activeCameraID = mainCamera.id;
                     RaiseMessage("Active camera set to " + mainCamera.name, true, true);
                 }
@@ -122,10 +127,20 @@ namespace Max2Babylon
             }
 
             // Meshes
+            ReportProgressChanged(10);
             RaiseMessage("Exporting meshes");
-            foreach (var meshNode in maxScene.NodesListBySuperClass(SuperClassID.GeometricObject))
+            var meshes = maxScene.NodesListBySuperClasses(new[] {SuperClassID.GeometricObject, SuperClassID.Helper});
+            var progressionStep = 80.0f / meshes.Count();
+            var progression = 10.0f;
+            foreach (var meshNode in meshes)
             {
+                Tools.PreparePipeline(meshNode._Node, true);
                 ExportMesh(meshNode, babylonScene, token);
+                Tools.PreparePipeline(meshNode._Node, false);
+
+                progression += progressionStep;
+                ReportProgressChanged((int)progression);
+
                 if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
             }
 

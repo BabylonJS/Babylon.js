@@ -4,6 +4,8 @@ namespace Max2Babylon
 {
     public struct GlobalVertex
     {
+        public int BaseIndex { get; set; }
+        public int CurrentIndex { get; set; }
         public IPoint3 Position { get; set; }
         public IPoint3 Normal { get; set; }
         public IPoint2 UV { get; set; }
@@ -22,6 +24,11 @@ namespace Max2Babylon
             }
 
             var other = (GlobalVertex)obj;
+
+            if (other.BaseIndex != BaseIndex)
+            {
+                return false;
+            }
 
             if (!other.Position.IsAlmostEqualTo(Position, Tools.Epsilon))
             {

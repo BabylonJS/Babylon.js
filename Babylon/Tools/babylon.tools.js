@@ -240,23 +240,31 @@ var BABYLON;
                 database.loadSceneFromDB(url, callback, progressCallBack, noIndexedDB);
             };
 
-            // Caching only scenes files
-            if (database && url.indexOf(".babylon") !== -1 && (database.enableSceneOffline)) {
-                database.openAsync(loadFromIndexedDB, noIndexedDB);
+            if (url.indexOf("file:") !== -1) {
+                var fileName = url.substring(5);
+                BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
             } else {
-                noIndexedDB();
+                // Caching only scenes files
+                if (database && url.indexOf(".babylon") !== -1 && (database.enableSceneOffline)) {
+                    database.openAsync(loadFromIndexedDB, noIndexedDB);
+                } else {
+                    noIndexedDB();
+                }
             }
         };
 
-        Tools.ReadFile = function (fileToLoad, callback, progressCallBack) {
+        Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
             reader.onload = function (e) {
                 callback(e.target.result);
             };
             reader.onprogress = progressCallBack;
-
-            // Asynchronous read
-            reader.readAsText(fileToLoad);
+            if (!useArrayBuffer) {
+                // Asynchronous read
+                reader.readAsText(fileToLoad);
+            } else {
+                reader.readAsArrayBuffer(fileToLoad);
+            }
         };
 
         // Misc.

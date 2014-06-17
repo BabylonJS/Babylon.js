@@ -8,8 +8,13 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonLight ExportLight(Node lightNode, BabylonScene babylonScene)
+        private void ExportLight(Node lightNode, BabylonScene babylonScene)
         {
+            if (lightNode._Node.GetBoolProperty("babylonjs_noexport"))
+            {
+                return;
+            }
+
             var maxLight = (lightNode.Object as Light);
             var babylonLight = new BabylonLight();
 
@@ -34,19 +39,25 @@ namespace Max2Babylon
                     break;
                 case LightType.DirectLgt:
                     babylonLight.type = 1;
-
-                    // Shadows
-                    if (maxLight.ShadowMethod == 1)
-                    {
-                        ExportShadowGenerator(lightNode, babylonScene);
-                    }
-
                     break;
                 case LightType.AmbientLgt:
                     babylonLight.type = 3;
                     babylonLight.groundColor = new float[] { 0, 0, 0 };
                     directionScale = 1;
                     break;
+            }
+
+            // Shadows
+            if (maxLight.ShadowMethod == 1)
+            {
+                if (lightState.Type == LightType.DirectLgt)
+                {
+                    ExportShadowGenerator(lightNode, babylonScene);
+                }
+                else
+                {
+                    RaiseWarning("Shadows maps are only supported for directional lights", true);
+                }
             }
 
             // Position
@@ -108,11 +119,15 @@ namespace Max2Babylon
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            ExportVector3Animation("position", animations, key =>
+
+            if (!ExportVector3Controller(lightNode._Node.TMController.PositionController, "position", animations))
             {
-                var worldMatrix = lightNode.GetWorldMatrix(key, lightNode.HasParent());
-                return worldMatrix.Trans.ToArraySwitched();
-            });
+                ExportVector3Animation("position", animations, key =>
+                {
+                    var worldMatrix = lightNode.GetWorldMatrix(key, lightNode.HasParent());
+                    return worldMatrix.Trans.ToArraySwitched();
+                });
+            }
 
             ExportVector3Animation("direction", animations, key =>
             {
@@ -132,7 +147,6 @@ namespace Max2Babylon
 
             ExportFloatAnimation("intensity", animations, key => new[] { maxLight.GetIntensity(key, Interval.Forever) });
 
-
             babylonLight.animations = animations.ToArray();
 
             if (lightNode._Node.GetBoolProperty("babylonjs_autoanimate"))
@@ -144,7 +158,6 @@ namespace Max2Babylon
             }
 
             babylonScene.LightsList.Add(babylonLight);
-            return babylonLight;
         }
     }
 }

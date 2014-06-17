@@ -38,10 +38,13 @@
             this.nupFrom = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).BeginInit();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // butOK
@@ -49,7 +52,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 179);
+            this.butOK.Location = new System.Drawing.Point(93, 252);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 1;
@@ -62,7 +65,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 179);
+            this.butCancel.Location = new System.Drawing.Point(174, 252);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 2;
@@ -74,7 +77,7 @@
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox3.Location = new System.Drawing.Point(12, 12);
+            this.groupBox3.Location = new System.Drawing.Point(12, 77);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(319, 156);
             this.groupBox3.TabIndex = 5;
@@ -162,13 +165,37 @@
             this.chkAutoAnimate.UseVisualStyleBackColor = true;
             this.chkAutoAnimate.CheckedChanged += new System.EventHandler(this.chkAutoAnimate_CheckedChanged);
             // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.chkNoExport);
+            this.groupBox4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox4.Location = new System.Drawing.Point(12, 12);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(319, 59);
+            this.groupBox4.TabIndex = 7;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Misc.";
+            // 
+            // chkNoExport
+            // 
+            this.chkNoExport.AutoSize = true;
+            this.chkNoExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkNoExport.Location = new System.Drawing.Point(21, 28);
+            this.chkNoExport.Name = "chkNoExport";
+            this.chkNoExport.Size = new System.Drawing.Size(87, 17);
+            this.chkNoExport.TabIndex = 4;
+            this.chkNoExport.Text = "Do not export";
+            this.chkNoExport.ThreeState = true;
+            this.chkNoExport.UseVisualStyleBackColor = true;
+            // 
             // LightPropertiesForm
             // 
             this.AcceptButton = this.butOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 214);
+            this.ClientSize = new System.Drawing.Size(343, 287);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
@@ -183,6 +210,8 @@
             this.grpAutoAnimate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).EndInit();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -199,5 +228,7 @@
         private System.Windows.Forms.NumericUpDown nupFrom;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox chkAutoAnimate;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.CheckBox chkNoExport;
     }
 }
