@@ -33,17 +33,17 @@ namespace Max2Babylon
             {
                 var modifier = derivedObject.GetModifier(index);
 
-                if (modifier.ClassID.PartA == 9815843 && modifier.ClassID.PartB == 87654) // Skin
-                {
-                    if (deactivate)
-                    {
-                        modifier.DisableMod();
-                    }
-                    else
-                    {
-                        modifier.EnableMod();
-                    }
-                }
+                //if (modifier.ClassID.PartA == 9815843 && modifier.ClassID.PartB == 87654) // Skin
+                //{
+                //    if (deactivate)
+                //    {
+                //        modifier.DisableMod();
+                //    }
+                //    else
+                //    {
+                //        modifier.EnableMod();
+                //    }
+                //}
             }
         }
 
@@ -134,6 +134,11 @@ namespace Max2Babylon
         public static float[] ToArray(this Color value)
         {
             return new[] { value.r, value.g, value.b };
+        }
+
+        public static float[] ToArray(this IPoint4 value)
+        {
+            return new[] { value.X, value.Y, value.Z, value.W };
         }
 
         public static float[] ToArray(this IPoint3 value)
@@ -236,20 +241,35 @@ namespace Max2Babylon
 
         public static IMatrix3 GetWorldMatrix(this Node node, TimeValue t, bool parent)
         {
-            var innerNode = node._Node;
+            return node._Node.GetWorldMatrix(t, parent);
+        }
 
-            var tm = innerNode.GetNodeTM(t, Interval.Forever._IInterval);
-            var ptm = innerNode.ParentNode.GetNodeTM(t, Interval.Forever._IInterval);
+        public static IMatrix3 GetWorldMatrix(this IINode node, TimeValue t, bool parent)
+        {
+            var tm = node.GetNodeTM(t, Interval.Forever._IInterval);
+            var ptm = node.ParentNode.GetNodeTM(t, Interval.Forever._IInterval);
 
             if (!parent)
                 return tm;
 
-            if (innerNode.ParentNode.SuperClassID == SuperClassID.Camera)
+            if (node.ParentNode.SuperClassID == SuperClassID.Camera)
             {
                 var r = ptm.GetRow(3);
                 ptm.IdentityMatrix();
                 ptm.SetRow(3, r);
             }
+
+            ptm.Invert();
+            return tm.Multiply(ptm);
+        }
+
+        public static IMatrix3 GetWorldMatrixComplete(this IINode node, TimeValue t, bool parent)
+        {
+            var tm = node.GetObjTMAfterWSM(t, Interval.Forever._IInterval);
+            var ptm = node.ParentNode.GetObjTMAfterWSM(t, Interval.Forever._IInterval);
+
+            if (!parent)
+                return tm;
 
             ptm.Invert();
             return tm.Multiply(ptm);
@@ -266,6 +286,31 @@ namespace Max2Babylon
             mustBeDeleted = (tri != obj);
 
             return tri;
+        }
+
+        public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)
+        {
+            if (Math.Abs(current.X - other.X) > epsilon)
+            {
+                return false;
+            }
+
+            if (Math.Abs(current.Y - other.Y) > epsilon)
+            {
+                return false;
+            }
+
+            if (Math.Abs(current.Z - other.Z) > epsilon)
+            {
+                return false;
+            }
+
+            if (Math.Abs(current.W - other.W) > epsilon)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public static bool IsAlmostEqualTo(this IPoint3 current, IPoint3 other, float epsilon)

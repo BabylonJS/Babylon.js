@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
@@ -22,6 +23,8 @@ namespace Max2Babylon
         public event Action<string, bool> OnError;
 
         readonly List<string> alreadyExportedTextures = new List<string>();
+
+        public bool IsCancelled { get; set; }
 
         void ReportProgressChanged(int progress)
         {
@@ -60,8 +63,18 @@ namespace Max2Babylon
             }
         }
 
-        public void Export(string outputFile, CancellationToken token)
+        void CheckCancelled()
         {
+            Application.DoEvents();
+            if (IsCancelled)
+            {
+                throw new OperationCanceledException();
+            }
+        }
+
+        public void Export(string outputFile)
+        {
+            IsCancelled = false;
             RaiseMessage("Exportation started");
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
@@ -74,6 +87,10 @@ namespace Max2Babylon
                 ReportProgressChanged(100);
                 return;
             }
+
+            // Save scene
+            RaiseMessage("Saving 3ds max file");
+            var forceSave = Loader.Core.FileSave;
 
             // Global
             babylonScene.autoClear = true;
@@ -135,13 +152,13 @@ namespace Max2Babylon
             foreach (var meshNode in meshes)
             {
                 Tools.PreparePipeline(meshNode._Node, true);
-                ExportMesh(meshNode, babylonScene, token);
+                ExportMesh(meshNode, babylonScene);
                 Tools.PreparePipeline(meshNode._Node, false);
 
                 progression += progressionStep;
                 ReportProgressChanged((int)progression);
 
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                CheckCancelled();
             }
 
             // Materials
@@ -150,7 +167,7 @@ namespace Max2Babylon
             foreach (var mat in matsToExport)
             {
                 ExportMaterial(mat, babylonScene);
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                CheckCancelled();
             }
 
             // Lights
@@ -158,12 +175,20 @@ namespace Max2Babylon
             foreach (var lightNode in maxScene.NodesListBySuperClass(SuperClassID.Light))
             {
                 ExportLight(lightNode, babylonScene);
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                CheckCancelled();
             }
 
             if (babylonScene.LightsList.Count == 0)
             {
                 RaiseWarning("No light defined", true);
+            }
+
+            // Skeletons
+            RaiseMessage("Exporting skeletons");
+            foreach (var skin in skins)
+            {
+                ExportSkin(skin, babylonScene);
+                skin.Dispose();
             }
 
             // Output

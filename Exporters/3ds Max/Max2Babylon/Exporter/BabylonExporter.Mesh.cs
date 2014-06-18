@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Runtime.InteropServices;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
@@ -10,7 +10,8 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private void ExportMesh(Node meshNode, BabylonScene babylonScene, CancellationToken token)
+        private int bonesCount;
+        private void ExportMesh(Node meshNode, BabylonScene babylonScene)
         {
             if (meshNode._Node.GetBoolProperty("babylonjs_noexport"))
             {
@@ -37,6 +38,15 @@ namespace Max2Babylon
             // Collisions
             babylonMesh.checkCollisions = meshNode._Node.GetBoolProperty("babylonjs_checkcollisions");
 
+            // Skin
+            var skin = GetSkinModifier(meshNode._Node);
+
+            if (skin != null)
+            {
+                babylonMesh.skeletonId = skins.IndexOf(skin);
+                bonesCount = skin.NumBones;
+            }
+
             // Position / rotation / scaling
             var wm = meshNode.GetWorldMatrix(0, meshNode.HasParent());
             babylonMesh.position = wm.Trans.ToArraySwitched();
@@ -55,10 +65,10 @@ namespace Max2Babylon
             //Marshal.Copy(yPtr, rotate, 1, 1);
             //Marshal.Copy(zPtr, rotate, 2, 1);
 
-            //var temp = -rotate[1];
-            //rotate[0] = rotate[0] * parts.F;
+            //var temp = rotate[1];
+            //rotate[0] = -rotate[0] * parts.F;
             //rotate[1] = -rotate[2] * parts.F;
-            //rotate[2] = temp * parts.F;
+            //rotate[2] = -temp * parts.F;
 
             //babylonMesh.rotation = rotate;
 
@@ -141,6 +151,14 @@ namespace Max2Babylon
 
                 var optimizeVertices = meshNode._Node.GetBoolProperty("babylonjs_optimizevertices");
 
+                // Skin
+                IISkinContextData skinContext = null;
+
+                if (skin != null)
+                {
+                    skinContext = skin.GetContextInterface(meshNode._Node);
+                }
+
                 // Compute normals
                 VNormal[] vnorms = null;
                 List<GlobalVertex>[] verticesAlreadyExported = null;
@@ -156,11 +174,11 @@ namespace Max2Babylon
 
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
-                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                    CheckCancelled();
                 }
 
                 if (vertices.Count >= 65536)
@@ -185,6 +203,12 @@ namespace Max2Babylon
                 if (hasUV2)
                 {
                     babylonMesh.uvs2 = vertices.SelectMany(v => v.UV2.ToArray()).ToArray();
+                }
+
+                if (skin != null)
+                {
+                    babylonMesh.matricesWeights = vertices.SelectMany(v => v.Weights.ToArray()).ToArray();
+                    babylonMesh.matricesIndices = vertices.Select(v => v.BonesIndices).ToArray();
                 }
 
                 // Submeshes
@@ -256,7 +280,7 @@ namespace Max2Babylon
 
                         subMeshes.Add(subMesh);
                     }
-                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                    CheckCancelled();
                 }
                 babylonMesh.subMeshes = subMeshes.ToArray();
 
@@ -327,7 +351,7 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported)
+        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)
         {
             var faceObject = mesh.Faces[face];
             var vertexIndex = (int)faceObject.V[facePart];
@@ -349,6 +373,55 @@ namespace Max2Babylon
             {
                 var tvertexIndex = (int)mesh.MapFaces(2)[face].T[facePart];
                 vertex.UV2 = Loader.Global.Point2.Create(mesh.MapVerts(2)[tvertexIndex].X, mesh.MapVerts(2)[tvertexIndex].Y);
+            }
+
+            if (skinContextData != null)
+            {
+                float weight0 = 0;
+                float weight1 = 0;
+                float weight2 = 0;
+                int bone0 = bonesCount;
+                int bone1 = bonesCount;
+                int bone2 = bonesCount;
+                int bone3 = bonesCount;
+                int nbBones = skinContextData.GetNumAssignedBones(vertexIndex);
+
+                if (nbBones > 0)
+                {
+                    bone0 = skinContextData.GetAssignedBone(vertexIndex, 0);
+                    weight0 = skinContextData.GetBoneWeight(vertexIndex, 0);
+                }
+
+                if (nbBones > 1)
+                {
+                    bone1 = skinContextData.GetAssignedBone(vertexIndex, 1);
+                    weight1 = skinContextData.GetBoneWeight(vertexIndex, 1);
+                }
+
+                if (nbBones > 2)
+                {
+                    bone2 = skinContextData.GetAssignedBone(vertexIndex, 2);
+                    weight2 = skinContextData.GetBoneWeight(vertexIndex, 2);
+                }
+
+                if (nbBones > 3)
+                {
+                    bone3 = skinContextData.GetAssignedBone(vertexIndex, 3);
+                }
+
+                if (nbBones == 0)
+                {
+                    weight0 = 1.0f;
+                    bone0 = bonesCount;
+                }
+
+                if (nbBones > 4)
+                {
+                    RaiseError("Too many bones per vertex: " + nbBones);
+                }
+
+                vertex.Weights = Loader.Global.Point4.Create(weight0, weight1, weight2, 1.0 - weight0 - weight1 - weight2);
+                vertex.BonesIndices = (bone3 << 24) | (bone2 << 16) | (bone1 << 8) | bone0;
             }
 
             if (verticesAlreadyExported != null)

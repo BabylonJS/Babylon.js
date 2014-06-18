@@ -10,6 +10,8 @@ namespace Max2Babylon
         public IPoint3 Normal { get; set; }
         public IPoint2 UV { get; set; }
         public IPoint2 UV2 { get; set; }
+        public int BonesIndices { get; set; }
+        public IPoint4 Weights { get; set; }
 
         public override int GetHashCode()
         {
@@ -50,7 +52,12 @@ namespace Max2Babylon
                 return false;
             }
 
-            return true;
+            if (Weights != null && !other.Weights.IsAlmostEqualTo(Weights, Tools.Epsilon))
+            {
+                return false;
+            }
+
+            return other.BonesIndices == BonesIndices;
         }
     }
 }
