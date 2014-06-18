@@ -478,7 +478,7 @@ var BABYLON = BABYLON || {};
             return null; // null since geometry could be a primitive
         }
 
-        var geometry = new BABYLON.Geometry(parsedVertexData.id, scene.getEngine());
+        var geometry = new BABYLON.Geometry(parsedVertexData.id, scene);
 
         BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
 

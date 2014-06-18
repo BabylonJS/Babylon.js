@@ -6,6 +6,7 @@
             this.id = id;
             this.bones = new Array();
             this._isDirty = true;
+            this._identity = BABYLON.Matrix.Identity();
             this.bones = [];
 
             this._scene = scene;
@@ -27,8 +28,8 @@
                 return;
             }
 
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * this.bones.length) {
-                this._transformMatrices = new Float32Array(16 * this.bones.length);
+            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
+                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
             }
 
             for (var index = 0; index < this.bones.length; index++) {
@@ -43,6 +44,8 @@
 
                 bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
             }
+
+            this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
 
             this._isDirty = false;
         };
