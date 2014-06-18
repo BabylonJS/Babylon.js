@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using MaxCustomControls;
 using MaxSharp;
@@ -11,7 +9,7 @@ namespace Max2Babylon
     public partial class ExporterForm : MaxForm
     {
         private readonly BabylonExportActionItem babylonExportAction;
-        private CancellationTokenSource cancellationToken;
+        private BabylonExporter exporter;
 
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
@@ -33,45 +31,47 @@ namespace Max2Babylon
             }
         }
 
-        private async void butExport_Click(object sender, EventArgs e)
+        private void butExport_Click(object sender, EventArgs e)
         {
             Kernel.Scene.RootNode.SetLocalData(txtFilename.Text);
 
-            var exporter = new BabylonExporter();
+            exporter = new BabylonExporter();
             TreeNode currentNode = null;
             TreeNode previousNode = null;
 
             treeView.Nodes.Clear();
 
-            exporter.OnImportProgressChanged += progress => BeginInvoke(new Action(() =>
+            exporter.OnImportProgressChanged += progress => 
             {
                 progressBar.Value = progress;
-            }));
+                Application.DoEvents();
+            };
 
-            exporter.OnWarning += (warning, asChild) => BeginInvoke(new Action(() =>
+            exporter.OnWarning += (warning, asChild) => 
             {
                 previousNode = new TreeNode(warning) { ForeColor = Color.Orange };
 
                 currentNode = CreateTreeNode(asChild, currentNode, previousNode);
 
                 previousNode.EnsureVisible();
-            }));
+                Application.DoEvents();
+            };
 
-            exporter.OnError += (error, asChild) => BeginInvoke(new Action(() =>
+            exporter.OnError += (error, asChild) =>
             {
                 previousNode = new TreeNode(error) { ForeColor = Color.Red };
 
                 currentNode = CreateTreeNode(asChild, currentNode, previousNode);
 
                 previousNode.EnsureVisible();
-            }));
+                Application.DoEvents();
+            };
 
-            exporter.OnMessage += (message, asChild, emphasis, embed, color) => BeginInvoke(new Action(() =>
+            exporter.OnMessage += (message, asChild, emphasis, embed, color) => 
             {
                 var oldPrevious = previousNode;
 
-                previousNode = new TreeNode(message);
-                previousNode.ForeColor = color;
+                previousNode = new TreeNode(message) {ForeColor = color};
 
                 if (emphasis)
                 {
@@ -84,21 +84,23 @@ namespace Max2Babylon
                 {
                     previousNode.EnsureVisible();
                 }
-            }));
+                Application.DoEvents();
+            };
 
             butExport.Enabled = false;
             butCancel.Enabled = true;
 
-            cancellationToken = new CancellationTokenSource();
-            var token = cancellationToken.Token;
-
             try
             {
-                await Task.Run(() => exporter.Export(txtFilename.Text, token), token);
+                exporter.Export(txtFilename.Text);
             }
-            catch
+            catch (OperationCanceledException)
             {
-                previousNode = new TreeNode("Exportation cancelled") { ForeColor = Color.Red };
+                progressBar.Value = 0;                
+            }
+            catch (Exception ex)
+            {
+                previousNode = new TreeNode("Exportation cancelled: " + ex.Message) { ForeColor = Color.Red };
 
                 currentNode = CreateTreeNode(false, currentNode, previousNode);
 
@@ -140,7 +142,7 @@ namespace Max2Babylon
 
         private void butCancel_Click(object sender, EventArgs e)
         {
-            cancellationToken.Cancel();
+            exporter.IsCancelled = true;
         }
     }
 }

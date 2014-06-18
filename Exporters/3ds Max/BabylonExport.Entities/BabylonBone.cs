@@ -19,5 +19,10 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonAnimation animation { get; set; }
+
+        public BabylonBone()
+        {
+            parentBoneIndex = -1;
+        }
     }
 }
