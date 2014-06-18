@@ -6,6 +6,7 @@
         private _isDirty = true;
         private _transformMatrices: Float32Array;
         private _animatables: IAnimatable[];
+        private _identity = Matrix.Identity();
 
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
@@ -30,8 +31,8 @@
                 return;
             }
 
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * this.bones.length) {
-                this._transformMatrices = new Float32Array(16 * this.bones.length);
+            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
+                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
             }
 
             for (var index = 0; index < this.bones.length; index++) {
@@ -46,6 +47,10 @@
 
                 bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
             }
+
+
+            this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
+
 
             this._isDirty = false;
         }
