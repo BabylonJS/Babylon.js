@@ -17,7 +17,7 @@ namespace Max2Babylon
         {
             var obj = node.ObjectRef;
 
-            if (obj.SuperClassID != SClass_ID.GenDerivob)
+            if (obj == null || obj.SuperClassID != SClass_ID.GenDerivob)
             {
                 return;
             }
@@ -263,29 +263,12 @@ namespace Max2Babylon
             return tm.Multiply(ptm);
         }
 
-        public static IMatrix3 GetWorldMatrixComplete(this IINode node, TimeValue t, bool parent)
+        public static ITriObject GetMesh(this IObject obj)
         {
-            var tm = node.GetObjTMAfterWSM(t, Interval.Forever._IInterval);
-            var ptm = node.ParentNode.GetObjTMAfterWSM(t, Interval.Forever._IInterval);
-
-            if (!parent)
-                return tm;
-
-            ptm.Invert();
-            return tm.Multiply(ptm);
-        }
-
-        public static ITriObject GetMesh(this IObject obj, out bool mustBeDeleted)
-        {
-            mustBeDeleted = false;
             if (obj.CanConvertToType(ClassID.TriObject._IClass_ID) == 0)
                 return null;
 
-            var tri = obj.ConvertToType(0, ClassID.TriObject._IClass_ID) as ITriObject;
-
-            mustBeDeleted = (tri != obj);
-
-            return tri;
+            return obj.ConvertToType(0, ClassID.TriObject._IClass_ID) as ITriObject;
         }
 
         public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)
