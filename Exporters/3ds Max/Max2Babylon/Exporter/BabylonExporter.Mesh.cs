@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
@@ -98,8 +97,7 @@ namespace Max2Babylon
 
             // Mesh
             var objectState = meshNode._Node.EvalWorldState(0, false);
-            bool mustBeDeleted;
-            var triObject = objectState.Obj.GetMesh(out mustBeDeleted);
+            var triObject = objectState.Obj.GetMesh();
             var mesh = triObject != null ? triObject.Mesh : null;
             var computedMesh = meshNode.GetMesh();
 
@@ -288,10 +286,7 @@ namespace Max2Babylon
                 // Buffers - Indices
                 babylonMesh.indices = sortedIndices.ToArray();
 
-                if (mustBeDeleted)
-                {
-                    triObject.DeleteMe();
-                }
+                triObject.Dispose();
             }
 
 
