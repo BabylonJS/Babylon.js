@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Autodesk.Max;
 using Autodesk.Max.MaxSDK.Util;
@@ -9,7 +10,7 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene)
+        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene, Boolean allowCube = false)
         {
             if (!stdMat.MapEnabled(index))
             {
@@ -124,6 +125,11 @@ namespace Max2Babylon
             catch
             {
                 // silently fails
+            }
+
+            if (babylonTexture.isCube != allowCube)
+            {
+                RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), true);
             }
 
             return babylonTexture;

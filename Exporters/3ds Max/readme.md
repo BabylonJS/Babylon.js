@@ -35,9 +35,10 @@ This exporter is designed for 3ds Max 2013+. You just have to unzip the content 
  - Pickable (*)
  - Position / rotation / scaling
  - Smoothing groups
+ - Skin
  - Geometry (position, normal, texture coordinates (2 channels))
  - Show Bounding box and submeshes bounding boxes (*)
- - Animations: Position, scaling, rotation, visibility
+ - Animations: Position, scaling, rotation, visibility, bones
 - *Materials*
  - Multi-materials
  - Alpha
