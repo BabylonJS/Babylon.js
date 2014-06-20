@@ -75,7 +75,7 @@ namespace Max2Babylon
                 babylonMaterial.emissiveTexture = ExportTexture(stdMat, 5, babylonScene);   // Emissive
                 babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, babylonScene);    // Opacity
                 babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, babylonScene);       // Bump
-                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, babylonScene); // Reflection
+                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, babylonScene, true); // Reflection
 
                 // Constraints
                 if (babylonMaterial.diffuseTexture != null)
