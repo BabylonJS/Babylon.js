@@ -67,6 +67,9 @@ Cameras, lights and meshes have custom properties (Right-click and select "Babyl
 
 Animations are exported by sampling keyframes which can generate a lot of data. To reduce file size, you can opt to use linear interpolation instead of bezier or TCB.
 
+## Consideration about bones
+To ensure that bones are correctly exported, you have to use the Skin modifier. Skin should be positioned at origin.
+
 ## Apache License 2.0 (Apache)
 
 Apache License
