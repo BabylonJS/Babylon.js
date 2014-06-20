@@ -29,11 +29,14 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.gravityControl = new Max2Babylon.Vector3Control();
             this.label3 = new System.Windows.Forms.Label();
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
-            this.gravityControl = new Max2Babylon.Vector3Control();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkQuaternions = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -41,12 +44,22 @@
             this.groupBox1.Controls.Add(this.gravityControl);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox1.Location = new System.Drawing.Point(12, 12);
+            this.groupBox1.Location = new System.Drawing.Point(12, 105);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(319, 87);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Collisions";
+            // 
+            // gravityControl
+            // 
+            this.gravityControl.Location = new System.Drawing.Point(21, 44);
+            this.gravityControl.Name = "gravityControl";
+            this.gravityControl.Size = new System.Drawing.Size(294, 28);
+            this.gravityControl.TabIndex = 5;
+            this.gravityControl.X = 0F;
+            this.gravityControl.Y = 0F;
+            this.gravityControl.Z = 0F;
             // 
             // label3
             // 
@@ -82,15 +95,28 @@
             this.butOK.UseVisualStyleBackColor = true;
             this.butOK.Click += new System.EventHandler(this.butOK_Click);
             // 
-            // gravityControl
+            // groupBox2
             // 
-            this.gravityControl.Location = new System.Drawing.Point(21, 44);
-            this.gravityControl.Name = "gravityControl";
-            this.gravityControl.Size = new System.Drawing.Size(294, 28);
-            this.gravityControl.TabIndex = 5;
-            this.gravityControl.X = 0F;
-            this.gravityControl.Y = 0F;
-            this.gravityControl.Z = 0F;
+            this.groupBox2.Controls.Add(this.chkQuaternions);
+            this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox2.Location = new System.Drawing.Point(12, 12);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(319, 87);
+            this.groupBox2.TabIndex = 5;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Exportation";
+            // 
+            // chkQuaternions
+            // 
+            this.chkQuaternions.AutoSize = true;
+            this.chkQuaternions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkQuaternions.Location = new System.Drawing.Point(21, 27);
+            this.chkQuaternions.Name = "chkQuaternions";
+            this.chkQuaternions.Size = new System.Drawing.Size(221, 17);
+            this.chkQuaternions.TabIndex = 1;
+            this.chkQuaternions.Text = "Export quaternions instead of Euler angles";
+            this.chkQuaternions.ThreeState = true;
+            this.chkQuaternions.UseVisualStyleBackColor = true;
             // 
             // ScenePropertiesForm
             // 
@@ -99,6 +125,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
             this.ClientSize = new System.Drawing.Size(343, 390);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
             this.Controls.Add(this.groupBox1);
@@ -109,6 +136,8 @@
             this.Load += new System.EventHandler(this.ScenePropertiesForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -120,5 +149,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button butCancel;
         private System.Windows.Forms.Button butOK;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox chkQuaternions;
     }
 }

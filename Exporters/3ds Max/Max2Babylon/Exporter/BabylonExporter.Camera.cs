@@ -34,8 +34,8 @@ namespace Max2Babylon
             }
 
             // Control
-            babylonCamera.speed = cameraNode._Node.GetFloatProperty("babylonjs_speed");
-            babylonCamera.inertia = cameraNode._Node.GetFloatProperty("babylonjs_inertia");
+            babylonCamera.speed = cameraNode._Node.GetFloatProperty("babylonjs_speed", 1.0f);
+            babylonCamera.inertia = cameraNode._Node.GetFloatProperty("babylonjs_inertia", 0.9f);
 
             // Collisions
             babylonCamera.checkCollisions = cameraNode._Node.GetBoolProperty("babylonjs_checkcollisions");

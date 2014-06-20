@@ -67,9 +67,26 @@
 
     var off_pfFlags = 20;
     var off_pfFourCC = 21;
+    var off_RGBbpp = 22;
+    var off_RMask = 23;
+    var off_GMask = 24;
+    var off_BMask = 25;
+    var off_AMask = 26;
+    var off_caps1 = 27;
+    var off_caps2 = 28;
+
+    export interface DDSInfo {
+        width: number;
+        height: number;
+        mipmapCount: number;
+        isFourCC: boolean;
+        isRGB: boolean;
+        isLuminance: boolean;
+        isCube: boolean
+    };
 
     export class DDSTools {
-        public static GetDDSInfo(arrayBuffer: any): { width: number; height: number; mipmapCount: number } {
+        public static GetDDSInfo(arrayBuffer: any): DDSInfo {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
 
             var mipmapCount = 1;
@@ -80,11 +97,65 @@
             return {
                 width: header[off_width],
                 height: header[off_height],
-                mipmapCount: mipmapCount
+                mipmapCount: mipmapCount,
+                isFourCC: (header[off_pfFlags] & DDPF_FOURCC) === DDPF_FOURCC,
+                isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
+                isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
+                isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP
             };
         }
 
-        public static UploadDDSLevels(gl: WebGLRenderingContext, ext: any, arrayBuffer: any, loadMipmaps?: boolean): void {
+        private static GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+            var byteArray = new Uint8Array(dataLength);
+            var srcData = new Uint8Array(arrayBuffer);
+            var index = 0;
+            for (var y = height - 1; y >= 0; y--) {
+                for (var x = 0; x < width; x++) {
+                    var srcPos = dataOffset + (x + y * width) * 4;
+                    byteArray[index + 2] = srcData[srcPos];
+                    byteArray[index + 1] = srcData[srcPos + 1];
+                    byteArray[index] = srcData[srcPos + 2];
+                    byteArray[index + 3] = srcData[srcPos + 3];
+                    index += 4;
+                }
+            }
+
+            return byteArray;
+        }
+
+        private static GetRGBArrayBuffer(width: number, height: number, dataOffset:number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {            
+            var byteArray = new Uint8Array(dataLength);
+            var srcData = new Uint8Array(arrayBuffer);
+            var index = 0;
+            for (var y = height - 1; y >= 0; y--) {
+                for (var x = 0; x < width; x++) {
+                    var srcPos = dataOffset + (x + y * width) * 3;
+                    byteArray[index + 2] = srcData[srcPos];
+                    byteArray[index + 1] = srcData[srcPos + 1];
+                    byteArray[index] = srcData[srcPos + 2];
+                    index += 3;
+                }
+            }
+
+            return byteArray;
+        }
+
+        private static GetLuminanceArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+            var byteArray = new Uint8Array(dataLength);
+            var srcData = new Uint8Array(arrayBuffer);
+            var index = 0;
+            for (var y = height - 1; y >= 0; y--) {
+                for (var x = 0; x < width; x++) {
+                    var srcPos = dataOffset + (x + y * width);
+                    byteArray[index] = srcData[srcPos];
+                    index++;
+                }
+            }
+
+            return byteArray;
+        }
+
+        public static UploadDDSLevels(gl: WebGLRenderingContext, ext: any, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number): void {
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt),
                 fourCC, blockBytes, internalFormat,
                 width, height, dataLength, dataOffset,
@@ -95,13 +166,14 @@
                 return;
             }
 
-            if ((header[off_pfFlags] & DDPF_FOURCC) !== DDPF_FOURCC) {
-                Tools.Error("Unsupported format, must contain a FourCC code");
+            if (!info.isFourCC && !info.isRGB && !info.isLuminance) {
+                Tools.Error("Unsupported format, must contain a FourCC, RGB or LUMINANCE code");
                 return;
             }
 
-            fourCC = header[off_pfFourCC];
-            switch (fourCC) {
+            if (info.isFourCC) {
+                fourCC = header[off_pfFourCC];
+                switch (fourCC) {
                 case FOURCC_DXT1:
                     blockBytes = 8;
                     internalFormat = ext.COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -117,6 +189,7 @@
                 default:
                     console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
                     return;
+                }
             }
 
             mipmapCount = 1;
@@ -124,17 +197,43 @@
                 mipmapCount = Math.max(1, header[off_mipmapCount]);
             }
 
-            width = header[off_width];
-            height = header[off_height];
-            dataOffset = header[off_size] + 4;
+            var bpp = header[off_RGBbpp];
 
-            for (i = 0; i < mipmapCount; ++i) {
-                dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
-                byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
-                gl.compressedTexImage2D(gl.TEXTURE_2D, i, internalFormat, width, height, 0, byteArray);
-                dataOffset += dataLength;
-                width *= 0.5;
-                height *= 0.5;
+            for (var face = 0; face < faces; face++) {
+                var sampler = faces == 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
+
+                width = header[off_width];
+                height = header[off_height];
+                dataOffset = header[off_size] + 4;
+
+                for (i = 0; i < mipmapCount; ++i) {
+                    if (info.isRGB) {
+                        if (bpp == 24) {
+                            dataLength = width * height * 3;
+                            byteArray = DDSTools.GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            gl.texImage2D(sampler, i, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
+                        } else { // 32
+                            dataLength = width * height * 4;
+                            byteArray = DDSTools.GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                            gl.texImage2D(sampler, i, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
+                        }
+                    } else if (info.isLuminance) {
+                        dataLength = width * height;
+                        byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                        gl.texImage2D(sampler, i, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
+                    } else {
+                        dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
+                        byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
+                        gl.compressedTexImage2D(sampler, i, internalFormat, width, height, 0, byteArray);
+                    }
+                    dataOffset += dataLength;
+                    width *= 0.5;
+                    height *= 0.5;
+
+                    if (width <= 2 || height <= 2) {
+                        break;
+                    }
+                }
             }
         }
     }

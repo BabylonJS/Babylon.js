@@ -105,6 +105,7 @@ namespace Max2Babylon
                 if (File.Exists(texture.MapName))
                 {
                     File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
+                    babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
                 }
                 else
                 {
@@ -112,6 +113,7 @@ namespace Max2Babylon
                     if (File.Exists(texturepath))
                     {
                         File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
+                        babylonTexture.isCube = Tools.IsTextureCube(texturepath);
                     }
                     else
                     {
@@ -121,7 +123,7 @@ namespace Max2Babylon
             }
             catch
             {
-                RaiseWarning(string.Format("Unable to copy {0} to output folder.", babylonTexture.name), true);
+                // silently fails
             }
 
             return babylonTexture;

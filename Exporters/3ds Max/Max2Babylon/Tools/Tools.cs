@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Max;
@@ -12,6 +13,60 @@ namespace Max2Babylon
     public static class Tools
     {
         public const float Epsilon = 0.001f;
+
+        public static bool IsTextureCube(string filepath)
+        {
+            try
+            {
+                var data = File.ReadAllBytes(filepath);
+                var intArray = new int[data.Length / 4];
+
+                Buffer.BlockCopy(data, 0, intArray, 0, data.Length);
+
+                return (intArray[28] & 0x200) == 0x200;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static Vector3 ToEulerAngles(this IQuat q)
+        {
+            // Store the Euler angles in radians
+            var pitchYawRoll = new Vector3();
+
+            double sqw = q.W * q.W;
+            double sqx = q.X * q.X;
+            double sqy = q.Y * q.Y;
+            double sqz = q.Z * q.Z;
+
+            // If quaternion is normalised the unit is one, otherwise it is the correction factor
+            double unit = sqx + sqy + sqz + sqw;
+            double test = q.X * q.Y + q.Z * q.W;
+
+            if (test > 0.4999f * unit)                              // 0.4999f OR 0.5f - EPSILON
+            {
+                // Singularity at north pole
+                pitchYawRoll.Y = 2f * (float)Math.Atan2(q.X, q.W);  // Yaw
+                pitchYawRoll.X = (float)Math.PI * 0.5f;             // Pitch
+                pitchYawRoll.Z = 0f;                                // Roll
+                return pitchYawRoll;
+            }
+            if (test < -0.4999f * unit)                        // -0.4999f OR -0.5f + EPSILON
+            {
+                // Singularity at south pole
+                pitchYawRoll.Y = -2f * (float)Math.Atan2(q.X, q.W); // Yaw
+                pitchYawRoll.X = -(float)Math.PI * 0.5f;            // Pitch
+                pitchYawRoll.Z = 0f;                                // Roll
+                return pitchYawRoll;
+            }
+            pitchYawRoll.Y = (float)Math.Atan2(2f * q.Y * q.W - 2f * q.X * q.Z, sqx - sqy - sqz + sqw);       // Yaw
+            pitchYawRoll.X = (float)Math.Asin(2f * test / unit);                                             // Pitch
+            pitchYawRoll.Z = (float)Math.Atan2(2f * q.X * q.W - 2f * q.Y * q.Z, -sqx + sqy - sqz + sqw);      // Roll
+
+            return pitchYawRoll;
+        }
 
         public static void PreparePipeline(IINode node, bool deactivate)
         {
@@ -120,7 +175,7 @@ namespace Max2Babylon
 
         public static Quaternion ToQuat(this IQuat value)
         {
-            return new Quaternion(value.X, value.Z, value.Y, value.W );
+            return new Quaternion(value.X, value.Z, value.Y, value.W);
         }
         public static float[] ToArray(this IQuat value)
         {
@@ -364,26 +419,44 @@ namespace Max2Babylon
             return new[] { state0, state1, state2 };
         }
 
+        public static bool PrepareCheckBox(CheckBox checkBox, IINode node, string propertyName, int defaultState = 0)
+        {
+            var state = node.GetBoolProperty(propertyName, defaultState);
+
+            if (checkBox.CheckState == CheckState.Indeterminate)
+            {
+                checkBox.CheckState = state ? CheckState.Checked : CheckState.Unchecked;
+            }
+            else
+            {
+                if (!state && checkBox.CheckState == CheckState.Checked ||
+                    state && checkBox.CheckState == CheckState.Unchecked)
+                {
+                    checkBox.CheckState = CheckState.Indeterminate;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static void PrepareCheckBox(CheckBox checkBox, List<IINode> nodes, string propertyName, int defaultState = 0)
         {
             checkBox.CheckState = CheckState.Indeterminate;
             foreach (var node in nodes)
             {
-                var state = node.GetBoolProperty(propertyName, defaultState);
+                if (PrepareCheckBox(checkBox, node, propertyName, defaultState))
+                {
+                    break;
+                }
+            }
+        }
 
-                if (checkBox.CheckState == CheckState.Indeterminate)
-                {
-                    checkBox.CheckState = state ? CheckState.Checked : CheckState.Unchecked;
-                }
-                else
-                {
-                    if (!state && checkBox.CheckState == CheckState.Checked ||
-                        state && checkBox.CheckState == CheckState.Unchecked)
-                    {
-                        checkBox.CheckState = CheckState.Indeterminate;
-                        break;
-                    }
-                }
+        public static void UpdateCheckBox(CheckBox checkBox, IINode node, string propertyName)
+        {
+            if (checkBox.CheckState != CheckState.Indeterminate)
+            {
+                node.SetUserPropBool(ref propertyName, checkBox.CheckState == CheckState.Checked);
             }
         }
 
@@ -391,10 +464,7 @@ namespace Max2Babylon
         {
             foreach (var node in nodes)
             {
-                if (checkBox.CheckState != CheckState.Indeterminate)
-                {
-                    node.SetUserPropBool(ref propertyName, checkBox.CheckState == CheckState.Checked);
-                }
+                UpdateCheckBox(checkBox, node, propertyName);
             }
         }
 
