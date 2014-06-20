@@ -139,7 +139,7 @@
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
-                defines.push("#define BonesPerMesh " + mesh.skeleton.bones.length);
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
             }
 
             // Instances

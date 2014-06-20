@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using MaxSharp;
+using System.Runtime.InteropServices;
 
 namespace Max2Babylon
 {
@@ -19,7 +20,7 @@ namespace Max2Babylon
 
             var babylonMesh = new BabylonMesh();
             int vx1, vx2, vx3;
-           
+
             babylonMesh.name = meshNode.Name;
             babylonMesh.id = meshNode.GetGuid().ToString();
             if (meshNode.HasParent())
@@ -53,25 +54,30 @@ namespace Max2Babylon
             var parts = Loader.Global.AffineParts.Create();
             Loader.Global.DecompAffine(wm, parts);
 
-            //var rotate = new float[3];
+            if (exportQuaternionsInsteadOfEulers)
+            {
+                babylonMesh.rotationQuaternion = parts.Q.ToArray();
+            }
+            else
+            {
+                var rotate = new float[3];
 
-            //IntPtr xPtr = Marshal.AllocHGlobal(sizeof(float));
-            //IntPtr yPtr = Marshal.AllocHGlobal(sizeof(float));
-            //IntPtr zPtr = Marshal.AllocHGlobal(sizeof(float));
-            //parts.Q.GetEuler(xPtr, yPtr, zPtr);
+                IntPtr xPtr = Marshal.AllocHGlobal(sizeof(float));
+                IntPtr yPtr = Marshal.AllocHGlobal(sizeof(float));
+                IntPtr zPtr = Marshal.AllocHGlobal(sizeof(float));
+                parts.Q.GetEuler(xPtr, yPtr, zPtr);
 
-            //Marshal.Copy(xPtr, rotate, 0, 1);
-            //Marshal.Copy(yPtr, rotate, 1, 1);
-            //Marshal.Copy(zPtr, rotate, 2, 1);
+                Marshal.Copy(xPtr, rotate, 0, 1);
+                Marshal.Copy(yPtr, rotate, 1, 1);
+                Marshal.Copy(zPtr, rotate, 2, 1);
 
-            //var temp = rotate[1];
-            //rotate[0] = -rotate[0] * parts.F;
-            //rotate[1] = -rotate[2] * parts.F;
-            //rotate[2] = -temp * parts.F;
+                var temp = rotate[1];
+                rotate[0] = -rotate[0] * parts.F;
+                rotate[1] = -rotate[2] * parts.F;
+                rotate[2] = -temp * parts.F;
 
-            //babylonMesh.rotation = rotate;
-
-            babylonMesh.rotationQuaternion = parts.Q.ToArray();
+                babylonMesh.rotation = rotate;                
+            }
 
             babylonMesh.scaling = parts.K.ToArraySwitched();
 
@@ -330,7 +336,7 @@ namespace Max2Babylon
 
             if (!ExportFloatController(meshNode._Node.VisController, "visibility", animations))
             {
-                ExportFloatAnimation("visibility", animations, key => new[] {meshNode._Node.GetVisibility(key, Interval.Forever._IInterval)});
+                ExportFloatAnimation("visibility", animations, key => new[] { meshNode._Node.GetVisibility(key, Interval.Forever._IInterval) });
             }
 
             babylonMesh.animations = animations.ToArray();

@@ -932,10 +932,10 @@
                 BABYLON.Tools.LoadFile(url, function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = info.mipmapCount > 1 && !noMipmap;
+                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
-                    prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, true, function () {
-                        BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, loadMipmap);
+                    prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
+                        BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
                     }, samplingMode);
                 }, null, scene.database, true);
             } else {
@@ -1110,43 +1110,76 @@
             texture.references = 1;
             this._loadedTexturesCache.push(texture);
 
-            cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-                var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
-                var height = width;
+            var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
-                _this._workingCanvas.width = width;
-                _this._workingCanvas.height = height;
+            if (isDDS) {
+                BABYLON.Tools.LoadFile(rootUrl, function (data) {
+                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
-                var faces = [
-                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                ];
+                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
 
-                for (var index = 0; index < faces.length; index++) {
-                    _this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                    gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _this._workingCanvas);
-                }
+                    BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 6);
 
-                if (!noMipmap) {
-                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                }
+                    if (!noMipmap && !info.isFourCC && info.mipmapCount == 1) {
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
 
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 
-                _this._activeTexturesCache = [];
+                    _this._activeTexturesCache = [];
 
-                texture._width = width;
-                texture._height = height;
-                texture.isReady = true;
-            }, extensions);
+                    texture._width = info.width;
+                    texture._height = info.height;
+                    texture.isReady = true;
+                });
+            } else {
+                cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
+                    var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var height = width;
+
+                    _this._workingCanvas.width = width;
+                    _this._workingCanvas.height = height;
+
+                    var faces = [
+                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                    ];
+
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+
+                    for (var index = 0; index < faces.length; index++) {
+                        _this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
+                        gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _this._workingCanvas);
+                    }
+
+                    if (!noMipmap) {
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
+
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+
+                    _this._activeTexturesCache = [];
+
+                    texture._width = width;
+                    texture._height = height;
+                    texture.isReady = true;
+                }, extensions);
+            }
 
             return texture;
         };

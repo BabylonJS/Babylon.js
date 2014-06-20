@@ -19,7 +19,10 @@ var BABYLON;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
 
-            this._texture = scene.getEngine().createDynamicTexture(size, size, generateMipMaps, samplingMode);
+            var requiredWidth = size.width || size;
+            var requiredHeight = size.height || size;
+
+            this._texture = scene.getEngine().createDynamicTexture(requiredWidth, requiredHeight, generateMipMaps, samplingMode);
             var textureSize = this.getSize();
 
             this.video = document.createElement("video");

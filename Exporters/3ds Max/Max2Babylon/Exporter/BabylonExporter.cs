@@ -25,6 +25,8 @@ namespace Max2Babylon
 
         public bool IsCancelled { get; set; }
 
+        private bool exportQuaternionsInsteadOfEulers;
+
         void ReportProgressChanged(int progress)
         {
             if (OnImportProgressChanged != null)
@@ -97,6 +99,7 @@ namespace Max2Babylon
             babylonScene.ambientColor = Loader.Core.GetAmbient(0, Interval.Forever._IInterval).ToArray();
 
             babylonScene.gravity = maxScene.RootNode._Node.GetVector3Property("babylonjs_gravity");
+            exportQuaternionsInsteadOfEulers = maxScene.RootNode._Node.GetBoolProperty("babylonjs_exportquaternions");
 
             // Cameras
             BabylonCamera mainCamera = null;
