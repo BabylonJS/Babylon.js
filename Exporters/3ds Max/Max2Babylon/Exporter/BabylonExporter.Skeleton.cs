@@ -88,7 +88,7 @@ namespace Max2Babylon
             var babylonSkeleton = new BabylonSkeleton {id = skins.IndexOf(skin)};
             babylonSkeleton.name = "skeleton #" + babylonSkeleton.id;
 
-            RaiseMessage(babylonSkeleton.name, true);
+            RaiseMessage(babylonSkeleton.name, 1);
 
             var bones = new List<BabylonBone>();
 

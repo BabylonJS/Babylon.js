@@ -107,7 +107,7 @@ namespace Max2Babylon
             var mesh = triObject != null ? triObject.Mesh : null;
             var computedMesh = meshNode.GetMesh();
 
-            RaiseMessage(meshNode.Name, mesh == null ? System.Drawing.Color.Gray : System.Drawing.Color.Black, true);
+            RaiseMessage(meshNode.Name, 1);
 
             if (mesh != null)
             {
@@ -195,7 +195,7 @@ namespace Max2Babylon
                     }
                 }
 
-                RaiseMessage(string.Format("{0} vertices, {1} faces", vertices.Count, indices.Count / 3), true, false, true);
+                RaiseMessage(string.Format("{0} vertices, {1} faces", vertices.Count, indices.Count / 3), 2);
 
                 // Buffers
                 babylonMesh.positions = vertices.SelectMany(v => v.Position.ToArraySwitched()).ToArray();
@@ -418,7 +418,7 @@ namespace Max2Babylon
 
                 if (nbBones > 4)
                 {
-                    RaiseError("Too many bones per vertex: " + nbBones);
+                    RaiseError("Too many bones influences per vertex: " + nbBones + ". Babylon.js only support 4 bones influences per vertex.", 2);
                 }
 
                 vertex.Weights = Loader.Global.Point4.Create(weight0, weight1, weight2, 1.0 - weight0 - weight1 - weight2);

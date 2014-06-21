@@ -124,7 +124,7 @@ namespace Max2Babylon
                     }
                     else
                     {
-                        RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), true);
+                        RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
                     }
                 }
             }
@@ -135,7 +135,7 @@ namespace Max2Babylon
 
             if (babylonTexture.isCube && !allowCube)
             {
-                RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), true);
+                RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), 2);
             }
 
             return babylonTexture;

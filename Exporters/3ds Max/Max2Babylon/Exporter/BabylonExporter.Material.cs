@@ -15,7 +15,7 @@ namespace Max2Babylon
             var name = materialNode._Mtl.Name;
             var id = materialNode.GetGuid().ToString();
 
-            RaiseMessage(name, true);
+            RaiseMessage(name, 1);
 
             if (materialNode.NumSubMaterials > 0)
             {
@@ -95,8 +95,8 @@ namespace Max2Babylon
                     // This is a alpha testing purpose
                     babylonMaterial.opacityTexture = null;
                     babylonMaterial.diffuseTexture.hasAlpha = true;
-                    RaiseWarning("Opacity texture was removed because alpha from diffuse texture can be use instead", true);
-                    RaiseWarning("If you do not want this behavior, just set Alpha Source = None on your diffuse texture", true);
+                    RaiseWarning("Opacity texture was removed because alpha from diffuse texture can be use instead", 2);
+                    RaiseWarning("If you do not want this behavior, just set Alpha Source = None on your diffuse texture", 2);
                 }
             }
 
