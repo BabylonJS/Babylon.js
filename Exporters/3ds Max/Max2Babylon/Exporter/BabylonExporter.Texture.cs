@@ -106,7 +106,10 @@ namespace Max2Babylon
                 if (File.Exists(texture.MapName))
                 {
                     File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                    babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
+                    if (Path.GetExtension(texture.MapName).ToLower() == ".dds")
+                    {
+                        babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
+                    }
                 }
                 else
                 {
@@ -114,7 +117,10 @@ namespace Max2Babylon
                     if (File.Exists(texturepath))
                     {
                         File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                        babylonTexture.isCube = Tools.IsTextureCube(texturepath);
+                        if (Path.GetExtension(texture.MapName).ToLower() == ".dds")
+                        {
+                            babylonTexture.isCube = Tools.IsTextureCube(texturepath);
+                        }
                     }
                     else
                     {
@@ -127,7 +133,7 @@ namespace Max2Babylon
                 // silently fails
             }
 
-            if (babylonTexture.isCube != allowCube)
+            if (babylonTexture.isCube && !allowCube)
             {
                 RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), true);
             }
