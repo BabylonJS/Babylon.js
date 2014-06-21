@@ -11,6 +11,9 @@ namespace Max2Babylon
         private readonly BabylonExportActionItem babylonExportAction;
         private BabylonExporter exporter;
 
+        TreeNode currentNode = null;
+        int currentRank = 0;
+
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
             InitializeComponent();
@@ -36,53 +39,54 @@ namespace Max2Babylon
             Kernel.Scene.RootNode.SetLocalData(txtFilename.Text);
 
             exporter = new BabylonExporter();
-            TreeNode currentNode = null;
-            TreeNode previousNode = null;
 
             treeView.Nodes.Clear();
 
-            exporter.OnImportProgressChanged += progress => 
+            exporter.OnImportProgressChanged += progress =>
             {
                 progressBar.Value = progress;
                 Application.DoEvents();
             };
 
-            exporter.OnWarning += (warning, asChild) => 
+            exporter.OnWarning += (warning, rank) =>
             {
-                previousNode = new TreeNode(warning) { ForeColor = Color.Orange };
-
-                currentNode = CreateTreeNode(asChild, currentNode, previousNode);
-
-                previousNode.EnsureVisible();
-                Application.DoEvents();
-            };
-
-            exporter.OnError += (error, asChild) =>
-            {
-                previousNode = new TreeNode(error) { ForeColor = Color.Red };
-
-                currentNode = CreateTreeNode(asChild, currentNode, previousNode);
-
-                previousNode.EnsureVisible();
-                Application.DoEvents();
-            };
-
-            exporter.OnMessage += (message, asChild, emphasis, embed, color) => 
-            {
-                var oldPrevious = previousNode;
-
-                previousNode = new TreeNode(message) {ForeColor = color};
-
-                if (emphasis)
+                try
                 {
-                    previousNode.ForeColor = Color.Green;
+                    currentNode = CreateTreeNode(rank, warning, Color.Orange);
+                    currentNode.EnsureVisible();
                 }
-
-                currentNode = CreateTreeNode(asChild || embed, embed ? oldPrevious : currentNode, previousNode);
-
-                if (emphasis)
+                catch
                 {
-                    previousNode.EnsureVisible();
+                }
+                Application.DoEvents();
+            };
+
+            exporter.OnError += (error, rank) =>
+            {
+                try
+                {
+                    currentNode = CreateTreeNode(rank, error, Color.Red);
+                    currentNode.EnsureVisible();
+                }
+                catch
+                {
+                }
+                Application.DoEvents();
+            };
+
+            exporter.OnMessage += (message, color, rank, emphasis) =>
+            {
+                try
+                {
+                    currentNode = CreateTreeNode(rank, message, color);
+
+                    if (emphasis)
+                    {
+                        currentNode.EnsureVisible();
+                    }
+                }
+                catch
+                {
                 }
                 Application.DoEvents();
             };
@@ -96,15 +100,13 @@ namespace Max2Babylon
             }
             catch (OperationCanceledException)
             {
-                progressBar.Value = 0;                
+                progressBar.Value = 0;
             }
             catch (Exception ex)
             {
-                previousNode = new TreeNode("Exportation cancelled: " + ex.Message) { ForeColor = Color.Red };
+                currentNode = CreateTreeNode(0, "Exportation cancelled: " + ex.Message, Color.Red);
 
-                currentNode = CreateTreeNode(false, currentNode, previousNode);
-
-                previousNode.EnsureVisible();
+                currentNode.EnsureVisible();
                 progressBar.Value = 0;
             }
 
@@ -112,26 +114,35 @@ namespace Max2Babylon
             butExport.Enabled = true;
         }
 
-        private TreeNode CreateTreeNode(bool asChild, TreeNode currentNode, TreeNode treeNode)
+        private TreeNode CreateTreeNode(int rank, string text, Color color)
         {
-            if (asChild)
+            var newNode = new TreeNode(text) { ForeColor = color };
+            if (rank == 0)
             {
-                currentNode.Nodes.Add(treeNode);
+                treeView.Nodes.Add(newNode);
+            }
+            else if (rank == currentRank + 1)
+            {
+                currentNode.Nodes.Add(newNode);
             }
             else
             {
-                treeView.Nodes.Add(treeNode);
+                var parentNode = currentNode;
+                while (currentRank != rank - 1)
+                {
+                    parentNode = parentNode.Parent;
+                    currentRank--;
+                }
+                parentNode.Nodes.Add(newNode);
             }
 
-            if (!asChild)
-            {
-                currentNode = treeNode;
-            }
-            return currentNode;
+            currentRank = rank;
+            return newNode;
         }
 
         private void ExporterForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            exporter.IsCancelled = true;
             babylonExportAction.Close();
         }
 

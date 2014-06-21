@@ -17,9 +17,9 @@ namespace Max2Babylon
     internal partial class BabylonExporter
     {
         public event Action<int> OnImportProgressChanged;
-        public event Action<string, bool> OnWarning;
-        public event Action<string, bool, bool, bool, Color> OnMessage;
-        public event Action<string, bool> OnError;
+        public event Action<string, int> OnWarning;
+        public event Action<string, Color, int, bool> OnMessage;
+        public event Action<string, int> OnError;
 
         readonly List<string> alreadyExportedTextures = new List<string>();
 
@@ -35,32 +35,32 @@ namespace Max2Babylon
             }
         }
 
-        void RaiseError(string error, bool asChild = true)
+        void RaiseError(string error, int rank = 0)
         {
             if (OnError != null)
             {
-                OnError(error, asChild);
+                OnError(error, rank);
             }
         }
 
-        void RaiseWarning(string warning, bool asChild = false)
+        void RaiseWarning(string warning, int rank = 0)
         {
             if (OnWarning != null)
             {
-                OnWarning(warning, asChild);
+                OnWarning(warning, rank);
             }
         }
 
-        void RaiseMessage(string message, bool asChild = false, bool emphasis = false, bool embed = false)
+        void RaiseMessage(string message, int rank = 0, bool emphasis = false)
         {
-            RaiseMessage(message, Color.Black, asChild, emphasis, embed);
+            RaiseMessage(message, Color.Black, rank, emphasis);
         }
 
-        void RaiseMessage(string message, Color color, bool asChild = false, bool emphasis = false, bool embed = false)
+        void RaiseMessage(string message, Color color, int rank = 0, bool emphasis = false)
         {
             if (OnMessage != null)
             {
-                OnMessage(message, asChild, emphasis, embed, color);
+                OnMessage(message, color, rank, emphasis);
             }
         }
 
@@ -113,13 +113,13 @@ namespace Max2Babylon
                 {
                     mainCamera = babylonScene.CamerasList[0];
                     babylonScene.activeCameraID = mainCamera.id;
-                    RaiseMessage("Active camera set to " + mainCamera.name, true, true);
+                    RaiseMessage("Active camera set to " + mainCamera.name, 1, true);
                 }
             }
 
             if (mainCamera == null)
             {
-                RaiseWarning("No camera defined", true);
+                RaiseWarning("No camera defined", 1);
             }
 
             // Fog
@@ -182,7 +182,7 @@ namespace Max2Babylon
 
             if (babylonScene.LightsList.Count == 0)
             {
-                RaiseWarning("No light defined", true);
+                RaiseWarning("No light defined", 1);
             }
 
             // Skeletons

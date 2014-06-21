@@ -18,7 +18,7 @@ namespace Max2Babylon
             var maxLight = (lightNode.Object as Light);
             var babylonLight = new BabylonLight();
 
-            RaiseMessage(maxLight.Name, true);
+            RaiseMessage(maxLight.Name, 1);
             babylonLight.name = lightNode.Name;
             babylonLight.id = lightNode.GetGuid().ToString();
 
@@ -56,7 +56,7 @@ namespace Max2Babylon
                 }
                 else
                 {
-                    RaiseWarning("Shadows maps are only supported for directional lights", true);
+                    RaiseWarning("Shadows maps are only supported for directional lights", 2);
                 }
             }
 

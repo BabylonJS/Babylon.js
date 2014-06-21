@@ -16,7 +16,7 @@ namespace Max2Babylon
             var maxCamera = (cameraNode.Object as Camera)._Camera;
             var babylonCamera = new BabylonCamera();
 
-            RaiseMessage(cameraNode.Name, true);
+            RaiseMessage(cameraNode.Name, 1);
             babylonCamera.name = cameraNode.Name;
             babylonCamera.id = cameraNode.GetGuid().ToString();
             if (cameraNode.HasParent())

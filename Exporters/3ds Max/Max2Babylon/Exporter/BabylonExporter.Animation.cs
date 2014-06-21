@@ -57,6 +57,11 @@ namespace Max2Babylon
         {
             var result = false;
 
+            if (control == null)
+            {
+                return false;
+            }
+
             if (control.XController != null || control.YController != null || control.ZController != null)
             {
                 result |= ExportFloatController(control.XController, property + ".x", animations);

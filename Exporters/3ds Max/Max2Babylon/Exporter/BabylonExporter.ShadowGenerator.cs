@@ -11,7 +11,7 @@ namespace Max2Babylon
             var maxLight = (lightNode.Object as Light);
             var babylonShadowGenerator = new BabylonShadowGenerator();
 
-            RaiseMessage("Exporting shadow map", true, false, true);
+            RaiseMessage("Exporting shadow map", 2);
 
             babylonShadowGenerator.lightId = lightNode.GetGuid().ToString();
 
