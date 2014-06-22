@@ -7,9 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 using Newtonsoft.Json;
-using Animatable = MaxSharp.Animatable;
 using Color = System.Drawing.Color;
 
 namespace Max2Babylon
@@ -82,7 +80,7 @@ namespace Max2Babylon
             RaiseMessage("Exportation started");
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
-            var maxScene = Kernel.Scene;
+            var maxScene = Loader.Core.RootNode;
             alreadyExportedTextures.Clear();
 
             if (!Directory.Exists(babylonScene.OutputPath))
@@ -103,17 +101,17 @@ namespace Max2Babylon
 
             // Global
             babylonScene.autoClear = true;
-            babylonScene.clearColor = Loader.Core.GetBackGround(0, Interval.Forever._IInterval).ToArray();
-            babylonScene.ambientColor = Loader.Core.GetAmbient(0, Interval.Forever._IInterval).ToArray();
+            babylonScene.clearColor = Loader.Core.GetBackGround(0, Tools.Forever).ToArray();
+            babylonScene.ambientColor = Loader.Core.GetAmbient(0, Tools.Forever).ToArray();
 
-            babylonScene.gravity = maxScene.RootNode._Node.GetVector3Property("babylonjs_gravity");
-            exportQuaternionsInsteadOfEulers = maxScene.RootNode._Node.GetBoolProperty("babylonjs_exportquaternions");
+            babylonScene.gravity = maxScene.GetVector3Property("babylonjs_gravity");
+            exportQuaternionsInsteadOfEulers = maxScene.GetBoolProperty("babylonjs_exportquaternions");
 
             // Cameras
             BabylonCamera mainCamera = null;
 
             RaiseMessage("Exporting cameras");
-            foreach (var cameraNode in maxScene.NodesListBySuperClass(SuperClassID.Camera))
+            foreach (var cameraNode in maxScene.NodesListBySuperClass(SClass_ID.Camera))
             {
                 ExportCamera(cameraNode, babylonScene);
 
@@ -141,18 +139,21 @@ namespace Max2Babylon
 
                 if (atmospheric.Active(0) && atmospheric.ClassName == "Fog")
                 {
-                    RaiseMessage("Exporting fog");
-                    var reference = atmospheric.GetReference(0);
-                    var parameters = Animatable.CreateWrapper<ParameterBlock1>(reference);
+                    var fog = atmospheric as IStdFog;
 
-                    babylonScene.fogColor = (parameters["fog color"].Value as IColor).ToArray();
-                    babylonScene.fogDensity = (float)parameters["density"].Value;
-                    babylonScene.fogMode = ((int)parameters["fog type"].Value) == 0 ? 3 : 1;
-
-                    if (mainCamera != null)
+                    if (fog != null)
                     {
-                        babylonScene.fogStart = mainCamera.minZ * (float)parameters["near %"].Value;
-                        babylonScene.fogEnd = mainCamera.maxZ * (float)parameters["far %"].Value;
+                        RaiseMessage("Exporting fog");
+
+                        babylonScene.fogColor = fog.GetColor(0).ToArray();
+                        babylonScene.fogDensity = fog.GetDensity(0);
+                        babylonScene.fogMode = fog.GetType_ == 0 ? 3 : 1;
+
+                        if (mainCamera != null)
+                        {
+                            babylonScene.fogStart = mainCamera.minZ*fog.GetNear(0);
+                            babylonScene.fogEnd = mainCamera.maxZ*fog.GetFar(0);
+                        }
                     }
                 }
             }
@@ -160,14 +161,14 @@ namespace Max2Babylon
             // Meshes
             ReportProgressChanged(10);
             RaiseMessage("Exporting meshes");
-            var meshes = maxScene.NodesListBySuperClasses(new[] {SuperClassID.GeometricObject, SuperClassID.Helper});
+            var meshes = maxScene.NodesListBySuperClasses(new[] { SClass_ID.Geomobject, SClass_ID.Helper });
             var progressionStep = 80.0f / meshes.Count();
             var progression = 10.0f;
             foreach (var meshNode in meshes)
             {
-                Tools.PreparePipeline(meshNode._Node, true);
+                Tools.PreparePipeline(meshNode, true);
                 ExportMesh(meshNode, babylonScene);
-                Tools.PreparePipeline(meshNode._Node, false);
+                Tools.PreparePipeline(meshNode, false);
 
                 progression += progressionStep;
                 ReportProgressChanged((int)progression);
@@ -188,7 +189,7 @@ namespace Max2Babylon
 
             // Lights
             RaiseMessage("Exporting lights");
-            foreach (var lightNode in maxScene.NodesListBySuperClass(SuperClassID.Light))
+            foreach (var lightNode in maxScene.NodesListBySuperClass(SClass_ID.Light))
             {
                 ExportLight(lightNode, babylonScene);
                 CheckCancelled();

@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
+using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 
 namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private void ExportCamera(Node cameraNode, BabylonScene babylonScene)
+        private void ExportCamera(IINode cameraNode, BabylonScene babylonScene)
         {
-            if (cameraNode._Node.GetBoolProperty("babylonjs_noexport"))
+            if (cameraNode.GetBoolProperty("babylonjs_noexport"))
             {
                 return;
             }
 
-            var maxCamera = (cameraNode.Object as Camera)._Camera;
+            var maxCamera = (cameraNode.ObjectRef as ICameraObject);
             var babylonCamera = new BabylonCamera();
 
             RaiseMessage(cameraNode.Name, 1);
@@ -21,12 +21,12 @@ namespace Max2Babylon
             babylonCamera.id = cameraNode.GetGuid().ToString();
             if (cameraNode.HasParent())
             {
-                babylonCamera.parentId = cameraNode.Parent.GetGuid().ToString();
+                babylonCamera.parentId = cameraNode.ParentNode.GetGuid().ToString();
             }
 
-            babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Interval.Forever._IInterval));
-            babylonCamera.minZ = maxCamera.GetEnvRange(0, 0, Interval.Forever._IInterval);
-            babylonCamera.maxZ = maxCamera.GetEnvRange(0, 1, Interval.Forever._IInterval);
+            babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
+            babylonCamera.minZ = maxCamera.GetEnvRange(0, 0, Tools.Forever);
+            babylonCamera.maxZ = maxCamera.GetEnvRange(0, 1, Tools.Forever);
 
             if (babylonCamera.minZ == 0.0f)
             {
@@ -34,13 +34,13 @@ namespace Max2Babylon
             }
 
             // Control
-            babylonCamera.speed = cameraNode._Node.GetFloatProperty("babylonjs_speed", 1.0f);
-            babylonCamera.inertia = cameraNode._Node.GetFloatProperty("babylonjs_inertia", 0.9f);
+            babylonCamera.speed = cameraNode.GetFloatProperty("babylonjs_speed", 1.0f);
+            babylonCamera.inertia = cameraNode.GetFloatProperty("babylonjs_inertia", 0.9f);
 
             // Collisions
-            babylonCamera.checkCollisions = cameraNode._Node.GetBoolProperty("babylonjs_checkcollisions");
-            babylonCamera.applyGravity = cameraNode._Node.GetBoolProperty("babylonjs_applygravity");
-            babylonCamera.ellipsoid = cameraNode._Node.GetVector3Property("babylonjs_ellipsoid");
+            babylonCamera.checkCollisions = cameraNode.GetBoolProperty("babylonjs_checkcollisions");
+            babylonCamera.applyGravity = cameraNode.GetBoolProperty("babylonjs_applygravity");
+            babylonCamera.ellipsoid = cameraNode.GetVector3Property("babylonjs_ellipsoid");
 
             // Position
             var wm = cameraNode.GetWorldMatrix(0, cameraNode.HasParent());
@@ -48,7 +48,7 @@ namespace Max2Babylon
             babylonCamera.position = position.ToArraySwitched();
 
             // Target
-            var target = cameraNode._Node.Target;
+            var target = cameraNode.Target;
             if (target != null)
             {
                 babylonCamera.lockedTargetId = target.GetGuid().ToString();
@@ -61,7 +61,7 @@ namespace Max2Babylon
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            if (!ExportVector3Controller(cameraNode._Node.TMController.PositionController, "position", animations))
+            if (!ExportVector3Controller(cameraNode.TMController.PositionController, "position", animations))
             {
                 ExportVector3Animation("position", animations, key =>
                 {
@@ -70,16 +70,16 @@ namespace Max2Babylon
                 });
             }
 
-            ExportFloatAnimation("fov", animations, key => new[] {Tools.ConvertFov(maxCamera.GetFOV(key, Interval.Forever._IInterval))});
+            ExportFloatAnimation("fov", animations, key => new[] {Tools.ConvertFov(maxCamera.GetFOV(key, Tools.Forever))});
 
             babylonCamera.animations = animations.ToArray();
 
-            if (cameraNode._Node.GetBoolProperty("babylonjs_autoanimate"))
+            if (cameraNode.GetBoolProperty("babylonjs_autoanimate"))
             {
                 babylonCamera.autoAnimate = true;
-                babylonCamera.autoAnimateFrom = (int)cameraNode._Node.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonCamera.autoAnimateTo = (int)cameraNode._Node.GetFloatProperty("babylonjs_autoanimate_to");
-                babylonCamera.autoAnimateLoop = cameraNode._Node.GetBoolProperty("babylonjs_autoanimateloop");
+                babylonCamera.autoAnimateFrom = (int)cameraNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonCamera.autoAnimateTo = (int)cameraNode.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonCamera.autoAnimateLoop = cameraNode.GetBoolProperty("babylonjs_autoanimateloop");
             }
 
             babylonScene.CamerasList.Add(babylonCamera);

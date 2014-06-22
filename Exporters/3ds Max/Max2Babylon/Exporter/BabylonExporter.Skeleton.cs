@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 using SharpDX;
 
 namespace Max2Babylon

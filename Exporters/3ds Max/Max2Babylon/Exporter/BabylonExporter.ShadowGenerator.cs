@@ -1,33 +1,32 @@
 ﻿using System.Collections.Generic;
+using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 
 namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        private BabylonShadowGenerator ExportShadowGenerator(Node lightNode, BabylonScene babylonScene)
+        private BabylonShadowGenerator ExportShadowGenerator(IINode lightNode, BabylonScene babylonScene)
         {
-            var maxLight = (lightNode.Object as Light);
+            var maxLight = (lightNode.ObjectRef as ILightObject);
             var babylonShadowGenerator = new BabylonShadowGenerator();
 
             RaiseMessage("Exporting shadow map", 2);
 
             babylonShadowGenerator.lightId = lightNode.GetGuid().ToString();
 
-            babylonShadowGenerator.mapSize = maxLight.GetMapSize(0, Interval.Forever);
+            babylonShadowGenerator.mapSize = maxLight.GetMapSize(0, Tools.Forever);
 
-            var maxScene = Kernel.Scene;
             var list = new List<string>();
 
-            var inclusion = maxLight._Light.ExclList.TestFlag(1); //NT_INCLUDE 
-            var checkExclusionList = maxLight._Light.ExclList.TestFlag(4); //NT_AFFECT_SHADOWCAST 
+            var inclusion = maxLight.ExclList.TestFlag(1); //NT_INCLUDE 
+            var checkExclusionList = maxLight.ExclList.TestFlag(4); //NT_AFFECT_SHADOWCAST 
 
-            foreach (var meshNode in maxScene.NodesListBySuperClass(SuperClassID.GeometricObject))
+            foreach (var meshNode in Loader.Core.RootNode.NodesListBySuperClass(SClass_ID.Geomobject))
             {
-                if (meshNode._Node.CastShadows == 1)
+                if (meshNode.CastShadows == 1)
                 {
-                    var inList = maxLight._Light.ExclList.FindNode(meshNode._Node) != -1;
+                    var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 
                     if (!checkExclusionList || (inList && inclusion) || (!inList && !inclusion))
                     {

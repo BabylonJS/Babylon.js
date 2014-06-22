@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 using System.Runtime.InteropServices;
 
 namespace Max2Babylon
@@ -11,14 +10,14 @@ namespace Max2Babylon
     partial class BabylonExporter
     {
         private int bonesCount;
-        private void ExportMesh(Node meshNode, BabylonScene babylonScene)
+        private void ExportMesh(IINode meshNode, BabylonScene babylonScene)
         {
-            if (meshNode._Node.GetBoolProperty("babylonjs_noexport"))
+            if (meshNode.GetBoolProperty("babylonjs_noexport"))
             {
                 return;
             }
 
-            if (!ExportHiddenObjects && !meshNode.Visible)
+            if (!ExportHiddenObjects && meshNode.IsHidden(NodeHideFlags.None, false))
             {
                 return;
             }
@@ -30,21 +29,21 @@ namespace Max2Babylon
             babylonMesh.id = meshNode.GetGuid().ToString();
             if (meshNode.HasParent())
             {
-                babylonMesh.parentId = meshNode.Parent.GetGuid().ToString();
+                babylonMesh.parentId = meshNode.ParentNode.GetGuid().ToString();
             }
 
             // Misc.
-            babylonMesh.isVisible = meshNode._Node.Renderable == 1;
-            babylonMesh.pickable = meshNode._Node.GetBoolProperty("babylonjs_checkpickable");
-            babylonMesh.receiveShadows = meshNode._Node.RcvShadows == 1;
-            babylonMesh.showBoundingBox = meshNode._Node.GetBoolProperty("babylonjs_showboundingbox");
-            babylonMesh.showSubMeshesBoundingBox = meshNode._Node.GetBoolProperty("babylonjs_showsubmeshesboundingbox");
+            babylonMesh.isVisible = meshNode.Renderable == 1;
+            babylonMesh.pickable = meshNode.GetBoolProperty("babylonjs_checkpickable");
+            babylonMesh.receiveShadows = meshNode.RcvShadows == 1;
+            babylonMesh.showBoundingBox = meshNode.GetBoolProperty("babylonjs_showboundingbox");
+            babylonMesh.showSubMeshesBoundingBox = meshNode.GetBoolProperty("babylonjs_showsubmeshesboundingbox");
 
             // Collisions
-            babylonMesh.checkCollisions = meshNode._Node.GetBoolProperty("babylonjs_checkcollisions");
+            babylonMesh.checkCollisions = meshNode.GetBoolProperty("babylonjs_checkcollisions");
 
             // Skin
-            var skin = GetSkinModifier(meshNode._Node);
+            var skin = GetSkinModifier(meshNode);
 
             if (skin != null)
             {
@@ -100,17 +99,16 @@ namespace Max2Babylon
             }
 
             // Pivot
-            var pivotMatrix = Matrix3.Identity._IMatrix3;
-            pivotMatrix.PreTranslate(meshNode._Node.ObjOffsetPos);
-            Loader.Global.PreRotateMatrix(pivotMatrix, meshNode._Node.ObjOffsetRot);
-            Loader.Global.ApplyScaling(pivotMatrix, meshNode._Node.ObjOffsetScale);
+            var pivotMatrix = Tools.Identity;
+            pivotMatrix.PreTranslate(meshNode.ObjOffsetPos);
+            Loader.Global.PreRotateMatrix(pivotMatrix, meshNode.ObjOffsetRot);
+            Loader.Global.ApplyScaling(pivotMatrix, meshNode.ObjOffsetScale);
             babylonMesh.pivotMatrix = pivotMatrix.ToArray();
 
             // Mesh
-            var objectState = meshNode._Node.EvalWorldState(0, false);
+            var objectState = meshNode.EvalWorldState(0, false);
             var triObject = objectState.Obj.GetMesh();
             var mesh = triObject != null ? triObject.Mesh : null;
-            var computedMesh = meshNode.GetMesh();
 
             RaiseMessage(meshNode.Name, 1);
 
@@ -134,7 +132,7 @@ namespace Max2Babylon
                 }
 
                 // Material
-                var mtl = meshNode.Material;
+                var mtl = meshNode.Mtl;
                 var multiMatsCount = 1;
 
                 if (mtl != null)
@@ -146,10 +144,10 @@ namespace Max2Babylon
                         referencedMaterials.Add(mtl);
                     }
 
-                    multiMatsCount = Math.Max(mtl.NumSubMaterials, 1);
+                    multiMatsCount = Math.Max(mtl.NumSubMtls, 1);
                 }
 
-                babylonMesh.visibility = meshNode._Node.GetVisibility(0, Interval.Forever._IInterval);
+                babylonMesh.visibility = meshNode.GetVisibility(0, Tools.Forever);
 
                 var vertices = new List<GlobalVertex>();
                 var indices = new List<int>();
@@ -158,34 +156,30 @@ namespace Max2Babylon
                 var hasUV = mesh.NumTVerts > 0;
                 var hasUV2 = mesh.GetNumMapVerts(2) > 0;
 
-                var optimizeVertices = meshNode._Node.GetBoolProperty("babylonjs_optimizevertices");
+                var optimizeVertices = meshNode.GetBoolProperty("babylonjs_optimizevertices");
 
                 // Skin
                 IISkinContextData skinContext = null;
 
                 if (skin != null)
                 {
-                    skinContext = skin.GetContextInterface(meshNode._Node);
+                    skinContext = skin.GetContextInterface(meshNode);
                 }
 
                 // Compute normals
-                VNormal[] vnorms = null;
+                VNormal[] vnorms = Tools.ComputeNormals(mesh, optimizeVertices);
                 List<GlobalVertex>[] verticesAlreadyExported = null;
 
-                if (!optimizeVertices)
-                {
-                    vnorms = Tools.ComputeNormals(mesh);
-                }
-                else
+                if (optimizeVertices)
                 {
                     verticesAlreadyExported = new List<GlobalVertex>[mesh.NumVerts];
                 }
 
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
-                    indices.Add(CreateGlobalVertex(mesh, computedMesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
                     CheckCancelled();
                 }
@@ -304,7 +298,7 @@ namespace Max2Babylon
             // Animations
             var animations = new List<BabylonAnimation>();
 
-            if (!ExportVector3Controller(meshNode._Node.TMController.PositionController, "position", animations))
+            if (!ExportVector3Controller(meshNode.TMController.PositionController, "position", animations))
             {
                 ExportVector3Animation("position", animations, key =>
                 {
@@ -313,7 +307,7 @@ namespace Max2Babylon
                 });
             }
 
-            if (!ExportQuaternionController(meshNode._Node.TMController.RotationController, "rotationQuaternion", animations))
+            if (!ExportQuaternionController(meshNode.TMController.RotationController, "rotationQuaternion", animations))
             {
                 ExportQuaternionAnimation("rotationQuaternion", animations, key =>
                 {
@@ -326,7 +320,7 @@ namespace Max2Babylon
                 });
             }
 
-            if (!ExportVector3Controller(meshNode._Node.TMController.ScaleController, "scaling", animations))
+            if (!ExportVector3Controller(meshNode.TMController.ScaleController, "scaling", animations))
             {
                 ExportVector3Animation("scaling", animations, key =>
                 {
@@ -339,25 +333,25 @@ namespace Max2Babylon
                 });
             }
 
-            if (!ExportFloatController(meshNode._Node.VisController, "visibility", animations))
+            if (!ExportFloatController(meshNode.VisController, "visibility", animations))
             {
-                ExportFloatAnimation("visibility", animations, key => new[] { meshNode._Node.GetVisibility(key, Interval.Forever._IInterval) });
+                ExportFloatAnimation("visibility", animations, key => new[] { meshNode.GetVisibility(key, Tools.Forever) });
             }
 
             babylonMesh.animations = animations.ToArray();
 
-            if (meshNode._Node.GetBoolProperty("babylonjs_autoanimate"))
+            if (meshNode.GetBoolProperty("babylonjs_autoanimate"))
             {
                 babylonMesh.autoAnimate = true;
-                babylonMesh.autoAnimateFrom = (int)meshNode._Node.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonMesh.autoAnimateTo = (int)meshNode._Node.GetFloatProperty("babylonjs_autoanimate_to");
-                babylonMesh.autoAnimateLoop = meshNode._Node.GetBoolProperty("babylonjs_autoanimateloop");
+                babylonMesh.autoAnimateFrom = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonMesh.autoAnimateTo = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonMesh.autoAnimateLoop = meshNode.GetBoolProperty("babylonjs_autoanimateloop");
             }
 
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        int CreateGlobalVertex(IMesh mesh, Mesh computedMesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)
+        int CreateGlobalVertex(IMesh mesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)
         {
             var faceObject = mesh.Faces[face];
             var vertexIndex = (int)faceObject.V[facePart];
@@ -366,7 +360,7 @@ namespace Max2Babylon
             {
                 BaseIndex = vertexIndex,
                 Position = mesh.Verts[vertexIndex],
-                Normal = (vnorms != null) ? vnorms[vertexIndex].GetNormal(faceObject.SmGroup) : computedMesh.vnormals[vertexIndex]._IPoint3
+                Normal = vnorms[vertexIndex].GetNormal(verticesAlreadyExported != null ? 1 : faceObject.SmGroup)
             };
 
             if (hasUV)
