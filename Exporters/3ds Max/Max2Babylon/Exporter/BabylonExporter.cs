@@ -23,7 +23,9 @@ namespace Max2Babylon
 
         readonly List<string> alreadyExportedTextures = new List<string>();
 
+        public bool ExportHiddenObjects { get; set; }
         public bool IsCancelled { get; set; }
+
         public bool CopyTexturesToOutput { get; set; }
 
         private bool exportQuaternionsInsteadOfEulers;
@@ -127,6 +129,10 @@ namespace Max2Babylon
             {
                 RaiseWarning("No camera defined", 1);
             }
+            else
+            {
+                RaiseMessage(string.Format("Total: {0}", babylonScene.CamerasList.Count), Color.Gray, 1);
+            }
 
             // Fog
             for (var index = 0; index < Loader.Core.NumAtmospheric; index++)
@@ -168,6 +174,7 @@ namespace Max2Babylon
 
                 CheckCancelled();
             }
+            RaiseMessage(string.Format("Total: {0}", babylonScene.MeshesList.Count), Color.Gray, 1);
 
             // Materials
             RaiseMessage("Exporting materials");
@@ -177,6 +184,7 @@ namespace Max2Babylon
                 ExportMaterial(mat, babylonScene);
                 CheckCancelled();
             }
+            RaiseMessage(string.Format("Total: {0}", babylonScene.MaterialsList.Count + babylonScene.MultiMaterialsList.Count), Color.Gray, 1);
 
             // Lights
             RaiseMessage("Exporting lights");
@@ -189,6 +197,10 @@ namespace Max2Babylon
             if (babylonScene.LightsList.Count == 0)
             {
                 RaiseWarning("No light defined", 1);
+            }
+            else
+            {
+                RaiseMessage(string.Format("Total: {0}", babylonScene.LightsList.Count), Color.Gray, 1);
             }
 
             // Skeletons

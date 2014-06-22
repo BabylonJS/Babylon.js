@@ -43,6 +43,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkCopyTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkHidden = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -149,7 +150,6 @@
             this.chkManifest.Size = new System.Drawing.Size(112, 17);
             this.chkManifest.TabIndex = 2;
             this.chkManifest.Text = "Generate .manifest";
-            this.chkManifest.ThreeState = true;
             this.chkManifest.UseVisualStyleBackColor = true;
             // 
             // chkQuaternions
@@ -161,7 +161,6 @@
             this.chkQuaternions.Size = new System.Drawing.Size(221, 17);
             this.chkQuaternions.TabIndex = 1;
             this.chkQuaternions.Text = "Export quaternions instead of Euler angles";
-            this.chkQuaternions.ThreeState = true;
             this.chkQuaternions.UseVisualStyleBackColor = true;
             // 
             // label2
@@ -183,13 +182,13 @@
             this.chkCopyTextures.Size = new System.Drawing.Size(132, 17);
             this.chkCopyTextures.TabIndex = 12;
             this.chkCopyTextures.Text = "Copy textures to output";
-            this.chkCopyTextures.ThreeState = true;
             this.chkCopyTextures.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkHidden);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.chkCopyTextures);
             this.groupBox1.Controls.Add(this.txtFilename);
@@ -202,6 +201,19 @@
             this.groupBox1.Size = new System.Drawing.Size(493, 136);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
+            // 
+            // chkHidden
+            // 
+            this.chkHidden.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkHidden.AutoSize = true;
+            this.chkHidden.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkHidden.Location = new System.Drawing.Point(338, 102);
+            this.chkHidden.Name = "chkHidden";
+            this.chkHidden.Size = new System.Drawing.Size(125, 17);
+            this.chkHidden.TabIndex = 13;
+            this.chkHidden.Text = "Export hidden objects";
+            this.chkHidden.ThreeState = true;
+            this.chkHidden.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
@@ -246,5 +258,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkCopyTextures;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.CheckBox chkHidden;
     }
 }

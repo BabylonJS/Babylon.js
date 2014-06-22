@@ -27,6 +27,7 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
             Tools.PrepareCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
             Tools.PrepareCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures", 1);
+            Tools.PrepareCheckBox(chkHidden, Kernel.Scene.RootNode._Node, "babylonjs_exporthidden");
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -42,6 +43,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
             Tools.UpdateCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures");
+            Tools.UpdateCheckBox(chkHidden, Kernel.Scene.RootNode._Node, "babylonjs_exporthidden");
             Kernel.Scene.RootNode.SetLocalData(txtFilename.Text);
 
             exporter = new BabylonExporter();
@@ -102,6 +104,7 @@ namespace Max2Babylon
 
             try
             {
+                exporter.ExportHiddenObjects = chkHidden.Checked;
                 exporter.CopyTexturesToOutput = chkCopyTextures.Checked;
                 exporter.Export(txtFilename.Text, chkManifest.Checked, this);
             }
@@ -119,6 +122,8 @@ namespace Max2Babylon
 
             butCancel.Enabled = false;
             butExport.Enabled = true;
+
+            BringToFront();
         }
 
         private TreeNode CreateTreeNode(int rank, string text, Color color)
