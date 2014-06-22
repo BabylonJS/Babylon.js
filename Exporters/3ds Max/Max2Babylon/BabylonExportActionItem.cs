@@ -1,8 +1,4 @@
-﻿using System;
-using Autodesk.Max;
-using Autodesk.Max.IQuadMenuContext;
-using MaxSharp;
-using ActionItem = Autodesk.Max.Plugins.ActionItem;
+﻿using ActionItem = Autodesk.Max.Plugins.ActionItem;
 
 namespace Max2Babylon
 {

@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 
 namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        readonly List<Material> referencedMaterials = new List<Material>();
+        readonly List<IMtl> referencedMaterials = new List<IMtl>();
 
-        private void ExportMaterial(Material materialNode, BabylonScene babylonScene)
+        private void ExportMaterial(IMtl materialNode, BabylonScene babylonScene)
         {
-            var name = materialNode._Mtl.Name;
+            var name = materialNode.Name;
             var id = materialNode.GetGuid().ToString();
 
             RaiseMessage(name, 1);
 
-            if (materialNode.NumSubMaterials > 0)
+            if (materialNode.NumSubMtls > 0)
             {
                 var babylonMultimaterial = new BabylonMultiMaterial();
                 babylonMultimaterial.name = name;
@@ -25,9 +24,9 @@ namespace Max2Babylon
 
                 var guids = new List<string>();
 
-                for (var index = 0; index < materialNode.NumSubMaterials; index++)
+                for (var index = 0; index < materialNode.NumSubMtls; index++)
                 {
-                    var subMat = materialNode.GetSubMaterial(index) as Material;
+                    var subMat = materialNode.GetSubMtl(index);
 
                     if (subMat != null)
                     {
@@ -56,15 +55,15 @@ namespace Max2Babylon
             babylonMaterial.name = name;
             babylonMaterial.id = id;
 
-            babylonMaterial.ambient = materialNode.GetAmbient(0).ToArray();
-            babylonMaterial.diffuse = materialNode.GetDiffuse(0).ToArray();
-            babylonMaterial.specular = materialNode.GetSpecular(0).Scale(materialNode.GetShinyStrength(0));
-            babylonMaterial.specularPower = materialNode.GetShininess(0) * 256;
+            babylonMaterial.ambient = materialNode.GetAmbient(0, false).ToArray();
+            babylonMaterial.diffuse = materialNode.GetDiffuse(0, false).ToArray();
+            babylonMaterial.specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false));
+            babylonMaterial.specularPower = materialNode.GetShininess(0, false) * 256;
 
-            babylonMaterial.emissive = materialNode.SelfIlluminationColorOn ? materialNode.GetSelfIllumColor(0).ToArray() : materialNode.GetDiffuse(0).Scale(materialNode.GetSelfIllumination(0));
-            babylonMaterial.alpha = 1.0f - materialNode.GetTransparency(0);
+            babylonMaterial.emissive = materialNode.GetSelfIllumColorOn(0, false) ? materialNode.GetSelfIllumColor(0, false).ToArray() : materialNode.GetDiffuse(0, false).Scale(materialNode.GetSelfIllum(0, false));
+            babylonMaterial.alpha = 1.0f - materialNode.GetXParency(0, false);
 
-            var stdMat = materialNode._Mtl.GetParamBlock(0).Owner as IStdMat2;
+            var stdMat = materialNode.GetParamBlock(0).Owner as IStdMat2;
 
             if (stdMat != null)
             {

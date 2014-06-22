@@ -4,15 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Max;
-using MaxSharp;
 using SharpDX;
-using Color = MaxSharp.Color;
 
 namespace Max2Babylon
 {
     public static class Tools
     {
         public const float Epsilon = 0.001f;
+
+        public static IPoint3 XAxis { get { return Loader.Global.Point3.Create(1, 0, 0); } }
+        public static IPoint3 YAxis { get { return Loader.Global.Point3.Create(0, 1, 0); } }
+        public static IPoint3 ZAxis { get { return Loader.Global.Point3.Create(0, 0, 1); } }
+        public static IPoint3 Origin { get { return Loader.Global.Point3.Create(0, 0, 0); } }
+
+        public static IInterval Forever
+        {
+            get { return Loader.Global.Interval.Create(int.MinValue, int.MaxValue); }
+        }
+
+        public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
 
         public static bool IsTextureCube(string filepath)
         {
@@ -107,7 +117,7 @@ namespace Max2Babylon
             }
         }
 
-        public static VNormal[] ComputeNormals(IMesh mesh)
+        public static VNormal[] ComputeNormals(IMesh mesh, bool optimize)
         {
             var vnorms = new VNormal[mesh.NumVerts];
             var fnorms = new Vector3[mesh.NumFaces];
@@ -128,7 +138,7 @@ namespace Max2Babylon
 
                 for (var j = 0; j < 3; j++)
                 {
-                    vnorms[(int)face.V[j]].AddNormal(fnorms[index], face.SmGroup);
+                    vnorms[(int)face.V[j]].AddNormal(fnorms[index], optimize ? 1 : face.SmGroup);
                 }
 
                 fnorms[index].Normalize();
@@ -187,13 +197,9 @@ namespace Max2Babylon
             return new[] { value.X, value.Z, value.Y, value.W };
         }
 
-        public static float[] Scale(this Color value, float scale)
+        public static float[] Scale(this IColor value, float scale)
         {
-            return new[] { value.r * scale, value.g * scale, value.b * scale };
-        }
-        public static float[] ToArray(this Color value)
-        {
-            return new[] { value.r, value.g, value.b };
+            return new[] { value.R * scale, value.G * scale, value.B * scale };
         }
 
         public static float[] ToArray(this IPoint4 value)
@@ -226,14 +232,31 @@ namespace Max2Babylon
             return new[] { value.R, value.G, value.B };
         }
 
-        public static IEnumerable<Node> NodesListBySuperClass(this Scene scene, SuperClassID sid)
+        public static IEnumerable<IINode> Nodes(this IINode node)
         {
-            return from n in scene.NodeTree where n.Object != null && n._Node.EvalWorldState(0, false).Obj.SuperClassID == sid select n;
+            for (int i = 0; i < node.NumberOfChildren; ++i)
+                if (node.GetChildNode(i) != null)
+                    yield return node.GetChildNode(i);
         }
 
-        public static IEnumerable<Node> NodesListBySuperClasses(this Scene scene, SuperClassID[] sids)
+        public static IEnumerable<IINode> NodeTree(this IINode node)
         {
-            return from n in scene.NodeTree where n.Object != null && sids.Any(sid => n._Node.EvalWorldState(0, false).Obj.SuperClassID == sid) select n;
+            foreach (var x in node.Nodes())
+            {
+                foreach (var y in x.NodeTree())
+                    yield return y;
+                yield return x;
+            }
+        }
+
+        public static IEnumerable<IINode> NodesListBySuperClass(this IINode rootNode, SClass_ID sid)
+        {
+            return from n in rootNode.NodeTree() where n.ObjectRef != null && n.EvalWorldState(0, false).Obj.SuperClassID == sid select n;
+        }
+
+        public static IEnumerable<IINode> NodesListBySuperClasses(this IINode rootNode, SClass_ID[] sids)
+        {
+            return from n in rootNode.NodeTree() where n.ObjectRef != null && sids.Any(sid => n.EvalWorldState(0, false).Obj.SuperClassID == sid) select n;
         }
 
         public static float ConvertFov(float fov)
@@ -241,78 +264,62 @@ namespace Max2Babylon
             return (float)(2.0f * Math.Atan(Math.Tan(fov / 2.0f) / Loader.Core.ImageAspRatio));
         }
 
-        public static bool HasParent(this Node node)
+        public static bool HasParent(this IINode node)
         {
-            return node.Parent != null && node.Parent.Object != null;
+            return node.ParentNode != null && node.ParentNode.ObjectRef != null;
         }
 
-        public static Guid GetGuid(this Animatable node)
+        public static Guid GetGuid(this IAnimatable node)
         {
-            var appData = node.GetAppData(new ClassID(Loader.Class_ID), SuperClassID.BaseNode);
-
-            var uidData = appData.GetChunk(0);
+            var uidData = node.GetAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 0);
             Guid uid;
 
             if (uidData != null)
             {
-                uid = new Guid(uidData);
+                uid = new Guid(uidData.Data);
             }
             else
             {
                 uid = Guid.NewGuid();
-                appData.AddChunk(0, uid.ToByteArray());
+                node.AddAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 0, uid.ToByteArray());
             }
 
             return uid;
         }
 
-        public static Guid GetGuid(this IINode node)
+        public static string GetLocalData(this IAnimatable node)
         {
-            return GetGuid(Animatable.CreateWrapper<Node>(node));
-        }
-
-        public static string GetLocalData(this Node node)
-        {
-            var appData = node.GetAppData(new ClassID(Loader.Class_ID), SuperClassID.BaseNode);
-
-            var uidData = appData.GetChunk(1);
+            var uidData = node.GetAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1);
 
             if (uidData != null)
             {
-                return System.Text.Encoding.UTF8.GetString(uidData);
+                return System.Text.Encoding.UTF8.GetString(uidData.Data);
             }
 
             return "";
         }
 
-        public static void SetLocalData(this Node node, string value)
+        public static void SetLocalData(this IAnimatable node, string value)
         {
-            var appData = node.GetAppData(new ClassID(Loader.Class_ID), SuperClassID.BaseNode);
-
-            var uidData = appData.GetChunk(1);
+            var uidData = node.GetAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1);
 
             if (uidData != null)
             {
-                appData.RemoveChunk(1);
+                node.RemoveAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1);
             }
 
-            appData.AddChunk(1, System.Text.Encoding.UTF8.GetBytes(value));
+            node.AddAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1, System.Text.Encoding.UTF8.GetBytes(value));
         }
 
-        public static IMatrix3 GetWorldMatrix(this Node node, TimeValue t, bool parent)
+        public static IMatrix3 GetWorldMatrix(this IINode node, int t, bool parent)
         {
-            return node._Node.GetWorldMatrix(t, parent);
-        }
-
-        public static IMatrix3 GetWorldMatrix(this IINode node, TimeValue t, bool parent)
-        {
-            var tm = node.GetNodeTM(t, Interval.Forever._IInterval);
-            var ptm = node.ParentNode.GetNodeTM(t, Interval.Forever._IInterval);
+            var tm = node.GetNodeTM(t, Forever);
+            var ptm = node.ParentNode.GetNodeTM(t, Forever);
 
             if (!parent)
                 return tm;
 
-            if (node.ParentNode.SuperClassID == SuperClassID.Camera)
+            if (node.ParentNode.SuperClassID == SClass_ID.Camera)
             {
                 var r = ptm.GetRow(3);
                 ptm.IdentityMatrix();
@@ -325,10 +332,12 @@ namespace Max2Babylon
 
         public static ITriObject GetMesh(this IObject obj)
         {
-            if (obj.CanConvertToType(ClassID.TriObject._IClass_ID) == 0)
+            var triObjectClassId = Loader.Global.Class_ID.Create(0x0009, 0);
+
+            if (obj.CanConvertToType(triObjectClassId) == 0)
                 return null;
 
-            return obj.ConvertToType(0, ClassID.TriObject._IClass_ID) as ITriObject;
+            return obj.ConvertToType(0, triObjectClassId) as ITriObject;
         }
 
         public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)

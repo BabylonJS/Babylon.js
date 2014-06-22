@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
-using MaxSharp;
 
 namespace Max2Babylon
 {

@@ -1,8 +1,6 @@
-﻿using System;
-using Autodesk.Max;
+﻿using Autodesk.Max;
 using Autodesk.Max.IQuadMenuContext;
 using Autodesk.Max.Plugins;
-using MaxSharp;
 
 namespace Max2Babylon
 {

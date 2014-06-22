@@ -74,7 +74,7 @@
             // 
             this.txtFilename.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFilename.Location = new System.Drawing.Point(18, 33);
+            this.txtFilename.Location = new System.Drawing.Point(18, 34);
             this.txtFilename.Name = "txtFilename";
             this.txtFilename.Size = new System.Drawing.Size(420, 20);
             this.txtFilename.TabIndex = 3;
@@ -84,7 +84,7 @@
             // 
             this.butBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.butBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butBrowse.Location = new System.Drawing.Point(444, 31);
+            this.butBrowse.Location = new System.Drawing.Point(444, 32);
             this.butBrowse.Name = "butBrowse";
             this.butBrowse.Size = new System.Drawing.Size(43, 23);
             this.butBrowse.TabIndex = 4;
@@ -145,7 +145,7 @@
             // 
             this.chkManifest.AutoSize = true;
             this.chkManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkManifest.Location = new System.Drawing.Point(18, 102);
+            this.chkManifest.Location = new System.Drawing.Point(18, 104);
             this.chkManifest.Name = "chkManifest";
             this.chkManifest.Size = new System.Drawing.Size(112, 17);
             this.chkManifest.TabIndex = 2;
@@ -156,7 +156,7 @@
             // 
             this.chkQuaternions.AutoSize = true;
             this.chkQuaternions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkQuaternions.Location = new System.Drawing.Point(18, 79);
+            this.chkQuaternions.Location = new System.Drawing.Point(18, 81);
             this.chkQuaternions.Name = "chkQuaternions";
             this.chkQuaternions.Size = new System.Drawing.Size(221, 17);
             this.chkQuaternions.TabIndex = 1;
@@ -166,7 +166,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 60);
+            this.label2.Location = new System.Drawing.Point(6, 62);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
             this.label2.TabIndex = 11;
@@ -177,7 +177,7 @@
             this.chkCopyTextures.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkCopyTextures.AutoSize = true;
             this.chkCopyTextures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkCopyTextures.Location = new System.Drawing.Point(338, 79);
+            this.chkCopyTextures.Location = new System.Drawing.Point(338, 81);
             this.chkCopyTextures.Name = "chkCopyTextures";
             this.chkCopyTextures.Size = new System.Drawing.Size(132, 17);
             this.chkCopyTextures.TabIndex = 12;
@@ -207,7 +207,7 @@
             this.chkHidden.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkHidden.AutoSize = true;
             this.chkHidden.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkHidden.Location = new System.Drawing.Point(338, 102);
+            this.chkHidden.Location = new System.Drawing.Point(338, 104);
             this.chkHidden.Name = "chkHidden";
             this.chkHidden.Size = new System.Drawing.Size(125, 17);
             this.chkHidden.TabIndex = 13;
@@ -229,7 +229,6 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.MinimumSize = new System.Drawing.Size(750, 400);
             this.Name = "ExporterForm";
-            this.ShowInTaskbar = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to .babylon file";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExporterForm_FormClosed);

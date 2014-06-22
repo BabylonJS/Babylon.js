@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using MaxSharp;
 
 namespace Max2Babylon
 {
@@ -13,12 +12,12 @@ namespace Max2Babylon
 
         private void butOK_Click(object sender, EventArgs e)
         {
-            Tools.UpdateVector3Control(gravityControl, Kernel.Scene.RootNode._Node, "babylonjs_gravity");
+            Tools.UpdateVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity");
         }
 
         private void ScenePropertiesForm_Load(object sender, EventArgs e)
         {
-            Tools.PrepareVector3Control(gravityControl, Kernel.Scene.RootNode._Node, "babylonjs_gravity", 0, -0.9f, 0);
+            Tools.PrepareVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity", 0, -0.9f, 0);
         }
     }
 }

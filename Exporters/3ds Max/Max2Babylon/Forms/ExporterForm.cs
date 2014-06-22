@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Windows.Forms;
-using MaxCustomControls;
-using MaxSharp;
+
 using Color = System.Drawing.Color;
 
 namespace Max2Babylon
 {
-    public partial class ExporterForm : MaxForm
+    public partial class ExporterForm : Form
     {
         private readonly BabylonExportActionItem babylonExportAction;
         private BabylonExporter exporter;
@@ -23,11 +22,11 @@ namespace Max2Babylon
 
         private void ExporterForm_Load(object sender, EventArgs e)
         {
-            txtFilename.Text = Kernel.Scene.RootNode.GetLocalData();
-            Tools.PrepareCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
-            Tools.PrepareCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
-            Tools.PrepareCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures", 1);
-            Tools.PrepareCheckBox(chkHidden, Kernel.Scene.RootNode._Node, "babylonjs_exporthidden");
+            txtFilename.Text = Loader.Core.RootNode.GetLocalData();
+            Tools.PrepareCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
+            Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
+            Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
+            Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -40,11 +39,11 @@ namespace Max2Babylon
 
         private void butExport_Click(object sender, EventArgs e)
         {
-            Tools.UpdateCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
-            Tools.UpdateCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
-            Tools.UpdateCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures");
-            Tools.UpdateCheckBox(chkHidden, Kernel.Scene.RootNode._Node, "babylonjs_exporthidden");
-            Kernel.Scene.RootNode.SetLocalData(txtFilename.Text);
+            Tools.UpdateCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
+            Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
+            Tools.UpdateCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures");
+            Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
+            Loader.Core.RootNode.SetLocalData(txtFilename.Text);
 
             exporter = new BabylonExporter();
 
@@ -154,7 +153,10 @@ namespace Max2Babylon
 
         private void ExporterForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            exporter.IsCancelled = true;
+            if (exporter != null)
+            {
+                exporter.IsCancelled = true;                
+            }
             babylonExportAction.Close();
         }
 
