@@ -196,7 +196,7 @@
             if (header[off_flags] & DDSD_MIPMAPCOUNT && loadMipmaps !== false) {
                 mipmapCount = Math.max(1, header[off_mipmapCount]);
             }
-
+            
             var bpp = header[off_RGBbpp];
 
             for (var face = 0; face < faces; face++) {
@@ -229,10 +229,6 @@
                     dataOffset += dataLength;
                     width *= 0.5;
                     height *= 0.5;
-
-                    if (width <= 2 || height <= 2) {
-                        break;
-                    }
                 }
             }
         }

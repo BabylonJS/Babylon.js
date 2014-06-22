@@ -193,10 +193,6 @@
                         dataOffset += dataLength;
                         width *= 0.5;
                         height *= 0.5;
-
-                        if (width <= 2 || height <= 2) {
-                            break;
-                        }
                     }
                 }
             };

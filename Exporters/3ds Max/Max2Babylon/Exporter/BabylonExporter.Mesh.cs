@@ -18,6 +18,11 @@ namespace Max2Babylon
                 return;
             }
 
+            if (!ExportHiddenObjects && !meshNode.Visible)
+            {
+                return;
+            }
+
             var babylonMesh = new BabylonMesh();
             int vx1, vx2, vx3;
 
