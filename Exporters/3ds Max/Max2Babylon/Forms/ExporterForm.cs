@@ -11,8 +11,8 @@ namespace Max2Babylon
         private readonly BabylonExportActionItem babylonExportAction;
         private BabylonExporter exporter;
 
-        TreeNode currentNode = null;
-        int currentRank = 0;
+        TreeNode currentNode;
+        int currentRank;
 
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
@@ -24,6 +24,9 @@ namespace Max2Babylon
         private void ExporterForm_Load(object sender, EventArgs e)
         {
             txtFilename.Text = Kernel.Scene.RootNode.GetLocalData();
+            Tools.PrepareCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
+            Tools.PrepareCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
+            Tools.PrepareCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures", 1);
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -36,6 +39,9 @@ namespace Max2Babylon
 
         private void butExport_Click(object sender, EventArgs e)
         {
+            Tools.UpdateCheckBox(chkQuaternions, Kernel.Scene.RootNode._Node, "babylonjs_exportquaternions");
+            Tools.UpdateCheckBox(chkManifest, Kernel.Scene.RootNode._Node, "babylonjs_generatemanifest");
+            Tools.UpdateCheckBox(chkCopyTextures, Kernel.Scene.RootNode._Node, "babylonjs_copytextures");
             Kernel.Scene.RootNode.SetLocalData(txtFilename.Text);
 
             exporter = new BabylonExporter();
@@ -96,7 +102,8 @@ namespace Max2Babylon
 
             try
             {
-                exporter.Export(txtFilename.Text);
+                exporter.CopyTexturesToOutput = chkCopyTextures.Checked;
+                exporter.Export(txtFilename.Text, chkManifest.Checked, this);
             }
             catch (OperationCanceledException)
             {

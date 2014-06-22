@@ -48,7 +48,7 @@ namespace Max2Babylon
             babylonTexture.coordinatesIndex = uvGen.MapChannel - 1;
             if (uvGen.MapChannel > 2)
             {
-                RaiseWarning(string.Format("Unsupported map channel, Only channel 1 and 2 are supported."));
+                RaiseWarning(string.Format("Unsupported map channel, Only channel 1 and 2 are supported."), 2);
             }
 
             babylonTexture.uOffset = uvGen.GetUOffs(0);
@@ -90,7 +90,7 @@ namespace Max2Babylon
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            ExportFloatAnimation("uOffset", animations, key => new []{uvGen.GetUOffs(key)});
+            ExportFloatAnimation("uOffset", animations, key => new[] { uvGen.GetUOffs(key) });
             ExportFloatAnimation("vOffset", animations, key => new[] { uvGen.GetVOffs(key) });
             ExportFloatAnimation("uScale", animations, key => new[] { uvGen.GetUScl(key) });
             ExportFloatAnimation("vScale", animations, key => new[] { uvGen.GetVScl(key) });
@@ -105,22 +105,22 @@ namespace Max2Babylon
             {
                 if (File.Exists(texture.MapName))
                 {
-                    File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                    if (Path.GetExtension(texture.MapName).ToLower() == ".dds")
+                    if (CopyTexturesToOutput)
                     {
-                        babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
+                        File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                     }
+                    babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
                 }
                 else
                 {
                     var texturepath = Path.Combine(Path.GetDirectoryName(Loader.Core.CurFilePath), babylonTexture.name);
                     if (File.Exists(texturepath))
                     {
-                        File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                        if (Path.GetExtension(texture.MapName).ToLower() == ".dds")
+                        if (CopyTexturesToOutput)
                         {
-                            babylonTexture.isCube = Tools.IsTextureCube(texturepath);
+                            File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                         }
+                        babylonTexture.isCube = Tools.IsTextureCube(texturepath);
                     }
                     else
                     {

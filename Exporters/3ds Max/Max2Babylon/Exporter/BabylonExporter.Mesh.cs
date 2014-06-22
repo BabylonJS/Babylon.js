@@ -115,17 +115,17 @@ namespace Max2Babylon
 
                 if (mesh.NumFaces < 1)
                 {
-                    RaiseError(string.Format("Mesh {0} has no face", babylonMesh.name));
+                    RaiseError(string.Format("Mesh {0} has no face", babylonMesh.name), 2);
                 }
 
                 if (mesh.NumVerts < 3)
                 {
-                    RaiseError(string.Format("Mesh {0} has not enough vertices", babylonMesh.name));
+                    RaiseError(string.Format("Mesh {0} has not enough vertices", babylonMesh.name), 2);
                 }
 
                 if (mesh.NumVerts >= 65536)
                 {
-                    RaiseError(string.Format("Mesh {0} has too many vertices (more than 65535)", babylonMesh.name));
+                    RaiseError(string.Format("Mesh {0} has too many vertices (more than 65535)", babylonMesh.name), 2);
                 }
 
                 // Material
@@ -187,11 +187,11 @@ namespace Max2Babylon
 
                 if (vertices.Count >= 65536)
                 {
-                    RaiseError(string.Format("Mesh {0} has too many vertices: {1} (limit is 65535)", babylonMesh.name, vertices.Count));
+                    RaiseError(string.Format("Mesh {0} has too many vertices: {1} (limit is 65535)", babylonMesh.name, vertices.Count), 2);
 
                     if (!optimizeVertices)
                     {
-                        RaiseError("You can try to optimize your object using [Try to optimize vertices] option");
+                        RaiseError("You can try to optimize your object using [Try to optimize vertices] option", 2);
                     }
                 }
 

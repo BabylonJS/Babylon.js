@@ -18,6 +18,11 @@ namespace Max2Babylon
         {
             try
             {
+                if (Path.GetExtension(filepath).ToLower() != ".dds")
+                {
+                    return false;
+                }
+
                 var data = File.ReadAllBytes(filepath);
                 var intArray = new int[data.Length / 4];
 
