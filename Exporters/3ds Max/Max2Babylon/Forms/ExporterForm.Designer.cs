@@ -37,8 +37,14 @@
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.treeView = new System.Windows.Forms.TreeView();
             this.butCancel = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.chkManifest = new System.Windows.Forms.CheckBox();
+            this.chkQuaternions = new System.Windows.Forms.CheckBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.chkCopyTextures = new System.Windows.Forms.CheckBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // butExport
@@ -46,9 +52,9 @@
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(368, 51);
+            this.butExport.Location = new System.Drawing.Point(313, 153);
             this.butExport.Name = "butExport";
-            this.butExport.Size = new System.Drawing.Size(80, 23);
+            this.butExport.Size = new System.Drawing.Size(197, 27);
             this.butExport.TabIndex = 0;
             this.butExport.Text = "Export";
             this.butExport.UseVisualStyleBackColor = true;
@@ -57,7 +63,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(150, 9);
+            this.label1.Location = new System.Drawing.Point(6, 17);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 2;
@@ -67,9 +73,9 @@
             // 
             this.txtFilename.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFilename.Location = new System.Drawing.Point(150, 25);
+            this.txtFilename.Location = new System.Drawing.Point(18, 33);
             this.txtFilename.Name = "txtFilename";
-            this.txtFilename.Size = new System.Drawing.Size(481, 20);
+            this.txtFilename.Size = new System.Drawing.Size(420, 20);
             this.txtFilename.TabIndex = 3;
             this.txtFilename.TextChanged += new System.EventHandler(this.txtFilename_TextChanged);
             // 
@@ -77,7 +83,7 @@
             // 
             this.butBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.butBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butBrowse.Location = new System.Drawing.Point(637, 22);
+            this.butBrowse.Location = new System.Drawing.Point(444, 31);
             this.butBrowse.Name = "butBrowse";
             this.butBrowse.Size = new System.Drawing.Size(43, 23);
             this.butBrowse.TabIndex = 4;
@@ -95,9 +101,9 @@
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(153, 418);
+            this.progressBar.Location = new System.Drawing.Point(12, 516);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(441, 23);
+            this.progressBar.Size = new System.Drawing.Size(713, 23);
             this.progressBar.TabIndex = 5;
             // 
             // treeView
@@ -105,9 +111,9 @@
             this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView.Location = new System.Drawing.Point(153, 80);
+            this.treeView.Location = new System.Drawing.Point(12, 186);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(527, 333);
+            this.treeView.Size = new System.Drawing.Size(799, 324);
             this.treeView.TabIndex = 6;
             // 
             // butCancel
@@ -115,7 +121,7 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(600, 418);
+            this.butCancel.Location = new System.Drawing.Point(731, 516);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 7;
@@ -123,37 +129,102 @@
             this.butCancel.UseVisualStyleBackColor = true;
             this.butCancel.Click += new System.EventHandler(this.butCancel_Click);
             // 
-            // pictureBox1
+            // pictureBox2
             // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(132, 302);
-            this.pictureBox1.TabIndex = 8;
-            this.pictureBox1.TabStop = false;
+            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(511, 12);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(300, 130);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBox2.TabIndex = 9;
+            this.pictureBox2.TabStop = false;
+            // 
+            // chkManifest
+            // 
+            this.chkManifest.AutoSize = true;
+            this.chkManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkManifest.Location = new System.Drawing.Point(18, 102);
+            this.chkManifest.Name = "chkManifest";
+            this.chkManifest.Size = new System.Drawing.Size(112, 17);
+            this.chkManifest.TabIndex = 2;
+            this.chkManifest.Text = "Generate .manifest";
+            this.chkManifest.ThreeState = true;
+            this.chkManifest.UseVisualStyleBackColor = true;
+            // 
+            // chkQuaternions
+            // 
+            this.chkQuaternions.AutoSize = true;
+            this.chkQuaternions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkQuaternions.Location = new System.Drawing.Point(18, 79);
+            this.chkQuaternions.Name = "chkQuaternions";
+            this.chkQuaternions.Size = new System.Drawing.Size(221, 17);
+            this.chkQuaternions.TabIndex = 1;
+            this.chkQuaternions.Text = "Export quaternions instead of Euler angles";
+            this.chkQuaternions.ThreeState = true;
+            this.chkQuaternions.UseVisualStyleBackColor = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 60);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(46, 13);
+            this.label2.TabIndex = 11;
+            this.label2.Text = "Options:";
+            // 
+            // chkCopyTextures
+            // 
+            this.chkCopyTextures.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkCopyTextures.AutoSize = true;
+            this.chkCopyTextures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkCopyTextures.Location = new System.Drawing.Point(338, 79);
+            this.chkCopyTextures.Name = "chkCopyTextures";
+            this.chkCopyTextures.Size = new System.Drawing.Size(132, 17);
+            this.chkCopyTextures.TabIndex = 12;
+            this.chkCopyTextures.Text = "Copy textures to output";
+            this.chkCopyTextures.ThreeState = true;
+            this.chkCopyTextures.UseVisualStyleBackColor = true;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.chkCopyTextures);
+            this.groupBox1.Controls.Add(this.txtFilename);
+            this.groupBox1.Controls.Add(this.chkManifest);
+            this.groupBox1.Controls.Add(this.butBrowse);
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.chkQuaternions);
+            this.groupBox1.Location = new System.Drawing.Point(12, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(493, 136);
+            this.groupBox1.TabIndex = 13;
+            this.groupBox1.TabStop = false;
             // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(692, 457);
-            this.Controls.Add(this.pictureBox1);
+            this.ClientSize = new System.Drawing.Size(823, 551);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.treeView);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.butExport);
-            this.Controls.Add(this.butBrowse);
-            this.Controls.Add(this.txtFilename);
-            this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(500, 400);
+            this.MinimumSize = new System.Drawing.Size(750, 400);
             this.Name = "ExporterForm";
             this.ShowInTaskbar = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to .babylon file";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExporterForm_FormClosed);
             this.Load += new System.EventHandler(this.ExporterForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -169,6 +240,11 @@
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.TreeView treeView;
         private System.Windows.Forms.Button butCancel;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.CheckBox chkQuaternions;
+        private System.Windows.Forms.CheckBox chkManifest;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.CheckBox chkCopyTextures;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }

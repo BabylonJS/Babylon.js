@@ -24,6 +24,7 @@ namespace Max2Babylon
         readonly List<string> alreadyExportedTextures = new List<string>();
 
         public bool IsCancelled { get; set; }
+        public bool CopyTexturesToOutput { get; set; }
 
         private bool exportQuaternionsInsteadOfEulers;
 
@@ -73,7 +74,7 @@ namespace Max2Babylon
             }
         }
 
-        public void Export(string outputFile)
+        public void Export(string outputFile, bool generateManifest, Form callerForm)
         {
             IsCancelled = false;
             RaiseMessage("Exportation started");
@@ -92,6 +93,11 @@ namespace Max2Babylon
             // Save scene
             RaiseMessage("Saving 3ds max file");
             var forceSave = Loader.Core.FileSave;
+
+            if (callerForm != null)
+            {
+                callerForm.BringToFront();
+            }
 
             // Global
             babylonScene.autoClear = true;
@@ -113,7 +119,7 @@ namespace Max2Babylon
                 {
                     mainCamera = babylonScene.CamerasList[0];
                     babylonScene.activeCameraID = mainCamera.id;
-                    RaiseMessage("Active camera set to " + mainCamera.name, 1, true);
+                    RaiseMessage("Active camera set to " + mainCamera.name, Color.Green, 1, true);
                 }
             }
 
@@ -204,6 +210,11 @@ namespace Max2Babylon
                 jsonSerializer.Serialize(jsonWriter, babylonScene);
             }
             File.WriteAllText(outputFile, sb.ToString());
+
+            if (generateManifest)
+            {
+                File.WriteAllText(outputFile + ".manifest", "{\r\n\"version\" : 1,\r\n\"enableSceneOffline\" : true,\r\n\"enableTexturesOffline\" : true\r\n}");
+            }
 
             ReportProgressChanged(100);
 
