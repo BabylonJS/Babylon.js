@@ -23,7 +23,6 @@ namespace Max2Babylon
         private void ExporterForm_Load(object sender, EventArgs e)
         {
             txtFilename.Text = Loader.Core.RootNode.GetLocalData();
-            Tools.PrepareCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
             Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
@@ -37,9 +36,8 @@ namespace Max2Babylon
             }
         }
 
-        private void butExport_Click(object sender, EventArgs e)
+        private async void butExport_Click(object sender, EventArgs e)
         {
-            Tools.UpdateCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
             Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures");
             Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
@@ -105,7 +103,7 @@ namespace Max2Babylon
             {
                 exporter.ExportHiddenObjects = chkHidden.Checked;
                 exporter.CopyTexturesToOutput = chkCopyTextures.Checked;
-                exporter.Export(txtFilename.Text, chkManifest.Checked, this);
+                await exporter.ExportAsync(txtFilename.Text, chkManifest.Checked, this);
             }
             catch (OperationCanceledException)
             {
@@ -127,27 +125,33 @@ namespace Max2Babylon
 
         private TreeNode CreateTreeNode(int rank, string text, Color color)
         {
-            var newNode = new TreeNode(text) { ForeColor = color };
-            if (rank == 0)
-            {
-                treeView.Nodes.Add(newNode);
-            }
-            else if (rank == currentRank + 1)
-            {
-                currentNode.Nodes.Add(newNode);
-            }
-            else
-            {
-                var parentNode = currentNode;
-                while (currentRank != rank - 1)
-                {
-                    parentNode = parentNode.Parent;
-                    currentRank--;
-                }
-                parentNode.Nodes.Add(newNode);
-            }
+            TreeNode newNode = null;
 
-            currentRank = rank;
+            Invoke(new Action(() =>
+            {
+                newNode = new TreeNode(text) {ForeColor = color};
+                if (rank == 0)
+                {
+                    treeView.Nodes.Add(newNode);
+                }
+                else if (rank == currentRank + 1)
+                {
+                    currentNode.Nodes.Add(newNode);
+                }
+                else
+                {
+                    var parentNode = currentNode;
+                    while (currentRank != rank - 1)
+                    {
+                        parentNode = parentNode.Parent;
+                        currentRank--;
+                    }
+                    parentNode.Nodes.Add(newNode);
+                }
+
+                currentRank = rank;
+            }));
+
             return newNode;
         }
 

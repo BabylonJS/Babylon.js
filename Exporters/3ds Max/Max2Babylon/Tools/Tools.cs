@@ -24,27 +24,6 @@ namespace Max2Babylon
 
         public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
 
-        public static bool IsTextureCube(string filepath)
-        {
-            try
-            {
-                if (Path.GetExtension(filepath).ToLower() != ".dds")
-                {
-                    return false;
-                }
-
-                var data = File.ReadAllBytes(filepath);
-                var intArray = new int[data.Length / 4];
-
-                Buffer.BlockCopy(data, 0, intArray, 0, data.Length);
-
-                return (intArray[28] & 0x200) == 0x200;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         public static Vector3 ToEulerAngles(this IQuat q)
         {
@@ -330,6 +309,25 @@ namespace Max2Babylon
             return tm.Multiply(ptm);
         }
 
+        public static IMatrix3 GetWorldMatrixComplete(this IINode node, int t, bool parent)
+        {
+            var tm = node.GetObjTMAfterWSM(t, Forever);
+            var ptm = node.ParentNode.GetObjTMAfterWSM(t, Forever);
+
+            if (!parent)
+                return tm;
+
+            if (node.ParentNode.SuperClassID == SClass_ID.Camera)
+            {
+                var r = ptm.GetRow(3);
+                ptm.IdentityMatrix();
+                ptm.SetRow(3, r);
+            }
+
+            ptm.Invert();
+            return tm.Multiply(ptm);
+        }
+
         public static ITriObject GetMesh(this IObject obj)
         {
             var triObjectClassId = Loader.Global.Class_ID.Create(0x0009, 0);
@@ -403,7 +401,11 @@ namespace Max2Babylon
         public static bool GetBoolProperty(this IINode node, string propertyName, int defaultState = 0)
         {
             int state = defaultState;
+#if MAX2015
+            node.GetUserPropBool(propertyName, ref state);
+#else
             node.GetUserPropBool(ref propertyName, ref state);
+#endif
 
             return state == 1;
         }
@@ -411,7 +413,11 @@ namespace Max2Babylon
         public static float GetFloatProperty(this IINode node, string propertyName, float defaultState = 0)
         {
             float state = defaultState;
+#if MAX2015
+            node.GetUserPropFloat(propertyName, ref state);
+#else
             node.GetUserPropFloat(ref propertyName, ref state);
+#endif
 
             return state;
         }
@@ -420,15 +426,28 @@ namespace Max2Babylon
         {
             float state0 = 0;
             string name = propertyName + "_x";
+#if MAX2015
+            node.GetUserPropFloat(name, ref state0);
+#else
             node.GetUserPropFloat(ref name, ref state0);
+#endif
+
 
             float state1 = 0;
             name = propertyName + "_y";
+#if MAX2015
+            node.GetUserPropFloat(name, ref state1);
+#else
             node.GetUserPropFloat(ref name, ref state1);
+#endif
 
             float state2 = 0;
             name = propertyName + "_z";
+#if MAX2015
+            node.GetUserPropFloat(name, ref state2);
+#else
             node.GetUserPropFloat(ref name, ref state2);
+#endif
 
             return new[] { state0, state1, state2 };
         }
@@ -470,7 +489,11 @@ namespace Max2Babylon
         {
             if (checkBox.CheckState != CheckState.Indeterminate)
             {
+#if MAX2015
+                node.SetUserPropBool(propertyName, checkBox.CheckState == CheckState.Checked);
+#else
                 node.SetUserPropBool(ref propertyName, checkBox.CheckState == CheckState.Checked);
+#endif
             }
         }
 
@@ -491,7 +514,11 @@ namespace Max2Babylon
         {
             foreach (var node in nodes)
             {
+#if MAX2015
+                node.SetUserPropFloat(propertyName, (float)nup.Value);
+#else
                 node.SetUserPropFloat(ref propertyName, (float)nup.Value);
+#endif
             }
         }
 
@@ -505,13 +532,25 @@ namespace Max2Babylon
         public static void UpdateVector3Control(Vector3Control vector3Control, IINode node, string propertyName)
         {
             string name = propertyName + "_x";
+#if MAX2015
+            node.SetUserPropFloat(name, vector3Control.X);
+#else
             node.SetUserPropFloat(ref name, vector3Control.X);
+#endif
 
             name = propertyName + "_y";
+#if MAX2015
+            node.SetUserPropFloat(name, vector3Control.Y);
+#else
             node.SetUserPropFloat(ref name, vector3Control.Y);
+#endif
 
             name = propertyName + "_z";
+#if MAX2015
+            node.SetUserPropFloat(name, vector3Control.Z);
+#else
             node.SetUserPropFloat(ref name, vector3Control.Z);
+#endif
         }
 
         public static void UpdateVector3Control(Vector3Control vector3Control, List<IINode> nodes, string propertyName)

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Max;
 using BabylonExport.Entities;
@@ -74,10 +76,10 @@ namespace Max2Babylon
             }
         }
 
-        public void Export(string outputFile, bool generateManifest, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, Form callerForm)
         {
             IsCancelled = false;
-            RaiseMessage("Exportation started");
+            RaiseMessage("Exportation started", Color.Blue);
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
             var maxScene = Loader.Core.RootNode;
@@ -89,6 +91,9 @@ namespace Max2Babylon
                 ReportProgressChanged(100);
                 return;
             }
+
+            var watch = new Stopwatch();
+            watch.Start();
 
             // Save scene
             RaiseMessage("Saving 3ds max file");
@@ -105,7 +110,7 @@ namespace Max2Babylon
             babylonScene.ambientColor = Loader.Core.GetAmbient(0, Tools.Forever).ToArray();
 
             babylonScene.gravity = maxScene.GetVector3Property("babylonjs_gravity");
-            exportQuaternionsInsteadOfEulers = maxScene.GetBoolProperty("babylonjs_exportquaternions");
+            exportQuaternionsInsteadOfEulers = maxScene.GetBoolProperty("babylonjs_exportquaternions", 1);
 
             // Cameras
             BabylonCamera mainCamera = null;
@@ -205,33 +210,42 @@ namespace Max2Babylon
             }
 
             // Skeletons
-            RaiseMessage("Exporting skeletons");
-            foreach (var skin in skins)
+            if (skins.Count > 0)
             {
-                ExportSkin(skin, babylonScene);
-                skin.Dispose();
+                RaiseMessage("Exporting skeletons");
+                foreach (var skin in skins)
+                {
+                    ExportSkin(skin, babylonScene);
+                    skin.Dispose();
+                }
             }
 
             // Output
+            RaiseMessage("Saving to output file");
             babylonScene.Prepare(false);
             var jsonSerializer = JsonSerializer.Create();
             var sb = new StringBuilder();
             var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
-            using (var jsonWriter = new JsonTextWriterOptimized(sw))
-            {
-                jsonWriter.Formatting = Formatting.None;
-                jsonSerializer.Serialize(jsonWriter, babylonScene);
-            }
-            File.WriteAllText(outputFile, sb.ToString());
 
-            if (generateManifest)
+            await Task.Run(() =>
             {
-                File.WriteAllText(outputFile + ".manifest", "{\r\n\"version\" : 1,\r\n\"enableSceneOffline\" : true,\r\n\"enableTexturesOffline\" : true\r\n}");
-            }
+                using (var jsonWriter = new JsonTextWriterOptimized(sw))
+                {
+                    jsonWriter.Formatting = Formatting.None;
+                    jsonSerializer.Serialize(jsonWriter, babylonScene);
+                }
+                File.WriteAllText(outputFile, sb.ToString());
+
+                if (generateManifest)
+                {
+                    File.WriteAllText(outputFile + ".manifest",
+                        "{\r\n\"version\" : 1,\r\n\"enableSceneOffline\" : true,\r\n\"enableTexturesOffline\" : true\r\n}");
+                }
+            });
 
             ReportProgressChanged(100);
-
-            RaiseMessage("Exportation done");
+            watch.Stop();
+            RaiseMessage(string.Format("Exportation done in {0:0.00}s", watch.ElapsedMilliseconds / 1000.0), Color.Blue);
         }
     }
 }

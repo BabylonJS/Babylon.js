@@ -55,6 +55,8 @@ namespace Max2Babylon
             babylonMaterial.name = name;
             babylonMaterial.id = id;
 
+            
+
             babylonMaterial.ambient = materialNode.GetAmbient(0, false).ToArray();
             babylonMaterial.diffuse = materialNode.GetDiffuse(0, false).ToArray();
             babylonMaterial.specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false));
@@ -67,6 +69,9 @@ namespace Max2Babylon
 
             if (stdMat != null)
             {
+                babylonMaterial.backFaceCulling = !stdMat.TwoSided;
+                babylonMaterial.wireframe = stdMat.Wire;
+
                 // Textures
                 babylonMaterial.ambientTexture = ExportTexture(stdMat, 0, babylonScene);    // Ambient
                 babylonMaterial.diffuseTexture = ExportTexture(stdMat, 1, babylonScene);    // Diffuse

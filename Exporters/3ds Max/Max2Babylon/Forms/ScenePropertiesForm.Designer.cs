@@ -33,7 +33,10 @@
             this.label3 = new System.Windows.Forms.Label();
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkQuaternions = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -92,6 +95,28 @@
             this.butOK.UseVisualStyleBackColor = true;
             this.butOK.Click += new System.EventHandler(this.butOK_Click);
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.chkQuaternions);
+            this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox2.Location = new System.Drawing.Point(12, 105);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(319, 87);
+            this.groupBox2.TabIndex = 5;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Advanced";
+            // 
+            // chkQuaternions
+            // 
+            this.chkQuaternions.AutoSize = true;
+            this.chkQuaternions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkQuaternions.Location = new System.Drawing.Point(21, 28);
+            this.chkQuaternions.Name = "chkQuaternions";
+            this.chkQuaternions.Size = new System.Drawing.Size(221, 17);
+            this.chkQuaternions.TabIndex = 2;
+            this.chkQuaternions.Text = "Export quaternions instead of Euler angles";
+            this.chkQuaternions.UseVisualStyleBackColor = true;
+            // 
             // ScenePropertiesForm
             // 
             this.AcceptButton = this.butOK;
@@ -99,6 +124,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
             this.ClientSize = new System.Drawing.Size(343, 390);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOK);
             this.Controls.Add(this.groupBox1);
@@ -109,6 +135,8 @@
             this.Load += new System.EventHandler(this.ScenePropertiesForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -120,5 +148,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button butCancel;
         private System.Windows.Forms.Button butOK;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox chkQuaternions;
     }
 }
