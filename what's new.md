@@ -1,5 +1,53 @@
 Changes list
 ============
+- 1.12.0:
+ - **Major updates**
+ - Babylon.js is now entirely developed using TypeScript ([deltakosh](http://www.github.com/deltakosh), [davrous](http://www.github.com/davrous))
+ - Physics plugins: You can add your own physics engine to Babylon.js. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/Adding-your-own-physics-engine-plugin-to-Babylon.js). Cannon.js is the first supported plugin ([deltakosh](http://www.github.com/deltakosh))
+ - ```BABYLON.Action```: You can now create a complex system of interactions. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) ([deltakosh](http://www.github.com/deltakosh))
+ - Babylon.js Playground: Experiment and learn Babylon.js using the [playground](http://www.babylonjs.com/playground) ([deltakosh](http://www.github.com/deltakosh))
+ - Geometry system ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
+ - Support for TGA textures based on [Vincent Thibault](http://blog.robrowser.com/javascript-tga-loader.html) work ([deltakosh](http://www.github.com/deltakosh))
+ - ```BABYLON.Gamepads``` & ```BABYLON.Gamepad```: Support for Gamepad API (Xbox 360 Pad & Generic Pads) ([davrous](http://www.github.com/davrous))
+ - ```BABYLON.GamepadCamera```: use a FPS-like camera controlled by your gamepad using 1 line of code ([davrous](http://www.github.com/davrous))
+ - Hardware accelerated instances used to render identical meshes. More info [here](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-instances) ([deltakosh](http://www.github.com/deltakosh))
+ - New ```BABYLON.GroundMesh``` created by ```BABYLON.Mesh.Createground``` and ```BABYLON.Mesh.CreateGroundFromHeightMap```. This object is optimized for collisions and rendering of grounds (!!!). A first feature is also included ```GroundMesh.getHeightAtCoordinates``` ([deltakosh](http://www.github.com/deltakosh))
+ - Beta: New [exporter for 3ds Max 2013+](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) ([deltakosh](http://www.github.com/deltakosh))
+ - **Updates**
+ - DDS: Support for RGB, Luminance and cube file format ([deltakosh](http://www.github.com/deltakosh))
+ - New LensFlareSystem.isEnabled property ([deltakosh](http://www.github.com/deltakosh))
+ - New ```samplingMode``` parameter when creating textures ([deltakosh](http://www.github.com/deltakosh))
+ - Blender: changed object.isVisible to reflect the corresponding param in Blender ([vousk](http://www.github.com/vousk))
+ - New properties: ```scene.meshUnderPointer```, ```scene.pointerX```, ```scene.pointerY``` ([deltakosh](http://www.github.com/deltakosh))
+ - Added "layerMask" property to meshes and cameras ([marcolebdech](https://github.com/marcolebdech))
+ - New ```Mesh.showSubMeshesBoundingBox``` to display sbumeshes bounding boxes ([deltakosh](http://www.github.com/deltakosh))
+ - Octree are now more generics and used to optimize rendering, collisions and picking. [More info](https://github.com/BabylonJS/Babylon.js/wiki/Optimizing-performances-with-octrees) ([deltakosh](http://www.github.com/deltakosh))
+ - Shadows now support alpha testing ([deltakosh](http://www.github.com/deltakosh))
+ - New feature demo: [particles](http://www.babylon.com/?PARTICLES) ([deltakosh](http://www.github.com/deltakosh))
+ - New ```renderTargetTexture.refreshRate``` property to define the refresh rate of RenderTargetTexture: Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on... ([deltakosh](http://www.github.com/deltakosh))
+ - New ```scene.beforeCameraRender``` and ```scene.afterCameraRender``` callbacks ([deltakosh](http://www.github.com/deltakosh))
+ - New custom functions for ParticleSystem: ```startDirectionFunction``` and ```startPositionFunction``` ([deltakosh](http://www.github.com/deltakosh))
+ - ```useAlphaFromDiffuseTexture``` option for standard material to use 8-it alpha channel from the diffuse texture instead of using it as an alpha test value ([Platane](https://github.com/Platane))
+ - New ```Tools.Log, Tools.Warn, Tools.Error``` functions. Filter can be applied using ```Tools.CurrentLoglevel``` ([MaxenceBrasselet](https://github.com/MaxenceBrasselet), [deltakosh](http://www.github.com/deltakosh))
+ - Using grunt-contrib-uglify to reduce babylon.js size (from 500KB to 384KB) ([deltakosh](http://www.github.com/deltakosh))
+ - ```setDirectionToTarget``` function added to SpotLight, HemisphericLight and DirectionalLight ([Wingnutt](https://github.com/Wingnutt))
+ - Picking now takes viewport in account ([deltakosh](http://www.github.com/deltakosh))
+ - Point lights and spot lights now have a range ([deltakosh](http://www.github.com/deltakosh))
+ - Color3 interpolator for animations ([deltakosh](http://www.github.com/deltakosh))
+ - New function: ```VertexData.CreateGroundFromHeightMap```([deltakosh](http://www.github.com/deltakosh))
+ - New function: ```Tools.CreateScreenshot```([nicolas-obre](https://github.com/nicolas-obre))
+ - **Bugfixes**
+ - Fixing ```ArcRotateCamera.setPosition()``` ([Celian](https://github.com/kostar111))
+ - RenderTarget crashed when used with incremental engine ([deltakosh](http://www.github.com/deltakosh))
+ - Depth clear is now more controlled (Mainly for Ejecta) ([deltakosh](http://www.github.com/deltakosh))
+ - Fixed a bug with ratio when using RenderTargetTexture [deltakosh](http://www.github.com/deltakosh))
+ - Fixed a bug in the sandbox tool ([davrous](http://www.github.com/davrous))
+ - Fixed a bug with skybox seams [holcombj](https://github.com/holcombj))
+ - Moved mousewheel event from window to canvas [deltakosh](http://www.github.com/deltakosh))
+ - Fixed matricesIndices serialization ([gwenael-hagenmuller](https://github.com/gwenael-hagenmuller))
+ - Bug fix and GC optimisation on CSG ([clementlevasseur](https://github.com/clementlevasseur))
+ - **Breaking changes**
+ - ```Mesh.setVerticesData``` signature is now: (kind, values, updatable) instead of (values, kind, updatable) in order to be consistent with ```Mesh.updateVerticesData``` [deltakosh](http://www.github.com/deltakosh))
 - 1.11.0:
  - **Major updates**
  - New option for mesh: ```mesh.showBoundingBox``` to display mesh's bounding box. You can configure back and front color using ```scene.getBoundingBoxRenderer()```. This function returns a ```BABYLON.BoundingBoxRenderer``` where you can define ```backColor```, ```frontColor``` and ```showBackLines``` ([deltakosh](http://www.github.com/deltakosh))

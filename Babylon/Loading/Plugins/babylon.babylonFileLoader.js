@@ -103,6 +103,7 @@ var BABYLON = BABYLON || {};
 
         BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
         material.backFaceCulling = parsedMaterial.backFaceCulling;
+        material.wireframe = parsedMaterial.wireframe;
 
         if (parsedMaterial.diffuseTexture) {
             material.diffuseTexture = loadTexture(rootUrl, parsedMaterial.diffuseTexture, scene);
