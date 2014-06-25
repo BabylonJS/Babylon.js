@@ -86,6 +86,7 @@ Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can lear
  - Babylon scene file can be converted from .OBJ, .FBX, .MXB
  - Exporter for Blender
  - Exporter for Cheetah3d
+ - Exporter for 3ds Max
 
 ## Apache License 2.0 (Apache)
 

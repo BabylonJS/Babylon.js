@@ -36,6 +36,9 @@
                 var scene = this._scene;
                 var engine = scene.getEngine();
 
+                // Culling
+                engine.setState(subMesh.getMaterial().backFaceCulling);
+
                 // Managing instances
                 var batch = mesh._getInstancesRenderList();
 
