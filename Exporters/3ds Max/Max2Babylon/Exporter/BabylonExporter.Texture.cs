@@ -8,6 +8,51 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
+        bool IsTextureCube(string filepath)
+        {
+            try
+            {
+                if (Path.GetExtension(filepath).ToLower() != ".dds")
+                {
+                    return false;
+                }
+
+                var data = File.ReadAllBytes(filepath);
+                var intArray = new int[data.Length / 4];
+
+                Buffer.BlockCopy(data, 0, intArray, 0, data.Length);
+
+
+                int width = intArray[4];
+                int height = intArray[3];
+                int mipmapsCount = intArray[7];
+
+                if ((width >> (mipmapsCount -1)) > 1)
+                {
+                    var expected = 1;
+                    var currentWidth = width;
+
+                    while (currentWidth > 1)
+                    {
+                        currentWidth = currentWidth >> 1;
+                        expected++;
+                    }
+
+                    RaiseWarning(string.Format("Mipmaps chain is not complete: {0} maps instead of {1} (based on texture width: {2})", mipmapsCount, expected, width), 2);
+                    RaiseWarning(string.Format("You must generate a complete mipmaps chain for .dds)"), 2);
+                    RaiseWarning(string.Format("Mipmaps will be disabled for this texture. If you want automatic texture generation you cannot use a .dds)"), 2);
+                }
+
+                bool isCube = (intArray[28] & 0x200) == 0x200;
+
+                return isCube;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene, Boolean allowCube = false)
         {
             if (!stdMat.MapEnabled(index))
@@ -107,7 +152,7 @@ namespace Max2Babylon
                     {
                         File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                     }
-                    babylonTexture.isCube = Tools.IsTextureCube(texture.MapName);
+                    babylonTexture.isCube = IsTextureCube(texture.MapName);
                 }
                 else
                 {
@@ -118,7 +163,7 @@ namespace Max2Babylon
                         {
                             File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                         }
-                        babylonTexture.isCube = Tools.IsTextureCube(texturepath);
+                        babylonTexture.isCube = IsTextureCube(texturepath);
                     }
                     else
                     {
