@@ -14,6 +14,9 @@ namespace BabylonExport.Entities
         public bool backFaceCulling { get; set; }
 
         [DataMember]
+        public bool wireframe { get; set; }
+
+        [DataMember]
         public float[] ambient { get; set; }
 
         [DataMember]
