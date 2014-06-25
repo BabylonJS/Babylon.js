@@ -44,18 +44,9 @@
       <HintPath>Refs\Autodesk.Max.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MaxCustomControls, Version=15.6.164.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\MaxCustomControls.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MaxSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\MaxSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>Refs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -74,6 +65,7 @@
   <ItemGroup>
     <Compile Include="BabylonActionCallback.cs" />
     <Compile Include="BabylonPropertiesActionItem.cs" />
+    <Compile Include="Exporter\BabylonExporter.Skeleton.cs" />
     <Compile Include="Forms\LightPropertiesForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -137,9 +129,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
-    <Content Include="Refs\ManagedServices.dll" />
-    <Content Include="Refs\MaxCustomControls.dll" />
-    <Content Include="Refs\MaxSharp.dll" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\LightPropertiesForm.resx">
