@@ -238,14 +238,22 @@
             return this._renderId;
         }
 
+        private _updatePointerPosition(evt: PointerEvent): void {
+            var canvas = this._engine.getRenderingCanvas();
+            var rect = canvas.getBoundingClientRect();
+
+            this._pointerX = evt.clientX - rect.left; 
+            this._pointerY = evt.clientY - rect.top;
+        }
+
         // Pointers handling
         public attachControl() {
             this._onPointerMove = (evt: PointerEvent) => {
                 var canvas = this._engine.getRenderingCanvas();
 
-                this._pointerX = evt.offsetX || evt.layerX;
-                this._pointerY = evt.offsetY || evt.layerY;
-                var pickResult = this.pick(this._pointerX, this._pointerY, mesh => mesh.actionManager && mesh.isPickable);
+                this._updatePointerPosition(evt);
+
+                var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady());
 
                 if (pickResult.hit) {
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -260,7 +268,16 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
-                var pickResult = this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
+                var predicate = null;
+
+                if (!this.onPointerDown) {
+                    predicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
+                    };
+                }
+
+                this._updatePointerPosition(evt);
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -1207,7 +1224,7 @@
             return pickingInfo || new BABYLON.PickingInfo();
         }
 
-        public pick(x: number, y: number, predicate?: (mesh: Mesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
+        public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
             /// <param name="x">X position on screen</param>
             /// <param name="y">Y position on screen</param>
