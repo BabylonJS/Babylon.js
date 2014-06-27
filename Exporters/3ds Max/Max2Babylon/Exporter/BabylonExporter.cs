@@ -23,6 +23,7 @@ namespace Max2Babylon
 
         readonly List<string> alreadyExportedTextures = new List<string>();
 
+        public bool AutoSave3dsMaxFile { get; set; }
         public bool ExportHiddenObjects { get; set; }
         public bool IsCancelled { get; set; }
 
@@ -97,11 +98,15 @@ namespace Max2Babylon
 
             // Save scene
             RaiseMessage("Saving 3ds max file");
-            var forceSave = Loader.Core.FileSave;
 
-            if (callerForm != null)
+            if (AutoSave3dsMaxFile)
             {
-                callerForm.BringToFront();
+                var forceSave = Loader.Core.FileSave;
+
+                if (callerForm != null)
+                {
+                    callerForm.BringToFront();
+                }
             }
 
             // Global

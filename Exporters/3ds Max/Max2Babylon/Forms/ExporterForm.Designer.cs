@@ -42,6 +42,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkCopyTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -175,6 +176,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkAutoSave);
             this.groupBox1.Controls.Add(this.chkHidden);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.chkCopyTextures);
@@ -187,6 +189,17 @@
             this.groupBox1.Size = new System.Drawing.Size(493, 136);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
+            // 
+            // chkAutoSave
+            // 
+            this.chkAutoSave.AutoSize = true;
+            this.chkAutoSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkAutoSave.Location = new System.Drawing.Point(196, 104);
+            this.chkAutoSave.Name = "chkAutoSave";
+            this.chkAutoSave.Size = new System.Drawing.Size(130, 17);
+            this.chkAutoSave.TabIndex = 14;
+            this.chkAutoSave.Text = "Auto save 3ds Max file";
+            this.chkAutoSave.UseVisualStyleBackColor = true;
             // 
             // chkHidden
             // 
@@ -215,6 +228,8 @@
             this.Name = "ExporterForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to .babylon file";
+            this.Activated += new System.EventHandler(this.ExporterForm_Activated);
+            this.Deactivate += new System.EventHandler(this.ExporterForm_Deactivate);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExporterForm_FormClosed);
             this.Load += new System.EventHandler(this.ExporterForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -241,5 +256,6 @@
         private System.Windows.Forms.CheckBox chkCopyTextures;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox chkHidden;
+        private System.Windows.Forms.CheckBox chkAutoSave;
     }
 }
