@@ -283,6 +283,14 @@
             configurable: true
         });
 
+        Object.defineProperty(Engine, "Version", {
+            get: function () {
+                return "1.13.0";
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
