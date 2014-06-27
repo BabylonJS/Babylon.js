@@ -22,9 +22,8 @@ var BABYLON;
         });
 
         GroundMesh.prototype.optimize = function (chunksCount) {
-            if (typeof chunksCount === "undefined") { chunksCount = 32; }
             this.subdivide(this._subdivisions);
-            this.createOrUpdateSubmeshesOctree(chunksCount);
+            this.createOrUpdateSubmeshesOctree(32);
         };
 
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {

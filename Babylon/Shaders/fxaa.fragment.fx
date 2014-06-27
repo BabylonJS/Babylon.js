@@ -16,7 +16,8 @@ void main(){
 	vec3 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize)).xyz;
 	vec3 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize)).xyz;
 	vec3 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize)).xyz;
-	vec3 rgbM = texture2D(textureSampler, vUV ).xyz;
+	vec4 rgbaM = texture2D(textureSampler, vUV);
+	vec3 rgbM = rgbaM.xyz;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
 	float lumaNW = dot(rgbNW, luma);
 	float lumaNE = dot(rgbNE, luma);
@@ -46,9 +47,9 @@ void main(){
 		texture2D(textureSampler, vUV + dir * 0.5).xyz);
 	float lumaB = dot(rgbB, luma);
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
-		gl_FragColor = vec4(rgbA, 1.0);
+		gl_FragColor = vec4(rgbA, rgbaM.a);
 	}
 	else {
-		gl_FragColor = vec4(rgbB, 1.0);
+		gl_FragColor = vec4(rgbB, rgbaM.a);
 	}
 }

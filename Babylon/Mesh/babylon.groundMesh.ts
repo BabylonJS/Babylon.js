@@ -13,9 +13,9 @@
             return this._subdivisions;
         }
 
-        public optimize(chunksCount: number = 32): void {
+        public optimize(chunksCount: number): void {
             this.subdivide(this._subdivisions);
-            this.createOrUpdateSubmeshesOctree(chunksCount);
+            this.createOrUpdateSubmeshesOctree(32);
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {
