@@ -26,6 +26,7 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
+            Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -41,6 +42,8 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures");
             Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
+            Tools.UpdateCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave");
+
             Loader.Core.RootNode.SetLocalData(txtFilename.Text);
 
             exporter = new BabylonExporter();
@@ -101,6 +104,7 @@ namespace Max2Babylon
 
             try
             {
+                exporter.AutoSave3dsMaxFile = chkAutoSave.Checked;
                 exporter.ExportHiddenObjects = chkHidden.Checked;
                 exporter.CopyTexturesToOutput = chkCopyTextures.Checked;
                 await exporter.ExportAsync(txtFilename.Text, chkManifest.Checked, this);
@@ -172,6 +176,16 @@ namespace Max2Babylon
         private void butCancel_Click(object sender, EventArgs e)
         {
             exporter.IsCancelled = true;
+        }
+
+        private void ExporterForm_Activated(object sender, EventArgs e)
+        {
+            Loader.Global.DisableAccelerators();
+        }
+
+        private void ExporterForm_Deactivate(object sender, EventArgs e)
+        {
+            Loader.Global.EnableAccelerators();
         }
     }
 }
