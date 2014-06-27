@@ -172,16 +172,24 @@
             return this._renderId;
         };
 
+        Scene.prototype._updatePointerPosition = function (evt) {
+            var canvas = this._engine.getRenderingCanvas();
+            var rect = canvas.getBoundingClientRect();
+
+            this._pointerX = evt.clientX - rect.left;
+            this._pointerY = evt.clientY - rect.top;
+        };
+
         // Pointers handling
         Scene.prototype.attachControl = function () {
             var _this = this;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
 
-                _this._pointerX = evt.offsetX || evt.layerX;
-                _this._pointerY = evt.offsetY || evt.layerY;
+                _this._updatePointerPosition(evt);
+
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
-                    return mesh.actionManager && mesh.isPickable;
+                    return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
                 });
 
                 if (pickResult.hit) {
@@ -197,7 +205,16 @@
             };
 
             this._onPointerDown = function (evt) {
-                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
+                var predicate = null;
+
+                if (!_this.onPointerDown) {
+                    predicate = function (mesh) {
+                        return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
+                    };
+                }
+
+                _this._updatePointerPosition(evt);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
