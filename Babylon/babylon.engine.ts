@@ -164,6 +164,10 @@
             return Engine._DELAYLOADSTATE_NOTLOADED;
         }
 
+        public static get Version(): string {
+            return "1.13.0";
+        }
+
         // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
