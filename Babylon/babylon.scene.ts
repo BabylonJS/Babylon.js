@@ -238,21 +238,13 @@
             return this._renderId;
         }
 
-        private _updatePointerPosition(evt: PointerEvent): void {
-            var canvas = this._engine.getRenderingCanvas();
-            var rect = canvas.getBoundingClientRect();
-
-            this._pointerX = evt.clientX - rect.left; 
-            this._pointerY = evt.clientY - rect.top;
-        }
-
         // Pointers handling
         public attachControl() {
             this._onPointerMove = (evt: PointerEvent) => {
                 var canvas = this._engine.getRenderingCanvas();
 
-                this._updatePointerPosition(evt);
-
+                this._pointerX = evt.offsetX || evt.layerX;
+                this._pointerY = evt.offsetY || evt.layerY;
                 var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady());
 
                 if (pickResult.hit) {
@@ -268,6 +260,7 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
+
                 var predicate = null;
 
                 if (!this.onPointerDown) {
@@ -276,8 +269,7 @@
                     };
                 }
 
-                this._updatePointerPosition(evt);
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate);
+                var pickResult = this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
