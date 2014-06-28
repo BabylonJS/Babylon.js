@@ -44,6 +44,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
+            this.butExportAndRun = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -53,7 +54,7 @@
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(313, 153);
+            this.butExport.Location = new System.Drawing.Point(211, 153);
             this.butExport.Name = "butExport";
             this.butExport.Size = new System.Drawing.Size(197, 27);
             this.butExport.TabIndex = 0;
@@ -212,11 +213,25 @@
             this.chkHidden.Text = "Export hidden objects";
             this.chkHidden.UseVisualStyleBackColor = true;
             // 
+            // butExportAndRun
+            // 
+            this.butExportAndRun.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.butExportAndRun.Enabled = false;
+            this.butExportAndRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.butExportAndRun.Location = new System.Drawing.Point(414, 153);
+            this.butExportAndRun.Name = "butExportAndRun";
+            this.butExportAndRun.Size = new System.Drawing.Size(197, 27);
+            this.butExportAndRun.TabIndex = 14;
+            this.butExportAndRun.Text = "Export && Run";
+            this.butExportAndRun.UseVisualStyleBackColor = true;
+            this.butExportAndRun.Click += new System.EventHandler(this.butExportAndRun_Click);
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(823, 551);
+            this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.butCancel);
@@ -257,5 +272,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox chkHidden;
         private System.Windows.Forms.CheckBox chkAutoSave;
+        private System.Windows.Forms.Button butExportAndRun;
     }
 }

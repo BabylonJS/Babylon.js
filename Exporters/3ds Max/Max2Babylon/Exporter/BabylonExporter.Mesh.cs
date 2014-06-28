@@ -340,12 +340,12 @@ namespace Max2Babylon
 
             babylonMesh.animations = animations.ToArray();
 
-            if (meshNode.GetBoolProperty("babylonjs_autoanimate"))
+            if (meshNode.GetBoolProperty("babylonjs_autoanimate", 1))
             {
                 babylonMesh.autoAnimate = true;
                 babylonMesh.autoAnimateFrom = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonMesh.autoAnimateTo = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_to");
-                babylonMesh.autoAnimateLoop = meshNode.GetBoolProperty("babylonjs_autoanimateloop");
+                babylonMesh.autoAnimateTo = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_to", 100);
+                babylonMesh.autoAnimateLoop = meshNode.GetBoolProperty("babylonjs_autoanimateloop", 1);
             }
 
             babylonScene.MeshesList.Add(babylonMesh);

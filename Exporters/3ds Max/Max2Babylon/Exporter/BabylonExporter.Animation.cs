@@ -137,6 +137,16 @@ namespace Max2Babylon
                 keys.Add(generateFunc(index, keyControl));
             }
 
+            var end = Loader.Core.AnimRange.End;
+            if (keys[keys.Count - 1].frame != end / Ticks)
+            {
+                keys.Add(new BabylonAnimationKey()
+                {
+                    frame = end / Ticks,
+                    values = keys[keys.Count - 1].values
+                });
+            }
+
             var babylonAnimation = new BabylonAnimation
             {
                 dataType = dataType,
@@ -207,13 +217,23 @@ namespace Max2Babylon
 
                 if (animationPresent)
                 {
+
+                    if (keys[keys.Count - 1].frame != end / Ticks)
+                    {
+                        keys.Add(new BabylonAnimationKey()
+                        {
+                            frame = end / Ticks,
+                            values = keys[keys.Count - 1].values
+                        });
+                    }
+
                     var babylonAnimation = new BabylonAnimation
                     {
                         dataType = dataType,
                         name = property + " animation",
                         keys = keys.ToArray(),
                         framePerSecond = Loader.Global.FrameRate,
-                        loopBehavior = BabylonAnimation.LoopBehavior.Relative,
+                        loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
                         property = property
                     };
 

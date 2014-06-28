@@ -1,4 +1,5 @@
-﻿using ActionItem = Autodesk.Max.Plugins.ActionItem;
+﻿using System.Windows.Forms;
+using ActionItem = Autodesk.Max.Plugins.ActionItem;
 
 namespace Max2Babylon
 {
@@ -12,6 +13,7 @@ namespace Max2Babylon
                 form = new ExporterForm(this);
             form.Show();
             form.BringToFront();
+            form.WindowState = FormWindowState.Normal;
 
             return true;
         }

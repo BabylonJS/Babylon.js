@@ -48,8 +48,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkShowBoundingBox, objects, "babylonjs_showboundingbox");
             Tools.PrepareCheckBox(chkShowSubMeshesBoundingBox, objects, "babylonjs_showsubmeshesboundingbox");
 
-            Tools.PrepareCheckBox(chkAutoAnimate, objects, "babylonjs_autoanimate");
-            Tools.PrepareCheckBox(chkLoop, objects, "babylonjs_autoanimateloop");
+            Tools.PrepareCheckBox(chkAutoAnimate, objects, "babylonjs_autoanimate", 1);
+            Tools.PrepareCheckBox(chkLoop, objects, "babylonjs_autoanimateloop", 1);
             Tools.PrepareNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
             Tools.PrepareNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to", 100.0f);
         }

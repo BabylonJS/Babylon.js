@@ -125,7 +125,8 @@
     <Compile Include="Forms\Vector3Control.Designer.cs">
       <DependentUpon>Vector3Control.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tools\VNormal.cs" />
+    <Compile Include="Tools\VNormal.cs" /> 
+    <Compile Include="Tools\WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
