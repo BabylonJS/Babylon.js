@@ -168,6 +168,9 @@
     <Compile Include="..\Tools\VNormal.cs">
       <Link>Tools\VNormal.cs</Link>
     </Compile>
+    <Compile Include="..\Tools\WebServer.cs">
+      <Link>Tools\WebServer.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

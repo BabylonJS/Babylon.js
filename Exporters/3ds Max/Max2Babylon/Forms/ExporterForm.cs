@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Color = System.Drawing.Color;
@@ -27,6 +30,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
             Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);
+
+            butExportAndRun.Enabled = WebServer.IsSupported;
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -38,6 +43,11 @@ namespace Max2Babylon
         }
 
         private async void butExport_Click(object sender, EventArgs e)
+        {
+            await DoExport();
+        }
+
+        private async Task<bool> DoExport()
         {
             Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures");
@@ -102,6 +112,7 @@ namespace Max2Babylon
             butExport.Enabled = false;
             butCancel.Enabled = true;
 
+            bool success = true;
             try
             {
                 exporter.AutoSave3dsMaxFile = chkAutoSave.Checked;
@@ -112,6 +123,7 @@ namespace Max2Babylon
             catch (OperationCanceledException)
             {
                 progressBar.Value = 0;
+                success = false;
             }
             catch (Exception ex)
             {
@@ -119,12 +131,15 @@ namespace Max2Babylon
 
                 currentNode.EnsureVisible();
                 progressBar.Value = 0;
+                success = false;
             }
 
             butCancel.Enabled = false;
             butExport.Enabled = true;
 
             BringToFront();
+
+            return success;
         }
 
         private TreeNode CreateTreeNode(int rank, string text, Color color)
@@ -186,6 +201,19 @@ namespace Max2Babylon
         private void ExporterForm_Deactivate(object sender, EventArgs e)
         {
             Loader.Global.EnableAccelerators();
+        }
+
+        private async void butExportAndRun_Click(object sender, EventArgs e)
+        {
+            if (await DoExport())
+            {
+                WebServer.SceneFilename = Path.GetFileName(txtFilename.Text);
+                WebServer.SceneFolder = Path.GetDirectoryName(txtFilename.Text);
+
+                Process.Start("http://localhost:" + WebServer.Port);
+
+                WindowState = FormWindowState.Minimized;
+            }
         }
     }
 }

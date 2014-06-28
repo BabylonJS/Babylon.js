@@ -462,10 +462,18 @@ namespace Max2Babylon
             }
             else
             {
-                if (!state && checkBox.CheckState == CheckState.Checked ||
-                    state && checkBox.CheckState == CheckState.Unchecked)
+                if (checkBox.ThreeState)
                 {
-                    checkBox.CheckState = CheckState.Indeterminate;
+                    if (!state && checkBox.CheckState == CheckState.Checked ||
+                        state && checkBox.CheckState == CheckState.Unchecked)
+                    {
+                        checkBox.CheckState = CheckState.Indeterminate;
+                        return true;
+                    }
+                }
+                else
+                {
+                    checkBox.CheckState = state ? CheckState.Checked : CheckState.Unchecked;
                     return true;
                 }
             }
