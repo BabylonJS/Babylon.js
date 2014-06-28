@@ -12,13 +12,12 @@ uniform vec2 texelSize;
 
 void main(){
 	vec2 localTexelSize = texelSize;
-	vec3 rgbNW = texture2D(textureSampler, (vUV + vec2(-1.0, -1.0) * localTexelSize)).xyz;
-	vec3 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize)).xyz;
-	vec3 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize)).xyz;
-	vec3 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize)).xyz;
-	vec4 rgbaM = texture2D(textureSampler, vUV);
-	vec3 rgbM = rgbaM.xyz;
-	vec3 luma = vec3(0.299, 0.587, 0.114);
+	vec4 rgbNW = texture2D(textureSampler, (vUV + vec2(-1.0, -1.0) * localTexelSize));
+	vec4 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize));
+	vec4 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize));
+	vec4 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize));
+	vec4 rgbM = texture2D(textureSampler, vUV);
+	vec4 luma = vec4(0.299, 0.587, 0.114, 1.0);
 	float lumaNW = dot(rgbNW, luma);
 	float lumaNE = dot(rgbNE, luma);
 	float lumaSW = dot(rgbSW, luma);
@@ -38,18 +37,18 @@ void main(){
 		max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
 		dir * rcpDirMin)) * localTexelSize;
 
-	vec3 rgbA = 0.5 * (
-		texture2D(textureSampler, vUV + dir * (1.0 / 3.0 - 0.5)).xyz +
-		texture2D(textureSampler, vUV + dir * (2.0 / 3.0 - 0.5)).xyz);
+	vec4 rgbA = 0.5 * (
+		texture2D(textureSampler, vUV + dir * (1.0 / 3.0 - 0.5)) +
+		texture2D(textureSampler, vUV + dir * (2.0 / 3.0 - 0.5)));
 
-	vec3 rgbB = rgbA * 0.5 + 0.25 * (
-		texture2D(textureSampler, vUV + dir *  -0.5).xyz +
-		texture2D(textureSampler, vUV + dir * 0.5).xyz);
+	vec4 rgbB = rgbA * 0.5 + 0.25 * (
+		texture2D(textureSampler, vUV + dir *  -0.5) +
+		texture2D(textureSampler, vUV + dir * 0.5));
 	float lumaB = dot(rgbB, luma);
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
-		gl_FragColor = vec4(rgbA, rgbaM.a);
+		gl_FragColor = rgbA;
 	}
 	else {
-		gl_FragColor = vec4(rgbB, rgbaM.a);
+		gl_FragColor = rgbB;
 	}
 }
