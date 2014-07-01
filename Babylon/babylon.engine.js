@@ -941,8 +941,8 @@
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
-
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
+                        console.log("loading " + url);
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
                     }, samplingMode);
                 }, null, scene.database, true);
