@@ -24,7 +24,7 @@ To export you can use the [Babylon] menu in the main menu bar.
  - Animations: Position, Fov
 - *Lights*
  - Omni / spot / directional / Ambient(Hemispheric)
- - Shadows maps for directional lights
+ - Shadows maps for directional lights (Variance shadow maps can be actived by checking [ABsoulte Map Bias] in light properties)
  - Inclusion / exclusion lists
  - Position / direction
  - Intensity
