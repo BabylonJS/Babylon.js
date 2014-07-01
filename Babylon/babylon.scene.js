@@ -895,7 +895,7 @@
             }
 
             // Animations
-            var deltaTime = BABYLON.Tools.GetDeltaTime();
+            var deltaTime = Math.max(1.0, Math.min(BABYLON.Tools.GetDeltaTime(), 1000.0));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 

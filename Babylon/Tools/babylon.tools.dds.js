@@ -182,7 +182,11 @@
                                 gl.texImage2D(sampler, i, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         } else if (info.isLuminance) {
-                            dataLength = width * height;
+                            var unpackAlignment = gl.getParameter(gl.UNPACK_ALIGNMENT);
+                            var unpaddedRowSize = width;
+                            var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
+                            dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
+
                             byteArray = DDSTools.GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
                             gl.texImage2D(sampler, i, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, byteArray);
                         } else {
@@ -193,6 +197,9 @@
                         dataOffset += dataLength;
                         width *= 0.5;
                         height *= 0.5;
+
+                        width = Math.max(1.0, width);
+                        height = Math.max(1.0, height);
                     }
                 }
             };
