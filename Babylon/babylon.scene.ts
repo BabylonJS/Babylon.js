@@ -10,6 +10,9 @@
         public static FOGMODE_EXP2 = 2;
         public static FOGMODE_LINEAR = 3;
 
+        public static MinDeltaTime = 1.0;
+        public static MaxDeltaTime = 1000.0;
+
         // Members
         public autoClear = true;
         public clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -962,7 +965,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(1.0, Math.min(BABYLON.Tools.GetDeltaTime(), 1000.0));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
