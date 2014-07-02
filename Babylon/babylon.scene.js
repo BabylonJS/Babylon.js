@@ -895,7 +895,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(1.0, Math.min(BABYLON.Tools.GetDeltaTime(), 1000.0));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
@@ -1295,6 +1295,9 @@
         Scene.FOGMODE_EXP = 1;
         Scene.FOGMODE_EXP2 = 2;
         Scene.FOGMODE_LINEAR = 3;
+
+        Scene.MinDeltaTime = 1.0;
+        Scene.MaxDeltaTime = 1000.0;
         return Scene;
     })();
     BABYLON.Scene = Scene;

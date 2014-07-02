@@ -823,15 +823,16 @@ var BABYLON = BABYLON || {};
             }
         }
 
-        // Update
-        mesh.computeWorldMatrix(true);
-
         // Flat shading
         if (mesh._shouldGenerateFlatShading) {
             mesh.convertToFlatShadedMesh();
             delete mesh._shouldGenerateFlatShading;
         }
 
+        // Update
+        mesh.computeWorldMatrix(true);
+
+        // Octree
         if (scene._selectionOctree) {
             scene._selectionOctree.addMesh(mesh);
         }
