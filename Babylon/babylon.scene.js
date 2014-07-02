@@ -172,14 +172,23 @@
             return this._renderId;
         };
 
+        Scene.prototype._updatePointerPosition = function (evt) {
+            var canvas = this._engine.getRenderingCanvas();
+
+            var canvasRect = canvas.getBoundingClientRect();
+
+            this._pointerX = evt.clientX - canvasRect.left;
+            this._pointerY = evt.clientY - canvasRect.top;
+        };
+
         // Pointers handling
         Scene.prototype.attachControl = function () {
             var _this = this;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
 
-                _this._pointerX = evt.offsetX || evt.layerX;
-                _this._pointerY = evt.offsetY || evt.layerY;
+                _this._updatePointerPosition(evt);
+
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
                     return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
                 });
@@ -205,7 +214,9 @@
                     };
                 }
 
-                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, predicate);
+                _this._updatePointerPosition(evt);
+
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
