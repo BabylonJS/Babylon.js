@@ -389,7 +389,7 @@ var BABYLON;
             if (hardwareInstancedRendering) {
                 this._renderWithInstances(subMesh, wireFrame, batch, effect, engine);
             } else {
-                if (batch.renderSelf) {
+                if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     this._draw(subMesh, !wireFrame);
                 }
