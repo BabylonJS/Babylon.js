@@ -63,7 +63,7 @@
                     if (hardwareInstancedRendering) {
                         mesh._renderWithInstances(subMesh, false, batch, _this._effect, engine);
                     } else {
-                        if (batch.renderSelf) {
+                        if (batch.renderSelf[subMesh._id]) {
                             _this._effect.setMatrix("world", mesh.getWorldMatrix());
 
                             // Draw
