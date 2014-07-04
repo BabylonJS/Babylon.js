@@ -137,6 +137,7 @@
             this._compiledEffects = {};
             this._depthMask = false;
             this._renderingCanvas = canvas;
+            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
             options = options || {};
             options.antialias = antialias;
@@ -316,6 +317,10 @@
             return this._renderingCanvas;
         };
 
+        Engine.prototype.getRenderingCanvasClientRect = function () {
+            return this._renderingCanvas.getBoundingClientRect();
+        };
+
         Engine.prototype.setHardwareScalingLevel = function (level) {
             this._hardwareScalingLevel = level;
             this.resize();
@@ -446,6 +451,8 @@
         Engine.prototype.resize = function () {
             this._renderingCanvas.width = this._renderingCanvas.clientWidth / this._hardwareScalingLevel;
             this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;
+
+            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
         };
 
         Engine.prototype.bindFramebuffer = function (texture) {

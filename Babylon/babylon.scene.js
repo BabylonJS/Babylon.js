@@ -172,14 +172,21 @@
             return this._renderId;
         };
 
+        Scene.prototype._updatePointerPosition = function (evt) {
+            var canvasRect = this._engine.getRenderingCanvasClientRect();
+
+            this._pointerX = evt.clientX - canvasRect.left;
+            this._pointerY = evt.clientY - canvasRect.top;
+        };
+
         // Pointers handling
         Scene.prototype.attachControl = function () {
             var _this = this;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
 
-                _this._pointerX = evt.offsetX || evt.layerX;
-                _this._pointerY = evt.offsetY || evt.layerY;
+                _this._updatePointerPosition(evt);
+
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
                     return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
                 });
@@ -205,7 +212,9 @@
                     };
                 }
 
-                var pickResult = _this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, predicate);
+                _this._updatePointerPosition(evt);
+
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -895,7 +904,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(1.0, Math.min(BABYLON.Tools.GetDeltaTime(), 1000.0));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
@@ -1295,6 +1304,9 @@
         Scene.FOGMODE_EXP = 1;
         Scene.FOGMODE_EXP2 = 2;
         Scene.FOGMODE_LINEAR = 3;
+
+        Scene.MinDeltaTime = 1.0;
+        Scene.MaxDeltaTime = 1000.0;
         return Scene;
     })();
     BABYLON.Scene = Scene;

@@ -213,12 +213,14 @@
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
+        private _canvasClientRect: ClientRect;
 
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?) {
             this._renderingCanvas = canvas;
+            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
             options = options || {};
             options.antialias = antialias;
@@ -343,6 +345,10 @@
 
         public getRenderingCanvas(): HTMLCanvasElement {
             return this._renderingCanvas;
+        }
+
+        public getRenderingCanvasClientRect(): ClientRect {
+            return this._renderingCanvas.getBoundingClientRect();
         }
 
         public setHardwareScalingLevel(level: number): void {
@@ -473,6 +479,8 @@
         public resize(): void {
             this._renderingCanvas.width = this._renderingCanvas.clientWidth / this._hardwareScalingLevel;
             this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;
+
+            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
         }
 
         public bindFramebuffer(texture: WebGLTexture): void {
