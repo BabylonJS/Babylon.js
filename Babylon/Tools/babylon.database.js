@@ -468,7 +468,8 @@ var BABYLON = BABYLON || {};
             var xhr = new XMLHttpRequest(), sceneText;
             var that = this;
 
-            xhr.open("GET", url, true);
+            var urlTimeStamped = url + (url.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
+            xhr.open("GET", urlTimeStamped, true);
 
             xhr.onprogress = progressCallback;
             
