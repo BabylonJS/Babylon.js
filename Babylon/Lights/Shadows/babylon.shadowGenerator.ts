@@ -40,7 +40,7 @@
                 engine.setState(subMesh.getMaterial().backFaceCulling);
 
                 // Managing instances
-                var batch = mesh._getInstancesRenderList();
+                var batch = mesh._getInstancesRenderList(subMesh._id);
 
                 if (batch.mustReturn) {
                     return;
@@ -78,9 +78,9 @@
                             mesh._draw(subMesh, true);
                         }
 
-                        if (batch.visibleInstances) {
-                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
-                                var instance = batch.visibleInstances[instanceIndex];
+                        if (batch.visibleInstances[subMesh._id]) {
+                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                                var instance = batch.visibleInstances[subMesh._id][instanceIndex];
 
                                 this._effect.setMatrix("world", instance.getWorldMatrix());
 

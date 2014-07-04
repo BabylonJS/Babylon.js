@@ -13,6 +13,8 @@
             this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);
 
+            this._id = mesh.subMeshes.length - 1;
+
             if (createBoundingBox) {
                 this.refreshBoundingInfo();
             }

@@ -10,6 +10,9 @@
         public static FOGMODE_EXP2 = 2;
         public static FOGMODE_LINEAR = 3;
 
+        public static MinDeltaTime = 1.0;
+        public static MaxDeltaTime = 1000.0;
+
         // Members
         public autoClear = true;
         public clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -238,13 +241,20 @@
             return this._renderId;
         }
 
+        private _updatePointerPosition(evt: PointerEvent): void {
+            var canvasRect = this._engine.getRenderingCanvasClientRect();
+
+            this._pointerX = evt.clientX - canvasRect.left;
+            this._pointerY = evt.clientY - canvasRect.top;
+        }
+
         // Pointers handling
         public attachControl() {
             this._onPointerMove = (evt: PointerEvent) => {
                 var canvas = this._engine.getRenderingCanvas();
 
-                this._pointerX = evt.offsetX || evt.layerX;
-                this._pointerY = evt.offsetY || evt.layerY;
+                this._updatePointerPosition(evt);
+
                 var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady());
 
                 if (pickResult.hit) {
@@ -269,7 +279,9 @@
                     };
                 }
 
-                var pickResult = this.pick(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY, predicate);
+                this._updatePointerPosition(evt);
+
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -962,7 +974,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(1.0, Math.min(BABYLON.Tools.GetDeltaTime(), 1000.0));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 

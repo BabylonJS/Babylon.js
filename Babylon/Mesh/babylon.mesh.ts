@@ -1,8 +1,8 @@
 ﻿module BABYLON {
     export class _InstancesBatch {
         public mustReturn = false;
-        public visibleInstances: InstancedMesh[];
-        public renderSelf = true;
+        public visibleInstances = new Array<Array<InstancedMesh>>();
+        public renderSelf = new  Array<boolean>();
     }
 
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -17,7 +17,7 @@
         private _delayInfo; //ANY
         private _delayLoadingFunction: (any, Mesh) => void;
         public _visibleInstances: any = {};
-        private _renderIdForInstances = -1;
+        private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
         private _worldMatricesInstancesBuffer: WebGLBuffer;
         private _worldMatricesInstancesArray: Float32Array;
@@ -265,35 +265,35 @@
             }
         }
 
-        public _getInstancesRenderList(): _InstancesBatch {
+        public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf = true;
-            this._batchCache.visibleInstances = null;
+            this._batchCache.renderSelf[subMeshId]  = true;
+            this._batchCache.visibleInstances[subMeshId] = null;
 
             if (this._visibleInstances) {
                 var currentRenderId = scene.getRenderId();
-                this._batchCache.visibleInstances = this._visibleInstances[currentRenderId];
+                this._batchCache.visibleInstances[subMeshId]  = this._visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
 
-                if (!this._batchCache.visibleInstances && this._visibleInstances.defaultRenderId) {
-                    this._batchCache.visibleInstances = this._visibleInstances[this._visibleInstances.defaultRenderId];
+                if (!this._batchCache.visibleInstances[subMeshId] && this._visibleInstances.defaultRenderId) {
+                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[this._visibleInstances.defaultRenderId];
                     currentRenderId = this._visibleInstances.defaultRenderId;
                     selfRenderId = this._visibleInstances.selfDefaultRenderId;
                 }
 
-                if (this._batchCache.visibleInstances && this._batchCache.visibleInstances.length) {
-                    if (this._renderIdForInstances === currentRenderId) {
+                if (this._batchCache.visibleInstances[subMeshId] && this._batchCache.visibleInstances[subMeshId].length) {
+                    if (this._renderIdForInstances[subMeshId] === currentRenderId) {
                         this._batchCache.mustReturn = true;
                         return this._batchCache;
                     }
 
                     if (currentRenderId !== selfRenderId) {
-                        this._batchCache.renderSelf = false;
+                        this._batchCache.renderSelf[subMeshId]  = false;
                     }
 
                 }
-                this._renderIdForInstances = currentRenderId;
+                this._renderIdForInstances[subMeshId] = currentRenderId;
             }
 
             return this._batchCache;
@@ -320,14 +320,16 @@
             var instancesCount = 0;
 
             var world = this.getWorldMatrix();
-            if (batch.renderSelf) {
+            if (batch.renderSelf[subMesh._id]) {
                 world.copyToArray(this._worldMatricesInstancesArray, offset);
                 offset += 16;
                 instancesCount++;
             }
 
-            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
-                var instance = batch.visibleInstances[instanceIndex];
+            var visibleInstances = batch.visibleInstances[subMesh._id];
+
+            for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                var instance = visibleInstances[instanceIndex];
                 instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
                 offset += 16;
                 instancesCount++;
@@ -351,7 +353,7 @@
             var scene = this.getScene();
 
             // Managing instances
-            var batch = this._getInstancesRenderList();
+            var batch = this._getInstancesRenderList(subMesh._id);
 
             if (batch.mustReturn) {
                 return;
@@ -367,7 +369,7 @@
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null); 
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null); 
 
             // Material
             var effectiveMaterial = subMesh.getMaterial();
@@ -395,9 +397,9 @@
                     this._draw(subMesh, !wireFrame);
                 }
 
-                if (batch.visibleInstances) {
-                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances.length; instanceIndex++) {
-                        var instance = batch.visibleInstances[instanceIndex];
+                if (batch.visibleInstances[subMesh._id]) {
+                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
 
                         // World
                         world = instance.getWorldMatrix();
