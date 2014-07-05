@@ -777,6 +777,17 @@ var BABYLON;
             return torusKnot;
         };
 
+        // Lines
+        Mesh.CreateLines = function (name, points, scene, updatable) {
+            var lines = new BABYLON.LinesMesh(name, scene, updatable);
+
+            var vertexData = BABYLON.VertexData.CreateLines(points);
+
+            vertexData.applyToMesh(lines, updatable);
+
+            return lines;
+        };
+
         // Plane & ground
         Mesh.CreatePlane = function (name, size, scene, updatable) {
             var plane = new BABYLON.Mesh(name, scene);

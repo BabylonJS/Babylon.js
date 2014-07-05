@@ -786,6 +786,17 @@
             return torusKnot;
         }
 
+        // Lines
+        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean): LinesMesh {
+            var lines = new LinesMesh(name, scene, updatable);
+
+            var vertexData = BABYLON.VertexData.CreateLines(points);
+
+            vertexData.applyToMesh(lines, updatable);
+
+            return lines;
+        }
+
         // Plane & ground
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
             var plane = new BABYLON.Mesh(name, scene);
@@ -810,7 +821,7 @@
             return ground;
         }
 
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
