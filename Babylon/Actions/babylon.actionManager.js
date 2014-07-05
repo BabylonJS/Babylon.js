@@ -128,6 +128,38 @@
             return false;
         };
 
+        Object.defineProperty(ActionManager.prototype, "hasPointerTriggers", {
+            get: function () {
+                for (var index = 0; index < this.actions.length; index++) {
+                    var action = this.actions[index];
+
+                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager.prototype, "hasPickTriggers", {
+            get: function () {
+                for (var index = 0; index < this.actions.length; index++) {
+                    var action = this.actions[index];
+
+                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         ActionManager.prototype.registerAction = function (action) {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {

@@ -190,7 +190,7 @@
                 _this._updatePointerPosition(evt);
 
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
-                    return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
+                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                 });
 
                 if (pickResult.hit) {
@@ -210,7 +210,7 @@
 
                 if (!_this.onPointerDown) {
                     predicate = function (mesh) {
-                        return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
                     };
                 }
 

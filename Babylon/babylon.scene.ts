@@ -257,7 +257,7 @@
 
                 this._updatePointerPosition(evt);
 
-                var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady());
+                var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers);
 
                 if (pickResult.hit) {
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -277,7 +277,7 @@
 
                 if (!this.onPointerDown) {
                     predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.actionManager && mesh.isPickable && mesh.isVisible && mesh.isReady();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
                     };
                 }
 

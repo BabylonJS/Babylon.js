@@ -100,6 +100,30 @@
             return false;
         }
 
+        public get hasPointerTriggers(): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public get hasPickTriggers(): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public registerAction(action: Action): Action {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
