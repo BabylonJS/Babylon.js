@@ -587,6 +587,28 @@
             return vertexData;
         }
 
+        public static CreateLines(points: Vector3[]): VertexData {
+            var indices = [];
+            var positions = [];
+
+            for (var index = 0; index < points.length; index++) {
+                positions.push(points[index].x, points[index].y, points[index].z);
+
+                if (index > 0) {
+                    indices.push(index - 1);
+                    indices.push(index);
+                }
+            }
+
+            // Result
+            var vertexData = new BABYLON.VertexData();
+
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+
+            return vertexData;
+        }
+
         public static CreateGround(width: number, height: number, subdivisions: number): VertexData {
             var indices = [];
             var positions = [];

@@ -567,6 +567,28 @@
             return vertexData;
         };
 
+        VertexData.CreateLines = function (points) {
+            var indices = [];
+            var positions = [];
+
+            for (var index = 0; index < points.length; index++) {
+                positions.push(points[index].x, points[index].y, points[index].z);
+
+                if (index > 0) {
+                    indices.push(index - 1);
+                    indices.push(index);
+                }
+            }
+
+            // Result
+            var vertexData = new BABYLON.VertexData();
+
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+
+            return vertexData;
+        };
+
         VertexData.CreateGround = function (width, height, subdivisions) {
             var indices = [];
             var positions = [];
