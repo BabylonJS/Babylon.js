@@ -328,11 +328,13 @@
 
             var visibleInstances = batch.visibleInstances[subMesh._id];
 
-            for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
-                var instance = visibleInstances[instanceIndex];
-                instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
-                offset += 16;
-                instancesCount++;
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
+                    instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
+                    offset += 16;
+                    instancesCount++;
+                }
             }
 
             var offsetLocation0 = effect.getAttributeLocationByName("world0");
