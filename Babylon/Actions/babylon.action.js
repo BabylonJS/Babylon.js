@@ -1,13 +1,24 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var Action = (function () {
-        function Action(trigger, condition) {
-            this.trigger = trigger;
+        function Action(triggerOptions, condition) {
+            this.triggerOptions = triggerOptions;
+            if (triggerOptions.parameter) {
+                this.trigger = triggerOptions.trigger;
+                this._triggerParameter = triggerOptions.parameter;
+            } else {
+                this.trigger = triggerOptions;
+            }
+
             this._nextActiveAction = this;
             this._condition = condition;
         }
         // Methods
         Action.prototype._prepare = function () {
+        };
+
+        Action.prototype.getTriggerParameter = function () {
+            return this._triggerParameter;
         };
 
         Action.prototype._executeCurrent = function (evt) {

@@ -8,9 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var InterpolateValueAction = (function (_super) {
         __extends(InterpolateValueAction, _super);
-        function InterpolateValueAction(trigger, target, propertyPath, value, duration, condition, stopOtherAnimations) {
+        function InterpolateValueAction(triggerOptions, target, propertyPath, value, duration, condition, stopOtherAnimations) {
             if (typeof duration === "undefined") { duration = 1000; }
-            _super.call(this, trigger, condition);
+            _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
             this.duration = duration;

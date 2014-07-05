@@ -51,6 +51,8 @@
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
+            this._actionManagers = new Array();
+            this._meshesForIntersections = new BABYLON.SmartArray(256);
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -689,6 +691,11 @@
                 mesh.computeWorldMatrix();
                 mesh._preActivate();
 
+                // Intersections
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionManager.OnIntersectionExitTrigger])) {
+                    this._meshesForIntersections.pushNoDuplicate(mesh);
+                }
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
@@ -879,6 +886,36 @@
             this.activeCamera._updateFromScene();
         };
 
+        Scene.prototype._checkIntersections = function () {
+            for (var index = 0; index < this._meshesForIntersections.length; index++) {
+                var sourceMesh = this._meshesForIntersections.data[index];
+
+                for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
+                    var action = sourceMesh.actionManager.actions[actionIndex];
+
+                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                        var otherMesh = action.getTriggerParameter();
+
+                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
+                        var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                            sourceMesh._intersectionsInProgress.push(otherMesh);
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+
+                            var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+
+                            if (indexOfOther > -1) {
+                                sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
         Scene.prototype.render = function () {
             var startDate = new Date().getTime();
             this._particlesDuration = 0;
@@ -888,6 +925,7 @@
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this._meshesForIntersections.reset();
 
             // Actions
             if (this.actionManager) {
@@ -938,6 +976,9 @@
             } else {
                 this._processSubCameras(this.activeCamera);
             }
+
+            // Intersection checks
+            this._checkIntersections();
 
             // After render
             if (this.afterRender) {

@@ -102,6 +102,8 @@
 
         // Actions
         public actionManager: ActionManager;
+        public _actionManagers = new Array<ActionManager>();
+        private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 
         // Private
         private _engine: Engine;
@@ -755,6 +757,11 @@
                 mesh.computeWorldMatrix();
                 mesh._preActivate();
 
+                // Intersections
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
+                    this._meshesForIntersections.pushNoDuplicate(mesh);
+                }
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
@@ -949,6 +956,37 @@
             this.activeCamera._updateFromScene();
         }
 
+        private _checkIntersections(): void {
+            for (var index = 0; index < this._meshesForIntersections.length; index++) {
+                var sourceMesh = this._meshesForIntersections.data[index];
+
+                for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
+                    var action = sourceMesh.actionManager.actions[actionIndex];
+
+                    if (action.trigger == ActionManager.OnIntersectionEnterTrigger || action.trigger == ActionManager.OnIntersectionExitTrigger) {
+                        var otherMesh = action.getTriggerParameter();
+
+                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
+                        var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger ) {
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, ActionEvent.CreateNew(sourceMesh));
+                            sourceMesh._intersectionsInProgress.push(otherMesh);
+
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger ) {
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, ActionEvent.CreateNew(sourceMesh));
+
+                            var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+
+                            if (indexOfOther > -1) {
+                                sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
+                            }
+                        }
+                    }
+                }                
+            }
+        }
+
         public render(): void {
             var startDate = new Date().getTime();
             this._particlesDuration = 0;
@@ -958,6 +996,7 @@
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this._meshesForIntersections.reset();
 
             // Actions
             if (this.actionManager) {
@@ -1009,6 +1048,9 @@
             } else {
                 this._processSubCameras(this.activeCamera);
             }
+
+            // Intersection checks
+            this._checkIntersections();
 
             // After render
             if (this.afterRender) {
