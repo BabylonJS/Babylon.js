@@ -1,18 +1,32 @@
 ﻿module BABYLON {
     export class Action {
+        public trigger: number;
         public _actionManager: ActionManager;
 
         private _nextActiveAction: Action;
         private _child: Action;
         private _condition: Condition;
+        private _triggerParameter: any;
 
-        constructor(public trigger: number, condition?: Condition) {
+        constructor(public triggerOptions: any, condition?: Condition) {
+
+            if (triggerOptions.parameter) {
+                this.trigger = triggerOptions.trigger;
+                this._triggerParameter = triggerOptions.parameter;
+            } else {
+                this.trigger = triggerOptions;
+            }
+
             this._nextActiveAction = this;
             this._condition = condition;
         }
 
         // Methods
         public _prepare(): void {
+        }
+
+        public getTriggerParameter(): any {
+            return this._triggerParameter;
         }
 
         public _executeCurrent(evt: ActionEvent): void {

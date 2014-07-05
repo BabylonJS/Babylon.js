@@ -8,8 +8,8 @@ var BABYLON;
 (function (BABYLON) {
     var SwitchBooleanAction = (function (_super) {
         __extends(SwitchBooleanAction, _super);
-        function SwitchBooleanAction(trigger, target, propertyPath, condition) {
-            _super.call(this, trigger, condition);
+        function SwitchBooleanAction(triggerOptions, target, propertyPath, condition) {
+            _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this._target = target;
         }
@@ -27,8 +27,8 @@ var BABYLON;
 
     var SetStateAction = (function (_super) {
         __extends(SetStateAction, _super);
-        function SetStateAction(trigger, target, value, condition) {
-            _super.call(this, trigger, condition);
+        function SetStateAction(triggerOptions, target, value, condition) {
+            _super.call(this, triggerOptions, condition);
             this.value = value;
             this._target = target;
         }
@@ -41,8 +41,8 @@ var BABYLON;
 
     var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
-        function SetValueAction(trigger, target, propertyPath, value, condition) {
-            _super.call(this, trigger, condition);
+        function SetValueAction(triggerOptions, target, propertyPath, value, condition) {
+            _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
             this._target = target;
@@ -61,8 +61,8 @@ var BABYLON;
 
     var IncrementValueAction = (function (_super) {
         __extends(IncrementValueAction, _super);
-        function IncrementValueAction(trigger, target, propertyPath, value, condition) {
-            _super.call(this, trigger, condition);
+        function IncrementValueAction(triggerOptions, target, propertyPath, value, condition) {
+            _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
             this._target = target;
@@ -85,8 +85,8 @@ var BABYLON;
 
     var PlayAnimationAction = (function (_super) {
         __extends(PlayAnimationAction, _super);
-        function PlayAnimationAction(trigger, target, from, to, loop, condition) {
-            _super.call(this, trigger, condition);
+        function PlayAnimationAction(triggerOptions, target, from, to, loop, condition) {
+            _super.call(this, triggerOptions, condition);
             this.from = from;
             this.to = to;
             this.loop = loop;
@@ -105,8 +105,8 @@ var BABYLON;
 
     var StopAnimationAction = (function (_super) {
         __extends(StopAnimationAction, _super);
-        function StopAnimationAction(trigger, target, condition) {
-            _super.call(this, trigger, condition);
+        function StopAnimationAction(triggerOptions, target, condition) {
+            _super.call(this, triggerOptions, condition);
             this._target = target;
         }
         StopAnimationAction.prototype._prepare = function () {
@@ -122,9 +122,9 @@ var BABYLON;
 
     var DoNothingAction = (function (_super) {
         __extends(DoNothingAction, _super);
-        function DoNothingAction(trigger, condition) {
-            if (typeof trigger === "undefined") { trigger = BABYLON.ActionManager.NothingTrigger; }
-            _super.call(this, trigger, condition);
+        function DoNothingAction(triggerOptions, condition) {
+            if (typeof triggerOptions === "undefined") { triggerOptions = BABYLON.ActionManager.NothingTrigger; }
+            _super.call(this, triggerOptions, condition);
         }
         DoNothingAction.prototype.execute = function () {
         };
@@ -134,8 +134,8 @@ var BABYLON;
 
     var CombineAction = (function (_super) {
         __extends(CombineAction, _super);
-        function CombineAction(trigger, children, condition) {
-            _super.call(this, trigger, condition);
+        function CombineAction(triggerOptions, children, condition) {
+            _super.call(this, triggerOptions, condition);
             this.children = children;
         }
         CombineAction.prototype._prepare = function () {
@@ -156,8 +156,8 @@ var BABYLON;
 
     var ExecuteCodeAction = (function (_super) {
         __extends(ExecuteCodeAction, _super);
-        function ExecuteCodeAction(trigger, func, condition) {
-            _super.call(this, trigger, condition);
+        function ExecuteCodeAction(triggerOptions, func, condition) {
+            _super.call(this, triggerOptions, condition);
             this.func = func;
         }
         ExecuteCodeAction.prototype.execute = function (evt) {
@@ -169,8 +169,8 @@ var BABYLON;
 
     var SetParentAction = (function (_super) {
         __extends(SetParentAction, _super);
-        function SetParentAction(trigger, target, parent, condition) {
-            _super.call(this, trigger, condition);
+        function SetParentAction(triggerOptions, target, parent, condition) {
+            _super.call(this, triggerOptions, condition);
             this._target = target;
             this._parent = parent;
         }

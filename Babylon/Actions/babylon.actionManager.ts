@@ -21,6 +21,8 @@
         private static _OnPointerOverTrigger = 5;
         private static _OnPointerOutTrigger = 6;
         private static _OnEveryFrameTrigger = 7;
+        private static _OnIntersectionEnterTrigger = 8;
+        private static _OnIntersectionExitTrigger = 9;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -54,6 +56,14 @@
             return ActionManager._OnEveryFrameTrigger;
         }
 
+        public static get OnIntersectionEnterTrigger(): number {
+            return ActionManager._OnIntersectionEnterTrigger;
+        }
+
+        public static get OnIntersectionExitTrigger(): number {
+            return ActionManager._OnIntersectionExitTrigger;
+        }
+
         // Members
         public actions = new Array<Action>();
 
@@ -61,11 +71,33 @@
 
         constructor(scene: Scene) {
             this._scene = scene;
+
+            scene._actionManagers.push(this);
         }
 
         // Methods
+        public dispose(): void {
+            var index = this._scene._actionManagers.indexOf(this);
+
+            if (index > -1) {
+                this._scene._actionManagers.splice(index, 1);
+            }
+        }
+
         public getScene(): Scene {
             return this._scene;
+        }
+
+        public hasSpecificTriggers(triggers: number[]): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (triggers.indexOf(action.trigger) > -1) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public registerAction(action: Action): Action {

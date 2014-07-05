@@ -3,8 +3,8 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean) {
+            super(triggerOptions, condition);
 
             this._target = target;
         }

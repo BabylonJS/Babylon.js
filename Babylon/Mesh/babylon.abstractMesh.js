@@ -48,6 +48,7 @@ var BABYLON;
             this._pivotMatrix = BABYLON.Matrix.Identity();
             this._isDisposed = false;
             this._renderId = 0;
+            this._intersectionsInProgress = new Array();
 
             scene.meshes.push(this);
         }
@@ -699,6 +700,15 @@ var BABYLON;
             if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
+
+            for (index = 0; index < this._intersectionsInProgress.length; index++) {
+                var other = this._intersectionsInProgress[index];
+
+                var pos = other._intersectionsInProgress.indexOf(this);
+                other._intersectionsInProgress.splice(pos, 1);
+            }
+
+            this._intersectionsInProgress = [];
 
             // SubMeshes
             this.releaseSubMeshes();

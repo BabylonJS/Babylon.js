@@ -3,8 +3,8 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, target: any, public propertyPath: string, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public propertyPath: string, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -21,8 +21,8 @@
     export class SetStateAction extends Action {
         private _target: any;
 
-        constructor(trigger: number, target: any, public value: string, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public value: string, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -35,8 +35,8 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, target: any, public propertyPath: string, public value: any, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -54,8 +54,8 @@
         private _target: any;
         private _property: string;
 
-        constructor(trigger: number, target: any, public propertyPath: string, public value: any, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -76,8 +76,8 @@
     export class PlayAnimationAction extends Action {
         private _target: any;
 
-        constructor(trigger: number, target: any, public from: number, public to: number, public loop?: boolean, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, public from: number, public to: number, public loop?: boolean, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -93,8 +93,8 @@
     export class StopAnimationAction extends Action {
         private _target: any;
 
-        constructor(trigger: number, target: any, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
         }
 
@@ -108,8 +108,8 @@
     }
 
     export class DoNothingAction extends Action {
-        constructor(trigger: number = ActionManager.NothingTrigger, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any = ActionManager.NothingTrigger, condition?: Condition) {
+            super(triggerOptions, condition);
         }
 
         public execute(): void {
@@ -117,8 +117,8 @@
     }
 
     export class CombineAction extends Action {
-        constructor(trigger: number, public children: Action[], condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, public children: Action[], condition?: Condition) {
+            super(triggerOptions, condition);
         }
 
         public _prepare(): void {
@@ -136,8 +136,8 @@
     }
 
     export class ExecuteCodeAction extends Action {
-        constructor(trigger: number, public func: (evt: ActionEvent) => void, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, public func: (evt: ActionEvent) => void, condition?: Condition) {
+            super(triggerOptions, condition);
         }
 
         public execute(evt: ActionEvent): void {
@@ -149,8 +149,8 @@
         private _parent: any;
         private _target: any;
 
-        constructor(trigger: number, target: any, parent: any, condition?: Condition) {
-            super(trigger, condition);
+        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition) {
+            super(triggerOptions, condition);
             this._target = target;
             this._parent = parent;
         }

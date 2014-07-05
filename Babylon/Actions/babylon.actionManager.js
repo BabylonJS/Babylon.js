@@ -20,6 +20,8 @@
             // Members
             this.actions = new Array();
             this._scene = scene;
+
+            scene._actionManagers.push(this);
         }
         Object.defineProperty(ActionManager, "NothingTrigger", {
             get: function () {
@@ -85,9 +87,45 @@
             configurable: true
         });
 
+        Object.defineProperty(ActionManager, "OnIntersectionEnterTrigger", {
+            get: function () {
+                return ActionManager._OnIntersectionEnterTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnIntersectionExitTrigger", {
+            get: function () {
+                return ActionManager._OnIntersectionExitTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
+        ActionManager.prototype.dispose = function () {
+            var index = this._scene._actionManagers.indexOf(this);
+
+            if (index > -1) {
+                this._scene._actionManagers.splice(index, 1);
+            }
+        };
+
         ActionManager.prototype.getScene = function () {
             return this._scene;
+        };
+
+        ActionManager.prototype.hasSpecificTriggers = function (triggers) {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (triggers.indexOf(action.trigger) > -1) {
+                    return true;
+                }
+            }
+
+            return false;
         };
 
         ActionManager.prototype.registerAction = function (action) {
@@ -139,6 +177,8 @@
         ActionManager._OnPointerOverTrigger = 5;
         ActionManager._OnPointerOutTrigger = 6;
         ActionManager._OnEveryFrameTrigger = 7;
+        ActionManager._OnIntersectionEnterTrigger = 8;
+        ActionManager._OnIntersectionExitTrigger = 9;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;

@@ -82,6 +82,7 @@
 
         public subMeshes: SubMesh[];
         public _submeshesOctree: Octree<SubMesh>;
+        public _intersectionsInProgress = new Array<AbstractMesh>();
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -419,7 +420,7 @@
             return true;
         }
 
-        public intersectsMesh(mesh: Mesh, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
@@ -691,6 +692,16 @@
             if (this.getPhysicsImpostor() != PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(PhysicsEngine.NoImpostor);
             }
+
+            // Intersections in progress
+            for (index = 0; index < this._intersectionsInProgress.length; index++) {
+                var other = this._intersectionsInProgress[index];
+
+                var pos = other._intersectionsInProgress.indexOf(this);
+                other._intersectionsInProgress.splice(pos, 1);
+            }
+
+            this._intersectionsInProgress = [];
 
             // SubMeshes
             this.releaseSubMeshes();
