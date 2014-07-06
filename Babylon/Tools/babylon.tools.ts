@@ -76,11 +76,11 @@ module BABYLON {
             return angle * Math.PI / 180;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[], indices: number[], indexStart:number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: number[], indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-            for (var index = indexStart; index < indexStart + indexCount; index ++) {
+            for (var index = indexStart; index < indexStart + indexCount; index++) {
                 var current = new Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
 
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
@@ -248,7 +248,7 @@ module BABYLON {
 
                 request.onreadystatechange = () => {
                     if (request.readyState == 4) {
-                        if (request.status == 200) {
+                        if (request.status == 200 && BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -544,6 +544,48 @@ module BABYLON {
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+        }
+
+        // XHR response validator for local file scenario
+        public static ValidateXHRData(xhr: XMLHttpRequest, dataType = 7): boolean {
+            // 1 for text (.babylon, manifest and shaders), 2 for TGA, 4 for DDS, 7 for all
+
+            try {
+                if (dataType & 1) {
+                    if (xhr.responseText && xhr.responseText.length > 0) {
+                        return true;
+                    } else if (dataType === 1) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 2) {
+                    // Check header width and height since there is no "TGA" magic number
+                    var tgaHeader = BABYLON.Internals.TGATools.GetTGAHeader(xhr.response);
+
+                    if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
+                        return true;
+                    } else if (dataType === 2) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 4) {
+                    // Check for the "DDS" magic number
+                    var ddsHeader = new Uint8Array(xhr.response, 0, 3);
+
+                    if (ddsHeader[0] == 68 && ddsHeader[1] == 68 && ddsHeader[2] == 83) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+            } catch (e) {
+                // Global protection
+            }
+
+            return false;
         }
 
         // Logs
