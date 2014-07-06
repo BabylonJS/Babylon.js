@@ -225,7 +225,7 @@ var BABYLON;
 
                 request.onreadystatechange = function () {
                     if (request.readyState == 4) {
-                        if (request.status == 200 && BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
+                        if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else {
                             throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
