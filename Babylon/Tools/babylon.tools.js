@@ -225,7 +225,7 @@ var BABYLON;
 
                 request.onreadystatechange = function () {
                     if (request.readyState == 4) {
-                        if (request.status == 200) {
+                        if (request.status == 200 && BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else {
                             throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
@@ -503,6 +503,46 @@ var BABYLON;
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+        };
+
+        // XHR response validator for local file scenario
+        Tools.ValidateXHRData = function (xhr, dataType) {
+            if (typeof dataType === "undefined") { dataType = 7; }
+            try  {
+                if (dataType & 1) {
+                    if (xhr.responseText && xhr.responseText.length > 0) {
+                        return true;
+                    } else if (dataType === 1) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 2) {
+                    // Check header width and height since there is no "TGA" magic number
+                    var tgaHeader = BABYLON.Internals.TGATools.GetTGAHeader(xhr.response);
+
+                    if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
+                        return true;
+                    } else if (dataType === 2) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 4) {
+                    // Check for the "DDS" magic number
+                    var ddsHeader = new Uint8Array(xhr.response, 0, 3);
+
+                    if (ddsHeader[0] == 68 && ddsHeader[1] == 68 && ddsHeader[2] == 83) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } catch (e) {
+                // Global protection
+            }
+
+            return false;
         };
 
         Object.defineProperty(Tools, "NoneLogLevel", {

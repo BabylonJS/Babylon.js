@@ -55,7 +55,7 @@ var BABYLON = BABYLON || {};
         xhr.open("GET", manifestURL, false);
 
         xhr.addEventListener("load", function () {
-            if (xhr.status === 200) {
+            if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                 try {
                     var manifestFile = JSON.parse(xhr.response);
                     that.enableSceneOffline = manifestFile.enableSceneOffline;
@@ -474,7 +474,7 @@ var BABYLON = BABYLON || {};
             xhr.onprogress = progressCallback;
             
             xhr.addEventListener("load", function () {
-                if (xhr.status === 200) {
+                if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     // Blob as response (XHR2)
                     sceneText = xhr.responseText;
 
