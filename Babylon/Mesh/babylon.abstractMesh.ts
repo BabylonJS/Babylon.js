@@ -59,6 +59,13 @@
         public _physicsFriction: number;
         public _physicRestitution: number;
 
+        // Collisions
+        public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+        private _collider = new Collider();
+        private _oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+        private _diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+        private _newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+
         // Cache
         private _localScaling = BABYLON.Matrix.Zero();
         private _localRotation = BABYLON.Matrix.Zero();
@@ -516,6 +523,21 @@
             }
 
             this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
+        }
+
+        // Collisions
+        public moveWithCollisions(velocity: Vector3): void {
+            var globalPosition = this.getAbsolutePosition();
+
+            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
+            this._collider.radius = this.ellipsoid;
+
+            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions);
+            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+
+            if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
+                this.position.addInPlace(this._diffPositionForCollisions);
+            }
         }
 
         // Submeshes octree
