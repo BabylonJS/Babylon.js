@@ -31,6 +31,12 @@ var BABYLON;
             this.layerMask = 0xFFFFFFFF;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
+            // Collisions
+            this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+            this._collider = new BABYLON.Collider();
+            this._oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+            this._diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+            this._newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             // Cache
             this._localScaling = BABYLON.Matrix.Zero();
             this._localRotation = BABYLON.Matrix.Zero();
@@ -521,6 +527,21 @@ var BABYLON;
             }
 
             this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
+        };
+
+        // Collisions
+        AbstractMesh.prototype.moveWithCollisions = function (velocity) {
+            var globalPosition = this.getAbsolutePosition();
+
+            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
+            this._collider.radius = this.ellipsoid;
+
+            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions);
+            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+
+            if (this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
+                this.position.addInPlace(this._diffPositionForCollisions);
+            }
         };
 
         // Submeshes octree
