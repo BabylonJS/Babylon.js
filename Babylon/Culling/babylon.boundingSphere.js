@@ -8,7 +8,6 @@
             var distance = BABYLON.Vector3.Distance(minimum, maximum);
 
             this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);
-            ;
             this.radius = distance * 0.5;
 
             this.centerWorld = BABYLON.Vector3.Zero();
