@@ -6,7 +6,6 @@
             this.targetProperty = targetProperty;
             this.framePerSecond = framePerSecond;
             this.dataType = dataType;
-            this.loopMode = loopMode;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
