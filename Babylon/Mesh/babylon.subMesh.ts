@@ -172,7 +172,7 @@
 
                 if (vertexIndex < minVertexIndex)
                     minVertexIndex = vertexIndex;
-                else if (vertexIndex > maxVertexIndex)
+                if (vertexIndex > maxVertexIndex)
                     maxVertexIndex = vertexIndex;
             }
 
