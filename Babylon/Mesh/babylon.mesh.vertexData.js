@@ -394,6 +394,7 @@
         };
 
         VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation, subdivisions) {
+            if (typeof subdivisions === "undefined") { subdivisions = 1; }
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
             var indices = [];
@@ -401,12 +402,12 @@
             var normals = [];
             var uvs = [];
 
-            height          = height || 1;
-            diameterTop     = diameterTop || 0.5;
-            diameterBottom  = diameterBottom || 1;
-            tessellation    = tessellation || 16;
-            subdivisions    = subdivisions || 1;
-            subdivisions    = (subdivisions < 1) ? 1 : subdivisions;
+            height = height || 1;
+            diameterTop = diameterTop || 0.5;
+            diameterBottom = diameterBottom || 1;
+            tessellation = tessellation || 16;
+            subdivisions = subdivisions || 1;
+            subdivisions = (subdivisions < 1) ? 1 : subdivisions;
 
             var getCircleVector = function (i) {
                 var angle = (i * 2.0 * Math.PI / tessellation);
@@ -432,20 +433,15 @@
                     textureScale.x = -textureScale.x;
                 }
 
-                // Positions, normals & uvs
                 for (i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new BABYLON.Vector2(
-                        circleVector.x * textureScale.x + 0.5,
-                        circleVector.z * textureScale.y + 0.5
-                    );
+                    var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
 
                     positions.push(position.x, position.y, position.z);
                     uvs.push(textureCoordinate.x, textureCoordinate.y);
                 }
 
-                // Indices
                 for (var i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         indices.push(vbase);
@@ -459,11 +455,10 @@
                 }
             };
 
-            var base    = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
-            var offset  = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
-            var stride  = tessellation + 1;
+            var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
+            var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
+            var stride = tessellation + 1;
 
-            // Positions, normals & uvs
             for (var i = 0; i <= tessellation; i++) {
                 var circleVector = getCircleVector(i);
                 var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
@@ -474,7 +469,7 @@
                     position = circleVector.scale(radius);
                     position.addInPlace(base.add(offset.scale(s)));
                     textureCoordinate.y += 1 / subdivisions;
-                    radius += (radiusTop - radiusBottom)/subdivisions;
+                    radius += (radiusTop - radiusBottom) / subdivisions;
 
                     // Push in arrays
                     positions.push(position.x, position.y, position.z);
@@ -483,14 +478,14 @@
             }
 
             subdivisions += 1;
-            // Indices
+
             for (var s = 0; s < subdivisions - 1; s++) {
                 for (var i = 0; i <= tessellation; i++) {
-                    indices.push( i * subdivisions + s);
+                    indices.push(i * subdivisions + s);
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
-                    indices.push( i * subdivisions + (s + 1));
+                    indices.push(i * subdivisions + (s + 1));
 
-                    indices.push( i * subdivisions + (s + 1));
+                    indices.push(i * subdivisions + (s + 1));
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
                     indices.push((i * subdivisions + (s + subdivisions + 1)) % (stride * subdivisions));
                 }
