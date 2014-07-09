@@ -33,6 +33,7 @@ var BABYLON;
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+            this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             this._collider = new BABYLON.Collider();
             this._oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             this._diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
@@ -534,6 +535,7 @@ var BABYLON;
             var globalPosition = this.getAbsolutePosition();
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
+            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
 
             this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions);
