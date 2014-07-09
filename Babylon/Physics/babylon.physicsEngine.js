@@ -60,7 +60,7 @@
         PhysicsEngine.MeshImpostor = 4;
         PhysicsEngine.CapsuleImpostor = 5;
         PhysicsEngine.ConeImpostor = 6;
-        PhysicsEngine.CylinderlImpostor = 7;
+        PhysicsEngine.CylinderImpostor = 7;
         PhysicsEngine.ConvexHullImpostor = 8;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
