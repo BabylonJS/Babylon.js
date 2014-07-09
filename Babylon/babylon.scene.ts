@@ -1142,19 +1142,19 @@
         }
 
         // Collisions
-        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3): void {
+        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
 
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
 
             finalPosition.multiplyInPlace(collider.radius);
         }
 
-        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3): void {
+        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
             var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {
@@ -1167,7 +1167,7 @@
             // Check all meshes
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
                     mesh._checkCollision(collider);
                 }
             }
@@ -1187,7 +1187,7 @@
             }
 
             collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
 
         // Octrees
