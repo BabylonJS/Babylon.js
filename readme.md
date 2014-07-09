@@ -81,7 +81,7 @@ Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can lear
  - Height maps
  - Constructive solid geometries
 -  Import: 
- - Babylon scene file can be converted from .OBJ, .FBX, .MXB
+ - Babylon scene file can be converted from .OBJ, .FBX
  - Exporter for Blender
  - Exporter for Cheetah3d
  - Exporter for 3ds Max
