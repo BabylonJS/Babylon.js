@@ -58,6 +58,10 @@
         PhysicsEngine.PlaneImpostor = 3;
         PhysicsEngine.CompoundImpostor = 4;
         PhysicsEngine.MeshImpostor = 4;
+        PhysicsEngine.CapsuleImpostor = 5;
+        PhysicsEngine.ConeImpostor = 6;
+        PhysicsEngine.CylinderImpostor = 7;
+        PhysicsEngine.ConvexHullImpostor = 8;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
     })();

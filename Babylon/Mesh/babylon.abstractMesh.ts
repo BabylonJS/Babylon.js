@@ -61,6 +61,7 @@
 
         // Collisions
         public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+        public ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
         private _collider = new Collider();
         private _oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
         private _diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
@@ -530,9 +531,10 @@
             var globalPosition = this.getAbsolutePosition();
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
+            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions);
+            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
             this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {

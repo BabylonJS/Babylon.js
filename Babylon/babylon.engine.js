@@ -1358,6 +1358,13 @@
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
             }
 
+            for (var i in this._vertexAttribArrays) {
+                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                    continue;
+                }
+                this._gl.disableVertexAttribArray(i);
+            }
+
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);

@@ -580,7 +580,6 @@ var BABYLON;
         Object.defineProperty(Tools, "AllLogLevel", {
             get: function () {
                 return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
-                ;
             },
             enumerable: true,
             configurable: true
