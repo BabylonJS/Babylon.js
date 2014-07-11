@@ -11,6 +11,8 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 
 Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
 
+Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
+
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
