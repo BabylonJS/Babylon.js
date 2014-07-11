@@ -611,7 +611,7 @@ module BABYLON {
         }
 
         static get AllLogLevel(): number {
-            return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;;
+            return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
         }
 
         private static _FormatMessage(message: string): string {
