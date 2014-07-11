@@ -1,13 +1,13 @@
 Babylon.js
 ==========
 
+Getting started? Play directly with the Babylon.js API with our playground: [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
+
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
 
 Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
 
 Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
-
-Online [playground](http://www.babylonjs.com/playground) where you can interactively learn how to use babylon.js
 
 Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
 
