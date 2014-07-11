@@ -9,7 +9,7 @@ var BABYLON = BABYLON || {};
         var fileName = url.substring(url.lastIndexOf("/") + 1, url.length);
         var absLocation = url.substring(0, url.indexOf(fileName, 0));
         return absLocation;
-    };
+    }
 
     // Handling various flavors of prefixed version of IndexedDB
     var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||
@@ -45,7 +45,7 @@ var BABYLON = BABYLON || {};
             BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
             that.enableSceneOffline = false;
             that.enableTexturesOffline = false;
-        };
+        }
 
         var that = this;
         var manifestURL = this.currentSceneUrl + ".manifest";
