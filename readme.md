@@ -1,7 +1,7 @@
 Babylon.js
 ==========
 
-Getting started? Play directly with the Babylon.js API via our playground: [launch playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
+Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
 
