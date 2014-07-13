@@ -326,6 +326,14 @@
             return new Vector2(0, 0);
         };
 
+        Vector2.FromArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new Vector2(array[offset], array[offset + 1]);
+        };
+
         Vector2.CatmullRom = function (value1, value2, value3, value4, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
