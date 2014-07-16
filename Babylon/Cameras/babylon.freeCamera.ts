@@ -19,13 +19,13 @@
         private _keys = [];
         private _collider = new Collider();
         private _needMoveForGravity = true;
-        private _currentTarget = BABYLON.Vector3.Zero();
-        private _viewMatrix = BABYLON.Matrix.Zero();
+        public _currentTarget = BABYLON.Vector3.Zero();
+        public _viewMatrix = BABYLON.Matrix.Zero();
         private _camMatrix = BABYLON.Matrix.Zero();
         private _cameraTransformMatrix = BABYLON.Matrix.Zero();
         public _cameraRotationMatrix = BABYLON.Matrix.Zero();
-        private _referencePoint = BABYLON.Vector3.Zero();
-        private _transformedReferencePoint = BABYLON.Vector3.Zero();
+        public _referencePoint = new BABYLON.Vector3(0, 0, 1);
+        public _transformedReferencePoint = BABYLON.Vector3.Zero();
         private _oldPosition = BABYLON.Vector3.Zero();
         private _diffPosition = BABYLON.Vector3.Zero();
         private _newPosition = BABYLON.Vector3.Zero();
@@ -398,8 +398,6 @@
         }
 
         public _getViewMatrix(): Matrix {
-            BABYLON.Vector3.FromFloatsToRef(0, 0, 1, this._referencePoint);
-
             if (!this.lockedTarget) {
                 // Compute
                 if (this.upVector.x != 0 || this.upVector.y != 1.0 || this.upVector.z != 0) {

@@ -1,34 +1,31 @@
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var BABYLON;
-(function (BABYLON) {
+module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
-    var DeviceOrientationCamera = (function (_super) {
-        __extends(DeviceOrientationCamera, _super);
-        function DeviceOrientationCamera(name, position, scene) {
-            var _this = this;
-            _super.call(this, name, position, scene);
-            this._offsetX = null;
-            this._offsetY = null;
-            this._orientationGamma = 0;
-            this._orientationBeta = 0;
-            this._initialOrientationGamma = 0;
-            this._initialOrientationBeta = 0;
-            this._isLandscape = true;
-            this.angularSensibility = 10000.0;
-            this.moveSensibility = 50.0;
+    export class DeviceOrientationCamera extends FreeCamera {
+        private _offsetX: number = null;
+        private _offsetY: number = null;
+        private _orientationGamma: number = 0;
+        private _orientationBeta: number = 0;
+        private _initialOrientationGamma: number = 0;
+        private _initialOrientationBeta: number = 0;
+        private _attachedCanvas: HTMLCanvasElement;
+        private _orientationChanged: (e: DeviceOrientationEvent) => any;
+        private _isLandscape: boolean = true;
 
-            http:
-            window.addEventListener("resize", function () {
-                _this._isLandscape = (window.innerWidth > window.innerHeight) ? true : false;
-                _this._initialOrientationGamma = null;
+        public angularSensibility: number = 10000.0;
+        public moveSensibility: number = 50.0;
+
+        constructor(name: string, position: Vector3, scene: Scene) {
+            super(name, position, scene);
+
+            http://david.blob.core.windows.net/videos/BabylonJSWinStoreLaunchSequence.mp4 = (window.innerWidth > window.innerHeight) ? true : false;
+
+            window.addEventListener("resize", () => {
+                this._isLandscape = (window.innerWidth > window.innerHeight) ? true : false;
+                this._initialOrientationGamma = null;
             }, false);
         }
-        DeviceOrientationCamera.prototype.attachControl = function (canvas, noPreventDefault) {
+
+        public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
             if (this._attachedCanvas) {
                 return;
             }
@@ -37,11 +34,13 @@ var BABYLON;
             var that = this;
             if (!this._orientationChanged) {
                 this._orientationChanged = function (evt) {
+
                     if (!that._initialOrientationGamma) {
                         if (!this._isLandscape) {
                             that._initialOrientationGamma = evt.gamma;
                             that._initialOrientationBeta = evt.beta;
-                        } else {
+                        }
+                        else {
                             that._initialOrientationGamma = evt.beta;
                             that._initialOrientationBeta = evt.gamma;
                         }
@@ -50,7 +49,8 @@ var BABYLON;
                     if (!this._isLandscape) {
                         that._orientationGamma = evt.gamma;
                         that._orientationBeta = evt.beta;
-                    } else {
+                    }
+                    else {
                         that._orientationGamma = evt.beta;
                         that._orientationBeta = evt.gamma;
                     }
@@ -61,9 +61,9 @@ var BABYLON;
             }
 
             window.addEventListener("deviceorientation", this._orientationChanged);
-        };
+        }
 
-        DeviceOrientationCamera.prototype.detachControl = function (canvas) {
+        public detachControl(canvas: HTMLCanvasElement): void {
             if (this._attachedCanvas != canvas) {
                 return;
             }
@@ -75,9 +75,9 @@ var BABYLON;
             this._orientationBeta = 0;
             this._initialOrientationGamma = 0;
             this._initialOrientationBeta = 0;
-        };
+        }
 
-        DeviceOrientationCamera.prototype._checkInputs = function () {
+        public _checkInputs(): void {
             if (!this._offsetX) {
                 return;
             }
@@ -88,9 +88,6 @@ var BABYLON;
 
             BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
             this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-        };
-        return DeviceOrientationCamera;
-    })(BABYLON.FreeCamera);
-    BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.deviceOrientationCamera.js.map
+        }
+    }
+}

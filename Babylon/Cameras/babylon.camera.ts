@@ -21,7 +21,7 @@
         public layerMask: number = 0xFFFFFFFF;
 
         private _computedViewMatrix = BABYLON.Matrix.Identity();
-        private _projectionMatrix = new BABYLON.Matrix();
+        public _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
