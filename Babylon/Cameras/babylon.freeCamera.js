@@ -33,7 +33,7 @@ var BABYLON;
             this._camMatrix = BABYLON.Matrix.Zero();
             this._cameraTransformMatrix = BABYLON.Matrix.Zero();
             this._cameraRotationMatrix = BABYLON.Matrix.Zero();
-            this._referencePoint = BABYLON.Vector3.Zero();
+            this._referencePoint = new BABYLON.Vector3(0, 0, 1);
             this._transformedReferencePoint = BABYLON.Vector3.Zero();
             this._oldPosition = BABYLON.Vector3.Zero();
             this._diffPosition = BABYLON.Vector3.Zero();
@@ -379,8 +379,6 @@ var BABYLON;
         };
 
         FreeCamera.prototype._getViewMatrix = function () {
-            BABYLON.Vector3.FromFloatsToRef(0, 0, 1, this._referencePoint);
-
             if (!this.lockedTarget) {
                 // Compute
                 if (this.upVector.x != 0 || this.upVector.y != 1.0 || this.upVector.z != 0) {
