@@ -768,7 +768,7 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorus(name: string, diameter:number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
             var torus = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
 

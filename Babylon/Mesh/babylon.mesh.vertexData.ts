@@ -410,7 +410,7 @@
             return vertexData;
         }
 
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number): VertexData {
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1): VertexData {
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
             var indices = [];
