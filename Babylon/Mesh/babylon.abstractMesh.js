@@ -117,6 +117,9 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getBoundingInfo = function () {
+            if (!this._boundingInfo) {
+                this._updateBoundingInfo();
+            }
             return this._boundingInfo;
         };
 

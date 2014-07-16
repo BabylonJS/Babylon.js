@@ -116,6 +116,9 @@
         }
 
         public getBoundingInfo(): BoundingInfo {
+            if (!this._boundingInfo) {
+                this._updateBoundingInfo();
+            }
             return this._boundingInfo;
         }
 
