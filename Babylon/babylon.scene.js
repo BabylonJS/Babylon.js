@@ -179,6 +179,11 @@
 
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+
+            if (this.cameraToUseForPointers) {
+                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
+                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
+            }
         };
 
         // Pointers handling
@@ -191,7 +196,7 @@
 
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
                     return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
-                });
+                }, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     _this.setPointerOverMesh(pickResult.pickedMesh);
@@ -216,19 +221,19 @@
 
                 _this._updatePointerPosition(evt);
 
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
-                        switch (evt.buttons) {
-                            case 1:
+                        switch (evt.button) {
+                            case 0:
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                break;
+                            case 1:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 2:
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
-                                break;
-                            case 3:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                         }
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
@@ -1004,6 +1009,10 @@
             this._boundingBoxRenderer.dispose();
 
             // Events
+            if (this.onDispose) {
+                this.onDispose();
+            }
+
             this.detachControl();
 
             // Detach cameras
@@ -1061,19 +1070,21 @@
         };
 
         // Collisions
-        Scene.prototype._getNewPosition = function (position, velocity, collider, maximumRetry, finalPosition) {
+        Scene.prototype._getNewPosition = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
+            if (typeof excludedMesh === "undefined") { excludedMesh = null; }
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
 
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
 
             finalPosition.multiplyInPlace(collider.radius);
         };
 
-        Scene.prototype._collideWithWorld = function (position, velocity, collider, maximumRetry, finalPosition) {
+        Scene.prototype._collideWithWorld = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
+            if (typeof excludedMesh === "undefined") { excludedMesh = null; }
             var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {
@@ -1085,7 +1096,7 @@
 
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
                     mesh._checkCollision(collider);
                 }
             }
@@ -1105,7 +1116,7 @@
             }
 
             collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         };
 
         // Octrees

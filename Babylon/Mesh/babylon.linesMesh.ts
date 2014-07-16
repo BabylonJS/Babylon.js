@@ -22,6 +22,14 @@
             return this._colorShader;
         }
 
+        public get isPickable(): boolean {
+            return false;
+        }
+
+        public get checkCollisions(): boolean {
+            return false;
+        }
+
         public _bind(subMesh: SubMesh, effect: Effect, wireframe?: boolean): void {
             var engine = this.getScene().getEngine();
 
@@ -43,6 +51,10 @@
 
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+        }
+
+        public intersects(ray: Ray, fastCheck?: boolean) {
+            return null;
         }
 
         public dispose(doNotRecurse?: boolean): void {

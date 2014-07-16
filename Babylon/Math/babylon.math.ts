@@ -294,6 +294,14 @@
             return new Vector2(0, 0);
         }
 
+        public static FromArray(array: number[], offset?: number): Vector2 {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new Vector2(array[offset], array[offset + 1]);
+        }
+
         public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;

@@ -27,6 +27,22 @@ var BABYLON;
             configurable: true
         });
 
+        Object.defineProperty(LinesMesh.prototype, "isPickable", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(LinesMesh.prototype, "checkCollisions", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         LinesMesh.prototype._bind = function (subMesh, effect, wireframe) {
             var engine = this.getScene().getEngine();
 
@@ -48,6 +64,10 @@ var BABYLON;
 
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+        };
+
+        LinesMesh.prototype.intersects = function (ray, fastCheck) {
+            return null;
         };
 
         LinesMesh.prototype.dispose = function (doNotRecurse) {

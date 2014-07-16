@@ -19,6 +19,7 @@
         public ambientColor = new BABYLON.Color3(0, 0, 0);
         public beforeRender: () => void;
         public afterRender: () => void;
+        public onDispose: () => void;
         public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
         public forceWireframe = false;
@@ -28,6 +29,7 @@
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public cameraToUseForPointers: Camera; // Define this parameter if you are using multiple cameras and you want to specify which one should be sued for pointer position
         private _pointerX: number;
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
@@ -248,6 +250,11 @@
 
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+
+            if (this.cameraToUseForPointers) {
+                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
+                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
+            }
         }
 
         // Pointers handling
@@ -257,7 +264,10 @@
 
                 this._updatePointerPosition(evt);
 
-                var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers);
+                var pickResult = this.pick(this._pointerX, this._pointerY,
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers,
+                    false,
+                    this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -283,19 +293,19 @@
 
                 this._updatePointerPosition(evt);
 
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate);
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
-                        switch (evt.buttons) {
-                            case 1:
+                        switch (evt.button) {
+                            case 0:
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                break;
+                            case 1:
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 2:
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
-                                break;
-                            case 3:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                         }
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
@@ -1077,6 +1087,10 @@
             this._boundingBoxRenderer.dispose();
 
             // Events
+            if (this.onDispose) {
+                this.onDispose();
+            }
+
             this.detachControl();
 
             // Detach cameras
@@ -1142,19 +1156,19 @@
         }
 
         // Collisions
-        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3): void {
+        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
 
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
 
             finalPosition.multiplyInPlace(collider.radius);
         }
 
-        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3): void {
+        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
             var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {
@@ -1167,7 +1181,7 @@
             // Check all meshes
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
                     mesh._checkCollision(collider);
                 }
             }
@@ -1187,7 +1201,7 @@
             }
 
             collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition);
+            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
 
         // Octrees

@@ -644,7 +644,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
 
         # Export Physics
         if object.rigid_body != None:
-            shape_items = {'BOX': 1, 'SPHERE': 2}
+            shape_items = { 'SPHERE': 1, 'BOX': 2, 'MESH': 4, 'CAPSULE': 5, 'CONE': 6, 'CYLINDER': 7, 'CONVEX_HULL': 8}
             shape_type = shape_items[object.rigid_body.collision_shape]
             Export_babylon.write_int(file_handler, "physicsImpostor", shape_type)
             mass = object.rigid_body.mass
