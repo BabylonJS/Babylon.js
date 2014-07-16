@@ -179,6 +179,11 @@
 
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+
+            if (this.cameraToUseForPointers) {
+                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
+                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
+            }
         };
 
         // Pointers handling
@@ -191,7 +196,7 @@
 
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
                     return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
-                });
+                }, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     _this.setPointerOverMesh(pickResult.pickedMesh);
@@ -216,7 +221,7 @@
 
                 _this._updatePointerPosition(evt);
 
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {

@@ -23,7 +23,7 @@
         private _viewMatrix = BABYLON.Matrix.Zero();
         private _camMatrix = BABYLON.Matrix.Zero();
         private _cameraTransformMatrix = BABYLON.Matrix.Zero();
-        private _cameraRotationMatrix = BABYLON.Matrix.Zero();
+        public _cameraRotationMatrix = BABYLON.Matrix.Zero();
         private _referencePoint = BABYLON.Vector3.Zero();
         private _transformedReferencePoint = BABYLON.Vector3.Zero();
         private _oldPosition = BABYLON.Vector3.Zero();
@@ -41,7 +41,7 @@
         private _onMouseMove: (e: MouseEvent) => any;
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;
-        private _onLostFocus: (e: FocusEvent) => any;
+        public _onLostFocus: (e: FocusEvent) => any;
         private _reset: () => void;
 
         constructor(name: string, position: Vector3, scene: Scene) {
@@ -97,7 +97,7 @@
         }
 
         // Methods
-        private _computeLocalCameraSpeed(): number {
+        public _computeLocalCameraSpeed(): number {
             return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
         }
 

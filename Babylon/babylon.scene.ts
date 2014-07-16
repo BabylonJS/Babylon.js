@@ -29,6 +29,7 @@
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public cameraToUseForPointers: Camera; // Define this parameter if you are using multiple cameras and you want to specify which one should be sued for pointer position
         private _pointerX: number;
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
@@ -249,6 +250,11 @@
 
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+
+            if (this.cameraToUseForPointers) {
+                this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
+                this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
+            }
         }
 
         // Pointers handling
@@ -258,7 +264,10 @@
 
                 this._updatePointerPosition(evt);
 
-                var pickResult = this.pick(this._pointerX, this._pointerY, (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers);
+                var pickResult = this.pick(this._pointerX, this._pointerY,
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers,
+                    false,
+                    this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -284,7 +293,7 @@
 
                 this._updatePointerPosition(evt);
 
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate);
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     if (pickResult.pickedMesh.actionManager) {
