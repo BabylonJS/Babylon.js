@@ -4,8 +4,7 @@
         function ShadowGenerator(mapSize, light) {
             var _this = this;
             // Members
-            this.useVarianceShadowMap = true;
-            this.usePoissonSampling = false;
+            this.filter = ShadowGenerator.FILTER_VARIANCESHADOWMAP;
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
@@ -106,6 +105,53 @@
                 }
             };
         }
+        Object.defineProperty(ShadowGenerator, "FILTER_NONE", {
+            // Static
+            get: function () {
+                return ShadowGenerator._FILTER_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ShadowGenerator, "FILTER_VARIANCESHADOWMAP", {
+            get: function () {
+                return ShadowGenerator._FILTER_VARIANCESHADOWMAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ShadowGenerator, "FILTER_POISSONSAMPLING", {
+            get: function () {
+                return ShadowGenerator._FILTER_POISSONSAMPLING;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ShadowGenerator.prototype, "useVarianceShadowMap", {
+            get: function () {
+                return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+            },
+            set: function (value) {
+                this.filter = (value ? ShadowGenerator.FILTER_VARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ShadowGenerator.prototype, "usePoissonSampling", {
+            get: function () {
+                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+            },
+            set: function (value) {
+                this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         ShadowGenerator.prototype.isReady = function (mesh, useInstances) {
             var defines = [];
 
@@ -207,6 +253,9 @@
         ShadowGenerator.prototype.dispose = function () {
             this._shadowMap.dispose();
         };
+        ShadowGenerator._FILTER_NONE = 0;
+        ShadowGenerator._FILTER_VARIANCESHADOWMAP = 1;
+        ShadowGenerator._FILTER_POISSONSAMPLING = 2;
         return ShadowGenerator;
     })();
     BABYLON.ShadowGenerator = ShadowGenerator;

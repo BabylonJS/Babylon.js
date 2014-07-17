@@ -1,8 +1,38 @@
 ﻿module BABYLON {
     export class ShadowGenerator {
+        private static _FILTER_NONE = 0;
+        private static _FILTER_VARIANCESHADOWMAP = 1;
+        private static _FILTER_POISSONSAMPLING = 2;
+
+        // Static
+        public static get FILTER_NONE(): number {
+            return ShadowGenerator._FILTER_NONE;
+        }
+
+        public static get FILTER_VARIANCESHADOWMAP(): number {
+            return ShadowGenerator._FILTER_VARIANCESHADOWMAP;
+        }
+
+        public static get FILTER_POISSONSAMPLING(): number {
+            return ShadowGenerator._FILTER_POISSONSAMPLING;
+        }
+
         // Members
-        public useVarianceShadowMap = true;
-        public usePoissonSampling = false;
+        public filter = ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+
+        public get useVarianceShadowMap(): boolean {
+            return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+        }
+        public set useVarianceShadowMap(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_VARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
+        }
+
+        public get usePoissonSampling(): boolean {
+            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+        }
+        public set usePoissonSampling(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
+        }
 
         private _light: DirectionalLight;
         private _scene: Scene;
