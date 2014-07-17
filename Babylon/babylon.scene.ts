@@ -29,7 +29,7 @@
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        public cameraToUseForPointers: Camera; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+        public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
