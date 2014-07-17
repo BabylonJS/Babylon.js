@@ -224,8 +224,12 @@ var BABYLON = BABYLON || {};
             shadowGenerator.getShadowMap().renderList.push(mesh);
         }
 
-        shadowGenerator.useVarianceShadowMap = parsedShadowGenerator.useVarianceShadowMap;
-
+        if (parsedShadowGenerator.usePoissonSampling) {
+            shadowGenerator.usePoissonSampling = true;
+        } else {
+            shadowGenerator.useVarianceShadowMap = parsedShadowGenerator.useVarianceShadowMap;
+        }
+        
         return shadowGenerator;
     };
 

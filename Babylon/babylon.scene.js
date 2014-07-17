@@ -8,6 +8,7 @@
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
+            this.cameraToUseForPointers = null;
             // Fog
             this.fogMode = BABYLON.Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
