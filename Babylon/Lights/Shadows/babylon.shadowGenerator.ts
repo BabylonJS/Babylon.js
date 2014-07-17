@@ -2,6 +2,7 @@
     export class ShadowGenerator {
         // Members
         public useVarianceShadowMap = true;
+        public usePoissonSampling = false;
 
         private _light: DirectionalLight;
         private _scene: Scene;

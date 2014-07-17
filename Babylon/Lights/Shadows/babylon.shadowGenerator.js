@@ -5,6 +5,7 @@
             var _this = this;
             // Members
             this.useVarianceShadowMap = true;
+            this.usePoissonSampling = false;
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
