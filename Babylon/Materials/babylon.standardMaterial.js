@@ -223,6 +223,13 @@ var BABYLON;
                                 optionalDefines.push(defines[defines.length - 1]);
                             }
                         }
+
+                        if (shadowGenerator.usePoissonSampling) {
+                            defines.push("#define SHADOWPCF" + lightIndex);
+                            if (lightIndex > 0) {
+                                optionalDefines.push(defines[defines.length - 1]);
+                            }
+                        }
                     }
 
                     lightIndex++;

@@ -347,6 +347,7 @@
         serializationObject.lightId = light.id;
         serializationObject.mapSize = shadowGenerator.getShadowMap().getRenderSize();
         serializationObject.useVarianceShadowMap = shadowGenerator.useVarianceShadowMap;
+        serializationObject.usePoissonSampling = shadowGenerator.usePoissonSampling;
 
         serializationObject.renderList = [];
         for (var meshIndex = 0; meshIndex < shadowGenerator.getShadowMap().renderList.length; meshIndex++) {

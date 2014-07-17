@@ -22,13 +22,8 @@
   <script src="Babylon/Cameras/babylon.anaglyphCamera.js"></script>
   <script src="Babylon/Mesh/babylon.mesh.vertexData.js"></script>
   <script src="Babylon/Materials/babylon.shaderMaterial.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.globalAxisFactorsFilter.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.gravityInputController.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.inputCollisionFilter.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.keyboardMoveController.js"></script>
   <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
-  <script src="Babylon/Cameras/babylon.oculusOrientedCamera.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.oculusController.js"></script>
+  <script src="Babylon/Cameras/babylon.oculusCamera.js"></script>
   <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
   <script src="Babylon/PostProcess/babylon.oculusDistortionCorrectionPostProcess.js"></script>
   <script src="Babylon/Mesh/babylon.csg.js"></script>
@@ -82,7 +77,6 @@
   <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
   <script src="Babylon/Cameras/babylon.freeCamera.js"></script>
   <script src="Babylon/Cameras/babylon.camera.js"></script>
-  <script src="Babylon/Cameras/Controllers/babylon.inputController.js"></script>
   <script src="Babylon/Collisions/babylon.collider.js"></script>
   <script src="Babylon/Lights//Shadows/babylon.shadowGenerator.js"></script>
   <script src="Babylon/Lights/babylon.directionalLight.js"></script>
