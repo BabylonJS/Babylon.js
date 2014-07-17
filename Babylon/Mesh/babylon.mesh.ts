@@ -821,6 +821,20 @@
             return ground;
         }
 
+        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {w: number; h: number;}, precision: {w: number; h: number;}, scene: Scene, updatable?: boolean): Mesh {
+            var tiledGround = new BABYLON.GroundMesh(name, scene);
+            tiledGround._setReady(false);
+            tiledGround._subdivisions = subdivisions;
+
+            var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+
+            vertexData.applyToMesh(tiledGround, updatable);
+
+            tiledGround._setReady(true);
+
+            return tiledGround;
+        }
+
         public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
