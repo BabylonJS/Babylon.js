@@ -527,22 +527,24 @@
             public diameterTop: number;
             public diameterBottom: number;
             public tessellation: number;
+            public subdivisions: number;
 
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.height = height;
                 this.diameterTop = diameterTop;
                 this.diameterBottom = diameterBottom;
                 this.tessellation = tessellation;
+                this.subdivisions = subdivisions;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation);
+                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions);
             }
 
             public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
+                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null);
             }
         }
 
