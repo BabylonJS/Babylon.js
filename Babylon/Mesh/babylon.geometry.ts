@@ -592,6 +592,35 @@
             }
         }
 
+        export class TiledGround extends _Primitive {
+            // Members
+            public xmin: number;
+            public zmin: number;
+            public xmax: number;
+            public zmax: number;
+            public subdivisions: {w: number; h: number;};
+            public precision:    {w: number; h: number;};
+
+            constructor(id: string, scene: Scene, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {w: number; h: number;}, precision: {w: number; h: number;}, canBeRegenerated?: boolean, mesh?: Mesh) {
+                this.xmin = xmin;
+                this.zmin = zmin;
+                this.xmax = xmax;
+                this.zmax = zmax;
+                this.subdivisions  = subdivisions;
+                this.precision     = precision;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateTiledGround(this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision);
+            }
+
+            public copy(id: string): Geometry {
+                return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
+            }
+        }
+
         export class Plane extends _Primitive {
             // Members
             public size: number;
