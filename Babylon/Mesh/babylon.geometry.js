@@ -569,6 +569,29 @@ var BABYLON;
             })(_Primitive);
             Primitives.Ground = Ground;
 
+            var TiledGround = (function (_super) {
+                __extends(TiledGround, _super);
+                function TiledGround(id, scene, xmin, zmin, xmax, zmax, subdivisions, precision, canBeRegenerated, mesh) {
+                    this.xmin = xmin;
+                    this.zmin = zmin;
+                    this.xmax = xmax;
+                    this.zmax = zmax;
+                    this.subdivisions = subdivisions;
+                    this.precision = precision;
+
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+                }
+                TiledGround.prototype._regenerateVertexData = function () {
+                    return BABYLON.VertexData.CreateTiledGround(this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision);
+                };
+
+                TiledGround.prototype.copy = function (id) {
+                    return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
+                };
+                return TiledGround;
+            })(_Primitive);
+            Primitives.TiledGround = TiledGround;
+
             var Plane = (function (_super) {
                 __extends(Plane, _super);
                 function Plane(id, scene, size, canBeRegenerated, mesh) {
