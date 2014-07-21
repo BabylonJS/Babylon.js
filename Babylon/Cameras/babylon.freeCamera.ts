@@ -44,6 +44,8 @@
         public _onLostFocus: (e: FocusEvent) => any;
         private _reset: () => void;
 
+        public _waitingLockedTargetId: string;
+
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
         }

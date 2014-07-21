@@ -418,12 +418,12 @@
             var normals = [];
             var uvs = [];
 
-            height          = height || 1;
-            diameterTop     = diameterTop || 0.5;
-            diameterBottom  = diameterBottom || 1;
-            tessellation    = tessellation || 16;
-            subdivisions    = subdivisions || 1;
-            subdivisions    = (subdivisions < 1) ? 1 : subdivisions;
+            height = height || 1;
+            diameterTop = diameterTop || 0.5;
+            diameterBottom = diameterBottom || 1;
+            tessellation = tessellation || 16;
+            subdivisions = subdivisions || 1;
+            subdivisions = (subdivisions < 1) ? 1 : subdivisions;
 
             var getCircleVector = i => {
                 var angle = (i * 2.0 * Math.PI / tessellation);
@@ -456,7 +456,7 @@
                     var textureCoordinate = new BABYLON.Vector2(
                         circleVector.x * textureScale.x + 0.5,
                         circleVector.z * textureScale.y + 0.5
-                    );
+                        );
 
                     positions.push(position.x, position.y, position.z);
                     uvs.push(textureCoordinate.x, textureCoordinate.y);
@@ -476,9 +476,9 @@
                 }
             };
 
-            var base    = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
-            var offset  = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
-            var stride  = tessellation + 1;
+            var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
+            var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
+            var stride = tessellation + 1;
 
             // Positions, normals & uvs
             for (var i = 0; i <= tessellation; i++) {
@@ -491,7 +491,7 @@
                     position = circleVector.scale(radius);
                     position.addInPlace(base.add(offset.scale(s)));
                     textureCoordinate.y += 1 / subdivisions;
-                    radius += (radiusTop - radiusBottom)/subdivisions;
+                    radius += (radiusTop - radiusBottom) / subdivisions;
 
                     // Push in arrays
                     positions.push(position.x, position.y, position.z);
@@ -503,11 +503,11 @@
             // Indices
             for (var s = 0; s < subdivisions - 1; s++) {
                 for (var i = 0; i <= tessellation; i++) {
-                    indices.push( i * subdivisions + s);
+                    indices.push(i * subdivisions + s);
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
-                    indices.push( i * subdivisions + (s + 1));
+                    indices.push(i * subdivisions + (s + 1));
 
-                    indices.push( i * subdivisions + (s + 1));
+                    indices.push(i * subdivisions + (s + 1));
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
                     indices.push((i * subdivisions + (s + subdivisions + 1)) % (stride * subdivisions));
                 }
@@ -661,7 +661,7 @@
             return vertexData;
         }
 
-        public static CreateTiledGround (xmin: number, zmin: number, xmax: number, zmax: number, subdivisions = {w: 1, h: 1}, precision = {w: 1, h: 1}): VertexData {
+        public static CreateTiledGround(xmin: number, zmin: number, xmax: number, zmax: number, subdivisions = { w: 1, h: 1 }, precision = { w: 1, h: 1 }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -670,12 +670,12 @@
 
             subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
-            precision.w    = (precision.w < 1) ? 1 : precision.w;
-            precision.h    = (precision.h < 1) ? 1 : precision.h;
+            precision.w = (precision.w < 1) ? 1 : precision.w;
+            precision.h = (precision.h < 1) ? 1 : precision.h;
 
             var tileSize = {
-                'w' : (xmax - xmin) / subdivisions.w,
-                'h' : (zmax - zmin) / subdivisions.h
+                'w': (xmax - xmin) / subdivisions.w,
+                'h': (zmax - zmin) / subdivisions.h
             };
 
             for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
@@ -685,21 +685,21 @@
                         zmin + tileRow * tileSize.h,
                         xmin + (tileCol + 1) * tileSize.w,
                         zmin + (tileRow + 1) * tileSize.h
-                    );
+                        );
                 }
             }
 
-            function applyTile (xTileMin: number, zTileMin: number, xTileMax: number, zTileMax: number) {
+            function applyTile(xTileMin: number, zTileMin: number, xTileMax: number, zTileMax: number) {
                 // Indices
                 var base = positions.length / 3;
                 var rowLength = precision.w + 1;
                 for (row = 0; row < precision.h; row++) {
                     for (col = 0; col < precision.w; col++) {
                         var square = [
-                            base +  col + row * rowLength,
+                            base + col + row * rowLength,
                             base + (col + 1) + row * rowLength,
                             base + (col + 1) + (row + 1) * rowLength,
-                            base +  col + (row + 1) * rowLength
+                            base + col + (row + 1) * rowLength
                         ];
 
                         indices.push(square[1]);
@@ -712,7 +712,7 @@
                 }
 
                 // Position, normals and uvs
-                var position = new BABYLON.Vector3.Zero();
+                var position = BABYLON.Vector3.Zero();
                 var normal = new BABYLON.Vector3(0, 1.0, 0);
                 for (row = 0; row <= precision.h; row++) {
                     position.z = (row * (zTileMax - zTileMin)) / precision.h + zTileMin;
@@ -738,7 +738,7 @@
             return vertexData;
         }
 
-        public static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth:  number, bufferHeight: number): VertexData {
+        public static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];

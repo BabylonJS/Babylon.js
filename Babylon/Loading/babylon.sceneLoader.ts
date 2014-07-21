@@ -1,21 +1,27 @@
-﻿var BABYLON;
-(function (BABYLON) {
-    var SceneLoader = (function () {
-        function SceneLoader() {
+﻿module BABYLON {
+    export interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+
+    export class SceneLoader
+    {
+        // Flags
+        private static _ForceFullSceneLoadingForIncremental = false;
+
+        public static get ForceFullSceneLoadingForIncremental() {
+            return SceneLoader._ForceFullSceneLoadingForIncremental;
         }
-        Object.defineProperty(SceneLoader, "ForceFullSceneLoadingForIncremental", {
-            get: function () {
-                return SceneLoader._ForceFullSceneLoadingForIncremental;
-            },
-            set: function (value) {
-                SceneLoader._ForceFullSceneLoadingForIncremental = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
 
+        public static set ForceFullSceneLoadingForIncremental(value: boolean) {
+            SceneLoader._ForceFullSceneLoadingForIncremental = value;
+        }
 
-        SceneLoader._getPluginForFilename = function (sceneFilename) {
+        // Members
+        private static _registeredPlugins = new Array<ISceneLoaderPlugin>();
+
+        private static _getPluginForFilename(sceneFilename): ISceneLoaderPlugin {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var extension = sceneFilename.substring(dotPosition).toLowerCase();
 
@@ -28,22 +34,21 @@
             }
 
             return this._registeredPlugins[this._registeredPlugins.length - 1];
-        };
+        }
 
-        // Public functions
-        SceneLoader.RegisterPlugin = function (plugin) {
+            // Public functions
+        public static RegisterPlugin(plugin: ISceneLoaderPlugin): void {
             plugin.extensions = plugin.extensions.toLowerCase();
             SceneLoader._registeredPlugins.push(plugin);
-        };
+        }
 
-        SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
-            var _this = this;
-            var manifestChecked = function (success) {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene) => void): void {
+            var manifestChecked = success => {
                 scene.database = database;
 
-                var plugin = _this._getPluginForFilename(sceneFilename);
+                var plugin = this._getPluginForFilename(sceneFilename);
 
-                var importMeshFromData = function (data) {
+                var importMeshFromData = data => {
                     var meshes = [];
                     var particleSystems = [];
                     var skeletons = [];
@@ -68,14 +73,14 @@
                     return;
                 }
 
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, data => {
                     importMeshFromData(data);
                 }, progressCallBack, database);
             };
 
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
             var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
-        };
+        }
 
         /**
         * Load a scene
@@ -83,11 +88,12 @@
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
-        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
+        public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
+
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
-            var loadSceneFromData = function (data) {
+            var loadSceneFromData = data => {
                 var scene = new BABYLON.Scene(engine);
                 scene.database = database;
 
@@ -104,7 +110,7 @@
                 }
             };
 
-            var manifestChecked = function (success) {
+            var manifestChecked = success => {
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
             };
 
@@ -117,16 +123,11 @@
             if (rootUrl.indexOf("file:") === -1) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
-            } else {
+            }
+            // Loading file from disk via input file or drag'n'drop
+            else {
                 BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
             }
-        };
-        SceneLoader._ForceFullSceneLoadingForIncremental = false;
-
-        SceneLoader._registeredPlugins = new Array();
-        return SceneLoader;
-    })();
-    BABYLON.SceneLoader = SceneLoader;
-    ;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneLoader.js.map
+        }
+    };
+}

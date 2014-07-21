@@ -194,11 +194,7 @@
             result.a = left.a + (right.a - left.a) * amount;
         }
 
-        public static FromArray(array: number[], offset: number): Color4 {
-            if (!offset) {
-                offset = 0;
-            }
-
+        public static FromArray(array: number[], offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 

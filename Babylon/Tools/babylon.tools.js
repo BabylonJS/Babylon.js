@@ -1,5 +1,4 @@
-﻿
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     
 
