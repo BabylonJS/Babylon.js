@@ -650,36 +650,31 @@
 
             subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
-            precision.w    = (precision.w < 1) ? 1 : precision.w;
-            precision.h    = (precision.h < 1) ? 1 : precision.h;
+            precision.w = (precision.w < 1) ? 1 : precision.w;
+            precision.h = (precision.h < 1) ? 1 : precision.h;
 
             var tileSize = {
-                'w' : (xmax - xmin) / subdivisions.w,
-                'h' : (zmax - zmin) / subdivisions.h
+                'w': (xmax - xmin) / subdivisions.w,
+                'h': (zmax - zmin) / subdivisions.h
             };
 
             for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
                 for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
-                    applyTile(
-                        xmin + tileCol * tileSize.w,
-                        zmin + tileRow * tileSize.h,
-                        xmin + (tileCol + 1) * tileSize.w,
-                        zmin + (tileRow + 1) * tileSize.h
-                    );
+                    applyTile(xmin + tileCol * tileSize.w, zmin + tileRow * tileSize.h, xmin + (tileCol + 1) * tileSize.w, zmin + (tileRow + 1) * tileSize.h);
                 }
             }
 
-            function applyTile (xTileMin, zTileMin, xTileMax, zTileMax) {
+            function applyTile(xTileMin, zTileMin, xTileMax, zTileMax) {
                 // Indices
                 var base = positions.length / 3;
                 var rowLength = precision.w + 1;
                 for (row = 0; row < precision.h; row++) {
                     for (col = 0; col < precision.w; col++) {
                         var square = [
-                            base +  col + row * rowLength,
+                            base + col + row * rowLength,
                             base + (col + 1) + row * rowLength,
                             base + (col + 1) + (row + 1) * rowLength,
-                            base +  col + (row + 1) * rowLength
+                            base + col + (row + 1) * rowLength
                         ];
 
                         indices.push(square[1]);
@@ -692,7 +687,7 @@
                 }
 
                 // Position, normals and uvs
-                var position = new BABYLON.Vector3.Zero();
+                var position = BABYLON.Vector3.Zero();
                 var normal = new BABYLON.Vector3(0, 1.0, 0);
                 for (row = 0; row <= precision.h; row++) {
                     position.z = (row * (zTileMax - zTileMin)) / precision.h + zTileMin;

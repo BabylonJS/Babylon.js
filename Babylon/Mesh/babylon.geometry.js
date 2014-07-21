@@ -511,6 +511,7 @@ var BABYLON;
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
                 function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh) {
+                    if (typeof subdivisions === "undefined") { subdivisions = 1; }
                     this.height = height;
                     this.diameterTop = diameterTop;
                     this.diameterBottom = diameterBottom;

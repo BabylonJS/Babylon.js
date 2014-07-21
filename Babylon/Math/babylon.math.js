@@ -224,10 +224,7 @@
         };
 
         Color4.FromArray = function (array, offset) {
-            if (!offset) {
-                offset = 0;
-            }
-
+            if (typeof offset === "undefined") { offset = 0; }
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
 
