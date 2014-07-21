@@ -813,15 +813,11 @@ var BABYLON;
         };
 
         Mesh.CreateTiledGround = function (name, xmin, zmin, xmax, zmax, subdivisions, precision, scene, updatable) {
-            var tiledGround = new BABYLON.GroundMesh(name, scene);
-            tiledGround._setReady(false);
-            tiledGround._subdivisions = subdivisions;
+            var tiledGround = new BABYLON.Mesh(name, scene);
 
             var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
 
             vertexData.applyToMesh(tiledGround, updatable);
-
-            tiledGround._setReady(true);
 
             return tiledGround;
         };
