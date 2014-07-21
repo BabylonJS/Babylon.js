@@ -1,10 +1,24 @@
 ﻿// Mixins
 interface Window {
+    mozIndexedDB(func: any): any;
+    webkitIndexedDB(func: any): any;
+    IDBTransaction(func: any): any;
+    webkitIDBTransaction(func: any): any;
+    msIDBTransaction(func: any): any;
+    IDBKeyRange(func: any): any;
+    webkitIDBKeyRange(func: any): any;
+    msIDBKeyRange(func: any): any;
+    URL: HTMLURL;
+    webkitURL: HTMLURL;
     webkitRequestAnimationFrame(func: any): any;
     mozRequestAnimationFrame(func: any): any;
     oRequestAnimationFrame(func: any): any;
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
+}
+
+interface HTMLURL {
+    createObjectURL(param1: any, param2?: any);
 }
 
 interface Document {

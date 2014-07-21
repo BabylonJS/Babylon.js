@@ -12,17 +12,17 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
-        private _delayInfo; //ANY
+        public _delayInfo; //ANY
         private _indexBuffer;
-        private _boundingInfo: BoundingInfo;
-        private _delayLoadingFunction: (any, Geometry) => void;
+        public _boundingInfo: BoundingInfo;
+        public _delayLoadingFunction: (any, Geometry) => void;
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
             this._scene = scene;
-            
+
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -138,7 +138,7 @@
             return this._vertexBuffers[kind];
         }
 
-        public getVertexBuffers(): VertexBuffer[]{
+        public getVertexBuffers(): VertexBuffer[] {
             if (!this.isReady()) {
                 return null;
             }
@@ -411,7 +411,7 @@
 
             return geometry.copy(id);
         }
-    
+
         // from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
         // be aware Math.random() could cause collisions
         public static RandomId(): string {
@@ -527,22 +527,24 @@
             public diameterTop: number;
             public diameterBottom: number;
             public tessellation: number;
+            public subdivisions: number;
 
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh) {
                 this.height = height;
                 this.diameterTop = diameterTop;
                 this.diameterBottom = diameterBottom;
                 this.tessellation = tessellation;
+                this.subdivisions = subdivisions;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation);
+                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions);
             }
 
             public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
+                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null);
             }
         }
 
@@ -589,6 +591,35 @@
 
             public copy(id: string): Geometry {
                 return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
+            }
+        }
+
+        export class TiledGround extends _Primitive {
+            // Members
+            public xmin: number;
+            public zmin: number;
+            public xmax: number;
+            public zmax: number;
+            public subdivisions: { w: number; h: number; };
+            public precision: { w: number; h: number; };
+
+            constructor(id: string, scene: Scene, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh?: Mesh) {
+                this.xmin = xmin;
+                this.zmin = zmin;
+                this.xmax = xmax;
+                this.zmax = zmax;
+                this.subdivisions = subdivisions;
+                this.precision = precision;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateTiledGround(this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision);
+            }
+
+            public copy(id: string): Geometry {
+                return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
             }
         }
 

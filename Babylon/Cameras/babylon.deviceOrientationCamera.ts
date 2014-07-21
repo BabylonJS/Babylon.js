@@ -9,7 +9,6 @@ module BABYLON {
         private _initialOrientationBeta: number = 0;
         private _attachedCanvas: HTMLCanvasElement;
         private _orientationChanged: (e: DeviceOrientationEvent) => any;
-        private _isLandscape: boolean = true;
 
         public angularSensibility: number = 10000.0;
         public moveSensibility: number = 50.0;
@@ -17,10 +16,7 @@ module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
 
-            http://david.blob.core.windows.net/videos/BabylonJSWinStoreLaunchSequence.mp4 = (window.innerWidth > window.innerHeight) ? true : false;
-
             window.addEventListener("resize", () => {
-                this._isLandscape = (window.innerWidth > window.innerHeight) ? true : false;
                 this._initialOrientationGamma = null;
             }, false);
         }
@@ -31,32 +27,19 @@ module BABYLON {
             }
             this._attachedCanvas = canvas;
 
-            var that = this;
             if (!this._orientationChanged) {
-                this._orientationChanged = function (evt) {
+                this._orientationChanged = (evt) => {
 
-                    if (!that._initialOrientationGamma) {
-                        if (!this._isLandscape) {
-                            that._initialOrientationGamma = evt.gamma;
-                            that._initialOrientationBeta = evt.beta;
-                        }
-                        else {
-                            that._initialOrientationGamma = evt.beta;
-                            that._initialOrientationBeta = evt.gamma;
-                        }
+                    if (!this._initialOrientationGamma) {
+                            this._initialOrientationGamma = evt.gamma;
+                            this._initialOrientationBeta = evt.beta;
                     }
 
-                    if (!this._isLandscape) {
-                        that._orientationGamma = evt.gamma;
-                        that._orientationBeta = evt.beta;
-                    }
-                    else {
-                        that._orientationGamma = evt.beta;
-                        that._orientationBeta = evt.gamma;
-                    }
-
-                    that._offsetY = (that._initialOrientationBeta - that._orientationBeta);
-                    that._offsetX = (that._initialOrientationGamma - that._orientationGamma);
+                    this._orientationGamma = evt.gamma;
+                    this._orientationBeta = evt.beta;
+ 
+                    this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
+                    this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
                 };
             }
 

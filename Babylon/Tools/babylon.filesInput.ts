@@ -1,11 +1,4 @@
-﻿// ANY
-declare module BABYLON {
-    export class SceneLoader {
-        static Load: (param1: any, param2: any, param3: any, param4: any, param5: any) => void;
-    }
-}
-
-module BABYLON {
+﻿module BABYLON {
     export class FilesInput {
         private engine: BABYLON.Engine;
         private currentScene: BABYLON.Scene;
