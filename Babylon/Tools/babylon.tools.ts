@@ -1,11 +1,4 @@
-﻿// ANY
-declare module BABYLON {
-    export class Database {
-        static isUASupportingBlobStorage: boolean;
-    }
-}
-
-module BABYLON {
+﻿module BABYLON {
 
     //class FilesTextures { } //ANY
 

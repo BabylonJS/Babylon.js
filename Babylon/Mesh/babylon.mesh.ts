@@ -2,7 +2,7 @@
     export class _InstancesBatch {
         public mustReturn = false;
         public visibleInstances = new Array<Array<InstancedMesh>>();
-        public renderSelf = new  Array<boolean>();
+        public renderSelf = new Array<boolean>();
     }
 
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -14,14 +14,15 @@
         // Private
         public _geometry: Geometry;
         private _onBeforeRenderCallbacks = [];
-        private _delayInfo; //ANY
-        private _delayLoadingFunction: (any, Mesh) => void;
+        public _delayInfo; //ANY
+        public _delayLoadingFunction: (any, Mesh) => void;
         public _visibleInstances: any = {};
         private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
         private _worldMatricesInstancesBuffer: WebGLBuffer;
         private _worldMatricesInstancesArray: Float32Array;
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+        public _shouldGenerateFlatShading: boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -268,12 +269,12 @@
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf[subMeshId]  = true;
+            this._batchCache.renderSelf[subMeshId] = true;
             this._batchCache.visibleInstances[subMeshId] = null;
 
             if (this._visibleInstances) {
                 var currentRenderId = scene.getRenderId();
-                this._batchCache.visibleInstances[subMeshId]  = this._visibleInstances[currentRenderId];
+                this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
 
                 if (!this._batchCache.visibleInstances[subMeshId] && this._visibleInstances.defaultRenderId) {
@@ -289,7 +290,7 @@
                     }
 
                     if (currentRenderId !== selfRenderId) {
-                        this._batchCache.renderSelf[subMeshId]  = false;
+                        this._batchCache.renderSelf[subMeshId] = false;
                     }
 
                 }
@@ -371,7 +372,7 @@
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null); 
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
 
             // Material
             var effectiveMaterial = subMesh.getMaterial();
@@ -758,9 +759,9 @@
         }
 
         // Cylinder and cone (Code inspired by SharpDX.org)
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
             var cylinder = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
+            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions);
 
             vertexData.applyToMesh(cylinder, updatable);
 
@@ -768,7 +769,7 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter:number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
             var torus = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
 
@@ -819,6 +820,16 @@
             ground._setReady(true);
 
             return ground;
+        }
+
+        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
+            var tiledGround = new BABYLON.Mesh(name, scene);
+
+            var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+
+            vertexData.applyToMesh(tiledGround, updatable);
+
+            return tiledGround;
         }
 
         public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh {

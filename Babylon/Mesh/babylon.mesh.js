@@ -749,9 +749,9 @@ var BABYLON;
         };
 
         // Cylinder and cone (Code inspired by SharpDX.org)
-        Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, scene, updatable) {
+        Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable) {
             var cylinder = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation);
+            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions);
 
             vertexData.applyToMesh(cylinder, updatable);
 
@@ -810,6 +810,16 @@ var BABYLON;
             ground._setReady(true);
 
             return ground;
+        };
+
+        Mesh.CreateTiledGround = function (name, xmin, zmin, xmax, zmax, subdivisions, precision, scene, updatable) {
+            var tiledGround = new BABYLON.Mesh(name, scene);
+
+            var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+
+            vertexData.applyToMesh(tiledGround, updatable);
+
+            return tiledGround;
         };
 
         Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {

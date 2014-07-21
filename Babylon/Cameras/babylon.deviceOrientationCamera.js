@@ -18,45 +18,32 @@ var BABYLON;
             this._orientationBeta = 0;
             this._initialOrientationGamma = 0;
             this._initialOrientationBeta = 0;
-            this._isLandscape = true;
             this.angularSensibility = 10000.0;
             this.moveSensibility = 50.0;
 
-            http:
             window.addEventListener("resize", function () {
-                _this._isLandscape = (window.innerWidth > window.innerHeight) ? true : false;
                 _this._initialOrientationGamma = null;
             }, false);
         }
         DeviceOrientationCamera.prototype.attachControl = function (canvas, noPreventDefault) {
+            var _this = this;
             if (this._attachedCanvas) {
                 return;
             }
             this._attachedCanvas = canvas;
 
-            var that = this;
             if (!this._orientationChanged) {
                 this._orientationChanged = function (evt) {
-                    if (!that._initialOrientationGamma) {
-                        if (!this._isLandscape) {
-                            that._initialOrientationGamma = evt.gamma;
-                            that._initialOrientationBeta = evt.beta;
-                        } else {
-                            that._initialOrientationGamma = evt.beta;
-                            that._initialOrientationBeta = evt.gamma;
-                        }
+                    if (!_this._initialOrientationGamma) {
+                        _this._initialOrientationGamma = evt.gamma;
+                        _this._initialOrientationBeta = evt.beta;
                     }
 
-                    if (!this._isLandscape) {
-                        that._orientationGamma = evt.gamma;
-                        that._orientationBeta = evt.beta;
-                    } else {
-                        that._orientationGamma = evt.beta;
-                        that._orientationBeta = evt.gamma;
-                    }
+                    _this._orientationGamma = evt.gamma;
+                    _this._orientationBeta = evt.beta;
 
-                    that._offsetY = (that._initialOrientationBeta - that._orientationBeta);
-                    that._offsetX = (that._initialOrientationGamma - that._orientationGamma);
+                    _this._offsetY = (_this._initialOrientationBeta - _this._orientationBeta);
+                    _this._offsetX = (_this._initialOrientationGamma - _this._orientationGamma);
                 };
             }
 

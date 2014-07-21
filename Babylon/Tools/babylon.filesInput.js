@@ -1,5 +1,4 @@
-﻿
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,

@@ -510,20 +510,22 @@ var BABYLON;
 
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
-                function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, canBeRegenerated, mesh) {
+                function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh) {
+                    if (typeof subdivisions === "undefined") { subdivisions = 1; }
                     this.height = height;
                     this.diameterTop = diameterTop;
                     this.diameterBottom = diameterBottom;
                     this.tessellation = tessellation;
+                    this.subdivisions = subdivisions;
 
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Cylinder.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation);
+                    return BABYLON.VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions);
                 };
 
                 Cylinder.prototype.copy = function (id) {
-                    return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.canBeRegenerated(), null);
+                    return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null);
                 };
                 return Cylinder;
             })(_Primitive);
@@ -568,6 +570,29 @@ var BABYLON;
                 return Ground;
             })(_Primitive);
             Primitives.Ground = Ground;
+
+            var TiledGround = (function (_super) {
+                __extends(TiledGround, _super);
+                function TiledGround(id, scene, xmin, zmin, xmax, zmax, subdivisions, precision, canBeRegenerated, mesh) {
+                    this.xmin = xmin;
+                    this.zmin = zmin;
+                    this.xmax = xmax;
+                    this.zmax = zmax;
+                    this.subdivisions = subdivisions;
+                    this.precision = precision;
+
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+                }
+                TiledGround.prototype._regenerateVertexData = function () {
+                    return BABYLON.VertexData.CreateTiledGround(this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision);
+                };
+
+                TiledGround.prototype.copy = function (id) {
+                    return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
+                };
+                return TiledGround;
+            })(_Primitive);
+            Primitives.TiledGround = TiledGround;
 
             var Plane = (function (_super) {
                 __extends(Plane, _super);

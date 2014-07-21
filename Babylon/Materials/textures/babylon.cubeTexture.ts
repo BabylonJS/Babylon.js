@@ -7,7 +7,7 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
 
-        constructor(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean) {
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean) {
             super(scene);
 
             this.name = rootUrl;
