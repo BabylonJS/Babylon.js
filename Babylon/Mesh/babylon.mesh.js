@@ -750,6 +750,15 @@ var BABYLON;
 
         // Cylinder and cone (Code inspired by SharpDX.org)
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable) {
+            // subdivisions is a new parameter, we need to support old signature
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
+
             var cylinder = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions);
 
