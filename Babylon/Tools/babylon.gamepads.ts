@@ -90,6 +90,10 @@
             document.body.appendChild(Gamepads.gamepadDOMInfo);
         }
 
+        public dispose() {
+            document.body.removeChild(Gamepads.gamepadDOMInfo);
+        }
+
         private _onGamepadConnected(evt) {
             var newGamepad = this._addNewGamepad(evt.gamepad);
             if (this._callbackGamepadConnected) this._callbackGamepadConnected(newGamepad);

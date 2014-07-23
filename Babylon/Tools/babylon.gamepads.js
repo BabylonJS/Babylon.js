@@ -87,6 +87,10 @@ var BABYLON;
             document.body.appendChild(Gamepads.gamepadDOMInfo);
         };
 
+        Gamepads.prototype.dispose = function () {
+            document.body.removeChild(Gamepads.gamepadDOMInfo);
+        };
+
         Gamepads.prototype._onGamepadConnected = function (evt) {
             var newGamepad = this._addNewGamepad(evt.gamepad);
             if (this._callbackGamepadConnected)

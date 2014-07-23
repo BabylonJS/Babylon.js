@@ -40,15 +40,16 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
 
-                if (_this.isReady(mesh, hardwareInstancedRendering)) {
+                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, false);
+                    var material = subMesh.getMaterial();
 
                     _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
 
                     // Alpha test
-                    if (mesh.material && mesh.material.needAlphaTesting()) {
-                        var alphaTexture = mesh.material.getAlphaTestTexture();
+                    if (material && material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
                         _this._effect.setTexture("diffuseSampler", alphaTexture);
                         _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
@@ -152,7 +153,7 @@
             configurable: true
         });
 
-        ShadowGenerator.prototype.isReady = function (mesh, useInstances) {
+        ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
 
             if (this.useVarianceShadowMap) {
@@ -161,8 +162,11 @@
 
             var attribs = [BABYLON.VertexBuffer.PositionKind];
 
+            var mesh = subMesh.getMesh();
+            var material = subMesh.getMaterial();
+
             // Alpha test
-            if (mesh.material && mesh.material.needAlphaTesting()) {
+            if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);

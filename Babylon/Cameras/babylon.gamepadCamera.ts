@@ -42,7 +42,7 @@ module BABYLON {
         }
 
         public dispose(): void {
-            
+            this._gamepads.dispose();
         }
     }
 }

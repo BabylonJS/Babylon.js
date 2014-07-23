@@ -420,22 +420,22 @@ module BABYLON {
             }
         }
 
-        private loadSceneFromDB(url, sceneLoaded, progressCallBack, errorCallback) {
+        private loadFileFromDB(url: string, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer?: boolean) {
             var that = this;
             var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
 
-            var saveAndLoadScene = function (event) {
+            var saveAndLoadFile = function (event) {
                 // the scene is not yet in the DB, let's try to save it
-                that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                that._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
             };
 
             this._checkVersionFromDB(completeUrl, function (version) {
                 if (version !== -1) {
                     if (!that.mustUpdateRessources) {
-                        that._loadSceneFromDBAsync(completeUrl, sceneLoaded, saveAndLoadScene);
+                        that._loadFileFromDBAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
                     }
                     else {
-                        that._saveSceneIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                        that._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer);
                     }
                 }
                 else {
@@ -444,16 +444,24 @@ module BABYLON {
             });
         }
 
-        private _loadSceneFromDBAsync(url, callback, notInDBCallback) {
+        private _loadFileFromDBAsync(url, callback, notInDBCallback, useArrayBuffer?: boolean) {
             if (this.isSupported) {
-                var scene;
-                var transaction = this.db.transaction(["scenes"]);
+                var targetStore: string;
+                if (url.indexOf(".babylon") !== -1) {
+                    targetStore = "scenes";
+                }
+                else {
+                    targetStore = "textures";
+                }
+
+                var file;
+                var transaction = this.db.transaction([targetStore]);
 
                 transaction.oncomplete = function (event) {
-                    if (scene) {
-                        callback(scene.data);
+                    if (file) {
+                        callback(file.data);
                     }
-                    // scene was not found in DB
+                    // file was not found in DB
                     else {
                         notInDBCallback();
                     }
@@ -463,13 +471,13 @@ module BABYLON {
                     notInDBCallback();
                 };
 
-                var getRequest = transaction.objectStore("scenes").get(url);
+                var getRequest = transaction.objectStore(targetStore).get(url);
 
                 getRequest.onsuccess = function (event) {
-                    scene = (<any>(event.target)).result;
+                    file = (<any>(event.target)).result;
                 };
                 getRequest.onerror = function (event) {
-                    BABYLON.Tools.Error("Error loading scene " + url + " from DB.");
+                    BABYLON.Tools.Error("Error loading file " + url + " from DB.");
                     notInDBCallback();
                 };
             }
@@ -479,24 +487,37 @@ module BABYLON {
             }
         }
 
-        private _saveSceneIntoDBAsync(url: string, callback, progressCallback) {
+        private _saveFileIntoDBAsync(url: string, callback, progressCallback, useArrayBuffer?: boolean) {
             if (this.isSupported) {
+                var targetStore: string;
+                if (url.indexOf(".babylon") !== -1) {
+                    targetStore = "scenes";
+                }
+                else {
+                    targetStore = "textures";
+                }
+
                 // Create XHR
-                var xhr = new XMLHttpRequest(), sceneText;
+                var xhr = new XMLHttpRequest(), fileData;
                 var that = this;
 
                 xhr.open("GET", url, true);
 
+                if (useArrayBuffer) {
+                    xhr.responseType = "arraybuffer";
+                }
+
                 xhr.onprogress = progressCallback;
 
                 xhr.addEventListener("load", function () {
-                    if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
+                    if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
-                        sceneText = xhr.responseText;
+                        //fileData = xhr.responseText;
+                        fileData = !useArrayBuffer ? xhr.responseText : xhr.response
 
                         if (!that.hasReachedQuota) {
                             // Open a transaction to the database
-                            var transaction = that.db.transaction(["scenes"], "readwrite");
+                            var transaction = that.db.transaction([targetStore], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
@@ -506,30 +527,36 @@ module BABYLON {
                                     }
                                 }
                                 catch (ex) { }
-                                callback(sceneText);
+                                callback(fileData);
                             };
 
                             transaction.oncomplete = function (event) {
-                                callback(sceneText);
+                                callback(fileData);
                             };
 
-                            var newScene = { sceneUrl: url, data: sceneText, version: that.manifestVersionFound};
+                            var newFile;
+                            if (targetStore === "scenes") {
+                                newFile = { sceneUrl: url, data: fileData, version: that.manifestVersionFound };
+                            }
+                            else {
+                                newFile = { textureUrl: url, data: fileData };
+                            }
 
                             try {
                                 // Put the scene into the database
-                                var addRequest = transaction.objectStore("scenes").put(newScene);
+                                var addRequest = transaction.objectStore(targetStore).put(newFile);
                                 addRequest.onsuccess = function (event) {
                                 };
                                 addRequest.onerror = function (event) {
-                                    BABYLON.Tools.Error("Error in DB add scene request in BABYLON.Database.");
+                                    BABYLON.Tools.Error("Error in DB add file request in BABYLON.Database.");
                                 };
                             }
                             catch (ex) {
-                                callback(sceneText);
+                                callback(fileData);
                             }
                         }
                         else {
-                            callback(sceneText);
+                            callback(fileData);
                         }
                     }
                     else {

@@ -236,15 +236,15 @@
             };
 
             var loadFromIndexedDB = function () {
-                database.loadSceneFromDB(url, callback, progressCallBack, noIndexedDB);
+                database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
             };
 
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5);
                 BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
             } else {
-                // Caching only scenes files
-                if (database && url.indexOf(".babylon") !== -1 && (database.enableSceneOffline)) {
+                // Caching all files
+                if (database && database.enableSceneOffline) {
                     database.openAsync(loadFromIndexedDB, noIndexedDB);
                 } else {
                     noIndexedDB();

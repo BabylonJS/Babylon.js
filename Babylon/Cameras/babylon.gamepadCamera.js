@@ -50,6 +50,7 @@ var BABYLON;
         };
 
         GamepadCamera.prototype.dispose = function () {
+            this._gamepads.dispose();
         };
         return GamepadCamera;
     })(BABYLON.FreeCamera);
