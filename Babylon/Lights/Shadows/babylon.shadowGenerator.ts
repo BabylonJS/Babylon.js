@@ -79,15 +79,16 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
 
-                if (this.isReady(mesh, hardwareInstancedRendering)) {
+                if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, false);
+                    var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
 
                     // Alpha test
-                    if (mesh.material && mesh.material.needAlphaTesting()) {
-                        var alphaTexture = mesh.material.getAlphaTestTexture();
+                    if (material && material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
                         this._effect.setTexture("diffuseSampler", alphaTexture);
                         this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
@@ -146,7 +147,7 @@
 
         }
 
-        public isReady(mesh: Mesh, useInstances: boolean): boolean {
+        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
 
             if (this.useVarianceShadowMap) {
@@ -155,8 +156,11 @@
 
             var attribs = [BABYLON.VertexBuffer.PositionKind];
 
+            var mesh = subMesh.getMesh();
+            var material = subMesh.getMaterial();
+
             // Alpha test
-            if (mesh.material && mesh.material.needAlphaTesting()) {
+            if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
