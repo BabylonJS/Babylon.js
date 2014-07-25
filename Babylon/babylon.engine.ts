@@ -164,8 +164,8 @@
             return Engine._DELAYLOADSTATE_NOTLOADED;
         }
 
-        public static get Version(): number {
-            return 1.130;
+        public static get Version(): string {
+            return "1.13.0";
         }
 
         // Updatable statics so stick with vars here
