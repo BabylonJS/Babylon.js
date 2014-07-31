@@ -4,6 +4,21 @@
         function CannonJSPlugin() {
             this._registeredMeshes = [];
             this._physicsMaterials = [];
+            this.updateBodyPosition = function (mesh) {
+                for (var index = 0; index < this._registeredMeshes.length; index++) {
+                    var registeredMesh = this._registeredMeshes[index];
+                    if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
+                        var body = registeredMesh.body.body;
+                        body.position.set(mesh.position.x, mesh.position.z, mesh.position.y);
+
+                        body.quaternion.x = mesh.rotationQuaternion.x;
+                        body.quaternion.z = mesh.rotationQuaternion.y;
+                        body.quaternion.y = mesh.rotationQuaternion.z;
+                        body.quaternion.w = -mesh.rotationQuaternion.w;
+                        return;
+                    }
+                }
+            };
         }
         CannonJSPlugin.prototype.initialize = function (iterations) {
             if (typeof iterations === "undefined") { iterations = 10; }

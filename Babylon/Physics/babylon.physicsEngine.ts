@@ -9,9 +9,10 @@
         registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
         unregisterMesh(mesh: AbstractMesh);
         applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
         dispose(): void;
         isSupported(): boolean;
+        updateBodyPosition(mesh: AbstractMesh): void;
     }
 
     export interface PhysicsBodyCreationOptions {
@@ -31,7 +32,7 @@
         private _currentPlugin: IPhysicsEnginePlugin;
 
         constructor(plugin?: IPhysicsEnginePlugin) {
-            this._currentPlugin = plugin || new CannonJSPlugin();
+            this._currentPlugin = plugin || new OimoJSPlugin();
         }
 
         public _initialize(gravity?: Vector3) {
@@ -70,8 +71,12 @@
             this._currentPlugin.applyImpulse(mesh, force, contactPoint);
         }
 
-        public _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean {
-            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2);
+        public _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
+            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2, options);
+        }
+
+        public _updateBodyPosition(mesh: AbstractMesh): void {
+            this._currentPlugin.updateBodyPosition(mesh);
         }
 
         public dispose(): void {
