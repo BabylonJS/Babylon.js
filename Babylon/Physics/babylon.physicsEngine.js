@@ -2,7 +2,7 @@
 (function (BABYLON) {
     var PhysicsEngine = (function () {
         function PhysicsEngine(plugin) {
-            this._currentPlugin = plugin || new BABYLON.CannonJSPlugin();
+            this._currentPlugin = plugin || new BABYLON.OimoJSPlugin();
         }
         PhysicsEngine.prototype._initialize = function (gravity) {
             this._currentPlugin.initialize();
@@ -40,8 +40,12 @@
             this._currentPlugin.applyImpulse(mesh, force, contactPoint);
         };
 
-        PhysicsEngine.prototype._createLink = function (mesh1, mesh2, pivot1, pivot2) {
-            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2);
+        PhysicsEngine.prototype._createLink = function (mesh1, mesh2, pivot1, pivot2, options) {
+            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2, options);
+        };
+
+        PhysicsEngine.prototype._updateBodyPosition = function (mesh) {
+            this._currentPlugin.updateBodyPosition(mesh);
         };
 
         PhysicsEngine.prototype.dispose = function () {

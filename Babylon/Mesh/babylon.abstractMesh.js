@@ -525,12 +525,19 @@ var BABYLON;
             this.getScene().getPhysicsEngine()._applyImpulse(this, force, contactPoint);
         };
 
-        AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2) {
+        AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
             if (!this._physicImpostor) {
                 return;
             }
 
-            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
+            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
+        };
+
+        AbstractMesh.prototype.updatePhysicsBodyPosition = function () {
+            if (!this._physicImpostor) {
+                return;
+            }
+            this.getScene().getPhysicsEngine()._updateBodyPosition(this);
         };
 
         // Collisions

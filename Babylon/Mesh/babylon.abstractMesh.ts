@@ -521,13 +521,21 @@
             this.getScene().getPhysicsEngine()._applyImpulse(this, force, contactPoint);
         }
 
-        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3): void {
+        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void {
             if (!this._physicImpostor) {
                 return;
             }
 
-            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2);
+            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
         }
+
+        public updatePhysicsBodyPosition(): void {
+            if (!this._physicImpostor) {
+                return;
+            }
+            this.getScene().getPhysicsEngine()._updateBodyPosition(this);
+        }
+
 
         // Collisions
         public moveWithCollisions(velocity: Vector3): void {

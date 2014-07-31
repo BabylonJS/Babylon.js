@@ -961,6 +961,55 @@
             result.m[15] = 1.0;
         };
 
+        Quaternion.prototype.fromRotationMatrix = function (matrix) {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
+            var trace = m11 + m22 + m33;
+            var s;
+
+            if (trace > 0) {
+                s = 0.5 / Math.sqrt(trace + 1.0);
+
+                this.w = 0.25 / s;
+                this.x = (m32 - m23) * s;
+                this.y = (m13 - m31) * s;
+                this.z = (m21 - m12) * s;
+
+                return;
+            }
+
+            if (m11 > m22 && m11 > m33) {
+                s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+
+                this.w = (m32 - m23) / s;
+                this.x = 0.25 * s;
+                this.y = (m12 + m21) / s;
+                this.z = (m13 + m31) / s;
+
+                return;
+            }
+
+            if (m22 > m33) {
+                s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+
+                this.w = (m13 - m31) / s;
+                this.x = (m12 + m21) / s;
+                this.y = 0.25 * s;
+                this.z = (m23 + m32) / s;
+
+                return;
+            }
+
+            s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+
+            this.w = (m21 - m12) / s;
+            this.x = (m13 + m31) / s;
+            this.y = (m23 + m32) / s;
+            this.z = 0.25 * s;
+        };
+
         // Statics
         Quaternion.RotationAxis = function (axis, angle) {
             var result = new Quaternion();
