@@ -73,18 +73,18 @@ namespace Max2Babylon
                 babylonMaterial.wireframe = stdMat.Wire;
 
                 // Textures
-                babylonMaterial.ambientTexture = ExportTexture(stdMat, 0, babylonScene);    // Ambient
-                babylonMaterial.diffuseTexture = ExportTexture(stdMat, 1, babylonScene);    // Diffuse
-                babylonMaterial.specularTexture = ExportTexture(stdMat, 2, babylonScene);   // Specular
-                babylonMaterial.emissiveTexture = ExportTexture(stdMat, 5, babylonScene);   // Emissive
-                babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, babylonScene);    // Opacity
-                babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, babylonScene);       // Bump
-                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, babylonScene, true); // Reflection
+                babylonMaterial.ambientTexture = ExportTexture(stdMat, 0, babylonScene);                // Ambient
+                babylonMaterial.diffuseTexture = ExportTexture(stdMat, 1, babylonScene);                // Diffuse
+                babylonMaterial.specularTexture = ExportTexture(stdMat, 2, babylonScene);               // Specular
+                babylonMaterial.emissiveTexture = ExportTexture(stdMat, 5, babylonScene);               // Emissive
+                babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, babylonScene, false, true);   // Opacity
+                babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, babylonScene);                   // Bump
+                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, babylonScene, true);       // Reflection
 
                 // Constraints
                 if (babylonMaterial.diffuseTexture != null)
                 {
-                    babylonMaterial.emissive = new [] { 1.0f, 1.0f, 1.0f };
+                    babylonMaterial.diffuse = new [] { 1.0f, 1.0f, 1.0f };
                 }
 
                 if (babylonMaterial.emissiveTexture != null)

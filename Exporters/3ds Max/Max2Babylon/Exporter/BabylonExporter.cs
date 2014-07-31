@@ -208,6 +208,8 @@ namespace Max2Babylon
             if (babylonScene.LightsList.Count == 0)
             {
                 RaiseWarning("No light defined", 1);
+                RaiseWarning("A default hemispheric light was added for your convenience", 1);
+                ExportDefaultLight(babylonScene);
             }
             else
             {
