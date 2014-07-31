@@ -20,7 +20,7 @@ namespace Max2Babylon
                 var data = File.ReadAllBytes(filepath);
                 var intArray = new int[data.Length / 4];
 
-                Buffer.BlockCopy(data, 0, intArray, 0, data.Length);
+                Buffer.BlockCopy(data, 0, intArray, 0, intArray.Length * 4);
 
 
                 int width = intArray[4];
@@ -30,15 +30,15 @@ namespace Max2Babylon
                 if ((width >> (mipmapsCount -1)) > 1)
                 {
                     var expected = 1;
-                    var currentWidth = width;
+                    var currentSize = Math.Max(width, height);
 
-                    while (currentWidth > 1)
+                    while (currentSize > 1)
                     {
-                        currentWidth = currentWidth >> 1;
+                        currentSize = currentSize >> 1;
                         expected++;
                     }
 
-                    RaiseWarning(string.Format("Mipmaps chain is not complete: {0} maps instead of {1} (based on texture width: {2})", mipmapsCount, expected, width), 2);
+                    RaiseWarning(string.Format("Mipmaps chain is not complete: {0} maps instead of {1} (based on texture max size: {2})", mipmapsCount, expected, width), 2);
                     RaiseWarning(string.Format("You must generate a complete mipmaps chain for .dds)"), 2);
                     RaiseWarning(string.Format("Mipmaps will be disabled for this texture. If you want automatic texture generation you cannot use a .dds)"), 2);
                 }
@@ -53,7 +53,7 @@ namespace Max2Babylon
             }
         }
 
-        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene, Boolean allowCube = false)
+        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene, bool allowCube = false, bool forceAlpha = false)
         {
             if (!stdMat.MapEnabled(index))
             {
@@ -69,8 +69,18 @@ namespace Max2Babylon
                 return null;
             }
 
-            babylonTexture.hasAlpha = (texture.AlphaSource != 3);
-            babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2);
+            if (forceAlpha)
+            {
+                babylonTexture.hasAlpha = true;
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);                
+            }
+            else
+            {
+                babylonTexture.hasAlpha = (texture.AlphaSource != 3);
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2);
+            }
+
+
             babylonTexture.level = stdMat.GetTexmapAmt(index, 0);
 
             var uvGen = texture.UVGen;

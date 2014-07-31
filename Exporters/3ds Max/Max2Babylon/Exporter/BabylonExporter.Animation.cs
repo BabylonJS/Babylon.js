@@ -137,6 +137,11 @@ namespace Max2Babylon
                 keys.Add(generateFunc(index, keyControl));
             }
 
+            if (keys.Count == 0)
+            {
+                return false;
+            }
+
             var end = Loader.Core.AnimRange.End;
             if (keys[keys.Count - 1].frame != end / Ticks)
             {

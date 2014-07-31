@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Max2Babylon
 {
@@ -20,37 +21,47 @@ namespace Max2Babylon
     <script type='text/javascript' src='http://www.babylonjs.com/cannon.js'></script>
     <script type='text/javascript' src='http://www.babylonjs.com/babylon.js'></script>
     <style type='text/css'>
-        html,
-        body,
-        div,
-        canvas {
+        html, body, div, canvas {
             width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
             overflow: hidden;
         }
+
+        #waitLabel {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            font-size: 40px;
+            text-align: center;
+            top: 50%;
+            margin-top: -20px;
+            font-family: Arial;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
     <canvas id='canvas'></canvas>
+    <div id='waitLabel'>loading....please wait</div>
     <script type='text/javascript'>
         var canvas = document.getElementById('canvas');
         var engine = new BABYLON.Engine(canvas, true);
 
         BABYLON.SceneLoader.Load('', '###SCENE###', engine, function (newScene) {
-            newScene.executeWhenReady(function () {
-                newScene.activeCamera.attachControl(canvas);
+            newScene.activeCamera.attachControl(canvas);
 
-                engine.runRenderLoop(function() {
-                    newScene.render();
-                });
-
-                window.addEventListener('resize', function () {
-                    engine.resize();
-                });
+            engine.runRenderLoop(function() {
+                newScene.render();
             });
+
+            window.addEventListener('resize', function () {
+                engine.resize();
+            });
+
+            document.getElementById('waitLabel').style.display = 'none';
         });
     </script>
 </body>
@@ -108,7 +119,7 @@ namespace Max2Babylon
                     {
                         try
                         {
-                            var buffer = File.ReadAllBytes(Path.Combine(SceneFolder, url.PathAndQuery.Substring(1)));
+                            var buffer = File.ReadAllBytes(Path.Combine(SceneFolder, HttpUtility.UrlDecode(url.PathAndQuery.Substring(1))));
                             WriteResponse(context, buffer);
                         }
                         catch

@@ -222,9 +222,9 @@ namespace Max2Babylon
         {
             foreach (var x in node.Nodes())
             {
+                yield return x;
                 foreach (var y in x.NodeTree())
                     yield return y;
-                yield return x;
             }
         }
 

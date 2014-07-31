@@ -29,9 +29,7 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
-            Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);
-
-            butExportAndRun.Enabled = WebServer.IsSupported;
+            Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);            
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -70,7 +68,7 @@ namespace Max2Babylon
             {
                 try
                 {
-                    currentNode = CreateTreeNode(rank, warning, Color.Orange);
+                    currentNode = CreateTreeNode(rank, warning, Color.DarkOrange);
                     currentNode.EnsureVisible();
                 }
                 catch
@@ -110,6 +108,7 @@ namespace Max2Babylon
             };
 
             butExport.Enabled = false;
+            butExportAndRun.Enabled = false;
             butCancel.Enabled = true;
 
             bool success = true;
@@ -136,6 +135,7 @@ namespace Max2Babylon
 
             butCancel.Enabled = false;
             butExport.Enabled = true;
+            butExportAndRun.Enabled = WebServer.IsSupported;
 
             BringToFront();
 
@@ -186,6 +186,7 @@ namespace Max2Babylon
         private void txtFilename_TextChanged(object sender, EventArgs e)
         {
             butExport.Enabled = !string.IsNullOrEmpty(txtFilename.Text.Trim());
+            butExportAndRun.Enabled = butExport.Enabled && WebServer.IsSupported;
         }
 
         private void butCancel_Click(object sender, EventArgs e)
