@@ -87,7 +87,7 @@ module BABYLON {
                 rot: rotations,
                 move: options.mass != 0,
                 config: [options.mass, options.friction, options.restitution],
-                world: this.world
+                world: this._world
             });
 
             this._registeredMeshes.push({
@@ -210,7 +210,7 @@ module BABYLON {
                 pos1: [pivot1.x, pivot1.y, pivot1.z],
                 collision: options.collision,
                 spring: options.spring,
-                world: this.world
+                world: this._world
             });
 
             return true;
