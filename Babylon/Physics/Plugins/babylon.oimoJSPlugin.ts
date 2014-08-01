@@ -63,7 +63,7 @@ module BABYLON {
             return body;
         }
 
-        public registerMeshesAsCompound = function (parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
+        public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
             var types = [],
                 sizes = [],
                 positions = [],
@@ -210,7 +210,7 @@ module BABYLON {
                 pos1: [pivot1.x, pivot1.y, pivot1.z],
                 collision: options.collision,
                 spring: options.spring,
-                world: this._world
+                world: this.world
             });
 
             return true;
