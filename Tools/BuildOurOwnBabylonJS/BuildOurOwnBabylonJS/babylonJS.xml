@@ -30,6 +30,7 @@
   <script src="Babylon/Tools/babylon.sceneSerializer.js"></script>
   <script src="Babylon/Physics/babylon.physicsEngine.js"></script>
   <script src="Babylon/Physics/Plugins/babylon.cannonJSPlugin.js"></script>
+  <script src="Babylon/Physics/Plugins/babylon.oimoJSPlugin.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlareSystem.js"></script>
   <script src="Babylon/LensFlare/babylon.lensFlare.js"></script>
   <script src="Babylon/PostProcess/babylon.fxaaPostProcess.js"></script>
