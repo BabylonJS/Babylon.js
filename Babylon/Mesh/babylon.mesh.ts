@@ -269,7 +269,7 @@
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf[subMeshId] = true;
+            this._batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
             this._batchCache.visibleInstances[subMeshId] = null;
 
             if (this._visibleInstances) {
