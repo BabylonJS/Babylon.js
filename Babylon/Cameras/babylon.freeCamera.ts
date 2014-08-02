@@ -14,7 +14,7 @@
         public noRotationConstraint = false;
         public angularSensibility = 2000.0;
         public lockedTarget = null;
-        public onCollide = null;
+        public onCollide: (collidedMesh: AbstractMesh) => void;
 
         private _keys = [];
         private _collider = new Collider();

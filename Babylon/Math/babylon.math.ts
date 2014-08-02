@@ -483,6 +483,12 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
+        public equalsWithEpsilon(otherVector: Vector3): boolean {
+            return  Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
+                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
+                Math.abs(this.z - otherVector.z) < Engine.Epsilon;
+        }
+
         public equalsToFloats(x: number, y: number, z: number): boolean {
             return this.x === x && this.y === y && this.z === z;
         }

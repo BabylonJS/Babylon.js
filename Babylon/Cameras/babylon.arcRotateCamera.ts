@@ -36,6 +36,18 @@
         private _onGesture: (e: MSGestureEvent) => void;
         private _MSGestureHandler: MSGesture;
 
+        // Collisions
+        public onCollide: (collidedMesh: AbstractMesh) => void;
+        public checkCollisions = false;
+        public collisionRadius = new Vector3(0.5, 0.5, 0.5);
+        private _collider = new Collider();
+        private _previousPosition = Vector3.Zero();
+        private _collisionVelocity = Vector3.Zero();
+        private _newPosition = Vector3.Zero();
+        private _previousAlpha: number;
+        private _previousBeta: number;
+        private _previousRadius: number;
+
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, BABYLON.Vector3.Zero(), scene);
 
@@ -383,7 +395,32 @@
             var target = this._getTargetPosition();
 
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+
+            if (this.checkCollisions) {
+                this._collider.radius = this.collisionRadius;
+                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+
+                this.getScene()._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, this._newPosition);
+
+                if (!this._newPosition.equalsWithEpsilon(this.position)) {
+                    this.position.copyFrom(this._previousPosition);
+
+                    this.alpha = this._previousAlpha;
+                    this.beta = this._previousBeta;
+                    this.radius = this._previousRadius;
+
+                    if (this.onCollide) {
+                        this.onCollide(this._collider.collidedMesh);
+                    }
+                }
+            }
+
             Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+
+            this._previousAlpha = this.alpha;
+            this._previousBeta = this.beta;
+            this._previousRadius = this.radius;
+            this._previousPosition.copyFrom(this.position);
 
             return this._viewMatrix;
         }
