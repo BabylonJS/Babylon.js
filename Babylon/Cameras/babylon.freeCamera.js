@@ -24,7 +24,6 @@ var BABYLON;
             this.noRotationConstraint = false;
             this.angularSensibility = 2000.0;
             this.lockedTarget = null;
-            this.onCollide = null;
             this._keys = [];
             this._collider = new BABYLON.Collider();
             this._needMoveForGravity = true;

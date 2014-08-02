@@ -34,6 +34,12 @@ var BABYLON;
             this.zoomOnFactor = 1;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
+            this.checkCollisions = false;
+            this.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
+            this._collider = new BABYLON.Collider();
+            this._previousPosition = BABYLON.Vector3.Zero();
+            this._collisionVelocity = BABYLON.Vector3.Zero();
+            this._newPosition = BABYLON.Vector3.Zero();
 
             this.getViewMatrix();
         }
@@ -365,7 +371,32 @@ var BABYLON;
             var target = this._getTargetPosition();
 
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+
+            if (this.checkCollisions) {
+                this._collider.radius = this.collisionRadius;
+                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+
+                this.getScene()._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, this._newPosition);
+
+                if (!this._newPosition.equalsWithEpsilon(this.position)) {
+                    this.position.copyFrom(this._previousPosition);
+
+                    this.alpha = this._previousAlpha;
+                    this.beta = this._previousBeta;
+                    this.radius = this._previousRadius;
+
+                    if (this.onCollide) {
+                        this.onCollide(this._collider.collidedMesh);
+                    }
+                }
+            }
+
             BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+
+            this._previousAlpha = this.alpha;
+            this._previousBeta = this.beta;
+            this._previousRadius = this.radius;
+            this._previousPosition.copyFrom(this.position);
 
             return this._viewMatrix;
         };
