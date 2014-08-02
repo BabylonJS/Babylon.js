@@ -106,6 +106,10 @@ var BABYLON;
             this._updateBoundingInfo();
         };
 
+        InstancedMesh.prototype._preActivate = function () {
+            this.sourceMesh._preActivate();
+        };
+
         InstancedMesh.prototype._activate = function (renderId) {
             this.sourceMesh._registerInstanceForRenderId(this, renderId);
         };

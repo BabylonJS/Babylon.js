@@ -23,6 +23,7 @@
         private _worldMatricesInstancesArray: Float32Array;
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
         public _shouldGenerateFlatShading: boolean;
+        private _preActivateId: number;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -100,6 +101,12 @@
 
         // Methods  
         public _preActivate(): void {
+            var sceneRenderId = this.getScene().getRenderId();
+            if (this._preActivateId == sceneRenderId) {
+                return;
+            }
+
+            this._preActivateId = sceneRenderId;
             this._visibleInstances = null;
         }
 
@@ -269,7 +276,7 @@
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
-            this._batchCache.renderSelf[subMeshId] = true;
+            this._batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
             this._batchCache.visibleInstances[subMeshId] = null;
 
             if (this._visibleInstances) {

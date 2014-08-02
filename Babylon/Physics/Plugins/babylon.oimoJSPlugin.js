@@ -3,37 +3,6 @@ var BABYLON;
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
             this._registeredMeshes = [];
-            this.registerMeshesAsCompound = function (parts, options) {
-                var types = [], sizes = [], positions = [], rotations = [];
-
-                var initialMesh = parts[0].mesh;
-
-                for (var index = 0; index < parts.length; index++) {
-                    var part = parts[index];
-                    var bodyParameters = this._createBodyAsCompound(part, options, initialMesh);
-                    types.push(bodyParameters.type);
-                    sizes.push.apply(sizes, bodyParameters.size);
-                    positions.push.apply(positions, bodyParameters.pos);
-                    rotations.push.apply(rotations, bodyParameters.rot);
-                }
-
-                var body = new OIMO.Body({
-                    type: types,
-                    size: sizes,
-                    pos: positions,
-                    rot: rotations,
-                    move: options.mass != 0,
-                    config: [options.mass, options.friction, options.restitution],
-                    world: this.world
-                });
-
-                this._registeredMeshes.push({
-                    mesh: initialMesh,
-                    body: body
-                });
-
-                return body;
-            };
             /**
             * Update the body position according to the mesh position
             * @param mesh
@@ -136,6 +105,38 @@ var BABYLON;
                     });
                     break;
             }
+            return body;
+        };
+
+        OimoJSPlugin.prototype.registerMeshesAsCompound = function (parts, options) {
+            var types = [], sizes = [], positions = [], rotations = [];
+
+            var initialMesh = parts[0].mesh;
+
+            for (var index = 0; index < parts.length; index++) {
+                var part = parts[index];
+                var bodyParameters = this._createBodyAsCompound(part, options, initialMesh);
+                types.push(bodyParameters.type);
+                sizes.push.apply(sizes, bodyParameters.size);
+                positions.push.apply(positions, bodyParameters.pos);
+                rotations.push.apply(rotations, bodyParameters.rot);
+            }
+
+            var body = new OIMO.Body({
+                type: types,
+                size: sizes,
+                pos: positions,
+                rot: rotations,
+                move: options.mass != 0,
+                config: [options.mass, options.friction, options.restitution],
+                world: this._world
+            });
+
+            this._registeredMeshes.push({
+                mesh: initialMesh,
+                body: body
+            });
+
             return body;
         };
 

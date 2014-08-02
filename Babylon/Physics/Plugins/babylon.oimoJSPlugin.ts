@@ -63,7 +63,7 @@ module BABYLON {
             return body;
         }
 
-        public registerMeshesAsCompound = function (parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
+        public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
             var types = [],
                 sizes = [],
                 positions = [],
@@ -87,7 +87,7 @@ module BABYLON {
                 rot: rotations,
                 move: options.mass != 0,
                 config: [options.mass, options.friction, options.restitution],
-                world: this.world
+                world: this._world
             });
 
             this._registeredMeshes.push({
