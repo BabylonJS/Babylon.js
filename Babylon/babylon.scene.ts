@@ -34,6 +34,10 @@
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
 
+        // Keyboard
+        private _onKeyDown: (evt: Event) => void;
+        private _onKeyUp: (evt: Event) => void;
+
         // Fog
         public fogMode = BABYLON.Scene.FOGMODE_NONE;
         public fogColor = new Color3(0.2, 0.2, 0.3);
@@ -317,16 +321,34 @@
                 }
             };
 
+            this._onKeyDown = (evt: Event) => {
+                if (this.actionManager) {
+                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                }
+            };
+
+            this._onKeyUp = (evt: Event) => {
+                if (this.actionManager) {
+                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                }
+            };
+
 
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+
+            window.addEventListener("keydown", this._onKeyDown, false);
+            window.addEventListener("keyup", this._onKeyUp, false);
         }
 
         public detachControl() {
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+
+            window.removeEventListener("keydown", this._onKeyDown);
+            window.removeEventListener("keyup", this._onKeyUp);
         }
 
         // Ready
