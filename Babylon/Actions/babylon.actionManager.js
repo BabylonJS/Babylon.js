@@ -1,15 +1,20 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var ActionEvent = (function () {
-        function ActionEvent(source, pointerX, pointerY, meshUnderPointer) {
+        function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent) {
             this.source = source;
             this.pointerX = pointerX;
             this.pointerY = pointerY;
             this.meshUnderPointer = meshUnderPointer;
+            this.sourceEvent = sourceEvent;
         }
         ActionEvent.CreateNew = function (source) {
             var scene = source.getScene();
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+        };
+
+        ActionEvent.CreateNewFromScene = function (scene, evt) {
+            return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
         return ActionEvent;
     })();
@@ -103,6 +108,22 @@
             configurable: true
         });
 
+        Object.defineProperty(ActionManager, "OnKeyDownTrigger", {
+            get: function () {
+                return ActionManager._OnKeyDownTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(ActionManager, "OnKeyUpTrigger", {
+            get: function () {
+                return ActionManager._OnKeyUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
@@ -181,6 +202,16 @@
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
+                    if (trigger == ActionManager.OnKeyUpTrigger || trigger == ActionManager.OnKeyDownTrigger) {
+                        var parameter = action.getTriggerParameter();
+
+                        if (parameter) {
+                            if (evt.sourceEvent.key !== parameter) {
+                                continue;
+                            }
+                        }
+                    }
+
                     action._executeCurrent(evt);
                 }
             }
@@ -211,6 +242,8 @@
         ActionManager._OnEveryFrameTrigger = 7;
         ActionManager._OnIntersectionEnterTrigger = 8;
         ActionManager._OnIntersectionExitTrigger = 9;
+        ActionManager._OnKeyDownTrigger = 10;
+        ActionManager._OnKeyUpTrigger = 11;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;

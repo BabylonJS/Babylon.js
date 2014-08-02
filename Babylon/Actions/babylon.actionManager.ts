@@ -1,13 +1,17 @@
 ﻿module BABYLON {
 
     export class ActionEvent {
-        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh) {
+        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any) {
             
         }
 
         public static CreateNew(source: AbstractMesh): ActionEvent {
             var scene = source.getScene();
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+        }
+
+        public static CreateNewFromScene(scene: Scene, evt:Event): ActionEvent {
+            return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
     }
 
@@ -23,6 +27,8 @@
         private static _OnEveryFrameTrigger = 7;
         private static _OnIntersectionEnterTrigger = 8;
         private static _OnIntersectionExitTrigger = 9;
+        private static _OnKeyDownTrigger = 10;
+        private static _OnKeyUpTrigger = 11;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -64,6 +70,13 @@
             return ActionManager._OnIntersectionExitTrigger;
         }
 
+        public static get OnKeyDownTrigger(): number {
+            return ActionManager._OnKeyDownTrigger;
+        }
+
+        public static get OnKeyUpTrigger(): number {
+            return ActionManager._OnKeyUpTrigger;
+        }
         // Members
         public actions = new Array<Action>();
 
@@ -146,6 +159,16 @@
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
+                    if (trigger == ActionManager.OnKeyUpTrigger || trigger == ActionManager.OnKeyDownTrigger) {
+                        var parameter = action.getTriggerParameter();
+
+                        if (parameter) {
+                            if (evt.sourceEvent.key !== parameter) {
+                                continue;
+                            }
+                        }
+                    }
+
                     action._executeCurrent(evt);
                 }
             }
