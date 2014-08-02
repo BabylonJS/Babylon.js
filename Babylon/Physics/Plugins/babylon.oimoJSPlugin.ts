@@ -5,7 +5,11 @@ module BABYLON {
         private _world;
         private _registeredMeshes = [];
 
-        public initialize(iterations: number): void {
+        private _checkWithEpsilon(value: number): number {
+            return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
+        }
+        
+        public initialize(iterations?: number): void {
             this._world = new OIMO.World();
             this._world.clear();
         }
@@ -22,11 +26,18 @@ module BABYLON {
             // register mesh
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
-                    var bsphere = mesh.getBoundingInfo().boundingSphere;
-                    var size = bsphere.maximum.subtract(bsphere.minimum).scale(0.5).multiply(mesh.scaling);
+                    var bbox = mesh.getBoundingInfo().boundingBox;
+                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                    var size = Math.max(
+                        this._checkWithEpsilon(radiusX),
+                        this._checkWithEpsilon(radiusY),
+                        this._checkWithEpsilon(radiusZ))/2;
                     body = new OIMO.Body({
                         type: 'sphere',
-                        size: [size.x],
+                        size: [size],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
@@ -41,11 +52,16 @@ module BABYLON {
 
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
-                    var bbox = mesh.getBoundingInfo().boundingBox;
-                    size = bbox.extends.scale(2).multiply(mesh.scaling);
+                    bbox = mesh.getBoundingInfo().boundingBox;
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    var sizeX = this._checkWithEpsilon(box.x);
+                    var sizeY = this._checkWithEpsilon(box.y);
+                    var sizeZ = this._checkWithEpsilon(box.z);
                     body = new OIMO.Body({
                         type: 'box',
-                        size: [size.x || 0.1, size.y || 0.1, size.z || 0.1],
+                        size: [sizeX, sizeY, sizeZ],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
@@ -104,12 +120,19 @@ module BABYLON {
 
             switch (part.impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
-                    var bsphere = mesh.getBoundingInfo().boundingSphere;
-                    var size = bsphere.maximum.subtract(bsphere.minimum).scale(0.5).multiply(mesh.scaling);
+                    var bbox = mesh.getBoundingInfo().boundingBox;
+                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                    var size = Math.max(
+                        this._checkWithEpsilon(radiusX),
+                        this._checkWithEpsilon(radiusY),
+                        this._checkWithEpsilon(radiusZ))/2;
                     bodyParameters = {
                         type: 'sphere',
                         /* bug with oimo : sphere needs 3 sizes in this case */
-                        size: [size.x, -1, -1],
+                        size: [size, -1, -1],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
                     };
@@ -117,12 +140,17 @@ module BABYLON {
 
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
-                    var bbox = part.mesh.getBoundingInfo().boundingBox;
-                    size = bbox.extends.scale(2).multiply(mesh.scaling);
+                    bbox = mesh.getBoundingInfo().boundingBox;
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    var sizeX = this._checkWithEpsilon(box.x);
+                    var sizeY = this._checkWithEpsilon(box.y);
+                    var sizeZ = this._checkWithEpsilon(box.z);
                     var relativePosition = mesh.position;
                     bodyParameters = {
                         type: 'box',
-                        size: [size.x || 0.1, size.y || 0.1, size.z || 0.1],
+                        size: [sizeX, sizeY, sizeZ],
                         pos: [relativePosition.x, relativePosition.y, relativePosition.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
                     };
@@ -181,7 +209,7 @@ module BABYLON {
             }
         }
 
-        public createLink = function (mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options: any): boolean {
+        public createLink (mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
             var body1 = null,
                 body2 = null;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
@@ -208,6 +236,7 @@ module BABYLON {
                 axe1: options.axe1,
                 axe2: options.axe2,
                 pos1: [pivot1.x, pivot1.y, pivot1.z],
+                pos2: [pivot2.x, pivot2.y, pivot2.z],
                 collision: options.collision,
                 spring: options.spring,
                 world: this.world
@@ -215,7 +244,7 @@ module BABYLON {
 
             return true;
 
-        };
+        }
 
         public dispose(): void {
             this._world.clear();
