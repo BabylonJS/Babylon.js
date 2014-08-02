@@ -11,9 +11,10 @@
     };
 
     var ParticleSystem = (function () {
-        function ParticleSystem(name, capacity, scene) {
+        function ParticleSystem(name, capacity, scene, fragmentElement) {
             var _this = this;
             this.name = name;
+            this.fragmentElement = fragmentElement;
             this.renderingGroupId = 0;
             this.emitter = null;
             this.emitRate = 10;
@@ -214,7 +215,18 @@
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("particles", ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
+                var baseName;
+
+                if (this.fragmentElement) {
+                    baseName = {
+                        vertex: "particles",
+                        fragmentElement: this.fragmentElement
+                    };
+                } else {
+                    baseName = "particles";
+                }
+
+                this._effect = this._scene.getEngine().createEffect(baseName, ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
             }
 
             return this._effect;
