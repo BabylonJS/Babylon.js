@@ -118,6 +118,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/LensFlare/babylon.lensFlare.js',
       '../../Babylon/LensFlare/babylon.lensFlareSystem.js',
       '../../Babylon/Physics/Plugins/babylon.cannonJSPlugin.js',
+      '../../Babylon/Physics/Plugins/babylon.oimoJSPlugin.js',
       '../../Babylon/Physics/babylon.physicsEngine.js',
       '../../Babylon/Tools/babylon.sceneSerializer.js',
       '../../Babylon/Mesh/babylon.csg.js',
