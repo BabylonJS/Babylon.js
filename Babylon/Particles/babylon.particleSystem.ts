@@ -81,7 +81,7 @@
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
 
-        constructor(public name: string, capacity: number, scene: Scene) {
+        constructor(public name: string, capacity: number, scene: Scene, public fragmentElement?: string) {
             this.id = name;
             this._capacity = capacity;
 
@@ -245,7 +245,20 @@
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                this._effect = this._scene.getEngine().createEffect("particles",
+                var baseName;
+
+                if (this.fragmentElement) {
+                    baseName = {
+                        vertex: "particles",
+                        fragmentElement: this.fragmentElement
+                    }
+                } else {
+                    baseName = "particles";
+                }
+
+
+                this._effect = this._scene.getEngine().createEffect(
+                    baseName,
                     ["position", "color", "options"],
                     ["invView", "view", "projection", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);

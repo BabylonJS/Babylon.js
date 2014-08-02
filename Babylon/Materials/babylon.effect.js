@@ -21,10 +21,14 @@
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
+            } else {
+                vertexSource = baseName.vertex || baseName;
+            }
+
+            if (baseName.fragmentElement) {
                 fragmentSource = document.getElementById(baseName.fragmentElement);
             } else {
-                vertexSource = baseName.vertexElement || baseName.vertex || baseName;
-                fragmentSource = baseName.fragmentElement || baseName.fragment || baseName;
+                fragmentSource = baseName.fragment || baseName;
             }
 
             this._loadVertexShader(vertexSource, function (vertexCode) {
