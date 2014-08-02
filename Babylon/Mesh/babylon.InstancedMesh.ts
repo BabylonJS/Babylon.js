@@ -77,6 +77,10 @@
             this._updateBoundingInfo();
         }
 
+        public _preActivate(): void {
+            this.sourceMesh._preActivate();
+        }
+
         public _activate(renderId: number): void {
             this.sourceMesh._registerInstanceForRenderId(this, renderId);
         }

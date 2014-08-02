@@ -15,6 +15,7 @@ var BABYLON;
             this.checkManifestFile();
         }
         Database.prototype.checkManifestFile = function () {
+            var _this = this;
             function noManifestFile() {
                 BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
                 that.enableSceneOffline = false;
@@ -34,13 +35,13 @@ var BABYLON;
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
                         var manifestFile = JSON.parse(xhr.response);
-                        that.enableSceneOffline = manifestFile.enableSceneOffline;
-                        that.enableTexturesOffline = manifestFile.enableTexturesOffline;
+                        _this.enableSceneOffline = manifestFile.enableSceneOffline;
+                        _this.enableTexturesOffline = manifestFile.enableTexturesOffline;
                         if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
-                            that.manifestVersionFound = manifestFile.version;
+                            _this.manifestVersionFound = manifestFile.version;
                         }
-                        if (that.callbackManifestChecked) {
-                            that.callbackManifestChecked(true);
+                        if (_this.callbackManifestChecked) {
+                            _this.callbackManifestChecked(true);
                         }
                     } catch (ex) {
                         noManifestFile();
@@ -63,6 +64,7 @@ var BABYLON;
         };
 
         Database.prototype.openAsync = function (successCallback, errorCallback) {
+            var _this = this;
             function handleError() {
                 that.isSupported = false;
                 if (errorCallback)
@@ -96,23 +98,23 @@ var BABYLON;
 
                     // DB has been opened successfully
                     request.onsuccess = function (event) {
-                        that.db = request.result;
+                        _this.db = request.result;
                         successCallback();
                     };
 
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = function (event) {
-                        that.db = (event.target).result;
+                        _this.db = (event.target).result;
                         try  {
                             if (event.oldVersion > 0) {
-                                that.db.deleteObjectStore("scenes");
-                                that.db.deleteObjectStore("versions");
-                                that.db.deleteObjectStore("textures");
+                                _this.db.deleteObjectStore("scenes");
+                                _this.db.deleteObjectStore("versions");
+                                _this.db.deleteObjectStore("textures");
                             }
 
-                            var scenesStore = that.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                            var versionsStore = that.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                            var texturesStore = that.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                            var scenesStore = _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                            var versionsStore = _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                            var texturesStore = _this.db.createObjectStore("textures", { keyPath: "textureUrl" });
                         } catch (ex) {
                             BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
                             handleError();
@@ -126,13 +128,13 @@ var BABYLON;
         };
 
         Database.prototype.loadImageFromDB = function (url, image) {
-            var that = this;
+            var _this = this;
             var completeURL = BABYLON.Database.ReturnFullUrlLocation(url);
 
             var saveAndLoadImage = function () {
-                if (!that.hasReachedQuota && that.db !== null) {
+                if (!_this.hasReachedQuota && _this.db !== null) {
                     // the texture is not yet in the DB, let's try to save it
-                    that._saveImageIntoDBAsync(completeURL, image);
+                    _this._saveImageIntoDBAsync(completeURL, image);
                 } else {
                     image.src = url;
                 }
@@ -186,6 +188,7 @@ var BABYLON;
         };
 
         Database.prototype._saveImageIntoDBAsync = function (url, image) {
+            var _this = this;
             if (this.isSupported) {
                 // In case of error (type not supported or quota exceeded), we're at least sending back XHR data to allow texture loading later on
                 var generateBlobUrl = function () {
@@ -204,9 +207,6 @@ var BABYLON;
                 };
 
                 if (BABYLON.Database.isUASupportingBlobStorage) {
-                    var that = this;
-
-                    // Create XHR
                     var xhr = new XMLHttpRequest(), blob;
 
                     xhr.open("GET", url, true);
@@ -217,13 +217,13 @@ var BABYLON;
                             // Blob as response (XHR2)
                             blob = xhr.response;
 
-                            var transaction = that.db.transaction(["textures"], "readwrite");
+                            var transaction = _this.db.transaction(["textures"], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try  {
                                     if (event.srcElement.error.name === "QuotaExceededError") {
-                                        that.hasReachedQuota = true;
+                                        this.hasReachedQuota = true;
                                     }
                                 } catch (ex) {
                                 }
@@ -272,33 +272,32 @@ var BABYLON;
         };
 
         Database.prototype._checkVersionFromDB = function (url, versionLoaded) {
-            var that = this;
-
+            var _this = this;
             var updateVersion = function (event) {
                 // the version is not yet in the DB or we need to update it
-                that._saveVersionIntoDBAsync(url, versionLoaded);
+                _this._saveVersionIntoDBAsync(url, versionLoaded);
             };
             this._loadVersionFromDBAsync(url, versionLoaded, updateVersion);
         };
 
         Database.prototype._loadVersionFromDBAsync = function (url, callback, updateInDBCallback) {
+            var _this = this;
             if (this.isSupported) {
                 var version;
-                var that = this;
                 try  {
                     var transaction = this.db.transaction(["versions"]);
 
                     transaction.oncomplete = function (event) {
                         if (version) {
                             // If the version in the JSON file is > than the version in DB
-                            if (that.manifestVersionFound > version.data) {
-                                that.mustUpdateRessources = true;
+                            if (_this.manifestVersionFound > version.data) {
+                                _this.mustUpdateRessources = true;
                                 updateInDBCallback();
                             } else {
                                 callback(version.data);
                             }
                         } else {
-                            that.mustUpdateRessources = true;
+                            _this.mustUpdateRessources = true;
                             updateInDBCallback();
                         }
                     };
@@ -327,8 +326,8 @@ var BABYLON;
         };
 
         Database.prototype._saveVersionIntoDBAsync = function (url, callback) {
+            var _this = this;
             if (this.isSupported && !this.hasReachedQuota) {
-                var that = this;
                 try  {
                     // Open a transaction to the database
                     var transaction = this.db.transaction(["versions"], "readwrite");
@@ -337,7 +336,7 @@ var BABYLON;
                     transaction.onabort = function (event) {
                         try  {
                             if (event.srcElement.error.name === "QuotaExceededError") {
-                                that.hasReachedQuota = true;
+                                _this.hasReachedQuota = true;
                             }
                         } catch (ex) {
                         }
@@ -345,7 +344,7 @@ var BABYLON;
                     };
 
                     transaction.oncomplete = function (event) {
-                        callback(that.manifestVersionFound);
+                        callback(_this.manifestVersionFound);
                     };
 
                     var newVersion = { sceneUrl: url, data: this.manifestVersionFound };
@@ -367,20 +366,20 @@ var BABYLON;
         };
 
         Database.prototype.loadFileFromDB = function (url, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer) {
-            var that = this;
+            var _this = this;
             var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
 
             var saveAndLoadFile = function (event) {
                 // the scene is not yet in the DB, let's try to save it
-                that._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                _this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
             };
 
             this._checkVersionFromDB(completeUrl, function (version) {
                 if (version !== -1) {
-                    if (!that.mustUpdateRessources) {
-                        that._loadFileFromDBAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
+                    if (!_this.mustUpdateRessources) {
+                        _this._loadFileFromDBAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
                     } else {
-                        that._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer);
+                        _this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer);
                     }
                 } else {
                     errorCallback();
@@ -428,6 +427,7 @@ var BABYLON;
         };
 
         Database.prototype._saveFileIntoDBAsync = function (url, callback, progressCallback, useArrayBuffer) {
+            var _this = this;
             if (this.isSupported) {
                 var targetStore;
                 if (url.indexOf(".babylon") !== -1) {
@@ -438,8 +438,6 @@ var BABYLON;
 
                 // Create XHR
                 var xhr = new XMLHttpRequest(), fileData;
-                var that = this;
-
                 xhr.open("GET", url, true);
 
                 if (useArrayBuffer) {
@@ -454,15 +452,15 @@ var BABYLON;
                         //fileData = xhr.responseText;
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
-                        if (!that.hasReachedQuota) {
+                        if (!_this.hasReachedQuota) {
                             // Open a transaction to the database
-                            var transaction = that.db.transaction([targetStore], "readwrite");
+                            var transaction = _this.db.transaction([targetStore], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try  {
                                     if (event.srcElement.error.name === "QuotaExceededError") {
-                                        that.hasReachedQuota = true;
+                                        this.hasReachedQuota = true;
                                     }
                                 } catch (ex) {
                                 }
@@ -475,7 +473,7 @@ var BABYLON;
 
                             var newFile;
                             if (targetStore === "scenes") {
-                                newFile = { sceneUrl: url, data: fileData, version: that.manifestVersionFound };
+                                newFile = { sceneUrl: url, data: fileData, version: _this.manifestVersionFound };
                             } else {
                                 newFile = { textureUrl: url, data: fileData };
                             }
