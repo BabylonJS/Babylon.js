@@ -188,12 +188,26 @@ module BABYLON {
          * @param mesh
          */
         public updateBodyPosition = function (mesh: AbstractMesh): void {
+
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     var body = registeredMesh.body.body;
                     body.setPosition(mesh.position.x, mesh.position.y, mesh.position.z);
                     body.setOrientation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+                    return;
+                }
+                // Case where the parent has been updated
+                if (registeredMesh.mesh.parent === mesh) {
+                    mesh.computeWorldMatrix(true);
+                    registeredMesh.mesh.computeWorldMatrix(true);
+
+                    var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
+                    var absoluteRotation = mesh.rotation;
+
+                    var body = registeredMesh.body.body;
+                    body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
+                    body.setOrientation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
                     return;
                 }
             }
@@ -203,7 +217,7 @@ module BABYLON {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * 0.01));
+                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
                     return;
                 }
             }
