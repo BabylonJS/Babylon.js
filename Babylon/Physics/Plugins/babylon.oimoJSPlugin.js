@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
@@ -16,42 +16,27 @@ var BABYLON;
                         body.setOrientation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
                         return;
                     }
-                }
-            };
-            this.createLink = function (mesh1, mesh2, pivot1, pivot2, options) {
-                var body1 = null, body2 = null;
-                for (var index = 0; index < this._registeredMeshes.length; index++) {
-                    var registeredMesh = this._registeredMeshes[index];
-                    if (registeredMesh.mesh === mesh1) {
-                        body1 = registeredMesh.body.body;
-                    } else if (registeredMesh.mesh === mesh2) {
-                        body2 = registeredMesh.body.body;
+
+                    // Case where the parent has been updated
+                    if (registeredMesh.mesh.parent === mesh) {
+                        mesh.computeWorldMatrix(true);
+                        registeredMesh.mesh.computeWorldMatrix(true);
+
+                        var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
+                        var absoluteRotation = mesh.rotation;
+
+                        body = registeredMesh.body.body;
+                        body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
+                        body.setOrientation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
+                        return;
                     }
                 }
-                if (!body1 || !body2) {
-                    return false;
-                }
-                if (!options) {
-                    options = {};
-                }
-
-                new OIMO.Link({
-                    type: options.type,
-                    body1: body1,
-                    body2: body2,
-                    min: options.min,
-                    max: options.max,
-                    axe1: options.axe1,
-                    axe2: options.axe2,
-                    pos1: [pivot1.x, pivot1.y, pivot1.z],
-                    collision: options.collision,
-                    spring: options.spring,
-                    world: this.world
-                });
-
-                return true;
             };
         }
+        OimoJSPlugin.prototype._checkWithEpsilon = function (value) {
+            return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
+        };
+
         OimoJSPlugin.prototype.initialize = function (iterations) {
             this._world = new OIMO.World();
             this._world.clear();
@@ -68,11 +53,15 @@ var BABYLON;
 
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
-                    var bsphere = mesh.getBoundingInfo().boundingSphere;
-                    var size = bsphere.maximum.subtract(bsphere.minimum).scale(0.5).multiply(mesh.scaling);
+                    var bbox = mesh.getBoundingInfo().boundingBox;
+                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                    var size = Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2;
                     body = new OIMO.Body({
                         type: 'sphere',
-                        size: [size.x],
+                        size: [size],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
@@ -87,11 +76,16 @@ var BABYLON;
 
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
-                    var bbox = mesh.getBoundingInfo().boundingBox;
-                    size = bbox.extends.scale(2).multiply(mesh.scaling);
+                    bbox = mesh.getBoundingInfo().boundingBox;
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    var sizeX = this._checkWithEpsilon(box.x);
+                    var sizeY = this._checkWithEpsilon(box.y);
+                    var sizeZ = this._checkWithEpsilon(box.z);
                     body = new OIMO.Body({
                         type: 'box',
-                        size: [size.x || 0.1, size.y || 0.1, size.z || 0.1],
+                        size: [sizeX, sizeY, sizeZ],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
@@ -146,12 +140,16 @@ var BABYLON;
 
             switch (part.impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
-                    var bsphere = mesh.getBoundingInfo().boundingSphere;
-                    var size = bsphere.maximum.subtract(bsphere.minimum).scale(0.5).multiply(mesh.scaling);
+                    var bbox = mesh.getBoundingInfo().boundingBox;
+                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                    var size = Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2;
                     bodyParameters = {
                         type: 'sphere',
                         /* bug with oimo : sphere needs 3 sizes in this case */
-                        size: [size.x, -1, -1],
+                        size: [size, -1, -1],
                         pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
                     };
@@ -159,12 +157,17 @@ var BABYLON;
 
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
-                    var bbox = part.mesh.getBoundingInfo().boundingBox;
-                    size = bbox.extends.scale(2).multiply(mesh.scaling);
+                    bbox = mesh.getBoundingInfo().boundingBox;
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    var sizeX = this._checkWithEpsilon(box.x);
+                    var sizeY = this._checkWithEpsilon(box.y);
+                    var sizeZ = this._checkWithEpsilon(box.z);
                     var relativePosition = mesh.position;
                     bodyParameters = {
                         type: 'box',
-                        size: [size.x || 0.1, size.y || 0.1, size.z || 0.1],
+                        size: [sizeX, sizeY, sizeZ],
                         pos: [relativePosition.x, relativePosition.y, relativePosition.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
                     };
@@ -201,10 +204,45 @@ var BABYLON;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * 0.01));
+                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
                     return;
                 }
             }
+        };
+
+        OimoJSPlugin.prototype.createLink = function (mesh1, mesh2, pivot1, pivot2, options) {
+            var body1 = null, body2 = null;
+            for (var index = 0; index < this._registeredMeshes.length; index++) {
+                var registeredMesh = this._registeredMeshes[index];
+                if (registeredMesh.mesh === mesh1) {
+                    body1 = registeredMesh.body.body;
+                } else if (registeredMesh.mesh === mesh2) {
+                    body2 = registeredMesh.body.body;
+                }
+            }
+            if (!body1 || !body2) {
+                return false;
+            }
+            if (!options) {
+                options = {};
+            }
+
+            new OIMO.Link({
+                type: options.type,
+                body1: body1,
+                body2: body2,
+                min: options.min,
+                max: options.max,
+                axe1: options.axe1,
+                axe2: options.axe2,
+                pos1: [pivot1.x, pivot1.y, pivot1.z],
+                pos2: [pivot2.x, pivot2.y, pivot2.z],
+                collision: options.collision,
+                spring: options.spring,
+                world: this._world
+            });
+
+            return true;
         };
 
         OimoJSPlugin.prototype.dispose = function () {
