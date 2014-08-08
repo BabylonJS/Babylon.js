@@ -205,7 +205,7 @@ module BABYLON {
                     var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
                     var absoluteRotation = mesh.rotation;
 
-                    var body = registeredMesh.body.body;
+                    body = registeredMesh.body.body;
                     body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
                     body.setOrientation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
                     return;
@@ -253,7 +253,7 @@ module BABYLON {
                 pos2: [pivot2.x, pivot2.y, pivot2.z],
                 collision: options.collision,
                 spring: options.spring,
-                world: this.world
+                world: this._world
             });
 
             return true;
