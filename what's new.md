@@ -1,5 +1,32 @@
 Changes list
 ============
+- 1.13.0:
+ - **Major updates**
+ - TypeScript port finished ([davrous](http://www.github.com/davrous) & [deltakosh](http://www.github.com/deltakosh)) 
+ - Physics engine: new OIMO plugin ([temechon](http://www.github.com/temechon))
+ - new demo: [V8 engine](http://www.babylonjs.com/index.html?V8)
+ - **Updates**
+ - Fixed ray creation when the devicePixelRatio is not equals to 1 ([demonixis](http://www.github.com/demonixis))
+ - New ```mesh.registerAfterRender``` and ```mesh.unregisterAfterRender``` functions ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```fragmentElement``` parameter to define custom shader for ```BABYLON.ParticleSystem``` constructor ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```OnKeyDown``` and ```OnKeyUp``` triggers. See [actions wiki](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) for more info ([deltakosh](http://www.github.com/deltakosh)) 
+ - ArcRotateCamera can now check collisions [wiki](https://github.com/BabylonJS/Babylon.js/wiki/09-Cameras-collisions) ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```Engine.Version``` property which returns a string with the current version ([deltakosh](http://www.github.com/deltakosh)) 
+ - New "Export and Run" feature for Max2Babylon ([deltakosh](http://www.github.com/deltakosh)) 
+ - Animations delta time is now capped between Scene.MinDeltaTime and Scene.MaxDeltaTime ([deltakosh](http://www.github.com/deltakosh)) 
+ - Non-squared DDS are now supported ([deltakosh](http://www.github.com/deltakosh)) 
+ - New triggers: ```BABYLON.ActionManager.OnIntersectionEnterTrigger```, ```BABYLON.ActionManager.OnIntersectionExitTrigger```. [Documentation](https://github.com/BabylonJS/Babylon.js/wiki/How-to-use-Actions) updated ([deltakosh](http://www.github.com/deltakosh)) 
+ - New mesh type: ```BABYLON.LinesMesh```. You can find a [demo here](http://www.babylonjs.com/?LINES) ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```mesh.moveWithCollisions``` function. Used with ```mesh.ellipsoid``` and '''mesh.ellipsoidOffset```, this function can be used to move a mesh and use an ellipsoid around it to [check collisions](https://github.com/BabylonJS/Babylon.js/wiki/09-Collisions-by-gravity) ([deltakosh](http://www.github.com/deltakosh)) 
+ - New feature demo: [How to do drag'n'drop](http://www.babylonjs.com/playground/?18) ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```BABYLON.PickingInfo.getTextureCoordinates()``` function ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```BABYLON.Scene.cameraToUseForPointers``` property that defines this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position ([deltakosh](http://www.github.com/deltakosh)) 
+ - ```BABYLON.OculusOrientedCamera``` was replaced by ```BABYLON.OculusCamera``` for better integration into camera system ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```Mesh.CreateTiledGround()``` function ([kostar111](https://github.com/kostar111)) 
+ - Shadow Poisson Sampling ([clementlevasseur](https://github.com/clementlevasseur)) 
+ - **Bugfixes**
+ - Fixing a bug when instances are used with a mesh with submeshes.length > 1 ([deltakosh](http://www.github.com/deltakosh)) 
+ - CreateCylinder() : add subdivisions parameter and fix normals bug ([kostar111](https://github.com/kostar111)) 
 - 1.12.0:
  - **Major updates**
  - Babylon.js is now entirely developed using TypeScript ([deltakosh](http://www.github.com/deltakosh), [davrous](http://www.github.com/davrous))

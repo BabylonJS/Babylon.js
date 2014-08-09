@@ -13,7 +13,8 @@
 
         // Private
         public _geometry: Geometry;
-        private _onBeforeRenderCallbacks = [];
+        private _onBeforeRenderCallbacks = new Array<()=> void >();
+        private _onAfterRenderCallbacks = new Array<() => void>();
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any, Mesh) => void;
         public _visibleInstances: any = {};
@@ -273,6 +274,18 @@
             }
         }
 
+        public registerAfterRender(func: () => void): void {
+            this._onAfterRenderCallbacks.push(func);
+        }
+
+        public unregisterAfterRender(func: () => void): void {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
+            }
+        }
+
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
@@ -422,6 +435,10 @@
             }
             // Unbind
             effectiveMaterial.unbind();
+
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
+            }
         }
 
         public getEmittedParticleSystems(): ParticleSystem[] {

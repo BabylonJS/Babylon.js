@@ -23,7 +23,8 @@ var BABYLON;
             // Members
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.instances = new Array();
-            this._onBeforeRenderCallbacks = [];
+            this._onBeforeRenderCallbacks = new Array();
+            this._onAfterRenderCallbacks = new Array();
             this._visibleInstances = {};
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
@@ -269,6 +270,18 @@ var BABYLON;
             }
         };
 
+        Mesh.prototype.registerAfterRender = function (func) {
+            this._onAfterRenderCallbacks.push(func);
+        };
+
+        Mesh.prototype.unregisterAfterRender = function (func) {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
+            }
+        };
+
         Mesh.prototype._getInstancesRenderList = function (subMeshId) {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
@@ -418,6 +431,10 @@ var BABYLON;
 
             // Unbind
             effectiveMaterial.unbind();
+
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
+            }
         };
 
         Mesh.prototype.getEmittedParticleSystems = function () {

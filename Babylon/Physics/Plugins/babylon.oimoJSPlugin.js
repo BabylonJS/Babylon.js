@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
