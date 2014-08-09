@@ -104,7 +104,8 @@ namespace Max2Babylon
 
             if (checkExclusionList)
             {
-                var list = new List<string>();
+                var excllist = new List<string>();
+                var incllist = new List<string>();
 
                 foreach (var meshNode in maxScene.NodesListBySuperClass(SClass_ID.Geomobject))
                 {
@@ -112,14 +113,22 @@ namespace Max2Babylon
                     {
                         var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 
-                        if ((!inList && inclusion) || (inList && !inclusion))
+                        if (inList)
                         {
-                            list.Add(meshNode.GetGuid().ToString());
+                            if (inclusion)
+                            {
+                                incllist.Add(meshNode.GetGuid().ToString());
+                            }
+                            else
+                            {
+                                excllist.Add(meshNode.GetGuid().ToString());
+                            }
                         }
                     }
                 }
 
-                babylonLight.excludedMeshesIds = list.ToArray();
+                babylonLight.includedOnlyMeshesIds = incllist.ToArray();
+                babylonLight.excludedMeshesIds = excllist.ToArray();
             }
 
             // Other fields

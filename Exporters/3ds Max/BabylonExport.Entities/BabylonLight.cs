@@ -45,6 +45,9 @@ namespace BabylonExport.Entities
         public string[] excludedMeshesIds { get; set; }
 
         [DataMember]
+        public string[] includedOnlyMeshesIds { get; set; }
+
+        [DataMember]
         public bool autoAnimate { get; set; }
 
         [DataMember]
