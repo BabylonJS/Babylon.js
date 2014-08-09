@@ -15,6 +15,9 @@ namespace BabylonExport.Entities
         public bool useVarianceShadowMap { get; set; }
 
         [DataMember]
+        public bool usePoissonSampling { get; set; }
+
+        [DataMember]
         public string[] renderList { get; set; }
 
     }
