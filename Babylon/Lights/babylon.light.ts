@@ -4,11 +4,13 @@
         public specular = new Color3(1.0, 1.0, 1.0);
         public intensity = 1.0;
         public range = Number.MAX_VALUE;
+        public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
 
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
         public _excludedMeshesIds = new Array<string>();
+        public _includedOnlyMeshesIds = new Array<string>();
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -25,6 +27,22 @@
 
         public _getWorldMatrix(): Matrix {
             return Matrix.Identity();
+        }
+
+        public canAffectMesh(mesh: AbstractMesh): boolean {
+            if (!mesh) {
+                return true;
+            }
+
+            if (this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
+                return false;
+            }
+
+            if (this.includedOnlyMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return false;
+            }
+
+            return true;
         }
 
         public getWorldMatrix(): Matrix {

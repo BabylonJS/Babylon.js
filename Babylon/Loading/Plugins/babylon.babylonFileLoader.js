@@ -307,6 +307,10 @@
                 light._excludedMeshesIds = parsedLight.excludedMeshesIds;
             }
 
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
+            }
+
             // Animations
             if (parsedLight.animations) {
                 for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
