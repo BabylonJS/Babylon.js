@@ -14,8 +14,10 @@ var BABYLON;
             this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.intensity = 1.0;
             this.range = Number.MAX_VALUE;
+            this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this._excludedMeshesIds = new Array();
+            this._includedOnlyMeshesIds = new Array();
 
             scene.lights.push(this);
         }
@@ -28,6 +30,22 @@ var BABYLON;
 
         Light.prototype._getWorldMatrix = function () {
             return BABYLON.Matrix.Identity();
+        };
+
+        Light.prototype.canAffectMesh = function (mesh) {
+            if (!mesh) {
+                return true;
+            }
+
+            if (this.includedOnlyMeshes.length > 0 && this.includedOnlyMeshes.indexOf(mesh) === -1) {
+                return false;
+            }
+
+            if (this.includedOnlyMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return false;
+            }
+
+            return true;
         };
 
         Light.prototype.getWorldMatrix = function () {

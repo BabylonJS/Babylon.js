@@ -167,6 +167,7 @@ var BABYLON;
                         continue;
                     }
 
+                    // Excluded check
                     if (light._excludedMeshesIds.length > 0) {
                         for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
                             var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
@@ -179,7 +180,20 @@ var BABYLON;
                         light._excludedMeshesIds = [];
                     }
 
-                    if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {
+                    // Included check
+                    if (light._includedOnlyMeshesIds.length > 0) {
+                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
+                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
+
+                            if (includedOnlyMesh) {
+                                light.includedOnlyMeshes.push(includedOnlyMesh);
+                            }
+                        }
+
+                        light._includedOnlyMeshesIds = [];
+                    }
+
+                    if (!light.canAffectMesh(mesh)) {
                         continue;
                     }
 
@@ -403,7 +417,7 @@ var BABYLON;
                         continue;
                     }
 
-                    if (mesh && light.excludedMeshes.indexOf(mesh) !== -1) {
+                    if (!light.canAffectMesh(mesh)) {
                         continue;
                     }
 
