@@ -153,15 +153,14 @@
 
             // Compute ratio
             var range = to - from;
+            var offsetValue;
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
             if (ratio > range && !loop) {
-                offsetValue = 0;
                 returnValue = false;
                 highLimitValue = this._keys[this._keys.length - 1].value;
             } else {
                 // Get max value if required
-                var offsetValue = 0;
                 var highLimitValue = 0;
                 if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
                     var keyOffset = to.toString() + from.toString();
@@ -191,6 +190,25 @@
 
                     highLimitValue = this._highLimitsCache[keyOffset];
                     offsetValue = this._offsetsCache[keyOffset];
+                }
+            }
+
+            if (offsetValue === undefined) {
+                switch (this.dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        offsetValue = 0;
+                        break;
+
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        offsetValue = new BABYLON.Quaternion();
+                        break;
+
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        offsetValue = BABYLON.Vector3.Zero();
+                        break;
+
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        offsetValue = BABYLON.Color3.Black();
                 }
             }
 
