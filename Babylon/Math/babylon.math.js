@@ -842,7 +842,7 @@
             if (typeof x === "undefined") { x = 0; }
             if (typeof y === "undefined") { y = 0; }
             if (typeof z === "undefined") { z = 0; }
-            if (typeof w === "undefined") { w = 0; }
+            if (typeof w === "undefined") { w = 1; }
             this.x = x;
             this.y = y;
             this.z = z;

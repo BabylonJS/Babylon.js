@@ -154,15 +154,14 @@
 
             // Compute ratio
             var range = to - from;
+            var offsetValue;
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
             if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
-                offsetValue = 0;
                 returnValue = false;
                 highLimitValue = this._keys[this._keys.length - 1].value;
             } else {
                 // Get max value if required
-                var offsetValue = 0;
                 var highLimitValue = 0;
                 if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
                     var keyOffset = to.toString() + from.toString();
@@ -193,6 +192,26 @@
 
                     highLimitValue = this._highLimitsCache[keyOffset];
                     offsetValue = this._offsetsCache[keyOffset];
+                }
+            }
+
+            if (offsetValue === undefined) {
+                switch (this.dataType) {
+                    // Float
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        offsetValue = 0;
+                        break;
+                    // Quaternion
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        offsetValue = new Quaternion();
+                        break;
+                    // Vector3
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        offsetValue = Vector3.Zero();
+                        break;
+                    // Color3
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        offsetValue = Color3.Black();
                 }
             }
 
