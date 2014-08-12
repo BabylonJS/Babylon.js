@@ -11,7 +11,7 @@
             this.cameraToUseForPointers = null;
             // Fog
             this.fogMode = BABYLON.Scene.FOGMODE_NONE;
-            this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
+            this.fogColor = new Color3(0.2, 0.2, 0.3);
             this.fogDensity = 0.1;
             this.fogStart = 0;
             this.fogEnd = 1000.0;
@@ -53,7 +53,7 @@
             // Imported meshes
             this.importedMeshesFiles = new Array();
             this._actionManagers = new Array();
-            this._meshesForIntersections = new BABYLON.SmartArray(256);
+            this._meshesForIntersections = new SmartArray(256);
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -66,30 +66,30 @@
             this._animationRatio = 0;
             this._renderId = 0;
             this._executeWhenReadyTimeoutId = -1;
-            this._toBeDisposed = new BABYLON.SmartArray(256);
+            this._toBeDisposed = new SmartArray(256);
             this._onReadyCallbacks = new Array();
             this._pendingData = [];
             this._onBeforeRenderCallbacks = new Array();
-            this._activeMeshes = new BABYLON.SmartArray(256);
-            this._processedMaterials = new BABYLON.SmartArray(256);
-            this._renderTargets = new BABYLON.SmartArray(256);
-            this._activeParticleSystems = new BABYLON.SmartArray(256);
-            this._activeSkeletons = new BABYLON.SmartArray(32);
+            this._activeMeshes = new SmartArray(256);
+            this._processedMaterials = new SmartArray(256);
+            this._renderTargets = new SmartArray(256);
+            this._activeParticleSystems = new SmartArray(256);
+            this._activeSkeletons = new SmartArray(32);
             this._activeAnimatables = new Array();
-            this._transformMatrix = BABYLON.Matrix.Zero();
-            this._scaledPosition = BABYLON.Vector3.Zero();
-            this._scaledVelocity = BABYLON.Vector3.Zero();
+            this._transformMatrix = Matrix.Zero();
+            this._scaledPosition = Vector3.Zero();
+            this._scaledVelocity = Vector3.Zero();
             this._engine = engine;
 
             engine.scenes.push(this);
 
-            this._renderingManager = new BABYLON.RenderingManager(this);
+            this._renderingManager = new RenderingManager(this);
 
-            this.postProcessManager = new BABYLON.PostProcessManager(this);
+            this.postProcessManager = new PostProcessManager(this);
 
-            this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
+            this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
 
-            this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
+            this._boundingBoxRenderer = new BoundingBoxRenderer(this);
 
             this.attachControl();
         }
@@ -228,16 +228,16 @@
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                     }
                 }
 
@@ -248,17 +248,17 @@
 
             this._onKeyDown = function (evt) {
                 if (_this.actionManager) {
-                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
+                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(_this, evt));
                 }
             };
 
             this._onKeyUp = function (evt) {
                 if (_this.actionManager) {
-                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
+                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(_this, evt));
                 }
             };
 
-            var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
 
@@ -267,7 +267,7 @@
         };
 
         Scene.prototype.detachControl = function () {
-            var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
 
@@ -374,7 +374,7 @@
             this.stopAnimation(target);
 
             if (!animatable) {
-                animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
             }
 
             // Local animations
@@ -716,7 +716,7 @@
                 mesh._preActivate();
 
                 // Intersections
-                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionManager.OnIntersectionExitTrigger])) {
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
@@ -917,17 +917,17 @@
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger == ActionManager.OnIntersectionEnterTrigger || action.trigger == ActionManager.OnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger) {
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger) {
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -953,7 +953,7 @@
 
             // Actions
             if (this.actionManager) {
-                this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
+                this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger, null);
             }
 
             // Before render
@@ -1143,7 +1143,7 @@
             if (typeof maxCapacity === "undefined") { maxCapacity = 64; }
             if (typeof maxDepth === "undefined") { maxDepth = 2; }
             if (!this._selectionOctree) {
-                this._selectionOctree = new BABYLON.Octree(BABYLON.Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
+                this._selectionOctree = new BABYLON.Octree(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
             }
 
             var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -1155,8 +1155,8 @@
                 var minBox = mesh.getBoundingInfo().boundingBox.minimumWorld;
                 var maxBox = mesh.getBoundingInfo().boundingBox.maximumWorld;
 
-                BABYLON.Tools.CheckExtends(minBox, min, max);
-                BABYLON.Tools.CheckExtends(maxBox, min, max);
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
             }
 
             // Update octree
@@ -1250,12 +1250,12 @@
             }
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, BABYLON.ActionEvent.CreateNew(this._pointerOverMesh));
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
             }
 
             this._pointerOverMesh = mesh;
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, BABYLON.ActionEvent.CreateNew(this._pointerOverMesh));
+                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
             }
         };
 
@@ -1382,4 +1382,3 @@
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map

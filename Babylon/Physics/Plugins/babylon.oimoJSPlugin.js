@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
@@ -304,4 +304,3 @@
     })();
     BABYLON.OimoJSPlugin = OimoJSPlugin;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.oimoJSPlugin.js.map

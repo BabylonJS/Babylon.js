@@ -36,7 +36,7 @@ var BABYLON;
             var vz = dz * this.cameraAcceleration * 2;
 
             if (vx > this.maxCameraSpeed || vx < -this.maxCameraSpeed) {
-                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed; //max speed is 40
+                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed; //max speed is 20
             }
 
             if (vy > this.maxCameraSpeed || vy < -this.maxCameraSpeed) {
@@ -50,7 +50,12 @@ var BABYLON;
             this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
             this.setTarget(cameraTarget.position);
         };
+
+        FollowCamera.prototype._update = function () {
+            _super.prototype._update.call(this);
+            this.follow(this.target);
+        };
         return FollowCamera;
-    })(FreeCamera);
+    })(TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
 })(BABYLON || (BABYLON = {}));
