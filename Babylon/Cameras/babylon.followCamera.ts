@@ -1,21 +1,22 @@
 ﻿module BABYLON {
-    export class FollowCamera extends FreeCamera {
+    export class FollowCamera extends TargetCamera {
 
-        public radius:number=12;
-        public rotationOffset:number=0;
-        public heightOffset:number=4;
-        public cameraAcceleration:number=0.05;
-        public maxCameraSpeed:number=20;
+        public radius:number = 12;
+        public rotationOffset:number = 0;
+        public heightOffset:number = 4;
+        public cameraAcceleration:number = 0.05;
+        public maxCameraSpeed:number = 20;
+        public target:BABYLON.AbstractMesh;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
+        constructor(name:string, position:Vector3, scene:Scene) {
             super(name, position, scene);
         }
 
-        private getRadians (degrees):number {
+        private getRadians(degrees):number {
             return degrees * Math.PI / 180;
         }
 
-        public follow( cameraTarget:BABYLON.AbstractMesh) {
+        private follow(cameraTarget:BABYLON.AbstractMesh) {
             if (!cameraTarget)
                 return;
 
@@ -31,7 +32,7 @@
             var vz:number = dz * this.cameraAcceleration * 2;
 
             if (vx > this.maxCameraSpeed || vx < -this.maxCameraSpeed) {
-                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed; //max speed is 40
+                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed; //max speed is 20
             }
 
             if (vy > this.maxCameraSpeed || vy < -this.maxCameraSpeed) {
@@ -44,6 +45,11 @@
 
             this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
             this.setTarget(cameraTarget.position);
+        }
+
+        public _update():void {
+            super._update();
+            this.follow(this.target);
         }
     }
 } 
