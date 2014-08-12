@@ -1076,9 +1076,9 @@ class Mesh(FCurveAnimatable):
             file_handler.write(indent2 + '\tscene.enablePhysics();\n')
             file_handler.write(indent2 + '}\t')
             file_handler.write(indent2 + var + '.setPhysicsState({ impostor: ' + format_int(self.physicsImpostor) + 
-                                                               ', mass: ' + format_float(self.physicsMass) + 
-                                                               ', friction: ' + format_float(self.physicsFriction) +
-                                                               ', restitution: ' + self(self.physicsRestitution) + '});\n')
+                                                               ', mass: ' + format_f(self.physicsMass) + 
+                                                               ', friction: ' + format_f(self.physicsFriction) +
+                                                               ', restitution: ' + format_f(self.physicsRestitution) + '});\n')
 
         # Geometry
         if hasattr(self, 'skeletonId'):
