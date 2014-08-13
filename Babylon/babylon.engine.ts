@@ -207,7 +207,7 @@
         private _cullingState: boolean;
         private _compiledEffects = {};
         private _vertexAttribArrays: boolean[];
-        private _depthMask = false;
+        private _depthMask = true;
         private _cachedViewport: Viewport;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
@@ -856,9 +856,9 @@
         }
 
         // States
-        public setState(culling: boolean): void {
+        public setState(culling: boolean, force?: boolean): void {
             // Culling        
-            if (this._cullingState !== culling) {
+            if (this._cullingState !== culling || force) {
                 if (culling) {
                     this._gl.cullFace(this.cullBackFaces ? this._gl.BACK : this._gl.FRONT);
                     this._gl.enable(this._gl.CULL_FACE);
@@ -876,6 +876,10 @@
             } else {
                 this._gl.disable(this._gl.DEPTH_TEST);
             }
+        }
+
+        public getDepthWrite(): boolean {
+            return this._depthMask;
         }
 
         public setDepthWrite(enable: boolean): void {

@@ -197,6 +197,7 @@ var BABYLON;
             return this._viewMatrix;
         };
         return TargetCamera;
-    })(Camera);
+    })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.targetCamera.js.map

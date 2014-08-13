@@ -78,6 +78,8 @@
   <script src="Babylon/Cameras/babylon.arcRotateCamera.js"></script>
   <script src="Babylon/Cameras/babylon.touchCamera.js"></script>
   <script src="Babylon/Cameras/babylon.freeCamera.js"></script>
+  <script src="Babylon/Cameras/babylon.followCamera.js"></script>
+  <script src="Babylon/Cameras/babylon.targetCamera.js"></script>
   <script src="Babylon/Cameras/babylon.camera.js"></script>
   <script src="Babylon/Collisions/babylon.collider.js"></script>
   <script src="Babylon/Lights//Shadows/babylon.shadowGenerator.js"></script>

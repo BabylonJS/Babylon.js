@@ -19,7 +19,7 @@ var BABYLON;
             this.applyGravity = false;
             this.angularSensibility = 2000.0;
             this._keys = [];
-            this._collider = new Collider();
+            this._collider = new BABYLON.Collider();
             this._needMoveForGravity = true;
             this._oldPosition = BABYLON.Vector3.Zero();
             this._diffPosition = BABYLON.Vector3.Zero();
@@ -134,7 +134,7 @@ var BABYLON;
             element.addEventListener("mouseout", this._onMouseOut, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
 
-            Tools.RegisterTopRootEvents([
+            BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
@@ -151,7 +151,7 @@ var BABYLON;
             element.removeEventListener("mouseout", this._onMouseOut);
             element.removeEventListener("mousemove", this._onMouseMove);
 
-            Tools.UnregisterTopRootEvents([
+            BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
@@ -178,7 +178,7 @@ var BABYLON;
             this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+            if (this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPosition);
                 if (this.onCollide) {
                     this.onCollide(this._collider.collidedMesh);
@@ -234,6 +234,7 @@ var BABYLON;
             _super.prototype._update.call(this);
         };
         return FreeCamera;
-    })(TargetCamera);
+    })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freeCamera.js.map

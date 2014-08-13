@@ -46,6 +46,9 @@
         public material: Material;
         public receiveShadows = false;
         public actionManager: ActionManager;
+        public renderOutline = false;
+        public outlineColor = BABYLON.Color3.Red();
+        public outlineWidth = 0.02;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -564,7 +567,7 @@
                 this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
             }
 
-            this.computeWorldMatrix(true);            
+            this.computeWorldMatrix(true);
 
             // Update octree
             var bbox = this.getBoundingInfo().boundingBox;
@@ -593,7 +596,7 @@
 
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {
             var subMeshes: SubMesh[];
-            var len: number;            
+            var len: number;
 
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
@@ -743,8 +746,8 @@
 
             // Remove from scene
             var index = this.getScene().meshes.indexOf(this);
-            if (index != -1){
-                // Remove from the scene if mesh found
+            if (index != -1) {
+                // Remove from the scene if mesh found 
                 this.getScene().meshes.splice(index, 1);
             }
 
