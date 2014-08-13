@@ -9,7 +9,7 @@
     "gulp-concat": "^2.2.0",
     "gulp-filter": "^0.4.1",
     "gulp-rename": "^1.2.0",
-    "gulp-tsc": "^0.8.0",
+    "gulp-tsc": "^0.9.2",
     "gulp-uglify": "^0.3.0",
     "gulp-util": "^2.2.14",
     "through": "^2.3.4"
