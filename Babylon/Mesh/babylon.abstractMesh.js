@@ -25,6 +25,9 @@ var BABYLON;
             this.checkCollisions = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
+            this.renderOutline = false;
+            this.outlineColor = BABYLON.Color3.Red();
+            this.outlineWidth = 0.02;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -748,7 +751,10 @@ var BABYLON;
 
             // Remove from scene
             var index = this.getScene().meshes.indexOf(this);
-            this.getScene().meshes.splice(index, 1);
+            if (index != -1) {
+                // Remove from the scene if mesh found
+                this.getScene().meshes.splice(index, 1);
+            }
 
             if (!doNotRecurse) {
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {

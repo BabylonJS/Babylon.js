@@ -58,7 +58,7 @@
     };
 
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
-        if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
+        if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
         var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
@@ -135,7 +135,7 @@
             this._loadedTexturesCache = new Array();
             this._activeTexturesCache = new Array();
             this._compiledEffects = {};
-            this._depthMask = false;
+            this._depthMask = true;
             this._renderingCanvas = canvas;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
@@ -827,9 +827,9 @@
         };
 
         // States
-        Engine.prototype.setState = function (culling) {
+        Engine.prototype.setState = function (culling, force) {
             // Culling
-            if (this._cullingState !== culling) {
+            if (this._cullingState !== culling || force) {
                 if (culling) {
                     this._gl.cullFace(this.cullBackFaces ? this._gl.BACK : this._gl.FRONT);
                     this._gl.enable(this._gl.CULL_FACE);
@@ -847,6 +847,10 @@
             } else {
                 this._gl.disable(this._gl.DEPTH_TEST);
             }
+        };
+
+        Engine.prototype.getDepthWrite = function () {
+            return this._depthMask;
         };
 
         Engine.prototype.setDepthWrite = function (enable) {
@@ -920,7 +924,7 @@
 
         Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode) {
             var _this = this;
-            if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
+            if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var texture = this._gl.createTexture();
 
             var extension = url.substr(url.length - 4, 4).toLowerCase();
@@ -940,7 +944,7 @@
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
 
                     prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
-                        Internals.TGATools.UploadContent(_this._gl, data);
+                        BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
                     }, samplingMode);
                 }, null, scene.database, true);
             } else if (isDDS) {
@@ -950,7 +954,7 @@
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                         console.log("loading " + url);
-                        Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
+                        BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
                     }, samplingMode);
                 }, null, scene.database, true);
             } else {
@@ -1137,7 +1141,7 @@
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
 
-                    Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 6);
+                    BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 6);
 
                     if (!noMipmap && !info.isFourCC && info.mipmapCount == 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -1405,3 +1409,4 @@
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.engine.js.map

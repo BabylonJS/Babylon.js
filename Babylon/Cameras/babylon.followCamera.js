@@ -36,7 +36,7 @@ var BABYLON;
             var vz = dz * this.cameraAcceleration * 2;
 
             if (vx > this.maxCameraSpeed || vx < -this.maxCameraSpeed) {
-                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed; //max speed is 20
+                vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
 
             if (vy > this.maxCameraSpeed || vy < -this.maxCameraSpeed) {
@@ -56,6 +56,7 @@ var BABYLON;
             this.follow(this.target);
         };
         return FollowCamera;
-    })(TargetCamera);
+    })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.followCamera.js.map

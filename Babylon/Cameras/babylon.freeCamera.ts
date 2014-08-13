@@ -8,7 +8,7 @@
         public checkCollisions = false;
         public applyGravity = false;
         public angularSensibility = 2000.0;
-        public onCollide:(collidedMesh:AbstractMesh) => void;
+        public onCollide: (collidedMesh: AbstractMesh) => void;
 
         private _keys = [];
         private _collider = new Collider();
@@ -16,26 +16,26 @@
         private _oldPosition = BABYLON.Vector3.Zero();
         private _diffPosition = BABYLON.Vector3.Zero();
         private _newPosition = BABYLON.Vector3.Zero();
-        private _attachedElement:HTMLElement;
-        private _localDirection:Vector3;
-        private _transformedDirection:Vector3;
+        private _attachedElement: HTMLElement;
+        private _localDirection: Vector3;
+        private _transformedDirection: Vector3;
 
-        private _onMouseDown:(e:MouseEvent) => any;
-        private _onMouseUp:(e:MouseEvent) => any;
-        private _onMouseOut:(e:MouseEvent) => any;
-        private _onMouseMove:(e:MouseEvent) => any;
-        private _onKeyDown:(e:KeyboardEvent) => any;
-        private _onKeyUp:(e:KeyboardEvent) => any;
-        public _onLostFocus:(e:FocusEvent) => any;
+        private _onMouseDown: (e: MouseEvent) => any;
+        private _onMouseUp: (e: MouseEvent) => any;
+        private _onMouseOut: (e: MouseEvent) => any;
+        private _onMouseMove: (e: MouseEvent) => any;
+        private _onKeyDown: (e: KeyboardEvent) => any;
+        private _onKeyUp: (e: KeyboardEvent) => any;
+        public _onLostFocus: (e: FocusEvent) => any;
 
-        public _waitingLockedTargetId:string;
+        public _waitingLockedTargetId: string;
 
-        constructor(name:string, position:Vector3, scene:Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
         }
 
         // Controls
-        public attachControl(element:HTMLElement, noPreventDefault?:boolean):void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             var previousPosition;
             var engine = this.getEngine();
 
@@ -155,7 +155,7 @@
             ]);
         }
 
-        public detachControl(element:HTMLElement):void {
+        public detachControl(element: HTMLElement): void {
             if (this._attachedElement != element) {
                 return;
             }
@@ -177,8 +177,8 @@
             }
         }
 
-        public _collideWithWorld(velocity:Vector3):void {
-            var globalPosition:Vector3;
+        public _collideWithWorld(velocity: Vector3): void {
+            var globalPosition: Vector3;
 
             if (this.parent) {
                 globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -200,7 +200,7 @@
             }
         }
 
-        public _checkInputs():void {
+        public _checkInputs(): void {
             if (!this._localDirection) {
                 this._localDirection = BABYLON.Vector3.Zero();
                 this._transformedDirection = BABYLON.Vector3.Zero();
@@ -227,11 +227,11 @@
             }
         }
 
-        public _decideIfNeedsToMove():boolean {
+        public _decideIfNeedsToMove(): boolean {
             return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
-        public _updatePosition():void {
+        public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
                 if (this.applyGravity) {
@@ -244,7 +244,7 @@
             }
         }
 
-        public _update():void {
+        public _update(): void {
             this._checkInputs();
             super._update();
         }

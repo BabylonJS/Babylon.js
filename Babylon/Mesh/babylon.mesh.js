@@ -258,6 +258,17 @@ var BABYLON;
             engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
         };
 
+        Mesh.prototype._fullDraw = function (subMesh, useTriangles, instancesCount) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
+                return;
+            }
+
+            var engine = this.getScene().getEngine();
+
+            // Draw order
+            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
+        };
+
         Mesh.prototype.registerBeforeRender = function (func) {
             this._onBeforeRenderCallbacks.push(func);
         };
@@ -396,6 +407,13 @@ var BABYLON;
                 return;
             }
 
+            // Outline - step 1
+            var savedDepthWrite = engine.getDepthWrite();
+            if (this.renderOutline) {
+                engine.setDepthWrite(false);
+                scene.getOutlineRenderer().render(subMesh, batch);
+            }
+
             effectiveMaterial._preBind();
             var effect = effectiveMaterial.getEffect();
 
@@ -431,6 +449,14 @@ var BABYLON;
 
             // Unbind
             effectiveMaterial.unbind();
+
+            // Outline - step 2
+            if (this.renderOutline && savedDepthWrite) {
+                engine.setDepthWrite(true);
+                engine.setColorWrite(false);
+                scene.getOutlineRenderer().render(subMesh, batch);
+                engine.setColorWrite(true);
+            }
 
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
                 this._onAfterRenderCallbacks[callbackIndex]();

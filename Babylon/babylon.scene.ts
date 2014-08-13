@@ -153,6 +153,7 @@
         private _scaledVelocity = Vector3.Zero();
 
         private _boundingBoxRenderer: BoundingBoxRenderer;
+        private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
@@ -160,7 +161,7 @@
 
         private _selectionOctree: Octree<AbstractMesh>;
 
-        private _pointerOverMesh: AbstractMesh;
+        private _pointerOverMesh: AbstractMesh;      
 
         // Constructor
         constructor(engine: Engine) {
@@ -175,6 +176,7 @@
             this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
 
             this._boundingBoxRenderer = new BoundingBoxRenderer(this);
+            this._outlineRenderer = new OutlineRenderer(this);
 
             this.attachControl();
         }
@@ -194,6 +196,10 @@
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
             return this._boundingBoxRenderer;
+        }
+
+        public getOutlineRenderer(): OutlineRenderer {
+            return this._outlineRenderer;
         }
 
         public getEngine(): Engine {
@@ -1001,11 +1007,11 @@
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger ) {
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger) {
                             sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
 
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger ) {
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger) {
                             sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
@@ -1015,7 +1021,7 @@
                             }
                         }
                     }
-                }                
+                }
             }
         }
 
@@ -1269,7 +1275,7 @@
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
             return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
-     //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): PickingInfo {
