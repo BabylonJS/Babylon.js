@@ -148,7 +148,8 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Mesh/babylon.instancedMesh.js',
       '../../Babylon/Tools/babylon.gamepads.js',
       '../../Babylon/Cameras/babylon.gamepadCamera.js',
-      '../../Babylon/Mesh/babylon.linesMesh.js'
+      '../../Babylon/Mesh/babylon.linesMesh.js',
+      '../../Babylon/Rendering/babylon.outlineRenderer.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))
