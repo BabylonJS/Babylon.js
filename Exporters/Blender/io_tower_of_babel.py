@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Tower of Babel',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (0, 99, 0),
+    'version': (0, 99, 1),
     'blender': (2, 69, 0),
     'location': 'File > Export > Tower of Babel (.babylon + .js + .ts)',
     'description': 'Produce Babylon scene file (.babylon), Translate to inline JavaScript & TypeScript',
@@ -39,7 +39,8 @@ MAX_VERTEX_ELEMENTS = 65535
 VERTEX_OUTPUT_PER_LINE = 1000
 MAX_FLOAT_PRECISION = '%.4f'
 MAX_INFLUENCERS_PER_VERTEX = 4
-INTERNAL_NS_VAR = 'ret'
+INTERNAL_NS_VAR = 'internal'
+MATERIALS_PATH_VAR = 'materialsRootDir'
 
 # used in World constructor, defined in BABYLON.Scene
 #FOGMODE_NONE = 0
@@ -114,11 +115,15 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         if not noNewLine: TowerOfBabel.log_handler.write('\n')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     @staticmethod
-    def define_static_method(name, is_typescript, loadCheckVar = ''):
+    def define_static_method(name, is_typescript, loadCheckVar = '', optionalArg = '', optionalTsType = '', optionalDefault = '""'):
         if is_typescript:
-            ret = '\n    export function ' + name + '(scene : BABYLON.Scene) : void {\n';
+            ret = '\n    export function ' + name + '(scene : BABYLON.Scene';
+            if len(optionalArg) > 0 : ret += ', ' + optionalArg + ' : ' + optionalTsType + " = " + optionalDefault
+            ret += ') : void {\n';
         else:
-            ret = '\n    ' + INTERNAL_NS_VAR + '.' + name + ' = function(scene){\n';
+            ret = '\n    ' + INTERNAL_NS_VAR + '.' + name + ' = function(scene';
+            if len(optionalArg) > 0 : ret += ', ' + optionalArg + " = " + optionalDefault
+            ret += '){\n';
             
         ret += '        ' + TowerOfBabel.versionCheckCode
         if len(loadCheckVar) > 0 : ret += '        if (' + loadCheckVar + ') return;\n'
@@ -216,6 +221,9 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                         nameID = nameID + 1
                 elif object.type == 'EMPTY':
                     self.meshesAndNodes.append(Node(object))
+                    
+                else:
+                    TowerOfBabel.log('WARNING: following object is not currently exportable thus ignored: ' + object.name)
 
             bpy.context.scene.frame_set(currentFrame)
 
@@ -352,7 +360,9 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             
         # Materials - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         file_handler.write('\n' + indent1 + 'var matLoaded = false;')
-        file_handler.write(TowerOfBabel.define_static_method('defineMaterials', is_typescript, 'matLoaded'))
+        file_handler.write(TowerOfBabel.define_static_method('defineMaterials', is_typescript, 'matLoaded', MATERIALS_PATH_VAR, 'string', '""'))
+        file_handler.write(indent2 + 'if (typeof ' + MATERIALS_PATH_VAR + '  === "undefined") { ' + MATERIALS_PATH_VAR + '  = ""; }\n')
+
         file_handler.write(indent2 + 'var material' + (' : BABYLON.StandardMaterial;\n' if is_typescript else ';\n') )          
         file_handler.write(indent2 + 'var texture'  + (' : BABYLON.Texture;\n'          if is_typescript else ';\n') )           
         for material in self.materials:
@@ -395,16 +405,16 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         
         # Lights - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         file_handler.write(TowerOfBabel.define_static_method('defineLights', is_typescript))
-        file_handler.write(indent2 + 'var light' + (' : BABYLON.Light;\n' if is_typescript else ';\n') )          
+        file_handler.write(indent2 + 'var light;\n') # intensionally vague, since sub-classes instances & different specifc propeties set          
         for light in self.lights:
             light.core_script(file_handler, indent2, is_typescript)
         file_handler.write(indent1 + close)
                                     
         # Shadow generators - - - - - - - - - - - - - - - - - - - - - - - - - - -
         file_handler.write(TowerOfBabel.define_static_method('defineShadowGen', is_typescript))
-        file_handler.write(indent2 + 'var light'           + (' : BABYLON.Light;\n'           if is_typescript else ';\n') )          
+        file_handler.write(indent2 + 'var light;\n') # intensionally vague, since scene.getLightByID() returns Light, not DirectionalLight          
         file_handler.write(indent2 + 'var shadowGenerator' + (' : BABYLON.ShadowGenerator;\n' if is_typescript else ';\n') )           
-        file_handler.write(indent2 + 'var renderList'      + (' : Array<BABYLON.Mesh>;\n'     if is_typescript else ';\n') )           
+        file_handler.write(indent2 + 'var renderList'      + (' : Array<BABYLON.AbstractMesh>;\n'     if is_typescript else ';\n') )           
         for shadowGen in self.shadowGenerators:
             shadowGen.core_script(file_handler, indent2)
         file_handler.write(indent1 + close)
@@ -434,7 +444,7 @@ class World:
         if world:
             self.world_ambient = world.ambient_color
         else:
-            self.world_ambient = Color((0.2, 0.2, 0.3))
+            self.world_ambient = mathutils.Color((0.2, 0.2, 0.3))
 
         self.gravity = scene.gravity
         
@@ -470,14 +480,14 @@ class World:
         file_handler.write('};\n')
         file_handler.write('var '+ TowerOfBabel.nameSpace + ' = (function(){\n')
         file_handler.write('    var ' + INTERNAL_NS_VAR + ' = {};\n')
-        file_handler.write('    ' + INTERNAL_NS_VAR + '.initScene = function(scene){\n')
+        file_handler.write('    ' + INTERNAL_NS_VAR + '.initScene = function(scene, ' + MATERIALS_PATH_VAR + ' = ""){\n')
         self.core_script(file_handler, meshes, '        ', False)
         file_handler.write('    };\n')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -        
     def to_typescript(self, file_handler, meshes): 
-        file_handler.write('import BABYLON = require("BABYLON");\n')
+#        file_handler.write('import BABYLON = require("BABYLON");\n')
         file_handler.write('module ' + TowerOfBabel.nameSpace + '{\n\n')
-        file_handler.write('    export function initScene(scene : BABYLON.Scene) : void {\n')
+        file_handler.write('    export function initScene(scene : BABYLON.Scene, ' + MATERIALS_PATH_VAR + ' : string = "") : void {\n')
         self.core_script(file_handler, meshes, '        ', True)
         file_handler.write('    }\n')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -        
@@ -497,7 +507,7 @@ class World:
             file_handler.write(indent + 'scene.fogDensity = ' + self.fogDensity + ';\n')
             
         file_handler.write('\n' + indent + '// define materials & skeletons before meshes\n')
-        file_handler.write(indent + ns + 'defineMaterials(scene);\n')
+        file_handler.write(indent + ns + 'defineMaterials(scene, ' + MATERIALS_PATH_VAR + ');\n')
         file_handler.write(indent + ns + 'defineSkeletons(scene);\n')
     
         file_handler.write('\n' + indent + '// instance all root meshes\n')
@@ -879,6 +889,7 @@ class Mesh(FCurveAnimatable):
                     TowerOfBabel.log('Key shape not in group-state format, changed to:  ' + keyName, 2)
                     
                 temp = keyName.upper().partition('-')
+                # the BASIS shape key is a member of all groups, each automatically built from positions, Blender version ignored
                 if (temp[2] != 'BASIS'):
                     rawShapeKeys.append(RawShapeKey(block, temp[0], temp[2], orderMapToNative))
                     newGroup = True
@@ -888,8 +899,6 @@ class Mesh(FCurveAnimatable):
                             break
                     if newGroup:
                         groupNames.append(temp[0])
-                else:
-                    TowerOfBabel.log('BASIS is a reserved state name, automatically built from positions.  Key ignored:  ' + keyName, 2)
                     
             # process into ShapeKeyGroups, when rawShapeKeys found
             if (len(groupNames) > 0):
@@ -1016,6 +1025,7 @@ class Mesh(FCurveAnimatable):
         isRootMesh = not hasattr(self, 'parentId')
         isAutomaton = hasattr(self, 'shapeKeyGroups')
         baseClass = self.get_base_class()
+        ns = '' if is_typescript else INTERNAL_NS_VAR + '.' 
         var = ''
         indent2 = ''
         if isRootMesh:
@@ -1027,20 +1037,20 @@ class Mesh(FCurveAnimatable):
                 for kid in kids:
                     file_handler.write(indent + '    public ' + kid.get_proper_name() + ' : ' + kid.get_base_class() + ';\n')    
                 
-                file_handler.write(indent + '    constructor(name: string, scene: BABYLON.Scene) {\n')
+                file_handler.write(indent + '    constructor(name: string, scene: BABYLON.Scene, ' + MATERIALS_PATH_VAR + ': string = "") {\n')
                 file_handler.write(indent2 + 'super(name, scene);\n\n')
-                file_handler.write(indent2 + TowerOfBabel.nameSpace + '.defineMaterials(scene); //embedded version check\n')
+                file_handler.write(indent2 + TowerOfBabel.nameSpace + '.defineMaterials(scene, ' + MATERIALS_PATH_VAR + '); //embedded version check\n')
             else:
                 file_handler.write('\n' + indent + INTERNAL_NS_VAR + '.' + properName + ' = (function (_super) {\n')
                 file_handler.write(indent + '    __extends(' + properName + ', _super);\n')
-                file_handler.write(indent + '    function ' + properName + '(name, scene){\n')
+                file_handler.write(indent + '    function ' + properName + '(name, scene, ' + MATERIALS_PATH_VAR + ' = ""){\n')
                 file_handler.write(indent2 + '_super.call(this, name, scene);\n\n')
-                file_handler.write(indent2 + INTERNAL_NS_VAR + '.defineMaterials(scene); //embedded version check\n')
+                file_handler.write(indent2 + INTERNAL_NS_VAR + '.defineMaterials(scene, ' + MATERIALS_PATH_VAR + '); //embedded version check\n')
         else:
             var = 'ret'
             indent2 = indent + '    '
             if is_typescript:
-                file_handler.write('\n' + indent + 'function child_' + properName + '(scene : BABYLON.Scene, parent : Any) : ' + baseClass + ' {\n')
+                file_handler.write('\n' + indent + 'function child_' + properName + '(scene : BABYLON.Scene, parent : any) : ' + baseClass + ' {\n')
             else:
                 file_handler.write('\n' + indent + INTERNAL_NS_VAR + '.child_' + properName + ' = function(scene, parent){\n')
                 
@@ -1052,7 +1062,7 @@ class Mesh(FCurveAnimatable):
         
         # not part of root mesh test to allow for nested parenting
         for kid in kids:
-            file_handler.write(indent2 + var + '.' + kid.get_proper_name() + ' = ' + INTERNAL_NS_VAR + '.child_' + kid.get_proper_name() + '(scene, this);\n')    
+            file_handler.write(indent2 + var + '.' + kid.get_proper_name() + ' = ' + ns + 'child_' + kid.get_proper_name() + '(scene, this);\n')    
         file_handler.write('\n')
 
         if hasattr(self, 'materialId'): file_handler.write(indent2 + var + '.setMaterialByID("' + self.materialId + '");\n')
@@ -1076,8 +1086,8 @@ class Mesh(FCurveAnimatable):
             file_handler.write(indent2 + '\tscene.enablePhysics();\n')
             file_handler.write(indent2 + '}\t')
             file_handler.write(indent2 + var + '.setPhysicsState({ impostor: ' + format_int(self.physicsImpostor) + 
-                                                               ', mass: ' + format_float(self.physicsMass) + 
-                                                               ', friction: ' + format_float(self.physicsFriction) +
+                                                               ', mass: ' + format_f(self.physicsMass) + 
+                                                               ', friction: ' + format_f(self.physicsFriction) +
                                                                ', restitution: ' + self(self.physicsRestitution) + '});\n')
 
         # Geometry
@@ -1086,7 +1096,7 @@ class Mesh(FCurveAnimatable):
                 file_handler.write(indent2 + TowerOfBabel.nameSpace + '.defineSkeletons(scene);\n')
             else:
                 file_handler.write('\n' + indent2 + INTERNAL_NS_VAR + '.defineSkeletons(scene);\n')
-            file_handler.write(indent2 + var + '.skeleton = scene.getLastSkeletonByID(' + format_int(self.skeletonId) + ');\n\n')
+            file_handler.write(indent2 + var + '.skeleton = scene.getLastSkeletonByID("' + format_int(self.skeletonId) + '");\n\n')
         
         indent3 = indent2 + '    '
         file_handler.write(indent2 + var + '.setVerticesData(BABYLON.VertexBuffer.PositionKind, [\n')
@@ -1144,14 +1154,14 @@ class Mesh(FCurveAnimatable):
         file_handler.write(indent2 + var + '.computeWorldMatrix(true);\n')
 
         # Octree, cannot predetermine since something in scene; break down and write an if
-        file_handler.write(indent2 + 'if (scene._selectionOctree) {\n')
-        file_handler.write(indent3 + 'scene._selectionOctree.addMesh(' + var + ');\n')
-        file_handler.write(indent2 + '}\n') 
+#        file_handler.write(indent2 + 'if (scene._selectionOctree) {\n')
+#        file_handler.write(indent3 + 'scene._selectionOctree.addMesh(' + var + ');\n')
+#        file_handler.write(indent2 + '}\n') 
         
         if (isAutomaton):
             file_handler.write(indent2 + 'var shapeKeyGroup' + (' : BABYLON.ShapeKeyGroup;\n' if is_typescript else ';\n') )
             for shapeKeyGroup in self.shapeKeyGroups:
-                shapeKeyGroup.core_script(file_handler, indent2) # assigns the previously declared js variable 'shapeKeyGroup'
+                shapeKeyGroup.core_script(file_handler, var, indent2) # assigns the previously declared js variable 'shapeKeyGroup'
                 file_handler.write(indent2 + 'this.addShapeKeyGroup(shapeKeyGroup);\n')
         
         super().core_script(file_handler, var, indent2, is_typescript) # Animations
@@ -1399,9 +1409,9 @@ class ShapeKeyGroup:
         file_handler.write(']')   # close states
         file_handler.write('}')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -        
-    def core_script(self, file_handler, indent):
+    def core_script(self, file_handler, var, indent):
         indent2 = indent + '    '
-        file_handler.write(indent  + 'shapeKeyGroup = new ShapeKeyGroup("' + self.group + '",[\n')
+        file_handler.write(indent  + 'shapeKeyGroup = new BABYLON.ShapeKeyGroup(' + var + ', "' + self.group + '",[\n')
         file_handler.write(indent2 + format_array(self.affectedIndices, VERTEX_OUTPUT_PER_LINE, indent2) + '\n')
         file_handler.write(indent  + '],[\n')
         file_handler.write(indent2 + format_vector_array(self.basisState, VERTEX_OUTPUT_PER_LINE, indent2) + '\n')
@@ -1524,7 +1534,7 @@ class Skeleton:
     def core_script(self, file_handler, indent): 
         # specifying scene gets skeleton added to scene in constructor
         file_handler.write(indent + "console.log('defining skeleton:  " + self.name + "');\n")
-        file_handler.write(indent + 'skeleton = new BABYLON.Skeleton("' + self.name + '", ' + format_int(self.id) + ', scene);\n')
+        file_handler.write(indent + 'skeleton = new BABYLON.Skeleton("' + self.name + '", "' + format_int(self.id) + '", scene);\n')
 
         for bone in self.bones:
             bone.core_script(file_handler, indent)
@@ -1825,9 +1835,9 @@ class Texture:
         file_handler.write('}') 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -        
     def core_script(self, file_handler, indent): 
-        file_handler.write(indent + 'texture = new BABYLON.Texture("' + self.name + '", scene);\n')
+        file_handler.write(indent + 'texture = new BABYLON.Texture(' + MATERIALS_PATH_VAR + ' + "' + self.name + '", scene);\n')
 
-        file_handler.write(indent + 'texture.name = "' + self.name + '";\n')
+        file_handler.write(indent + 'texture.name = ' + MATERIALS_PATH_VAR + ' + "' + self.name + '";\n')
         file_handler.write(indent + 'texture.hasAlpha = ' + format_bool(self.hasAlpha) + ';\n')
         file_handler.write(indent + 'texture.level = ' + format_f(self.level) + ';\n')
 
