@@ -20,7 +20,7 @@
             if (!cameraTarget)
                 return;
 
-            var radians:number = this.getRadians(cameraTarget.rotation.y - this.rotationOffset);
+            var radians:number = this.getRadians(this.rotationOffset)+cameraTarget.rotation.y;
             var targetX:number = cameraTarget.position.x + Math.sin(radians) * this.radius;
 
             var targetZ:number = cameraTarget.position.z + Math.cos(radians) * this.radius;
