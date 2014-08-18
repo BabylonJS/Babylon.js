@@ -77,7 +77,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, Form callerForm)
         {
             IsCancelled = false;
             RaiseMessage("Exportation started", Color.Blue);
@@ -123,6 +123,10 @@ namespace Max2Babylon
             RaiseMessage("Exporting cameras");
             foreach (var cameraNode in maxScene.NodesListBySuperClass(SClass_ID.Camera))
             {
+                if (onlySelected && !cameraNode.Selected)
+                {
+                    continue;
+                }
                 ExportCamera(cameraNode, babylonScene);
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
@@ -176,6 +180,11 @@ namespace Max2Babylon
             var progression = 10.0f;
             foreach (var meshNode in meshes)
             {
+                if (onlySelected && !meshNode.Selected)
+                {
+                    continue;
+                }
+
                 Tools.PreparePipeline(meshNode, true);
                 ExportMesh(meshNode, babylonScene);
                 Tools.PreparePipeline(meshNode, false);
@@ -201,6 +210,10 @@ namespace Max2Babylon
             RaiseMessage("Exporting lights");
             foreach (var lightNode in maxScene.NodesListBySuperClass(SClass_ID.Light))
             {
+                if (onlySelected && !lightNode.Selected)
+                {
+                    continue;
+                }
                 ExportLight(lightNode, babylonScene);
                 CheckCancelled();
             }

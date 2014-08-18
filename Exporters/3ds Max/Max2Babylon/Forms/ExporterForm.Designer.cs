@@ -45,6 +45,7 @@
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
             this.butExportAndRun = new System.Windows.Forms.Button();
+            this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -177,6 +178,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkOnlySelected);
             this.groupBox1.Controls.Add(this.chkAutoSave);
             this.groupBox1.Controls.Add(this.chkHidden);
             this.groupBox1.Controls.Add(this.label1);
@@ -226,6 +228,17 @@
             this.butExportAndRun.UseVisualStyleBackColor = true;
             this.butExportAndRun.Click += new System.EventHandler(this.butExportAndRun_Click);
             // 
+            // chkOnlySelected
+            // 
+            this.chkOnlySelected.AutoSize = true;
+            this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkOnlySelected.Location = new System.Drawing.Point(362, 81);
+            this.chkOnlySelected.Name = "chkOnlySelected";
+            this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
+            this.chkOnlySelected.TabIndex = 15;
+            this.chkOnlySelected.Text = "Export only selected";
+            this.chkOnlySelected.UseVisualStyleBackColor = true;
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -273,5 +286,6 @@
         private System.Windows.Forms.CheckBox chkHidden;
         private System.Windows.Forms.CheckBox chkAutoSave;
         private System.Windows.Forms.Button butExportAndRun;
+        private System.Windows.Forms.CheckBox chkOnlySelected;
     }
 }
