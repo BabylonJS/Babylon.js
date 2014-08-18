@@ -24,7 +24,7 @@ var BABYLON;
             if (!cameraTarget)
                 return;
 
-            var radians = this.getRadians(cameraTarget.rotation.y - this.rotationOffset);
+            var radians = this.getRadians(this.rotationOffset)+cameraTarget.rotation.y;
             var targetX = cameraTarget.position.x + Math.sin(radians) * this.radius;
 
             var targetZ = cameraTarget.position.z + Math.cos(radians) * this.radius;
