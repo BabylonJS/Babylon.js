@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Babylon.js",
     "author": "David Catuhe",
-    "version": (1, 3),
+    "version": (1, 4),
     "blender": (2, 69, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -47,11 +47,25 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
     filepath = ""
     
     materialsNameSpace = None
+
+    export_onlyCurrentLayer = BoolProperty(
+        name="Export only current layer",
+        description="Export only current layer",
+        default=False,
+        )
+    
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row()
+        row.prop(self, "export_onlyCurrentLayer")
     
     # global_scale = FloatProperty(name="Scale", min=0.01, max=1000.0, default=1.0)
 
-    def execute(self, context):            
-           return Export_babylon.save(self, context, **self.as_keywords(ignore=("check_existing", "filter_glob", "global_scale")))
+    def execute(self, context):    
+        keywords = self.as_keywords(ignore=("check_existing", "filter_glob"))
+
+        return Export_babylon.save(self, context, **keywords)
            
     def mesh_triangulate(mesh):
         try:
@@ -902,10 +916,10 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         file_handler.write("}")
         bpy.context.scene.frame_set(start_frame)
 
-    def save(operator, context, filepath="",
-        use_apply_modifiers=False,
-        use_triangulate=True,
-        use_compress=False):
+    def isInSelectedLayer(obj, scene, export_onlyCurrentLayer):
+        return not export_onlyCurrentLayer or obj.layers[scene.active_layer]
+
+    def save(operator, context, filepath="", export_onlyCurrentLayer=False):
 
         # assign materialsNameSpace, based on OS
         filepathMinusExtension = filepath.rpartition('.')[0]
@@ -951,7 +965,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Cameras
         file_handler.write(",\"cameras\":[")
         first = True
-        for object in [object for object in scene.objects if object.is_visible(scene)]:
+        for object in [object for object in scene.objects if object.is_visible(scene) and Export_babylon.isInSelectedLayer(object, scene, export_onlyCurrentLayer)]:
             if (object.type == 'CAMERA'):
                 if first != True:
                     file_handler.write(",")
@@ -967,7 +981,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Lights
         file_handler.write(",\"lights\":[")
         first = True
-        for object in [object for object in scene.objects if object.is_visible(scene)]:
+        for object in [object for object in scene.objects if object.is_visible(scene) and Export_babylon.isInSelectedLayer(object, scene, export_onlyCurrentLayer)]:
             if (object.type == 'LAMP'):
                 if first != True:
                     file_handler.write(",")
@@ -992,7 +1006,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         file_handler.write(",\"meshes\":[")
         multiMaterials = []
         first = True
-        for object in [object for object in scene.objects]:
+        for object in [object for object in scene.objects if Export_babylon.isInSelectedLayer(object, scene, export_onlyCurrentLayer)]:
             if object.type == 'MESH' or object.type == 'EMPTY':
                 # Check if current object is an instance
                 currentFound = False
@@ -1050,7 +1064,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         # Shadow generators
         file_handler.write(",\"shadowGenerators\":[")
         first = True
-        for object in [object for object in scene.objects if object.is_visible(scene)]:
+        for object in [object for object in scene.objects if object.is_visible(scene) and Export_babylon.isInSelectedLayer(object, scene, export_onlyCurrentLayer)]:
             if (object.type == 'LAMP' and object.data.shadowMap != 'NONE'):
                 if first != True:
                     file_handler.write(",")
@@ -1063,7 +1077,7 @@ class Export_babylon(bpy.types.Operator, ExportHelper):
         file_handler.write(",\"skeletons\":[")
         first = True
         i = 0
-        for object in [object for object in scene.objects if object.is_visible(scene)]:
+        for object in [object for object in scene.objects if object.is_visible(scene) and Export_babylon.isInSelectedLayer(object, scene, export_onlyCurrentLayer)]:
             if (object.type == 'ARMATURE'):
                 if first != True:
                     file_handler.write(",")
@@ -1124,13 +1138,20 @@ class ObjectPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
+
+    export_onlyCurrentLayer = BoolProperty(
+        name="Export only current layer",
+        description="Export only current layer",
+        default=False,
+        )
     
     def draw(self, context):
         ob = context.object
+        layout = self.layout
+
         if not ob or not ob.data:
             return
             
-        layout = self.layout
         isMesh = isinstance(ob.data, bpy.types.Mesh)
         isCamera = isinstance(ob.data, bpy.types.Camera)
         isLight = isinstance(ob.data, bpy.types.Lamp)
@@ -1146,7 +1167,7 @@ class ObjectPanel(bpy.types.Panel):
             layout.prop(ob.data, 'ellipsoid')
         elif isLight:
             layout.prop(ob.data, 'shadowMap')
-            layout.prop(ob.data, 'shadowMapSize')   
+            layout.prop(ob.data, 'shadowMapSize')
             
 ### REGISTER ###
 
