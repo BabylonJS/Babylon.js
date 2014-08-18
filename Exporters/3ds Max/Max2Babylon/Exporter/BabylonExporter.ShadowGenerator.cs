@@ -16,7 +16,7 @@ namespace Max2Babylon
             babylonShadowGenerator.lightId = lightNode.GetGuid().ToString();
 
             babylonShadowGenerator.mapSize = maxLight.GetMapSize(0, Tools.Forever);
-            babylonShadowGenerator.usePoissonSampling = maxLight.AbsMapBias == 1;
+            babylonShadowGenerator.usePoissonSampling = maxLight.AbsMapBias >= 1;
 
             var list = new List<string>();
 
