@@ -681,6 +681,73 @@ var BABYLON;
         };
 
         // Geometric tools
+        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight) {
+            var _this = this;
+            var scene = this.getScene();
+
+            var onload = function (img) {
+                // Getting height map data
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                var heightMapWidth = img.width;
+                var heightMapHeight = img.height;
+                canvas.width = heightMapWidth;
+                canvas.height = heightMapHeight;
+
+                context.drawImage(img, 0, 0);
+
+                // Create VertexData from map data
+                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+
+                _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+            };
+
+            BABYLON.Tools.LoadImage(url, onload, function () {
+            }, scene.database);
+        };
+
+        Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight) {
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                BABYLON.Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
+                return;
+            }
+
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var uvs = this.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            var position = BABYLON.Vector3.Zero();
+            var normal = BABYLON.Vector3.Zero();
+            var uv = BABYLON.Vector2.Zero();
+
+            for (var index = 0; index < positions.length; index += 3) {
+                BABYLON.Vector3.FromArrayToRef(positions, index, position);
+                BABYLON.Vector3.FromArrayToRef(normals, index, normal);
+                BABYLON.Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+
+                // Compute height
+                var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
+                var v = ((Math.abs(uv.y) * heightMapHeight) % heightMapHeight) | 0;
+
+                var pos = (u + v * heightMapWidth) * 4;
+                var r = buffer[pos] / 255.0;
+                var g = buffer[pos + 1] / 255.0;
+                var b = buffer[pos + 2] / 255.0;
+
+                var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+
+                normal.normalize();
+                normal.scaleInPlace(minHeight + (maxHeight - minHeight) * gradient);
+                position = position.add(normal);
+
+                position.toArray(positions, index);
+            }
+
+            BABYLON.VertexData.ComputeNormals(positions, this.getIndices(), normals);
+
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+        };
+
         Mesh.prototype.convertToFlatShadedMesh = function () {
             /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>

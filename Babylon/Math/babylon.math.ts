@@ -298,6 +298,11 @@
             return new Vector2(array[offset], array[offset + 1]);
         }
 
+        public static FromArrayToRef(array: number[], offset: number, result: Vector2): void {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+        }
+
         public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
             var cubed = amount * squared;

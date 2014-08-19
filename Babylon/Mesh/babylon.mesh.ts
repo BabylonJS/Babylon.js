@@ -13,7 +13,7 @@
 
         // Private
         public _geometry: Geometry;
-        private _onBeforeRenderCallbacks = new Array<()=> void >();
+        private _onBeforeRenderCallbacks = new Array<() => void>();
         private _onAfterRenderCallbacks = new Array<() => void>();
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any, Mesh) => void;
@@ -688,6 +688,74 @@
         }
 
         // Geometric tools
+        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number): void {
+            var scene = this.getScene();
+
+            var onload = img => {
+                // Getting height map data
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                var heightMapWidth = img.width;
+                var heightMapHeight = img.height;
+                canvas.width = heightMapWidth;
+                canvas.height = heightMapHeight;
+
+                context.drawImage(img, 0, 0);
+
+                // Create VertexData from map data
+                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+
+                this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+            };
+
+            Tools.LoadImage(url, onload, () => { }, scene.database);
+        }
+
+        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
+            if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)
+                || !this.isVerticesDataPresent(VertexBuffer.NormalKind)
+                || !this.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
+                return;
+            }
+
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
+            var normals = this.getVerticesData(VertexBuffer.NormalKind);
+            var uvs = this.getVerticesData(VertexBuffer.UVKind);
+            var position = Vector3.Zero();
+            var normal = Vector3.Zero();
+            var uv = Vector2.Zero();
+
+            for (var index = 0; index < positions.length; index += 3) {
+                Vector3.FromArrayToRef(positions, index, position);
+                Vector3.FromArrayToRef(normals, index, normal);
+                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+
+                // Compute height
+                var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
+                var v = ((Math.abs(uv.y) * heightMapHeight) % heightMapHeight) | 0;
+
+                var pos = (u + v * heightMapWidth) * 4;
+                var r = buffer[pos] / 255.0;
+                var g = buffer[pos + 1] / 255.0;
+                var b = buffer[pos + 2] / 255.0;
+
+                var gradient = r * 0.3 + g * 0.59 + b * 0.11;
+
+                normal.normalize();
+                normal.scaleInPlace(minHeight + (maxHeight - minHeight) * gradient);
+                position = position.add(normal);
+
+                position.toArray(positions, index);
+            }
+
+            VertexData.ComputeNormals(positions, this.getIndices(), normals);
+
+            this.updateVerticesData(VertexBuffer.PositionKind, positions);
+            this.updateVerticesData(VertexBuffer.NormalKind, normals);
+        }
+
+
         public convertToFlatShadedMesh(): void {
             /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
             /// <summary>Warning: This may imply adding vertices to the mesh in order to get exactly 3 vertices per face</summary>

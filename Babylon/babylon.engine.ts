@@ -165,7 +165,7 @@
         }
 
         public static get Version(): string {
-            return "1.13.0";
+            return "1.14.0";
         }
 
         // Updatable statics so stick with vars here
