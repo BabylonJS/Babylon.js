@@ -69,6 +69,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Lights/Shadows/babylon.shadowGenerator.js',
       '../../Babylon/Collisions/babylon.collider.js',
       '../../Babylon/Cameras/babylon.camera.js',
+      '../../Babylon/Cameras/babylon.targetCamera.js',
       '../../Babylon/Cameras/babylon.freeCamera.js',
       '../../Babylon/Cameras/babylon.followCamera.js',
       '../../Babylon/Cameras/babylon.touchCamera.js',
