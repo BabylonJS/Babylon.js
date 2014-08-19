@@ -331,6 +331,11 @@
             return new Vector2(array[offset], array[offset + 1]);
         };
 
+        Vector2.FromArrayToRef = function (array, offset, result) {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+        };
+
         Vector2.CatmullRom = function (value1, value2, value3, value4, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
