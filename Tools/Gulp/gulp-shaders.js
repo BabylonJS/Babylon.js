@@ -22,7 +22,7 @@ var shaders = function shaders(name) {
       .replace('.vertex', 'Vertex')
       .replace('.fx', 'Shader');
 
-    content[fileName] = file.contents.toString().substring(1); //stript the BOM character
+    content[fileName] = file.contents.toString();
   }
 
   function endStream(){
