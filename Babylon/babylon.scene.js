@@ -205,10 +205,10 @@
                 }, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
+                    _this._meshUnderPointer = pickResult.pickedMesh;
+
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     canvas.style.cursor = "pointer";
-
-                    _this._meshUnderPointer = pickResult.pickedMesh;
                 } else {
                     _this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
