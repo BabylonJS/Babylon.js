@@ -2,9 +2,9 @@
     var computeBoxExtents = (axis: Vector3, box: BoundingBox) => {
         var p = Vector3.Dot(box.center, axis);
 
-        var r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extends.x;
-        var r1 = Math.abs(Vector3.Dot(box.directions[1], axis)) * box.extends.y;
-        var r2 = Math.abs(Vector3.Dot(box.directions[2], axis)) * box.extends.z;
+        var r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
+        var r1 = Math.abs(Vector3.Dot(box.directions[1], axis)) * box.extendSize.y;
+        var r2 = Math.abs(Vector3.Dot(box.directions[2], axis)) * box.extendSize.z;
 
         var r = r0 + r1 + r2;
         return {
