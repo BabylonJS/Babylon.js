@@ -280,10 +280,10 @@
                     this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
+                    this._meshUnderPointer = pickResult.pickedMesh;
+
                     this.setPointerOverMesh(pickResult.pickedMesh);
                     canvas.style.cursor = "pointer";
-
-                    this._meshUnderPointer = pickResult.pickedMesh;
                 } else {
                     this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
