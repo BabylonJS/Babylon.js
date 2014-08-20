@@ -2,7 +2,7 @@
     export class BoundingBox {
         public vectors: Vector3[] = new Array<Vector3>();
         public center: Vector3;
-        public extends: Vector3;
+        public extendSize: Vector3;
         public directions: Vector3[];
         public vectorsWorld: Vector3[] = new Array<Vector3>();
         public minimumWorld: Vector3;
@@ -35,7 +35,7 @@
 
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
-            this.extends = this.maximum.subtract(this.minimum).scale(0.5);
+            this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
             this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
 
             // World

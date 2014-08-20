@@ -212,8 +212,6 @@ var BABYLON;
                 case 2 /* Z */:
                     this._axisTargetedByLeftAndRight = axis;
                     break;
-                    this._axisTargetedByLeftAndRight = axis;
-                    break;
                 default:
                     this._axisTargetedByLeftAndRight = 0 /* X */;
                     break;

@@ -241,8 +241,6 @@ module BABYLON {
                 case JoystickAxis.Z:
                     this._axisTargetedByLeftAndRight = axis;
                     break;
-                    this._axisTargetedByLeftAndRight = axis;
-                    break;
                 default:
                     this._axisTargetedByLeftAndRight = JoystickAxis.X;
                     break;
