@@ -33,6 +33,7 @@
 
         public dispose(): void {
             this._leftjoystick.releaseCanvas();
+            super.dispose();
         }
     }
 }

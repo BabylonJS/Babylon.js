@@ -37,6 +37,7 @@ var BABYLON;
 
         VirtualJoysticksCamera.prototype.dispose = function () {
             this._leftjoystick.releaseCanvas();
+            _super.prototype.dispose.call(this);
         };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);
