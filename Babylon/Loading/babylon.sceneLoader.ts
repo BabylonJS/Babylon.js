@@ -5,8 +5,7 @@
         load: (scene: Scene, data: string, rootUrl: string) => boolean;
     }
 
-    export class SceneLoader
-    {
+    export class SceneLoader {
         // Flags
         private static _ForceFullSceneLoadingForIncremental = false;
 
@@ -36,7 +35,7 @@
             return this._registeredPlugins[this._registeredPlugins.length - 1];
         }
 
-            // Public functions
+        // Public functions
         public static RegisterPlugin(plugin: ISceneLoaderPlugin): void {
             plugin.extensions = plugin.extensions.toLowerCase();
             SceneLoader._registeredPlugins.push(plugin);
@@ -53,13 +52,22 @@
                     var particleSystems = [];
                     var skeletons = [];
 
-                    if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
+                    try {
+                        if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
+                            if (onerror) {
+                                onerror(scene);
+                            }
+
+                            return;
+                        }
+                    } catch (e) {
                         if (onerror) {
                             onerror(scene);
                         }
 
                         return;
                     }
+
 
                     if (onsuccess) {
                         scene.importedMeshesFiles.push(rootUrl + sceneFilename);

@@ -48,7 +48,15 @@
                     var particleSystems = [];
                     var skeletons = [];
 
-                    if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
+                    try  {
+                        if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
+                            if (onerror) {
+                                onerror(scene);
+                            }
+
+                            return;
+                        }
+                    } catch (e) {
                         if (onerror) {
                             onerror(scene);
                         }
