@@ -3,10 +3,8 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonMesh
+    public class BabylonMesh: BabylonAbstractMesh
     {
-        [DataMember]
-        public string name { get; set; }
 
         [DataMember]
         public string id { get; set; }
@@ -25,18 +23,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public bool pickable { get; set; }
-
-        [DataMember]
-        public float[] position { get; set; }
-
-        [DataMember]
-        public float[] rotation { get; set; }
-
-        [DataMember]
-        public float[] scaling { get; set; }
-
-        [DataMember]
-        public float[] rotationQuaternion { get; set; }
 
         [DataMember]
         public float[] pivotMatrix { get; set; }
@@ -84,6 +70,9 @@ namespace BabylonExport.Entities
         public BabylonSubMesh[] subMeshes { get; set; }
 
         [DataMember]
+        public BabylonAbstractMesh[] instances { get; set; }
+
+        [DataMember]
         public int skeletonId { get; set; }
 
         [DataMember]
@@ -97,9 +86,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public bool autoAnimateLoop { get; set; }
-
-        [DataMember]
-        public BabylonAnimation[] animations { get; set; }
 
         [DataMember]
         public bool showBoundingBox { get; set; }

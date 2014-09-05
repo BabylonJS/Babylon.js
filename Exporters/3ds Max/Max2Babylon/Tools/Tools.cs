@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autodesk.Max;
+using BabylonExport.Entities;
 using SharpDX;
 
 namespace Max2Babylon
@@ -246,6 +248,23 @@ namespace Max2Babylon
         public static bool HasParent(this IINode node)
         {
             return node.ParentNode != null && node.ParentNode.ObjectRef != null;
+        }
+
+        public static bool IsInstance(this IAnimatable node)
+        {
+            var data = node.GetAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1);
+
+            if (data != null)
+            {
+                return data.Data[0] != 0;
+            }
+
+            return false;
+        }
+
+        public static void MarkAsInstance(this IAnimatable node)
+        {
+            node.AddAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 1, new byte[] { 1 });
         }
 
         public static Guid GetGuid(this IAnimatable node)
@@ -567,6 +586,44 @@ namespace Max2Babylon
             {
                 UpdateVector3Control(vector3Control, node, propertyName);
             }
+        }
+
+        public static IMatrix3 ExtractCoordinates(IINode meshNode, BabylonAbstractMesh babylonMesh, bool exportQuaternionsInsteadOfEulers)
+        {
+            var wm = meshNode.GetWorldMatrix(0, meshNode.HasParent());
+            babylonMesh.position = wm.Trans.ToArraySwitched();
+
+            var parts = Loader.Global.AffineParts.Create();
+            Loader.Global.DecompAffine(wm, parts);
+
+            if (exportQuaternionsInsteadOfEulers)
+            {
+                babylonMesh.rotationQuaternion = parts.Q.ToArray();
+            }
+            else
+            {
+                var rotate = new float[3];
+
+                IntPtr xPtr = Marshal.AllocHGlobal(sizeof(float));
+                IntPtr yPtr = Marshal.AllocHGlobal(sizeof(float));
+                IntPtr zPtr = Marshal.AllocHGlobal(sizeof(float));
+                parts.Q.GetEuler(xPtr, yPtr, zPtr);
+
+                Marshal.Copy(xPtr, rotate, 0, 1);
+                Marshal.Copy(yPtr, rotate, 1, 1);
+                Marshal.Copy(zPtr, rotate, 2, 1);
+
+                var temp = rotate[1];
+                rotate[0] = -rotate[0] * parts.F;
+                rotate[1] = -rotate[2] * parts.F;
+                rotate[2] = -temp * parts.F;
+
+                babylonMesh.rotation = rotate;
+            }
+
+            babylonMesh.scaling = parts.K.ToArraySwitched();
+
+            return wm;
         }
     }
 }

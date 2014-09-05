@@ -12,6 +12,11 @@ namespace Max2Babylon
         private int bonesCount;
         private void ExportMesh(IINode meshNode, BabylonScene babylonScene)
         {
+            if (meshNode.IsInstance())
+            {
+                return;
+            }
+
             if (meshNode.GetBoolProperty("babylonjs_noexport"))
             {
                 return;
@@ -52,38 +57,7 @@ namespace Max2Babylon
             }
 
             // Position / rotation / scaling
-            var wm = meshNode.GetWorldMatrix(0, meshNode.HasParent());
-            babylonMesh.position = wm.Trans.ToArraySwitched();
-
-            var parts = Loader.Global.AffineParts.Create();
-            Loader.Global.DecompAffine(wm, parts);
-
-            if (exportQuaternionsInsteadOfEulers)
-            {
-                babylonMesh.rotationQuaternion = parts.Q.ToArray();
-            }
-            else
-            {
-                var rotate = new float[3];
-
-                IntPtr xPtr = Marshal.AllocHGlobal(sizeof(float));
-                IntPtr yPtr = Marshal.AllocHGlobal(sizeof(float));
-                IntPtr zPtr = Marshal.AllocHGlobal(sizeof(float));
-                parts.Q.GetEuler(xPtr, yPtr, zPtr);
-
-                Marshal.Copy(xPtr, rotate, 0, 1);
-                Marshal.Copy(yPtr, rotate, 1, 1);
-                Marshal.Copy(zPtr, rotate, 2, 1);
-
-                var temp = rotate[1];
-                rotate[0] = -rotate[0] * parts.F;
-                rotate[1] = -rotate[2] * parts.F;
-                rotate[2] = -temp * parts.F;
-
-                babylonMesh.rotation = rotate;                
-            }
-
-            babylonMesh.scaling = parts.K.ToArraySwitched();
+            var wm = Tools.ExtractCoordinates(meshNode, babylonMesh, exportQuaternionsInsteadOfEulers);
 
             if (wm.Parity)
             {
@@ -294,10 +268,62 @@ namespace Max2Babylon
                 triObject.Dispose();
             }
 
+            // Instances
+            var tabs = Loader.Global.NodeTab.Create();
+            Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode, tabs);
+            var instances = new List<BabylonAbstractMesh>();
+
+            for (var index = 0; index < tabs.Count; index++)
+            {
+                var indexer = new IntPtr(index);
+                var tab = tabs[indexer];
+
+                Marshal.FreeHGlobal(indexer);
+
+                if (meshNode.GetGuid() == tab.GetGuid())
+                {
+                    continue;
+                }
+
+                tab.MarkAsInstance();
+
+                var instance = new BabylonAbstractMesh {name = tab.Name};
+
+                Tools.ExtractCoordinates(tab, instance, exportQuaternionsInsteadOfEulers);
+                var instanceAnimations = new List<BabylonAnimation>();
+                GenerateCoordinatesAnimations(tab, instanceAnimations);
+                instance.animations = instanceAnimations.ToArray();
+
+                instances.Add(instance);
+            }
+
+            babylonMesh.instances = instances.ToArray();
 
             // Animations
             var animations = new List<BabylonAnimation>();
+            GenerateCoordinatesAnimations(meshNode, animations);
+            
 
+            if (!ExportFloatController(meshNode.VisController, "visibility", animations))
+            {
+                ExportFloatAnimation("visibility", animations, key => new[] { meshNode.GetVisibility(key, Tools.Forever) });
+            }
+
+            babylonMesh.animations = animations.ToArray();
+
+            if (meshNode.GetBoolProperty("babylonjs_autoanimate", 1))
+            {
+                babylonMesh.autoAnimate = true;
+                babylonMesh.autoAnimateFrom = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonMesh.autoAnimateTo = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_to", 100);
+                babylonMesh.autoAnimateLoop = meshNode.GetBoolProperty("babylonjs_autoanimateloop", 1);
+            }
+
+            babylonScene.MeshesList.Add(babylonMesh);
+        }
+
+        public static void GenerateCoordinatesAnimations(IINode meshNode, List<BabylonAnimation> animations)
+        {
             if (!ExportVector3Controller(meshNode.TMController.PositionController, "position", animations))
             {
                 ExportVector3Animation("position", animations, key =>
@@ -332,23 +358,6 @@ namespace Max2Babylon
                     return affineParts.K.ToArraySwitched();
                 });
             }
-
-            if (!ExportFloatController(meshNode.VisController, "visibility", animations))
-            {
-                ExportFloatAnimation("visibility", animations, key => new[] { meshNode.GetVisibility(key, Tools.Forever) });
-            }
-
-            babylonMesh.animations = animations.ToArray();
-
-            if (meshNode.GetBoolProperty("babylonjs_autoanimate", 1))
-            {
-                babylonMesh.autoAnimate = true;
-                babylonMesh.autoAnimateFrom = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_from");
-                babylonMesh.autoAnimateTo = (int)meshNode.GetFloatProperty("babylonjs_autoanimate_to", 100);
-                babylonMesh.autoAnimateLoop = meshNode.GetBoolProperty("babylonjs_autoanimateloop", 1);
-            }
-
-            babylonScene.MeshesList.Add(babylonMesh);
         }
 
         int CreateGlobalVertex(IMesh mesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)

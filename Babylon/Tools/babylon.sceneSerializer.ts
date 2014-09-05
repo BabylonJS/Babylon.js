@@ -614,6 +614,23 @@
             }
         }
 
+        // Instances
+        serializationObject.instances = [];
+        for (var index = 0; index < mesh.instances.length; index++) {
+            var instance = mesh.instances[index];
+            var serializationInstance = {
+                name: instance.name,
+                position: instance.position,
+                rotation: instance.rotation,
+                rotationQuaternion: instance.rotationQuaternion,
+                scaling: instance.scaling
+            };
+            serializationObject.instances.push(serializationInstance);
+
+            // Animations
+            appendAnimations(instance, serializationInstance);
+        }
+
         // Animations
         appendAnimations(mesh, serializationObject);
 
