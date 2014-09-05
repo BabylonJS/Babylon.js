@@ -85,7 +85,7 @@ var BABYLON;
                 delete this._waitingRenderList;
             }
 
-            if (!this.renderList || this.renderList.length == 0) {
+            if (!this.renderList) {
                 return;
             }
 
