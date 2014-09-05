@@ -9,7 +9,7 @@ namespace Max2Babylon
     {
         const int Ticks = 160;
 
-        private BabylonAnimationKey GenerateFloatFunc(int index, IIKeyControl keyControl)
+        private static BabylonAnimationKey GenerateFloatFunc(int index, IIKeyControl keyControl)
         {
             var key = Loader.Global.ILinFloatKey.Create();
             keyControl.GetKey(index, key);
@@ -21,12 +21,12 @@ namespace Max2Babylon
             };
         }
 
-        private bool ExportFloatController(IControl control, string property, List<BabylonAnimation> animations)
+        private static bool ExportFloatController(IControl control, string property, List<BabylonAnimation> animations)
         {
             return ExportController(control, property, animations, 0x2001, BabylonAnimation.DataType.Float, GenerateFloatFunc);
         }
 
-        private bool ExportQuaternionController(IControl control, string property, List<BabylonAnimation> animations)
+        private static bool ExportQuaternionController(IControl control, string property, List<BabylonAnimation> animations)
         {
             IQuat previousQuat = null;
 
@@ -52,7 +52,7 @@ namespace Max2Babylon
                 });
         }
 
-        private bool ExportVector3Controller(IControl control, string property, List<BabylonAnimation> animations)
+        private static bool ExportVector3Controller(IControl control, string property, List<BabylonAnimation> animations)
         {
             var result = false;
 
@@ -100,7 +100,7 @@ namespace Max2Babylon
                 });
         }
 
-        private bool ExportController(IControl control, string property, List<BabylonAnimation> animations, uint classId, BabylonAnimation.DataType dataType, Func<int, IIKeyControl, BabylonAnimationKey> generateFunc)
+        private static bool ExportController(IControl control, string property, List<BabylonAnimation> animations, uint classId, BabylonAnimation.DataType dataType, Func<int, IIKeyControl, BabylonAnimationKey> generateFunc)
         {
             if (control == null)
             {
@@ -167,25 +167,25 @@ namespace Max2Babylon
             return true;
         }
 
-        private void ExportVector3Animation(string property, List<BabylonAnimation> animations,
+        private static void ExportVector3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Vector3);
         }
 
-        private void ExportQuaternionAnimation(string property, List<BabylonAnimation> animations,
+        private static void ExportQuaternionAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Quaternion);
         }
 
-        private void ExportFloatAnimation(string property, List<BabylonAnimation> animations,
+        private static void ExportFloatAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float);
         }
 
-        private void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
+        private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
         {
             var start = Loader.Core.AnimRange.Start;
             var end = Loader.Core.AnimRange.End;

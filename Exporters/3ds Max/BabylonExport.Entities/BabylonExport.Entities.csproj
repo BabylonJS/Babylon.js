@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SharpDX">
-      <HintPath>..\Max2Babylon\Refs\SharpDX.dll</HintPath>
+      <HintPath>..\BabylonExport.Core\Refs\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,6 +56,7 @@
     <Compile Include="BabylonLensFlareSystem.cs" />
     <Compile Include="BabylonLight.cs" />
     <Compile Include="BabylonMaterial.cs" />
+    <Compile Include="BabylonAbstractMesh.cs" />
     <Compile Include="BabylonMesh.cs" />
     <Compile Include="BabylonMultiMaterial.cs" />
     <Compile Include="BabylonParticleSystem.cs" />
