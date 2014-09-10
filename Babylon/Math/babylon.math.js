@@ -266,6 +266,11 @@
             this.x = source.x;
             this.y = source.y;
         };
+		
+		Vector2.prototype.copyFromFloats = function (x, y) {
+            this.x = x;
+            this.y = y;
+        };
 
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
