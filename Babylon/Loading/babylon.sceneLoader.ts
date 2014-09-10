@@ -97,12 +97,20 @@
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
+        }
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        public static Append(rootUrl: string, sceneFilename: any, scene : Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
 
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
             var loadSceneFromData = data => {
-                var scene = new BABYLON.Scene(engine);
                 scene.database = database;
 
                 if (!plugin.load(scene, data, rootUrl)) {
