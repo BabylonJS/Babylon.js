@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var SceneLoader = (function () {
         function SceneLoader() {
@@ -84,11 +84,20 @@
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
+        };
+
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
             var loadSceneFromData = function (data) {
-                var scene = new BABYLON.Scene(engine);
                 scene.database = database;
 
                 if (!plugin.load(scene, data, rootUrl)) {
