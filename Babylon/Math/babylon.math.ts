@@ -233,6 +233,11 @@
             this.x = source.x;
             this.y = source.y;
         }
+		
+		public copyFromFloats(x: number, y: number): void {
+			this.x = x;
+			this.y = y;
+		}
 
         public add(otherVector: Vector2): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
