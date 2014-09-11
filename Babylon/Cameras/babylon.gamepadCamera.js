@@ -1,4 +1,4 @@
-﻿var __extends = this.__extends || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -46,7 +46,7 @@ var BABYLON;
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
             var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x, 0, -LSValues.y), cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
-            this.cameraRotation = this.cameraRotation.add(new BABYLON.Vector3(RSValues.y, RSValues.x, 0));
+            this.cameraRotation = this.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
         };
 
         GamepadCamera.prototype.dispose = function () {

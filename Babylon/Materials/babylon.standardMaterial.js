@@ -19,6 +19,7 @@ var BABYLON;
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
+            this.useFresnelForDiffuse = false;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -71,7 +72,7 @@ var BABYLON;
 
             var engine = scene.getEngine();
             var defines = [];
-            var optionalDefines = new Array();
+            var fallbacks = new BABYLON.EffectFallbacks();
 
             // Textures
             if (scene.texturesEnabled) {
@@ -108,6 +109,7 @@ var BABYLON;
                         return false;
                     } else {
                         defines.push("#define REFLECTION");
+                        fallbacks.addFallback(0, "REFLECTION");
                     }
                 }
 
@@ -124,7 +126,7 @@ var BABYLON;
                         return false;
                     } else {
                         defines.push("#define SPECULAR");
-                        optionalDefines.push(defines[defines.length - 1]);
+                        fallbacks.addFallback(0, "SPECULAR");
                     }
                 }
             }
@@ -134,7 +136,7 @@ var BABYLON;
                     return false;
                 } else {
                     defines.push("#define BUMP");
-                    optionalDefines.push(defines[defines.length - 1]);
+                    fallbacks.addFallback(0, "BUMP");
                 }
             }
 
@@ -154,7 +156,7 @@ var BABYLON;
             // Fog
             if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 defines.push("#define FOG");
-                optionalDefines.push(defines[defines.length - 1]);
+                fallbacks.addFallback(1, "FOG");
             }
 
             var shadowsActivated = false;
@@ -200,7 +202,7 @@ var BABYLON;
                     defines.push("#define LIGHT" + lightIndex);
 
                     if (lightIndex > 0) {
-                        optionalDefines.push(defines[defines.length - 1]);
+                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
                     }
 
                     var type;
@@ -214,17 +216,14 @@ var BABYLON;
 
                     defines.push(type);
                     if (lightIndex > 0) {
-                        optionalDefines.push(defines[defines.length - 1]);
+                        fallbacks.addFallback(lightIndex, type.replace("#define ", ""));
                     }
 
                     // Shadows
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
                         defines.push("#define SHADOW" + lightIndex);
-
-                        if (lightIndex > 0) {
-                            optionalDefines.push(defines[defines.length - 1]);
-                        }
+                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
 
                         if (!shadowsActivated) {
                             defines.push("#define SHADOWS");
@@ -234,14 +233,14 @@ var BABYLON;
                         if (shadowGenerator.useVarianceShadowMap) {
                             defines.push("#define SHADOWVSM" + lightIndex);
                             if (lightIndex > 0) {
-                                optionalDefines.push(defines[defines.length - 1]);
+                                fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
                             }
                         }
 
                         if (shadowGenerator.usePoissonSampling) {
                             defines.push("#define SHADOWPCF" + lightIndex);
                             if (lightIndex > 0) {
-                                optionalDefines.push(defines[defines.length - 1]);
+                                fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
                             }
                         }
                     }
@@ -250,6 +249,13 @@ var BABYLON;
                     if (lightIndex == maxSimultaneousLights)
                         break;
                 }
+            }
+
+            if (this.useFresnelForDiffuse) {
+                defines.push("#define FRESNEL");
+                defines.push("#define DIFFUSEFRESNEL");
+                fallbacks.addFallback(1, "FRESNEL");
+                fallbacks.addFallback(1, "DIFFUSEFRESNEL");
             }
 
             var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
@@ -272,7 +278,7 @@ var BABYLON;
                     defines.push("#define BONES");
                     defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                     defines.push("#define BONES4");
-                    optionalDefines.push(defines[defines.length - 1]);
+                    fallbacks.addFallback(0, "BONES4");
                 }
 
                 // Instances
@@ -309,7 +315,7 @@ var BABYLON;
                     "darkness0", "darkness1", "darkness2", "darkness3"], [
                     "diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                ], join, optionalDefines, this.onCompiled, this.onError);
+                ], join, fallbacks, this.onCompiled, this.onError);
             }
             if (!this._effect.isReady()) {
                 return false;

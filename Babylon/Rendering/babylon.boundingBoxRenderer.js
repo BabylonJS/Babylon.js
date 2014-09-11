@@ -44,7 +44,7 @@
                 if (this.showBackLines) {
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
-                    this._colorShader.setColor3("color", this.backColor);
+                    this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
 
                     // Draw order
@@ -53,7 +53,7 @@
 
                 // Front
                 engine.setDepthFunctionToLess();
-                this._colorShader.setColor3("color", this.frontColor);
+                this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
 
                 // Draw order

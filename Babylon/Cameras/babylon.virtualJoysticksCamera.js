@@ -26,7 +26,7 @@ var BABYLON;
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
             var deltaTransform = BABYLON.Vector3.TransformCoordinates(this._leftjoystick.deltaPosition, cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
-            this.cameraRotation = this.cameraRotation.add(this._rightjoystick.deltaPosition);
+            this.cameraRotation = this.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
             if (!this._leftjoystick.pressed) {
                 this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
             }

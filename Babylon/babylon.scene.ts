@@ -1178,7 +1178,10 @@
 
             // Remove from engine
             index = this._engine.scenes.indexOf(this);
-            this._engine.scenes.splice(index, 1);
+
+            if (index > -1) {
+                this._engine.scenes.splice(index, 1);
+            }
 
             this._engine.wipeCaches();
         }

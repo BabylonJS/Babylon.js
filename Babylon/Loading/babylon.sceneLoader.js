@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var SceneLoader = (function () {
         function SceneLoader() {
@@ -91,8 +91,9 @@ var BABYLON;
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
-        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
+        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror, showLoadingScreen) {
+            if (typeof showLoadingScreen === "undefined") { showLoadingScreen = true; }
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror, showLoadingScreen);
         };
 
         /**
@@ -101,9 +102,14 @@ var BABYLON;
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param scene is the instance of BABYLON.Scene to append to
         */
-        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror, showLoadingScreen) {
+            if (typeof showLoadingScreen === "undefined") { showLoadingScreen = true; }
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
+
+            if (showLoadingScreen) {
+                scene.getEngine().displayLoadingUI();
+            }
 
             var loadSceneFromData = function (data) {
                 scene.database = database;
@@ -113,11 +119,18 @@ var BABYLON;
                         onerror(scene);
                     }
 
+                    scene.getEngine().hideLoadingUI();
                     return;
                 }
 
                 if (onsuccess) {
                     onsuccess(scene);
+                }
+
+                if (showLoadingScreen) {
+                    scene.executeWhenReady(function () {
+                        scene.getEngine().hideLoadingUI();
+                    });
                 }
             };
 

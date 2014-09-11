@@ -1,7 +1,4 @@
 ﻿module BABYLON {
-
-    //class FilesTextures { } //ANY
-
     export interface IAnimatable {
         animations: Array<Animation>;
     }
@@ -225,7 +222,7 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean, onError?: () => void): void {
             url = Tools.CleanUrl(url);
 
             var noIndexedDB = () => {
@@ -244,7 +241,12 @@
                         if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
-                            throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                            if (onError) {
+                                onError();
+                            } else {
+
+                                throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                            }
                         }
                     }
                 };
@@ -253,7 +255,6 @@
             };
 
             var loadFromIndexedDB = () => {
-                
                 database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
             };
 
@@ -264,8 +265,7 @@
             else {
                 // Caching all files
                 if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                    
+                    database.openAsync(loadFromIndexedDB, noIndexedDB);                    
                 }
                 else {
                     noIndexedDB();

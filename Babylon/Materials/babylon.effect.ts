@@ -1,4 +1,44 @@
 ﻿module BABYLON {
+    export class EffectFallbacks {
+        private _defines = {};
+
+        private _currentRank = 32;
+        private _maxRank = -1;
+
+        public addFallback(rank: number, define: string): void {
+            if (!this._defines[rank]) {
+                if (rank < this._currentRank) {
+                    this._currentRank = rank;
+                }
+
+                if (rank > this._maxRank) {
+                    this._maxRank = rank;
+                }
+
+                this._defines[rank] = new Array<String>();
+            }
+
+            this._defines[rank].push(define);
+        }
+
+        public get isMoreFallbacks(): boolean {
+            return this._currentRank <= this._maxRank;
+        }
+
+        public reduce(currentDefines: string): string {
+
+            var currentFallbacks = this._defines[this._currentRank];
+
+            for (var index = 0; index < currentFallbacks.length; index++) {
+                currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+
+            this._currentRank++;
+
+            return currentDefines;
+        }
+    }
+
     export class Effect {
         public name: any;
         public defines: string;
@@ -18,7 +58,7 @@
         private _program: WebGLProgram;
         private _valueCache = [];
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, optionalDefines?: string[], onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
@@ -46,7 +86,7 @@
 
             this._loadVertexShader(vertexSource, vertexCode => {
                 this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                    this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, optionalDefines);
+                    this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
                 });
             });
         }
@@ -147,7 +187,7 @@
             BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
-        public _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, optionalDefines?: string[], useFallback?: boolean): void {
+        private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
@@ -171,15 +211,12 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
-                if (!useFallback && optionalDefines) {
-                    for (index = 0; index < optionalDefines.length; index++) {
-                        defines = defines.replace(optionalDefines[index], "");
-                    }
-                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, true);
+                if (fallbacks && fallbacks.isMoreFallbacks) {
+                    defines = fallbacks.reduce(defines);
+                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else {
                     Tools.Error("Unable to compile effect: " + this.name);
                     Tools.Error("Defines: " + defines);
-                    Tools.Error("Optional defines: " + optionalDefines);
                     Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;
 

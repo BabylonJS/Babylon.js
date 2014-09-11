@@ -124,6 +124,15 @@ uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
 #endif
 
+// Fresnel
+#ifdef FRESNEL
+float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal)
+{
+	float fresnelTerm = dot(viewDirection, worldNormal);
+	return clamp(1.0 - fresnelTerm, 0., 1.);
+}
+#endif
+
 // Reflection
 #ifdef REFLECTION
 varying vec3 vPositionUVW;
@@ -638,6 +647,11 @@ void main(void) {
 	vec3 specularColor = vSpecularColor.rgb;
 #ifdef SPECULAR
 	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;
+#endif
+
+	// Fresnel
+#ifdef DIFFUSEFRESNEL
+	diffuseBase *= computeFresnelTerm(viewDirectionW, normalW);
 #endif
 
 	// Composition

@@ -1,7 +1,52 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    var EffectFallbacks = (function () {
+        function EffectFallbacks() {
+            this._defines = {};
+            this._currentRank = 32;
+            this._maxRank = -1;
+        }
+        EffectFallbacks.prototype.addFallback = function (rank, define) {
+            if (!this._defines[rank]) {
+                if (rank < this._currentRank) {
+                    this._currentRank = rank;
+                }
+
+                if (rank > this._maxRank) {
+                    this._maxRank = rank;
+                }
+
+                this._defines[rank] = new Array();
+            }
+
+            this._defines[rank].push(define);
+        };
+
+        Object.defineProperty(EffectFallbacks.prototype, "isMoreFallbacks", {
+            get: function () {
+                return this._currentRank <= this._maxRank;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        EffectFallbacks.prototype.reduce = function (currentDefines) {
+            var currentFallbacks = this._defines[this._currentRank];
+
+            for (var index = 0; index < currentFallbacks.length; index++) {
+                currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+
+            this._currentRank++;
+
+            return currentDefines;
+        };
+        return EffectFallbacks;
+    })();
+    BABYLON.EffectFallbacks = EffectFallbacks;
+
     var Effect = (function () {
-        function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, optionalDefines, onCompiled, onError) {
+        function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError) {
             var _this = this;
             this._isReady = false;
             this._compilationError = "";
@@ -33,7 +78,7 @@
 
             this._loadVertexShader(vertexSource, function (vertexCode) {
                 _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
-                    _this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, optionalDefines);
+                    _this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
                 });
             });
         }
@@ -133,7 +178,7 @@
             BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         };
 
-        Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, useFallback) {
+        Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try  {
                 var engine = this._engine;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
@@ -157,15 +202,12 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
-                if (!useFallback && optionalDefines) {
-                    for (index = 0; index < optionalDefines.length; index++) {
-                        defines = defines.replace(optionalDefines[index], "");
-                    }
-                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, optionalDefines, true);
+                if (fallbacks && fallbacks.isMoreFallbacks) {
+                    defines = fallbacks.reduce(defines);
+                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else {
                     BABYLON.Tools.Error("Unable to compile effect: " + this.name);
                     BABYLON.Tools.Error("Defines: " + defines);
-                    BABYLON.Tools.Error("Optional defines: " + optionalDefines);
                     BABYLON.Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;
 
