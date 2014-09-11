@@ -12,11 +12,13 @@ var BABYLON;
             if (typeof updatable === "undefined") { updatable = false; }
             _super.call(this, name, scene);
             this.color = new BABYLON.Color3(1, 1, 1);
+            this.alpha = 1;
             this._indices = new Array();
 
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
                 attributes: ["position"],
-                uniforms: ["worldViewProjection", "color"]
+                uniforms: ["worldViewProjection", "color"],
+                needAlphaBlending: true
             });
         }
         Object.defineProperty(LinesMesh.prototype, "material", {
@@ -52,7 +54,7 @@ var BABYLON;
             engine.bindBuffers(this._geometry.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).getBuffer(), indexToBind, [3], 3 * 4, this._colorShader.getEffect());
 
             // Color
-            this._colorShader.setColor3("color", this.color);
+            this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         };
 
         LinesMesh.prototype._draw = function (subMesh, useTriangles, instancesCount) {

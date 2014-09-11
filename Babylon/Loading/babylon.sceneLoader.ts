@@ -8,6 +8,7 @@
     export class SceneLoader {
         // Flags
         private static _ForceFullSceneLoadingForIncremental = false;
+        private static _ShowLoadingScreen = true;
 
         public static get ForceFullSceneLoadingForIncremental() {
             return SceneLoader._ForceFullSceneLoadingForIncremental;
@@ -15,6 +16,14 @@
 
         public static set ForceFullSceneLoadingForIncremental(value: boolean) {
             SceneLoader._ForceFullSceneLoadingForIncremental = value;
+        }
+
+        public static get ShowLoadingScreen() {
+            return SceneLoader._ShowLoadingScreen;
+        }
+
+        public static set ShowLoadingScreen(value: boolean) {
+            SceneLoader._ShowLoadingScreen = value;
         }
 
         // Members
@@ -99,16 +108,21 @@
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
             SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
         }
+
         /**
         * Append a scene
         * @param rootUrl a string that defines the root url for scene and resources
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param scene is the instance of BABYLON.Scene to append to
         */
-        public static Append(rootUrl: string, sceneFilename: any, scene : Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
+        public static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
 
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
+
+            if (SceneLoader.ShowLoadingScreen) {
+                scene.getEngine().displayLoadingUI();
+            }
 
             var loadSceneFromData = data => {
                 scene.database = database;
@@ -118,12 +132,19 @@
                         onerror(scene);
                     }
 
+                    scene.getEngine().hideLoadingUI();
                     return;
                 }
 
                 if (onsuccess) {
                     onsuccess(scene);
                 }
+
+                if (SceneLoader.ShowLoadingScreen) {
+                    scene.executeWhenReady(() => {
+                        scene.getEngine().hideLoadingUI();
+                    });
+                }                
             };
 
             var manifestChecked = success => {

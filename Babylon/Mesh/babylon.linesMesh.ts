@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     export class LinesMesh extends Mesh {
         public color = new BABYLON.Color3(1, 1, 1);
+        public alpha = 1;
 
         private _colorShader: ShaderMaterial;
         private _ib: WebGLBuffer;
@@ -14,7 +15,8 @@
             this._colorShader = new ShaderMaterial("colorShader", scene, "color",
                 {
                     attributes: ["position"],
-                    uniforms: ["worldViewProjection", "color"]
+                    uniforms: ["worldViewProjection", "color"],
+                    needAlphaBlending: true
                 });
         }
 
@@ -39,7 +41,7 @@
             engine.bindBuffers(this._geometry.getVertexBuffer(VertexBuffer.PositionKind).getBuffer(), indexToBind, [3], 3 * 4, this._colorShader.getEffect());
 
             // Color
-            this._colorShader.setColor3("color", this.color);
+            this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         }
 
         public _draw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void {

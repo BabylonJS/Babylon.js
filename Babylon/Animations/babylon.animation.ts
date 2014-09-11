@@ -203,7 +203,7 @@
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
-                        offsetValue = new Quaternion();
+                        offsetValue = new Quaternion(0, 0, 0, 0);
                         break;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:

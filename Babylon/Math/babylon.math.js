@@ -24,6 +24,11 @@
             array[index + 2] = this.b;
         };
 
+        Color3.prototype.toColor4 = function (alpha) {
+            if (typeof alpha === "undefined") { alpha = 1; }
+            return new Color4(this.r, this.g, this.b, alpha);
+        };
+
         Color3.prototype.asArray = function () {
             var result = [];
 
@@ -266,13 +271,17 @@
             this.x = source.x;
             this.y = source.y;
         };
-		
-		Vector2.prototype.copyFromFloats = function (x, y) {
+
+        Vector2.prototype.copyFromFloats = function (x, y) {
             this.x = x;
             this.y = y;
         };
 
         Vector2.prototype.add = function (otherVector) {
+            return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
+        };
+
+        Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
 

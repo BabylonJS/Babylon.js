@@ -18,6 +18,10 @@
             array[index + 2] = this.b;
         }
 
+        public toColor4(alpha = 1): Color4 {
+            return new Color4(this.r, this.g, this.b, alpha);
+        }
+
         public asArray(): number[] {
             var result = [];
 
@@ -233,13 +237,17 @@
             this.x = source.x;
             this.y = source.y;
         }
-		
-		public copyFromFloats(x: number, y: number): void {
-			this.x = x;
-			this.y = y;
-		}
+
+        public copyFromFloats(x: number, y: number): void {
+            this.x = x;
+            this.y = y;
+        }
 
         public add(otherVector: Vector2): Vector2 {
+            return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
+        }
+
+        public addVector3(otherVector: Vector3): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
@@ -494,7 +502,7 @@
         }
 
         public equalsWithEpsilon(otherVector: Vector3): boolean {
-            return  Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
                 Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
                 Math.abs(this.z - otherVector.z) < Engine.Epsilon;
         }

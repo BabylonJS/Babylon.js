@@ -200,7 +200,7 @@
                         break;
 
                     case Animation.ANIMATIONTYPE_QUATERNION:
-                        offsetValue = new BABYLON.Quaternion();
+                        offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
                         break;
 
                     case Animation.ANIMATIONTYPE_VECTOR3:

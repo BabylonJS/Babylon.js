@@ -1,7 +1,5 @@
 ﻿var BABYLON;
 (function (BABYLON) {
-    
-
     // Screenshots
     var screenshotCanvas;
 
@@ -208,7 +206,7 @@
         };
 
         //ANY
-        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer) {
+        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
 
             var noIndexedDB = function () {
@@ -227,7 +225,11 @@
                         if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else {
-                            throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                            if (onError) {
+                                onError();
+                            } else {
+                                throw new Error("Error status: " + request.status + " - Unable to load " + loadUrl);
+                            }
                         }
                     }
                 };
