@@ -8,6 +8,16 @@ var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
 
+    var FresnelParameters = (function () {
+        function FresnelParameters() {
+            this.isEnabled = true;
+            this.leftColor = BABYLON.Color3.Black();
+            this.rightColor = BABYLON.Color3.White();
+        }
+        return FresnelParameters;
+    })();
+    BABYLON.FresnelParameters = FresnelParameters;
+
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -19,7 +29,6 @@ var BABYLON;
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
-            this.useFresnelForDiffuse = false;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -251,13 +260,15 @@ var BABYLON;
                 }
             }
 
-            if (this.useFresnelForDiffuse) {
+            // Fresnel
+            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
                 defines.push("#define FRESNEL");
                 defines.push("#define DIFFUSEFRESNEL");
                 fallbacks.addFallback(1, "FRESNEL");
                 fallbacks.addFallback(1, "DIFFUSEFRESNEL");
             }
 
+            // Attribs
             var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
             if (mesh) {
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
@@ -312,7 +323,9 @@ var BABYLON;
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
-                    "darkness0", "darkness1", "darkness2", "darkness3"], [
+                    "darkness0", "darkness1", "darkness2", "darkness3",
+                    "diffuseLeftColor", "diffuseRightColor"
+                ], [
                     "diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ], join, fallbacks, this.onCompiled, this.onError);
@@ -347,6 +360,12 @@ var BABYLON;
             // Bones
             if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+            }
+
+            // Fresnel
+            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                this._effect.setColor3("diffuseLeftColor", this.diffuseFresnelParameters.leftColor);
+                this._effect.setColor3("diffuseRightColor", this.diffuseFresnelParameters.rightColor);
             }
 
             // Textures

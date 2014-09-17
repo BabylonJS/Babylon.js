@@ -15,6 +15,18 @@
         });
 
 
+        Object.defineProperty(SceneLoader, "ShowLoadingScreen", {
+            get: function () {
+                return SceneLoader._ShowLoadingScreen;
+            },
+            set: function (value) {
+                SceneLoader._ShowLoadingScreen = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var extension = sceneFilename.substring(dotPosition).toLowerCase();
@@ -91,9 +103,8 @@
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
-        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror, showLoadingScreen) {
-            if (typeof showLoadingScreen === "undefined") { showLoadingScreen = true; }
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror, showLoadingScreen);
+        SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
+            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
         };
 
         /**
@@ -102,12 +113,11 @@
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
         * @param scene is the instance of BABYLON.Scene to append to
         */
-        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror, showLoadingScreen) {
-            if (typeof showLoadingScreen === "undefined") { showLoadingScreen = true; }
+        SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
-            if (showLoadingScreen) {
+            if (SceneLoader.ShowLoadingScreen) {
                 scene.getEngine().displayLoadingUI();
             }
 
@@ -127,7 +137,7 @@
                     onsuccess(scene);
                 }
 
-                if (showLoadingScreen) {
+                if (SceneLoader.ShowLoadingScreen) {
                     scene.executeWhenReady(function () {
                         scene.getEngine().hideLoadingUI();
                     });
@@ -152,6 +162,7 @@
             }
         };
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
+        SceneLoader._ShowLoadingScreen = true;
 
         SceneLoader._registeredPlugins = new Array();
         return SceneLoader;

@@ -29,9 +29,22 @@
                     continue;
                 }
 
-                registeredMesh.mesh.position.x = registeredMesh.body.position.x;
-                registeredMesh.mesh.position.y = registeredMesh.body.position.z;
-                registeredMesh.mesh.position.z = registeredMesh.body.position.y;
+                // Body position
+                var bodyX = registeredMesh.body.position.x,
+                    bodyY = registeredMesh.body.position.y,
+                    bodyZ = registeredMesh.body.position.z;
+
+                var deltaPos = registeredMesh.delta;
+                if (deltaPos) {
+                    registeredMesh.mesh.position.x = bodyX + deltaPos.x;
+                    registeredMesh.mesh.position.y = bodyZ + deltaPos.y;
+                    registeredMesh.mesh.position.z = bodyY + deltaPos.z;
+                } else {
+                    registeredMesh.mesh.position.x = bodyX;
+                    registeredMesh.mesh.position.y = bodyZ;
+                    registeredMesh.mesh.position.z = bodyY;
+                }
+
 
                 if (!registeredMesh.mesh.rotationQuaternion) {
                     registeredMesh.mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
@@ -174,6 +187,10 @@
                 mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
             }
 
+            // The delta between the mesh position and the mesh bounding box center
+            var bbox = mesh.getBoundingInfo().boundingBox;
+            var deltaPosition = mesh.position.subtract(bbox.center);
+
             var material = this._addMaterial(friction, restitution);
             var body = new CANNON.RigidBody(mass, shape, material);
 
@@ -184,10 +201,10 @@
                 body.quaternion.w = -initialRotation.w;
             }
 
-            body.position.set(mesh.position.x, mesh.position.z, mesh.position.y);
+            body.position.set(bbox.center.x, bbox.center.z, bbox.center.y);
             this._world.add(body);
 
-            this._registeredMeshes.push({ mesh: mesh, body: body, material: material });
+            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition });
 
             return body;
         }
@@ -221,6 +238,7 @@
 
                 if (registeredMesh.body === body) {
                     registeredMesh.body = null;
+                    registeredMesh.delta = 0;
                 }
             }
         }
@@ -262,7 +280,9 @@
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     var body = registeredMesh.body.body;
-                    body.position.set(mesh.position.x, mesh.position.z, mesh.position.y);
+
+                    var center = mesh.getBoundingInfo().boundingBox.center;
+                    body.position.set(center.x, center.z, center.y);
 
                     body.quaternion.x = mesh.rotationQuaternion.x;
                     body.quaternion.z = mesh.rotationQuaternion.y;

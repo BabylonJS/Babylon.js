@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {
@@ -513,7 +513,8 @@ var BABYLON;
         Database.parseURL = function (url) {
             var a = document.createElement('a');
             a.href = url;
-            var fileName = url.substring(url.lastIndexOf("/") + 1, url.length);
+            var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
+            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
             var absLocation = url.substring(0, url.indexOf(fileName, 0));
             return absLocation;
         };
