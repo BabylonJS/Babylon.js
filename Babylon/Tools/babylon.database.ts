@@ -27,16 +27,16 @@ module BABYLON {
             this.checkManifestFile();
         }
 
-        static parseURL = function(url: string) {
+        static parseURL = (url: string) => {
             var a = document.createElement('a');
             a.href = url;
-            var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
-            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
+            var urlWithoutHash = url.substring(0, url.lastIndexOf("#")); 
+            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length); 
             var absLocation = url.substring(0, url.indexOf(fileName, 0));
             return absLocation;
         }
 
-        static ReturnFullUrlLocation = function (url: string): string {
+        static ReturnFullUrlLocation = (url: string): string => {
             if (url.indexOf("http:/") === -1) {
                 return (BABYLON.Database.parseURL(window.location.href) + url);
             }

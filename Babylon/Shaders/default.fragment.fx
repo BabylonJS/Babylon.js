@@ -133,6 +133,11 @@ float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal)
 }
 #endif
 
+#ifdef DIFFUSEFRESNEL
+uniform vec3 diffuseLeftColor;
+uniform vec3 diffuseRightColor;
+#endif
+
 // Reflection
 #ifdef REFLECTION
 varying vec3 vPositionUVW;
@@ -651,7 +656,8 @@ void main(void) {
 
 	// Fresnel
 #ifdef DIFFUSEFRESNEL
-	diffuseBase *= computeFresnelTerm(viewDirectionW, normalW);
+	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW);
+	diffuseBase *= diffuseLeftColor * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor;
 #endif
 
 	// Composition

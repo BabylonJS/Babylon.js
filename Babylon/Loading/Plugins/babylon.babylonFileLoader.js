@@ -85,6 +85,16 @@
             return skeleton;
         };
 
+        var parseFresnelParameters = function (parsedFresnelParameters) {
+            var fresnelParameters = new BABYLON.FresnelParameters();
+
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+
+            return fresnelParameters;
+        };
+
         var parseMaterial = function (parsedMaterial, scene, rootUrl) {
             var material;
             material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
@@ -107,6 +117,10 @@
                 material.diffuseTexture = loadTexture(rootUrl, parsedMaterial.diffuseTexture, scene);
             }
 
+            if (parsedMaterial.diffuseFresnelParameters) {
+                material.diffuseFresnelParameters = parseFresnelParameters(parsedMaterial.diffuseFresnelParameters);
+            }
+
             if (parsedMaterial.ambientTexture) {
                 material.ambientTexture = loadTexture(rootUrl, parsedMaterial.ambientTexture, scene);
             }
@@ -115,8 +129,16 @@
                 material.opacityTexture = loadTexture(rootUrl, parsedMaterial.opacityTexture, scene);
             }
 
+            if (parsedMaterial.opacityFresnelParameters) {
+                material.opacityFresnelParameters = parseFresnelParameters(parsedMaterial.opacityFresnelParameters);
+            }
+
             if (parsedMaterial.reflectionTexture) {
                 material.reflectionTexture = loadTexture(rootUrl, parsedMaterial.reflectionTexture, scene);
+            }
+
+            if (parsedMaterial.reflectionFresnelParameters) {
+                material.reflectionFresnelParameters = parseFresnelParameters(parsedMaterial.reflectionFresnelParameters);
             }
 
             if (parsedMaterial.emissiveTexture) {

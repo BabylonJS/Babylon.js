@@ -1,5 +1,250 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    var _DepthCullingState = (function () {
+        function _DepthCullingState() {
+            this._isDepthTestDirty = false;
+            this._isDepthMaskDirty = false;
+            this._isDepthFuncDirty = false;
+            this._isCullFaceDirty = false;
+            this._isCullDirty = false;
+        }
+        Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
+            get: function () {
+                return this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(_DepthCullingState.prototype, "cullFace", {
+            get: function () {
+                return this._cullFace;
+            },
+            set: function (value) {
+                if (this._cullFace === value) {
+                    return;
+                }
+
+                this._cullFace = value;
+                this._isCullFaceDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(_DepthCullingState.prototype, "cull", {
+            get: function () {
+                return this._cull;
+            },
+            set: function (value) {
+                if (this._cull === value) {
+                    return;
+                }
+
+                this._cull = value;
+                this._isCullDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(_DepthCullingState.prototype, "depthFunc", {
+            get: function () {
+                return this._depthFunc;
+            },
+            set: function (value) {
+                if (this._depthFunc === value) {
+                    return;
+                }
+
+                this._depthFunc = value;
+                this._isDepthFuncDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(_DepthCullingState.prototype, "depthMask", {
+            get: function () {
+                return this._depthMask;
+            },
+            set: function (value) {
+                if (this._depthMask === value) {
+                    return;
+                }
+
+                this._depthMask = value;
+                this._isDepthMaskDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(_DepthCullingState.prototype, "depthTest", {
+            get: function () {
+                return this._depthTest;
+            },
+            set: function (value) {
+                if (this._depthTest === value) {
+                    return;
+                }
+
+                this._depthTest = value;
+                this._isDepthTestDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        _DepthCullingState.prototype.reset = function () {
+            this._depthMask = true;
+            this._depthTest = true;
+            this._depthFunc = null;
+            this._cull = null;
+            this._cullFace = null;
+
+            this._isDepthTestDirty = true;
+            this._isDepthMaskDirty = true;
+            this._isDepthFuncDirty = false;
+            this._isCullFaceDirty = false;
+            this._isCullDirty = false;
+        };
+
+        _DepthCullingState.prototype.apply = function (gl) {
+            if (!this.isDirty) {
+                return;
+            }
+
+            // Cull
+            if (this._isCullDirty) {
+                if (this.cull === true) {
+                    gl.enable(gl.CULL_FACE);
+                } else if (this.cull === false) {
+                    gl.disable(gl.CULL_FACE);
+                }
+
+                this._isCullDirty = false;
+            }
+
+            // Cull face
+            if (this._isCullFaceDirty) {
+                gl.cullFace(this.cullFace);
+                this._isCullFaceDirty = false;
+            }
+
+            // Depth mask
+            if (this._isDepthMaskDirty) {
+                gl.depthMask(this.depthMask);
+                this._isDepthMaskDirty = false;
+            }
+
+            // Depth test
+            if (this._isDepthTestDirty) {
+                if (this.depthTest === true) {
+                    gl.enable(gl.DEPTH_TEST);
+                } else if (this.depthTest === false) {
+                    gl.disable(gl.DEPTH_TEST);
+                }
+                this._isDepthTestDirty = false;
+            }
+
+            // Depth func
+            if (this._isDepthFuncDirty) {
+                gl.depthFunc(this.depthFunc);
+                this._isDepthFuncDirty = false;
+            }
+        };
+        return _DepthCullingState;
+    })();
+    BABYLON._DepthCullingState = _DepthCullingState;
+
+    var _AlphaState = (function () {
+        function _AlphaState() {
+            this._isAlphaBlendDirty = false;
+            this._isBlendFunctionParametersDirty = false;
+            this._alphaBlend = false;
+            this._blendFunctionParameters = new Array(4);
+        }
+        Object.defineProperty(_AlphaState.prototype, "isDirty", {
+            get: function () {
+                return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(_AlphaState.prototype, "alphaBlend", {
+            get: function () {
+                return this._alphaBlend;
+            },
+            set: function (value) {
+                if (this._alphaBlend === value) {
+                    return;
+                }
+
+                this._alphaBlend = value;
+                this._isAlphaBlendDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        _AlphaState.prototype.setAlphaBlendFunctionParameters = function (value0, value1, value2, value3) {
+            if (this._blendFunctionParameters[0] === value0 && this._blendFunctionParameters[1] === value1 && this._blendFunctionParameters[2] === value2 && this._blendFunctionParameters[3] === value3) {
+                return;
+            }
+
+            this._blendFunctionParameters[0] = value0;
+            this._blendFunctionParameters[1] = value1;
+            this._blendFunctionParameters[2] = value2;
+            this._blendFunctionParameters[3] = value3;
+
+            this._isBlendFunctionParametersDirty = true;
+        };
+
+        _AlphaState.prototype.reset = function () {
+            this._alphaBlend = false;
+            this._blendFunctionParameters[0] = null;
+            this._blendFunctionParameters[1] = null;
+            this._blendFunctionParameters[2] = null;
+            this._blendFunctionParameters[3] = null;
+
+            this._isAlphaBlendDirty = true;
+            this._isBlendFunctionParametersDirty = false;
+        };
+
+        _AlphaState.prototype.apply = function (gl) {
+            if (!this.isDirty) {
+                return;
+            }
+
+            // Alpha blend
+            if (this._isAlphaBlendDirty) {
+                if (this._alphaBlend === true) {
+                    gl.enable(gl.BLEND);
+                } else if (this._alphaBlend === false) {
+                    gl.disable(gl.BLEND);
+                }
+
+                this._isAlphaBlendDirty = false;
+            }
+
+            // Alpha function
+            if (this._isBlendFunctionParametersDirty) {
+                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
+                this._isBlendFunctionParametersDirty = false;
+            }
+        };
+        return _AlphaState;
+    })();
+    BABYLON._AlphaState = _AlphaState;
+
     var compileShader = function (gl, source, type, defines) {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
@@ -131,11 +376,14 @@
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._runningLoop = false;
+            this._loadingDivBackgroundColor = "black";
+            // States
+            this._depthCullingState = new _DepthCullingState();
+            this._alphaState = new _AlphaState();
             // Cache
             this._loadedTexturesCache = new Array();
             this._activeTexturesCache = new Array();
             this._compiledEffects = {};
-            this._depthMask = true;
             this._renderingCanvas = canvas;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
@@ -340,19 +588,19 @@
 
         // Methods
         Engine.prototype.setDepthFunctionToGreater = function () {
-            this._gl.depthFunc(this._gl.GREATER);
+            this._depthCullingState.depthFunc = this._gl.GREATER;
         };
 
         Engine.prototype.setDepthFunctionToGreaterOrEqual = function () {
-            this._gl.depthFunc(this._gl.GEQUAL);
+            this._depthCullingState.depthFunc = this._gl.GEQUAL;
         };
 
         Engine.prototype.setDepthFunctionToLess = function () {
-            this._gl.depthFunc(this._gl.LESS);
+            this._depthCullingState.depthFunc = this._gl.LESS;
         };
 
         Engine.prototype.setDepthFunctionToLessOrEqual = function () {
-            this._gl.depthFunc(this._gl.LEQUAL);
+            this._depthCullingState.depthFunc = this._gl.LEQUAL;
         };
 
         Engine.prototype.stopRenderLoop = function () {
@@ -409,7 +657,7 @@
 
         Engine.prototype.clear = function (color, backBuffer, depthStencil) {
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            if (this._depthMask) {
+            if (this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
             }
             var mode = 0;
@@ -417,7 +665,7 @@
             if (backBuffer)
                 mode |= this._gl.COLOR_BUFFER_BIT;
 
-            if (depthStencil && this._depthMask)
+            if (depthStencil && this._depthCullingState.depthMask)
                 mode |= this._gl.DEPTH_BUFFER_BIT;
 
             this._gl.clear(mode);
@@ -642,6 +890,11 @@
         };
 
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+            // Apply states
+            this._depthCullingState.apply(this._gl);
+            this._alphaState.apply(this._gl);
+
+            // Render
             if (instancesCount) {
                 this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
                 return;
@@ -829,33 +1082,26 @@
         // States
         Engine.prototype.setState = function (culling, force) {
             // Culling
-            if (this._cullingState !== culling || force) {
+            if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
-                    this._gl.cullFace(this.cullBackFaces ? this._gl.BACK : this._gl.FRONT);
-                    this._gl.enable(this._gl.CULL_FACE);
+                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cull = true;
                 } else {
-                    this._gl.disable(this._gl.CULL_FACE);
+                    this._depthCullingState.cull = false;
                 }
-
-                this._cullingState = culling;
             }
         };
 
         Engine.prototype.setDepthBuffer = function (enable) {
-            if (enable) {
-                this._gl.enable(this._gl.DEPTH_TEST);
-            } else {
-                this._gl.disable(this._gl.DEPTH_TEST);
-            }
+            this._depthCullingState.depthTest = enable;
         };
 
         Engine.prototype.getDepthWrite = function () {
-            return this._depthMask;
+            return this._depthCullingState.depthMask;
         };
 
         Engine.prototype.setDepthWrite = function (enable) {
-            this._gl.depthMask(enable);
-            this._depthMask = enable;
+            this._depthCullingState.depthMask = enable;
         };
 
         Engine.prototype.setColorWrite = function (enable) {
@@ -866,17 +1112,17 @@
             switch (mode) {
                 case BABYLON.Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
-                    this._gl.disable(this._gl.BLEND);
+                    this._alphaState.alphaBlend = false;
                     break;
                 case BABYLON.Engine.ALPHA_COMBINE:
                     this.setDepthWrite(false);
-                    this._gl.blendFuncSeparate(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-                    this._gl.enable(this._gl.BLEND);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
                     break;
                 case BABYLON.Engine.ALPHA_ADD:
                     this.setDepthWrite(false);
-                    this._gl.blendFuncSeparate(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-                    this._gl.enable(this._gl.BLEND);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
                     break;
             }
         };
@@ -893,7 +1139,9 @@
         Engine.prototype.wipeCaches = function () {
             this._activeTexturesCache = [];
             this._currentEffect = null;
-            this._cullingState = null;
+
+            this._depthCullingState.reset();
+            this._alphaState.reset();
 
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
@@ -1453,7 +1701,7 @@
 
             window.addEventListener("resize", this._resizeLoadingUI);
 
-            this._loadingDiv.style.backgroundColor = "black";
+            this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
             document.body.appendChild(this._loadingDiv);
 
             setTimeout(function () {
@@ -1462,7 +1710,7 @@
             }, 0);
         };
 
-        Object.defineProperty(Engine.prototype, "loadingUiText", {
+        Object.defineProperty(Engine.prototype, "loadingUIText", {
             set: function (text) {
                 if (!this._loadingDiv) {
                     return;
@@ -1473,6 +1721,24 @@
             enumerable: true,
             configurable: true
         });
+
+        Object.defineProperty(Engine.prototype, "loadingUIBackgroundColor", {
+            get: function () {
+                return this._loadingDivBackgroundColor;
+            },
+            set: function (color) {
+                this._loadingDivBackgroundColor = color;
+
+                if (!this._loadingDiv) {
+                    return;
+                }
+
+                this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
 
         Engine.prototype.hideLoadingUI = function () {
             var _this = this;
