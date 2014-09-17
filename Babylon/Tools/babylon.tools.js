@@ -253,6 +253,15 @@
                 }
             }
         };
+		
+		Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target.result);
+            };
+            reader.onprogress = progressCallback;
+            reader.readAsDataURL(fileToLoad);
+        };
 
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
