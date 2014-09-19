@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {

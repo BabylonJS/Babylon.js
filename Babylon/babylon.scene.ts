@@ -161,7 +161,7 @@
 
         private _selectionOctree: Octree<AbstractMesh>;
 
-        private _pointerOverMesh: AbstractMesh;      
+        private _pointerOverMesh: AbstractMesh;
 
         // Constructor
         constructor(engine: Engine) {
@@ -1084,6 +1084,10 @@
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
                 this._processSubCameras(this.activeCamera);
             }
 

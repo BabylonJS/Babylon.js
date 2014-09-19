@@ -1003,6 +1003,10 @@
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
                 this._processSubCameras(this.activeCamera);
             }
 
