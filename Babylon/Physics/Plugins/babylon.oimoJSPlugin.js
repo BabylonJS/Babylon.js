@@ -12,7 +12,9 @@ var BABYLON;
                     var registeredMesh = this._registeredMeshes[index];
                     if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                         var body = registeredMesh.body.body;
-                        body.setPosition(mesh.position.x, mesh.position.y, mesh.position.z);
+
+                        var center = mesh.getBoundingInfo().boundingBox.center;
+                        body.setPosition(center.x, center.y, center.z);
                         body.setOrientation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
                         return;
                     }
@@ -59,10 +61,14 @@ var BABYLON;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
 
                     var size = Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2;
+
+                    // The delta between the mesh position and the mesh bounding box center
+                    var deltaPosition = mesh.position.subtract(bbox.center);
+
                     body = new OIMO.Body({
                         type: 'sphere',
                         size: [size],
-                        pos: [mesh.position.x, mesh.position.y, mesh.position.z],
+                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
                         config: [options.mass, options.friction, options.restitution],
@@ -70,7 +76,8 @@ var BABYLON;
                     });
                     this._registeredMeshes.push({
                         mesh: mesh,
-                        body: body
+                        body: body,
+                        delta: deltaPosition
                     });
                     break;
 
@@ -83,10 +90,14 @@ var BABYLON;
                     var sizeX = this._checkWithEpsilon(box.x);
                     var sizeY = this._checkWithEpsilon(box.y);
                     var sizeZ = this._checkWithEpsilon(box.z);
+
+                    // The delta between the mesh position and the mesh boudning box center
+                    var deltaPosition = mesh.position.subtract(bbox.center);
+
                     body = new OIMO.Body({
                         type: 'box',
                         size: [sizeX, sizeY, sizeZ],
-                        pos: [mesh.position.x, mesh.position.y, mesh.position.z],
+                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                         rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
                         move: options.mass != 0,
                         config: [options.mass, options.friction, options.restitution],
@@ -95,7 +106,8 @@ var BABYLON;
 
                     this._registeredMeshes.push({
                         mesh: mesh,
-                        body: body
+                        body: body,
+                        delta: deltaPosition
                     });
                     break;
             }
@@ -273,6 +285,8 @@ var BABYLON;
             while (i--) {
                 var body = this._registeredMeshes[i].body.body;
                 var mesh = this._registeredMeshes[i].mesh;
+                var delta = this._registeredMeshes[i].delta;
+
                 if (!body.sleeping) {
                     if (body.shapes.next) {
                         var parentShape = this._getLastShape(body);
@@ -288,9 +302,19 @@ var BABYLON;
                     } else {
                         m = body.getMatrix();
                         mtx = BABYLON.Matrix.FromArray(m);
-                        mesh.position.x = mtx.m[12];
-                        mesh.position.y = mtx.m[13];
-                        mesh.position.z = mtx.m[14];
+
+                        // Body position
+                        var bodyX = mtx.m[12], bodyY = mtx.m[13], bodyZ = mtx.m[14];
+
+                        if (delta) {
+                            mesh.position.x = bodyX;
+                            mesh.position.y = bodyY;
+                            mesh.position.z = bodyZ;
+                        } else {
+                            mesh.position.x = bodyX + delta.x;
+                            mesh.position.y = bodyY + delta.y;
+                            mesh.position.z = bodyZ + delta.z;
+                        }
 
                         if (!mesh.rotationQuaternion) {
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
