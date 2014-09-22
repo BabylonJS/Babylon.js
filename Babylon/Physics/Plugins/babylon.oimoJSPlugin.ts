@@ -326,7 +326,7 @@ module BABYLON {
                             bodyY = mtx.m[13],
                             bodyZ = mtx.m[14];
 
-                        if (delta) {
+                        if (!delta) {
                             mesh.position.x = bodyX;
                             mesh.position.y = bodyY;
                             mesh.position.z = bodyZ;
