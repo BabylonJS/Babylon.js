@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Tower of Babel',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 0, 0),
+    'version': (1, 0, 1),
     'blender': (2, 69, 0),
     'location': 'File > Export > Tower of Babel [.babylon + .js + .ts + .html(s)]',
     'description': 'Produce Babylon scene file (.babylon), Translate to inline JavaScript & TypeScript',
@@ -209,6 +209,7 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             else:
                 TowerOfBabel.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('/')[2])
 
+            TowerOfBabel.nWarnings = 0 # explicitly reset, incase there was an earlier export this session
             TowerOfBabel.log_handler = open(self.filepathMinusExtension + '.log', 'w')
             TOB_version = bl_info['version']
             TowerOfBabel.log('Tower of Babel version: ' + str(TOB_version[0]) + '.' + str(TOB_version[1]) +  '.' + str(TOB_version[2]) + 
@@ -367,7 +368,16 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         # Meshes
         file_handler.write(',\n"meshes":[')
         first = True
-        for mesh in reversed(self.meshesAndNodes): # reversed for shared vertex instances
+        for m in range(0, len(self.meshesAndNodes)):
+            mesh = self.meshesAndNodes[m]
+            
+            # skip if mesh already written by that name, since this one is an instance
+            skip = False
+            for n in range(0, m):
+                skip |= mesh.dataName == self.meshesAndNodes[n].dataName # nodes have no dataname, so no need to check for
+             
+            if skip: continue
+                
             if first != True:
                 file_handler.write(',')
 
@@ -753,7 +763,6 @@ class Mesh(FCurveAnimatable):
         
         # used to support shared vertex instances in later passed
         self.dataName = object.data.name
-        self.alreadyExported = False
 
         if forcedParent is None:     
             if object.parent and object.parent.type != 'ARMATURE':
@@ -859,7 +868,6 @@ class Mesh(FCurveAnimatable):
             self.skeletonIndicesCompressed = []
     
         # used tracking of vertices as they are recieved     
-        orderMapToNative = []
         alreadySavedVertices = []
         vertices_UVs = []
         vertices_UV2s = []
@@ -869,7 +877,6 @@ class Mesh(FCurveAnimatable):
         self.offsetFace = 0
                 
         for v in range(0, len(mesh.vertices)):
-            orderMapToNative.append(-1)
             alreadySavedVertices.append(False)
             vertices_UVs.append([])
             vertices_UV2s.append([])
@@ -988,7 +995,6 @@ class Mesh(FCurveAnimatable):
                     else:
                         # Export new one
                         index = verticesCount
-                        orderMapToNative[vertex_index] = index
                         alreadySavedVertices[vertex_index] = True
                         if hasUV:
                             vertices_UVs[vertex_index].append(vertex_UV)
@@ -1040,40 +1046,60 @@ class Mesh(FCurveAnimatable):
         
         # shape keys for mesh 
         if object.data.shape_keys:
-            rawShapeKeys = []
-            groupNames = []
+            basisFound = False
             for block in object.data.shape_keys.key_blocks:
-                # perform name format validation, before processing
-                keyName = block.name
+                if (block.name == 'Basis'):
+                    keyOrderMap = self.get_key_order_map(block)
+                    basisFound = True
+                    break
                 
-                # the Basis shape key is a member of all groups, each automatically built from positions, Blender version ignored
-                if (keyName == 'Basis'): continue
+            if not basisFound:
+                TowerOfBabel.warn('WARNING: Basis key missing, shape-key processing NOT performed', 2)
+            
+            else:
+                rawShapeKeys = []
+                groupNames = []
+                for block in object.data.shape_keys.key_blocks:
+                    # perform name format validation, before processing
+                    keyName = block.name
                 
-                if (keyName.find('-') <= 0):
-                    keyName = 'ENTIRE MESH-' + keyName.upper();
-                    TowerOfBabel.log('Key shape not in group-state format, changed to:  ' + keyName, 2)
+                    # the Basis shape key is a member of all groups, each automatically built from positions, Blender version ignored
+                    if (keyName == 'Basis'): continue
+                
+                    if (keyName.find('-') <= 0):
+                        keyName = 'ENTIRE MESH-' + keyName.upper();
+                        TowerOfBabel.warn('WARNING: Key shape not in group-state format, changed to:  ' + keyName, 2)
                     
-                temp = keyName.upper().partition('-')
-                if len(block.data) != len(self.positions):
-                    TowerOfBabel.warn('WARNING: shape key length != positions length, either missing UV map, or mesh too large:  '+ keyName, 2)
-                    continue
-                        
-                rawShapeKeys.append(RawShapeKey(block, temp[0], temp[2], orderMapToNative))
+                    temp = keyName.upper().partition('-')
+                    rawShapeKeys.append(RawShapeKey(block, temp[0], temp[2], keyOrderMap))
                 
-                # check for a new group, add to groupNames if so
-                newGroup = True
-                for group in groupNames:
-                    if temp[0] == group:
-                        newGroup = False
-                        break
-                if newGroup:
-                    groupNames.append(temp[0])
+                    # check for a new group, add to groupNames if so
+                    newGroup = True
+                    for group in groupNames:
+                        if temp[0] == group:
+                            newGroup = False
+                            break
+                    if newGroup:
+                       groupNames.append(temp[0])
                     
-            # process into ShapeKeyGroups, when rawShapeKeys found
-            if (len(groupNames) > 0):
-                self.shapeKeyGroups = []
-                for group in groupNames:
-                    self.shapeKeyGroups.append(ShapeKeyGroup(group, rawShapeKeys, self.positions))
+                # process into ShapeKeyGroups, when rawShapeKeys found
+                if (len(groupNames) > 0):
+                    self.shapeKeyGroups = []
+                    for group in groupNames:
+                        self.shapeKeyGroups.append(ShapeKeyGroup(group, rawShapeKeys, self.positions))
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def get_key_order_map(self, basisKey):
+        basisData = basisKey.data
+        keySz =len(basisData)
+        
+        ret = []
+        positionsSz = len(self.positions)
+        for posIdx in range(0, positionsSz):
+            for keyIdx in range(0, keySz):
+                if same_vertex(basisData[keyIdx].co, self.positions[posIdx]): 
+                    ret.append(keyIdx)
+                    break
+        return ret
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def get_proper_name(self):
         return legal_js_identifier(self.name)
@@ -1095,8 +1121,6 @@ class Mesh(FCurveAnimatable):
             pass
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -      
     def to_scene_file(self, file_handler, meshesAndNodes): 
-        if self.alreadyExported: return
-        
         file_handler.write('{')        
         write_string(file_handler, 'name', self.name, True)        
         write_string(file_handler, 'id', self.name) 
@@ -1155,8 +1179,7 @@ class Mesh(FCurveAnimatable):
         first = True
         file_handler.write('\n,"instances":[')
         for mesh in meshesAndNodes:
-            if hasattr(mesh, 'positions') and mesh.dataName == self.dataName and mesh != self and not mesh.alreadyExported:  # check for positions to be sure not a Node
-                mesh.alreadyExported = True
+            if mesh.dataName == self.dataName and mesh != self:  # nodes have no dataname, so no need to check for
                 if first == False:
                     file_handler.write(',')
                 file_handler.write('{')
@@ -1482,17 +1505,14 @@ class SubMesh:
 #===============================================================================   
 # extract data in Mesh order, no optimization from group analyse yet
 class RawShapeKey:
-    def __init__(self, keyBlock, group, state, orderMapToNative):
+    def __init__(self, keyBlock, group, state, keyOrderMap):
         self.group = group
         self.state = state
         self.vertices = []   
 
-        max_index = len(orderMapToNative)
-        for lookingForIdx in range(0, max_index):
-            for nativeIdx in range(0, max_index):
-                if orderMapToNative[nativeIdx] == lookingForIdx:
-                   self.vertices.append(keyBlock.data[nativeIdx].co)
-                   break;
+        retSz = len(keyOrderMap)
+        for idx in range(0, retSz):
+            self.vertices.append(keyBlock.data[keyOrderMap[idx]].co)
 #===============================================================================
 class ShapeKeyGroup:
     def __init__(self, group, rawShapeKeys, positions):
@@ -1510,30 +1530,20 @@ class ShapeKeyGroup:
             
         # first pass to determine which vertices are not the same across all members of a group & also positions
         for i in range(0, nSize):
-            for keyA in rawShapeKeys:
+            for key in rawShapeKeys:
                 # no need for more checking once 1 difference is found
                 if not sameForAll[i]:
                     break;
                     
                 # skip key if not member of the current group being processed
-                if group != keyA.group:
+                if group != key.group:
                     continue;
                     
-                # check vertex not different from positions (done before inner loop for performance)
-                if not ShapeKeyGroup.same_vertex(keyA.vertices[i],  positions[i]):
+                # check vertex not different from positions, aka. Basis
+                if not same_vertex(key.vertices[i],  positions[i]):
                     sameForAll[i] = False
                     break;
                 
-                # check vertices[i] of keyA against all other keys of this group 
-                for keyB in range(0, nRawKeys):
-                    # skip keyB if not member of the current group being processed, or itself
-                    if group != keyB.group or keyA == keyB:
-                         continue;
-                         
-                    if not ShapeKeyGroup.same_vertex(keyA.vertices[i],  keyB.vertices[i]):
-                       sameForAll[i] = False
-                       break;
-       
         affectedWholeVertices = []
         affectedVertices = []
         # pass to convert sameForAll into self.affectedIndices, build 'BASIS' state at the same time
@@ -1546,7 +1556,7 @@ class ShapeKeyGroup:
                 affectedVertices.append(positions[i])
                 
         self.basisState = affectedVertices
-        TowerOfBabel.log('n Affected for ' + group + ': '+ str(len(affectedWholeVertices)) + ', of ' + str(nSize))
+        TowerOfBabel.log('Shape-key group, ' + group + ', # of affected vertices: '+ str(len(affectedWholeVertices)) + ', out of ' + str(nSize), 2)
                 
         # pass to convert rawShapeKeys in this group, to stateVertices of only affected indices
         for key in rawShapeKeys:
@@ -1592,10 +1602,6 @@ class ShapeKeyGroup:
             file_handler.write(indent  + 'shapeKeyGroup.addShapeKey("' + self.stateNames[state_idx] + '",[\n')
             file_handler.write(indent2 + format_vector_array(self.stateVertices[state_idx], VERTEX_OUTPUT_PER_LINE, indent2) + '\n')
             file_handler.write(indent  + ']);\n')
-            
-    @staticmethod
-    def same_vertex(vertA, vertB):
-        return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
 #===============================================================================
 class Bone:
     def __init__(self, bone, skeleton, scene, index):
@@ -1687,7 +1693,7 @@ class Skeleton:
     def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
-        write_int(file_handler, 'id', self.id)
+        write_int(file_handler, 'id', self.id)  # keep int for legacy of original exporter
         
         file_handler.write(',"bones":[')
         first = True
@@ -1705,7 +1711,7 @@ class Skeleton:
     def core_script(self, file_handler, indent): 
         # specifying scene gets skeleton added to scene in constructor
         file_handler.write(indent + "console.log('defining skeleton:  " + self.name + "');\n")
-        file_handler.write(indent + 'skeleton = new BABYLON.Skeleton("' + self.name + '", "' + format_int(self.id) + '", scene);\n')
+        file_handler.write(indent + 'skeleton = new BABYLON.Skeleton("' + self.name + '", "' + format_int(self.id) + '", scene);\n') # MUST be String for inline
 
         for bone in self.bones:
             bone.core_script(file_handler, indent)
@@ -1928,7 +1934,7 @@ class ShadowGenerator:
 class MultiMaterial:
     def __init__(self, material_slots, idx):
         self.name = TowerOfBabel.nameSpace + '.' + 'Multimaterial#' + str(idx)
-        TowerOfBabel.log('processing begun of multimaterial:  ' + self.name)
+        TowerOfBabel.log('processing begun of multimaterial:  ' + self.name, 2)
         self.materials = []
 
         for mat in material_slots:
@@ -2309,7 +2315,7 @@ def format_quaternion(quaternion):
     return format_f(quaternion.x) + ',' + format_f(quaternion.z) + ',' + format_f(quaternion.y) + ',' + format_f(-quaternion.w)
 
 def format_int(int):
-    candidate = str(int) # when int string of an int, if
+    candidate = str(int) # when int string of an int
     if '.' in candidate:
         return format_f(math.floor(int)) # format_f removes un-neccessary precision
     else:
@@ -2328,6 +2334,9 @@ def scale_vector(vector, mult, xOffset = 0):
     ret.z *= mult
     ret.y *= mult
     return ret
+           
+def same_vertex(vertA, vertB):
+    return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
 #===============================================================================
 # module level methods for writing JSON (.babylon) files
 #===============================================================================
