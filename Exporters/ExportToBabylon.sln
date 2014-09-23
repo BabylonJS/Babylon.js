@@ -1,15 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonExport.Core", "XNA - OBJ\BabylonExport.Core\BabylonExport.Core.csproj", "{CE70B051-FB63-420D-80C0-51CC03A214BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonExport.Interface", "XNA - OBJ\BabylonExport.Interface\BabylonExport.Interface.csproj", "{DEC52846-FFCB-4A66-9F13-64F65B61EDBA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabylonExport", "XNA - OBJ\BabylonExport\BabylonExport.csproj", "{1E0A8EB2-7022-42E2-8970-F0374188A09D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColladaXnaImporter", "XNA - OBJ\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaImporter\ColladaXnaImporter.csproj", "{625E5D7F-86F6-4961-89D0-3835BF261ACC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColladaXnaBase", "XNA - OBJ\BabylonExport.Core\Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaBase\ColladaXnaBase.csproj", "{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,30 +61,6 @@ Global
 		{1E0A8EB2-7022-42E2-8970-F0374188A09D}.Release|x64.Build.0 = Release|x64
 		{1E0A8EB2-7022-42E2-8970-F0374188A09D}.Release|x86.ActiveCfg = Release|x86
 		{1E0A8EB2-7022-42E2-8970-F0374188A09D}.Release|x86.Build.0 = Release|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|x64.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|x86.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Debug|x86.Build.0 = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|Any CPU.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|Mixed Platforms.Build.0 = Release|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|x64.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|x86.ActiveCfg = Debug|x86
-		{625E5D7F-86F6-4961-89D0-3835BF261ACC}.Release|x86.Build.0 = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|x64.ActiveCfg = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|x86.ActiveCfg = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Debug|x86.Build.0 = Debug|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|Any CPU.ActiveCfg = Release|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|Mixed Platforms.Build.0 = Release|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|x64.ActiveCfg = Release|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|x86.ActiveCfg = Release|x86
-		{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
