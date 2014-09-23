@@ -663,6 +663,8 @@
         }
 
         public clear(color: any, backBuffer: boolean, depthStencil: boolean): void {
+            this.applyStates();
+
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
             if (this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
@@ -896,10 +898,14 @@
             }
         }
 
-        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-            // Apply states
+        public applyStates() {
             this._depthCullingState.apply(this._gl);
             this._alphaState.apply(this._gl);
+        }
+
+        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+            // Apply states
+            this.applyStates();
             
             // Render
             if (instancesCount) {
