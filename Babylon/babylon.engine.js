@@ -656,6 +656,8 @@
         };
 
         Engine.prototype.clear = function (color, backBuffer, depthStencil) {
+            this.applyStates();
+
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
             if (this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
@@ -889,10 +891,14 @@
             }
         };
 
-        Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
-            // Apply states
+        Engine.prototype.applyStates = function () {
             this._depthCullingState.apply(this._gl);
             this._alphaState.apply(this._gl);
+        };
+
+        Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+            // Apply states
+            this.applyStates();
 
             // Render
             if (instancesCount) {
