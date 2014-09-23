@@ -4,12 +4,25 @@
     <title>mesh_parent</title>
     <!-- edit path - name of babylon library as required -->
     <script src="./lib/babylon.js"></script>
+    <script src="./lib/mesh_parent_common.js"></script>
     <style>
          html, body   { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; } 
          #renderCanvas{ width: 100%; height: 100%; } 
+         #button      {
+			color: white; background-color: Dimgray;
+			font-size: 14pt; font-weight: bold;
+			padding-left:4pt; padding-right:4pt;
+			
+			border: black outset 2pt; line-height: 2em;
+			cursor: pointer;
+		}     
     </style>
 </head>
 <body>
+	<div id="buttonbar" style="background-color: Darkorange;">
+		<span id="button" onclick="pausePlay()"> Pause - Play </span>
+		<span id="button" onclick="orphanConceive()"> Orhpan - Conceive </span>
+	</div>
 <canvas id="renderCanvas"></canvas>
 <script>
     if (BABYLON.Engine.isSupported()) {
@@ -23,9 +36,10 @@
                 newScene.executeWhenReady(function () {
                     // Attach camera to canvas inputs
                     newScene.activeCamera.attachControl(canvas);
-
+                   
                     // Once the scene is loaded, register a render loop
                     engine.runRenderLoop(function() {
+                    	animate(newScene);
                         newScene.render();
                     });
                 });
