@@ -225,16 +225,6 @@
     <Content Include="Refs\Vertice.Nova.Interop.dll" />
     <Content Include="Refs\Vertice.Wrappers.DirectX.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaBase\ColladaXnaBase.csproj">
-      <Project>{65FE2973-B4E6-49DE-8F57-55490D4B4FD4}</Project>
-      <Name>ColladaXnaBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="Exporters\ThroughXNA\DAE\ColladaXna\ColladaXnaImporter\ColladaXnaImporter.csproj">
-      <Project>{625E5D7F-86F6-4961-89D0-3835BF261ACC}</Project>
-      <Name>ColladaXnaImporter</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
