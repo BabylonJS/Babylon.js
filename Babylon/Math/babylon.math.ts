@@ -30,6 +30,10 @@
             return result;
         }
 
+        public toLuminance(): number {
+            return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
+        }
+
         public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
@@ -253,6 +257,33 @@
 
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        }
+
+        public multiplyInPlace(otherVector: Vector2): void {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+        }
+
+        public multiply(otherVector: Vector2): Vector2 {
+            return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
+        }
+
+        public multiplyToRef(otherVector: Vector2, result: Vector2): void {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+        }
+
+        public multiplyByFloats(x: number, y: number): Vector2 {
+            return new Vector2(this.x * x, this.y * y);
+        }
+
+        public divide(otherVector: Vector2): Vector2 {
+            return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
+        }
+
+        public divideToRef(otherVector: Vector2, result: Vector2): void {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
         }
 
         public negate(): Vector2 {

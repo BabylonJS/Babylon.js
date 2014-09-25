@@ -37,6 +37,10 @@
             return result;
         };
 
+        Color3.prototype.toLuminance = function () {
+            return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
+        };
+
         Color3.prototype.multiply = function (otherColor) {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         };
@@ -287,6 +291,33 @@
 
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        };
+
+        Vector2.prototype.multiplyInPlace = function (otherVector) {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+        };
+
+        Vector2.prototype.multiply = function (otherVector) {
+            return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
+        };
+
+        Vector2.prototype.multiplyToRef = function (otherVector, result) {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+        };
+
+        Vector2.prototype.multiplyByFloats = function (x, y) {
+            return new Vector2(this.x * x, this.y * y);
+        };
+
+        Vector2.prototype.divide = function (otherVector) {
+            return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
+        };
+
+        Vector2.prototype.divideToRef = function (otherVector, result) {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
         };
 
         Vector2.prototype.negate = function () {
