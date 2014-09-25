@@ -3,8 +3,10 @@
 
     export class FresnelParameters {
         public isEnabled = true;
-        public leftColor = Color3.Black();
-        public rightColor = Color3.White();
+        public leftColor = Color3.White();
+        public rightColor = Color3.Black();
+        public bias = 0;
+        public power = 1;
     }
 
     export class StandardMaterial extends Material {
@@ -26,12 +28,12 @@
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
         public reflectionFresnelParameters: FresnelParameters;
+        public emissiveFresnelParameters: FresnelParameters;
 
         private _cachedDefines = null;
         private _renderTargets = new BABYLON.SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = BABYLON.Matrix.Zero();
         private _globalAmbientColor = new BABYLON.Color3(0, 0, 0);
-        private _baseColor = new BABYLON.Color3();
         private _scaledDiffuse = new BABYLON.Color3();
         private _scaledSpecular = new BABYLON.Color3();
         private _renderId: number;
@@ -51,7 +53,7 @@
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture();
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
@@ -264,11 +266,39 @@
             }
 
             // Fresnel
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled ||
+                this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled ||
+                this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled ||
+                this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+
+                var fresnelRank = 1;
+
+                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                    defines.push("#define DIFFUSEFRESNEL");
+                    fallbacks.addFallback(fresnelRank, "DIFFUSEFRESNEL");
+                    fresnelRank++;
+                }
+
+                if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                    defines.push("#define OPACITYFRESNEL");
+                    fallbacks.addFallback(fresnelRank, "OPACITYFRESNEL");
+                    fresnelRank++;
+                }
+
+                if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                    defines.push("#define REFLECTIONFRESNEL");
+                    fallbacks.addFallback(fresnelRank, "REFLECTIONFRESNEL");
+                    fresnelRank++;
+                }
+
+                if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                    defines.push("#define EMISSIVEFRESNEL");
+                    fallbacks.addFallback(fresnelRank, "EMISSIVEFRESNEL");
+                    fresnelRank++;
+                }
+
                 defines.push("#define FRESNEL");
-                defines.push("#define DIFFUSEFRESNEL");
-                fallbacks.addFallback(1, "FRESNEL");
-                fallbacks.addFallback(1, "DIFFUSEFRESNEL");
+                fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
             }
 
 
@@ -329,7 +359,7 @@
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
                         "darkness0", "darkness1", "darkness2", "darkness3",
-                        "diffuseLeftColor", "diffuseRightColor"
+                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -358,7 +388,6 @@
 
         public bind(world: Matrix, mesh: Mesh): void {
             var scene = this.getScene();
-            this._baseColor.copyFrom(this.diffuseColor);
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -371,8 +400,22 @@
 
             // Fresnel
             if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                this._effect.setColor3("diffuseLeftColor", this.diffuseFresnelParameters.leftColor);
-                this._effect.setColor3("diffuseRightColor", this.diffuseFresnelParameters.rightColor);
+                this._effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
+                this._effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
+            }
+
+            if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                this._effect.setColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+            }
+
+            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
+                this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+            }
+
+            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                this._effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
             }
 
             // Textures        
@@ -381,8 +424,6 @@
 
                 this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
                 this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
-
-                this._baseColor.copyFromFloats(1, 1, 1);
             }
 
             if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
@@ -436,7 +477,7 @@
 
             this._effect.setVector3("vEyePosition", scene.activeCamera.position);
             this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-            this._effect.setColor4("vDiffuseColor", this._baseColor, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 

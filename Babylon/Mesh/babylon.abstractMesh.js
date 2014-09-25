@@ -23,6 +23,7 @@ var BABYLON;
             this.showSubMeshesBoundingBox = false;
             this.onDispose = null;
             this.checkCollisions = false;
+            this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
             this.renderOutline = false;

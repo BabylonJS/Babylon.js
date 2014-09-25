@@ -14,7 +14,7 @@
         
 
         public get isDirty(): boolean {
-            return this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
         }
 
         public get cullFace(): number {

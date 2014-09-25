@@ -41,6 +41,7 @@
         public showSubMeshesBoundingBox = false;
         public onDispose = null;
         public checkCollisions = false;
+        public isBlocker = false;
         public skeleton: Skeleton;
         public renderingGroupId = 0;
         public material: Material;

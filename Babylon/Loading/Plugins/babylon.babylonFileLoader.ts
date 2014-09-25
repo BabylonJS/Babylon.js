@@ -90,6 +90,8 @@
         fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
         fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
         fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+        fresnelParameters.bias = parsedFresnelParameters.bias;
+        fresnelParameters.power = parsedFresnelParameters.power || 1.0;
 
         return fresnelParameters;
     }
@@ -142,6 +144,10 @@
 
         if (parsedMaterial.emissiveTexture) {
             material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
+        }
+
+        if (parsedMaterial.emissiveFresnelParameters) {
+            material.emissiveFresnelParameters = parseFresnelParameters(parsedMaterial.emissiveFresnelParameters);
         }
 
         if (parsedMaterial.specularTexture) {

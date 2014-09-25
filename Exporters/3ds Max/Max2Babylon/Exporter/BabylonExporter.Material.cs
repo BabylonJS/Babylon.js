@@ -18,9 +18,7 @@ namespace Max2Babylon
 
             if (materialNode.NumSubMtls > 0)
             {
-                var babylonMultimaterial = new BabylonMultiMaterial();
-                babylonMultimaterial.name = name;
-                babylonMultimaterial.id = id;
+                var babylonMultimaterial = new BabylonMultiMaterial {name = name, id = id};
 
                 var guids = new List<string>();
 
@@ -51,19 +49,21 @@ namespace Max2Babylon
             }
 
 
-            var babylonMaterial = new BabylonMaterial();
-            babylonMaterial.name = name;
-            babylonMaterial.id = id;
+            var babylonMaterial = new BabylonMaterial
+            {
+                name = name,
+                id = id,
+                ambient = materialNode.GetAmbient(0, false).ToArray(),
+                diffuse = materialNode.GetDiffuse(0, false).ToArray(),
+                specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false)),
+                specularPower = materialNode.GetShininess(0, false)*256,
+                emissive =
+                    materialNode.GetSelfIllumColorOn(0, false)
+                        ? materialNode.GetSelfIllumColor(0, false).ToArray()
+                        : materialNode.GetDiffuse(0, false).Scale(materialNode.GetSelfIllum(0, false)),
+                alpha = 1.0f - materialNode.GetXParency(0, false)
+            };
 
-            
-
-            babylonMaterial.ambient = materialNode.GetAmbient(0, false).ToArray();
-            babylonMaterial.diffuse = materialNode.GetDiffuse(0, false).ToArray();
-            babylonMaterial.specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false));
-            babylonMaterial.specularPower = materialNode.GetShininess(0, false) * 256;
-
-            babylonMaterial.emissive = materialNode.GetSelfIllumColorOn(0, false) ? materialNode.GetSelfIllumColor(0, false).ToArray() : materialNode.GetDiffuse(0, false).Scale(materialNode.GetSelfIllum(0, false));
-            babylonMaterial.alpha = 1.0f - materialNode.GetXParency(0, false);
 
             var stdMat = materialNode.GetParamBlock(0).Owner as IStdMat2;
 
@@ -73,13 +73,41 @@ namespace Max2Babylon
                 babylonMaterial.wireframe = stdMat.Wire;
 
                 // Textures
-                babylonMaterial.ambientTexture = ExportTexture(stdMat, 0, babylonScene);                // Ambient
-                babylonMaterial.diffuseTexture = ExportTexture(stdMat, 1, babylonScene);                // Diffuse
-                babylonMaterial.specularTexture = ExportTexture(stdMat, 2, babylonScene);               // Specular
-                babylonMaterial.emissiveTexture = ExportTexture(stdMat, 5, babylonScene);               // Emissive
-                babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, babylonScene, false, true);   // Opacity
-                babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, babylonScene);                   // Bump
-                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, babylonScene, true);       // Reflection
+                BabylonFresnelParameters fresnelParameters;
+
+                babylonMaterial.ambientTexture = ExportTexture(stdMat, 0, out fresnelParameters, babylonScene);                // Ambient
+                babylonMaterial.diffuseTexture = ExportTexture(stdMat, 1, out fresnelParameters, babylonScene);                // Diffuse
+                if (fresnelParameters != null)
+                {
+                    babylonMaterial.diffuseFresnelParameters = fresnelParameters;
+                }
+
+                babylonMaterial.specularTexture = ExportTexture(stdMat, 2, out fresnelParameters, babylonScene);               // Specular
+                babylonMaterial.emissiveTexture = ExportTexture(stdMat, 5, out fresnelParameters, babylonScene);               // Emissive
+                if (fresnelParameters != null)
+                {
+                    babylonMaterial.emissiveFresnelParameters = fresnelParameters;
+                }
+                
+                babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, out fresnelParameters, babylonScene, false, true);   // Opacity
+                if (fresnelParameters != null)
+                {
+                    babylonMaterial.opacityFresnelParameters = fresnelParameters;
+                }
+
+                babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, out fresnelParameters, babylonScene);                   // Bump
+                babylonMaterial.reflectionTexture = ExportTexture(stdMat, 9, out fresnelParameters, babylonScene, true);       // Reflection
+                if (fresnelParameters != null)
+                {
+                    if (babylonMaterial.reflectionTexture == null)
+                    {
+                        RaiseWarning("Fallout cannot be used with reflection channel without a texture", 2);
+                    }
+                    else
+                    {
+                        babylonMaterial.reflectionFresnelParameters = fresnelParameters;                        
+                    }
+                }
 
                 // Constraints
                 if (babylonMaterial.diffuseTexture != null)
