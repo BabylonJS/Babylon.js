@@ -54,6 +54,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Skybox
  - Vertex color
  - Bones (Animations and shadows are supported)
+ - Fresnel term for diffuse, opacity, emissive and reflection
 -  Special FX
  - Fog
  - Alpha blending
