@@ -7,7 +7,7 @@
         public cellIndex = 0;
         public invertU = 0;
         public invertV = 0;
-        public disposeWhenFinishedAnimating: () => void;
+        public disposeWhenFinishedAnimating: boolean;
         public animations = new Array<Animation>();
 
         private _animationStarted = false;

@@ -4205,7 +4205,7 @@ var BABYLON;
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                });
+                }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
                     var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
@@ -16787,6 +16787,18 @@ var BABYLON;
         return serializationObject;
     };
 
+    var serializeFresnelParameter = function (fresnelParameter) {
+        var serializationObject = {};
+
+        serializationObject.isEnabled = fresnelParameter.isEnabled;
+        serializationObject.leftColor = fresnelParameter.leftColor;
+        serializationObject.rightColor = fresnelParameter.rightColor;
+        serializationObject.bias = fresnelParameter.bias;
+        serializationObject.power = fresnelParameter.power;
+
+        return serializationObject;
+    };
+
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
@@ -16919,6 +16931,10 @@ var BABYLON;
             serializationObject.diffuseTexture = serializeTexture(material.diffuseTexture);
         }
 
+        if (material.diffuseFresnelParameters) {
+            serializationObject.diffuseFresnelParameters = serializeFresnelParameter(material.diffuseFresnelParameters);
+        }
+
         if (material.ambientTexture) {
             serializationObject.ambientTexture = serializeTexture(material.ambientTexture);
         }
@@ -16927,12 +16943,24 @@ var BABYLON;
             serializationObject.opacityTexture = serializeTexture(material.opacityTexture);
         }
 
+        if (material.opacityFresnelParameters) {
+            serializationObject.opacityFresnelParameters = serializeFresnelParameter(material.opacityFresnelParameters);
+        }
+
         if (material.reflectionTexture) {
             serializationObject.reflectionTexture = serializeTexture(material.reflectionTexture);
         }
 
+        if (material.reflectionFresnelParameters) {
+            serializationObject.reflectionFresnelParameters = serializeFresnelParameter(material.reflectionFresnelParameters);
+        }
+
         if (material.emissiveTexture) {
             serializationObject.emissiveTexture = serializeTexture(material.emissiveTexture);
+        }
+
+        if (material.emissiveFresnelParameters) {
+            serializationObject.emissiveFresnelParameters = serializeFresnelParameter(material.emissiveFresnelParameters);
         }
 
         if (material.specularTexture) {
