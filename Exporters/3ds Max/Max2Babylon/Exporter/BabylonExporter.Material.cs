@@ -87,6 +87,12 @@ namespace Max2Babylon
                 if (fresnelParameters != null)
                 {
                     babylonMaterial.emissiveFresnelParameters = fresnelParameters;
+                    if (babylonMaterial.emissive[0] == 0 && 
+                        babylonMaterial.emissive[1] == 0 &&
+                        babylonMaterial.emissive[2] == 0)
+                    {
+                        babylonMaterial.emissive = new float[]{1, 1, 1};
+                    }
                 }
                 
                 babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, out fresnelParameters, babylonScene, false, true);   // Opacity

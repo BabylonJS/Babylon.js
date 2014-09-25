@@ -1418,7 +1418,7 @@
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                });
+                }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, imgs => {
                     var width = getExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
