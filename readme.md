@@ -13,6 +13,10 @@ Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can lear
 
 Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
 
+3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
+
+Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
+
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
 - [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
