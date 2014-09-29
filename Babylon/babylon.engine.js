@@ -1676,15 +1676,14 @@
 
             var deg = 360;
 
-            imgBack.addEventListener("transitionend", function () {
+            var onTransitionEnd = function () {
                 deg += 360;
                 imgBack.style.transform = "rotateZ(" + deg + "deg)";
-            });
-
-            imgBack.addEventListener("webkitTransitionEnd", function () {
-                deg += 360;
                 imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
-            });
+            };
+
+            imgBack.addEventListener("transitionend", onTransitionEnd);
+            imgBack.addEventListener("webkitTransitionEnd", onTransitionEnd);
 
             this._loadingDiv.appendChild(imgBack);
 

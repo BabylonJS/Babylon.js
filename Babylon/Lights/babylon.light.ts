@@ -38,7 +38,7 @@
                 return false;
             }
 
-            if (this.includedOnlyMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
 
