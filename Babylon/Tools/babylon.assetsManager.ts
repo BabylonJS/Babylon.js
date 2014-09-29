@@ -138,6 +138,8 @@
 
                 onError();
             };
+
+            img.src = this.url;
         }
     }
 

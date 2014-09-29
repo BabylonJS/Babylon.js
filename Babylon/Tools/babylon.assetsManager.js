@@ -120,6 +120,8 @@
 
                 onError();
             };
+
+            img.src = this.url;
         };
         return ImageAssetTask;
     })();

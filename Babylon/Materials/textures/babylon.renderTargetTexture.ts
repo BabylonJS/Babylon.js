@@ -6,6 +6,7 @@
         public coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
+        public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
         private _size: number;

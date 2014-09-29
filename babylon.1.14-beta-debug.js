@@ -8259,16 +8259,11 @@ var BABYLON;
                 skeleton.prepare();
             }
 
-            for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                var renderTarget = this.customRenderTargets[customIndex];
-                this._renderTargets.push(renderTarget);
-            }
-
            
             var beforeRenderTargetDate = new Date().getTime();
             if (this.renderTargetsEnabled) {
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    renderTarget = this._renderTargets.data[renderIndex];
+                    var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         renderTarget.render();
@@ -8280,7 +8275,7 @@ var BABYLON;
             if (this._renderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration = new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
 
            
             this.postProcessManager._prepareFrame();
@@ -8420,6 +8415,37 @@ var BABYLON;
             if (this._physicsEngine) {
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
             }
+
+           
+            var beforeRenderTargetDate = new Date().getTime();
+            var engine = this.getEngine();
+            if (this.renderTargetsEnabled) {
+                for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
+                    var renderTarget = this.customRenderTargets[customIndex];
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+
+                        if (!this.activeCamera)
+                            throw new Error("Active camera not set");
+
+                       
+                        engine.setViewport(this.activeCamera.viewport);
+
+                       
+                        this.updateTransformMatrix();
+
+                        renderTarget.render();
+                    }
+                }
+                this._renderId++;
+            }
+
+            if (this.customRenderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
+            }
+            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
 
            
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
@@ -25283,6 +25309,8 @@ var BABYLON;
 
                 onError();
             };
+
+            img.src = this.url;
         };
         return ImageAssetTask;
     })();
