@@ -1672,12 +1672,18 @@
             imgBack.style.marginLeft = "-50px";
             imgBack.style.marginTop = "-50px";
             imgBack.style.transition = "transform 1.0s ease";
+            imgBack.style.webkitTransition = "-webkit-transform 1.0s ease";
 
             var deg = 360;
 
             imgBack.addEventListener("transitionend", function () {
                 deg += 360;
                 imgBack.style.transform = "rotateZ(" + deg + "deg)";
+            });
+
+            imgBack.addEventListener("webkitTransitionEnd", function () {
+                deg += 360;
+                imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
             });
 
             this._loadingDiv.appendChild(imgBack);
@@ -1713,6 +1719,7 @@
             setTimeout(function () {
                 _this._loadingDiv.style.opacity = "1";
                 imgBack.style.transform = "rotateZ(360deg)";
+                imgBack.style.webkitTransform = "rotateZ(360deg)";
             }, 0);
         };
 

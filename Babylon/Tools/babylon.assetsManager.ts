@@ -107,6 +107,40 @@
         }
     }
 
+    export class ImageAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public image: HTMLImageElement;
+
+        constructor(public name: string, public url: string) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+            var img = new Image();
+
+            img.onload = () => {
+                this.image = img;
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            img.onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+        }
+    }
+
     export class AssetsManager {
         private _tasks = new Array<IAssetTask>();
         private _scene: Scene;
@@ -139,6 +173,13 @@
 
         public addBinaryFileTask(taskName: string, url: string): IAssetTask {
             var task = new BinaryFileAssetTask(taskName, url);
+            this._tasks.push(task);
+
+            return task;
+        }
+
+        public addImageTask(taskName: string, url: string): IAssetTask {
+            var task = new ImageAssetTask(taskName, url);
             this._tasks.push(task);
 
             return task;

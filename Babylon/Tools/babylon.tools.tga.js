@@ -98,7 +98,7 @@ var BABYLON;
                     var localOffset = 0;
                     var pixels = new Uint8Array(pixel_size);
 
-                    while (offset < pixel_total) {
+                    while (offset < pixel_total && localOffset < pixel_total) {
                         c = data[offset++];
                         count = (c & 0x7f) + 1;
 
