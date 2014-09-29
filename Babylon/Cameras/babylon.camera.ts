@@ -11,8 +11,8 @@
         public orthoBottom = null;
         public orthoTop = null;
         public fov = 0.8;
-        public minZ = 0.1;
-        public maxZ = 1000.0;
+        public minZ = 1.0;
+        public maxZ = 10000.0;
         public inertia = 0.9;
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;

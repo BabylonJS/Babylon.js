@@ -4468,15 +4468,14 @@ var BABYLON;
 
             var deg = 360;
 
-            imgBack.addEventListener("transitionend", function () {
+            var onTransitionEnd = function () {
                 deg += 360;
                 imgBack.style.transform = "rotateZ(" + deg + "deg)";
-            });
-
-            imgBack.addEventListener("webkitTransitionEnd", function () {
-                deg += 360;
                 imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
-            });
+            };
+
+            imgBack.addEventListener("transitionend", onTransitionEnd);
+            imgBack.addEventListener("webkitTransitionEnd", onTransitionEnd);
 
             this._loadingDiv.appendChild(imgBack);
 
@@ -5127,7 +5126,7 @@ var BABYLON;
                 return false;
             }
 
-            if (this.includedOnlyMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
 
@@ -6000,8 +5999,8 @@ var BABYLON;
             this.orthoBottom = null;
             this.orthoTop = null;
             this.fov = 0.8;
-            this.minZ = 0.1;
-            this.maxZ = 1000.0;
+            this.minZ = 1.0;
+            this.maxZ = 10000.0;
             this.inertia = 0.9;
             this.mode = Camera.PERSPECTIVE_CAMERA;
             this.isIntermediate = false;
