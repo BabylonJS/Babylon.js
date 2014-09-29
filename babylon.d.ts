@@ -263,6 +263,10 @@ interface MouseEvent {
     msMovementX: number;
     msMovementY: number;
 }
+interface MSStyleCSSProperties {
+    webkitTransform: string;
+    webkitTransition: string;
+}
 declare module BABYLON {
     class Node {
         public parent: Node;
@@ -3158,6 +3162,16 @@ declare module BABYLON {
         constructor(name: string, url: string);
         public run(scene: Scene, onSuccess: () => void, onError: () => void): void;
     }
+    class ImageAssetTask implements IAssetTask {
+        public name: string;
+        public url: string;
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+        public isCompleted: boolean;
+        public image: HTMLImageElement;
+        constructor(name: string, url: string);
+        public run(scene: Scene, onSuccess: () => void, onError: () => void): void;
+    }
     class AssetsManager {
         private _tasks;
         private _scene;
@@ -3170,6 +3184,7 @@ declare module BABYLON {
         public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): IAssetTask;
         public addTextFileTask(taskName: string, url: string): IAssetTask;
         public addBinaryFileTask(taskName: string, url: string): IAssetTask;
+        public addImageTask(taskName: string, url: string): IAssetTask;
         private _decreaseWaitingTasksCount();
         private _runTask(task);
         public reset(): AssetsManager;
