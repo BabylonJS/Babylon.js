@@ -1104,6 +1104,10 @@
 
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         }
+		
+		public static Inverse(q: Quaternion): Quaternion {
+			return new Quaternion(-q.x, -q.y, -q.z, q.w);
+		}		
     }
 
     export class Matrix {
