@@ -24,6 +24,7 @@
         public specularPower = 64;
         public emissiveColor = new BABYLON.Color3(0, 0, 0);
         public useAlphaFromDiffuseTexture = false;
+        public useSpecularOverAlpha = true;
 
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
@@ -155,6 +156,11 @@
             }
 
             // Effect
+            if (this.useSpecularOverAlpha) {
+                defines.push("#define SPECULAROVERALPHA");
+                fallbacks.addFallback(0, "SPECULAROVERALPHA");
+            }
+
             if (scene.clipPlane) {
                 defines.push("#define CLIPPLANE");
             }

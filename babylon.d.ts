@@ -1582,6 +1582,7 @@ declare module BABYLON {
         public specularPower: number;
         public emissiveColor: Color3;
         public useAlphaFromDiffuseTexture: boolean;
+        public useSpecularOverAlpha: boolean;
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
         public reflectionFresnelParameters: FresnelParameters;
@@ -1691,6 +1692,7 @@ declare module BABYLON {
         public coordinatesMode: number;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
+        public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
         private _size;
         public _generateMipMaps: boolean;
@@ -1950,6 +1952,7 @@ declare module BABYLON {
         public toEulerAngles(): Vector3;
         public toRotationMatrix(result: Matrix): void;
         public fromRotationMatrix(matrix: Matrix): void;
+        static Inverse(q: Quaternion): Quaternion;
         static RotationAxis(axis: Vector3, angle: number): Quaternion;
         static FromArray(array: number[], offset?: number): Quaternion;
         static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;

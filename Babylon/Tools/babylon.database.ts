@@ -136,13 +136,7 @@ module BABYLON {
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
                         this.db = (<any>(event.target)).result;
-                        try {
-                            if (event.oldVersion > 0) {
-                                this.db.deleteObjectStore("scenes");
-                                this.db.deleteObjectStore("versions");
-                                this.db.deleteObjectStore("textures");
-                            }
-                            
+                        try {                            
                             var scenesStore = this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
                             var versionsStore = this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
                             var texturesStore = this.db.createObjectStore("textures", { keyPath: "textureUrl" });
