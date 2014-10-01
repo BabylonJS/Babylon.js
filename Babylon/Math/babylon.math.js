@@ -1065,6 +1065,10 @@
         };
 
         // Statics
+        Quaternion.Inverse = function (q) {
+            return new Quaternion(-q.x, -q.y, -q.z, q.w);
+        };
+
         Quaternion.RotationAxis = function (axis, angle) {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);

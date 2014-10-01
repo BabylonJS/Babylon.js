@@ -31,6 +31,7 @@ var BABYLON;
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
+            this.useSpecularOverAlpha = true;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -151,6 +152,11 @@ var BABYLON;
             }
 
             // Effect
+            if (this.useSpecularOverAlpha) {
+                defines.push("#define SPECULAROVERALPHA");
+                fallbacks.addFallback(0, "SPECULAROVERALPHA");
+            }
+
             if (scene.clipPlane) {
                 defines.push("#define CLIPPLANE");
             }
