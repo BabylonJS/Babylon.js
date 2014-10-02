@@ -920,6 +920,13 @@
             this.z = other.z;
             this.w = other.w;
         };
+		
+		Quaternion.prototype.copyFromFloats = function (x, y, z, w) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        };
 
         Quaternion.prototype.add = function (other) {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
@@ -961,6 +968,14 @@
         };
 
         Quaternion.prototype.toEulerAngles = function () {
+            var result = BABYLON.Vector3.Zero();
+
+            Quaternion.toEulerAnglesToRef(result);
+
+            return result;
+        };
+
+        Quaternion.prototype.toEulerAnglesToRef = function (result) {
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
@@ -983,7 +998,9 @@
                 roll = 0;
             }
 
-            return new Vector3(pitch, yaw, roll);
+            result.x = pitch;
+            result.y = yaw;
+            result.z = roll;
         };
 
         Quaternion.prototype.toRotationMatrix = function (result) {

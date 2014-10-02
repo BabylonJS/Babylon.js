@@ -885,6 +885,13 @@
             this.z = other.z;
             this.w = other.w;
         }
+		
+		public copyFromFloats(x: number, y: number, z: number, w: number): void {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        };
 
         public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
@@ -924,8 +931,16 @@
             this.z *= length;
             this.w *= length;
         }
+		
+		public toEulerAngles(): Vector3 {
+            var result = Vector3.Zero();
 
-        public toEulerAngles(): Vector3 {
+            this.toEulerAnglesToRef(result);
+
+            return result;
+        }
+
+        public toEulerAnglesToRef(result: Vector3): void {
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
@@ -948,7 +963,9 @@
                 roll = 0;
             }
 
-            return new Vector3(pitch, yaw, roll);
+            result.x = pitch;
+            result.y = yaw;
+            result.z = roll;
         }
 
         public toRotationMatrix(result: Matrix): void {
