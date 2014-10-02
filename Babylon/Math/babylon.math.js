@@ -920,8 +920,8 @@
             this.z = other.z;
             this.w = other.w;
         };
-		
-		Quaternion.prototype.copyFromFloats = function (x, y, z, w) {
+
+        Quaternion.prototype.copyFromFloats = function (x, y, z, w) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -968,9 +968,9 @@
         };
 
         Quaternion.prototype.toEulerAngles = function () {
-            var result = BABYLON.Vector3.Zero();
+            var result = Vector3.Zero();
 
-            Quaternion.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result);
 
             return result;
         };
