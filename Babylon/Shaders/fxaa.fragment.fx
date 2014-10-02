@@ -1,5 +1,5 @@
 ﻿#ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
 
 #define FXAA_REDUCE_MIN   (1.0/128.0)

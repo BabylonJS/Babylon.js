@@ -891,7 +891,7 @@
             this.y = y;
             this.z = z;
             this.w = w;
-        };
+        }
 
         public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
