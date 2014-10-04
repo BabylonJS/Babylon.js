@@ -514,12 +514,19 @@ var BABYLON;
 
                 scene._addPendingData(that);
 
+                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1) ? true : false;
+
                 BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
-                    _this._delayLoadingFunction(JSON.parse(data), _this);
+                    if (data instanceof ArrayBuffer) {
+                        _this._delayLoadingFunction(data, _this);
+                    } else {
+                        _this._delayLoadingFunction(JSON.parse(data), _this);
+                    }
+
                     _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(_this);
                 }, function () {
-                }, scene.database);
+                }, scene.database, getBinaryData);
             }
         };
 
