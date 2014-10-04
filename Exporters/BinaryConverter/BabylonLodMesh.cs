@@ -162,6 +162,9 @@ namespace BabylonBinaryConverter
         public AttrDesc matricesWeightsAttrDesc { get; set; }
 
         [DataMember]
+        public AttrDesc subMeshesAttrDesc { get; set; }
+
+        [DataMember]
         public AttrDesc combinedAttrDesc { get; set; }
 
         [DataMember]
@@ -187,6 +190,8 @@ namespace BabylonBinaryConverter
             matricesIndicesAttrDesc = new AttrDesc();
             matricesWeightsAttrDesc = new AttrDesc();
 
+            subMeshesAttrDesc = new AttrDesc();
+
             combinedAttrDesc = new AttrDesc();
             vertexAttributes = VertexAttributes.Undefined;
         }
@@ -201,20 +206,21 @@ namespace BabylonBinaryConverter
                 LoadMeshData(Path.Combine(srcPath, delayLoadingFile));
 
             if (string.IsNullOrEmpty(delayLoadingFile))
+                //delayLoadingFile = name + fileEXT;
                 delayLoadingFile = id + fileEXT;
             else
                 delayLoadingFile = Path.GetFileNameWithoutExtension(delayLoadingFile) + fileEXT;
 
+            
             string fullPath = Path.Combine(dstPath, delayLoadingFile);
 
             if (localMatrix == null)
                 localMatrix = Matrix.Identity.ToArray();
 
-            if (boundingBoxMinimum == null || boundingBoxMaximum == null)
-                CalculateBoundingBox();
+            CalculateBoundingBox();
 
             if (!_combined)
-                MultipleBuffers(fullPath);
+                WriteMultipleBuffers(fullPath);
 
             else
                 VertexBuffer(fullPath);
@@ -227,19 +233,19 @@ namespace BabylonBinaryConverter
             {
                 string filename = WebUtility.UrlDecode(srcFilename);
 
-                IncrMeshData meshData = JsonConvert.DeserializeObject<IncrMeshData>(File.ReadAllText(filename));
+                IncrMeshData incrMeshData = JsonConvert.DeserializeObject<IncrMeshData>(File.ReadAllText(filename));
 
-                positions = meshData.positions;
-                colors = meshData.colors;
-                normals = meshData.normals;
-                uvs = meshData.uvs;
-                uvs2 = meshData.uvs2;
-                indices = meshData.indices;
+                positions = incrMeshData.positions;
+                colors = incrMeshData.colors;
+                normals = incrMeshData.normals;
+                uvs = incrMeshData.uvs;
+                uvs2 = incrMeshData.uvs2;
+                indices = incrMeshData.indices;
 
-                matricesIndices = meshData.matricesIndices;
-                matricesWeights = meshData.matricesWeights;
+                matricesIndices = incrMeshData.matricesIndices;
+                matricesWeights = incrMeshData.matricesWeights;
 
-                subMeshes = meshData.subMeshes;
+                subMeshes = incrMeshData.subMeshes;
             }
             catch (Exception ex)
             {
@@ -253,7 +259,7 @@ namespace BabylonBinaryConverter
         }
         
         
-        private void MultipleBuffers(string fullPath)
+        private void WriteMultipleBuffers(string fullPath)
         {
             try
             {
@@ -314,6 +320,8 @@ namespace BabylonBinaryConverter
 
                         hasUVs = true;
 
+                        writer.Flush();
+
                         uvs = null;
                     }
 
@@ -328,6 +336,8 @@ namespace BabylonBinaryConverter
                             writer.Write(uvs2[x]);
 
                         hasUVs2 = true;
+
+                        writer.Flush();
 
                         uvs2 = null;
                     }
@@ -373,6 +383,30 @@ namespace BabylonBinaryConverter
                         hasMatricesWeights = true;
 
                         matricesWeights = null;
+                    }
+
+                    if(subMeshes != null && subMeshes.Length > 0)
+                    {
+                        subMeshesAttrDesc.count = subMeshes.Length;
+                        subMeshesAttrDesc.stride = 5;
+                        subMeshesAttrDesc.offset = stream.Length;
+                        subMeshesAttrDesc.dataType = DataType.Int32;
+
+                        int[] smData = new int[5];
+
+                        for (int x = 0; x < subMeshes.Length; x++)
+                        {
+                            smData[0] = subMeshes[x].materialIndex;
+                            smData[1] = subMeshes[x].verticesStart;
+                            smData[2] = subMeshes[x].verticesCount;
+                            smData[3] = subMeshes[x].indexStart;
+                            smData[4] = subMeshes[x].indexCount;
+
+                            for (int y = 0; y < smData.Length; y++)
+                                writer.Write(smData[y]);
+                        }
+
+                        subMeshes = null;
                     }
                 }
             }

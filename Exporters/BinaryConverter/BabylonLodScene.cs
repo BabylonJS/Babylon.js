@@ -12,6 +12,9 @@ namespace BabylonBinaryConverter
         [DataMember]
         public new BabylonLodMesh[] meshes { get; set; }
 
+        [DataMember]
+        public bool useDelayedTextureLoading { get; set; }
+
 
         public BabylonLodScene(string outputPath) : base(outputPath)
         {
