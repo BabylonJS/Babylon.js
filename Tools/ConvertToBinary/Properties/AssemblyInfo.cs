@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BabylonBinaryConverter")]
+[assembly: AssemblyTitle("ConvertToBinary")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("BabylonBinaryConverter")]
+[assembly: AssemblyProduct("ConvertToBinary")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("155c78d1-0e27-4e85-863a-d96a418007cc")]
+[assembly: Guid("4e8c456c-1bd6-43fb-b67b-0dfbee0c468d")]
 
 // Version information for an assembly consists of the following four values:
 //

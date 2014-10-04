@@ -10,7 +10,7 @@
         public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
-        public _binaryInfo : BinaryAttrData;
+        public _binaryInfo: any;
 
         // Private
         public _geometry: Geometry;

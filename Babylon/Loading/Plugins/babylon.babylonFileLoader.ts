@@ -269,19 +269,19 @@
             var data;
 
             switch (dataType) {
-            case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
-                data = key.values[0];
-                break;
-            case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-                data = BABYLON.Quaternion.FromArray(key.values);
-                break;
-            case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-                data = BABYLON.Matrix.FromArray(key.values);
-                break;
-            case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
-            default:
-                data = BABYLON.Vector3.FromArray(key.values);
-                break;
+                case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+                    data = key.values[0];
+                    break;
+                case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
+                    data = BABYLON.Quaternion.FromArray(key.values);
+                    break;
+                case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
+                    data = BABYLON.Matrix.FromArray(key.values);
+                    break;
+                case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+                default:
+                    data = BABYLON.Vector3.FromArray(key.values);
+                    break;
             }
 
             keys.push({
@@ -299,20 +299,20 @@
         var light;
 
         switch (parsedLight.type) {
-        case 0:
-            light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), scene);
-            break;
-        case 1:
-            light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
-            light.position = BABYLON.Vector3.FromArray(parsedLight.position);
-            break;
-        case 2:
-            light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
-            break;
-        case 3:
-            light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
-            light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
-            break;
+            case 0:
+                light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), scene);
+                break;
+            case 1:
+                light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
+                light.position = BABYLON.Vector3.FromArray(parsedLight.position);
+                break;
+            case 2:
+                light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
+                break;
+            case 3:
+                light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
+                light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
+                break;
         }
 
         light.id = parsedLight.id;
@@ -1156,8 +1156,7 @@
 
                 if (camera instanceof BABYLON.FreeCamera) {
                     var freecamera = <FreeCamera>camera;
-                    if (freecamera._waitingLockedTargetId)
-                    {
+                    if (freecamera._waitingLockedTargetId) {
                         freecamera.lockedTarget = scene.getLastEntryByID(freecamera._waitingLockedTargetId);
                         delete freecamera._waitingLockedTargetId;
                     }

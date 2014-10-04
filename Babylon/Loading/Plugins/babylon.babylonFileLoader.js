@@ -608,6 +608,10 @@
                 mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
                 mesh._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMinimum), BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMaximum));
 
+                if (parsedMesh._binaryInfo) {
+                    mesh._binaryInfo = parsedMesh._binaryInfo;
+                }
+
                 mesh._delayInfo = [];
                 if (parsedMesh.hasUVs) {
                     mesh._delayInfo.push(BABYLON.VertexBuffer.UVKind);
@@ -793,6 +797,65 @@
                 if (geometry) {
                     geometry.applyToMesh(mesh);
                 }
+            } else if (parsedGeometry instanceof ArrayBuffer) {
+                var binaryInfo = mesh._binaryInfo;
+
+                if (binaryInfo.positionsAttrDesc && binaryInfo.positionsAttrDesc.count > 0) {
+                    var positionsData = new Float32Array(parsedGeometry, binaryInfo.positionsAttrDesc.offset, binaryInfo.positionsAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, positionsData, false);
+                }
+
+                if (binaryInfo.normalsAttrDesc && binaryInfo.normalsAttrDesc.count > 0) {
+                    var normalsData = new Float32Array(parsedGeometry, binaryInfo.normalsAttrDesc.offset, binaryInfo.normalsAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, normalsData, false);
+                }
+
+                if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
+                    var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvsData, false);
+                }
+
+                if (binaryInfo.uvs2AttrDesc && binaryInfo.uvs2AttrDesc.count > 0) {
+                    var uvs2Data = new Float32Array(parsedGeometry, binaryInfo.uvs2AttrDesc.offset, binaryInfo.uvs2AttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs2Data, false);
+                }
+
+                if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
+                    var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false);
+                }
+
+                if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
+                    var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, matricesIndicesData, false);
+                }
+
+                if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
+                    var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, matricesWeightsData, false);
+                }
+
+                if (binaryInfo.indicesAttrDesc && binaryInfo.indicesAttrDesc.count > 0) {
+                    var indicesData = new Int32Array(parsedGeometry, binaryInfo.indicesAttrDesc.offset, binaryInfo.indicesAttrDesc.count);
+                    mesh.setIndices(indicesData);
+                }
+
+                if (binaryInfo.subMeshesAttrDesc && binaryInfo.subMeshesAttrDesc.count > 0) {
+                    var subMeshesData = new Int32Array(parsedGeometry, binaryInfo.subMeshesAttrDesc.offset, binaryInfo.subMeshesAttrDesc.count * 5);
+
+                    mesh.subMeshes = [];
+                    for (var i = 0; i < binaryInfo.subMeshesAttrDesc.count; i++) {
+                        var materialIndex = subMeshesData[(i * 5) + 0];
+                        var verticesStart = subMeshesData[(i * 5) + 1];
+                        var verticesCount = subMeshesData[(i * 5) + 2];
+                        var indexStart = subMeshesData[(i * 5) + 3];
+                        var indexCount = subMeshesData[(i * 5) + 4];
+
+                        var subMesh = new BABYLON.SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                    }
+                }
+
+                return;
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
                 mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, parsedGeometry.positions, false);
                 mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, parsedGeometry.normals, false);
