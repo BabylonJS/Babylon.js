@@ -96,7 +96,9 @@ namespace BabylonBinaryConverter
             try
             {
                 BabylonLodScene scene = JsonConvert.DeserializeObject<BabylonLodScene>(File.ReadAllText(WebUtility.UrlDecode(srcFilename)));
-                
+                scene.autoClear = true;
+                scene.useDelayedTextureLoading = true;
+
                 scene.Convert(srcPath, dstPath);
 
                 File.WriteAllText(WebUtility.UrlDecode(dstFilename), JsonConvert.SerializeObject(scene, (formatted ? Formatting.Indented : Formatting.None)));
