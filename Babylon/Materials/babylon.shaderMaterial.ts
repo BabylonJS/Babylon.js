@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class ShaderMaterial extends Material {
-        private _shaderPath: string;
+        private _shaderPath: any;
         private _options: any;
         private _textures = new Array<Texture>();
         private _floats = new Array<number>();
@@ -12,7 +12,7 @@
         private _matrices = new Array<Matrix>();
         private _cachedWorldViewMatrix = new BABYLON.Matrix();
 
-        constructor(name: string, scene: Scene, shaderPath: string, options) {
+        constructor(name: string, scene: Scene, shaderPath: any, options: any) {
             super(name, scene);
             this._shaderPath = shaderPath;
 
