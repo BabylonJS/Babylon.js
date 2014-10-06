@@ -229,7 +229,10 @@ module BABYLON {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
+                    // Get object mass to have a behaviour similar to cannon.js
+                    var mass = registeredMesh.body.body.massInfo.mass;
+                    // The force is scaled with the mass of object
+                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE*mass));
                     return;
                 }
             }
