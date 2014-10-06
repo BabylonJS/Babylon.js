@@ -943,6 +943,19 @@
             return effect;
         }
 
+        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+
+            return this.createEffect(
+                {
+                    vertex: "particles",
+                    fragmentElement: fragmentName
+                },
+                ["position", "color", "options"],
+                ["view", "projection"].concat(uniformsNames),
+                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+        }
+
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string): WebGLProgram {
             var vertexShader = compileShader(this._gl, vertexCode, "vertex", defines);
             var fragmentShader = compileShader(this._gl, fragmentCode, "fragment", defines);

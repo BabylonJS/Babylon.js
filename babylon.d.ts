@@ -144,6 +144,7 @@ declare module BABYLON {
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
         public _releaseEffect(effect: Effect): void;
         public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
+        public createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string): WebGLProgram;
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
@@ -1942,6 +1943,7 @@ declare module BABYLON {
         public equals(otherQuaternion: Quaternion): boolean;
         public clone(): Quaternion;
         public copyFrom(other: Quaternion): void;
+        public copyFromFloats(x: number, y: number, z: number, w: number): void;
         public add(other: Quaternion): Quaternion;
         public subtract(other: Quaternion): Quaternion;
         public scale(value: number): Quaternion;
@@ -1950,6 +1952,7 @@ declare module BABYLON {
         public length(): number;
         public normalize(): void;
         public toEulerAngles(): Vector3;
+        public toEulerAnglesToRef(result: Vector3): void;
         public toRotationMatrix(result: Matrix): void;
         public fromRotationMatrix(matrix: Matrix): void;
         static Inverse(q: Quaternion): Quaternion;
@@ -2410,6 +2413,7 @@ declare module BABYLON {
         public delayLoadState: number;
         public instances: InstancedMesh[];
         public delayLoadingFile: string;
+        public _binaryInfo: any;
         public _geometry: Geometry;
         private _onBeforeRenderCallbacks;
         private _onAfterRenderCallbacks;
@@ -2626,7 +2630,6 @@ declare module BABYLON {
 declare module BABYLON {
     class ParticleSystem implements IDisposable {
         public name: string;
-        public fragmentElement: string;
         static BLENDMODE_ONEONE: number;
         static BLENDMODE_STANDARD: number;
         public id: string;
@@ -2671,6 +2674,7 @@ declare module BABYLON {
         private _indexBuffer;
         private _vertices;
         private _effect;
+        private _customEffect;
         private _cachedDefines;
         private _scaledColorStep;
         private _colorDiff;
@@ -2682,7 +2686,7 @@ declare module BABYLON {
         private _stopped;
         private _actualFrame;
         private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, fragmentElement?: string);
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
         public getCapacity(): number;
         public isAlive(): boolean;
         public isStarted(): boolean;

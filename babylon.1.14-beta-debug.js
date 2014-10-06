@@ -3748,6 +3748,16 @@ var BABYLON;
             return effect;
         };
 
+        Engine.prototype.createEffectForParticles = function (fragmentName, uniformsNames, samplers, defines, fallbacks, onCompiled, onError) {
+            if (typeof uniformsNames === "undefined") { uniformsNames = []; }
+            if (typeof samplers === "undefined") { samplers = []; }
+            if (typeof defines === "undefined") { defines = ""; }
+            return this.createEffect({
+                vertex: "particles",
+                fragmentElement: fragmentName
+            }, ["position", "color", "options"], ["view", "projection"].concat(uniformsNames), ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+        };
+
         Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines) {
             var vertexShader = compileShader(this._gl, vertexCode, "vertex", defines);
             var fragmentShader = compileShader(this._gl, fragmentCode, "fragment", defines);
@@ -12305,12 +12315,20 @@ var BABYLON;
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
+
+                if (!vertexSource) {
+                    vertexSource = baseName.vertexElement;
+                }
             } else {
                 vertexSource = baseName.vertex || baseName;
             }
 
             if (baseName.fragmentElement) {
                 fragmentSource = document.getElementById(baseName.fragmentElement);
+
+                if (!fragmentSource) {
+                    fragmentSource = baseName.fragmentElement;
+                }
             } else {
                 fragmentSource = baseName.fragment || baseName;
             }
@@ -12402,6 +12420,11 @@ var BABYLON;
            
             if (BABYLON.Effect.ShadersStore[fragment + "PixelShader"]) {
                 callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
+                return;
+            }
+
+            if (BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]) {
+                callback(BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]);
                 return;
             }
 
@@ -14340,10 +14363,9 @@ var BABYLON;
     };
 
     var ParticleSystem = (function () {
-        function ParticleSystem(name, capacity, scene, fragmentElement) {
+        function ParticleSystem(name, capacity, scene, customEffect) {
             var _this = this;
             this.name = name;
-            this.fragmentElement = fragmentElement;
             this.renderingGroupId = 0;
             this.emitter = null;
             this.emitRate = 10;
@@ -14387,6 +14409,8 @@ var BABYLON;
             this._capacity = capacity;
 
             this._scene = scene;
+
+            this._customEffect = customEffect;
 
             scene.particleSystems.push(this);
 
@@ -14534,6 +14558,11 @@ var BABYLON;
         };
 
         ParticleSystem.prototype._getEffect = function () {
+            if (this._customEffect) {
+                return this._customEffect;
+            }
+            ;
+
             var defines = [];
 
             if (this._scene.clipPlane) {
@@ -14544,18 +14573,8 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                var baseName;
 
-                if (this.fragmentElement) {
-                    baseName = {
-                        vertex: "particles",
-                        fragmentElement: this.fragmentElement
-                    };
-                } else {
-                    baseName = "particles";
-                }
-
-                this._effect = this._scene.getEngine().createEffect(baseName, ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
+                this._effect = this._scene.getEngine().createEffect("particles", ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
             }
 
             return this._effect;

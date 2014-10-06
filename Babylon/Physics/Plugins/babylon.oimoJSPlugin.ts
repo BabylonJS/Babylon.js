@@ -8,7 +8,7 @@ module BABYLON {
         private _checkWithEpsilon(value: number): number {
             return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
         }
-        
+
         public initialize(iterations?: number): void {
             this._world = new OIMO.World();
             this._world.clear();
@@ -34,7 +34,7 @@ module BABYLON {
                     var size = Math.max(
                         this._checkWithEpsilon(radiusX),
                         this._checkWithEpsilon(radiusY),
-                        this._checkWithEpsilon(radiusZ))/2;
+                        this._checkWithEpsilon(radiusZ)) / 2;
 
                     // The delta between the mesh position and the mesh bounding box center
                     var deltaPosition = mesh.position.subtract(bbox.center);
@@ -49,9 +49,9 @@ module BABYLON {
                         world: this._world
                     });
                     this._registeredMeshes.push({
-                        mesh:       mesh,
-                        body:       body,
-                        delta:  deltaPosition
+                        mesh: mesh,
+                        body: body,
+                        delta: deltaPosition
                     });
                     break;
 
@@ -79,9 +79,9 @@ module BABYLON {
                     });
 
                     this._registeredMeshes.push({
-                        mesh:   mesh,
-                        body:   body,
-                        delta:  deltaPosition
+                        mesh: mesh,
+                        body: body,
+                        delta: deltaPosition
                     });
                     break;
 
@@ -138,7 +138,7 @@ module BABYLON {
                     var size = Math.max(
                         this._checkWithEpsilon(radiusX),
                         this._checkWithEpsilon(radiusY),
-                        this._checkWithEpsilon(radiusZ))/2;
+                        this._checkWithEpsilon(radiusZ)) / 2;
                     bodyParameters = {
                         type: 'sphere',
                         /* bug with oimo : sphere needs 3 sizes in this case */
@@ -232,13 +232,13 @@ module BABYLON {
                     // Get object mass to have a behaviour similar to cannon.js
                     var mass = registeredMesh.body.body.massInfo.mass;
                     // The force is scaled with the mass of object
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE*mass));
+                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
                     return;
                 }
             }
         }
 
-        public createLink (mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
+        public createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
             var body1 = null,
                 body2 = null;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
@@ -304,7 +304,7 @@ module BABYLON {
 
                 var body = this._registeredMeshes[i].body.body;
                 var mesh = this._registeredMeshes[i].mesh;
-                var delta  = this._registeredMeshes[i].delta;
+                var delta = this._registeredMeshes[i].delta;
 
                 if (!body.sleeping) {
 

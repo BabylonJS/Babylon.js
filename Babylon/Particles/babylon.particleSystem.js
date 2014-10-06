@@ -11,10 +11,9 @@
     };
 
     var ParticleSystem = (function () {
-        function ParticleSystem(name, capacity, scene, fragmentElement) {
+        function ParticleSystem(name, capacity, scene, customEffect) {
             var _this = this;
             this.name = name;
-            this.fragmentElement = fragmentElement;
             this.renderingGroupId = 0;
             this.emitter = null;
             this.emitRate = 10;
@@ -58,6 +57,8 @@
             this._capacity = capacity;
 
             this._scene = scene;
+
+            this._customEffect = customEffect;
 
             scene.particleSystems.push(this);
 
@@ -205,6 +206,11 @@
         };
 
         ParticleSystem.prototype._getEffect = function () {
+            if (this._customEffect) {
+                return this._customEffect;
+            }
+            ;
+
             var defines = [];
 
             if (this._scene.clipPlane) {
@@ -215,18 +221,8 @@
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                var baseName;
 
-                if (this.fragmentElement) {
-                    baseName = {
-                        vertex: "particles",
-                        fragmentElement: this.fragmentElement
-                    };
-                } else {
-                    baseName = "particles";
-                }
-
-                this._effect = this._scene.getEngine().createEffect(baseName, ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
+                this._effect = this._scene.getEngine().createEffect("particles", ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
             }
 
             return this._effect;

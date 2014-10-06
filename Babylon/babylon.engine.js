@@ -935,6 +935,16 @@
             return effect;
         };
 
+        Engine.prototype.createEffectForParticles = function (fragmentName, uniformsNames, samplers, defines, fallbacks, onCompiled, onError) {
+            if (typeof uniformsNames === "undefined") { uniformsNames = []; }
+            if (typeof samplers === "undefined") { samplers = []; }
+            if (typeof defines === "undefined") { defines = ""; }
+            return this.createEffect({
+                vertex: "particles",
+                fragmentElement: fragmentName
+            }, ["position", "color", "options"], ["view", "projection"].concat(uniformsNames), ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+        };
+
         Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines) {
             var vertexShader = compileShader(this._gl, vertexCode, "vertex", defines);
             var fragmentShader = compileShader(this._gl, fragmentCode, "fragment", defines);
