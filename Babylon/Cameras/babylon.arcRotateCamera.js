@@ -1,6 +1,10 @@
-﻿var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
+var __extends = this.__extends || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() {
+        this.constructor = d;
+    }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
@@ -40,14 +44,18 @@ var BABYLON;
             this._previousPosition = BABYLON.Vector3.Zero();
             this._collisionVelocity = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
-
             this.getViewMatrix();
+			//-- for pinch
+			//-- this is for block camera rotate
+			this.blockMove = false;
+			//-- this a value for pinch step scaling
+            this.pinchPrecision = 20;
         }
         ArcRotateCamera.prototype._getTargetPosition = function () {
             return this.target.position || this.target;
         };
 
-        // Cache
+
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
             this._cache.target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -67,7 +75,7 @@ var BABYLON;
             this._cache.radius = this.radius;
         };
 
-        // Synchronized
+
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
@@ -75,12 +83,15 @@ var BABYLON;
             return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius;
         };
 
-        // Methods
+
         ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             var previousPosition;
             var pointerId;
-
+            //-- pinch variables
+            var scaling = false;
+            var pointX1, pointX2;
+            
             if (this._attachedElement) {
                 return;
             }
@@ -122,7 +133,9 @@ var BABYLON;
                     if (pointerId !== evt.pointerId) {
                         return;
                     }
-
+                    if (_this.blockMove){
+                        return;
+                    }
                     var offsetX = evt.clientX - previousPosition.x;
                     var offsetY = evt.clientY - previousPosition.y;
 
@@ -143,7 +156,9 @@ var BABYLON;
                     if (!engine.isPointerLock) {
                         return;
                     }
-
+                    if (_this.blockMove){
+                        return;
+                    }
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
@@ -162,7 +177,6 @@ var BABYLON;
                     } else if (event.detail) {
                         delta = -event.detail / _this.wheelPrecision;
                     }
-
                     if (delta)
                         _this.inertialRadiusOffset += delta;
 
@@ -242,6 +256,69 @@ var BABYLON;
                     previousPosition = null;
                     pointerId = null;
                 };
+
+                this._touchStart = function (e) {
+                    if (e.touches.length == 2) {
+                        //-- start pinch if two fingers on the screen
+                        scaling = true;
+                        _this._pinchStart(e);
+                    }                    
+                };
+                
+                this._touchMove = function (e) {
+                    if (scaling) {
+                        //-- make scaling
+                        _this._pinchMove(e);
+                    }                    
+                };
+                
+                this._touchEnd = function (e) {                    
+                    if (scaling) {
+                        //-- end of pinch
+                        _this._pinchEnd(e);
+                    }                    
+                };
+                
+                this._pinchStart = function (e) {
+                    //-- save origin touch point
+                    pointX1 = e.touches[0].clientX;
+                    pointX2 = e.touches[1].clientX;
+                    //-- block the camera because 
+                    //-- if not it rotate arround target during pinch
+                    _this.blockMove = true;
+                };
+                
+                this._pinchMove = function (e) {                    
+                    //-- tempory variable for new camera's radius
+                    var delta = 0;
+                    //-- variables to know if pinch open or pinch close
+                    var direction = 1;
+                    var distanceXOrigine, distanceXNow;
+                    
+                    if (e.touches.length != 2)
+                        return;
+                    //-- calculate absolute distances of the two fingers
+                    distanceXOrigine = Math.abs(pointX1 - pointX2);
+                    distanceXNow = Math.abs(e.touches[0].clientX - e.touches[1].clientX);
+                    
+                    //-- if distanceXNow < distanceXOrigine -> pinch close so direction = -1
+                    if (distanceXNow < distanceXOrigine) {
+                        direction = -1;
+                    }
+                    //-- calculate new radius
+                    delta = (_this.pinchPrecision / (_this.wheelPrecision * 40)) * direction;
+                    //-- set new radius
+                    _this.inertialRadiusOffset += delta;
+                    //-- save origin touch point
+                    pointX1 = e.touches[0].clientX;
+                    pointX2 = e.touches[1].clientX;
+                };
+                
+                this._pinchEnd = function (e) {
+                    //-- cancel scaling and deblock camera
+                    scaling = false;
+                    _this.blockMove = false;                    
+                };
             }
 
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
@@ -253,11 +330,15 @@ var BABYLON;
             element.addEventListener("MSGestureChange", this._onGesture, false);
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
+            //-- pinch
+            element.addEventListener('touchstart', this._touchStart, false);
+            element.addEventListener('touchmove', this._touchMove, false);
+            element.addEventListener('touchend', this._touchEnd, false);
 
             BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
+                {name: "keydown", handler: this._onKeyDown},
+                {name: "keyup", handler: this._onKeyUp},
+                {name: "blur", handler: this._onLostFocus}
             ]);
         };
 
@@ -275,11 +356,15 @@ var BABYLON;
             element.removeEventListener("MSGestureChange", this._onGesture);
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
+            //-- pinch
+            element.removeEventListener('touchstart', this._touchStart);
+            element.removeEventListener('touchmove', this._touchMove);
+            element.removeEventListener('touchend', this._touchEnd);
 
             BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
+                {name: "keydown", handler: this._onKeyDown},
+                {name: "keyup", handler: this._onKeyUp},
+                {name: "blur", handler: this._onLostFocus}
             ]);
 
             this._MSGestureHandler = null;
@@ -305,7 +390,7 @@ var BABYLON;
                 }
             }
 
-            // Inertia
+
             if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0 || this.inertialRadiusOffset != 0) {
                 this.alpha += this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
@@ -325,7 +410,7 @@ var BABYLON;
                     this.inertialRadiusOffset = 0;
             }
 
-            // Limits
+
             if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
                 this.alpha = this.lowerAlphaLimit;
             }
@@ -350,19 +435,19 @@ var BABYLON;
             var radiusv3 = position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
-            // Alpha
+
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
 
             if (radiusv3.z < 0) {
                 this.alpha = 2 * Math.PI - this.alpha;
             }
 
-            // Beta
+
             this.beta = Math.acos(radiusv3.y / this.radius);
         };
 
         ArcRotateCamera.prototype._getViewMatrix = function () {
-            // Compute
+
             var cosa = Math.cos(this.alpha);
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
@@ -409,7 +494,7 @@ var BABYLON;
 
             this.radius = distance * this.zoomOnFactor;
 
-            this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance });
+            this.focusOn({min: minMaxVector.min, max: minMaxVector.max, distance: distance});
         };
 
         ArcRotateCamera.prototype.focusOn = function (meshesOrMinMaxVectorAndDistance) {
@@ -433,4 +518,3 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map
