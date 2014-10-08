@@ -7077,6 +7077,10 @@ var BABYLON;
             this._previousPosition = BABYLON.Vector3.Zero();
             this._collisionVelocity = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+           
+           
+           
+            this.pinchPrecision = 20;
 
             this.getViewMatrix();
         }
@@ -7117,6 +7121,13 @@ var BABYLON;
             var _this = this;
             var previousPosition;
             var pointerId;
+
+           
+            var pinchStarted = false;
+
+           
+           
+            var pinchPointX1, pinchPointX2;
 
             if (this._attachedElement) {
                 return;
@@ -7160,6 +7171,11 @@ var BABYLON;
                         return;
                     }
 
+                   
+                    if (pinchStarted) {
+                        return;
+                    }
+
                     var offsetX = evt.clientX - previousPosition.x;
                     var offsetY = evt.clientY - previousPosition.y;
 
@@ -7178,6 +7194,11 @@ var BABYLON;
 
                 this._onMouseMove = function (evt) {
                     if (!engine.isPointerLock) {
+                        return;
+                    }
+
+                   
+                    if (pinchStarted) {
                         return;
                     }
 
@@ -7279,6 +7300,70 @@ var BABYLON;
                     previousPosition = null;
                     pointerId = null;
                 };
+
+                this._touchStart = function (event) {
+                    if (event.touches.length == 2) {
+                       
+                        pinchStarted = true;
+                        _this._pinchStart(event);
+                    }
+                };
+                this._touchMove = function (event) {
+                    if (pinchStarted) {
+                       
+                        _this._pinchMove(event);
+                    }
+                };
+                this._touchEnd = function (event) {
+                    if (pinchStarted) {
+                       
+                        _this._pinchEnd(event);
+                    }
+                };
+
+                this._pinchStart = function (event) {
+                   
+                    pinchPointX1 = event.touches[0].clientX;
+                    pinchPointX2 = event.touches[1].clientX;
+
+                   
+                   
+                    pinchStarted = true;
+                };
+                this._pinchMove = function (event) {
+                   
+                    var delta = 0;
+
+                   
+                    var direction = 1;
+                    var distanceXOrigine, distanceXNow;
+
+                    if (event.touches.length != 2)
+                        return;
+
+                   
+                    distanceXOrigine = Math.abs(pinchPointX1 - pinchPointX2);
+                    distanceXNow = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
+
+                   
+                    if (distanceXNow < distanceXOrigine) {
+                        direction = -1;
+                    }
+
+                   
+                    delta = (_this.pinchPrecision / (_this.wheelPrecision * 40)) * direction;
+
+                   
+                    _this.inertialRadiusOffset += delta;
+
+                   
+                    pinchPointX1 = event.touches[0].clientX;
+                    pinchPointX2 = event.touches[1].clientX;
+                };
+                this._pinchEnd = function (event) {
+                   
+                    pinchStarted = false;
+                };
             }
 
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
@@ -7290,6 +7375,11 @@ var BABYLON;
             element.addEventListener("MSGestureChange", this._onGesture, false);
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
+
+           
+            element.addEventListener('touchstart', this._touchStart, false);
+            element.addEventListener('touchmove', this._touchMove, false);
+            element.addEventListener('touchend', this._touchEnd, false);
 
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -7312,6 +7402,11 @@ var BABYLON;
             element.removeEventListener("MSGestureChange", this._onGesture);
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
+
+           
+            element.removeEventListener('touchstart', this._touchStart);
+            element.removeEventListener('touchmove', this._touchMove);
+            element.removeEventListener('touchend', this._touchEnd);
 
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -16639,7 +16734,11 @@ var BABYLON;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
+                   
+                    var mass = registeredMesh.body.body.massInfo.mass;
+
+                   
+                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
                     return;
                 }
             }
@@ -25517,4 +25616,119 @@ var BABYLON;
         return AssetsManager;
     })();
     BABYLON.AssetsManager = AssetsManager;
+})(BABYLON || (BABYLON = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var VRDeviceOrientationCamera = (function (_super) {
+        __extends(VRDeviceOrientationCamera, _super);
+        function VRDeviceOrientationCamera(name, position, scene) {
+            _super.call(this, name, position, scene);
+            this._alpha = 0;
+            this._beta = 0;
+            this._gamma = 0;
+        }
+        VRDeviceOrientationCamera.prototype._onOrientationEvent = function (evt) {
+            this._alpha = +evt.alpha | 0;
+            this._beta = +evt.beta | 0;
+            this._gamma = +evt.gamma | 0;
+
+            if (this._gamma < 0) {
+                this._gamma = 90 + this._gamma;
+            } else {
+               
+                this._gamma = 270 - this._gamma;
+            }
+
+            this.rotation.x = this._gamma / 180.0 * Math.PI;
+            this.rotation.y = -this._alpha / 180.0 * Math.PI;
+            this.rotation.z = this._beta / 180.0 * Math.PI;
+        };
+        return VRDeviceOrientationCamera;
+    })(BABYLON.OculusCamera);
+    BABYLON.VRDeviceOrientationCamera = VRDeviceOrientationCamera;
+})(BABYLON || (BABYLON = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var WebVRCamera = (function (_super) {
+        __extends(WebVRCamera, _super);
+        function WebVRCamera(name, position, scene) {
+            _super.call(this, name, position, scene);
+            this._hmdDevice = null;
+            this._sensorDevice = null;
+            this._cacheState = null;
+            this._cacheQuaternion = new BABYLON.Quaternion();
+            this._cacheRotation = BABYLON.Vector3.Zero();
+            this._vrEnabled = false;
+            this._getWebVRDevices = this._getWebVRDevices.bind(this);
+        }
+        WebVRCamera.prototype._getWebVRDevices = function (devices) {
+            var size = devices.length;
+            var i = 0;
+
+           
+            this._sensorDevice = null;
+            this._hmdDevice = null;
+
+            while (i > 0 && this._hmdDevice === null) {
+                if (devices[i] instanceof HMDVRDevice) {
+                    this._hmdDevice = devices[i];
+                }
+                i++;
+            }
+
+            i = 0;
+
+            while (i > 0 && this._sensorDevice === null) {
+                if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
+                    this._sensorDevice = devices[i];
+                }
+                i++;
+            }
+
+            this._vrEnabled = this._sensorDevice && this._hmdDevice ? true : false;
+        };
+
+        WebVRCamera.prototype._update = function () {
+            if (this._vrEnabled) {
+                this._cacheState = this._sensorDevice.getState();
+                this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
+                this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
+
+                this.rotation.x = -this._cacheRotation.z;
+                this.rotation.y = -this._cacheRotation.y;
+                this.rotation.z = this._cacheRotation.x;
+            }
+
+            _super.prototype._update.call(this);
+        };
+
+        WebVRCamera.prototype.attachControl = function (element, noPreventDefault) {
+            _super.prototype.attachControl.call(this, element, noPreventDefault);
+
+            if (navigator.getVRDevices) {
+                navigator.getVRDevices().then(this._getWebVRDevices);
+            } else if (navigator.mozGetVRDevices) {
+                navigator.mozGetVRDevices(this._getWebVRDevices);
+            }
+        };
+
+        WebVRCamera.prototype.detachControl = function (element) {
+            _super.prototype.detachControl.call(this, element);
+            this._vrEnabled = false;
+        };
+        return WebVRCamera;
+    })(BABYLON.OculusCamera);
+    BABYLON.WebVRCamera = WebVRCamera;
 })(BABYLON || (BABYLON = {}));

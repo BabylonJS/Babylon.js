@@ -8,7 +8,7 @@ module BABYLON {
 			super(name, position, scene);
 		}
 
-		private _onOrientationEvent(evt: DeviceOrientationEvent): void {
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             this._alpha = +evt.alpha|0;
             this._beta = +evt.beta|0;
             this._gamma = +evt.gamma|0;

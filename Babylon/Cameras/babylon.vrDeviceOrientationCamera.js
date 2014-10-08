@@ -34,3 +34,4 @@ var BABYLON;
     })(BABYLON.OculusCamera);
     BABYLON.VRDeviceOrientationCamera = VRDeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.vrDeviceOrientationCamera.js.map

@@ -47,19 +47,19 @@
         private _previousAlpha: number;
         private _previousBeta: number;
         private _previousRadius: number;
-		
-	// Pinch
-	// value for pinch step scaling
-	// set to 20 by default
-	public pinchPrecision = 20;
-	// Event for pinch
-	private _touchStart: (e: PointerEvent) => void;
-	private _touchMove: (e: PointerEvent) => void;
-	private _touchEnd: (e: PointerEvent) => void;
-	// Method for pinch
-	private _pinchStart: (e: PointerEvent) => void;
-	private _pinchMove: (e: PointerEvent) => void;
-	private _pinchEnd: (e: PointerEvent) => void;
+
+        // Pinch
+        // value for pinch step scaling
+        // set to 20 by default
+        public pinchPrecision = 20;
+        // Event for pinch
+        private _touchStart: (e: any) => void;
+        private _touchMove: (e: any) => void;
+        private _touchEnd: (e: any) => void;
+        // Method for pinch
+        private _pinchStart: (e: any) => void;
+        private _pinchMove: (e: any) => void;
+        private _pinchEnd: (e: any) => void;
 
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, BABYLON.Vector3.Zero(), scene);
@@ -106,12 +106,12 @@
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             var previousPosition;
             var pointerId;
-	    // to know if pinch started
-	    var pinchStarted = false;
-	    // two pinch point on X
-	    // that will use for find if user action is pinch open or pinch close
-	    var pinchPointX1, pinchPointX2;
-			
+            // to know if pinch started
+            var pinchStarted = false;
+            // two pinch point on X
+            // that will use for find if user action is pinch open or pinch close
+            var pinchPointX1, pinchPointX2;
+
             if (this._attachedElement) {
                 return;
             }
@@ -155,9 +155,9 @@
                     if (pointerId !== evt.pointerId) {
                         return;
                     }
-					
-		    // return pinch is started
-		    if (pinchStarted){
+
+                    // return pinch is started
+                    if (pinchStarted) {
                         return;
                     }
 
@@ -181,9 +181,9 @@
                     if (!engine.isPointerLock) {
                         return;
                     }
-					
-		    // return pinch is started
-		    if (pinchStarted){
+
+                    // return pinch is started
+                    if (pinchStarted) {
                         return;
                     }
 
@@ -292,28 +292,28 @@
                     previousPosition = null;
                     pointerId = null;
                 };
-				
-		this._touchStart = event => {
+
+                this._touchStart = event => {
                     if (event.touches.length == 2) {
                         //-- start pinch if two fingers on the screen
                         pinchStarted = true;
                         this._pinchStart(event);
-                    } 
+                    }
                 };
-		this._touchMove = event => {
+                this._touchMove = event => {
                     if (pinchStarted) {
                         //-- make scaling
                         this._pinchMove(event);
                     }
                 };
-		this._touchEnd = event => {
+                this._touchEnd = event => {
                     if (pinchStarted) {
                         //-- end of pinch
                         this._pinchEnd(event);
-                    } 
+                    }
                 };
-				
-		this._pinchStart = event => {
+
+                this._pinchStart = event => {
                     // save origin touch point
                     pinchPointX1 = event.touches[0].clientX;
                     pinchPointX2 = event.touches[1].clientX;
@@ -321,19 +321,19 @@
                     // if not it rotate around target during pinch
                     pinchStarted = true;
                 };
-		this._pinchMove = event => {
+                this._pinchMove = event => {
                     // variable for new camera's radius
                     var delta = 0;
                     // variables to know if pinch open or pinch close
                     var direction = 1;
                     var distanceXOrigine, distanceXNow;
-                    
+
                     if (event.touches.length != 2)
                         return;
                     // calculate absolute distances of the two fingers
                     distanceXOrigine = Math.abs(pinchPointX1 - pinchPointX2);
                     distanceXNow = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
-                    
+
                     // if distanceXNow < distanceXOrigine -> pinch close so direction = -1
                     if (distanceXNow < distanceXOrigine) {
                         direction = -1;
@@ -346,7 +346,7 @@
                     pinchPointX1 = event.touches[0].clientX;
                     pinchPointX2 = event.touches[1].clientX;
                 };
-				this._pinchEnd = event => {
+                this._pinchEnd = event => {
                     // cancel pinch and deblock camera rotation
                     pinchStarted = false;
                 };
@@ -361,7 +361,7 @@
             element.addEventListener("MSGestureChange", this._onGesture, false);
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
-	    // pinch
+            // pinch
             element.addEventListener('touchstart', this._touchStart, false);
             element.addEventListener('touchmove', this._touchMove, false);
             element.addEventListener('touchend', this._touchEnd, false);
@@ -387,7 +387,7 @@
             element.removeEventListener("MSGestureChange", this._onGesture);
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
-	    // pinch
+            // pinch
             element.removeEventListener('touchstart', this._touchStart);
             element.removeEventListener('touchmove', this._touchMove);
             element.removeEventListener('touchend', this._touchEnd);
