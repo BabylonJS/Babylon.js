@@ -84,3 +84,8 @@ interface MSStyleCSSProperties {
     webkitTransform: string;
     webkitTransition: string;
 }
+
+interface Navigator {
+    getVRDevices: () => any;
+    mozGetVRDevices: (any) => any;
+}

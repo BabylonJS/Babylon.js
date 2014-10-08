@@ -268,6 +268,10 @@ interface MSStyleCSSProperties {
     webkitTransform: string;
     webkitTransition: string;
 }
+interface Navigator {
+    getVRDevices: () => any;
+    mozGetVRDevices: (any: any) => any;
+}
 declare module BABYLON {
     class Node {
         public parent: Node;
@@ -314,7 +318,7 @@ declare module BABYLON {
         static MinDeltaTime: number;
         static MaxDeltaTime: number;
         public autoClear: boolean;
-        public clearColor: Color3;
+        public clearColor: any;
         public ambientColor: Color3;
         public beforeRender: () => void;
         public afterRender: () => void;
@@ -864,6 +868,13 @@ declare module BABYLON {
         private _previousAlpha;
         private _previousBeta;
         private _previousRadius;
+        public pinchPrecision: number;
+        private _touchStart;
+        private _touchMove;
+        private _touchEnd;
+        private _pinchStart;
+        private _pinchMove;
+        private _pinchEnd;
         constructor(name: string, alpha: number, beta: number, radius: number, target: any, scene: Scene);
         public _getTargetPosition(): Vector3;
         public _initCache(): void;
@@ -1014,7 +1025,7 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         public _update(): void;
         public _updateCamera(camera: FreeCamera): void;
-        private _onOrientationEvent(evt);
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         public detachControl(element: HTMLElement): void;
     }
@@ -1077,6 +1088,32 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         public _checkInputs(): void;
         public dispose(): void;
+    }
+}
+declare module BABYLON {
+    class VRDeviceOrientationCamera extends OculusCamera {
+        public _alpha: number;
+        public _beta: number;
+        public _gamma: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
+    }
+}
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRCamera extends OculusCamera {
+        public _hmdDevice: any;
+        public _sensorDevice: any;
+        public _cacheState: any;
+        public _cacheQuaternion: Quaternion;
+        public _cacheRotation: Vector3;
+        public _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private _getWebVRDevices(devices);
+        public _update(): void;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        public detachControl(element: HTMLElement): void;
     }
 }
 declare module BABYLON {
@@ -1544,7 +1581,7 @@ declare module BABYLON {
         private _vectors3;
         private _matrices;
         private _cachedWorldViewMatrix;
-        constructor(name: string, scene: Scene, shaderPath: string, options: any);
+        constructor(name: string, scene: Scene, shaderPath: any, options: any);
         public needAlphaBlending(): boolean;
         public needAlphaTesting(): boolean;
         private _checkUniform(uniformName);

@@ -36,7 +36,7 @@ var BABYLON;
             i = 0;
 
             while (i > 0 && this._sensorDevice === null) {
-                if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === hmdDevice.hardwareUnitId)) {
+                if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
                     this._sensorDevice = devices[i];
                 }
                 i++;
@@ -77,3 +77,4 @@ var BABYLON;
     })(BABYLON.OculusCamera);
     BABYLON.WebVRCamera = WebVRCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.webVRCamera.js.map
