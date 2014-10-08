@@ -15,7 +15,7 @@
 
         // Members
         public autoClear = true;
-        public clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
+        public clearColor: any = new BABYLON.Color3(0.2, 0.2, 0.3);
         public ambientColor = new BABYLON.Color3(0, 0, 0);
         public beforeRender: () => void;
         public afterRender: () => void;
