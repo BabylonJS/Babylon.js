@@ -169,7 +169,7 @@ declare module BABYLON {
         public getAlphaTesting(): boolean;
         public wipeCaches(): void;
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void;
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number): WebGLTexture;
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void): WebGLTexture;
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture;
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void;
         public updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
@@ -1788,7 +1788,7 @@ declare module BABYLON {
         private _cachedWAng;
         private _cachedCoordinatesMode;
         private _samplingMode;
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number);
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void);
         public delayLoad(): void;
         private _prepareRowForTextureGeneration(x, y, z, t);
         public getTextureMatrix(): Matrix;
@@ -3216,6 +3216,19 @@ declare module BABYLON {
         constructor(name: string, url: string);
         public run(scene: Scene, onSuccess: () => void, onError: () => void): void;
     }
+    class TextureAssetTask implements IAssetTask {
+        public name: string;
+        public url: string;
+        public noMipmap: boolean;
+        public invertY: boolean;
+        public samplingMode: number;
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+        public isCompleted: boolean;
+        public texture: Texture;
+        constructor(name: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number);
+        public run(scene: Scene, onSuccess: () => void, onError: () => void): void;
+    }
     class AssetsManager {
         private _tasks;
         private _scene;
@@ -3229,6 +3242,7 @@ declare module BABYLON {
         public addTextFileTask(taskName: string, url: string): IAssetTask;
         public addBinaryFileTask(taskName: string, url: string): IAssetTask;
         public addImageTask(taskName: string, url: string): IAssetTask;
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number): IAssetTask;
         private _decreaseWaitingTasksCount();
         private _runTask(task);
         public reset(): AssetsManager;

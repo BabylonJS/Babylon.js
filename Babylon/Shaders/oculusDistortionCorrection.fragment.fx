@@ -18,8 +18,6 @@ vec2 HmdWarp(vec2 in01) {
 	return LensCenter + Scale * rvector;
 }
 
-
-
 void main(void)
 {
 	vec2 tc = HmdWarp(vUV);
