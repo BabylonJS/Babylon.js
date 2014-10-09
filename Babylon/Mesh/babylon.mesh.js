@@ -570,6 +570,10 @@ var BABYLON;
                 results.push(this.material);
             }
 
+            if (this.skeleton) {
+                results.push(this.skeleton);
+            }
+
             return results;
         };
 

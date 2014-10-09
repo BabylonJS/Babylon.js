@@ -1198,7 +1198,7 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): WebGLTexture {
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
             var texture = this._gl.createTexture();
 
             var extension = url.substr(url.length - 4, 4).toLowerCase();
@@ -1211,6 +1211,14 @@
             texture.references = 1;
             this._loadedTexturesCache.push(texture);
 
+            var onerror = () => {
+                scene._removePendingData(texture);
+
+                if (onError) {
+                    onError();
+                }
+            };
+
             if (isTGA) {
                 BABYLON.Tools.LoadFile(url, arrayBuffer => {
                     var data = new Uint8Array(arrayBuffer);
@@ -1219,18 +1227,26 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
+
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
-                }, null, scene.database, true);
+                }, onerror, scene.database, true);
             } else if (isDDS) {
                 BABYLON.Tools.LoadFile(url, data => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount -1)) == 1);
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                        console.log("loading " + url);
+
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
+
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
-                }, null, scene.database, true);
+                }, onerror, scene.database, true);
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
@@ -1244,12 +1260,12 @@
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
 
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
                 };
 
-                var onerror = () => {
-                    scene._removePendingData(texture);
-                };
 
                 BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
             }
