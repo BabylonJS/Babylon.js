@@ -43,7 +43,6 @@ function animate(scene){
  }
  
  function orphanConceive() {
-	 console.log("in orphan ");
 	 parenting = !parenting;
      for (index = 0; index < meshes.length; index++) {
          var mesh = meshes[index];

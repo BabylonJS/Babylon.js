@@ -25,8 +25,6 @@
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
-        
-        public _waitingParentId: string;
 
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
