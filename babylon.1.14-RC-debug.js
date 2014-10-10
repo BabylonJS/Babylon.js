@@ -2797,6 +2797,19 @@ var BABYLON;
         });
         Tools.BaseUrl = "";
 
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while(count < value);
+
+            if (count > max)
+                count = max;
+
+            return count;
+        };
+
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
         Tools._WarningLogLevel = 2;
@@ -3102,24 +3115,11 @@ var BABYLON;
         };
     };
 
-    var getExponantOfTwo = function (value, max) {
-        var count = 1;
-
-        do {
-            count *= 2;
-        } while(count < value);
-
-        if (count > max)
-            count = max;
-
-        return count;
-    };
-
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -4079,8 +4079,8 @@ var BABYLON;
         Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
 
-            width = getExponantOfTwo(width, this._caps.maxTextureSize);
-            height = getExponantOfTwo(height, this._caps.maxTextureSize);
+            width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
@@ -4256,7 +4256,7 @@ var BABYLON;
                 }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-                    var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     _this._workingCanvas.width = width;
@@ -15733,8 +15733,13 @@ var BABYLON;
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = (sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio;
-            var desiredHeight = (sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio;
+            var maxSize = camera.getEngine().getCaps().maxTextureSize;
+            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+
+            desiredWidth = BABYLON.Tools.GetExponantOfTwo(desiredWidth, maxSize);
+            desiredHeight = BABYLON.Tools.GetExponantOfTwo(desiredHeight, maxSize);
+
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -23408,6 +23413,7 @@ var BABYLON;
                 if (!this._nextActiveAction._child._actionManager) {
                     this._nextActiveAction._child._actionManager = this._actionManager;
                 }
+
                 this._nextActiveAction = this._nextActiveAction._child;
             } else {
                 this._nextActiveAction = this;
@@ -25751,7 +25757,7 @@ var BABYLON;
             this._sensorDevice = null;
             this._hmdDevice = null;
 
-            while (i > 0 && this._hmdDevice === null) {
+            while (i < size && this._hmdDevice === null) {
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];
                 }
@@ -25760,7 +25766,7 @@ var BABYLON;
 
             i = 0;
 
-            while (i > 0 && this._sensorDevice === null) {
+            while (i < size && this._sensorDevice === null) {
                 if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
                     this._sensorDevice = devices[i];
                 }
