@@ -641,6 +641,19 @@
         });
         Tools.BaseUrl = "";
 
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while(count < value);
+
+            if (count > max)
+                count = max;
+
+            return count;
+        };
+
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
         Tools._WarningLogLevel = 2;

@@ -24,7 +24,7 @@ module BABYLON {
             this._hmdDevice = null;
 
             // Search for a HmdDevice.
-            while (i < size && this._hmdDevice === null) { 
+            while (i < size && this._hmdDevice === null) {
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];
                 }

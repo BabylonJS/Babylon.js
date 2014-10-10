@@ -55,8 +55,9 @@
             if (this._nextActiveAction._child) {
 
                 if (!this._nextActiveAction._child._actionManager) {
-                    this._nextActiveAction._child._actionManager = this._actionManager
+                    this._nextActiveAction._child._actionManager = this._actionManager;
                 }
+
                 this._nextActiveAction = this._nextActiveAction._child;
             } else {
                 this._nextActiveAction = this;

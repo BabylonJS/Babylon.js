@@ -3473,6 +3473,7 @@ declare module BABYLON {
     }
     class Tools {
         static BaseUrl: string;
+        static GetExponantOfTwo: (value: number, max: number) => number;
         static GetFilename(path: string): string;
         static GetDOMTextContent(element: HTMLElement): string;
         static ToDegrees(angle: number): number;
