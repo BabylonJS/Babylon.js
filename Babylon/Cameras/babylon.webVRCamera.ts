@@ -24,7 +24,7 @@ module BABYLON {
             this._hmdDevice = null;
 
             // Search for a HmdDevice.
-            while (i > 0 && this._hmdDevice === null) {
+            while (i < size && this._hmdDevice === null) { 
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];
                 }
@@ -33,8 +33,7 @@ module BABYLON {
 
             i = 0;
 
-            // Search for a PositionSensorVRDevice
-            while (i > 0 && this._sensorDevice === null) {
+            while (i < size && this._sensorDevice === null) {
                 if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
                     this._sensorDevice = devices[i];
                 }
