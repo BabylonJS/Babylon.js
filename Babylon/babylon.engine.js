@@ -289,24 +289,11 @@
         };
     };
 
-    var getExponantOfTwo = function (value, max) {
-        var count = 1;
-
-        do {
-            count *= 2;
-        } while(count < value);
-
-        if (count > max)
-            count = max;
-
-        return count;
-    };
-
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -1266,8 +1253,8 @@
         Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
 
-            width = getExponantOfTwo(width, this._caps.maxTextureSize);
-            height = getExponantOfTwo(height, this._caps.maxTextureSize);
+            width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
@@ -1443,7 +1430,7 @@
                 }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-                    var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     _this._workingCanvas.width = width;

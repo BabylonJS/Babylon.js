@@ -2797,6 +2797,19 @@ var BABYLON;
         });
         Tools.BaseUrl = "";
 
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while(count < value);
+
+            if (count > max)
+                count = max;
+
+            return count;
+        };
+
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
         Tools._WarningLogLevel = 2;
@@ -3102,24 +3115,11 @@ var BABYLON;
         };
     };
 
-    var getExponantOfTwo = function (value, max) {
-        var count = 1;
-
-        do {
-            count *= 2;
-        } while(count < value);
-
-        if (count > max)
-            count = max;
-
-        return count;
-    };
-
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -4079,8 +4079,8 @@ var BABYLON;
         Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
 
-            width = getExponantOfTwo(width, this._caps.maxTextureSize);
-            height = getExponantOfTwo(height, this._caps.maxTextureSize);
+            width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
@@ -4256,7 +4256,7 @@ var BABYLON;
                 }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
-                    var width = getExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     _this._workingCanvas.width = width;
@@ -9514,7 +9514,7 @@ var BABYLON;
             this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
 
            
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
+            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
                 var zero = this.getScene().activeCamera.position.clone();
 
@@ -15733,8 +15733,13 @@ var BABYLON;
             camera = camera || this._camera;
 
             var scene = camera.getScene();
-            var desiredWidth = (sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio;
-            var desiredHeight = (sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio;
+            var maxSize = camera.getEngine().getCaps().maxTextureSize;
+            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+
+            desiredWidth = BABYLON.Tools.GetExponantOfTwo(desiredWidth, maxSize);
+            desiredHeight = BABYLON.Tools.GetExponantOfTwo(desiredHeight, maxSize);
+
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -18260,7 +18265,54 @@ var BABYLON;
         };
 
         var parseCamera = function (parsedCamera, scene) {
-            var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
+            var camera;
+            var position = BABYLON.Vector3.FromArray(parsedCamera.position);
+            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+
+            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
+                var alpha = parsedCamera.alpha;
+                var beta = parsedCamera.beta;
+                var radius = parsedCamera.radius;
+                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
+                    var eye_space = parsedCamera.eye_space;
+                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
+                } else {
+                    camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
+                }
+            } else if (parsedCamera.type === "AnaglyphFreeCamera") {
+                var eye_space = parsedCamera.eye_space;
+                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
+            } else if (parsedCamera.type === "DeviceOrientationCamera") {
+                camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "FollowCamera") {
+                camera = new BABYLON.FollowCamera(parsedCamera.name, position, scene);
+                camera.heightOffset = parsedCamera.heightOffset;
+                camera.radius = parsedCamera.radius;
+                camera.rotationOffset = parsedCamera.rotationOffset;
+                if (lockedTargetMesh)
+                    camera.target = lockedTargetMesh;
+            } else if (parsedCamera.type === "GamepadCamera") {
+                camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "OculusCamera") {
+                camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "TouchCamera") {
+                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "VirtualJoysticksCamera") {
+                camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "WebVRCamera") {
+                camera = new BABYLON.WebVRCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
+                camera = new BABYLON.VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+            } else {
+               
+                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
+            }
+
+           
+            if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
+                camera.lockedTarget = lockedTargetMesh;
+            }
+
             camera.id = parsedCamera.id;
 
             BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
@@ -18275,11 +18327,6 @@ var BABYLON;
                 camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
             } else {
                 camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-            }
-
-           
-            if (parsedCamera.lockedTargetId) {
-                camera._waitingLockedTargetId = parsedCamera.lockedTargetId;
             }
 
             camera.fov = parsedCamera.fov;
@@ -18505,7 +18552,7 @@ var BABYLON;
 
            
             if (parsedMesh.parentId) {
-                mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
+                mesh._waitingParentId = parsedMesh.parentId;
             }
 
            
@@ -18896,6 +18943,14 @@ var BABYLON;
                     }
                 }
 
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var currentMesh = scene.meshes[index];
+                    if (currentMesh._waitingParentId) {
+                        currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                        currentMesh._waitingParentId = undefined;
+                    }
+                }
+
                
                 if (parsedData.particleSystems) {
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
@@ -18931,15 +18986,6 @@ var BABYLON;
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
-                }
-
-                for (index = 0; index < parsedData.cameras.length; index++) {
-                    var parsedCamera = parsedData.cameras[index];
-                    parseCamera(parsedCamera, scene);
-                }
-
-                if (parsedData.activeCameraID) {
-                    scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
 
                
@@ -19046,19 +19092,28 @@ var BABYLON;
                     parseMesh(parsedMesh, scene, rootUrl);
                 }
 
+                for (index = 0; index < parsedData.cameras.length; index++) {
+                    var parsedCamera = parsedData.cameras[index];
+                    parseCamera(parsedCamera, scene);
+                }
+
+                if (parsedData.activeCameraID) {
+                    scene.setActiveCameraByID(parsedData.activeCameraID);
+                }
+
                 for (index = 0; index < scene.cameras.length; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
                         camera.parent = scene.getLastEntryByID(camera._waitingParentId);
-                        delete camera._waitingParentId;
+                        camera._waitingParentId = undefined;
                     }
+                }
 
-                    if (camera instanceof BABYLON.FreeCamera) {
-                        var freecamera = camera;
-                        if (freecamera._waitingLockedTargetId) {
-                            freecamera.lockedTarget = scene.getLastEntryByID(freecamera._waitingLockedTargetId);
-                            delete freecamera._waitingLockedTargetId;
-                        }
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var mesh = scene.meshes[index];
+                    if (mesh._waitingParentId) {
+                        mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                        mesh._waitingParentId = undefined;
                     }
                 }
 
@@ -23408,6 +23463,7 @@ var BABYLON;
                 if (!this._nextActiveAction._child._actionManager) {
                     this._nextActiveAction._child._actionManager = this._actionManager;
                 }
+
                 this._nextActiveAction = this._nextActiveAction._child;
             } else {
                 this._nextActiveAction = this;
@@ -25751,7 +25807,7 @@ var BABYLON;
             this._sensorDevice = null;
             this._hmdDevice = null;
 
-            while (i > 0 && this._hmdDevice === null) {
+            while (i < size && this._hmdDevice === null) {
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];
                 }
@@ -25760,7 +25816,7 @@ var BABYLON;
 
             i = 0;
 
-            while (i > 0 && this._sensorDevice === null) {
+            while (i < size && this._sensorDevice === null) {
                 if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
                     this._sensorDevice = devices[i];
                 }

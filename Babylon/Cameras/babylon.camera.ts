@@ -24,7 +24,7 @@
         public _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
-        public _postProcessesTakenIndices = [];
+        public _postProcessesTakenIndices = [];               
 
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);

@@ -264,24 +264,11 @@
         }
     }
 
-    var getExponantOfTwo = (value: number, max: number): number => {
-        var count = 1;
-
-        do {
-            count *= 2;
-        } while (count < value);
-
-        if (count > max)
-            count = max;
-
-        return count;
-    };
-
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -1276,8 +1263,8 @@
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
 
-            width = getExponantOfTwo(width, this._caps.maxTextureSize);
-            height = getExponantOfTwo(height, this._caps.maxTextureSize);
+            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
@@ -1450,7 +1437,7 @@
                 }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, imgs => {
-                    var width = getExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
+                    var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     this._workingCanvas.width = width;

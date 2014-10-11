@@ -284,6 +284,7 @@ declare module BABYLON {
         private _isEnabled;
         private _isReady;
         public _currentRenderId: number;
+        public _waitingParentId: string;
         private _scene;
         public _cache: any;
         constructor(name: string, scene: any);
@@ -913,7 +914,6 @@ declare module BABYLON {
         private _worldMatrix;
         public _postProcesses: PostProcess[];
         public _postProcessesTakenIndices: any[];
-        public _waitingParentId: string;
         constructor(name: string, position: Vector3, scene: Scene);
         public _initCache(): void;
         public _updateCache(ignoreParentClass?: boolean): void;
@@ -3473,6 +3473,7 @@ declare module BABYLON {
     }
     class Tools {
         static BaseUrl: string;
+        static GetExponantOfTwo: (value: number, max: number) => number;
         static GetFilename(path: string): string;
         static GetDOMTextContent(element: HTMLElement): string;
         static ToDegrees(angle: number): number;
