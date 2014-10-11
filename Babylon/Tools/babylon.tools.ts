@@ -36,6 +36,19 @@
     export class Tools {
         public static BaseUrl = "";
 
+        public static GetExponantOfTwo = (value: number, max: number): number => {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while (count < value);
+
+            if (count > max)
+                count = max;
+
+            return count;
+        };
+
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");
             if (index < 0)
@@ -265,7 +278,7 @@
             else {
                 // Caching all files
                 if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);                    
+                    database.openAsync(loadFromIndexedDB, noIndexedDB);
                 }
                 else {
                     noIndexedDB();

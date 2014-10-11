@@ -352,57 +352,64 @@
         }
     };
 
-    var parseCamera = (parsedCamera, scene) => {
+    var parseCamera = (parsedCamera, scene: Scene) => {
         var camera;
         var position = Vector3.FromArray(parsedCamera.position);
-        var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getMeshByID(parsedCamera.lockedTargetId) : null; // cannot use getLastEntryByID due to FollowCamera
-        
-        if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera"){
+        var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+
+        if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
             var alpha = parsedCamera.alpha;
             var beta = parsedCamera.beta;
             var radius = parsedCamera.radius;
-            if (parsedCamera.type === "AnaglyphArcRotateCamera"){
+            if (parsedCamera.type === "AnaglyphArcRotateCamera") {
                 var eye_space = parsedCamera.eye_space;
                 camera = new AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
-            }else{
+            } else {
                 camera = new ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
             }
-                     
-        }else if (parsedCamera.type === "AnaglyphFreeCamera"){
+
+        } else if (parsedCamera.type === "AnaglyphFreeCamera") {
             var eye_space = parsedCamera.eye_space;
             camera = new AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
-            
-        }else if (parsedCamera.type === "DeviceOrientationCamera"){
+
+        } else if (parsedCamera.type === "DeviceOrientationCamera") {
             camera = new DeviceOrientationCamera(parsedCamera.name, position, scene);
-            
-        }else if (parsedCamera.type === "FollowCamera"){
+
+        } else if (parsedCamera.type === "FollowCamera") {
             camera = new FollowCamera(parsedCamera.name, position, scene);
             camera.heightOffset = parsedCamera.heightOffset;
             camera.radius = parsedCamera.radius;
             camera.rotationOffset = parsedCamera.rotationOffset;
             if (lockedTargetMesh)
                 (<FollowCamera>camera).target = lockedTargetMesh;
-            
-        }else if (parsedCamera.type === "GamepadCamera"){
+
+        } else if (parsedCamera.type === "GamepadCamera") {
             camera = new GamepadCamera(parsedCamera.name, position, scene);
-            
-        }else if (parsedCamera.type === "OculusCamera"){
+
+        } else if (parsedCamera.type === "OculusCamera") {
             camera = new OculusCamera(parsedCamera.name, position, scene);
-            
-        }else if (parsedCamera.type === "TouchCamera"){
+
+        } else if (parsedCamera.type === "TouchCamera") {
             camera = new TouchCamera(parsedCamera.name, position, scene);
-            
-        }else if (parsedCamera.type === "VirtualJoysticksCamera"){
+
+        } else if (parsedCamera.type === "VirtualJoysticksCamera") {
             camera = new VirtualJoysticksCamera(parsedCamera.name, position, scene);
 
-        }else{
-            // Free Camera is not tested for due to some exporters that may not set a 'type'
+        } else if (parsedCamera.type === "WebVRCamera") {
+            camera = new WebVRCamera(parsedCamera.name, position, scene);
+
+        } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
+            camera = new VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+
+        } else {
+            // Free Camera is the default value
             camera = new FreeCamera(parsedCamera.name, position, scene);
         }
-        
-        // test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
-        if (lockedTargetMesh && camera instanceof FreeCamera)
-             (<FreeCamera>camera).lockedTarget = lockedTargetMesh;
+
+        // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
+        if (lockedTargetMesh && camera instanceof FreeCamera) {
+            (<FreeCamera>camera).lockedTarget = lockedTargetMesh;
+        }
 
         camera.id = parsedCamera.id;
 
@@ -410,7 +417,7 @@
 
         // Parent
         if (parsedCamera.parentId) {
-            camera.parentId = parsedCamera.parentId;
+            camera._waitingParentId = parsedCamera.parentId;
         }
 
         // Target
@@ -598,12 +605,7 @@
     };
 
     var parseMesh = (parsedMesh, scene, rootUrl) => {
-         var mesh : any;
-        if (parsedMesh.isAutomaton){
-            mesh = new BABYLON.Automaton(parsedMesh.name, scene);
-        }else{
-            mesh = new BABYLON.Mesh(parsedMesh.name, scene);
-        }
+        var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
         mesh.id = parsedMesh.id;
 
         BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
@@ -648,7 +650,7 @@
 
         // Parent
         if (parsedMesh.parentId) {
-            mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
+            mesh._waitingParentId = parsedMesh.parentId;
         }
 
         // Geometry
@@ -733,20 +735,6 @@
             mesh.layerMask = 0xFFFFFFFF;
         }
 
-        // shape key groups
-        if (parsedMesh.shapeKeyGroups) {
-            var shapeKeyGroup : BABYLON.ShapeKeyGroup;
-            for (var index = 0; index < parsedMesh.shapeKeyGroups.length; index++) {
-                var parsedShapeKeyGroup = parsedMesh.shapeKeyGroups[index];
-                shapeKeyGroup = new BABYLON.ShapeKeyGroup(mesh, parsedShapeKeyGroup.group, parsedShapeKeyGroup.affectedIndices, parsedShapeKeyGroup.basisState);
-                for (var stateIdx = 0; stateIdx < parsedShapeKeyGroup.states.length; stateIdx++) {
-                    var parsedState = parsedShapeKeyGroup.states[stateIdx];
-                    shapeKeyGroup.addShapeKey(parsedState.stateName, parsedState.state);
-                }
-                mesh.addShapeKeyGroup(shapeKeyGroup);
-            }
-        }
-        
         // Instances
         if (parsedMesh.instances) {
             for (var index = 0; index < parsedMesh.instances.length; index++) {
@@ -1057,6 +1045,15 @@
                 }
             }
 
+            // Connecting parents
+            for (index = 0; index < scene.meshes.length; index++) {
+                var currentMesh = scene.meshes[index];
+                if (currentMesh._waitingParentId) {
+                    currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                    currentMesh._waitingParentId = undefined;
+                }
+            }
+
             // Particles
             if (parsedData.particleSystems) {
                 for (index = 0; index < parsedData.particleSystems.length; index++) {
@@ -1208,6 +1205,23 @@
 
             if (parsedData.activeCameraID) {
                 scene.setActiveCameraByID(parsedData.activeCameraID);
+            }
+
+            // Connecting parents
+            for (index = 0; index < scene.cameras.length; index++) {
+                var camera = scene.cameras[index];
+                if (camera._waitingParentId) {
+                    camera.parent = scene.getLastEntryByID(camera._waitingParentId);
+                    camera._waitingParentId = undefined;
+                }
+            }
+
+            for (index = 0; index < scene.meshes.length; index++) {
+                var mesh = scene.meshes[index];
+                if (mesh._waitingParentId) {
+                    mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                    mesh._waitingParentId = undefined;
+                }
             }
 
             // Particles Systems
