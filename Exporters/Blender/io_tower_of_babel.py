@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Tower of Babel',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 0, 1),
+    'version': (1, 1, 0),
     'blender': (2, 69, 0),
     'location': 'File > Export > Tower of Babel [.babylon + .js + .ts + .html(s)]',
     'description': 'Produce Babylon scene file (.babylon), Translate to inline JavaScript & TypeScript',
@@ -80,7 +80,19 @@ CONE_IMPOSTER = 6
 CYLINDER_IMPOSTER = 7
 CONVEX_HULL_IMPOSTER = 8
 
-# used in Light constructor never formally defined in Babylon, but used in babylonFileLoader
+# camera class names, never formally defined in Babylon, but used in babylonFileLoader
+ANAGLYPH_ARC_CAM = 'AnaglyphArcRotateCamera' 
+ANAGLYPH_FREE_CAM = 'AnaglyphFreeCamera'
+ARC_ROTATE_CAM = 'ArcRotateCamera' 
+DEV_ORIENT_CAM = 'DeviceOrientationCamera'
+FOLLOW_CAM = 'FollowCamera'
+FREE_CAM = 'FreeCamera' 
+GAMEPAD_CAM = 'GamepadCamera'
+OCULUS_CAM = 'OculusCamera'
+TOUCH_CAM = 'TouchCamera'
+V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
+
+# used in Light constructor, never formally defined in Babylon, but used in babylonFileLoader
 POINT_LIGHT = 0
 DIRECTIONAL_LIGHT = 1
 SPOT_LIGHT = 2
@@ -136,7 +148,7 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     export_typeScript = bpy.props.BoolProperty(
         name="Export Typescript (.ts) File",
         description="Produce an inline TypeScript (xxx.ts) File",
-        default = True,
+        default = False,
         )
     
     export_json = bpy.props.BoolProperty(
@@ -148,7 +160,7 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     export_html = bpy.props.BoolProperty(
         name="Export applicable .html File(s)",
         description="Produce a xxx_JSON.html and/or xxx_inline.html as required by other selections",
-        default = True,
+        default = False,
         )
     
     def draw(self, context):
@@ -389,10 +401,12 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         file_handler.write(',\n"cameras":[')
         first = True
         for camera in self.cameras:
+            if hasattr(camera, 'fatalProblem'): continue
             if first != True:
                 file_handler.write(',')
 
             first = False
+            camera.update_for_target_attributes(self.meshesAndNodes)
             camera.to_scene_file(file_handler)
         file_handler.write(']')
                         
@@ -483,6 +497,8 @@ class TowerOfBabel(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         file_handler.write(TowerOfBabel.define_static_method('defineCameras', is_typescript))
         file_handler.write(indent2 + 'var camera;\n') # intensionally vague, since sub-classes instances & different specifc propeties set           
         for camera in self.cameras:
+            if hasattr(camera, 'fatalProblem'): continue
+            camera.update_for_target_attributes(self.meshesAndNodes)
             camera.core_script(file_handler, indent2, is_typescript)
             
         if hasattr(self, 'activeCamera'):
@@ -903,7 +919,7 @@ class Mesh(FCurveAnimatable):
                 if verticesCount + 3 > MAX_VERTEX_ELEMENTS:
                     self.offsetFace = faceIndex
                     break
-
+                
                 for v in range(3): # For each vertex in face
                     vertex_index = face.vertices[v]
 
@@ -1044,6 +1060,10 @@ class Mesh(FCurveAnimatable):
         if uvRequired and len(self.uvs) == 0:
             TowerOfBabel.warn('WARNING: textures being used, but no UV Map found', 2)
         
+        numZeroAreaFaces = self.find_zero_area_faces()    
+        if numZeroAreaFaces > 0:
+            TowerOfBabel.warn('WARNING: # of 0 area faces found:  ' + str(numZeroAreaFaces), 2)
+        
         # shape keys for mesh 
         if object.data.shape_keys:
             basisFound = False
@@ -1088,6 +1108,19 @@ class Mesh(FCurveAnimatable):
                     for group in groupNames:
                         self.shapeKeyGroups.append(ShapeKeyGroup(group, rawShapeKeys, self.positions))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def find_zero_area_faces(self):
+        nFaces = int(len(self.indices) / 3)
+        nZeroAreaFaces = 0
+        for f in range(0, nFaces):
+            faceOffset = f * 3
+            p1 = self.positions[self.indices[faceOffset    ]]
+            p2 = self.positions[self.indices[faceOffset + 1]]
+            p3 = self.positions[self.indices[faceOffset + 2]]
+            
+            if same_vertex(p1, p2) or same_vertex(p1, p3) or same_vertex(p2, p3): nZeroAreaFaces += 1
+           
+        return nZeroAreaFaces       
+        
     def get_key_order_map(self, basisKey):
         basisData = basisKey.data
         keySz =len(basisData)
@@ -1738,15 +1771,45 @@ class Camera(FCurveAnimatable):
                 self.lockedTargetId = constraint.target.name
                 break
             
-        self.useFollowCamera = camera.data.useFollowCamera
-                
-        if self.useFollowCamera:
-            self.followHeight = camera.data.followHeight
-            self.followDistance = camera.data.followDistance
-            self.followRotation = camera.data.followRotation
-            if not hasattr(self, 'lockedTargetId'):
-                TowerOfBabel.warn('WARNING: Follow Camera specified, but no target to track', 2)
+        self.CameraType = camera.data.CameraType  
+                   
+        if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ANAGLYPH_FREE_CAM:
+            self.anaglyphEyeSpace = camera.data.anaglyphEyeSpace
         
+        if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM or self.CameraType == FOLLOW_CAM:
+            if not hasattr(self, 'lockedTargetId'):
+                TowerOfBabel.warn('ERROR: Camera type with manditory target specified, but no target to track set', 2)
+                self.fatalProblem = True
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
+    def update_for_target_attributes(self, meshesAndNodes):  
+        if not hasattr(self, 'lockedTargetId'): return
+        
+        # find the actual mesh tracking, so properties can be derrived
+        targetFound = False
+        for mesh in meshesAndNodes:
+            if mesh.name == self.lockedTargetId: 
+                targetMesh = mesh
+                targetFound = True
+                break;
+            
+        xApart = 3 if not targetFound else self.position.x - targetMesh.position.x
+        yApart = 3 if not targetFound else self.position.y - targetMesh.position.y
+        zApart = 3 if not targetFound else self.position.z - targetMesh.position.z
+        
+        distance3D = math.sqrt(xApart * xApart + yApart * yApart + zApart * zApart)
+        
+        alpha = math.atan2(yApart, xApart);
+        beta  = math.atan2(yApart, zApart);
+             
+        if self.CameraType == FOLLOW_CAM:
+            self.followHeight   =  zApart
+            self.followDistance = distance3D
+            self.followRotation =  90 + (alpha * 180 / math.pi) 
+                
+        elif self.CameraType ==  ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM:
+            self.arcRotAlpha  = alpha
+            self.arcRotBeta   = beta 
+            self.arcRotRadius = distance3D
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):     
         file_handler.write('{')
@@ -1761,13 +1824,25 @@ class Camera(FCurveAnimatable):
         write_float(file_handler, 'inertia', self.inertia)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_bool(file_handler, 'applyGravity', self.applyGravity)
-        write_bool(file_handler, 'useFollowCamera', self.useFollowCamera)
         write_array3(file_handler, 'ellipsoid', self.ellipsoid)
         
-        if self.useFollowCamera:
-            write_int(file_handler, 'heightOffset',  self.followHeight)
-            write_int(file_handler, 'radius',  self.followDistance)
-            write_int(file_handler, 'rotationOffset',  self.followRotation)
+        write_string(file_handler, 'type', self.CameraType)
+        
+        if self.CameraType == FOLLOW_CAM:
+            write_float(file_handler, 'heightOffset',  self.followHeight)
+            write_float(file_handler, 'radius',  self.followDistance)
+            write_float(file_handler, 'rotationOffset',  self.followRotation)
+            
+        elif self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM:
+            write_float(file_handler, 'alpha', self.arcRotAlpha)
+            write_float(file_handler, 'beta', self.arcRotBeta)
+            write_float(file_handler, 'radius',  self.arcRotRadius)
+            
+            if self.CameraType ==  ANAGLYPH_ARC_CAM:
+                write_float(file_handler, 'eye_space',  self.anaglyphEyeSpace)
+            
+        elif self.CameraType == ANAGLYPH_FREE_CAM:
+            write_float(file_handler, 'eye_space',  self.anaglyphEyeSpace)
             
         if hasattr(self, 'lockedTargetId'):
             write_string(file_handler, 'lockedTargetId', self.lockedTargetId)
@@ -1776,11 +1851,23 @@ class Camera(FCurveAnimatable):
         file_handler.write('}')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -        
     def core_script(self, file_handler, indent, is_typescript): 
-        cameraClass = 'BABYLON.FollowCamera' if self.useFollowCamera else 'BABYLON.FreeCamera'
+        # constructor args are not the same for each camera type
+        file_handler.write(indent + 'camera = new BABYLON.' + self.CameraType + '("' + self.name + '"')
+        if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM:
+            file_handler.write(', ' + format_f(self.arcRotAlpha) + ', ' + format_f(self.arcRotBeta) + ', ' + format_f(self.arcRotRadius))
+            file_handler.write(', scene.getMeshByID("' + self.lockedTargetId + '")')
+            
+            if self.CameraType ==  ANAGLYPH_ARC_CAM:
+                file_handler.write(', ' + format_f(self.anaglyphEyeSpace))
+                            
+        else:
+            file_handler.write(', new BABYLON.Vector3(' + format_vector(self.position) + ')')
+            if self.CameraType == ANAGLYPH_FREE_CAM:
+                file_handler.write(', ' + format_f(self.anaglyphEyeSpace))
+            
+        file_handler.write(', scene);\n')
         
-        file_handler.write(indent + 'camera = new ' + cameraClass + '("' + self.name + '", new BABYLON.Vector3(' + format_vector(self.position) + '), scene);\n')
         file_handler.write(indent + 'camera.id = "' + self.name + '";\n')
-
         file_handler.write(indent + 'camera.rotation = new BABYLON.Vector3(' + format_vector(self.rotation) + ');\n')
 
         file_handler.write(indent + 'camera.fov = ' + format_f(self.fov) + ';\n')
@@ -1794,13 +1881,13 @@ class Camera(FCurveAnimatable):
         file_handler.write(indent + 'camera.applyGravity = ' + format_bool(self.applyGravity) + ';\n')
         file_handler.write(indent + 'camera.ellipsoid = new BABYLON.Vector3(' + format_array3(self.ellipsoid) + ');\n')
                  
-        if self.useFollowCamera:
-            file_handler.write(indent + 'camera.heightOffset = ' + format_int(self.followHeight) + ';\n')
-            file_handler.write(indent + 'camera.radius = ' + format_int(self.followDistance) + ';\n')
-            file_handler.write(indent + 'camera.rotationOffset = ' + format_int(self.followRotation) + ';\n')
-            
-        if hasattr(self, 'lockedTargetId'):
-            if self.useFollowCamera:
+        if self.CameraType == FOLLOW_CAM:
+            file_handler.write(indent + 'camera.heightOffset = ' + format_f(self.followHeight) + ';\n')
+            file_handler.write(indent + 'camera.radius = ' + format_f(self.followDistance) + ';\n')
+            file_handler.write(indent + 'camera.rotationOffset = ' + format_f(self.followRotation) + ';\n')
+                        
+        if hasattr(self, 'lockedTargetId') and (self.CameraType == FOLLOW_CAM or self.CameraType == FREE_CAM):
+            if self.CameraType == FOLLOW_CAM:
                 file_handler.write(indent + 'camera.target = scene.getMeshByID("' + self.lockedTargetId + '");\n')
             else:
                 file_handler.write(indent + 'camera.lockedTarget = scene.getMeshByID("' + self.lockedTargetId + '");\n')
@@ -2380,6 +2467,7 @@ def write_bool(file_handler, name, bool, noComma = False):
     file_handler.write('"' + name + '":' + format_bool(bool))
 #===============================================================================
 # custom properties definition and display 
+#===============================================================================
 bpy.types.Mesh.useFlatShading = bpy.props.BoolProperty(
     name='Use Flat Shading', 
     description='',
@@ -2400,6 +2488,24 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     description='',
     default = False
 )
+#===============================================================================
+bpy.types.Camera.CameraType = bpy.props.EnumProperty(
+    name='Camera Type', 
+    description='',
+    items = ( 
+             (V_JOYSTICKS_CAM  , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
+             (TOUCH_CAM        , 'Touch'              , 'Use Touch Camera'),
+             (OCULUS_CAM       , 'Oculus'             , 'Use Oculus Camera'),
+             (GAMEPAD_CAM      , 'Gamepad'            , 'Use Gamepad Camera'),
+             (FREE_CAM         , 'Free'               , 'Use Free Camera'),
+             (FOLLOW_CAM       , 'Follow'             , 'Use Follow Camera'),
+             (DEV_ORIENT_CAM   , 'Device Orientation' , 'Use Device Orientation Camera'),
+             (ARC_ROTATE_CAM   , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
+             (ANAGLYPH_FREE_CAM, 'Anaglyph Free'       , 'Use Anaglyph Free Camera'), 
+             (ANAGLYPH_ARC_CAM , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera') 
+            ),
+    default = FREE_CAM
+)
 bpy.types.Camera.checkCollisions = bpy.props.BoolProperty(
     name='Check Collisions', 
     description='',
@@ -2410,31 +2516,17 @@ bpy.types.Camera.applyGravity = bpy.props.BoolProperty(
     description='',
     default = False
 )    
-bpy.types.Camera.useFollowCamera = bpy.props.BoolProperty(
-    name='Use Follow Camera', 
-    description='',
-    default = False
-)
-bpy.types.Camera.followHeight = bpy.props.IntProperty(
-    name='Follow Height', 
-    description='how high above the object to maintain the camera',
-    default = 0
-)    
-bpy.types.Camera.followDistance = bpy.props.IntProperty(
-    name='Follow Distance', 
-    description='how far from the object to follow',
-    default = 10
-)    
-bpy.types.Camera.followRotation = bpy.props.IntProperty(
-    name='Follow rotation', 
-    description='rotate around the object, use 180 to follow from the front of the object',
-    default = 0
-)    
 bpy.types.Camera.ellipsoid = bpy.props.FloatVectorProperty(
     name='Ellipsoid', 
     description='',
     default = mathutils.Vector((0.2, 0.9, 0.2))
 )
+bpy.types.Camera.anaglyphEyeSpace = bpy.props.IntProperty(
+    name='Anaglyph Eye space', 
+    description='Used by the Anaglyph Arc Rotate camera',
+    default = 1
+)    
+#===============================================================================
 bpy.types.Lamp.shadowMap = bpy.props.EnumProperty(
     name='Shadow Map Type', 
     description='',
@@ -2467,14 +2559,17 @@ class ObjectPanel(bpy.types.Panel):
             layout.prop(ob.data, 'checkCollisions')     
             layout.prop(ob.data, 'castShadows')     
             layout.prop(ob.data, 'receiveShadows')   
+            
         elif isCamera:
+            layout.prop(ob.data, 'CameraType')
             layout.prop(ob.data, 'checkCollisions')
             layout.prop(ob.data, 'applyGravity')
             layout.prop(ob.data, 'ellipsoid')
-            layout.prop(ob.data, 'useFollowCamera')
-            layout.prop(ob.data, 'followHeight')
-            layout.prop(ob.data, 'followDistance')
-            layout.prop(ob.data, 'followRotation')
+
+            layout.separator()
+            
+            layout.prop(ob.data, 'anaglyphEyeSpace')
+            
         elif isLight:
             layout.prop(ob.data, 'shadowMap')
             layout.prop(ob.data, 'shadowMapSize')        
