@@ -1,9 +1,9 @@
 module BABYLON {
     export class PostProcessRenderPipelineManager {
-        private _renderPipelines: PostProcessRenderPipeline[];
+        private _renderPipelines: Array<PostProcessRenderPipeline>;
 
         constructor() {
-            this._renderPipelines = [];
+            this._renderPipelines = new Array<PostProcessRenderPipeline>();
         }
 
         public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
@@ -13,73 +13,73 @@ module BABYLON {
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean);
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean);
         public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any, unique?: boolean): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.attachCameras(cameras, unique);
+            renderPipeline._attachCameras(cameras, unique);
         }
 
         public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera);
         public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[]);
         public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.detachCameras(cameras);
+            renderPipeline._detachCameras(cameras);
         }
 
         public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera);
         public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]);
         public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.enableEffect(renderEffectName, cameras);
+            renderPipeline._enableEffect(renderEffectName, cameras);
         }
 
         public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera);
         public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]);
         public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.disableEffect(renderEffectName, cameras);
+            renderPipeline._disableEffect(renderEffectName, cameras);
         }
 
         public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera);
         public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[]);
         public enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: any): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.enableDisplayOnlyPass(passName, cameras);
+            renderPipeline._enableDisplayOnlyPass(passName, cameras);
         }
 
         public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera);
         public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]);
         public disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: any): void {
-            var renderPipeline = this._renderPipelines[renderPipelineName];
+            var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
             if (!renderPipeline) {
                 return;
             }
 
-            renderPipeline.disableDisplayOnlyPass(cameras);
+            renderPipeline._disableDisplayOnlyPass(cameras);
         }
 
         public update(): void {

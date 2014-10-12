@@ -68,9 +68,14 @@
                     break;
                 }
 
-                var effect = postProcesses[postProcessesTakenIndices[index]].apply();
+                var pp = postProcesses[postProcessesTakenIndices[index]];
+                var effect = pp.apply();
 
                 if (effect) {
+                    if (pp.onBeforeRender) {
+                        pp.onBeforeRender(effect);
+                    }
+
                     // VBOs
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
