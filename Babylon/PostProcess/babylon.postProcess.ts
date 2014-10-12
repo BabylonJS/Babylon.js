@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     export class PostProcess {
         public onApply: (Effect) => void;
+        public onBeforeRender: (Effect) => void;
         public onSizeChanged: () => void;
         public onActivate: (Camera) => void;
         public width = -1;

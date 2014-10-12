@@ -2910,6 +2910,7 @@ declare module BABYLON {
     class PostProcess {
         public name: string;
         public onApply: (Effect: any) => void;
+        public onBeforeRender: (Effect: any) => void;
         public onSizeChanged: () => void;
         public onActivate: (Camera: any) => void;
         public width: number;
@@ -2957,19 +2958,15 @@ declare module BABYLON {
     class PostProcessRenderEffect {
         private _engine;
         private _postProcesses;
-        private _postProcessType;
-        private _ratio;
-        private _samplingMode;
+        private _getPostProcess;
         private _singleInstance;
         private _cameras;
         private _indicesForCamera;
         private _renderPasses;
         private _renderEffectAsPasses;
         public _name: string;
-        public parameters: (effect: Effect) => void;
-        constructor(engine: Engine, name: string, postProcessType: any, ratio?: number, samplingMode?: number, singleInstance?: boolean);
-        private static _GetInstance(engine, postProcessType, ratio, samplingMode);
-        private static _GetParametersNames(func);
+        public applyParameters: (postProcess: PostProcess) => void;
+        constructor(engine: Engine, name: string, getPostProcess: () => PostProcess, singleInstance?: boolean);
         public _update(): void;
         public addPass(renderPass: PostProcessRenderPass): void;
         public removePass(renderPass: PostProcessRenderPass): void;

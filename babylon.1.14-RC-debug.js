@@ -15884,9 +15884,14 @@ var BABYLON;
                     break;
                 }
 
-                var effect = postProcesses[postProcessesTakenIndices[index]].apply();
+                var pp = postProcesses[postProcessesTakenIndices[index]];
+                var effect = pp.apply();
 
                 if (effect) {
+                    if (pp.onBeforeRender) {
+                        pp.onBeforeRender(effect);
+                    }
+
                    
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
@@ -21815,13 +21820,12 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderEffect = (function () {
-        function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+        function PostProcessRenderEffect(engine, name, getPostProcess, singleInstance) {
             this._engine = engine;
             this._name = name;
-            this._postProcessType = postProcessType;
-            this._ratio = ratio || 1.0;
-            this._samplingMode = samplingMode || null;
             this._singleInstance = singleInstance || true;
+
+            this._getPostProcess = getPostProcess;
 
             this._cameras = [];
 
@@ -21830,64 +21834,7 @@ var BABYLON;
 
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
-
-            this.parameters = function (effect) {
-            };
         }
-        PostProcessRenderEffect._GetInstance = function (engine, postProcessType, ratio, samplingMode) {
-            var postProcess;
-            var instance;
-            var args = [];
-
-            var parameters = PostProcessRenderEffect._GetParametersNames(postProcessType);
-            for (var i = 0; i < parameters.length; i++) {
-                switch (parameters[i]) {
-                    case "name":
-                        args[i] = postProcessType.toString();
-                        break;
-                    case "ratio":
-                        args[i] = ratio;
-                        break;
-                    case "camera":
-                        args[i] = null;
-                        break;
-                    case "samplingMode":
-                        args[i] = samplingMode;
-                        break;
-                    case "engine":
-                        args[i] = engine;
-                        break;
-                    case "reusable":
-                        args[i] = true;
-                        break;
-                    default:
-                        args[i] = null;
-                        break;
-                }
-            }
-
-            postProcess = function () {
-            };
-            postProcess.prototype = postProcessType.prototype;
-
-            instance = new postProcess();
-            postProcessType.apply(instance, args);
-
-            return instance;
-        };
-
-        PostProcessRenderEffect._GetParametersNames = function (func) {
-            var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            var functWithoutComments = func.toString().replace(commentsRegex, '');
-
-            var parameters = functWithoutComments.slice(functWithoutComments.indexOf('(') + 1, functWithoutComments.indexOf(')')).match(/([^\s,]+)/g);
-
-            if (parameters === null)
-                parameters = [];
-
-            return parameters;
-        };
-
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();
@@ -21941,11 +21888,11 @@ var BABYLON;
                     cameraKey = cameraName;
                 }
 
-                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || PostProcessRenderEffect._GetInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
+                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || this._getPostProcess();
 
                 var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
 
-                if (this._indicesForCamera[cameraName] === null) {
+                if (!this._indicesForCamera[cameraName]) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
@@ -22028,8 +21975,11 @@ var BABYLON;
         PostProcessRenderEffect.prototype._linkParameters = function () {
             var _this = this;
             for (var index in this._postProcesses) {
-                this._postProcesses[index].onApply = function (effect) {
-                    _this.parameters(effect);
+                if (this.applyParameters) {
+                    this.applyParameters(this._postProcesses[index]);
+                }
+
+                this._postProcesses[index].onBeforeRender = function (effect) {
                     _this._linkTextures(effect);
                 };
             }
@@ -22071,7 +22021,7 @@ var BABYLON;
                 return;
             }
 
-            renderEffects.enable(BABYLON.Tools.MakeArray(cameras || this._cameras));
+            renderEffects._enable(BABYLON.Tools.MakeArray(cameras || this._cameras));
         };
 
         PostProcessRenderPipeline.prototype._disableEffect = function (renderEffectName, cameras) {
@@ -22081,7 +22031,7 @@ var BABYLON;
                 return;
             }
 
-            renderEffects.disable(BABYLON.Tools.MakeArray(cameras || this._cameras));
+            renderEffects._disable(BABYLON.Tools.MakeArray(cameras || this._cameras));
         };
 
         PostProcessRenderPipeline.prototype._attachCameras = function (cameras, unique) {
@@ -22122,6 +22072,7 @@ var BABYLON;
         };
 
         PostProcessRenderPipeline.prototype._enableDisplayOnlyPass = function (passName, cameras) {
+            var _this = this;
             var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
             var pass = null;
@@ -22148,7 +22099,9 @@ var BABYLON;
                 var camera = _cam[i];
                 var cameraName = camera.name;
 
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () {
+                    return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true);
+                });
                 this._renderEffectsForIsolatedPass[cameraName].emptyPasses();
                 this._renderEffectsForIsolatedPass[cameraName].addPass(pass);
                 this._renderEffectsForIsolatedPass[cameraName]._attachCameras(camera);
@@ -22156,13 +22109,16 @@ var BABYLON;
         };
 
         PostProcessRenderPipeline.prototype._disableDisplayOnlyPass = function (cameras) {
+            var _this = this;
             var _cam = BABYLON.Tools.MakeArray(cameras || this._cameras);
 
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.name;
 
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, "BABYLON.DisplayPassPostProcess", 1.0, null, null);
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () {
+                    return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true);
+                });
                 this._renderEffectsForIsolatedPass[cameraName]._disable(camera);
             }
 
@@ -22193,7 +22149,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
-            this._renderPipelines = [];
+            this._renderPipelines = new Array();
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
             this._renderPipelines[renderPipeline._name] = renderPipeline;
@@ -22206,7 +22162,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.attachCameras(cameras, unique);
+            renderPipeline._attachCameras(cameras, unique);
         };
 
         PostProcessRenderPipelineManager.prototype.detachCamerasFromRenderPipeline = function (renderPipelineName, cameras) {
@@ -22216,7 +22172,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.detachCameras(cameras);
+            renderPipeline._detachCameras(cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.enableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
@@ -22226,7 +22182,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.enableEffect(renderEffectName, cameras);
+            renderPipeline._enableEffect(renderEffectName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.disableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
@@ -22236,7 +22192,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.disableEffect(renderEffectName, cameras);
+            renderPipeline._disableEffect(renderEffectName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.enableDisplayOnlyPassInPipeline = function (renderPipelineName, passName, cameras) {
@@ -22246,7 +22202,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.enableDisplayOnlyPass(passName, cameras);
+            renderPipeline._enableDisplayOnlyPass(passName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.disableDisplayOnlyPassInPipeline = function (renderPipelineName, cameras) {
@@ -22256,7 +22212,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.disableDisplayOnlyPass(cameras);
+            renderPipeline._disableDisplayOnlyPass(cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.update = function () {
