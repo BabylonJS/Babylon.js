@@ -354,7 +354,54 @@
         };
 
         var parseCamera = function (parsedCamera, scene) {
-            var camera = new BABYLON.FreeCamera(parsedCamera.name, BABYLON.Vector3.FromArray(parsedCamera.position), scene);
+            var camera;
+            var position = BABYLON.Vector3.FromArray(parsedCamera.position);
+            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+
+            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
+                var alpha = parsedCamera.alpha;
+                var beta = parsedCamera.beta;
+                var radius = parsedCamera.radius;
+                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
+                    var eye_space = parsedCamera.eye_space;
+                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
+                } else {
+                    camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
+                }
+            } else if (parsedCamera.type === "AnaglyphFreeCamera") {
+                var eye_space = parsedCamera.eye_space;
+                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
+            } else if (parsedCamera.type === "DeviceOrientationCamera") {
+                camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "FollowCamera") {
+                camera = new BABYLON.FollowCamera(parsedCamera.name, position, scene);
+                camera.heightOffset = parsedCamera.heightOffset;
+                camera.radius = parsedCamera.radius;
+                camera.rotationOffset = parsedCamera.rotationOffset;
+                if (lockedTargetMesh)
+                    camera.target = lockedTargetMesh;
+            } else if (parsedCamera.type === "GamepadCamera") {
+                camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "OculusCamera") {
+                camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "TouchCamera") {
+                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "VirtualJoysticksCamera") {
+                camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "WebVRCamera") {
+                camera = new BABYLON.WebVRCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
+                camera = new BABYLON.VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+            } else {
+                // Free Camera is the default value
+                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
+            }
+
+            // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
+            if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
+                camera.lockedTarget = lockedTargetMesh;
+            }
+
             camera.id = parsedCamera.id;
 
             BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
@@ -369,11 +416,6 @@
                 camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
             } else {
                 camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-            }
-
-            // Locked target
-            if (parsedCamera.lockedTargetId) {
-                camera._waitingLockedTargetId = parsedCamera.lockedTargetId;
             }
 
             camera.fov = parsedCamera.fov;
@@ -599,7 +641,7 @@
 
             // Parent
             if (parsedMesh.parentId) {
-                mesh.parent = scene.getLastEntryByID(parsedMesh.parentId);
+                mesh._waitingParentId = parsedMesh.parentId;
             }
 
             // Geometry
@@ -990,6 +1032,14 @@
                     }
                 }
 
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var currentMesh = scene.meshes[index];
+                    if (currentMesh._waitingParentId) {
+                        currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                        currentMesh._waitingParentId = undefined;
+                    }
+                }
+
                 // Particles
                 if (parsedData.particleSystems) {
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
@@ -1025,15 +1075,6 @@
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
-                }
-
-                for (index = 0; index < parsedData.cameras.length; index++) {
-                    var parsedCamera = parsedData.cameras[index];
-                    parseCamera(parsedCamera, scene);
-                }
-
-                if (parsedData.activeCameraID) {
-                    scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
 
                 // Materials
@@ -1140,19 +1181,28 @@
                     parseMesh(parsedMesh, scene, rootUrl);
                 }
 
+                for (index = 0; index < parsedData.cameras.length; index++) {
+                    var parsedCamera = parsedData.cameras[index];
+                    parseCamera(parsedCamera, scene);
+                }
+
+                if (parsedData.activeCameraID) {
+                    scene.setActiveCameraByID(parsedData.activeCameraID);
+                }
+
                 for (index = 0; index < scene.cameras.length; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
                         camera.parent = scene.getLastEntryByID(camera._waitingParentId);
-                        delete camera._waitingParentId;
+                        camera._waitingParentId = undefined;
                     }
+                }
 
-                    if (camera instanceof BABYLON.FreeCamera) {
-                        var freecamera = camera;
-                        if (freecamera._waitingLockedTargetId) {
-                            freecamera.lockedTarget = scene.getLastEntryByID(freecamera._waitingLockedTargetId);
-                            delete freecamera._waitingLockedTargetId;
-                        }
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var mesh = scene.meshes[index];
+                    if (mesh._waitingParentId) {
+                        mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                        mesh._waitingParentId = undefined;
                     }
                 }
 

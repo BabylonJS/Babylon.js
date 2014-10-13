@@ -3,10 +3,8 @@ module BABYLON {
         private _engine: Engine;
 
         private _postProcesses: PostProcess[];
-        private _postProcessType; //The type must inherit from PostProcess (example: BABYLON.BlackAndWhitePostProcess, like this without quotes).
+        private _getPostProcess: () => PostProcess;
 
-        private _ratio: number;
-        private _samplingMode: number;
         private _singleInstance: boolean;
 
         private _cameras: Camera[];
@@ -18,15 +16,14 @@ module BABYLON {
         // private
         public _name: string;
 
-        public parameters: (effect: Effect) => void;
+        public applyParameters: (postProcess: PostProcess) => void;
 
-        constructor(engine: Engine, name: string, postProcessType, ratio?: number, samplingMode?: number, singleInstance?: boolean) {
+        constructor(engine: Engine, name: string, getPostProcess: () => PostProcess, singleInstance?: boolean) {
             this._engine = engine;
             this._name = name;
-            this._postProcessType = postProcessType;
-            this._ratio = ratio || 1.0;
-            this._samplingMode = samplingMode || null;
             this._singleInstance = singleInstance || true;
+
+            this._getPostProcess = getPostProcess;
 
             this._cameras = [];
 
@@ -35,61 +32,6 @@ module BABYLON {
 
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
-
-            this.parameters = (effect: Effect) => { };
-        }
-
-        private static _GetInstance(engine: Engine, postProcessType, ratio: number, samplingMode: number): PostProcess {
-            var postProcess;
-            var instance;
-            var args = [];
-
-            var parameters = PostProcessRenderEffect._GetParametersNames(postProcessType);
-            for (var i = 0; i < parameters.length; i++) {
-                switch (parameters[i]) {
-                    case "name":
-                        args[i] = postProcessType.toString();
-                        break;
-                    case "ratio":
-                        args[i] = ratio;
-                        break;
-                    case "camera":
-                        args[i] = null;
-                        break;
-                    case "samplingMode":
-                        args[i] = samplingMode;
-                        break;
-                    case "engine":
-                        args[i] = engine;
-                        break;
-                    case "reusable":
-                        args[i] = true;
-                        break;
-                    default:
-                        args[i] = null;
-                        break;
-                }
-            }
-
-            postProcess = function () { };
-            postProcess.prototype = postProcessType.prototype;
-
-            instance = new postProcess();
-            postProcessType.apply(instance, args);
-
-            return instance;
-        }
-
-        private static _GetParametersNames(func): string[] {
-            var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            var functWithoutComments = func.toString().replace(commentsRegex, '');
-
-            var parameters = functWithoutComments.slice(functWithoutComments.indexOf('(') + 1, functWithoutComments.indexOf(')')).match(/([^\s,]+)/g);
-
-            if (parameters === null)
-                parameters = [];
-
-            return parameters;
         }
 
         public _update(): void {
@@ -149,11 +91,11 @@ module BABYLON {
                     cameraKey = cameraName;
                 }
 
-                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || PostProcessRenderEffect._GetInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
+                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || this._getPostProcess();
 
                 var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
 
-                if (this._indicesForCamera[cameraName] === null) {
+                if (!this._indicesForCamera[cameraName]) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
@@ -245,8 +187,11 @@ module BABYLON {
 
         private _linkParameters(): void {
             for (var index in this._postProcesses) {
-                this._postProcesses[index].onApply = (effect: Effect) => {
-                    this.parameters(effect);
+                if (this.applyParameters) {
+                    this.applyParameters(this._postProcesses[index]);
+                }
+
+                this._postProcesses[index].onBeforeRender = (effect: Effect) => {
                     this._linkTextures(effect);
                 };
             }

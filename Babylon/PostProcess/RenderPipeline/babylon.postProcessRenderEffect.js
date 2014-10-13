@@ -1,13 +1,12 @@
 var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderEffect = (function () {
-        function PostProcessRenderEffect(engine, name, postProcessType, ratio, samplingMode, singleInstance) {
+        function PostProcessRenderEffect(engine, name, getPostProcess, singleInstance) {
             this._engine = engine;
             this._name = name;
-            this._postProcessType = postProcessType;
-            this._ratio = ratio || 1.0;
-            this._samplingMode = samplingMode || null;
             this._singleInstance = singleInstance || true;
+
+            this._getPostProcess = getPostProcess;
 
             this._cameras = [];
 
@@ -16,64 +15,7 @@ var BABYLON;
 
             this._renderPasses = [];
             this._renderEffectAsPasses = [];
-
-            this.parameters = function (effect) {
-            };
         }
-        PostProcessRenderEffect._GetInstance = function (engine, postProcessType, ratio, samplingMode) {
-            var postProcess;
-            var instance;
-            var args = [];
-
-            var parameters = PostProcessRenderEffect._GetParametersNames(postProcessType);
-            for (var i = 0; i < parameters.length; i++) {
-                switch (parameters[i]) {
-                    case "name":
-                        args[i] = postProcessType.toString();
-                        break;
-                    case "ratio":
-                        args[i] = ratio;
-                        break;
-                    case "camera":
-                        args[i] = null;
-                        break;
-                    case "samplingMode":
-                        args[i] = samplingMode;
-                        break;
-                    case "engine":
-                        args[i] = engine;
-                        break;
-                    case "reusable":
-                        args[i] = true;
-                        break;
-                    default:
-                        args[i] = null;
-                        break;
-                }
-            }
-
-            postProcess = function () {
-            };
-            postProcess.prototype = postProcessType.prototype;
-
-            instance = new postProcess();
-            postProcessType.apply(instance, args);
-
-            return instance;
-        };
-
-        PostProcessRenderEffect._GetParametersNames = function (func) {
-            var commentsRegex = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            var functWithoutComments = func.toString().replace(commentsRegex, '');
-
-            var parameters = functWithoutComments.slice(functWithoutComments.indexOf('(') + 1, functWithoutComments.indexOf(')')).match(/([^\s,]+)/g);
-
-            if (parameters === null)
-                parameters = [];
-
-            return parameters;
-        };
-
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();
@@ -127,11 +69,11 @@ var BABYLON;
                     cameraKey = cameraName;
                 }
 
-                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || PostProcessRenderEffect._GetInstance(this._engine, this._postProcessType, this._ratio, this._samplingMode);
+                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || this._getPostProcess();
 
                 var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
 
-                if (this._indicesForCamera[cameraName] === null) {
+                if (!this._indicesForCamera[cameraName]) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
@@ -214,8 +156,11 @@ var BABYLON;
         PostProcessRenderEffect.prototype._linkParameters = function () {
             var _this = this;
             for (var index in this._postProcesses) {
-                this._postProcesses[index].onApply = function (effect) {
-                    _this.parameters(effect);
+                if (this.applyParameters) {
+                    this.applyParameters(this._postProcesses[index]);
+                }
+
+                this._postProcesses[index].onBeforeRender = function (effect) {
                     _this._linkTextures(effect);
                 };
             }
