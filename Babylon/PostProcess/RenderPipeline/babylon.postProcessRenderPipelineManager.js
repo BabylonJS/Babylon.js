@@ -2,7 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
-            this._renderPipelines = [];
+            this._renderPipelines = new Array();
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
             this._renderPipelines[renderPipeline._name] = renderPipeline;
@@ -15,7 +15,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.attachCameras(cameras, unique);
+            renderPipeline._attachCameras(cameras, unique);
         };
 
         PostProcessRenderPipelineManager.prototype.detachCamerasFromRenderPipeline = function (renderPipelineName, cameras) {
@@ -25,7 +25,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.detachCameras(cameras);
+            renderPipeline._detachCameras(cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.enableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
@@ -35,7 +35,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.enableEffect(renderEffectName, cameras);
+            renderPipeline._enableEffect(renderEffectName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.disableEffectInPipeline = function (renderPipelineName, renderEffectName, cameras) {
@@ -45,7 +45,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.disableEffect(renderEffectName, cameras);
+            renderPipeline._disableEffect(renderEffectName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.enableDisplayOnlyPassInPipeline = function (renderPipelineName, passName, cameras) {
@@ -55,7 +55,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.enableDisplayOnlyPass(passName, cameras);
+            renderPipeline._enableDisplayOnlyPass(passName, cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.disableDisplayOnlyPassInPipeline = function (renderPipelineName, cameras) {
@@ -65,7 +65,7 @@ var BABYLON;
                 return;
             }
 
-            renderPipeline.disableDisplayOnlyPass(cameras);
+            renderPipeline._disableDisplayOnlyPass(cameras);
         };
 
         PostProcessRenderPipelineManager.prototype.update = function () {

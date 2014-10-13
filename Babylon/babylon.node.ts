@@ -14,6 +14,8 @@
         private _isReady = true;
         public _currentRenderId = -1;
 
+        public _waitingParentId: string;
+
         private _scene: Scene;
         public _cache;
 
