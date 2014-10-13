@@ -212,6 +212,18 @@ var BABYLON;
             }
         };
 
+        Mesh.prototype.updateVerticesDataDirectly = function (kind, data, makeItUnique) {
+            if (!this._geometry) {
+                return;
+            }
+            if (!makeItUnique) {
+                this._geometry.updateVerticesDataDirectly(kind, data);
+            } else {
+                this.makeGeometryUnique();
+                this.updateVerticesDataDirectly(kind, data, false);
+            }
+        };
+
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
                 return;

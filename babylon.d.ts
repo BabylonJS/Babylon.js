@@ -2274,6 +2274,7 @@ declare module BABYLON {
         public isReady(): boolean;
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
         public setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+        public updateVerticesDataDirectly(kind: string, data: Float32Array): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
         public getTotalVertices(): number;
         public getVerticesData(kind: string): number[];
@@ -2481,6 +2482,7 @@ declare module BABYLON {
         public subdivide(count: number): void;
         public setVerticesData(kind: any, data: any, updatable?: boolean): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void;
         public makeGeometryUnique(): void;
         public setIndices(indices: number[]): void;
         public _bind(subMesh: SubMesh, effect: Effect, wireframe?: boolean): void;
@@ -2634,6 +2636,7 @@ declare module BABYLON {
         public getStrideSize(): number;
         public create(data?: number[]): void;
         public update(data: number[]): void;
+        public updateDirectly(data: Float32Array): void;
         public dispose(): void;
         private static _PositionKind;
         private static _NormalKind;
