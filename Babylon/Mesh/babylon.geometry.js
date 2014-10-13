@@ -74,6 +74,16 @@ var BABYLON;
             }
         };
 
+        Geometry.prototype.updateVerticesDataDirectly = function (kind, data) {
+            var vertexBuffer = this.getVertexBuffer(kind);
+
+            if (!vertexBuffer) {
+                return;
+            }
+
+            vertexBuffer.updateDirectly(data);
+        };
+
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
             var vertexBuffer = this.getVertexBuffer(kind);
 

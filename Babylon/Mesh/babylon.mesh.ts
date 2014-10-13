@@ -216,6 +216,19 @@
             }
         }
 
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void {
+            if (!this._geometry) {
+                return;
+            }
+            if (!makeItUnique) {
+                this._geometry.updateVerticesDataDirectly(kind, data);
+            }
+            else {
+                this.makeGeometryUnique();
+                this.updateVerticesDataDirectly(kind, data, false);
+            }
+        }
+
         public makeGeometryUnique() {
             if (!this._geometry) {
                 return;

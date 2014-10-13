@@ -94,6 +94,17 @@
             this.create(data);
         }
 
+        public updateDirectly(data: Float32Array): void {
+            if (!this._buffer) {
+                return;
+            }
+
+            if (this._updatable) { // update buffer
+                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+                this._data = null;
+            }
+        }
+
         public dispose(): void {
             if (!this._buffer) {
                 return;

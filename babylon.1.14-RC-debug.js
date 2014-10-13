@@ -9091,6 +9091,17 @@ var BABYLON;
             this.create(data);
         };
 
+        VertexBuffer.prototype.updateDirectly = function (data) {
+            if (!this._buffer) {
+                return;
+            }
+
+            if (this._updatable) {
+                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+                this._data = null;
+            }
+        };
+
         VertexBuffer.prototype.dispose = function () {
             if (!this._buffer) {
                 return;
@@ -10177,6 +10188,18 @@ var BABYLON;
             } else {
                 this.makeGeometryUnique();
                 this.updateVerticesData(kind, data, updateExtends, false);
+            }
+        };
+
+        Mesh.prototype.updateVerticesDataDirectly = function (kind, data, makeItUnique) {
+            if (!this._geometry) {
+                return;
+            }
+            if (!makeItUnique) {
+                this._geometry.updateVerticesDataDirectly(kind, data);
+            } else {
+                this.makeGeometryUnique();
+                this.updateVerticesDataDirectly(kind, data, false);
             }
         };
 
@@ -24036,6 +24059,16 @@ var BABYLON;
                     mesh.computeWorldMatrix(true);
                 }
             }
+        };
+
+        Geometry.prototype.updateVerticesDataDirectly = function (kind, data) {
+            var vertexBuffer = this.getVertexBuffer(kind);
+
+            if (!vertexBuffer) {
+                return;
+            }
+
+            vertexBuffer.updateDirectly(data);
         };
 
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
