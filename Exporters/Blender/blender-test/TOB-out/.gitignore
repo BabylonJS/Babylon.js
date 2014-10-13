@@ -1,4 +1,0 @@
-# Ignore everything in this directory, but not require tester to create dir
-*
-# Except this file
-!.gitignore
