@@ -293,6 +293,7 @@
         public scaleInPlace(scale: number): void {
             this.x *= scale;
             this.y *= scale;
+            return this;
         }
 
         public scale(scale: number): Vector2 {
@@ -323,6 +324,8 @@
 
             this.x *= num;
             this.y *= num;
+
+            return this;
         }
 
         public clone(): Vector2 {
@@ -516,6 +519,7 @@
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
+            return this;
         }
 
         public scale(scale: number): Vector3 {
@@ -605,6 +609,8 @@
             this.x *= num;
             this.y *= num;
             this.z *= num;
+
+            return this;
         }
 
         public clone(): Vector3 {

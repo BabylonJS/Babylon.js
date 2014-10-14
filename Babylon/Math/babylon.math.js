@@ -327,6 +327,7 @@
         Vector2.prototype.scaleInPlace = function (scale) {
             this.x *= scale;
             this.y *= scale;
+            return this;
         };
 
         Vector2.prototype.scale = function (scale) {
@@ -357,6 +358,8 @@
 
             this.x *= num;
             this.y *= num;
+
+            return this;
         };
 
         Vector2.prototype.clone = function () {
@@ -549,6 +552,7 @@
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
+            return this;
         };
 
         Vector3.prototype.scale = function (scale) {
@@ -642,6 +646,8 @@
             this.x *= num;
             this.y *= num;
             this.z *= num;
+
+            return this;
         };
 
         Vector3.prototype.clone = function () {
