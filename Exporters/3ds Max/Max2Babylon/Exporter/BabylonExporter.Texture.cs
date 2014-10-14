@@ -53,8 +53,10 @@ namespace Max2Babylon
             }
         }
 
-        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, BabylonScene babylonScene, bool allowCube = false, bool forceAlpha = false)
+        private BabylonTexture ExportTexture(IStdMat2 stdMat, int index, out BabylonFresnelParameters fresnelParameters, BabylonScene babylonScene, bool allowCube = false, bool forceAlpha = false)
         {
+            fresnelParameters = null;
+
             if (!stdMat.MapEnabled(index))
             {
                 return null;
@@ -62,6 +64,56 @@ namespace Max2Babylon
             var babylonTexture = new BabylonTexture();
 
             var texMap = stdMat.GetSubTexmap(index);
+
+            // Fallout
+            if (texMap.ClassName == "Falloff") // This is the only way I found to detect it. This is crappy but it works
+            {
+                fresnelParameters = new BabylonFresnelParameters();
+
+                var paramBlock = texMap.GetParamBlock(0);
+                var color1 = paramBlock.GetColor(0, 0, 0);
+                var color2 = paramBlock.GetColor(4, 0, 0);
+
+                fresnelParameters.isEnabled = true;
+                fresnelParameters.leftColor = color2.ToArray();
+                fresnelParameters.rightColor = color1.ToArray();
+
+                if (paramBlock.GetInt(8, 0, 0) == 2)
+                {
+                    fresnelParameters.power = paramBlock.GetFloat(12, 0, 0);
+                }
+                else
+                {
+                    fresnelParameters.power = 1;
+                }
+                var texMap1 = paramBlock.GetTexmap(2, 0, 0);
+                var texMap1On = paramBlock.GetInt(3, 0, 0);
+
+                var texMap2 = paramBlock.GetTexmap(6, 0, 0);
+                var texMap2On = paramBlock.GetInt(7, 0, 0);
+
+                if (texMap1 != null && texMap1On != 0)
+                {
+                    texMap = texMap1;
+                    fresnelParameters.rightColor = new float[] { 1, 1, 1 };
+
+                    if (texMap2 != null && texMap2On != 0)
+                    {
+                        RaiseWarning(string.Format("You cannot specify two textures for falloff. Only one is supported"), 2);
+                    }
+                }
+                else if (texMap2 != null && texMap2On != 0)
+                {
+                    fresnelParameters.leftColor = new float[] { 1, 1, 1 };
+                    texMap = texMap2;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            // Bitmap
             var texture = texMap.GetParamBlock(0).Owner as IBitmapTex;
 
             if (texture == null)
@@ -158,22 +210,22 @@ namespace Max2Babylon
             {
                 if (File.Exists(texture.MapName))
                 {
+                    babylonTexture.isCube = IsTextureCube(texture.MapName);
                     if (CopyTexturesToOutput)
                     {
                         File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                     }
-                    babylonTexture.isCube = IsTextureCube(texture.MapName);
                 }
                 else
                 {
                     var texturepath = Path.Combine(Path.GetDirectoryName(Loader.Core.CurFilePath), babylonTexture.name);
                     if (File.Exists(texturepath))
                     {
+                        babylonTexture.isCube = IsTextureCube(texturepath);
                         if (CopyTexturesToOutput)
                         {
                             File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                         }
-                        babylonTexture.isCube = IsTextureCube(texturepath);
                     }
                     else
                     {

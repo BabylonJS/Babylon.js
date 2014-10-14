@@ -38,16 +38,27 @@ namespace BabylonExport.Entities
         public BabylonTexture diffuseTexture { get; set; }
 
         [DataMember]
+        public BabylonFresnelParameters diffuseFresnelParameters { get; set; }
+
+        [DataMember]
         public BabylonTexture ambientTexture { get; set; }
 
         [DataMember]
         public BabylonTexture opacityTexture { get; set; }
 
         [DataMember]
+        public BabylonFresnelParameters opacityFresnelParameters { get; set; }
+
+        [DataMember]
         public BabylonTexture reflectionTexture { get; set; }
 
         [DataMember]
+        public BabylonFresnelParameters reflectionFresnelParameters { get; set; }
+
+        [DataMember]
         public BabylonTexture emissiveTexture { get; set; }
+        [DataMember]
+        public BabylonFresnelParameters emissiveFresnelParameters { get; set; }
 
         [DataMember]
         public BabylonTexture specularTexture { get; set; }

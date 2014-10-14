@@ -28,24 +28,11 @@ namespace Max2Babylon
             margin: 0;
             overflow: hidden;
         }
-
-        #waitLabel {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            font-size: 40px;
-            text-align: center;
-            top: 50%;
-            margin-top: -20px;
-            font-family: Arial;
-            font-weight: bold;
-        }
     </style>
 </head>
 
 <body>
     <canvas id='canvas'></canvas>
-    <div id='waitLabel'>loading....please wait</div>
     <script type='text/javascript'>
         var canvas = document.getElementById('canvas');
         var engine = new BABYLON.Engine(canvas, true);
@@ -60,8 +47,6 @@ namespace Max2Babylon
             window.addEventListener('resize', function () {
                 engine.resize();
             });
-
-            document.getElementById('waitLabel').style.display = 'none';
         });
     </script>
 </body>
@@ -73,28 +58,28 @@ namespace Max2Babylon
 
         static WebServer()
         {
-            listener = new HttpListener();
-
-            if (!HttpListener.IsSupported)
-            {
-                IsSupported = false;
-                return;
-            }
-
             try
             {
+                listener = new HttpListener();
+
+                if (!HttpListener.IsSupported)
+                {
+                    IsSupported = false;
+                    return;
+                }
+
                 listener.Prefixes.Add("http://localhost:" + Port + "/");
                 listener.Start();
+
+
+                runningTask = Task.Run(() => Listen());
+
+                IsSupported = true;
             }
-            catch 
+            catch
             {
                 IsSupported = false;
-                return;
             }
-
-            runningTask = Task.Run(() => Listen());
-
-            IsSupported = true;
         }
 
         public static string SceneFilename { get; set; }
@@ -110,7 +95,8 @@ namespace Max2Babylon
                     var request = context.Request;
                     var url = request.Url;
 
-                    if (string.IsNullOrEmpty(url.PathAndQuery) || url.PathAndQuery == "/")
+                    context.Response.AddHeader("Cache-Control", "no-cache");
+                    if (string.IsNullOrEmpty(url.LocalPath) || url.LocalPath == "/")
                     {
                         var responseText = HtmlResponseText.Replace("###SCENE###", SceneFilename);
                         WriteResponse(context, responseText);

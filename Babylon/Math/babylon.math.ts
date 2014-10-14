@@ -30,6 +30,10 @@
             return result;
         }
 
+        public toLuminance(): number {
+            return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
+        }
+
         public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
@@ -253,6 +257,33 @@
 
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        }
+
+        public multiplyInPlace(otherVector: Vector2): void {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+        }
+
+        public multiply(otherVector: Vector2): Vector2 {
+            return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
+        }
+
+        public multiplyToRef(otherVector: Vector2, result: Vector2): void {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+        }
+
+        public multiplyByFloats(x: number, y: number): Vector2 {
+            return new Vector2(this.x * x, this.y * y);
+        }
+
+        public divide(otherVector: Vector2): Vector2 {
+            return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
+        }
+
+        public divideToRef(otherVector: Vector2, result: Vector2): void {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
         }
 
         public negate(): Vector2 {
@@ -854,6 +885,13 @@
             this.z = other.z;
             this.w = other.w;
         }
+		
+		public copyFromFloats(x: number, y: number, z: number, w: number): void {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
 
         public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
@@ -893,8 +931,16 @@
             this.z *= length;
             this.w *= length;
         }
+		
+		public toEulerAngles(): Vector3 {
+            var result = Vector3.Zero();
 
-        public toEulerAngles(): Vector3 {
+            this.toEulerAnglesToRef(result);
+
+            return result;
+        }
+
+        public toEulerAnglesToRef(result: Vector3): void {
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
@@ -917,7 +963,9 @@
                 roll = 0;
             }
 
-            return new Vector3(pitch, yaw, roll);
+            result.x = pitch;
+            result.y = yaw;
+            result.z = roll;
         }
 
         public toRotationMatrix(result: Matrix): void {
@@ -1002,6 +1050,10 @@
         }
 
         // Statics
+        public static Inverse(q: Quaternion): Quaternion {
+			return new Quaternion(-q.x, -q.y, -q.z, q.w);
+        }
+
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);

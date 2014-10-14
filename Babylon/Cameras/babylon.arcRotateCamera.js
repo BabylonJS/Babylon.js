@@ -40,6 +40,10 @@ var BABYLON;
             this._previousPosition = BABYLON.Vector3.Zero();
             this._collisionVelocity = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+            // Pinch
+            // value for pinch step scaling
+            // set to 20 by default
+            this.pinchPrecision = 20;
 
             this.getViewMatrix();
         }
@@ -80,6 +84,13 @@ var BABYLON;
             var _this = this;
             var previousPosition;
             var pointerId;
+
+            // to know if pinch started
+            var pinchStarted = false;
+
+            // two pinch point on X
+            // that will use for find if user action is pinch open or pinch close
+            var pinchPointX1, pinchPointX2;
 
             if (this._attachedElement) {
                 return;
@@ -123,6 +134,11 @@ var BABYLON;
                         return;
                     }
 
+                    // return pinch is started
+                    if (pinchStarted) {
+                        return;
+                    }
+
                     var offsetX = evt.clientX - previousPosition.x;
                     var offsetY = evt.clientY - previousPosition.y;
 
@@ -141,6 +157,11 @@ var BABYLON;
 
                 this._onMouseMove = function (evt) {
                     if (!engine.isPointerLock) {
+                        return;
+                    }
+
+                    // return pinch is started
+                    if (pinchStarted) {
                         return;
                     }
 
@@ -242,6 +263,70 @@ var BABYLON;
                     previousPosition = null;
                     pointerId = null;
                 };
+
+                this._touchStart = function (event) {
+                    if (event.touches.length == 2) {
+                        //-- start pinch if two fingers on the screen
+                        pinchStarted = true;
+                        _this._pinchStart(event);
+                    }
+                };
+                this._touchMove = function (event) {
+                    if (pinchStarted) {
+                        //-- make scaling
+                        _this._pinchMove(event);
+                    }
+                };
+                this._touchEnd = function (event) {
+                    if (pinchStarted) {
+                        //-- end of pinch
+                        _this._pinchEnd(event);
+                    }
+                };
+
+                this._pinchStart = function (event) {
+                    // save origin touch point
+                    pinchPointX1 = event.touches[0].clientX;
+                    pinchPointX2 = event.touches[1].clientX;
+
+                    // block the camera
+                    // if not it rotate around target during pinch
+                    pinchStarted = true;
+                };
+                this._pinchMove = function (event) {
+                    // variable for new camera's radius
+                    var delta = 0;
+
+                    // variables to know if pinch open or pinch close
+                    var direction = 1;
+                    var distanceXOrigine, distanceXNow;
+
+                    if (event.touches.length != 2)
+                        return;
+
+                    // calculate absolute distances of the two fingers
+                    distanceXOrigine = Math.abs(pinchPointX1 - pinchPointX2);
+                    distanceXNow = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
+
+                    // if distanceXNow < distanceXOrigine -> pinch close so direction = -1
+                    if (distanceXNow < distanceXOrigine) {
+                        direction = -1;
+                    }
+
+                    // calculate new radius
+                    delta = (_this.pinchPrecision / (_this.wheelPrecision * 40)) * direction;
+
+                    // set new radius
+                    _this.inertialRadiusOffset += delta;
+
+                    // save origin touch point
+                    pinchPointX1 = event.touches[0].clientX;
+                    pinchPointX2 = event.touches[1].clientX;
+                };
+                this._pinchEnd = function (event) {
+                    // cancel pinch and deblock camera rotation
+                    pinchStarted = false;
+                };
             }
 
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
@@ -253,6 +338,11 @@ var BABYLON;
             element.addEventListener("MSGestureChange", this._onGesture, false);
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
+
+            // pinch
+            element.addEventListener('touchstart', this._touchStart, false);
+            element.addEventListener('touchmove', this._touchMove, false);
+            element.addEventListener('touchend', this._touchEnd, false);
 
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -275,6 +365,11 @@ var BABYLON;
             element.removeEventListener("MSGestureChange", this._onGesture);
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
+
+            // pinch
+            element.removeEventListener('touchstart', this._touchStart);
+            element.removeEventListener('touchmove', this._touchMove);
+            element.removeEventListener('touchend', this._touchEnd);
 
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },

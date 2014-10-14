@@ -8,8 +8,14 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
+<<<<<<< HEAD
         function Texture(url, scene, noMipmap, invertY, samplingMode, buffer, deleteBuffer) {
+=======
+        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
+            if (typeof onLoad === "undefined") { onLoad = null; }
+            if (typeof onError === "undefined") { onError = null; }
             _super.call(this, scene);
             this.uOffset = 0;
             this.vOffset = 0;
@@ -35,10 +41,14 @@ var BABYLON;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
+<<<<<<< HEAD
                     this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
+=======
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }

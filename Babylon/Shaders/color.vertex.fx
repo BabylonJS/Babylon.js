@@ -1,4 +1,4 @@
-﻿precision mediump float;
+﻿precision highp float;
 
 // Attributes
 attribute vec3 position;

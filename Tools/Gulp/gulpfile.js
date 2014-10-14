@@ -145,6 +145,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Actions/babylon.actionManager.js',
       '../../Babylon/Actions/babylon.interpolateValueAction.js',
       '../../Babylon/Actions/babylon.directActions.js',
+      '../../Babylon/Mesh/Automaton/babylon.automatonEventSeries.js',
       '../../Babylon/Mesh/babylon.geometry.js',
       '../../Babylon/Mesh/babylon.groundMesh.js',
       '../../Babylon/Mesh/babylon.instancedMesh.js',
@@ -152,7 +153,9 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Cameras/babylon.gamepadCamera.js',
       '../../Babylon/Mesh/babylon.linesMesh.js',
       '../../Babylon/Rendering/babylon.outlineRenderer.js',
-      '../../Babylon/Tools/babylon.assetsManager.js'
+      '../../Babylon/Tools/babylon.assetsManager.js',
+      '../../Babylon/Cameras/babylon.vrDeviceOrientationCamera.js',
+      '../../Babylon/Cameras/babylon.webVRCamera.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))

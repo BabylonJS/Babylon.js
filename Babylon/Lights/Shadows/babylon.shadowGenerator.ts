@@ -77,7 +77,7 @@
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);

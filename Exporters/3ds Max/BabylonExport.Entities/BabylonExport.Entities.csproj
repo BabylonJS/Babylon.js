@@ -52,6 +52,7 @@
     <Compile Include="BabylonAnimationKey.cs" />
     <Compile Include="BabylonBone.cs" />
     <Compile Include="BabylonCamera.cs" />
+    <Compile Include="BabylonFresnelParameters.cs" />
     <Compile Include="BabylonLensFlare.cs" />
     <Compile Include="BabylonLensFlareSystem.cs" />
     <Compile Include="BabylonLight.cs" />

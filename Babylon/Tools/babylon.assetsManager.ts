@@ -107,6 +107,76 @@
         }
     }
 
+    export class ImageAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public image: HTMLImageElement;
+
+        constructor(public name: string, public url: string) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+            var img = new Image();
+
+            img.onload = () => {
+                this.image = img;
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            img.onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+
+            img.src = this.url;
+        }
+    }
+
+    export class TextureAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public texture: Texture;
+
+        constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+
+            var onload = () => {
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            var onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+
+            this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onError);
+        }
+    }
+
     export class AssetsManager {
         private _tasks = new Array<IAssetTask>();
         private _scene: Scene;
@@ -139,6 +209,20 @@
 
         public addBinaryFileTask(taskName: string, url: string): IAssetTask {
             var task = new BinaryFileAssetTask(taskName, url);
+            this._tasks.push(task);
+
+            return task;
+        }
+
+        public addImageTask(taskName: string, url: string): IAssetTask {
+            var task = new ImageAssetTask(taskName, url);
+            this._tasks.push(task);
+
+            return task;
+        }
+
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): IAssetTask {
+            var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
             this._tasks.push(task);
 
             return task;

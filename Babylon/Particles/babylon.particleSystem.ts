@@ -67,6 +67,7 @@
         private _indexBuffer: WebGLBuffer;
         private _vertices: Float32Array;
         private _effect: Effect;
+        private _customEffect: Effect;
         private _cachedDefines: string;
 
         private _scaledColorStep = new BABYLON.Color4(0, 0, 0, 0);
@@ -81,11 +82,13 @@
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
 
-        constructor(public name: string, capacity: number, scene: Scene, public fragmentElement?: string) {
+        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect) {
             this.id = name;
             this._capacity = capacity;
 
             this._scene = scene;
+
+            this._customEffect = customEffect;
 
             scene.particleSystems.push(this);
 
@@ -235,6 +238,10 @@
         }
 
         private _getEffect(): Effect {
+            if (this._customEffect) {
+                return this._customEffect;
+            };
+
             var defines = [];
 
             if (this._scene.clipPlane) {
@@ -245,20 +252,9 @@
             var join = defines.join("\n");
             if (this._cachedDefines != join) {
                 this._cachedDefines = join;
-                var baseName;
-
-                if (this.fragmentElement) {
-                    baseName = {
-                        vertex: "particles",
-                        fragmentElement: this.fragmentElement
-                    }
-                } else {
-                    baseName = "particles";
-                }
-
 
                 this._effect = this._scene.getEngine().createEffect(
-                    baseName,
+                    "particles",
                     ["position", "color", "options"],
                     ["invView", "view", "projection", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);

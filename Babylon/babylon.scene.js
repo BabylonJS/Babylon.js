@@ -818,16 +818,11 @@
                 skeleton.prepare();
             }
 
-            for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                var renderTarget = this.customRenderTargets[customIndex];
-                this._renderTargets.push(renderTarget);
-            }
-
             // Render targets
             var beforeRenderTargetDate = new Date().getTime();
             if (this.renderTargetsEnabled) {
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    renderTarget = this._renderTargets.data[renderIndex];
+                    var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         renderTarget.render();
@@ -839,7 +834,7 @@
             if (this._renderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration = new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
@@ -980,6 +975,37 @@
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
             }
 
+            // Customs render targets
+            var beforeRenderTargetDate = new Date().getTime();
+            var engine = this.getEngine();
+            if (this.renderTargetsEnabled) {
+                for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
+                    var renderTarget = this.customRenderTargets[customIndex];
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+
+                        if (!this.activeCamera)
+                            throw new Error("Active camera not set");
+
+                        // Viewport
+                        engine.setViewport(this.activeCamera.viewport);
+
+                        // Camera
+                        this.updateTransformMatrix();
+
+                        renderTarget.render();
+                    }
+                }
+                this._renderId++;
+            }
+
+            if (this.customRenderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
+            }
+            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+
             // Clear
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
@@ -1003,6 +1029,10 @@
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
                 this._processSubCameras(this.activeCamera);
             }
 

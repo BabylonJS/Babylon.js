@@ -1,5 +1,5 @@
 ﻿#ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
 
 // Samplers
@@ -17,8 +17,6 @@ vec2 HmdWarp(vec2 in01) {
 	vec2 rvector = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);
 	return LensCenter + Scale * rvector;
 }
-
-
 
 void main(void)
 {

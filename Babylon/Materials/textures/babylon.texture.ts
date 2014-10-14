@@ -47,7 +47,11 @@
         private _buffer: any;
         private _deleteBuffer: boolean;
 
+<<<<<<< HEAD
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, buffer: any = null, deleteBuffer: boolean = false) {
+=======
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null) {
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             super(scene);
 
             this.name = url;
@@ -68,10 +72,14 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
+<<<<<<< HEAD
                     this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
+=======
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }

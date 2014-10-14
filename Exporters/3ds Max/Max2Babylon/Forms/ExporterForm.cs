@@ -218,5 +218,10 @@ namespace Max2Babylon
                 WindowState = FormWindowState.Minimized;
             }
         }
+
+        private void butClose_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }

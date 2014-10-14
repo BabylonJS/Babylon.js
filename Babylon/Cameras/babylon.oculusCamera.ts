@@ -103,7 +103,7 @@
         }
 
         // Oculus events
-        private _onOrientationEvent(evt: DeviceOrientationEvent): void {
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             var yaw = evt.alpha / 180 * Math.PI;
             var pitch = evt.beta / 180 * Math.PI;
             var roll = evt.gamma / 180 * Math.PI;
