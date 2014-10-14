@@ -14,7 +14,7 @@
         
 
         public get isDirty(): boolean {
-            return this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
         }
 
         public get cullFace(): number {
@@ -264,24 +264,11 @@
         }
     }
 
-    var getExponantOfTwo = (value: number, max: number): number => {
-        var count = 1;
-
-        do {
-            count *= 2;
-        } while (count < value);
-
-        if (count > max)
-            count = max;
-
-        return count;
-    };
-
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
-        var potWidth = getExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = getExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -663,6 +650,8 @@
         }
 
         public clear(color: any, backBuffer: boolean, depthStencil: boolean): void {
+            this.applyStates();
+
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
             if (this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
@@ -896,10 +885,14 @@
             }
         }
 
-        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-            // Apply states
+        public applyStates() {
             this._depthCullingState.apply(this._gl);
             this._alphaState.apply(this._gl);
+        }
+
+        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+            // Apply states
+            this.applyStates();
             
             // Render
             if (instancesCount) {
@@ -935,6 +928,19 @@
             this._compiledEffects[name] = effect;
 
             return effect;
+        }
+
+        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+
+            return this.createEffect(
+                {
+                    vertex: "particles",
+                    fragmentElement: fragmentName
+                },
+                ["position", "color", "options"],
+                ["view", "projection"].concat(uniformsNames),
+                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string): WebGLProgram {
@@ -1179,7 +1185,11 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
+<<<<<<< HEAD
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, buffer: any = null): WebGLTexture {
+=======
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             var texture = this._gl.createTexture();
 
             var extension: string;
@@ -1206,6 +1216,14 @@
             texture.references = 1;
             this._loadedTexturesCache.push(texture);
 
+            var onerror = () => {
+                scene._removePendingData(texture);
+
+                if (onError) {
+                    onError();
+                }
+            };
+
             if (isTGA) {
                 var callback = (arrayBuffer) => {
                     var data = new Uint8Array(arrayBuffer);
@@ -1214,7 +1232,12 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
+
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
+<<<<<<< HEAD
                 };
 
                 if (!(fromData instanceof Array))
@@ -1224,15 +1247,23 @@
                 else
                     callback(buffer);
 
+=======
+                }, onerror, scene.database, true);
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else if (isDDS) {
                 var callback = (data) => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                        console.log("loading " + url);
+
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
+
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
+<<<<<<< HEAD
                 }
 
                 if (!(fromData instanceof Array))
@@ -1242,6 +1273,9 @@
                 else
                     callback(buffer);
 
+=======
+                }, onerror, scene.database, true);
+>>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
@@ -1255,12 +1289,12 @@
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
 
+                        if (onLoad) {
+                            onLoad();
+                        }
                     }, samplingMode);
                 };
 
-                var onerror = () => {
-                    scene._removePendingData(texture);
-                };
 
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
@@ -1274,8 +1308,8 @@
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
 
-            width = getExponantOfTwo(width, this._caps.maxTextureSize);
-            height = getExponantOfTwo(height, this._caps.maxTextureSize);
+            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
@@ -1445,10 +1479,10 @@
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                });
+                }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, 0, [], scene, imgs => {
-                    var width = getExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
+                    var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     this._workingCanvas.width = width;
@@ -1707,13 +1741,18 @@
             imgBack.style.marginLeft = "-50px";
             imgBack.style.marginTop = "-50px";
             imgBack.style.transition = "transform 1.0s ease";
+            imgBack.style.webkitTransition = "-webkit-transform 1.0s ease";
 
             var deg = 360;
 
-            imgBack.addEventListener("transitionend", () => {
+            var onTransitionEnd = () => {
                 deg += 360;
-                imgBack.style.transform = "rotateZ(" + deg + "deg)";
-            });
+                imgBack.style.transform = "rotateZ(" + deg + "deg)"; 
+                imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
+            }
+
+            imgBack.addEventListener("transitionend", onTransitionEnd);
+            imgBack.addEventListener("webkitTransitionEnd", onTransitionEnd);
 
             this._loadingDiv.appendChild(imgBack);
 
@@ -1748,6 +1787,7 @@
             setTimeout(() => {
                 this._loadingDiv.style.opacity = "1";
                 imgBack.style.transform = "rotateZ(360deg)";
+                imgBack.style.webkitTransform = "rotateZ(360deg)";
             }, 0);
         }
 
@@ -1804,4 +1844,4 @@
             }
         }
     }
-} 
+}

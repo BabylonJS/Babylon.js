@@ -23,6 +23,7 @@ var BABYLON;
             this.showSubMeshesBoundingBox = false;
             this.onDispose = null;
             this.checkCollisions = false;
+            this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
             this.renderOutline = false;
@@ -345,7 +346,7 @@ var BABYLON;
             this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
 
             // Billboarding
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
+            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
                 var zero = this.getScene().activeCamera.position.clone();
 

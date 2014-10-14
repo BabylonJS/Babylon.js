@@ -1,5 +1,5 @@
 ﻿#ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
 
 #define MAP_EXPLICIT	0.
@@ -126,16 +126,30 @@ uniform sampler2D specularSampler;
 
 // Fresnel
 #ifdef FRESNEL
-float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal)
+float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)
 {
-	float fresnelTerm = dot(viewDirection, worldNormal);
-	return clamp(1.0 - fresnelTerm, 0., 1.);
+	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);
+	return clamp(fresnelTerm, 0., 1.);
 }
 #endif
 
 #ifdef DIFFUSEFRESNEL
-uniform vec3 diffuseLeftColor;
-uniform vec3 diffuseRightColor;
+uniform vec4 diffuseLeftColor;
+uniform vec4 diffuseRightColor;
+#endif
+
+#ifdef OPACITYFRESNEL
+uniform vec4 opacityParts;
+#endif
+
+#ifdef REFLECTIONFRESNEL
+uniform vec4 reflectionLeftColor;
+uniform vec4 reflectionRightColor;
+#endif
+
+#ifdef EMISSIVEFRESNEL
+uniform vec4 emissiveLeftColor;
+uniform vec4 emissiveRightColor;
 #endif
 
 // Reflection
@@ -627,6 +641,12 @@ void main(void) {
 
 		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;
 	}
+
+#ifdef REFLECTIONFRESNEL
+	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
+
+	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+#endif
 #endif
 
 #ifdef OPACITY
@@ -639,13 +659,24 @@ void main(void) {
 	alpha *= opacityMap.a * vOpacityInfos.y;
 #endif
 
+#endif
 
+#ifdef OPACITYFRESNEL
+	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
+
+	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
 #endif
 
 	// Emissive
 	vec3 emissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
 	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;
+#endif
+
+#ifdef EMISSIVEFRESNEL
+	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);
+
+	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;
 #endif
 
 	// Specular map
@@ -656,13 +687,18 @@ void main(void) {
 
 	// Fresnel
 #ifdef DIFFUSEFRESNEL
-	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW);
-	diffuseBase *= diffuseLeftColor * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor;
+	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);
+
+	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;
 #endif
 
 	// Composition
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 	vec3 finalSpecular = specularBase * specularColor;
+
+#ifdef SPECULAROVERALPHA
+	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
+#endif
 
 	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
 

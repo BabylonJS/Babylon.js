@@ -83,6 +83,16 @@
             }
         }
 
+        public updateVerticesDataDirectly(kind: string, data: Float32Array): void {
+            var vertexBuffer = this.getVertexBuffer(kind);
+
+            if (!vertexBuffer) {
+                return;
+            }
+
+            vertexBuffer.updateDirectly(data);
+        }
+
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 

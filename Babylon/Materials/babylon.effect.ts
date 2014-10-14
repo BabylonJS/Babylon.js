@@ -74,12 +74,20 @@
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
+
+                if (!vertexSource) {
+                    vertexSource = baseName.vertexElement;
+                }
             } else {
                 vertexSource = baseName.vertex || baseName;
             }
 
             if (baseName.fragmentElement) {
                 fragmentSource = document.getElementById(baseName.fragmentElement);
+
+                if (!fragmentSource) {
+                    fragmentSource = baseName.fragmentElement;
+                }
             } else {
                 fragmentSource = baseName.fragment || baseName;
             }
@@ -172,6 +180,11 @@
             // Is in local store ?
             if (BABYLON.Effect.ShadersStore[fragment + "PixelShader"]) {
                 callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
+                return;
+            }
+
+            if (BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]) {
+                callback(BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]);
                 return;
             }
 

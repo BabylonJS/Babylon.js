@@ -11,8 +11,8 @@
         public orthoBottom = null;
         public orthoTop = null;
         public fov = 0.8;
-        public minZ = 0.1;
-        public maxZ = 1000.0;
+        public minZ = 1.0;
+        public maxZ = 10000.0;
         public inertia = 0.9;
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
@@ -24,9 +24,7 @@
         public _projectionMatrix = new BABYLON.Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
-        public _postProcessesTakenIndices = [];
-        
-        public _waitingParentId: string;
+        public _postProcessesTakenIndices = [];               
 
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);

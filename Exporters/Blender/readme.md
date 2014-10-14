@@ -13,6 +13,8 @@ The [Blender export plugin](http://blogs.msdn.com/b/eternalcoding/archive/2013/0
  * Check collisions
  * Gravity
  * Ellipsoid
+ * Animations
+ * All kind of Babylon.js cameras can be chosen from a custom dropdown list
 * **Lights**
  * Type (Point, directional (Sun), Spot, Hemispheric)
  * Name
@@ -23,6 +25,8 @@ The [Blender export plugin](http://blogs.msdn.com/b/eternalcoding/archive/2013/0
  * Energy
  * Diffuse color
  * Specular color
+ * Shadow maps (For directional lights)
+ * Animations
 * **Materials**
  * Name
  * Ambient color

@@ -42,10 +42,11 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkCopyTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
             this.butExportAndRun = new System.Windows.Forms.Button();
-            this.chkOnlySelected = new System.Windows.Forms.CheckBox();
+            this.butClose = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -106,7 +107,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(12, 516);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(713, 23);
+            this.progressBar.Size = new System.Drawing.Size(627, 23);
             this.progressBar.TabIndex = 5;
             // 
             // treeView
@@ -124,7 +125,7 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(731, 516);
+            this.butCancel.Location = new System.Drawing.Point(645, 516);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 7;
@@ -193,6 +194,17 @@
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             // 
+            // chkOnlySelected
+            // 
+            this.chkOnlySelected.AutoSize = true;
+            this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkOnlySelected.Location = new System.Drawing.Point(362, 81);
+            this.chkOnlySelected.Name = "chkOnlySelected";
+            this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
+            this.chkOnlySelected.TabIndex = 15;
+            this.chkOnlySelected.Text = "Export only selected";
+            this.chkOnlySelected.UseVisualStyleBackColor = true;
+            // 
             // chkAutoSave
             // 
             this.chkAutoSave.AutoSize = true;
@@ -228,16 +240,17 @@
             this.butExportAndRun.UseVisualStyleBackColor = true;
             this.butExportAndRun.Click += new System.EventHandler(this.butExportAndRun_Click);
             // 
-            // chkOnlySelected
+            // butClose
             // 
-            this.chkOnlySelected.AutoSize = true;
-            this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkOnlySelected.Location = new System.Drawing.Point(362, 81);
-            this.chkOnlySelected.Name = "chkOnlySelected";
-            this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
-            this.chkOnlySelected.TabIndex = 15;
-            this.chkOnlySelected.Text = "Export only selected";
-            this.chkOnlySelected.UseVisualStyleBackColor = true;
+            this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.butClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.butClose.Location = new System.Drawing.Point(731, 516);
+            this.butClose.Name = "butClose";
+            this.butClose.Size = new System.Drawing.Size(80, 23);
+            this.butClose.TabIndex = 7;
+            this.butClose.Text = "Close";
+            this.butClose.UseVisualStyleBackColor = true;
+            this.butClose.Click += new System.EventHandler(this.butClose_Click);
             // 
             // ExporterForm
             // 
@@ -247,6 +260,7 @@
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox2);
+            this.Controls.Add(this.butClose);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.treeView);
             this.Controls.Add(this.progressBar);
@@ -287,5 +301,6 @@
         private System.Windows.Forms.CheckBox chkAutoSave;
         private System.Windows.Forms.Button butExportAndRun;
         private System.Windows.Forms.CheckBox chkOnlySelected;
+        private System.Windows.Forms.Button butClose;
     }
 }

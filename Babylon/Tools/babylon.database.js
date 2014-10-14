@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {
@@ -106,12 +106,6 @@
                     request.onupgradeneeded = function (event) {
                         _this.db = (event.target).result;
                         try  {
-                            if (event.oldVersion > 0) {
-                                _this.db.deleteObjectStore("scenes");
-                                _this.db.deleteObjectStore("versions");
-                                _this.db.deleteObjectStore("textures");
-                            }
-
                             var scenesStore = _this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
                             var versionsStore = _this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
                             var texturesStore = _this.db.createObjectStore("textures", { keyPath: "textureUrl" });

@@ -11,6 +11,10 @@ Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .baby
 
 Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
 
+3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
+
+Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
+
 Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
 
 ## Documentation
@@ -54,6 +58,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Skybox
  - Vertex color
  - Bones (Animations and shadows are supported)
+ - Fresnel term for diffuse, opacity, emissive and reflection
 -  Special FX
  - Fog
  - Alpha blending

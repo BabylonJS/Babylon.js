@@ -10,6 +10,7 @@
         public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
+        public _binaryInfo: any;
 
         // Private
         public _geometry: Geometry;
@@ -212,6 +213,19 @@
             else {
                 this.makeGeometryUnique();
                 this.updateVerticesData(kind, data, updateExtends, false);
+            }
+        }
+
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void {
+            if (!this._geometry) {
+                return;
+            }
+            if (!makeItUnique) {
+                this._geometry.updateVerticesDataDirectly(kind, data);
+            }
+            else {
+                this.makeGeometryUnique();
+                this.updateVerticesDataDirectly(kind, data, false);
             }
         }
 
@@ -518,11 +532,20 @@
 
                 scene._addPendingData(that);
 
+                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1) ? true : false;
+
                 BABYLON.Tools.LoadFile(this.delayLoadingFile, data => {
-                    this._delayLoadingFunction(JSON.parse(data), this);
+
+                    if (data instanceof ArrayBuffer) {
+                        this._delayLoadingFunction(data, this);
+                    }
+                    else {
+                        this._delayLoadingFunction(JSON.parse(data), this);
+                    }
+
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database);
+                }, () => { }, scene.database, getBinaryData);
             }
         }
 
@@ -564,6 +587,10 @@
 
             if (this.material) {
                 results.push(this.material);
+            }
+
+            if (this.skeleton) {
+                results.push(this.skeleton);
             }
 
             return results;
