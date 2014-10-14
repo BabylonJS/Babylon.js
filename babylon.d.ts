@@ -169,7 +169,7 @@ declare module BABYLON {
         public getAlphaTesting(): boolean;
         public wipeCaches(): void;
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void;
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void): WebGLTexture;
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any): WebGLTexture;
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture;
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void;
         public updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
@@ -1788,7 +1788,9 @@ declare module BABYLON {
         private _cachedWAng;
         private _cachedCoordinatesMode;
         private _samplingMode;
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void);
+        private _buffer;
+        private _deleteBuffer;
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, deleteBuffer?: boolean);
         public delayLoad(): void;
         private _prepareRowForTextureGeneration(x, y, z, t);
         public getTextureMatrix(): Matrix;
@@ -1881,12 +1883,12 @@ declare module BABYLON {
         public divide(otherVector: Vector2): Vector2;
         public divideToRef(otherVector: Vector2, result: Vector2): void;
         public negate(): Vector2;
-        public scaleInPlace(scale: number): void;
+        public scaleInPlace(scale: number): Vector2;
         public scale(scale: number): Vector2;
         public equals(otherVector: Vector2): boolean;
         public length(): number;
         public lengthSquared(): number;
-        public normalize(): void;
+        public normalize(): Vector2;
         public clone(): Vector2;
         static Zero(): Vector2;
         static FromArray(array: number[], offset?: number): Vector2;
@@ -1920,7 +1922,7 @@ declare module BABYLON {
         public subtractFromFloats(x: number, y: number, z: number): Vector3;
         public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
         public negate(): Vector3;
-        public scaleInPlace(scale: number): void;
+        public scaleInPlace(scale: number): Vector3;
         public scale(scale: number): Vector3;
         public scaleToRef(scale: number, result: Vector3): void;
         public equals(otherVector: Vector3): boolean;
@@ -1936,7 +1938,7 @@ declare module BABYLON {
         public MaximizeInPlace(other: Vector3): void;
         public length(): number;
         public lengthSquared(): number;
-        public normalize(): void;
+        public normalize(): Vector3;
         public clone(): Vector3;
         public copyFrom(source: Vector3): void;
         public copyFromFloats(x: number, y: number, z: number): void;
@@ -3494,6 +3496,7 @@ declare module BABYLON {
         static CleanUrl(url: string): string;
         static LoadImage(url: string, onload: any, onerror: any, database: any): HTMLImageElement;
         static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?: any, useArrayBuffer?: boolean, onError?: () => void): void;
+        static ReadFileAsDataURL(fileToLoad: any, callback: any, progressCallback: any): void;
         static ReadFile(fileToLoad: any, callback: any, progressCallBack: any, useArrayBuffer?: boolean): void;
         static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void;
         static WithinEpsilon(a: number, b: number): boolean;

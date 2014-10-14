@@ -327,6 +327,7 @@ var BABYLON;
         Vector2.prototype.scaleInPlace = function (scale) {
             this.x *= scale;
             this.y *= scale;
+            return this;
         };
 
         Vector2.prototype.scale = function (scale) {
@@ -357,6 +358,8 @@ var BABYLON;
 
             this.x *= num;
             this.y *= num;
+
+            return this;
         };
 
         Vector2.prototype.clone = function () {
@@ -549,6 +552,7 @@ var BABYLON;
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
+            return this;
         };
 
         Vector3.prototype.scale = function (scale) {
@@ -642,6 +646,8 @@ var BABYLON;
             this.x *= num;
             this.y *= num;
             this.z *= num;
+
+            return this;
         };
 
         Vector3.prototype.clone = function () {
@@ -2316,7 +2322,9 @@ var BABYLON;
             url = Tools.CleanUrl(url);
 
             var img = new Image();
-            img.crossOrigin = 'anonymous';
+
+            if (url.substr(0, 5) != "data:")
+                img.crossOrigin = 'anonymous';
 
             img.onload = function () {
                 onload(img);
@@ -2408,6 +2416,15 @@ var BABYLON;
                     noIndexedDB();
                 }
             }
+        };
+
+        Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target.result);
+            };
+            reader.onprogress = progressCallback;
+            reader.readAsDataURL(fileToLoad);
         };
 
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
@@ -3999,14 +4016,29 @@ var BABYLON;
             gl.bindTexture(gl.TEXTURE_2D, null);
         };
 
-        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError) {
+        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
             var _this = this;
             if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
             if (typeof onError === "undefined") { onError = null; }
+            if (typeof buffer === "undefined") { buffer = null; }
             var texture = this._gl.createTexture();
 
-            var extension = url.substr(url.length - 4, 4).toLowerCase();
+            var extension;
+            var fromData = false;
+            if (url.substr(0, 5) === "data:") {
+                fromData = true;
+            }
+
+            if (!fromData)
+                extension = url.substr(url.length - 4, 4).toLowerCase();
+            else {
+                var oldUrl = url;
+                fromData = oldUrl.split(':');
+                url = oldUrl;
+                extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
+            }
+
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
             var isTGA = (extension === ".tga");
 
@@ -4025,7 +4057,7 @@ var BABYLON;
             };
 
             if (isTGA) {
-                BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
+                var callback = function (arrayBuffer) {
                     var data = new Uint8Array(arrayBuffer);
 
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
@@ -4037,9 +4069,16 @@ var BABYLON;
                             onLoad();
                         }
                     }, samplingMode);
-                }, onerror, scene.database, true);
+                };
+
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
+                        callback(arrayBuffer);
+                    }, onerror, scene.database, true);
+                else
+                    callback(buffer);
             } else if (isDDS) {
-                BABYLON.Tools.LoadFile(url, function (data) {
+                var callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
@@ -4050,7 +4089,14 @@ var BABYLON;
                             onLoad();
                         }
                     }, samplingMode);
-                }, onerror, scene.database, true);
+                };
+
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadFile(url, function (data) {
+                        callback(data);
+                    }, onerror, scene.database, true);
+                else
+                    callback(buffer);
             } else {
                 var onload = function (img) {
                     prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {
@@ -4070,7 +4116,10 @@ var BABYLON;
                     }, samplingMode);
                 };
 
-                BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                else
+                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
             }
 
             return texture;
@@ -11750,10 +11799,12 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
+        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
             if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
             if (typeof onError === "undefined") { onError = null; }
+            if (typeof buffer === "undefined") { buffer = null; }
+            if (typeof deleteBuffer === "undefined") { deleteBuffer = false; }
             _super.call(this, scene);
             this.uOffset = 0;
             this.vOffset = 0;
@@ -11768,6 +11819,8 @@ var BABYLON;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
+            this._buffer = buffer;
+            this._deleteBuffer = deleteBuffer;
 
             if (!url) {
                 return;
@@ -11777,7 +11830,10 @@ var BABYLON;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    if (deleteBuffer) {
+                        delete this._buffer;
+                    }
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -11792,7 +11848,10 @@ var BABYLON;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                if (this._deleteBuffer) {
+                    delete this._buffer;
+                }
             }
         };
 

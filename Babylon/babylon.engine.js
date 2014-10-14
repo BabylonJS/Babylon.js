@@ -1178,12 +1178,12 @@
             if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
             if (typeof onError === "undefined") { onError = null; }
+            if (typeof buffer === "undefined") { buffer = null; }
             var texture = this._gl.createTexture();
+
             var extension;
             var fromData = false;
-
             if (url.substr(0, 5) === "data:") {
-                // data: -- name
                 fromData = true;
             }
 
@@ -1229,10 +1229,11 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, callback, onerror, scene.database, true);
+                    BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
+                        callback(arrayBuffer);
+                    }, onerror, scene.database, true);
                 else
                     callback(buffer);
-
             } else if (isDDS) {
                 var callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
@@ -1248,10 +1249,11 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, callback, onerror, scene.database, true);
+                    BABYLON.Tools.LoadFile(url, function (data) {
+                        callback(data);
+                    }, onerror, scene.database, true);
                 else
                     callback(buffer);
-
             } else {
                 var onload = function (img) {
                     prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {

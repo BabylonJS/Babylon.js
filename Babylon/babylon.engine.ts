@@ -11,7 +11,7 @@
         private _depthFunc: number;
         private _cull: boolean;
         private _cullFace: number;
-        
+
 
         public get isDirty(): boolean {
             return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
@@ -172,14 +172,14 @@
                 this._blendFunctionParameters[1] === value1 &&
                 this._blendFunctionParameters[2] === value2 &&
                 this._blendFunctionParameters[3] === value3
-            ) {
+                ) {
                 return;
             }
 
-            this._blendFunctionParameters[0] = value0;                
-            this._blendFunctionParameters[1] = value1;                
-            this._blendFunctionParameters[2] = value2;                
-            this._blendFunctionParameters[3] = value3;                
+            this._blendFunctionParameters[0] = value0;
+            this._blendFunctionParameters[1] = value1;
+            this._blendFunctionParameters[2] = value2;
+            this._blendFunctionParameters[3] = value3;
 
             this._isBlendFunctionParametersDirty = true;
         }
@@ -189,7 +189,7 @@
             this._blendFunctionParameters[0] = null;
             this._blendFunctionParameters[1] = null;
             this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;   
+            this._blendFunctionParameters[3] = null;
 
             this._isAlphaBlendDirty = true;
             this._isBlendFunctionParametersDirty = false;
@@ -394,7 +394,7 @@
         private _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
-        
+
         private _onBlur: () => void;
         private _onFocus: () => void;
         private _onFullscreenChange: () => void;
@@ -893,7 +893,7 @@
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            
+
             // Render
             if (instancesCount) {
                 this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
@@ -930,7 +930,7 @@
             return effect;
         }
 
-        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[]= [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
             return this.createEffect(
@@ -1185,17 +1185,17 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer:any = null): WebGLTexture {
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
 
             var texture = this._gl.createTexture();
 
             var extension: string;
-			var fromData: any = false;
-			if (url.substr(0, 5) === "data:") {
+            var fromData: any = false;
+            if (url.substr(0, 5) === "data:") {
                 fromData = true;
             }
 
-			if (!fromData)
+            if (!fromData)
                 extension = url.substr(url.length - 4, 4).toLowerCase();
             else {
                 var oldUrl = url;
@@ -1736,7 +1736,7 @@
 
             var onTransitionEnd = () => {
                 deg += 360;
-                imgBack.style.transform = "rotateZ(" + deg + "deg)"; 
+                imgBack.style.transform = "rotateZ(" + deg + "deg)";
                 imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
             }
 

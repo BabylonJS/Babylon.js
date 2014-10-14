@@ -160,7 +160,7 @@
             url = Tools.CleanUrl(url);
 
             var img = new Image();
-            
+
             if (url.substr(0, 5) != "data:")
                 img.crossOrigin = 'anonymous';
 
