@@ -1179,10 +1179,24 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): WebGLTexture {
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, buffer: any = null): WebGLTexture {
             var texture = this._gl.createTexture();
 
-            var extension = url.substr(url.length - 4, 4).toLowerCase();
+            var extension: string;
+			var fromData: any = false;
+			if (url.substr(0, 5) === "data:") {
+                fromData = true;
+            }
+
+			if (!fromData)
+                extension = url.substr(url.length - 4, 4).toLowerCase();
+            else {
+                var oldUrl = url;
+                fromData = oldUrl.split(':');
+                url = oldUrl;
+                extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
+            }
+
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
             var isTGA = (extension === ".tga");
 
@@ -1193,7 +1207,7 @@
             this._loadedTexturesCache.push(texture);
 
             if (isTGA) {
-                BABYLON.Tools.LoadFile(url, arrayBuffer => {
+                var callback = (arrayBuffer) => {
                     var data = new Uint8Array(arrayBuffer);
 
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
@@ -1201,17 +1215,33 @@
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
                     }, samplingMode);
-                }, null, scene.database, true);
+                };
+
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadFile(url, arrayBuffer => {
+                        callback(arrayBuffer);
+                    }, null, scene.database, true);
+                else
+                    callback(buffer);
+
             } else if (isDDS) {
-                BABYLON.Tools.LoadFile(url, data => {
+                var callback = (data) => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount -1)) == 1);
+                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
                         console.log("loading " + url);
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
                     }, samplingMode);
-                }, null, scene.database, true);
+                }
+
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadFile(url, data => {
+                        callback(data);
+                    }, null, scene.database, true);
+                else
+                    callback(buffer);
+
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
@@ -1232,7 +1262,10 @@
                     scene._removePendingData(texture);
                 };
 
-                BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                if (!(fromData instanceof Array))
+                    BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                else
+                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
             }
 
             return texture;
