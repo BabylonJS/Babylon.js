@@ -8,7 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
+
+        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+
             if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
             if (typeof onError === "undefined") { onError = null; }
@@ -26,6 +28,8 @@ var BABYLON;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
+            this._buffer = buffer;
+            this._deleteBuffer = deleteBuffer;
 
             if (!url) {
                 return;
@@ -35,7 +39,12 @@ var BABYLON;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
+
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+					if (deleteBuffer) {
+                        delete this._buffer;
+                    }
+
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -50,7 +59,10 @@ var BABYLON;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                if (this._deleteBuffer) {
+                    delete this._buffer;
+                }
             }
         };
 
@@ -159,7 +171,7 @@ var BABYLON;
         };
 
         Texture.prototype.clone = function () {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY);
+            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode, this._buffer, this._deleteBuffer);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

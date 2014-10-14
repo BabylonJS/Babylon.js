@@ -44,8 +44,10 @@
         private _cachedWAng: number;
         private _cachedCoordinatesMode: number;
         private _samplingMode: number;
+        private _buffer: any;
+        private _deleteBuffer: boolean;
 
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null) {
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
 
             this.name = url;
@@ -53,6 +55,8 @@
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
+            this._buffer = buffer;
+            this._deleteBuffer = deleteBuffer;
 
             if (!url) {
                 return;
@@ -62,7 +66,10 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    if (deleteBuffer) {
+                        delete this._buffer;
+                    }
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -78,7 +85,10 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                if (this._deleteBuffer) {
+                    delete this._buffer;
+                }
             }
         }
 

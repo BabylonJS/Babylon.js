@@ -160,7 +160,9 @@
             url = Tools.CleanUrl(url);
 
             var img = new Image();
-            img.crossOrigin = 'anonymous';
+            
+            if (url.substr(0, 5) != "data:")
+                img.crossOrigin = 'anonymous';
 
             img.onload = function () {
                 onload(img);
@@ -252,6 +254,15 @@
                     noIndexedDB();
                 }
             }
+        };
+
+        Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target.result);
+            };
+            reader.onprogress = progressCallback;
+            reader.readAsDataURL(fileToLoad);
         };
 
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
