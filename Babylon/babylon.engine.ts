@@ -1185,11 +1185,8 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-<<<<<<< HEAD
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, buffer: any = null): WebGLTexture {
-=======
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
+        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer:any = null): WebGLTexture {
+
             var texture = this._gl.createTexture();
 
             var extension: string;
@@ -1237,19 +1234,15 @@
                             onLoad();
                         }
                     }, samplingMode);
-<<<<<<< HEAD
                 };
 
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
-                    }, null, scene.database, true);
+                    }, onerror, scene.database, true);
                 else
                     callback(buffer);
 
-=======
-                }, onerror, scene.database, true);
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else if (isDDS) {
                 var callback = (data) => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
@@ -1263,19 +1256,15 @@
                             onLoad();
                         }
                     }, samplingMode);
-<<<<<<< HEAD
-                }
+                };
 
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, data => {
                         callback(data);
-                    }, null, scene.database, true);
+                    }, onerror, scene.database, true);
                 else
                     callback(buffer);
 
-=======
-                }, onerror, scene.database, true);
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {

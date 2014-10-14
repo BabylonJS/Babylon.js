@@ -1173,11 +1173,7 @@
             gl.bindTexture(gl.TEXTURE_2D, null);
         };
 
-<<<<<<< HEAD
-        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, buffer) {
-=======
-        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError) {
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
+        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
             var _this = this;
             if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
@@ -1230,17 +1226,13 @@
                             onLoad();
                         }
                     }, samplingMode);
-<<<<<<< HEAD
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, callback, null, scene.database, true);
+                    BABYLON.Tools.LoadFile(url, callback, onerror, scene.database, true);
                 else
                     callback(buffer);
 
-=======
-                }, onerror, scene.database, true);
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else if (isDDS) {
                 var callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
@@ -1253,17 +1245,13 @@
                             onLoad();
                         }
                     }, samplingMode);
-<<<<<<< HEAD
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, callback, null, scene.database, true);
+                    BABYLON.Tools.LoadFile(url, callback, onerror, scene.database, true);
                 else
                     callback(buffer);
 
-=======
-                }, onerror, scene.database, true);
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
             } else {
                 var onload = function (img) {
                     prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {
