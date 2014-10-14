@@ -47,11 +47,7 @@
         private _buffer: any;
         private _deleteBuffer: boolean;
 
-<<<<<<< HEAD
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, buffer: any = null, deleteBuffer: boolean = false) {
-=======
-        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null) {
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
 
             this.name = url;
@@ -66,20 +62,14 @@
                 return;
             }
 
-            console.log('coucou');
-
             this._texture = this._getFromCache(url, noMipmap);
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-<<<<<<< HEAD
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
-=======
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError);
->>>>>>> 08f8d5bd302ffec3b0c263e3d9b3a73544899aa5
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -95,7 +85,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
