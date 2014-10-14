@@ -145,7 +145,6 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Actions/babylon.actionManager.js',
       '../../Babylon/Actions/babylon.interpolateValueAction.js',
       '../../Babylon/Actions/babylon.directActions.js',
-      '../../Babylon/Mesh/Automaton/babylon.automatonEventSeries.js',
       '../../Babylon/Mesh/babylon.geometry.js',
       '../../Babylon/Mesh/babylon.groundMesh.js',
       '../../Babylon/Mesh/babylon.instancedMesh.js',
