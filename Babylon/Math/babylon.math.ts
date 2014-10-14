@@ -290,7 +290,7 @@
             return new Vector2(-this.x, -this.y);
         }
 
-        public scaleInPlace(scale: number): void {
+        public scaleInPlace(scale: number): Vector2 {
             this.x *= scale;
             this.y *= scale;
             return this;
@@ -314,7 +314,7 @@
         }
 
         // Methods
-        public normalize(): void {
+        public normalize(): Vector2 {
             var len = this.length();
 
             if (len === 0)
@@ -515,7 +515,7 @@
             return new Vector3(-this.x, -this.y, -this.z);
         }
 
-        public scaleInPlace(scale: number): void {
+        public scaleInPlace(scale: number): Vector3 {
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
@@ -598,7 +598,7 @@
         }
 
         // Methods
-        public normalize(): void {
+        public normalize(): Vector3 {
             var len = this.length();
 
             if (len === 0)

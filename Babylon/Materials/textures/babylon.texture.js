@@ -8,12 +8,12 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
-
             if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (typeof onLoad === "undefined") { onLoad = null; }
             if (typeof onError === "undefined") { onError = null; }
+            if (typeof buffer === "undefined") { buffer = null; }
+            if (typeof deleteBuffer === "undefined") { deleteBuffer = false; }
             _super.call(this, scene);
             this.uOffset = 0;
             this.vOffset = 0;
@@ -39,12 +39,10 @@ var BABYLON;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-
                     this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
-					if (deleteBuffer) {
+                    if (deleteBuffer) {
                         delete this._buffer;
                     }
-
                 } else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -171,7 +169,7 @@ var BABYLON;
         };
 
         Texture.prototype.clone = function () {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode, this._buffer, this._deleteBuffer);
+            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
