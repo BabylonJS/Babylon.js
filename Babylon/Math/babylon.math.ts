@@ -318,7 +318,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 
@@ -602,7 +602,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 
