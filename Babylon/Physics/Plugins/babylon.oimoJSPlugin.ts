@@ -203,6 +203,7 @@ module BABYLON {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     var body = registeredMesh.body.body;
+                    mesh.computeWorldMatrix(true);
 
                     var center = mesh.getBoundingInfo().boundingBox.center;
                     body.setPosition(center.x, center.y, center.z);

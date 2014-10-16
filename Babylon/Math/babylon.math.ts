@@ -258,8 +258,8 @@
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
-		
-		public subtractInPlace(otherVector: Vector2): void {
+
+        public subtractInPlace(otherVector: Vector2): void {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
         }
@@ -896,8 +896,8 @@
             this.z = other.z;
             this.w = other.w;
         }
-		
-		public copyFromFloats(x: number, y: number, z: number, w: number): void {
+
+        public copyFromFloats(x: number, y: number, z: number, w: number): void {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -942,8 +942,8 @@
             this.z *= length;
             this.w *= length;
         }
-		
-		public toEulerAngles(): Vector3 {
+
+        public toEulerAngles(): Vector3 {
             var result = Vector3.Zero();
 
             this.toEulerAnglesToRef(result);
@@ -1062,7 +1062,7 @@
 
         // Statics
         public static Inverse(q: Quaternion): Quaternion {
-			return new Quaternion(-q.x, -q.y, -q.z, q.w);
+            return new Quaternion(-q.x, -q.y, -q.z, q.w);
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {

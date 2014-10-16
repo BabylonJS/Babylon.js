@@ -479,7 +479,7 @@ var BABYLON;
 
             options.mass = options.mass || 0;
             options.friction = options.friction || 0.2;
-            options.restitution = options.restitution || 0.9;
+            options.restitution = options.restitution || 0.2;
 
             this._physicImpostor = impostor;
             this._physicsMass = options.mass;

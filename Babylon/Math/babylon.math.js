@@ -292,8 +292,8 @@
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         };
-		
-		Vector2.prototype.subtractInPlace = function (otherVector) {
+
+        Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
         };

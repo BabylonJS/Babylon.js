@@ -1031,6 +1031,27 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class OculusGamepadCamera extends FreeCamera {
+        private _leftCamera;
+        private _rightCamera;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        private _gamepad;
+        private _gamepads;
+        public angularSensibility: number;
+        public moveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private _onNewGameConnected(gamepad);
+        public _update(): void;
+        public _checkInputs(): void;
+        public _updateCamera(camera: FreeCamera): void;
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        public detachControl(element: HTMLElement): void;
+        public dispose(): void;
+    }
+}
+declare module BABYLON {
     class TargetCamera extends Camera {
         public cameraDirection: Vector3;
         public cameraRotation: Vector2;
@@ -1876,6 +1897,7 @@ declare module BABYLON {
         public add(otherVector: Vector2): Vector2;
         public addVector3(otherVector: Vector3): Vector2;
         public subtract(otherVector: Vector2): Vector2;
+        public subtractInPlace(otherVector: Vector2): void;
         public multiplyInPlace(otherVector: Vector2): void;
         public multiply(otherVector: Vector2): Vector2;
         public multiplyToRef(otherVector: Vector2, result: Vector2): void;
@@ -2785,7 +2807,6 @@ declare module BABYLON {
         static SphereImpostor: number;
         static BoxImpostor: number;
         static PlaneImpostor: number;
-        static CompoundImpostor: number;
         static MeshImpostor: number;
         static CapsuleImpostor: number;
         static ConeImpostor: number;
