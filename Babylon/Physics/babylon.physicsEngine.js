@@ -60,7 +60,6 @@
         PhysicsEngine.SphereImpostor = 1;
         PhysicsEngine.BoxImpostor = 2;
         PhysicsEngine.PlaneImpostor = 3;
-        PhysicsEngine.CompoundImpostor = 4;
         PhysicsEngine.MeshImpostor = 4;
         PhysicsEngine.CapsuleImpostor = 5;
         PhysicsEngine.ConeImpostor = 6;

@@ -92,7 +92,6 @@
         public static SphereImpostor = 1;
         public static BoxImpostor = 2;
         public static PlaneImpostor = 3;
-        public static CompoundImpostor = 4;
         public static MeshImpostor = 4;
         public static CapsuleImpostor = 5;
         public static ConeImpostor = 6;
