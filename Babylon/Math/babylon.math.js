@@ -292,6 +292,11 @@
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         };
+		
+		Vector2.prototype.subtractInPlace = function (otherVector) {
+            this.x -= otherVector.x;
+            this.y -= otherVector.y;
+        };
 
         Vector2.prototype.multiplyInPlace = function (otherVector) {
             this.x *= otherVector.x;
@@ -352,7 +357,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 
@@ -639,7 +644,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 

@@ -258,6 +258,11 @@
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
+		
+		public subtractInPlace(otherVector: Vector2): void {
+            this.x -= otherVector.x;
+            this.y -= otherVector.y;
+        }
 
         public multiplyInPlace(otherVector: Vector2): void {
             this.x *= otherVector.x;
@@ -318,7 +323,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 
@@ -602,7 +607,7 @@
             var len = this.length();
 
             if (len === 0)
-                return;
+                return this;
 
             var num = 1.0 / len;
 
