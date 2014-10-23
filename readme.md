@@ -28,7 +28,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
-- Physics engine (thanks to [cannon.js](http://github.com/schteppe/cannon.js))
+- Physics engine (thanks to [oimo.js](https://github.com/lo-th/Oimo.js))
 - Scene picking
 - Antialiasing
 - Animations engine
@@ -39,8 +39,9 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Sub-meshes clipping
  - Hardware scaling
  - Selection octrees
- - Offline mode (Assets are saved locally to prevent reloading them)
- - Incremental loading
+ - Offline mode via IndexedDB (Assets are saved locally to prevent reloading them)
+ - Incremental loading 
+ - Binary compressed format
  - Hardware accelerated instances
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
@@ -52,6 +53,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Emissive texture
  - Specular texture
  - Bump texture
+ - Fresnel term for diffuse, opacity, emissive and reflection
  - Up to 4 lights (points, directionals, spots, hemispherics)
  - Custom materials
  - Custom shaders
@@ -82,6 +84,9 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Virtual Joysticks camera
  - Oculus Rift camera
  - Gamepad camera
+ - VR Device Oriention camera
+ - WebVR camera
+ - Follow camera
 -  Meshes: 
  - Mesh cloning
  - Dynamic meshes
@@ -92,6 +97,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Exporter for Blender
  - Exporter for Cheetah3d
  - Exporter for 3ds Max
+ - Assets manager
 
 ## Apache License 2.0 (Apache)
 
