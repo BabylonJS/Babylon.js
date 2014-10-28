@@ -54,6 +54,9 @@
             this.importedMeshesFiles = new Array();
             this._actionManagers = new Array();
             this._meshesForIntersections = new BABYLON.SmartArray(256);
+            // Procedural textures
+            this.proceduralTexturesEnabled = true;
+            this._proceduralTextures = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -1005,6 +1008,16 @@
                 engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+
+            // Procedural textures
+            if (this.proceduralTexturesEnabled) {
+                for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
+                    var proceduralTexture = this._proceduralTextures[proceduralIndex];
+                    if (proceduralTexture._shouldRender()) {
+                        proceduralTexture.render();
+                    }
+                }
+            }
 
             // Clear
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);

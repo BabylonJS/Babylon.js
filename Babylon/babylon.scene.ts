@@ -111,6 +111,10 @@
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 
+        // Procedural textures
+        public proceduralTexturesEnabled = true;
+        public _proceduralTextures = new Array<ProceduralTexture>();
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
@@ -1085,6 +1089,15 @@
             }
             this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
 
+            // Procedural textures
+            if (this.proceduralTexturesEnabled) {
+                for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
+                    var proceduralTexture = this._proceduralTextures[proceduralIndex];
+                    if (proceduralTexture._shouldRender()) {
+                        proceduralTexture.render();
+                    }
+                }
+            }
 
             // Clear
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);

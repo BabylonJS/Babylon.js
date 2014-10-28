@@ -320,18 +320,16 @@
         scene._removePendingData(texture);
     };
 
-    // ANY
-    var cascadeLoad = function (rootUrl, index, loadedImages, scene, onfinish, extensions) {
+    var partialLoad = function (url, index, loadedImages, scene, onfinish) {
         var img;
 
         var onload = function () {
-            loadedImages.push(img);
+            loadedImages[index] = img;
+            loadedImages._internalCount++;
 
             scene._removePendingData(img);
 
-            if (index != extensions.length - 1) {
-                cascadeLoad(rootUrl, index + 1, loadedImages, scene, onfinish, extensions);
-            } else {
+            if (loadedImages._internalCount == 6) {
                 onfinish(loadedImages);
             }
         };
@@ -340,8 +338,17 @@
             scene._removePendingData(img);
         };
 
-        img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror, scene.database);
+        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
+    };
+
+    var cascadeLoad = function (rootUrl, scene, onfinish, extensions) {
+        var loadedImages = [];
+        loadedImages._internalCount = 0;
+
+        for (var index = 0; index < 6; index++) {
+            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+        }
     };
 
     var EngineCapabilities = (function () {
@@ -1461,7 +1468,7 @@
                     texture.isReady = true;
                 }, null, null, true);
             } else {
-                cascadeLoad(rootUrl, 0, [], scene, function (imgs) {
+                cascadeLoad(rootUrl, scene, function (imgs) {
                     var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
 
