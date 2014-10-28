@@ -295,19 +295,18 @@
         scene._removePendingData(texture);
     };
 
-    // ANY
-    var cascadeLoad = (rootUrl: string, index: number, loadedImages: HTMLImageElement[], scene,
-        onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
+    var partialLoad = (url: string, index: number, loadedImages: any, scene,
+        onfinish: (images: HTMLImageElement[]) => void) => {
+
         var img: HTMLImageElement;
 
         var onload = () => {
-            loadedImages.push(img);
+            loadedImages[index] = img;
+            loadedImages._internalCount++;
 
             scene._removePendingData(img);
 
-            if (index != extensions.length - 1) {
-                cascadeLoad(rootUrl, index + 1, loadedImages, scene, onfinish, extensions);
-            } else {
+            if (loadedImages._internalCount == 6) {
                 onfinish(loadedImages);
             }
         };
@@ -316,8 +315,19 @@
             scene._removePendingData(img);
         };
 
-        img = BABYLON.Tools.LoadImage(rootUrl + extensions[index], onload, onerror, scene.database);
+        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
+    }
+
+    var cascadeLoad = (rootUrl: string, scene,
+        onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
+
+        var loadedImages:any = [];
+        loadedImages._internalCount = 0;
+
+        for (var index = 0; index < 6; index++) {
+            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+        }
     };
 
     export class EngineCapabilities {
@@ -1470,7 +1480,7 @@
                     texture.isReady = true;
                 }, null, null, true);
             } else {
-                cascadeLoad(rootUrl, 0, [], scene, imgs => {
+                cascadeLoad(rootUrl, scene, imgs => {
                     var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
