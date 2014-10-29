@@ -18,7 +18,9 @@
         public keysLeft = [37];
         public keysRight = [39];
         public zoomOnFactor = 1;
-
+		public targetScreenOffset = Vector3.Zero();
+		
+		
         private _keys = [];
         private _viewMatrix = new BABYLON.Matrix();
         private _attachedElement: HTMLElement;
@@ -78,6 +80,7 @@
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
+			this._cache.targetScreenOffset = undefined;
         }
 
         public _updateCache(ignoreParentClass?: boolean): void {
@@ -89,6 +92,7 @@
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
+			this._cache.targetScreenOffset = this.targetScreenOffset.clone();
         }
 
         // Synchronized
@@ -99,7 +103,8 @@
             return this._cache.target.equals(this._getTargetPosition())
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
-                && this._cache.radius === this.radius;
+                && this._cache.radius === this.radius
+				&& this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         }
 
         // Methods
@@ -516,6 +521,9 @@
             this._previousRadius = this.radius;
             this._previousPosition.copyFrom(this.position);
 
+			this._viewMatrix.m[12] += this.targetScreenOffset.x;
+			this._viewMatrix.m[13] += this.targetScreenOffset.y;
+						
             return this._viewMatrix;
         }
 
