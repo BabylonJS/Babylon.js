@@ -8,7 +8,7 @@
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
                     if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                        var body = registeredMesh.body.body;
+                        var body = registeredMesh.body;
 
                         var center = mesh.getBoundingInfo().boundingBox.center;
                         body.position.set(center.x, center.z, center.y);
