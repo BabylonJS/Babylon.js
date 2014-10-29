@@ -35,8 +35,8 @@
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         }
-		
-		 public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
+
+        public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
         }
 
@@ -58,7 +58,7 @@
             this._highLimitsCache = {};
         }
 
-        private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue? , highLimitValue?) {
+        private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue?, highLimitValue?) {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }
@@ -105,7 +105,7 @@
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
-						// Vector2
+                        // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
@@ -193,7 +193,7 @@
                             // Vector3
                             case Animation.ANIMATIONTYPE_VECTOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-							// Vector2
+                            // Vector2
                             case Animation.ANIMATIONTYPE_VECTOR2:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             // Color3
@@ -225,7 +225,7 @@
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         offsetValue = Vector3.Zero();
                         break;
-					// Vector2
+                    // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         offsetValue = Vector2.Zero();
                         break;
@@ -270,7 +270,7 @@
         private static _ANIMATIONTYPE_QUATERNION = 2;
         private static _ANIMATIONTYPE_MATRIX = 3;
         private static _ANIMATIONTYPE_COLOR3 = 4;
-		private static _ANIMATIONTYPE_VECTOR2 = 5;
+        private static _ANIMATIONTYPE_VECTOR2 = 5;
         private static _ANIMATIONLOOPMODE_RELATIVE = 0;
         private static _ANIMATIONLOOPMODE_CYCLE = 1;
         private static _ANIMATIONLOOPMODE_CONSTANT = 2;
@@ -283,10 +283,10 @@
             return Animation._ANIMATIONTYPE_VECTOR3;
         }
 
-		public static get ANIMATIONTYPE_VECTOR2(): number {
+        public static get ANIMATIONTYPE_VECTOR2(): number {
             return Animation._ANIMATIONTYPE_VECTOR2;
         }
-		
+
         public static get ANIMATIONTYPE_QUATERNION(): number {
             return Animation._ANIMATIONTYPE_QUATERNION;
         }

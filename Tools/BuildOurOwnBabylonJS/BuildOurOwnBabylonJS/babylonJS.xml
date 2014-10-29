@@ -67,6 +67,7 @@
   <script src="Babylon/Materials/textures/babylon.dynamicTexture.js"></script>
   <script src="Babylon/Materials/textures/babylon.mirrorTexture.js"></script>
   <script src="Babylon/Materials/textures/babylon.renderTargetTexture.js"></script>
+  <script src="Babylon/Materials/textures/procedurals/babylon.proceduralTexture.js"></script>
   <script src="Babylon/Materials/textures/babylon.cubeTexture.js"></script>
   <script src="Babylon/Materials/textures/babylon.texture.js"></script>
   <script src="Babylon/Materials/textures/babylon.baseTexture.js"></script>

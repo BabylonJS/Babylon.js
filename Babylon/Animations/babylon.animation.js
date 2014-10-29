@@ -35,6 +35,10 @@
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
 
+        Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
+            return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+        };
+
         Animation.prototype.color3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
@@ -98,6 +102,15 @@
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+
+                        case Animation.ANIMATIONTYPE_VECTOR2:
+                            switch (loopMode) {
+                                case Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
 
                         case Animation.ANIMATIONTYPE_COLOR3:
@@ -179,6 +192,9 @@
                             case Animation.ANIMATIONTYPE_VECTOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
 
+                            case Animation.ANIMATIONTYPE_VECTOR2:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             default:
@@ -205,6 +221,10 @@
 
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         offsetValue = BABYLON.Vector3.Zero();
+                        break;
+
+                    case Animation.ANIMATIONTYPE_VECTOR2:
+                        offsetValue = BABYLON.Vector2.Zero();
                         break;
 
                     case Animation.ANIMATIONTYPE_COLOR3:
@@ -252,6 +272,14 @@
         Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR3", {
             get: function () {
                 return Animation._ANIMATIONTYPE_VECTOR3;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR2", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_VECTOR2;
             },
             enumerable: true,
             configurable: true
@@ -309,6 +337,7 @@
         Animation._ANIMATIONTYPE_QUATERNION = 2;
         Animation._ANIMATIONTYPE_MATRIX = 3;
         Animation._ANIMATIONTYPE_COLOR3 = 4;
+        Animation._ANIMATIONTYPE_VECTOR2 = 5;
         Animation._ANIMATIONLOOPMODE_RELATIVE = 0;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
