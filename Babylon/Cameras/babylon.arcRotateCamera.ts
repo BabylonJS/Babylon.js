@@ -18,7 +18,7 @@
         public keysLeft = [37];
         public keysRight = [39];
         public zoomOnFactor = 1;
-		public targetScreenOffset = Vector3.Zero();
+		public targetScreenOffset = Vector2.Zero();
 		
 		
         private _keys = [];
