@@ -1282,7 +1282,7 @@ class Texture:
         except:
             ex = sys.exc_info()
             BabylonExporter.log_handler.write('Error encountered processing image file:  ' + imageFilepath + ', Error:  '+ str(ex[1]) + '\n')
-            pass
+            #pass
         
         # Export
         self.slot = slot
@@ -1322,7 +1322,7 @@ class Texture:
         self.coordinatesIndex = 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):       
-        file_handler.write(',"' + self.slot + '":{')
+        file_handler.write(', "' + self.slot + '":{')
         write_string(file_handler, 'name', self.name, True)
         write_float(file_handler, 'level', self.level)
         write_float(file_handler, 'hasAlpha', self.hasAlpha)       
@@ -1359,22 +1359,28 @@ class Material:
                 if mtex.texture.image:
                     if (mtex.use_map_color_diffuse and (mtex.texture_coords != 'REFLECTION')):
                         # Diffuse
+                        BabylonExporter.log('Diffuse texture found');
                         self.textures.append(Texture('diffuseTexture', mtex.diffuse_color_factor, mtex, filepath))
                     if mtex.use_map_ambient:
                         # Ambient
+                        BabylonExporter.log('Ambient texture found');
                         self.textures.append(Texture('ambientTexture', mtex.ambient_factor, mtex, filepath))
                     if mtex.use_map_alpha:
                         # Opacity
+                        BabylonExporter.log('Opacity texture found');
                         self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, filepath))
                     if mtex.use_map_color_diffuse and (mtex.texture_coords == 'REFLECTION'):
                         # Reflection
+                        BabylonExporter.log('Reflection texture found');
                         self.textures.append(Texture('reflectionTexture', mtex.diffuse_color_factor, mtex, filepath))
                     if mtex.use_map_emit:
-                        # Emissive
+                        # Emissive                        
+                        BabylonExporter.log('Emissive texture found');
                         self.textures.append(Texture('emissiveTexture', mtex.emit_factor, mtex, filepath))     
                     if mtex.use_map_normal:
                         # Bump
-                        self.textures.append(Texture('bumpTexture', mtex.emit_factor, mtex, filepath))  
+                        BabylonExporter.log('Bump texture found');
+                        self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))  
                         
             else:
                  BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')
@@ -1390,11 +1396,7 @@ class Material:
         write_float(file_handler, 'specularPower', self.specularPower)
         write_float(file_handler, 'alpha', self.alpha)
         write_bool(file_handler, 'backFaceCulling', self.backFaceCulling)
-        first = True
         for texSlot in self.textures:
-            if first != True:
-                file_handler.write(',')
-            first = False
             texSlot.to_scene_file(file_handler)
             
         file_handler.write('}')                   
