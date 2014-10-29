@@ -739,6 +739,7 @@ declare module BABYLON {
         public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
         public quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
         public color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         public clone(): Animation;
         public setKeys(values: any[]): void;
@@ -749,11 +750,13 @@ declare module BABYLON {
         private static _ANIMATIONTYPE_QUATERNION;
         private static _ANIMATIONTYPE_MATRIX;
         private static _ANIMATIONTYPE_COLOR3;
+        private static _ANIMATIONTYPE_VECTOR2;
         private static _ANIMATIONLOOPMODE_RELATIVE;
         private static _ANIMATIONLOOPMODE_CYCLE;
         private static _ANIMATIONLOOPMODE_CONSTANT;
         static ANIMATIONTYPE_FLOAT : number;
         static ANIMATIONTYPE_VECTOR3 : number;
+        static ANIMATIONTYPE_VECTOR2 : number;
         static ANIMATIONTYPE_QUATERNION : number;
         static ANIMATIONTYPE_MATRIX : number;
         static ANIMATIONTYPE_COLOR3 : number;
@@ -846,6 +849,7 @@ declare module BABYLON {
         public keysLeft: number[];
         public keysRight: number[];
         public zoomOnFactor: number;
+        public targetScreenOffset: Vector2;
         private _keys;
         private _viewMatrix;
         private _attachedElement;
@@ -1743,6 +1747,50 @@ declare module BABYLON {
         private _savedViewMatrix;
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
         public clone(): MirrorTexture;
+    }
+}
+declare module BABYLON {
+    class ProceduralTexture extends Texture {
+        private _size;
+        public _generateMipMaps: boolean;
+        private _doNotChangeAspectRatio;
+        private _currentRefreshId;
+        private _refreshRate;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _uniforms;
+        private _samplers;
+        private _fragment;
+        private _textures;
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _matrices;
+        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
+        public isReady(): boolean;
+        public resetRefreshCounter(): void;
+        public refreshRate : number;
+        public _shouldRender(): boolean;
+        public getRenderSize(): number;
+        public resize(size: any, generateMipMaps: any): void;
+        private _checkUniform(uniformName);
+        public setTexture(name: string, texture: Texture): ProceduralTexture;
+        public setFloat(name: string, value: number): ProceduralTexture;
+        public setFloats(name: string, value: number[]): ProceduralTexture;
+        public setColor3(name: string, value: Color3): ProceduralTexture;
+        public setColor4(name: string, value: Color4): ProceduralTexture;
+        public setVector2(name: string, value: Vector2): ProceduralTexture;
+        public setVector3(name: string, value: Vector3): ProceduralTexture;
+        public setMatrix(name: string, value: Matrix): ProceduralTexture;
+        public render(useCameraPostProcess?: boolean): void;
+        public clone(): ProceduralTexture;
+        public dispose(): void;
     }
 }
 declare module BABYLON {

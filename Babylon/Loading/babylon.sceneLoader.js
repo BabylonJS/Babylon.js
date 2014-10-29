@@ -29,8 +29,9 @@
 
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
+
             var queryStringPosition = sceneFilename.indexOf("?");
-            var extension = sceneFilename.substring(dotPosition,queryStringPosition).toLowerCase();
+            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
 
             for (var index = 0; index < this._registeredPlugins.length; index++) {
                 var plugin = this._registeredPlugins[index];
