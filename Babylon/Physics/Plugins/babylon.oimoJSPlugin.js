@@ -28,7 +28,7 @@ var BABYLON;
                         var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
                         var absoluteRotation = mesh.rotation;
 
-                        body = registeredMesh.body.body;
+                        body = registeredMesh.body;
                         body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
                         body.setOrientation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
                         return;
@@ -195,7 +195,7 @@ var BABYLON;
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     if (registeredMesh.body) {
-                        this._world.removeRigidBody(registeredMesh.body.body);
+                        this._world.removeRigidBody(registeredMesh.body);
                         this._unbindBody(registeredMesh.body);
                     }
                     this._registeredMeshes.splice(index, 1);
@@ -218,10 +218,10 @@ var BABYLON;
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     // Get object mass to have a behaviour similar to cannon.js
-                    var mass = registeredMesh.body.body.massInfo.mass;
+                    var mass = registeredMesh.body.massInfo.mass;
 
                     // The force is scaled with the mass of object
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
+                    registeredMesh.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
                     return;
                 }
             }
@@ -232,9 +232,9 @@ var BABYLON;
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh1) {
-                    body1 = registeredMesh.body.body;
+                    body1 = registeredMesh.body;
                 } else if (registeredMesh.mesh === mesh2) {
-                    body2 = registeredMesh.body.body;
+                    body2 = registeredMesh.body;
                 }
             }
             if (!body1 || !body2) {
@@ -288,7 +288,7 @@ var BABYLON;
             var i = this._registeredMeshes.length;
             var m;
             while (i--) {
-                var body = this._registeredMeshes[i].body.body;
+                var body = this._registeredMeshes[i].body;
                 var mesh = this._registeredMeshes[i].mesh;
                 var delta = this._registeredMeshes[i].delta;
 
