@@ -32,6 +32,7 @@ var BABYLON;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
             this.useSpecularOverAlpha = true;
+			this.fogEnabled = true;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -170,7 +171,7 @@ var BABYLON;
             }
 
             // Fog
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
                 fallbacks.addFallback(1, "FOG");
             }

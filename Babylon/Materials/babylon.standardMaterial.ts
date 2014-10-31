@@ -25,6 +25,7 @@
         public emissiveColor = new BABYLON.Color3(0, 0, 0);
         public useAlphaFromDiffuseTexture = false;
         public useSpecularOverAlpha = true;
+		public fogEnabled = true;
 
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
@@ -174,7 +175,7 @@
             }
 
             // Fog
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
                 fallbacks.addFallback(1, "FOG");
             }
