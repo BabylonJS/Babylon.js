@@ -987,31 +987,38 @@
         };
 
         Quaternion.prototype.toEulerAnglesToRef = function (result) {
+            //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
-
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qwx = qw * qx;
+            var qyz = qy * qz;
             var sqx = qx * qx;
             var sqy = qy * qy;
-            var sqz = qz * qz;
 
-            var yaw = Math.atan2(2.0 * (qy * qw - qx * qz), 1.0 - 2.0 * (sqy + sqz));
-            var pitch = Math.asin(2.0 * (qx * qy + qz * qw));
-            var roll = Math.atan2(2.0 * (qx * qw - qy * qz), 1.0 - 2.0 * (sqx + sqz));
+            var determinant = sqx + sqy;
 
-            var gimbaLockTest = qx * qy + qz * qw;
-            if (gimbaLockTest > 0.499) {
-                yaw = 2.0 * Math.atan2(qx, qw);
-                roll = 0;
-            } else if (gimbaLockTest < -0.499) {
-                yaw = -2.0 * Math.atan2(qx, qw);
-                roll = 0;
+            if (determinant != 0.000 && determinant != 1.000) {
+                result.alpha = Math.atan2(qxz + qwy, qwx - qyz);
+                result.beta = Math.acos(1 - 2 * determinant);
+                result.gamma = Math.atan2(qxz - qwy, qwx + qyz);
             }
-
-            result.x = pitch;
-            result.y = yaw;
-            result.z = roll;
+            else
+            if (determinant == 0.000)
+            {
+                result.alpha = 0.0;
+                result.beta = 0.0;
+                result.gamma = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha+gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+            }
+            else //determinant == 1.000
+            {
+                result.alpha = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha-gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                result.beta = Math.PI;
+                result.gamma = 0.0;
+            }
         };
 
         Quaternion.prototype.toRotationMatrix = function (result) {
@@ -1170,6 +1177,153 @@
         return Quaternion;
     })();
     BABYLON.Quaternion = Quaternion;
+
+    var EulerAngles = (function () {
+        function EulerAngles(alpha, beta, gamma) {
+            if (typeof alpha === "undefined") { alpha = 0; }
+            if (typeof beta === "undefined") { beta = 0; }
+            if (typeof gamma === "undefined") { gamma = 0; }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+        }
+        EulerAngles.prototype.toString = function () {
+            return "{alpha: " + this.alpha + " beta:" + this.beta + " gamma:" + this.gamma + "}";
+        };
+
+        EulerAngles.prototype.asArray = function () {
+            return [this.alpha, this.beta, this.gamma];
+        };
+
+        EulerAngles.prototype.equals = function (otherEulerAngles) {
+            return otherEulerAngles && this.alpha === otherEulerAngles.alpha && this.beta === otherEulerAngles.beta && this.gamma === otherEulerAngles.gamma;
+        };
+
+        EulerAngles.prototype.clone = function () {
+            return new EulerAngles(this.alpha, this.beta, this.gamma);
+        };
+
+        EulerAngles.prototype.copyFrom = function (other) {
+            this.alpha = other.alpha;
+            this.beta = other.beta;
+            this.gamma = other.gamma;
+        };
+
+        EulerAngles.prototype.copyFromFloats = function (alpha, beta, gamma) {
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+        };
+
+        EulerAngles.prototype.add = function (other) {
+            return new EulerAngles(this.alpha + other.alpha, this.beta + other.beta, this.gamma + other.gamma);
+        };
+
+        EulerAngles.prototype.subtract = function (other) {
+            return new EulerAngles(this.alpha - other.alpha, this.beta - other.beta, this.gamma - other.gamma);
+        };
+
+        EulerAngles.prototype.scale = function (value) {
+            return new EulerAngles(this.alpha * value, this.beta * value, this.gamma * value);
+        };
+
+        EulerAngles.prototype.multiply = function (ea) {
+            var result = new EulerAngles(0, 0, 0);
+
+            this.multiplyToRef(ea, result);
+
+            return result;
+        };
+
+        EulerAngles.prototype.length = function () {
+            return Math.sqrt((this.alpha * this.alpha) + (this.beta * this.beta) + (this.gamma * this.gamma));
+        };
+
+        EulerAngles.prototype.normalize = function () {
+            var length = 1.0 / this.length();
+            this.alpha *= length;
+            this.beta *= length;
+            this.gamma *= length;
+        };
+
+        EulerAngles.prototype.toQuaternion = function () {
+            var result = {};
+
+            //result is a Quaternion in the z-x-z rotation convention
+            var cosAlphaPlusGamma = Math.cos((this.alpha + this.gamma) / 2.0);
+            var sinAlphaPlusGamma = Math.sin((this.alpha + this.gamma) / 2.0);
+            var cosGammaMinusAlpha = Math.cos((this.gamma - this.alpha) / 2.0);
+            var sinGammaMinusAlpha = Math.sin((this.gamma - this.alpha) / 2.0);
+            var cosBeta = Math.cos(this.beta / 2.0);
+            var sinBeta = Math.sin(this.beta / 2.0);
+
+            result.w = cosAlphaPlusGamma * cosBeta;
+            result.x = cosGammaMinusAlpha * sinBeta;
+            result.y = -sinGammaMinusAlpha * sinBeta; //the negative sign is a hack, must discover justification
+            result.z = sinAlphaPlusGamma * cosBeta;
+
+            return result;
+        };
+
+        EulerAngles.prototype.toRotationMatrix = function (result) {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[3]=12, etc
+            //done in the z-x-z rotation convention
+            var cosAlpha = Math.cos(this.alpha);
+            var sinAlpha = Math.sin(this.alpha);
+            var cosBeta = Math.cos(this.beta);
+            var sinBeta = Math.sin(this.beta);
+            var cosGamma = Math.cos(this.gamma);
+            var sinGamma = Math.sin(this.gamma);
+
+            result.m[0] = cosAlpha * cosGamma - cosBeta * sinAlpha * sinGamma;
+            result.m[1] = cosBeta * sinAlpha * cosGamma + cosAlpha * sinGamma;
+            result.m[2] = sinBeta * sinAlpha;
+            result.m[3] = -sinAlpha * cosGamma - cosBeta * cosAlpha * sinGamma;
+            result.m[4] = cosBeta * cosAlpha * cosGamma - sinAlpha * sinGamma;
+            result.m[5] = sinBeta * cosAlpha;
+            result.m[6] = sinBeta * sinGamma;
+            result.m[7] = -sinBeta * cosGamma;
+            result.m[8] = cosBeta;
+
+        };
+
+        EulerAngles.prototype.fromRotationMatrix = function (matrix) {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[3], m13 = data[6];
+            var m21 = data[1], m22 = data[4], m23 = data[7];
+            var m31 = data[2], m32 = data[5], m33 = data[8];
+
+            if (m33 == -1) {
+                this.alpha = 0; //any angle works here
+                this.beta = Math.PI;
+                this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+
+            }
+            else
+                if (m33 == 1) {
+                    this.alpha = 0; //any angle works here
+                    this.beta = 0;
+                    this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+                }
+                else {
+                    this.alpha = Math.atan2(m31, m32);
+                    this.beta = Math.acos(m33); //principal value (between 0 and PI)
+                    this.gamma = Math.atan2(m13, -m23);
+                }
+
+        };
+
+        EulerAngles.FromArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new EulerAngles(array[offset], array[offset + 1], array[offset + 2]);
+        };
+
+        return EulerAngles;
+    })();
+    BABYLON.EulerAngles = EulerAngles;
 
     var Matrix = (function () {
         function Matrix() {
