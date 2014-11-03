@@ -86,6 +86,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Materials/textures/babylon.texture.js',
       '../../Babylon/Materials/textures/babylon.cubeTexture.js',
       '../../Babylon/Materials/textures/babylon.renderTargetTexture.js',
+      '../../Babylon/Materials/textures/procedurals/babylon.proceduralTexture.js',
       '../../Babylon/Materials/textures/babylon.mirrorTexture.js',
       '../../Babylon/Materials/textures/babylon.dynamicTexture.js',
       '../../Babylon/Materials/textures/babylon.videoTexture.js',

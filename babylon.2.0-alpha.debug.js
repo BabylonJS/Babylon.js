@@ -7348,6 +7348,7 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
             this.zoomOnFactor = 1;
+            this.targetScreenOffset = BABYLON.Vector2.Zero();
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             this.checkCollisions = false;
@@ -7374,6 +7375,7 @@ var BABYLON;
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
+            this._cache.targetScreenOffset = undefined;
         };
 
         ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
@@ -7385,6 +7387,7 @@ var BABYLON;
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
+            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
         };
 
        
@@ -7392,7 +7395,7 @@ var BABYLON;
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
 
-            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius;
+            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         };
 
        
@@ -7815,6 +7818,9 @@ var BABYLON;
             this._previousBeta = this.beta;
             this._previousRadius = this.radius;
             this._previousPosition.copyFrom(this.position);
+
+            this._viewMatrix.m[12] += this.targetScreenOffset.x;
+            this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
             return this._viewMatrix;
         };
@@ -15798,6 +15804,10 @@ var BABYLON;
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
 
+        Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
+            return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+        };
+
         Animation.prototype.color3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
@@ -15861,6 +15871,15 @@ var BABYLON;
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+
+                        case Animation.ANIMATIONTYPE_VECTOR2:
+                            switch (loopMode) {
+                                case Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
+                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
 
                         case Animation.ANIMATIONTYPE_COLOR3:
@@ -15942,6 +15961,9 @@ var BABYLON;
                             case Animation.ANIMATIONTYPE_VECTOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
 
+                            case Animation.ANIMATIONTYPE_VECTOR2:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             default:
@@ -15968,6 +15990,10 @@ var BABYLON;
 
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         offsetValue = BABYLON.Vector3.Zero();
+                        break;
+
+                    case Animation.ANIMATIONTYPE_VECTOR2:
+                        offsetValue = BABYLON.Vector2.Zero();
                         break;
 
                     case Animation.ANIMATIONTYPE_COLOR3:
@@ -16015,6 +16041,14 @@ var BABYLON;
         Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR3", {
             get: function () {
                 return Animation._ANIMATIONTYPE_VECTOR3;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR2", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_VECTOR2;
             },
             enumerable: true,
             configurable: true
@@ -16072,6 +16106,7 @@ var BABYLON;
         Animation._ANIMATIONTYPE_QUATERNION = 2;
         Animation._ANIMATIONTYPE_MATRIX = 3;
         Animation._ANIMATIONTYPE_COLOR3 = 4;
+        Animation._ANIMATIONTYPE_VECTOR2 = 5;
         Animation._ANIMATIONLOOPMODE_RELATIVE = 0;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
@@ -18666,7 +18701,9 @@ var BABYLON;
 
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
-            var extension = sceneFilename.substring(dotPosition).toLowerCase();
+
+            var queryStringPosition = sceneFilename.indexOf("?");
+            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
 
             for (var index = 0; index < this._registeredPlugins.length; index++) {
                 var plugin = this._registeredPlugins[index];
@@ -23996,7 +24033,7 @@ var BABYLON;
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
                     if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                        var body = registeredMesh.body.body;
+                        var body = registeredMesh.body;
 
                         var center = mesh.getBoundingInfo().boundingBox.center;
                         body.position.set(center.x, center.z, center.y);
