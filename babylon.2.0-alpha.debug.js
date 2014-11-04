@@ -979,40 +979,98 @@ var BABYLON;
         };
 
         Quaternion.prototype.toEulerAngles = function () {
-            var result = Vector3.Zero();
+            var result = {};
+            result.alpha = 0;
+            result.beta = 0;
+            result.gamma = 0;
 
             this.toEulerAnglesToRef(result);
 
             return result;
         };
 
+        Quaternion.prototype.toEulerAnglesTaitBryan = function () {
+            var result = {};
+            result.roll = 0;
+            result.pitch = 0;
+            result.yaw = 0;
+
+            this.toEulerAnglesToRefTaitBryan(result);
+
+            return result;
+        };
+
         Quaternion.prototype.toEulerAnglesToRef = function (result) {
+            //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qwx = qw * qx;
+            var qyz = qy * qz;
+            var sqx = qx * qx;
+            var sqy = qy * qy;
 
+            var determinant = sqx + sqy;
+
+            if (determinant != 0.000 && determinant != 1.000) {
+                result.alpha = Math.atan2(qxz + qwy, qwx - qyz);
+                result.beta = Math.acos(1 - 2 * determinant);
+                result.gamma = Math.atan2(qxz - qwy, qwx + qyz);
+            }
+            else
+                if (determinant == 0.000) {
+                    result.alpha = 0.0;
+                    result.beta = 0.0;
+                    result.gamma = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha+gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                }
+                else //determinant == 1.000
+                {
+                    result.alpha = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha-gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                    result.beta = Math.PI;
+                    result.gamma = 0.0;
+                }
+        };
+
+        Quaternion.prototype.toEulerAnglesToRefTaitBryan = function (result) {
+            //result is an EulerAngles in the in the z-y-x rotation convention
+            var qx = this.x;
+            var qy = this.y;
+            var qz = this.z;
+            var qw = this.w;
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qyz = qy * qz;
+            var qwx = qw * qx;
             var sqx = qx * qx;
             var sqy = qy * qy;
             var sqz = qz * qz;
+            var qxy = qx * qy;
+            var qwz = qw * qz;
 
-            var yaw = Math.atan2(2.0 * (qy * qw - qx * qz), 1.0 - 2.0 * (sqy + sqz));
-            var pitch = Math.asin(2.0 * (qx * qy + qz * qw));
-            var roll = Math.atan2(2.0 * (qx * qw - qy * qz), 1.0 - 2.0 * (sqx + sqz));
+            var determinant = 2.0 * (qxz - qwy);
 
-            var gimbaLockTest = qx * qy + qz * qw;
-            if (gimbaLockTest > 0.499) {
-                yaw = 2.0 * Math.atan2(qx, qw);
-                roll = 0;
-            } else if (gimbaLockTest < -0.499) {
-                yaw = -2.0 * Math.atan2(qx, qw);
-                roll = 0;
+            if (determinant != 1.00 && determinant != -1.00) {
+                result.roll = Math.atan2(qyz + qwx, 0.5 - sqx - sqy);
+                result.pitch = Math.asin(-determinant);
+                result.yaw = Math.atan2(qxy + qwz, 0.5 - sqy - sqz);
             }
-
-            result.x = pitch;
-            result.y = yaw;
-            result.z = roll;
+            else
+                if (determinant == 1.00) {
+                    result.roll = 0;
+                    result.pitch = -0.5 * Math.PI;
+                    result.yaw = Math.atan2(qxy - qwz, qxz + qwy); //actually, choice of roll+yaw=Math.atan2(qxy - qwz, qxz + qwy)
+                }
+                else //determinant == -1.00
+                {
+                    result.roll = Math.atan2(qxy - qwz, qxz + qwy);
+                    result.pitch = 0.5 * Math.PI;
+                    result.yaw = 0; //actually, choice of roll-yaw=Math.atan2(qxy - qwz, qxz + qwy)
+                }
         };
+
 
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
@@ -1092,7 +1150,7 @@ var BABYLON;
             this.z = 0.25 * s;
         };
 
-       
+        // Statics
         Quaternion.Inverse = function (q) {
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         };
@@ -1170,6 +1228,307 @@ var BABYLON;
         return Quaternion;
     })();
     BABYLON.Quaternion = Quaternion;
+
+    var BABYLON = {};
+    var EulerAngles = (function () {
+        function EulerAngles(alpha, beta, gamma) {
+            if (typeof alpha === "undefined") { alpha = 0; }
+            if (typeof beta === "undefined") { beta = 0; }
+            if (typeof gamma === "undefined") { gamma = 0; }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+        }
+        EulerAngles.prototype.toString = function () {
+            return "{alpha: " + this.alpha + " beta:" + this.beta + " gamma:" + this.gamma + "}";
+        };
+
+        EulerAngles.prototype.asArray = function () {
+            return [this.alpha, this.beta, this.gamma];
+        };
+
+        EulerAngles.prototype.equals = function (otherEulerAngles) {
+            return otherEulerAngles && this.alpha === otherEulerAngles.alpha && this.beta === otherEulerAngles.beta && this.gamma === otherEulerAngles.gamma;
+        };
+
+        EulerAngles.prototype.clone = function () {
+            return new EulerAngles(this.alpha, this.beta, this.gamma);
+        };
+
+        EulerAngles.prototype.copyFrom = function (other) {
+            this.alpha = other.alpha;
+            this.beta = other.beta;
+            this.gamma = other.gamma;
+        };
+
+        EulerAngles.prototype.copyFromFloats = function (alpha, beta, gamma) {
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+        };
+
+        EulerAngles.prototype.add = function (other) {
+            return new EulerAngles(this.alpha + other.alpha, this.beta + other.beta, this.gamma + other.gamma);
+        };
+
+        EulerAngles.prototype.subtract = function (other) {
+            return new EulerAngles(this.alpha - other.alpha, this.beta - other.beta, this.gamma - other.gamma);
+        };
+
+        EulerAngles.prototype.scale = function (value) {
+            return new EulerAngles(this.alpha * value, this.beta * value, this.gamma * value);
+        };
+
+        EulerAngles.prototype.multiply = function (ea) {
+            var result = new EulerAngles(0, 0, 0);
+
+            this.multiplyToRef(ea, result);
+
+            return result;
+        };
+
+        EulerAngles.prototype.length = function () {
+            return Math.sqrt((this.alpha * this.alpha) + (this.beta * this.beta) + (this.gamma * this.gamma));
+        };
+
+        EulerAngles.prototype.normalize = function () {
+            var length = 1.0 / this.length();
+            this.alpha *= length;
+            this.beta *= length;
+            this.gamma *= length;
+        };
+
+        EulerAngles.prototype.toQuaternion = function () {
+            var result = {};
+
+            //result is a Quaternion in the z-x-z rotation convention
+            var cosAlphaPlusGamma = Math.cos((this.alpha + this.gamma) * 0.5);
+            var sinAlphaPlusGamma = Math.sin((this.alpha + this.gamma) * 0.5);
+            var cosGammaMinusAlpha = Math.cos((this.gamma - this.alpha) * 0.5);
+            var sinGammaMinusAlpha = Math.sin((this.gamma - this.alpha) * 0.5);
+            var cosBeta = Math.cos(this.beta * 0.5);
+            var sinBeta = Math.sin(this.beta * 0.5);
+
+            result.x = cosGammaMinusAlpha * sinBeta;
+            result.y = -sinGammaMinusAlpha * sinBeta; //the negative sign is a hack, must discover justification
+            result.z = sinAlphaPlusGamma * cosBeta;
+            result.w = cosAlphaPlusGamma * cosBeta;
+
+            return result;
+        };
+
+        EulerAngles.prototype.toRotationMatrix = function (result) {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[3]=12, etc
+            //done in the z-x-z rotation convention
+            var cosAlpha = Math.cos(this.alpha);
+            var sinAlpha = Math.sin(this.alpha);
+            var cosBeta = Math.cos(this.beta);
+            var sinBeta = Math.sin(this.beta);
+            var cosGamma = Math.cos(this.gamma);
+            var sinGamma = Math.sin(this.gamma);
+
+            result.m[0] = cosAlpha * cosGamma - cosBeta * sinAlpha * sinGamma;
+            result.m[1] = cosBeta * sinAlpha * cosGamma + cosAlpha * sinGamma;
+            result.m[2] = sinBeta * sinAlpha;
+            result.m[3] = -sinAlpha * cosGamma - cosBeta * cosAlpha * sinGamma;
+            result.m[4] = cosBeta * cosAlpha * cosGamma - sinAlpha * sinGamma;
+            result.m[5] = sinBeta * cosAlpha;
+            result.m[6] = sinBeta * sinGamma;
+            result.m[7] = -sinBeta * cosGamma;
+            result.m[8] = cosBeta;
+
+        };
+
+        EulerAngles.prototype.fromRotationMatrix = function (matrix) {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[3], m13 = data[6];
+            var m21 = data[1], m22 = data[4], m23 = data[7];
+            var m31 = data[2], m32 = data[5], m33 = data[8];
+
+            if (m33 == -1) {
+                this.alpha = 0; //any angle works here
+                this.beta = Math.PI;
+                this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+
+            }
+            else
+                if (m33 == 1) {
+                    this.alpha = 0; //any angle works here
+                    this.beta = 0;
+                    this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+                }
+                else {
+                    this.alpha = Math.atan2(m31, m32);
+                    this.beta = Math.acos(m33); //principal value (between 0 and PI)
+                    this.gamma = Math.atan2(m13, -m23);
+                }
+
+        };
+
+        EulerAngles.FromArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new EulerAngles(array[offset], array[offset + 1], array[offset + 2]);
+        };
+
+        return EulerAngles;
+    })();
+    BABYLON.EulerAngles = EulerAngles;
+
+    var EulerAnglesTaitBryan = (function () {
+        function EulerAnglesTaitBryan(roll, pitch, yaw) {
+            if (typeof roll === "undefined") { roll = 0; }
+            if (typeof pitch === "undefined") { pitch = 0; }
+            if (typeof yaw === "undefined") { yaw = 0; }
+            this.roll = roll;
+            this.pitch = pitch;
+            this.yaw = yaw;
+        }
+        EulerAnglesTaitBryan.prototype.toString = function () {
+            return "{roll: " + this.roll + " pitch:" + this.pitch + " yaw:" + this.yaw + "}";
+        };
+
+        EulerAnglesTaitBryan.prototype.asArray = function () {
+            return [this.roll, this.pitch, this.yaw];
+        };
+
+        EulerAnglesTaitBryan.prototype.equals = function (otherEulerAnglesTaitBryan) {
+            return otherEulerAnglesTaitBryan && this.roll === otherEulerAnglesTaitBryan.roll && this.pitch === otherEulerAnglesTaitBryan.pitch && this.yaw === otherEulerAnglesTaitBryan.yaw;
+        };
+
+        EulerAnglesTaitBryan.prototype.clone = function () {
+            return new EulerAnglesTaitBryan(this.roll, this.pitch, this.yaw);
+        };
+
+        EulerAnglesTaitBryan.prototype.copyFrom = function (other) {
+            this.roll = other.roll;
+            this.pitch = other.pitch;
+            this.yaw = other.yaw;
+        };
+
+        EulerAnglesTaitBryan.prototype.copyFromFloats = function (roll, pitch, yaw) {
+            this.roll = roll;
+            this.pitch = pitch;
+            this.yaw = yaw;
+        };
+
+        EulerAnglesTaitBryan.prototype.add = function (other) {
+            return new EulerAnglesTaitBryan(this.roll + other.roll, this.pitch + other.pitch, this.yaw + other.yaw);
+        };
+
+        EulerAnglesTaitBryan.prototype.subtract = function (other) {
+            return new EulerAnglesTaitBryan(this.roll - other.roll, this.pitch - other.pitch, this.yaw - other.yaw);
+        };
+
+        EulerAnglesTaitBryan.prototype.scale = function (value) {
+            return new EulerAnglesTaitBryan(this.roll * value, this.pitch * value, this.yaw * value);
+        };
+
+        EulerAnglesTaitBryan.prototype.multiply = function (ea) {
+            var result = new EulerAnglesTaitBryan(0, 0, 0);
+
+            this.multiplyToRef(ea, result);
+
+            return result;
+        };
+
+        EulerAnglesTaitBryan.prototype.length = function () {
+            return Math.sqrt((this.roll * this.roll) + (this.pitch * this.pitch) + (this.yaw * this.yaw));
+        };
+
+        EulerAnglesTaitBryan.prototype.normalize = function () {
+            var length = 1.0 / this.length();
+            this.roll *= length;
+            this.pitch *= length;
+            this.yaw *= length;
+        };
+
+        EulerAnglesTaitBryan.prototype.toQuaternion = function () {
+
+            var result = {};
+            var cosRoll = Math.cos(this.roll * 0.5);
+            var cosPitch = Math.cos(this.pitch * 0.5);
+            var cosYaw = Math.cos(this.yaw * 0.5);
+            var sinRoll = Math.sin(this.roll * 0.5);
+            var sinPitch = Math.sin(this.pitch * 0.5);
+            var sinYaw = Math.sin(this.yaw * 0.5);
+
+            result.x = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
+            result.y = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
+            result.z = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
+            result.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
+
+            return result;
+        };
+
+        EulerAnglesTaitBryan.prototype.toRotationMatrix = function (result) {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[3]=12, etc
+            //done in the z-y-x rotation convention
+            var cosRoll = Math.cos(this.roll);
+            var sinRoll = Math.sin(this.roll);
+            var cosPitch = Math.cos(this.pitch);
+            var sinPitch = Math.sin(this.pitch);
+            var cosYaw = Math.cos(this.yaw);
+            var sinYaw = Math.sin(this.yaw);
+
+            result.m[0] = cosYaw * cosPitch;
+            result.m[1] = sinYaw * cosPitch;
+            result.m[2] = -sinPitch;
+            result.m[3] = cosYaw * sinPitch * sinRoll - sinYaw * cosRoll;
+            result.m[4] = sinYaw * sinPitch * sinRoll + cosYaw * cosRoll;
+            result.m[5] = cosPitch * sinRoll;
+            result.m[6] = cosYaw * sinPitch * cosRoll + sinYaw * sinRoll;
+            result.m[7] = sinYaw * sinPitch * cosRoll - cosYaw * sinRoll;
+            result.m[8] = cosPitch * cosRoll;
+
+        };
+
+        EulerAnglesTaitBryan.prototype.fromRotationMatrix = function (matrix) {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[3], m13 = data[6];
+            var m21 = data[1], m22 = data[4], m23 = data[7];
+            var m31 = data[2], m32 = data[5], m33 = data[8];
+
+            if (m31 == -1) {
+                this.roll = Math.atan2(m12, m13); //generally, atan2(m21,m11)+yaw
+                this.pitch = Math.PI * 0.5;
+                this.yaw = 0; //any angle works here
+
+            }
+            else
+                if (m31 == 1) {
+                    this.roll = Math.atan2(-m12, -m13); //generally, atan2(m21,m11)-yaw
+                    this.pitch = -Math.PI * 0.5;
+                    this.yaw = 0; //any angle works here
+                }
+                else {
+                    this.pitch = Math.asin(-m31);
+                    if (this.pitch > -Math.PI * 0.5 && this.pitch < Math.PI * 0.5) {
+                        this.roll = Math.atan2(m32, m33);
+                        this.yaw = Math.atan2(m21, m11);
+                    }
+                    else //this.pitch > Math.PI * 0.5 && this.pitch < Math.PI * 1.5
+                    {
+                        this.roll = Math.atan2(-m32, -m33);
+                        this.yaw = Math.atan2(-m21, -m11);
+                    }
+                }
+
+        };
+
+        EulerAnglesTaitBryan.FromArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new EulerAnglesTaitBryan(array[offset], array[offset + 1], array[offset + 2]);
+        };
+
+        return EulerAnglesTaitBryan;
+    })();
+    BABYLON.EulerAnglesTaitBryan = EulerAnglesTaitBryan;
 
     var Matrix = (function () {
         function Matrix() {
@@ -2518,13 +2877,15 @@ var BABYLON;
         };
 
         Tools.RegisterTopRootEvents = function (events) {
+            var _window = window;
+            var _windowParent = window.parent;
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.addEventListener(event.name, event.handler, false);
+                _window.addEventListener(event.name, event.handler, false);
 
                 try  {
-                    if (window.parent) {
-                        window.parent.addEventListener(event.name, event.handler, false);
+                    if (_windowParent) {
+                        _windowParent.addEventListener(event.name, event.handler, false);
                     }
                 } catch (e) {
                    
@@ -2533,13 +2894,15 @@ var BABYLON;
         };
 
         Tools.UnregisterTopRootEvents = function (events) {
+            var _window = window;
+            var _windowParent = window.parent;
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.removeEventListener(event.name, event.handler);
+                _window.removeEventListener(event.name, event.handler);
 
                 try  {
-                    if (window.parent) {
-                        window.parent.removeEventListener(event.name, event.handler);
+                    if (_windowParent) {
+                        _windowParent.removeEventListener(event.name, event.handler);
                     }
                 } catch (e) {
                    
@@ -3845,8 +4208,10 @@ var BABYLON;
            
             this._gl.useProgram(effect.getProgram());
 
+            var glVertexAttribArrayEnabled = this._gl.VERTEX_ATTRIB_ARRAY_ENABLED;
+
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                if (i > glVertexAttribArrayEnabled || !this._vertexAttribArrays[i]) {
                     continue;
                 }
                 this._vertexAttribArrays[i] = false;
@@ -4331,8 +4696,10 @@ var BABYLON;
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
+                    var thisWorkingContext = _this._workingContext;
+
                     for (var index = 0; index < faces.length; index++) {
-                        _this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
+                        thisWorkingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
                         gl.texImage2D(faces[index], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _this._workingCanvas);
                     }
 
@@ -4370,11 +4737,13 @@ var BABYLON;
             }
 
             gl.deleteTexture(texture);
+            var thisGL = this._gl;
+            var thisCapsMaxtexturesImageUnits = this._caps.maxTexturesImageUnits
 
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+            for (var channel = 0; channel < thisCapsMaxtexturesImageUnits; channel++) {
+                thisGL.activeTexture(thisGL["TEXTURE" + channel]);
+                thisGL.bindTexture(thisGL.TEXTURE_2D, null);
+                thisGL.bindTexture(thisGL.TEXTURE_CUBE_MAP, null);
                 this._activeTexturesCache[channel] = null;
             }
 
@@ -4386,10 +4755,11 @@ var BABYLON;
 
         Engine.prototype.bindSamplers = function (effect) {
             this._gl.useProgram(effect.getProgram());
+            var thisGL = this._gl;
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
-                this._gl.uniform1i(uniform, index);
+                thisGL.uniform1i(uniform, index);
             }
             this._currentEffect = null;
         };
@@ -4515,15 +4885,21 @@ var BABYLON;
                 this.scenes[0].dispose();
             }
 
+            var thisGL = this._gl;
+            var thisCompiledEffects = this._compiledEffects;
+
             for (var name in this._compiledEffects) {
-                this._gl.deleteProgram(this._compiledEffects[name]._program);
+                thisGL.deleteProgram(thisCompiledEffects[name]._program);
             }
 
-            for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+            var thisVertexAttribArrays = this._vertexAttribArrays;
+            var thisGLVertexAttribArrayEnabled = this._gl.VERTEX_ATTRIB_ARRAY_ENABLED;
+
+            for (var i in thisVertexAttribArrays) {
+                if (i > thisGLVertexAttribArrayEnabled || !thisVertexAttribArrays[i]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                thisGL.disableVertexAttribArray(i);
             }
 
            
@@ -4813,7 +5189,8 @@ var BABYLON;
         };
 
         Node.prototype._getDescendants = function (list, results) {
-            for (var index = 0; index < list.length; index++) {
+            var listLength = list.length;
+            for (var index = 0; index < listLength; index++) {
                 var item = list[index];
                 if (item.isDescendantOf(this)) {
                     results.push(item);
@@ -4872,8 +5249,10 @@ var BABYLON;
         };
 
         BoundingSphere.prototype.isInFrustum = function (frustumPlanes) {
+            var thisCenterWorld = this.centerWorld;
+            var thisRadiusWorld = -this.radiusWorld;
             for (var i = 0; i < 6; i++) {
-                if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld)
+                if (frustumPlanes[i].dotCoordinate(thisCenterWorld) <= thisRadiusWorld)
                     return false;
             }
 
@@ -4945,11 +5324,13 @@ var BABYLON;
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
             this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
 
-            for (var index = 0; index < this.vectors.length; index++) {
-                this.vectorsWorld[index] = BABYLON.Vector3.Zero();
+            var zero = BABYLON.Vector3.Zero();
+            var thisVectorsLength = this.vectors.length;
+            for (var index = 0; index < thisVectorsLength; index++) {
+                this.vectorsWorld[index] = zero;
             }
-            this.minimumWorld = BABYLON.Vector3.Zero();
-            this.maximumWorld = BABYLON.Vector3.Zero();
+            this.minimumWorld = zero;
+            this.maximumWorld = zero;
 
             this._update(BABYLON.Matrix.Identity());
         }
@@ -4962,22 +5343,30 @@ var BABYLON;
             BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
 
-            for (var index = 0; index < this.vectors.length; index++) {
+            var thisVectorsLength = this.vectors.length;
+            var thisMinimumWorldx = this.minimumWorld.x;
+            var thisMinimumWorldy = this.minimumWorld.y;
+            var thisMinimumWorldz = this.minimumWorld.z;
+            var thisMaximumWorldx = this.maximumWorld.x;
+            var thisMaximumWorldy = this.maximumWorld.y;
+            var thisMaximumWorldz = this.maximumWorld.z;
+
+            for (var index = 0; index < thisVectorsLength; index++) {
                 var v = this.vectorsWorld[index];
                 BABYLON.Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
 
-                if (v.x < this.minimumWorld.x)
+                if (v.x < thisMinimumWorldx)
                     this.minimumWorld.x = v.x;
-                if (v.y < this.minimumWorld.y)
+                if (v.y < thisMinimumWorldy)
                     this.minimumWorld.y = v.y;
-                if (v.z < this.minimumWorld.z)
+                if (v.z < thisMinimumWorldz)
                     this.minimumWorld.z = v.z;
 
-                if (v.x > this.maximumWorld.x)
+                if (v.x > thisMaximumWorldx)
                     this.maximumWorld.x = v.x;
-                if (v.y > this.maximumWorld.y)
+                if (v.y > thisMaximumWorldy)
                     this.maximumWorld.y = v.y;
-                if (v.z > this.maximumWorld.z)
+                if (v.z > thisMaximumWorldz)
                     this.maximumWorld.z = v.z;
             }
 
@@ -5049,9 +5438,9 @@ var BABYLON;
         };
 
         BoundingBox.IsInFrustum = function (boundingVectors, frustumPlanes) {
+            
             for (var p = 0; p < 6; p++) {
                 var inCount = 8;
-
                 for (var i = 0; i < 8; i++) {
                     if (frustumPlanes[p].dotCoordinate(boundingVectors[i]) < 0) {
                         --inCount;
@@ -5516,11 +5905,14 @@ var BABYLON;
                             mesh._draw(subMesh, true);
                         }
 
-                        if (batch.visibleInstances[subMesh._id]) {
-                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                        var batchVisibleInstances = batch.visibleInstances;
+                        var thisEffect = _this._effect;
+
+                        if (batchVisibleInstances[subMesh._id]) {
+                            for (var instanceIndex = 0; instanceIndex < batchVisibleInstances[subMesh._id].length; instanceIndex++) {
                                 var instance = batch.visibleInstances[subMesh._id][instanceIndex];
 
-                                _this._effect.setMatrix("world", instance.getWorldMatrix());
+                                thisEffect.setMatrix("world", instance.getWorldMatrix());
 
                                
                                 mesh._draw(subMesh, true);
@@ -5535,18 +5927,24 @@ var BABYLON;
 
             this._shadowMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
                 var index;
+                var opaqueSubMeshesLength = opaqueSubMeshes.length;
+                var opaqueSubMeshesData = opaqueSubMeshes.data;
+                var alphaTestSubMeshesLength = alphaTestSubMeshes.length;
+                var alphaTestSubMeshesData = alphaTestSubMeshes.data;
+                var transparentSubMeshesLength = transparentSubMeshes.length;
+                var transparentSubMeshesData = transparentSubMeshes.data;
 
-                for (index = 0; index < opaqueSubMeshes.length; index++) {
-                    renderSubMesh(opaqueSubMeshes.data[index]);
+                for (index = 0; index < opaqueSubMeshesLength; index++) {
+                    renderSubMesh(opaqueSubMeshesData[index]);
                 }
 
-                for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                    renderSubMesh(alphaTestSubMeshes.data[index]);
+                for (index = 0; index < alphaTestSubMeshesLength; index++) {
+                    renderSubMesh(alphaTestSubMeshesData[index]);
                 }
 
                 if (_this._transparencyShadow) {
-                    for (index = 0; index < transparentSubMeshes.length; index++) {
-                        renderSubMesh(transparentSubMeshes.data[index]);
+                    for (index = 0; index < transparentSubMeshesLength; index++) {
+                        renderSubMesh(transparentSubMeshesData[index]);
                     }
                 }
             };
@@ -6234,23 +6632,25 @@ var BABYLON;
             }
 
             var add = 0;
+            var thisPostProcesses = this._postProcesses;
+            var thisPostProcessesTakenIndicesLength = this._postProcessesTakenIndices.length;
 
-            if (this._postProcesses[insertAt]) {
-                var start = this._postProcesses.length - 1;
+            if (thisPostProcesses[insertAt]) {
+                var start = thisPostProcesses.length - 1;
 
                 for (var i = start; i >= insertAt + 1; --i) {
-                    this._postProcesses[i + 1] = this._postProcesses[i];
+                    this._postProcesses[i + 1] = thisPostProcesses[i];
                 }
 
                 add = 1;
             }
 
-            for (i = 0; i < this._postProcessesTakenIndices.length; ++i) {
+            for (i = 0; i < thisPostProcessesTakenIndicesLength; ++i) {
                 if (this._postProcessesTakenIndices[i] < insertAt) {
                     continue;
                 }
 
-                start = this._postProcessesTakenIndices.length - 1;
+                start = thisPostProcessesTakenIndicesLength - 1;
                 for (var j = start; j >= i; --j) {
                     this._postProcessesTakenIndices[j + 1] = this._postProcessesTakenIndices[j] + add;
                 }
@@ -6275,6 +6675,7 @@ var BABYLON;
 
             if (!atIndices) {
                 var length = this._postProcesses.length;
+                var thisPostProcessesTakenIndices = this._postProcessesTakenIndices;
 
                 for (var i = 0; i < length; i++) {
                     if (this._postProcesses[i] !== postProcess) {
@@ -6283,12 +6684,13 @@ var BABYLON;
 
                     delete this._postProcesses[i];
 
-                    var index = this._postProcessesTakenIndices.indexOf(i);
-                    this._postProcessesTakenIndices.splice(index, 1);
+                    var index = thisPostProcessesTakenIndices.indexOf(i);
+                    thisPostProcessesTakenIndices.splice(index, 1);
                 }
             } else {
                 atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                for (i = 0; i < atIndices.length; i++) {
+                var atIndecesLength = atIndices.length;
+                for (i = 0; i < atIndecesLength; i++) {
                     var foundPostProcess = this._postProcesses[atIndices[i]];
 
                     if (foundPostProcess !== postProcess) {
@@ -6379,9 +6781,11 @@ var BABYLON;
            
             var index = this.getScene().cameras.indexOf(this);
             this.getScene().cameras.splice(index, 1);
+            var thisPostProcessesTakenIndicesLength = this._postProcessesTakenIndices.length;
+            var thisPostProcesses = this._postProcesses;
 
-            for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
-                this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
+            for (var i = 0; i < thisPostProcessesTakenIndicesLength; ++i) {
+                thisPostProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }
         };
         Camera.PERSPECTIVE_CAMERA = 0;
@@ -6847,8 +7251,11 @@ var BABYLON;
                 this._transformedDirection = BABYLON.Vector3.Zero();
             }
 
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
+            var thisKeysLength = this._keys.length;
+            var thisKeys = this._keys;
+
+            for (var index = 0; index < thisKeysLength; index++) {
+                var keyCode = thisKeys[index];
                 var speed = this._computeLocalCameraSpeed();
 
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
@@ -7147,7 +7554,6 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
             this.zoomOnFactor = 1;
-            this.targetScreenOffset = BABYLON.Vector2.Zero();
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             this.checkCollisions = false;
@@ -7174,7 +7580,6 @@ var BABYLON;
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
         };
 
         ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
@@ -7186,7 +7591,6 @@ var BABYLON;
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
         };
 
        
@@ -7194,7 +7598,7 @@ var BABYLON;
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
 
-            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
+            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius;
         };
 
        
@@ -7504,16 +7908,23 @@ var BABYLON;
         };
 
         ArcRotateCamera.prototype._update = function () {
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
+            var thisKeysLength = this._keys.length;
+            var thisKeys = this._keys;
+            var thisKeysLeft = this.keysLeft;
+            var thisKeysUp = this.keysUp;
+            var thisKeysRight = this.keysRight;
+            var thisKeysDown = this.keysDown;
 
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
+            for (var index = 0; index < thisKeysLength; index++) {
+                var keyCode = thisKeys[index];
+
+                if (thisKeysLeft.indexOf(keyCode) !== -1) {
                     this.inertialAlphaOffset -= 0.01;
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                } else if (thisKeysUp.indexOf(keyCode) !== -1) {
                     this.inertialBetaOffset -= 0.01;
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                } else if (thisKeysRight.indexOf(keyCode) !== -1) {
                     this.inertialAlphaOffset += 0.01;
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                } else if (thisKeysDown.indexOf(keyCode) !== -1) {
                     this.inertialBetaOffset += 0.01;
                 }
             }
@@ -7610,9 +8021,6 @@ var BABYLON;
             this._previousBeta = this.beta;
             this._previousRadius = this.radius;
             this._previousPosition.copyFrom(this.position);
-
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
             return this._viewMatrix;
         };
@@ -7940,16 +8348,24 @@ var BABYLON;
                 return false;
             }
 
-            for (var index = 0; index < this._geometries.length; index++) {
-                var geometry = this._geometries[index];
+            var thisGeometriesLength = this._geometries.length;
+            var thisGeometries = this._geometries;
+            var geometryDelayLoadState = geometry.delayLoadState;
+            var delayLoadStateLoading = BABYLON.Engine.DELAYLOADSTATE_LOADING;
 
-                if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+            for (var index = 0; index < thisGeometriesLength; index++) {
+                var geometry = thisGeometries[index];
+
+                if (geometryDelayLoadState === delayLoadStateLoading) {
                     return false;
                 }
             }
 
-            for (index = 0; index < this.meshes.length; index++) {
-                var mesh = this.meshes[index];
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+
+            for (index = 0; index < thisMeshesLength; index++) {
+                var mesh = thisMeshes[index];
 
                 if (!mesh.isReady()) {
                     return false;
@@ -8041,10 +8457,11 @@ var BABYLON;
                 animatable.appendAnimations(target, target.animations);
             }
 
+            var animatablesLength = animatables.length;
            
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
-                for (var index = 0; index < animatables.length; index++) {
+                for (var index = 0; index < animatablesLength; index++) {
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
@@ -8063,9 +8480,11 @@ var BABYLON;
         };
 
         Scene.prototype.getAnimatableByTarget = function (target) {
-            for (var index = 0; index < this._activeAnimatables.length; index++) {
-                if (this._activeAnimatables[index].target === target) {
-                    return this._activeAnimatables[index];
+            var thisActiveAnimatablesLength = this._activeAnimatables.length;
+            var thisActiveAnimatables = this._activeAnimatables;
+            for (var index = 0; index < thisActiveAnimatablesLength; index++) {
+                if (thisActiveAnimatables[index].target === target) {
+                    return thisActiveAnimatables[index];
                 }
             }
 
@@ -8088,10 +8507,12 @@ var BABYLON;
            
             var now = new Date().getTime();
             var delay = now - this._animationStartDate;
+            var thisActiveAnimatablesLength = this._activeAnimatables.length;
+            var thisActiveAnimatables = this._activeAnimatables;
 
-            for (var index = 0; index < this._activeAnimatables.length; index++) {
-                if (!this._activeAnimatables[index]._animate(delay)) {
-                    this._activeAnimatables.splice(index, 1);
+            for (var index = 0; index < thisActiveAnimatablesLength; index++) {
+                if (!thisActiveAnimatables[index]._animate(delay)) {
+                    thisActiveAnimatables.splice(index, 1);
                     index--;
                 }
             }
@@ -8141,9 +8562,12 @@ var BABYLON;
         };
 
         Scene.prototype.getMaterialByID = function (id) {
-            for (var index = 0; index < this.materials.length; index++) {
-                if (this.materials[index].id === id) {
-                    return this.materials[index];
+            var thisMaterialsLength = this.materials.length;
+            var thisMaterials = this.materials;
+
+            for (var index = 0; index < thisMaterialsLength; index++) {
+                if (thisMaterials[index].id === id) {
+                    return thisMaterials[index];
                 }
             }
 
@@ -8151,9 +8575,11 @@ var BABYLON;
         };
 
         Scene.prototype.getMaterialByName = function (name) {
-            for (var index = 0; index < this.materials.length; index++) {
-                if (this.materials[index].name === name) {
-                    return this.materials[index];
+            var thisMaterialsLength = this.materials.length;
+            var thisMaterials = this.materials;
+            for (var index = 0; index < thisMaterialsLength; index++) {
+                if (thisMaterials[index].name === name) {
+                    return thisMaterials[index];
                 }
             }
 
@@ -8161,9 +8587,12 @@ var BABYLON;
         };
 
         Scene.prototype.getCameraByID = function (id) {
-            for (var index = 0; index < this.cameras.length; index++) {
-                if (this.cameras[index].id === id) {
-                    return this.cameras[index];
+            var thisCamerasLength = this.cameras.length;
+            var thisCameras = this.cameras;
+
+            for (var index = 0; index < thisCamerasLength; index++) {
+                if (thisCameras[index].id === id) {
+                    return thisCameras[index];
                 }
             }
 
@@ -8171,9 +8600,12 @@ var BABYLON;
         };
 
         Scene.prototype.getCameraByName = function (name) {
-            for (var index = 0; index < this.cameras.length; index++) {
-                if (this.cameras[index].name === name) {
-                    return this.cameras[index];
+            var thisCamerasLength = this.cameras.length;
+            var thisCameras = this.cameras;
+
+            for (var index = 0; index < thisCamerasLength; index++) {
+                if (thisCameras[index].name === name) {
+                    return thisCameras[index];
                 }
             }
 
@@ -8181,9 +8613,12 @@ var BABYLON;
         };
 
         Scene.prototype.getLightByName = function (name) {
-            for (var index = 0; index < this.lights.length; index++) {
-                if (this.lights[index].name === name) {
-                    return this.lights[index];
+            var thisLightsLength = this.lights.length;
+            var thisLights = this.lights;
+
+            for (var index = 0; index < thisLightsLength; index++) {
+                if (thisLights[index].name === name) {
+                    return thisLights[index];
                 }
             }
 
@@ -8191,9 +8626,12 @@ var BABYLON;
         };
 
         Scene.prototype.getLightByID = function (id) {
-            for (var index = 0; index < this.lights.length; index++) {
-                if (this.lights[index].id === id) {
-                    return this.lights[index];
+            var thisLightsLength = this.lights.length;
+            var thisLights = this.lights;
+
+            for (var index = 0; index < thisLightsLength; index++) {
+                if (thisLights[index].id === id) {
+                    return thisLights[index];
                 }
             }
 
@@ -8201,9 +8639,12 @@ var BABYLON;
         };
 
         Scene.prototype.getGeometryByID = function (id) {
-            for (var index = 0; index < this._geometries.length; index++) {
-                if (this._geometries[index].id === id) {
-                    return this._geometries[index];
+            var thisGeometriesLength = this._geometries.length;
+            var thisGeometries = this._geometries;
+
+            for (var index = 0; index < thisGeometriesLength; index++) {
+                if (thisGeometries[index].id === id) {
+                    return thisGeometries[index];
                 }
             }
 
@@ -8225,9 +8666,11 @@ var BABYLON;
         };
 
         Scene.prototype.getMeshByID = function (id) {
-            for (var index = 0; index < this.meshes.length; index++) {
-                if (this.meshes[index].id === id) {
-                    return this.meshes[index];
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+            for (var index = 0; index < thisMeshesLength; index++) {
+                if (thisMeshes[index].id === id) {
+                    return thisMeshes[index];
                 }
             }
 
@@ -8235,9 +8678,11 @@ var BABYLON;
         };
 
         Scene.prototype.getLastMeshByID = function (id) {
-            for (var index = this.meshes.length - 1; index >= 0; index--) {
-                if (this.meshes[index].id === id) {
-                    return this.meshes[index];
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+            for (var index = thisMeshesLength - 1; index >= 0; index--) {
+                if (thisMeshes[index].id === id) {
+                    return thisMeshes[index];
                 }
             }
 
@@ -8245,21 +8690,27 @@ var BABYLON;
         };
 
         Scene.prototype.getLastEntryByID = function (id) {
-            for (var index = this.meshes.length - 1; index >= 0; index--) {
-                if (this.meshes[index].id === id) {
-                    return this.meshes[index];
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+            for (var index = thisMeshesLength - 1; index >= 0; index--) {
+                if (thisMeshes[index].id === id) {
+                    return thisMeshes[index];
                 }
             }
+
+            var thisCameras = this.cameras;
 
             for (index = this.cameras.length - 1; index >= 0; index--) {
-                if (this.cameras[index].id === id) {
-                    return this.cameras[index];
+                if (thisCameras[index].id === id) {
+                    return thisCameras[index];
                 }
             }
 
+            var thisLights = this.lights;
+
             for (index = this.lights.length - 1; index >= 0; index--) {
-                if (this.lights[index].id === id) {
-                    return this.lights[index];
+                if (thisLights[index].id === id) {
+                    return thisLights[index];
                 }
             }
 
@@ -8267,9 +8718,13 @@ var BABYLON;
         };
 
         Scene.prototype.getMeshByName = function (name) {
-            for (var index = 0; index < this.meshes.length; index++) {
-                if (this.meshes[index].name === name) {
-                    return this.meshes[index];
+
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+
+            for (var index = 0; index < thisMeshesLength; index++) {
+                if (thisMeshes[index].name === name) {
+                    return thisMeshes[index];
                 }
             }
 
@@ -8277,9 +8732,10 @@ var BABYLON;
         };
 
         Scene.prototype.getLastSkeletonByID = function (id) {
+            var thisSkeletons = this.skeletons;
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
-                if (this.skeletons[index].id === id) {
-                    return this.skeletons[index];
+                if (thisSkeletons[index].id === id) {
+                    return thisSkeletons[index];
                 }
             }
 
@@ -8287,9 +8743,11 @@ var BABYLON;
         };
 
         Scene.prototype.getSkeletonById = function (id) {
-            for (var index = 0; index < this.skeletons.length; index++) {
-                if (this.skeletons[index].id === id) {
-                    return this.skeletons[index];
+            var thisSkeletonsLength = this.skeletons.length;
+            var thisSkeletons = this.skeletons;
+            for (var index = 0; index < thisSkeletonsLength; index++) {
+                if (thisSkeletons[index].id === id) {
+                    return thisSkeletons[index];
                 }
             }
 
@@ -8297,9 +8755,11 @@ var BABYLON;
         };
 
         Scene.prototype.getSkeletonByName = function (name) {
-            for (var index = 0; index < this.skeletons.length; index++) {
-                if (this.skeletons[index].name === name) {
-                    return this.skeletons[index];
+            var thisSkeletonsLength = this.skeletons.length;
+            var thisSkeletons = this.skeletons;
+            for (var index = 0; index < thisSkeletonsLength; index++) {
+                if (thisSkeletons[index].name === name) {
+                    return thisSkeletons[index];
                 }
             }
 
@@ -8349,7 +8809,6 @@ var BABYLON;
                 BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
 
-           
             var meshes;
             var len;
 
@@ -8389,9 +8848,11 @@ var BABYLON;
 
            
             var beforeParticlesDate = new Date().getTime();
+            var thisParticleSystemsLength = this.particleSystems.length;
+            var thisParticleSystems = this.particleSystems;
             if (this.particlesEnabled) {
-                for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
-                    var particleSystem = this.particleSystems[particleIndex];
+                for (var particleIndex = 0; particleIndex < thisParticleSystemsLength; particleIndex++) {
+                    var particleSystem = thisParticleSystems[particleIndex];
 
                     if (!particleSystem.isStarted()) {
                         continue;
@@ -8466,8 +8927,11 @@ var BABYLON;
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += new Date().getTime() - beforeEvaluateActiveMeshesDate;
 
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
+            var thisActiveSkeletonsLength = this._activeSkeletons.length;
+            var thisActiveSkeletonsData = this._activeSkeletons.data;
+
+            for (var skeletonIndex = 0; skeletonIndex < thisActiveSkeletonsLength; skeletonIndex++) {
+                var skeleton = thisActiveSkeletonsData[skeletonIndex];
 
                 skeleton.prepare();
             }
@@ -8475,8 +8939,10 @@ var BABYLON;
            
             var beforeRenderTargetDate = new Date().getTime();
             if (this.renderTargetsEnabled) {
-                for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    var renderTarget = this._renderTargets.data[renderIndex];
+                var thisRenderTargetsLength = this._renderTargets.length;
+                var thisRenderTargetsData = this._renderTargets.data;
+                for (var renderIndex = 0; renderIndex < thisRenderTargetsLength; renderIndex++) {
+                    var renderTarget = thisRenderTargetsData[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         renderTarget.render();
@@ -8494,14 +8960,17 @@ var BABYLON;
             this.postProcessManager._prepareFrame();
 
             var beforeRenderDate = new Date().getTime();
-
+            var thisLayersLength = this.layers.length;
+            var thisLayers = this.layers;
            
-            if (this.layers.length) {
+            if (thisLayersLength) {
                 engine.setDepthBuffer(false);
                 var layerIndex;
                 var layer;
-                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-                    layer = this.layers[layerIndex];
+                
+                
+                for (layerIndex = 0; layerIndex < thisLayersLength; layerIndex++) {
+                    layer = thisLayers[layerIndex];
                     if (layer.isBackground) {
                         layer.render();
                     }
@@ -8515,15 +8984,18 @@ var BABYLON;
            
             this._boundingBoxRenderer.render();
 
-            for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                this.lensFlareSystems[lensFlareSystemIndex].render();
+            var thisLensFlareSystemsLength = this.lensFlareSystems.length;
+            var thisLensFlareSystems = this.lensFlareSystems;
+
+            for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < thisLensFlareSystemsLength; lensFlareSystemIndex++) {
+                thisLensFlareSystems[lensFlareSystemIndex].render();
             }
 
            
-            if (this.layers.length) {
+            if (thisLayersLength) {
                 engine.setDepthBuffer(false);
-                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-                    layer = this.layers[layerIndex];
+                for (layerIndex = 0; layerIndex < thisLayersLength; layerIndex++) {
+                    layer = thisLayers[layerIndex];
                     if (!layer.isBackground) {
                         layer.render();
                     }
@@ -8553,8 +9025,11 @@ var BABYLON;
                 return;
             }
 
-            for (var index = 0; index < camera.subCameras.length; index++) {
-                this._renderForCamera(camera.subCameras[index]);
+            var cameraSubCamerasLength = camera.subCameras.length;
+            var cameraSubCameras = camera.subCameras;
+
+            for (var index = 0; index < cameraSubCamerasLength; index++) {
+                this._renderForCamera(cameraSubCameras[index]);
             }
 
             this.activeCamera = camera;
@@ -8567,21 +9042,26 @@ var BABYLON;
         Scene.prototype._checkIntersections = function () {
             for (var index = 0; index < this._meshesForIntersections.length; index++) {
                 var sourceMesh = this._meshesForIntersections.data[index];
+                var sourceMeshActionManagerActionsLength = sourceMesh.actionManager.actions.length;
+                var sourceMeshActionManagerActions = sourceMesh.actionManager.actions;
+                var BABYLONActionManagerOnIntersectionEnterTrigger = BABYLON.ActionManager.OnIntersectionEnterTrigger;
+                var BABYLONActionManagerOnIntersectionExitTrigger = BABYLON.ActionManager.OnIntersectionExitTrigger;
+                var BABYLONActionEvent = BABYLON.ActionEvent;
 
-                for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
-                    var action = sourceMesh.actionManager.actions[actionIndex];
+                for (var actionIndex = 0; actionIndex < sourceMeshActionManagerActionsLength; actionIndex++) {
+                    var action = sourceMeshActionManagerActions[actionIndex];
 
-                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger == BABYLONActionManagerOnIntersectionEnterTrigger || action.trigger == BABYLONActionManagerOnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLONActionManagerOnIntersectionEnterTrigger) {
                             sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLONActionManagerOnIntersectionExitTrigger) {
+                            sourceMesh.actionManager.processTrigger(BABYLONActionManagerOnIntersectionExitTrigger, BABYLONActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -8614,8 +9094,10 @@ var BABYLON;
             if (this.beforeRender) {
                 this.beforeRender();
             }
+            
+            var thisOnBeforeRenderCallbacksLength = this._onBeforeRenderCallbacks.length;
 
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            for (var callbackIndex = 0; callbackIndex < thisOnBeforeRenderCallbacksLength; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
@@ -8632,19 +9114,24 @@ var BABYLON;
            
             var beforeRenderTargetDate = new Date().getTime();
             var engine = this.getEngine();
+            var thisCustomRenderTargetsLength = this.customRenderTargets.length;
+            var thisCustomRenderTargets = this.customRenderTargets;
+            var renderTargetActiveCamera = renderTarget.activeCamera;
+            var thisActiveCamera = this.activeCamera;
+            var thisActiveCameraViewport = this.activeCamera.viewport;
             if (this.renderTargetsEnabled) {
-                for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                    var renderTarget = this.customRenderTargets[customIndex];
+                for (var customIndex = 0; customIndex < thisCustomRenderTargetsLength; customIndex++) {
+                    var renderTarget = thisCustomRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
 
-                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+                        this.activeCamera = renderTargetActiveCamera || thisActiveCamera;
 
-                        if (!this.activeCamera)
+                        if (!thisActiveCamera)
                             throw new Error("Active camera not set");
 
                        
-                        engine.setViewport(this.activeCamera.viewport);
+                        engine.setViewport(thisActiveCameraViewport);
 
                        
                         this.updateTransformMatrix();
@@ -8660,10 +9147,11 @@ var BABYLON;
             }
             this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
 
-           
+            var thisProceduralTexturesLength = this._proceduralTextures.length;
+            var thisProceduralTextures = this._proceduralTextures;
             if (this.proceduralTexturesEnabled) {
-                for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
-                    var proceduralTexture = this._proceduralTextures[proceduralIndex];
+                for (var proceduralIndex = 0; proceduralIndex < thisProceduralTexturesLength; proceduralIndex++) {
+                    var proceduralTexture = thisProceduralTextures[proceduralIndex];
                     if (proceduralTexture._shouldRender()) {
                         proceduralTexture.render();
                     }
@@ -8673,8 +9161,11 @@ var BABYLON;
            
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
-            for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                var light = this.lights[lightIndex];
+            var thisLightsLength = this.lights.length;
+            var thisLights = this.lights;
+
+            for (var lightIndex = 0; lightIndex < thisLightsLength; lightIndex++) {
+                var light = thisLights[lightIndex];
                 var shadowGenerator = light.getShadowGenerator();
 
                 if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
@@ -8708,7 +9199,10 @@ var BABYLON;
                 this.afterRender();
             }
 
-            for (var index = 0; index < this._toBeDisposed.length; index++) {
+            var thisToBeDisposedLength = this._toBeDisposed.length;
+            
+
+            for (var index = 0; index < thisToBeDisposedLength; index++) {
                 this._toBeDisposed.data[index].dispose();
                 this._toBeDisposed[index] = null;
             }
@@ -8736,7 +9230,8 @@ var BABYLON;
            
             var canvas = this._engine.getRenderingCanvas();
             var index;
-            for (index = 0; index < this.cameras.length; index++) {
+            var thisCamerasLength = this.cameras.length;
+            for (index = 0; index < thisCamerasLength; index++) {
                 this.cameras[index].detachControl(canvas);
             }
 
@@ -8814,8 +9309,9 @@ var BABYLON;
             }
 
             collider._initialize(position, velocity, closeDistance);
-
-            for (var index = 0; index < this.meshes.length; index++) {
+            
+            var thisMeshesLength = this.meshes.length;
+            for (var index = 0; index < thisMeshesLength; index++) {
                 var mesh = this.meshes[index];
                 if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
                     mesh._checkCollision(collider);
@@ -8850,7 +9346,8 @@ var BABYLON;
 
             var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-            for (var index = 0; index < this.meshes.length; index++) {
+            var thisMeshesLength = this.meshes.length;
+            for (var index = 0; index < thisMeshesLength; index++) {
                 var mesh = this.meshes[index];
 
                 mesh.computeWorldMatrix(true);
@@ -8890,9 +9387,10 @@ var BABYLON;
 
         Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
             var pickingInfo = null;
-
-            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-                var mesh = this.meshes[meshIndex];
+            var thisMeshesLength = this.meshes.length;
+            var thisMeshes = this.meshes;
+            for (var meshIndex = 0; meshIndex < thisMeshesLength; meshIndex++) {
+                var mesh = thisMeshes[meshIndex];
 
                 if (predicate) {
                     if (!predicate(mesh)) {
@@ -8924,11 +9422,6 @@ var BABYLON;
 
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
-           
-           
-           
-           
-           
            
             return this._internalPick(function (world) {
                 return _this.createPickingRay(x, y, world, camera);
@@ -9018,7 +9511,9 @@ var BABYLON;
                 return null;
             }
 
-            for (var index = 0; index < parts.length; index++) {
+            var partsLength = parts.length;
+
+            for (var index = 0; index < partsLength; index++) {
                 var mesh = parts[index].mesh;
 
                 mesh._physicImpostor = parts[index].impostor;
@@ -9032,9 +9527,12 @@ var BABYLON;
 
        
         Scene.prototype.deleteCompoundImpostor = function (compound) {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
+            var compoundPartsLength = compound.parts.length;
+            var compoundParts = compound.parts;
+            var BABYLONPhysicsEngineNoImpostor = BABYLON.PhysicsEngine.NoImpostor;
+            for (var index = 0; index < compoundPartsLength; index++) {
+                var mesh = compoundParts[index].mesh;
+                mesh._physicImpostor = BABYLONPhysicsEngineNoImpostor;
                 this._physicsEngine._unregisterMesh(mesh);
             }
         };
@@ -9558,10 +10056,14 @@ var BABYLON;
                 return;
             }
 
-            for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
-                var subMesh = this.subMeshes[subIndex];
+            var thisSubMeshesLength = this.subMeshes.length;
+            var thisSubMeshes = this.subMeshes;
+            var thisWorldMatrixFromCache = this.worldMatrixFromCache;
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+            for (var subIndex = 0; subIndex < thisSubMeshesLength; subIndex++) {
+                var subMesh = thisSubMeshes[subIndex];
+
+                subMesh.updateBoundingInfo(thisWorldMatrixFromCache);
             }
         };
 
@@ -9674,11 +10176,6 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
-           
-           
-           
-           
-           
            
             yawCor = yawCor || 0;
             pitchCor = pitchCor || 0;
@@ -9997,8 +10494,11 @@ var BABYLON;
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
 
-            for (index = 0; index < this._intersectionsInProgress.length; index++) {
-                var other = this._intersectionsInProgress[index];
+            var thisIntersectionsInProgressLength = this._intersectionsInProgress.length;
+            var thisIntersectionsInProgress = this._intersectionsInProgress;
+
+            for (index = 0; index < thisIntersectionsInProgressLength; index++) {
+                var other = thisIntersectionsInProgress[index];
 
                 var pos = other._intersectionsInProgress.indexOf(this);
                 other._intersectionsInProgress.splice(pos, 1);
@@ -10017,8 +10517,10 @@ var BABYLON;
             }
 
             if (!doNotRecurse) {
-                for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                    if (this.getScene().particleSystems[index].emitter == this) {
+                var thisGetSceneParticleSystemsLength = this.getScene().particleSystems.length;
+                var thisGetSceneParticleSystems = this.getScene().particleSystems;
+                for (index = 0; index < thisGetSceneParticleSystemsLength; index++) {
+                    if (thisGetSceneParticleSystems[index].emitter == this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;
                     }
@@ -10026,17 +10528,20 @@ var BABYLON;
 
                
                 var objects = this.getScene().meshes.slice(0);
-                for (index = 0; index < objects.length; index++) {
+                var objectsLength = objects.length;
+                for (index = 0; index < objectsLength; index++) {
                     if (objects[index].parent == this) {
                         objects[index].dispose();
                     }
                 }
             } else {
-                for (index = 0; index < this.getScene().meshes.length; index++) {
-                    var obj = this.getScene().meshes[index];
+                var thisGetSceneMeshesLength = this.getScene().meshes.length;
+                var thisGetSceneMeshes = this.getScene().meshes;
+                for (index = 0; index < thisGetSceneMeshesLength; index++) {
+                    var obj = thisGetSceneMeshes[index];
                     if (obj.parent === this) {
-                        obj.parent = null;
-                        obj.computeWorldMatrix(true);
+                        this.getScene().meshes[index].parent = null;
+                        this.getScene().meshes[index].computeWorldMatrix(true);
                     }
                 }
             }
@@ -10193,7 +10698,8 @@ var BABYLON;
             }
 
             if (this.subMeshes) {
-                for (var index = 0; index < this.subMeshes.length; index++) {
+                var thisSubMeshesLength = this.subMeshes.length;
+                for (var index = 0; index < thisSubMeshesLength; index++) {
                     this.subMeshes[index].refreshBoundingInfo();
                 }
             }
@@ -10427,7 +10933,8 @@ var BABYLON;
             var visibleInstances = batch.visibleInstances[subMesh._id];
 
             if (visibleInstances) {
-                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                var visibleInstancesLength = visibleInstances.length;
+                for (var instanceIndex = 0; instanceIndex < visibleInstancesLength; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
                     instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
                     offset += 16;
@@ -10464,7 +10971,8 @@ var BABYLON;
                 return;
             }
 
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var thisOnBeforeRenderCallbacksLength = this._onBeforeRenderCallbacks.length;
+            for (var callbackIndex = 0; callbackIndex < thisOnBeforeRenderCallbacksLength; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
@@ -10529,15 +11037,18 @@ var BABYLON;
                 engine.setColorWrite(true);
             }
 
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+            var thisOnAfterRenderCallbacksLength = this._onAfterRenderCallbacks.length;
+            for (callbackIndex = 0; callbackIndex < thisOnAfterRenderCallbacksLength; callbackIndex++) {
                 this._onAfterRenderCallbacks[callbackIndex]();
             }
         };
 
         Mesh.prototype.getEmittedParticleSystems = function () {
             var results = new Array();
-            for (var index = 0; index < this.getScene().particleSystems.length; index++) {
-                var particleSystem = this.getScene().particleSystems[index];
+            var thisGetSceneParticleSystemsLength = this.getScene().particleSystems.length;
+            var thisGetSceneParticleSystems = this.getScene().particleSystems;
+            for (var index = 0; index < thisGetSceneParticleSystemsLength; index++) {
+                var particleSystem = thisGetSceneParticleSystems[index];
                 if (particleSystem.emitter === this) {
                     results.push(particleSystem);
                 }
@@ -10551,8 +11062,10 @@ var BABYLON;
             var descendants = this.getDescendants();
             descendants.push(this);
 
-            for (var index = 0; index < this.getScene().particleSystems.length; index++) {
-                var particleSystem = this.getScene().particleSystems[index];
+            var thisGetSceneParticleSystemsLength = this.getScene().particleSystems.length;
+            var thisGetSceneParticleSystems = this.getScene().particleSystems;
+            for (var index = 0; index < thisGetSceneParticleSystemsLength; index++) {
+                var particleSystem = thisGetSceneParticleSystems[index];
                 if (descendants.indexOf(particleSystem.emitter) !== -1) {
                     results.push(particleSystem);
                 }
@@ -10563,8 +11076,10 @@ var BABYLON;
 
         Mesh.prototype.getChildren = function () {
             var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
+            var thisGetSceneMeshesLength = this.getScene().meshes.length;
+            var thisGetSceneMeshes = this.getScene().meshes;
+            for (var index = 0; index < thisGetSceneMeshesLength; index++) {
+                var mesh = thisGetSceneMeshes[index];
                 if (mesh.parent == this) {
                     results.push(mesh);
                 }
@@ -10617,7 +11132,8 @@ var BABYLON;
 
         Mesh.prototype.setMaterialByID = function (id) {
             var materials = this.getScene().materials;
-            for (var index = 0; index < materials.length; index++) {
+            var materialsLength = materials.length;
+            for (var index = 0; index < materialsLength; index++) {
                 if (materials[index].id == id) {
                     this.material = materials[index];
                     return;
@@ -10626,7 +11142,8 @@ var BABYLON;
 
            
             var multiMaterials = this.getScene().multiMaterials;
-            for (index = 0; index < multiMaterials.length; index++) {
+            var multiMaterialsLength = multiMaterials.length;
+            for (index = 0; index < multiMaterialsLength; index++) {
                 if (multiMaterials[index].id == id) {
                     this.material = multiMaterials[index];
                     return;
@@ -10659,7 +11176,8 @@ var BABYLON;
 
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var temp = [];
-            for (var index = 0; index < data.length; index += 3) {
+            var dataLength = data.length;
+            for (var index = 0; index < dataLength; index += 3) {
                 BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
 
@@ -10671,7 +11189,7 @@ var BABYLON;
             }
 
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            for (index = 0; index < data.length; index += 3) {
+            for (index = 0; index < dataLength; index += 3) {
                 BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
 
@@ -10695,7 +11213,8 @@ var BABYLON;
                 return false;
             }
 
-            for (var index = 0; index < data.length; index += 3) {
+            var dataLength = data.length;
+            for (var index = 0; index < dataLength; index += 3) {
                 this._positions.push(BABYLON.Vector3.FromArray(data, index));
             }
 
@@ -10721,7 +11240,8 @@ var BABYLON;
             }
 
             if (!doNotCloneChildren) {
-                for (var index = 0; index < this.getScene().meshes.length; index++) {
+                var thisGetSceneMeshesLength = this.getScene().meshes.length;
+                for (var index = 0; index < thisGetSceneMeshesLength; index++) {
                     var mesh = this.getScene().meshes[index];
 
                     if (mesh.parent == this) {
@@ -10730,8 +11250,10 @@ var BABYLON;
                 }
             }
 
-            for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                var system = this.getScene().particleSystems[index];
+            var thisGetSceneParticleSysstemsLength = this.getScene().particleSystems.length;
+            var thisGetSceneParticleSystems = this.getScene().particleSystems;
+            for (index = 0; index < thisGetSceneParticleSysstemsLength; index++) {
+                var system = thisGetSceneParticleSystems[index];
 
                 if (system.emitter == this) {
                     system.clone(system.name, result);
@@ -10800,8 +11322,9 @@ var BABYLON;
             var position = BABYLON.Vector3.Zero();
             var normal = BABYLON.Vector3.Zero();
             var uv = BABYLON.Vector2.Zero();
+            var positionsLength = positions.length;
 
-            for (var index = 0; index < positions.length; index += 3) {
+            for (var index = 0; index < positionsLength; index += 3) {
                 BABYLON.Vector3.FromArrayToRef(positions, index, position);
                 BABYLON.Vector3.FromArrayToRef(normals, index, normal);
                 BABYLON.Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
@@ -10838,7 +11361,8 @@ var BABYLON;
             var data = [];
             var newdata = [];
             var updatableNormals = false;
-            for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+            var kindsLength = kinds.length;
+            for (var kindIndex = 0; kindIndex < kindsLength; kindIndex++) {
                 var kind = kinds[kindIndex];
                 var vertexBuffer = this.getVertexBuffer(kind);
 
@@ -10863,7 +11387,7 @@ var BABYLON;
             for (index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
 
-                for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                for (kindIndex = 0; kindIndex < kindsLength; kindIndex++) {
                     kind = kinds[kindIndex];
                     var stride = vbs[kind].getStrideSize();
 
@@ -10900,14 +11424,15 @@ var BABYLON;
             this.setIndices(indices);
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatableNormals);
 
-            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+            for (kindIndex = 0; kindIndex < kindsLength; kindIndex++) {
                 kind = kinds[kindIndex];
                 this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
             }
 
            
             this.releaseSubMeshes();
-            for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
+            var previousSubmeshesLength = previousSubmeshes.length;
+            for (var submeshIndex = 0; submeshIndex < previousSubmeshesLength; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
                 var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
@@ -10921,8 +11446,10 @@ var BABYLON;
         };
 
         Mesh.prototype.synchronizeInstances = function () {
-            for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
-                var instance = this.instances[instanceIndex];
+            var thisInstancesLength = this.instances.length;
+            var thisInstances = this.instances;
+            for (var instanceIndex = 0; instanceIndex < thisInstancesLength; instanceIndex++) {
+                var instance = thisInstances[instanceIndex];
                 instance._syncSubMeshes();
             }
         };
@@ -15539,10 +16066,6 @@ var BABYLON;
             return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
         };
 
-        Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
-            return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
-        };
-
         Animation.prototype.color3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
@@ -15606,15 +16129,6 @@ var BABYLON;
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-
-                        case Animation.ANIMATIONTYPE_VECTOR2:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
 
                         case Animation.ANIMATIONTYPE_COLOR3:
@@ -15696,9 +16210,6 @@ var BABYLON;
                             case Animation.ANIMATIONTYPE_VECTOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
 
-                            case Animation.ANIMATIONTYPE_VECTOR2:
-                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
-
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             default:
@@ -15725,10 +16236,6 @@ var BABYLON;
 
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         offsetValue = BABYLON.Vector3.Zero();
-                        break;
-
-                    case Animation.ANIMATIONTYPE_VECTOR2:
-                        offsetValue = BABYLON.Vector2.Zero();
                         break;
 
                     case Animation.ANIMATIONTYPE_COLOR3:
@@ -15776,14 +16283,6 @@ var BABYLON;
         Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR3", {
             get: function () {
                 return Animation._ANIMATIONTYPE_VECTOR3;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR2", {
-            get: function () {
-                return Animation._ANIMATIONTYPE_VECTOR2;
             },
             enumerable: true,
             configurable: true
@@ -15841,7 +16340,6 @@ var BABYLON;
         Animation._ANIMATIONTYPE_QUATERNION = 2;
         Animation._ANIMATIONTYPE_MATRIX = 3;
         Animation._ANIMATIONTYPE_COLOR3 = 4;
-        Animation._ANIMATIONTYPE_VECTOR2 = 5;
         Animation._ANIMATIONLOOPMODE_RELATIVE = 0;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
@@ -18436,9 +18934,7 @@ var BABYLON;
 
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
-
-            var queryStringPosition = sceneFilename.indexOf("?");
-            var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
+            var extension = sceneFilename.substring(dotPosition).toLowerCase();
 
             for (var index = 0; index < this._registeredPlugins.length; index++) {
                 var plugin = this._registeredPlugins[index];
@@ -23768,7 +24264,7 @@ var BABYLON;
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
                     if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                        var body = registeredMesh.body;
+                        var body = registeredMesh.body.body;
 
                         var center = mesh.getBoundingInfo().boundingBox.center;
                         body.position.set(center.x, center.z, center.y);
