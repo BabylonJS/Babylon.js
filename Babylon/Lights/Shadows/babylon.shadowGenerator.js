@@ -42,7 +42,7 @@
 
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
-                    mesh._bind(subMesh, _this._effect, false);
+                    mesh._bind(subMesh, _this._effect, WebGLRenderingContext.TRIANGLES);
                     var material = subMesh.getMaterial();
 
                     _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
@@ -62,13 +62,13 @@
                     }
 
                     if (hardwareInstancedRendering) {
-                        mesh._renderWithInstances(subMesh, false, batch, _this._effect, engine);
+                        mesh._renderWithInstances(subMesh, WebGLRenderingContext.TRIANGLES, batch, _this._effect, engine);
                     } else {
                         if (batch.renderSelf[subMesh._id]) {
                             _this._effect.setMatrix("world", mesh.getWorldMatrix());
 
                             // Draw
-                            mesh._draw(subMesh, true);
+                            mesh._draw(subMesh, WebGLRenderingContext.TRIANGLES);
                         }
 
                         if (batch.visibleInstances[subMesh._id]) {
@@ -78,7 +78,7 @@
                                 _this._effect.setMatrix("world", instance.getWorldMatrix());
 
                                 // Draw
-                                mesh._draw(subMesh, true);
+                                mesh._draw(subMesh, WebGLRenderingContext.TRIANGLES);
                             }
                         }
                     }

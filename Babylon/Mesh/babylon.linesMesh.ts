@@ -32,7 +32,7 @@
             return false;
         }
 
-        public _bind(subMesh: SubMesh, effect: Effect, wireframe?: boolean): void {
+        public _bind(subMesh: SubMesh, effect: Effect, drawAs: number): void {
             var engine = this.getScene().getEngine();
 
             var indexToBind = this._geometry.getIndexBuffer();
@@ -44,7 +44,7 @@
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         }
 
-        public _draw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void {
+        public _draw(subMesh: SubMesh, drawAs: number, instancesCount?: number): void {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
@@ -52,7 +52,7 @@
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            engine.draw(WebGLRenderingContext.LINES, subMesh.indexStart, subMesh.indexCount);
         }
 
         public intersects(ray: Ray, fastCheck?: boolean) {
