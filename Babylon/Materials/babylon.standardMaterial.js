@@ -32,7 +32,7 @@ var BABYLON;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
             this.useSpecularOverAlpha = true;
-			this.fogEnabled = true;
+            this.fogEnabled = true;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -612,7 +612,7 @@ var BABYLON;
             // Base material
             newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
             newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.wireframe = this.wireframe;
+            newStandardMaterial.drawAs = this.drawAs;
             newStandardMaterial.backFaceCulling = this.backFaceCulling;
 
             // Standard material

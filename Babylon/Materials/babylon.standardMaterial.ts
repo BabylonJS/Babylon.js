@@ -624,7 +624,7 @@
             // Base material
             newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
             newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.wireframe = this.wireframe;
+            newStandardMaterial.drawAs = this.drawAs;
             newStandardMaterial.backFaceCulling = this.backFaceCulling;
 
             // Standard material

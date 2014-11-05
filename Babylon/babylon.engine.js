@@ -833,7 +833,7 @@
                 }
             }
 
-            if (this._cachedIndexBuffer !== indexBuffer) {
+            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             }
@@ -890,19 +890,42 @@
             this._alphaState.apply(this._gl);
         };
 
-        Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
+        Engine.prototype.draw = function (drawAs, start, count, instancesCount) {
             // Apply states
             this.applyStates();
 
-            // Render
-            if (instancesCount) {
-                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
-                return;
+            switch (drawAs) {
+                case this._gl.LINES:
+                case this._gl.TRIANGLES:
+                     {
+                        if (instancesCount) {
+                            this._caps.instancedArrays.drawElementsInstancedANGLE(drawAs, count, this._gl.UNSIGNED_SHORT, start * 2, instancesCount);
+                        } else {
+                            this._gl.drawElements(drawAs, count, this._gl.UNSIGNED_SHORT, start * 2);
+                        }
+                    }
+                    break;
+                case this._gl.POINTS:
+                     {
+                        this._gl.drawArrays(drawAs, 0, count);
+                    }
+                    break;
             }
-
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
         };
 
+        /*
+        public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+        // Apply states
+        this.applyStates();
+        
+        // Render
+        if (instancesCount) {
+        this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
+        return;
+        }
+        
+        this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
+        }*/
         // Shaders
         Engine.prototype._releaseEffect = function (effect) {
             if (this._compiledEffects[effect._key]) {

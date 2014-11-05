@@ -28,7 +28,7 @@
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
-            mesh._bind(subMesh, this._effect, false);
+            mesh._bind(subMesh, this._effect, WebGLRenderingContext.TRIANGLES);
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
@@ -38,13 +38,13 @@
             }
 
             if (hardwareInstancedRendering) {
-                mesh._renderWithInstances(subMesh, false, batch, this._effect, engine);
+                mesh._renderWithInstances(subMesh, WebGLRenderingContext.TRIANGLES, batch, this._effect, engine);
             } else {
                 if (batch.renderSelf[subMesh._id]) {
                     this._effect.setMatrix("world", mesh.getWorldMatrix());
 
                     // Draw
-                    mesh._draw(subMesh, true);
+                    mesh._draw(subMesh, WebGLRenderingContext.TRIANGLES);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -54,7 +54,7 @@
                         this._effect.setMatrix("world", instance.getWorldMatrix());
 
                         // Draw
-                        mesh._draw(subMesh, true);
+                        mesh._draw(subMesh, WebGLRenderingContext.TRIANGLES);
                     }
                 }
             }

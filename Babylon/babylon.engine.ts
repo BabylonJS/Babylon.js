@@ -841,8 +841,9 @@
                     }
                 }
             }
-
-            if (this._cachedIndexBuffer !== indexBuffer) {
+            
+            if (indexBuffer != null &&
+                this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             }
@@ -900,6 +901,33 @@
             this._alphaState.apply(this._gl);
         }
 
+
+        public draw(drawAs: number, start: number, count: number, instancesCount?: number): void {
+            // Apply states
+            this.applyStates();
+
+            // Render         
+            switch (drawAs) {
+                case this._gl.LINES:
+                case this._gl.TRIANGLES:
+                    {
+                        if (instancesCount) {
+                            this._caps.instancedArrays.drawElementsInstancedANGLE(drawAs, count, this._gl.UNSIGNED_SHORT, start * 2, instancesCount);
+                        }
+                        else {
+                            this._gl.drawElements(drawAs, count, this._gl.UNSIGNED_SHORT, start * 2);
+                        }
+                    }
+                    break;
+                case this._gl.POINTS:
+                    {
+                        this._gl.drawArrays(drawAs, 0, count);
+                    }
+                    break;
+            }
+        }
+
+        /*
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
@@ -911,7 +939,7 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
-        }
+        }*/
 
         // Shaders
         public _releaseEffect(effect: Effect): void {
