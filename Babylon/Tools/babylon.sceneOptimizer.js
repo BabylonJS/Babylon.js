@@ -21,13 +21,13 @@ var BABYLON;
 
     var TextureSceneOptimization = (function (_super) {
         __extends(TextureSceneOptimization, _super);
-        function TextureSceneOptimization(maximumSize, priority) {
-            if (typeof maximumSize === "undefined") { maximumSize = 1024; }
+        function TextureSceneOptimization(priority, maximumSize) {
             if (typeof priority === "undefined") { priority = 0; }
+            if (typeof maximumSize === "undefined") { maximumSize = 1024; }
             var _this = this;
             _super.call(this, priority);
-            this.maximumSize = maximumSize;
             this.priority = priority;
+            this.maximumSize = maximumSize;
             this.apply = function (scene) {
                 var allDone = true;
                 for (var index = 0; index < scene.textures.length; index++) {
@@ -55,13 +55,13 @@ var BABYLON;
 
     var HardwareScalingSceneOptimization = (function (_super) {
         __extends(HardwareScalingSceneOptimization, _super);
-        function HardwareScalingSceneOptimization(maximumScale, priority) {
-            if (typeof maximumScale === "undefined") { maximumScale = 2; }
+        function HardwareScalingSceneOptimization(priority, maximumScale) {
             if (typeof priority === "undefined") { priority = 0; }
+            if (typeof maximumScale === "undefined") { maximumScale = 2; }
             var _this = this;
             _super.call(this, priority);
-            this.maximumScale = maximumScale;
             this.priority = priority;
+            this.maximumScale = maximumScale;
             this._currentScale = 1;
             this.apply = function (scene) {
                 _this._currentScale++;
@@ -127,6 +127,19 @@ var BABYLON;
     })(SceneOptimization);
     BABYLON.ParticlesSceneOptimization = ParticlesSceneOptimization;
 
+    var RenderTargetsSceneOptimization = (function (_super) {
+        __extends(RenderTargetsSceneOptimization, _super);
+        function RenderTargetsSceneOptimization() {
+            _super.apply(this, arguments);
+            this.apply = function (scene) {
+                scene.renderTargetsEnabled = false;
+                return true;
+            };
+        }
+        return RenderTargetsSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.RenderTargetsSceneOptimization = RenderTargetsSceneOptimization;
+
     // Options
     var SceneOptimizerOptions = (function () {
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
@@ -173,6 +186,10 @@ var BABYLON;
 
             // Next priority
             priority++;
+            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+
+            // Next priority
+            priority++;
             result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
 
             return result;
@@ -193,6 +210,10 @@ var BABYLON;
             // Next priority
             priority++;
             result.optimizations.push(new TextureSceneOptimization(priority, 256));
+
+            // Next priority
+            priority++;
+            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
 
             // Next priority
             priority++;

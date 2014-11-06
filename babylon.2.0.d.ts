@@ -123,6 +123,7 @@ declare module BABYLON {
         public beginFrame(): void;
         public endFrame(): void;
         public resize(): void;
+        public setSize(width: number, height: number): void;
         public bindFramebuffer(texture: WebGLTexture): void;
         public unBindFramebuffer(texture: WebGLTexture): void;
         public flushFramebuffer(): void;
@@ -271,6 +272,7 @@ interface MSStyleCSSProperties {
 interface Navigator {
     getVRDevices: () => any;
     mozGetVRDevices: (any: any) => any;
+    isCocoonJS: boolean;
 }
 declare module BABYLON {
     class Node {
@@ -1826,6 +1828,7 @@ declare module BABYLON {
         public resetRefreshCounter(): void;
         public refreshRate : number;
         public _shouldRender(): boolean;
+        public isReady(): boolean;
         public getRenderSize(): number;
         public canRescale : boolean;
         public scale(ratio: number): void;
@@ -3603,16 +3606,16 @@ declare module BABYLON {
         constructor(priority?: number);
     }
     class TextureSceneOptimization extends SceneOptimization {
-        public maximumSize: number;
         public priority: number;
-        constructor(maximumSize?: number, priority?: number);
+        public maximumSize: number;
+        constructor(priority?: number, maximumSize?: number);
         public apply: (scene: Scene) => boolean;
     }
     class HardwareScalingSceneOptimization extends SceneOptimization {
-        public maximumScale: number;
         public priority: number;
+        public maximumScale: number;
         private _currentScale;
-        constructor(maximumScale?: number, priority?: number);
+        constructor(priority?: number, maximumScale?: number);
         public apply: (scene: Scene) => boolean;
     }
     class ShadowsSceneOptimization extends SceneOptimization {
@@ -3625,6 +3628,9 @@ declare module BABYLON {
         public apply: (scene: Scene) => boolean;
     }
     class ParticlesSceneOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class RenderTargetsSceneOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
     class SceneOptimizerOptions {

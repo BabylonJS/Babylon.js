@@ -10,7 +10,7 @@
     }
 
     export class TextureSceneOptimization extends SceneOptimization {
-        constructor(public maximumSize: number = 1024, public priority: number = 0) {
+        constructor(public priority: number = 0, public maximumSize: number = 1024) {
             super(priority);
         }
 
@@ -40,7 +40,7 @@
     export class HardwareScalingSceneOptimization extends SceneOptimization {
         private _currentScale = 1;
 
-        constructor(public maximumScale: number = 2, public priority: number = 0) {
+        constructor(public priority: number = 0, public maximumScale: number = 2) {
             super(priority);
         }
 
@@ -77,6 +77,13 @@
     export class ParticlesSceneOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.particlesEnabled = false;
+            return true;
+        };
+    }
+
+    export class RenderTargetsSceneOptimization extends SceneOptimization {
+        public apply = (scene: Scene): boolean => {
+            scene.renderTargetsEnabled = false;
             return true;
         };
     }
@@ -125,6 +132,10 @@
 
             // Next priority
             priority++;
+            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+
+            // Next priority
+            priority++;
             result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
 
             return result;
@@ -145,6 +156,10 @@
             // Next priority
             priority++;
             result.optimizations.push(new TextureSceneOptimization(priority, 256));
+
+            // Next priority
+            priority++;
+            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
 
             // Next priority
             priority++;

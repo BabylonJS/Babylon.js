@@ -88,4 +88,5 @@ interface MSStyleCSSProperties {
 interface Navigator {
     getVRDevices: () => any;
     mozGetVRDevices: (any) => any;
+    isCocoonJS: boolean;
 }
