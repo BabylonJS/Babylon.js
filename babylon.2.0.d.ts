@@ -708,6 +708,7 @@ declare module BABYLON {
         public speedRatio: number;
         public onAnimationEnd: any;
         private _localDelayOffset;
+        private _pausedDelay;
         private _animations;
         private _paused;
         private _scene;
@@ -3307,6 +3308,7 @@ declare module BABYLON {
         public sprites: Sprite[];
         public renderingGroupId: number;
         public onDispose: () => void;
+        public fogEnabled: boolean;
         private _capacity;
         private _spriteTexture;
         private _epsilon;
