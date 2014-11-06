@@ -84,6 +84,10 @@
             return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
         };
 
+        BoundingBox.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+        };
+
         BoundingBox.prototype.intersectsPoint = function (point) {
             var delta = BABYLON.Engine.Epsilon;
 
@@ -134,6 +138,17 @@
             var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
             var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
+        };
+
+        BoundingBox.IsCompletelyInFrustum = function (boundingVectors, frustumPlanes) {
+            for (var p = 0; p < 6; p++) {
+                for (var i = 0; i < 8; i++) {
+                    if (frustumPlanes[p].dotCoordinate(boundingVectors[i]) < 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         };
 
         BoundingBox.IsInFrustum = function (boundingVectors, frustumPlanes) {

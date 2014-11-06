@@ -46,6 +46,7 @@
         public fogEnd = 1000.0;
 
         // Lights
+        public shadowsEnabled = true;
         public lightsEnabled = true;
         public lights = new Array<Light>();
 
@@ -82,6 +83,7 @@
         public skeletons = new Array<Skeleton>();
 
         // Lens flares
+        public lensFlaresEnabled = true;
         public lensFlareSystems = new Array<LensFlareSystem>();
 
         // Collisions
@@ -508,10 +510,10 @@
 
         private _animate(): void {
             if (!this._animationStartDate) {
-                this._animationStartDate = new Date().getTime();
+                this._animationStartDate = Tools.Now;
             }
             // Getting time
-            var now = new Date().getTime();
+            var now = Tools.Now;
             var delay = now - this._animationStartDate;
 
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -813,8 +815,9 @@
             }
 
             // Particle systems
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = Tools.Now;
             if (this.particlesEnabled) {
+                Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
@@ -827,8 +830,9 @@
                         particleSystem.animate();
                     }
                 }
+                Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._particlesDuration += Tools.Now - beforeParticlesDate;
         }
 
         private _activeMesh(mesh: AbstractMesh): void {
@@ -875,6 +879,8 @@
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
 
+            Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
+
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
@@ -887,9 +893,11 @@
             }
 
             // Meshes
-            var beforeEvaluateActiveMeshesDate = new Date().getTime();
+            var beforeEvaluateActiveMeshesDate = Tools.Now;
+            Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration += new Date().getTime() - beforeEvaluateActiveMeshesDate;
+            this._evaluateActiveMeshesDuration += Tools.Now - beforeEvaluateActiveMeshesDate;
+            Tools.EndPerformanceCounter("Active meshes evaluation");
 
             // Skeletons
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
@@ -899,8 +907,9 @@
             }
 
             // Render targets
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled) {
+                Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
@@ -908,18 +917,19 @@
                         renderTarget.render();
                     }
                 }
+                Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
             }
 
             if (this._renderTargets.length > 0) { // Restore back buffer
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
-            var beforeRenderDate = new Date().getTime();
+            var beforeRenderDate = Tools.Now;
             // Backgrounds
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
@@ -935,14 +945,20 @@
             }
 
             // Render
+            Tools.StartPerformanceCounter("Main render");
             this._renderingManager.render(null, null, true, true);
+            Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
             this._boundingBoxRenderer.render();
 
             // Lens flares
-            for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                this.lensFlareSystems[lensFlareSystemIndex].render();
+            if (this.lensFlaresEnabled) {
+                Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
+                for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
+                    this.lensFlareSystems[lensFlareSystemIndex].render();
+                }
+                Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
 
             // Foregrounds
@@ -957,7 +973,7 @@
                 engine.setDepthBuffer(true);
             }
 
-            this._renderDuration += new Date().getTime() - beforeRenderDate;
+            this._renderDuration += Tools.Now - beforeRenderDate;
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -972,6 +988,7 @@
                 this.afterCameraRender(this.activeCamera);
             }
 
+            Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         }
 
         private _processSubCameras(camera: Camera): void {
@@ -1024,7 +1041,7 @@
         }
 
         public render(): void {
-            var startDate = new Date().getTime();
+            var startDate = Tools.Now;
             this._particlesDuration = 0;
             this._spritesDuration = 0;
             this._activeParticles = 0;
@@ -1033,6 +1050,8 @@
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._meshesForIntersections.reset();
+
+            Tools.StartPerformanceCounter("Scene rendering");
 
             // Actions
             if (this.actionManager) {
@@ -1055,13 +1074,16 @@
 
             // Physics
             if (this._physicsEngine) {
+                Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                Tools.EndPerformanceCounter("Physics");
             }
 
             // Customs render targets
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
             if (this.renderTargetsEnabled) {
+                Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -1081,34 +1103,40 @@
                         renderTarget.render();
                     }
                 }
+                Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+
                 this._renderId++;
             }
 
             if (this.customRenderTargets.length > 0) { // Restore back buffer
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
+                Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
                 for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
                     var proceduralTexture = this._proceduralTextures[proceduralIndex];
                     if (proceduralTexture._shouldRender()) {
                         proceduralTexture.render();
                     }
                 }
+                Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
             }
 
             // Clear
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
             // Shadows
-            for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                var light = this.lights[lightIndex];
-                var shadowGenerator = light.getShadowGenerator();
+            if (this.shadowsEnabled) {
+                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
+                    var light = this.lights[lightIndex];
+                    var shadowGenerator = light.getShadowGenerator();
 
-                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
-                    this._renderTargets.push(shadowGenerator.getShadowMap());
+                    if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
+                        this._renderTargets.push(shadowGenerator.getShadowMap());
+                    }
                 }
             }
 
@@ -1146,7 +1174,9 @@
 
             this._toBeDisposed.reset();
 
-            this._lastFrameDuration = new Date().getTime() - startDate;
+
+            Tools.EndPerformanceCounter("Scene rendering");
+            this._lastFrameDuration = Tools.Now - startDate;
         }
 
         public dispose(): void {

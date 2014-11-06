@@ -45,6 +45,10 @@
             return this.boundingBox.isInFrustum(frustumPlanes);
         };
 
+        BoundingInfo.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
+        };
+
         BoundingInfo.prototype._checkCollision = function (collider) {
             return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
         };

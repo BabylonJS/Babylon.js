@@ -65,7 +65,17 @@
             return this._size;
         }
 
-        public resize(size, generateMipMaps) {
+        public get canRescale(): boolean {
+            return true;
+        }
+
+        public scale(ratio: number): void {
+            var newSize = this._size * ratio;
+
+            this.resize(newSize, this._generateMipMaps);
+        }
+
+        public resize(size:any, generateMipMaps?: boolean) {
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }

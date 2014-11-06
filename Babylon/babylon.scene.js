@@ -16,6 +16,7 @@
             this.fogStart = 0;
             this.fogEnd = 1000.0;
             // Lights
+            this.shadowsEnabled = true;
             this.lightsEnabled = true;
             this.lights = new Array();
             // Cameras
@@ -41,6 +42,7 @@
             // Skeletons
             this.skeletons = new Array();
             // Lens flares
+            this.lensFlaresEnabled = true;
             this.lensFlareSystems = new Array();
             // Collisions
             this.collisionsEnabled = true;
@@ -431,11 +433,11 @@
 
         Scene.prototype._animate = function () {
             if (!this._animationStartDate) {
-                this._animationStartDate = new Date().getTime();
+                this._animationStartDate = BABYLON.Tools.Now;
             }
 
             // Getting time
-            var now = new Date().getTime();
+            var now = BABYLON.Tools.Now;
             var delay = now - this._animationStartDate;
 
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -737,8 +739,9 @@
             }
 
             // Particle systems
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = BABYLON.Tools.Now;
             if (this.particlesEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
@@ -751,8 +754,9 @@
                         particleSystem.animate();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
 
         Scene.prototype._activeMesh = function (mesh) {
@@ -799,6 +803,8 @@
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
 
+            BABYLON.Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
+
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
@@ -811,9 +817,11 @@
             }
 
             // Meshes
-            var beforeEvaluateActiveMeshesDate = new Date().getTime();
+            var beforeEvaluateActiveMeshesDate = BABYLON.Tools.Now;
+            BABYLON.Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration += new Date().getTime() - beforeEvaluateActiveMeshesDate;
+            this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
+            BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
 
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
@@ -822,8 +830,9 @@
             }
 
             // Render targets
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
@@ -831,18 +840,19 @@
                         renderTarget.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
             }
 
             if (this._renderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
-            var beforeRenderDate = new Date().getTime();
+            var beforeRenderDate = BABYLON.Tools.Now;
 
             // Backgrounds
             if (this.layers.length) {
@@ -859,13 +869,20 @@
             }
 
             // Render
+            BABYLON.Tools.StartPerformanceCounter("Main render");
             this._renderingManager.render(null, null, true, true);
+            BABYLON.Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
             this._boundingBoxRenderer.render();
 
-            for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                this.lensFlareSystems[lensFlareSystemIndex].render();
+            // Lens flares
+            if (this.lensFlaresEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
+                for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
+                    this.lensFlareSystems[lensFlareSystemIndex].render();
+                }
+                BABYLON.Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
 
             // Foregrounds
@@ -880,7 +897,7 @@
                 engine.setDepthBuffer(true);
             }
 
-            this._renderDuration += new Date().getTime() - beforeRenderDate;
+            this._renderDuration += BABYLON.Tools.Now - beforeRenderDate;
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -894,6 +911,8 @@
             if (this.afterCameraRender) {
                 this.afterCameraRender(this.activeCamera);
             }
+
+            BABYLON.Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         };
 
         Scene.prototype._processSubCameras = function (camera) {
@@ -944,7 +963,7 @@
         };
 
         Scene.prototype.render = function () {
-            var startDate = new Date().getTime();
+            var startDate = BABYLON.Tools.Now;
             this._particlesDuration = 0;
             this._spritesDuration = 0;
             this._activeParticles = 0;
@@ -953,6 +972,8 @@
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._meshesForIntersections.reset();
+
+            BABYLON.Tools.StartPerformanceCounter("Scene rendering");
 
             // Actions
             if (this.actionManager) {
@@ -975,13 +996,16 @@
 
             // Physics
             if (this._physicsEngine) {
+                BABYLON.Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                BABYLON.Tools.EndPerformanceCounter("Physics");
             }
 
             // Customs render targets
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
             if (this.renderTargetsEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -1001,33 +1025,40 @@
                         renderTarget.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+
                 this._renderId++;
             }
 
             if (this.customRenderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
 
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
                 for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
                     var proceduralTexture = this._proceduralTextures[proceduralIndex];
                     if (proceduralTexture._shouldRender()) {
                         proceduralTexture.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
             }
 
             // Clear
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
-            for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                var light = this.lights[lightIndex];
-                var shadowGenerator = light.getShadowGenerator();
+            // Shadows
+            if (this.shadowsEnabled) {
+                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
+                    var light = this.lights[lightIndex];
+                    var shadowGenerator = light.getShadowGenerator();
 
-                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
-                    this._renderTargets.push(shadowGenerator.getShadowMap());
+                    if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
+                        this._renderTargets.push(shadowGenerator.getShadowMap());
+                    }
                 }
             }
 
@@ -1064,7 +1095,8 @@
 
             this._toBeDisposed.reset();
 
-            this._lastFrameDuration = new Date().getTime() - startDate;
+            BABYLON.Tools.EndPerformanceCounter("Scene rendering");
+            this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
 
         Scene.prototype.dispose = function () {

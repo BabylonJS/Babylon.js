@@ -38,6 +38,28 @@ var BABYLON;
             this._canvas.height = textureSize.height;
             this._context = this._canvas.getContext("2d");
         }
+        Object.defineProperty(DynamicTexture.prototype, "canRescale", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        DynamicTexture.prototype.scale = function (ratio) {
+            var textureSize = this.getSize();
+
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+
+            this._canvas.width = textureSize.width;
+            this._canvas.height = textureSize.height;
+
+            this.releaseInternalTexture();
+
+            this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        };
+
         DynamicTexture.prototype.getContext = function () {
             return this._context;
         };

@@ -2556,7 +2556,7 @@ var BABYLON;
         };
 
         Tools._MeasureFps = function () {
-            previousFramesDuration.push((new Date).getTime());
+            previousFramesDuration.push(Tools.Now);
             var length = previousFramesDuration.length;
 
             if (length >= 2) {
@@ -2817,6 +2817,112 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+        Object.defineProperty(Tools, "PerformanceNoneLogLevel", {
+            get: function () {
+                return Tools._PerformanceNoneLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceUserMarkLogLevel", {
+            get: function () {
+                return Tools._PerformanceUserMarkLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceConsoleLogLevel", {
+            get: function () {
+                return Tools._PerformanceConsoleLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceLogLevel", {
+            set: function (level) {
+                if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
+                    Tools.StartPerformanceCounter = Tools._StartUserMark;
+                    Tools.EndPerformanceCounter = Tools._EndUserMark;
+                    return;
+                }
+
+                if ((level & Tools.PerformanceConsoleLogLevel) === Tools.PerformanceConsoleLogLevel) {
+                    Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
+                    Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
+                    return;
+                }
+
+                Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
+                Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Tools._StartPerformanceCounterDisabled = function (counterName, condition) {
+        };
+
+        Tools._EndPerformanceCounterDisabled = function (counterName, condition) {
+        };
+
+        Tools._StartUserMark = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-Begin");
+        };
+
+        Tools._EndUserMark = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-End");
+            Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
+        };
+
+        Tools._StartPerformanceConsole = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition) {
+                return;
+            }
+
+            Tools._StartUserMark(counterName, condition);
+
+            if (console.time) {
+                console.time(counterName);
+            }
+        };
+
+        Tools._EndPerformanceConsole = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition) {
+                return;
+            }
+
+            Tools._EndUserMark(counterName, condition);
+
+            if (console.time) {
+                console.timeEnd(counterName);
+            }
+        };
+
+        Object.defineProperty(Tools, "Now", {
+            get: function () {
+                if (window.performance.now) {
+                    return window.performance.now();
+                }
+
+                return new Date().getTime();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Tools.BaseUrl = "";
 
         Tools.GetExponantOfTwo = function (value, max) {
@@ -2842,6 +2948,15 @@ var BABYLON;
         Tools.Warn = Tools._WarnEnabled;
 
         Tools.Error = Tools._ErrorEnabled;
+
+        Tools._PerformanceNoneLogLevel = 0;
+        Tools._PerformanceUserMarkLogLevel = 1;
+        Tools._PerformanceConsoleLogLevel = 2;
+
+        Tools._performance = window.performance;
+
+        Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
+        Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
     })();
     BABYLON.Tools = Tools;
@@ -4090,7 +4205,7 @@ var BABYLON;
                 else
                     callback(buffer);
             } else if (isDDS) {
-                var callback = function (data) {
+                callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
@@ -4996,6 +5111,10 @@ var BABYLON;
             return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
         };
 
+        BoundingBox.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+        };
+
         BoundingBox.prototype.intersectsPoint = function (point) {
             var delta = BABYLON.Engine.Epsilon;
 
@@ -5046,6 +5165,17 @@ var BABYLON;
             var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
             var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
+        };
+
+        BoundingBox.IsCompletelyInFrustum = function (boundingVectors, frustumPlanes) {
+            for (var p = 0; p < 6; p++) {
+                for (var i = 0; i < 8; i++) {
+                    if (frustumPlanes[p].dotCoordinate(boundingVectors[i]) < 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         };
 
         BoundingBox.IsInFrustum = function (boundingVectors, frustumPlanes) {
@@ -5113,6 +5243,10 @@ var BABYLON;
                 return false;
 
             return this.boundingBox.isInFrustum(frustumPlanes);
+        };
+
+        BoundingInfo.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         };
 
         BoundingInfo.prototype._checkCollision = function (collider) {
@@ -7667,6 +7801,7 @@ var BABYLON;
             this.fogStart = 0;
             this.fogEnd = 1000.0;
            
+            this.shadowsEnabled = true;
             this.lightsEnabled = true;
             this.lights = new Array();
            
@@ -7692,6 +7827,7 @@ var BABYLON;
            
             this.skeletons = new Array();
            
+            this.lensFlaresEnabled = true;
             this.lensFlareSystems = new Array();
            
             this.collisionsEnabled = true;
@@ -8082,11 +8218,11 @@ var BABYLON;
 
         Scene.prototype._animate = function () {
             if (!this._animationStartDate) {
-                this._animationStartDate = new Date().getTime();
+                this._animationStartDate = BABYLON.Tools.Now;
             }
 
            
-            var now = new Date().getTime();
+            var now = BABYLON.Tools.Now;
             var delay = now - this._animationStartDate;
 
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -8388,8 +8524,9 @@ var BABYLON;
             }
 
            
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = BABYLON.Tools.Now;
             if (this.particlesEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
                 for (var particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
                     var particleSystem = this.particleSystems[particleIndex];
 
@@ -8402,8 +8539,9 @@ var BABYLON;
                         particleSystem.animate();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
 
         Scene.prototype._activeMesh = function (mesh) {
@@ -8450,6 +8588,8 @@ var BABYLON;
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
 
+            BABYLON.Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
+
            
             engine.setViewport(this.activeCamera.viewport);
 
@@ -8462,9 +8602,11 @@ var BABYLON;
             }
 
            
-            var beforeEvaluateActiveMeshesDate = new Date().getTime();
+            var beforeEvaluateActiveMeshesDate = BABYLON.Tools.Now;
+            BABYLON.Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration += new Date().getTime() - beforeEvaluateActiveMeshesDate;
+            this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
+            BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
 
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
@@ -8473,8 +8615,9 @@ var BABYLON;
             }
 
            
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
@@ -8482,18 +8625,19 @@ var BABYLON;
                         renderTarget.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
             }
 
             if (this._renderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
 
            
             this.postProcessManager._prepareFrame();
 
-            var beforeRenderDate = new Date().getTime();
+            var beforeRenderDate = BABYLON.Tools.Now;
 
            
             if (this.layers.length) {
@@ -8510,13 +8654,20 @@ var BABYLON;
             }
 
            
+            BABYLON.Tools.StartPerformanceCounter("Main render");
             this._renderingManager.render(null, null, true, true);
+            BABYLON.Tools.EndPerformanceCounter("Main render");
 
            
             this._boundingBoxRenderer.render();
 
-            for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                this.lensFlareSystems[lensFlareSystemIndex].render();
+           
+            if (this.lensFlaresEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
+                for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
+                    this.lensFlareSystems[lensFlareSystemIndex].render();
+                }
+                BABYLON.Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
 
            
@@ -8531,7 +8682,7 @@ var BABYLON;
                 engine.setDepthBuffer(true);
             }
 
-            this._renderDuration += new Date().getTime() - beforeRenderDate;
+            this._renderDuration += BABYLON.Tools.Now - beforeRenderDate;
 
            
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -8545,6 +8696,8 @@ var BABYLON;
             if (this.afterCameraRender) {
                 this.afterCameraRender(this.activeCamera);
             }
+
+            BABYLON.Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         };
 
         Scene.prototype._processSubCameras = function (camera) {
@@ -8595,7 +8748,7 @@ var BABYLON;
         };
 
         Scene.prototype.render = function () {
-            var startDate = new Date().getTime();
+            var startDate = BABYLON.Tools.Now;
             this._particlesDuration = 0;
             this._spritesDuration = 0;
             this._activeParticles = 0;
@@ -8604,6 +8757,8 @@ var BABYLON;
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._meshesForIntersections.reset();
+
+            BABYLON.Tools.StartPerformanceCounter("Scene rendering");
 
            
             if (this.actionManager) {
@@ -8626,13 +8781,16 @@ var BABYLON;
 
            
             if (this._physicsEngine) {
+                BABYLON.Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                BABYLON.Tools.EndPerformanceCounter("Physics");
             }
 
            
-            var beforeRenderTargetDate = new Date().getTime();
+            var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
             if (this.renderTargetsEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     var renderTarget = this.customRenderTargets[customIndex];
                     if (renderTarget._shouldRender()) {
@@ -8652,33 +8810,40 @@ var BABYLON;
                         renderTarget.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+
                 this._renderId++;
             }
 
             if (this.customRenderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += new Date().getTime() - beforeRenderTargetDate;
+            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
 
            
             if (this.proceduralTexturesEnabled) {
+                BABYLON.Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
                 for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
                     var proceduralTexture = this._proceduralTextures[proceduralIndex];
                     if (proceduralTexture._shouldRender()) {
                         proceduralTexture.render();
                     }
                 }
+                BABYLON.Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
             }
 
            
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
-            for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                var light = this.lights[lightIndex];
-                var shadowGenerator = light.getShadowGenerator();
+           
+            if (this.shadowsEnabled) {
+                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
+                    var light = this.lights[lightIndex];
+                    var shadowGenerator = light.getShadowGenerator();
 
-                if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
-                    this._renderTargets.push(shadowGenerator.getShadowMap());
+                    if (light.isEnabled() && shadowGenerator && shadowGenerator.getShadowMap().getScene().textures.indexOf(shadowGenerator.getShadowMap()) !== -1) {
+                        this._renderTargets.push(shadowGenerator.getShadowMap());
+                    }
                 }
             }
 
@@ -8715,7 +8880,8 @@ var BABYLON;
 
             this._toBeDisposed.reset();
 
-            this._lastFrameDuration = new Date().getTime() - startDate;
+            BABYLON.Tools.EndPerformanceCounter("Scene rendering");
+            this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
 
         Scene.prototype.dispose = function () {
@@ -9693,6 +9859,20 @@ var BABYLON;
 
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
+                return false;
+            }
+
+            return true;
+        };
+
+        AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
+
+            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
                 return false;
             }
 
@@ -11551,6 +11731,29 @@ var BABYLON;
             return { width: this._texture._baseWidth, height: this._texture._baseHeight };
         };
 
+        BaseTexture.prototype.scale = function (ratio) {
+        };
+
+        Object.defineProperty(BaseTexture.prototype, "canRescale", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        BaseTexture.prototype._removeFromCache = function (url, noMipmap) {
+            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+            for (var index = 0; index < texturesCache.length; index++) {
+                var texturesCacheEntry = texturesCache[index];
+
+                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                    texturesCache.splice(index, 1);
+                    return;
+                }
+            }
+        };
+
         BaseTexture.prototype._getFromCache = function (url, noMipmap) {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
@@ -11729,7 +11932,7 @@ var BABYLON;
             }
 
            
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = BABYLON.Tools.Now;
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -11743,7 +11946,7 @@ var BABYLON;
                     this._scene._activeParticles += particleSystem.render();
                 }
             }
-            this._scene._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
 
         RenderingManager.prototype._renderSprites = function (index) {
@@ -11752,7 +11955,7 @@ var BABYLON;
             }
 
            
-            var beforeSpritessDate = new Date().getTime();
+            var beforeSpritessDate = BABYLON.Tools.Now;
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
 
@@ -11761,7 +11964,7 @@ var BABYLON;
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += new Date().getTime() - beforeSpritessDate;
+            this._scene._spritesDuration += BABYLON.Tools.Now - beforeSpritessDate;
         };
 
         RenderingManager.prototype._clearDepthBuffer = function () {
@@ -12169,6 +12372,20 @@ var BABYLON;
 
         RenderTargetTexture.prototype.getRenderSize = function () {
             return this._size;
+        };
+
+        Object.defineProperty(RenderTargetTexture.prototype, "canRescale", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        RenderTargetTexture.prototype.scale = function (ratio) {
+            var newSize = this._size * ratio;
+
+            this.resize(newSize, this._generateMipMaps);
         };
 
         RenderTargetTexture.prototype.resize = function (size, generateMipMaps) {
@@ -12884,6 +13101,28 @@ var BABYLON;
             this._canvas.height = textureSize.height;
             this._context = this._canvas.getContext("2d");
         }
+        Object.defineProperty(DynamicTexture.prototype, "canRescale", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        DynamicTexture.prototype.scale = function (ratio) {
+            var textureSize = this.getSize();
+
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+
+            this._canvas.width = textureSize.width;
+            this._canvas.height = textureSize.height;
+
+            this.releaseInternalTexture();
+
+            this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        };
+
         DynamicTexture.prototype.getContext = function () {
             return this._context;
         };
@@ -12974,7 +13213,7 @@ var BABYLON;
                 _this.video.appendChild(source);
             });
 
-            this._lastUpdate = new Date().getTime();
+            this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype.update = function () {
             if (this._autoLaunch) {
@@ -12982,7 +13221,7 @@ var BABYLON;
                 this.video.play();
             }
 
-            var now = new Date().getTime();
+            var now = BABYLON.Tools.Now;
 
             if (now - this._lastUpdate < 15) {
                 return false;
@@ -13550,6 +13789,7 @@ var BABYLON;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
             this.useSpecularOverAlpha = true;
+            this.fogEnabled = true;
             this._cachedDefines = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -13688,7 +13928,7 @@ var BABYLON;
             }
 
            
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
                 fallbacks.addFallback(1, "FOG");
             }
@@ -13754,27 +13994,29 @@ var BABYLON;
                     }
 
                    
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        defines.push("#define SHADOW" + lightIndex);
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = light.getShadowGenerator();
+                        if (mesh && mesh.receiveShadows && shadowGenerator) {
+                            defines.push("#define SHADOW" + lightIndex);
+                            fallbacks.addFallback(0, "SHADOW" + lightIndex);
 
-                        if (!shadowsActivated) {
-                            defines.push("#define SHADOWS");
-                            shadowsActivated = true;
-                        }
-
-                        if (shadowGenerator.useVarianceShadowMap) {
-                            defines.push("#define SHADOWVSM" + lightIndex);
-                            if (lightIndex > 0) {
-                                fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                            if (!shadowsActivated) {
+                                defines.push("#define SHADOWS");
+                                shadowsActivated = true;
                             }
-                        }
 
-                        if (shadowGenerator.usePoissonSampling) {
-                            defines.push("#define SHADOWPCF" + lightIndex);
-                            if (lightIndex > 0) {
-                                fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                            if (shadowGenerator.useVarianceShadowMap) {
+                                defines.push("#define SHADOWVSM" + lightIndex);
+                                if (lightIndex > 0) {
+                                    fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                                }
+                            }
+
+                            if (shadowGenerator.usePoissonSampling) {
+                                defines.push("#define SHADOWPCF" + lightIndex);
+                                if (lightIndex > 0) {
+                                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                                }
                             }
                         }
                     }
@@ -14026,11 +14268,13 @@ var BABYLON;
                     this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
 
                    
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
-                        this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = light.getShadowGenerator();
+                        if (mesh.receiveShadows && shadowGenerator) {
+                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
+                            this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                        }
                     }
 
                     lightIndex++;
@@ -26662,4 +26906,274 @@ var BABYLON;
         return WebVRCamera;
     })(BABYLON.OculusCamera);
     BABYLON.WebVRCamera = WebVRCamera;
+})(BABYLON || (BABYLON = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+   
+    var SceneOptimization = (function () {
+        function SceneOptimization(priority) {
+            if (typeof priority === "undefined") { priority = 0; }
+            this.priority = priority;
+            this.apply = function (scene) {
+                return true;
+            };
+        }
+        return SceneOptimization;
+    })();
+    BABYLON.SceneOptimization = SceneOptimization;
+
+    var TextureSceneOptimization = (function (_super) {
+        __extends(TextureSceneOptimization, _super);
+        function TextureSceneOptimization(maximumSize, priority) {
+            if (typeof maximumSize === "undefined") { maximumSize = 1024; }
+            if (typeof priority === "undefined") { priority = 0; }
+            var _this = this;
+            _super.call(this, priority);
+            this.maximumSize = maximumSize;
+            this.priority = priority;
+            this.apply = function (scene) {
+                var allDone = true;
+                for (var index = 0; index < scene.textures.length; index++) {
+                    var texture = scene.textures[index];
+
+                    if (!texture.canRescale) {
+                        continue;
+                    }
+
+                    var currentSize = texture.getSize();
+                    var maxDimension = Math.max(currentSize.width, currentSize.height);
+
+                    if (maxDimension > _this.maximumSize) {
+                        texture.scale(0.5);
+                        allDone = false;
+                    }
+                }
+
+                return allDone;
+            };
+        }
+        return TextureSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.TextureSceneOptimization = TextureSceneOptimization;
+
+    var HardwareScalingSceneOptimization = (function (_super) {
+        __extends(HardwareScalingSceneOptimization, _super);
+        function HardwareScalingSceneOptimization(maximumScale, priority) {
+            if (typeof maximumScale === "undefined") { maximumScale = 2; }
+            if (typeof priority === "undefined") { priority = 0; }
+            var _this = this;
+            _super.call(this, priority);
+            this.maximumScale = maximumScale;
+            this.priority = priority;
+            this._currentScale = 1;
+            this.apply = function (scene) {
+                _this._currentScale++;
+
+                scene.getEngine().setHardwareScalingLevel(_this._currentScale);
+
+                return _this._currentScale >= _this.maximumScale;
+            };
+        }
+        return HardwareScalingSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.HardwareScalingSceneOptimization = HardwareScalingSceneOptimization;
+
+    var ShadowsSceneOptimization = (function (_super) {
+        __extends(ShadowsSceneOptimization, _super);
+        function ShadowsSceneOptimization() {
+            _super.apply(this, arguments);
+            this.apply = function (scene) {
+                scene.shadowsEnabled = false;
+                return true;
+            };
+        }
+        return ShadowsSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.ShadowsSceneOptimization = ShadowsSceneOptimization;
+
+    var PostProcessesSceneOptimization = (function (_super) {
+        __extends(PostProcessesSceneOptimization, _super);
+        function PostProcessesSceneOptimization() {
+            _super.apply(this, arguments);
+            this.apply = function (scene) {
+                scene.postProcessesEnabled = false;
+                return true;
+            };
+        }
+        return PostProcessesSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.PostProcessesSceneOptimization = PostProcessesSceneOptimization;
+
+    var LensFlaresSceneOptimization = (function (_super) {
+        __extends(LensFlaresSceneOptimization, _super);
+        function LensFlaresSceneOptimization() {
+            _super.apply(this, arguments);
+            this.apply = function (scene) {
+                scene.lensFlaresEnabled = false;
+                return true;
+            };
+        }
+        return LensFlaresSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.LensFlaresSceneOptimization = LensFlaresSceneOptimization;
+
+    var ParticlesSceneOptimization = (function (_super) {
+        __extends(ParticlesSceneOptimization, _super);
+        function ParticlesSceneOptimization() {
+            _super.apply(this, arguments);
+            this.apply = function (scene) {
+                scene.particlesEnabled = false;
+                return true;
+            };
+        }
+        return ParticlesSceneOptimization;
+    })(SceneOptimization);
+    BABYLON.ParticlesSceneOptimization = ParticlesSceneOptimization;
+
+   
+    var SceneOptimizerOptions = (function () {
+        function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
+            if (typeof targetFrameRate === "undefined") { targetFrameRate = 60; }
+            if (typeof trackerDuration === "undefined") { trackerDuration = 2000; }
+            this.targetFrameRate = targetFrameRate;
+            this.trackerDuration = trackerDuration;
+            this.optimizations = new Array();
+        }
+        SceneOptimizerOptions.LowDegradationAllowed = function (targetFrameRate) {
+            var result = new SceneOptimizerOptions(targetFrameRate);
+
+            var priority = 0;
+            result.optimizations.push(new ShadowsSceneOptimization(priority));
+            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new PostProcessesSceneOptimization(priority));
+            result.optimizations.push(new ParticlesSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new TextureSceneOptimization(priority, 1024));
+
+            return result;
+        };
+
+        SceneOptimizerOptions.ModerateDegradationAllowed = function (targetFrameRate) {
+            var result = new SceneOptimizerOptions(targetFrameRate);
+
+            var priority = 0;
+            result.optimizations.push(new ShadowsSceneOptimization(priority));
+            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new PostProcessesSceneOptimization(priority));
+            result.optimizations.push(new ParticlesSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new TextureSceneOptimization(priority, 512));
+
+           
+            priority++;
+            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
+
+            return result;
+        };
+
+        SceneOptimizerOptions.HighDegradationAllowed = function (targetFrameRate) {
+            var result = new SceneOptimizerOptions(targetFrameRate);
+
+            var priority = 0;
+            result.optimizations.push(new ShadowsSceneOptimization(priority));
+            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new PostProcessesSceneOptimization(priority));
+            result.optimizations.push(new ParticlesSceneOptimization(priority));
+
+           
+            priority++;
+            result.optimizations.push(new TextureSceneOptimization(priority, 256));
+
+           
+            priority++;
+            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 4));
+
+            return result;
+        };
+        return SceneOptimizerOptions;
+    })();
+    BABYLON.SceneOptimizerOptions = SceneOptimizerOptions;
+
+   
+    var SceneOptimizer = (function () {
+        function SceneOptimizer() {
+        }
+        SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
+           
+            if (BABYLON.Tools.GetFps() >= options.targetFrameRate) {
+                if (onSuccess) {
+                    onSuccess();
+                }
+
+                return;
+            }
+
+           
+            var allDone = true;
+            var noOptimizationApplied = true;
+            for (var index = 0; index < options.optimizations.length; index++) {
+                var optimization = options.optimizations[index];
+
+                if (optimization.priority === currentPriorityLevel) {
+                    noOptimizationApplied = false;
+                    allDone = allDone && optimization.apply(scene);
+                }
+            }
+
+           
+            if (noOptimizationApplied) {
+                if (onFailure) {
+                    onFailure();
+                }
+
+                return;
+            }
+
+           
+            if (allDone) {
+                currentPriorityLevel++;
+            }
+
+           
+            scene.executeWhenReady(function () {
+                setTimeout(function () {
+                    SceneOptimizer._CheckCurrentState(scene, options, currentPriorityLevel, onSuccess, onFailure);
+                }, options.trackerDuration);
+            });
+        };
+
+        SceneOptimizer.OptimizeAsync = function (scene, options, onSuccess, onFailure) {
+            if (!options) {
+                options = SceneOptimizerOptions.ModerateDegradationAllowed();
+            }
+
+           
+            scene.executeWhenReady(function () {
+                setTimeout(function () {
+                    SceneOptimizer._CheckCurrentState(scene, options, 0, onSuccess, onFailure);
+                }, options.trackerDuration);
+            });
+        };
+        return SceneOptimizer;
+    })();
+    BABYLON.SceneOptimizer = SceneOptimizer;
 })(BABYLON || (BABYLON = {}));

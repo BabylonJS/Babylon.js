@@ -43,7 +43,7 @@ var BABYLON;
                 _this.video.appendChild(source);
             });
 
-            this._lastUpdate = new Date().getTime();
+            this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype.update = function () {
             if (this._autoLaunch) {
@@ -51,7 +51,7 @@ var BABYLON;
                 this.video.play();
             }
 
-            var now = new Date().getTime();
+            var now = BABYLON.Tools.Now;
 
             if (now - this._lastUpdate < 15) {
                 return false;

@@ -1242,7 +1242,7 @@
                 else
                     callback(buffer);
             } else if (isDDS) {
-                var callback = function (data) {
+                callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
