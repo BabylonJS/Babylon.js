@@ -706,7 +706,7 @@
             this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
         }
 
-        public setSize(width : number, height : number): void {
+        public setSize(width: number, height: number): void {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
 
@@ -1258,7 +1258,7 @@
                     callback(buffer);
 
             } else if (isDDS) {
-                callback = (data) => {
+                 callback = (data) => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
@@ -1839,7 +1839,7 @@
         public static isSupported(): boolean {
             try {
                 // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
-                if (navigator.isCocoonJS){
+                if (navigator.isCocoonJS) {
                     return true;
                 }
                 var tempcanvas = document.createElement("canvas");

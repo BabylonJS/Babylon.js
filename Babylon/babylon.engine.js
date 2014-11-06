@@ -528,7 +528,7 @@
 
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "1.14.0";
+                return "2.0.0";
             },
             enumerable: true,
             configurable: true
@@ -693,8 +693,12 @@
         };
 
         Engine.prototype.resize = function () {
-            this._renderingCanvas.width = this._renderingCanvas.clientWidth / this._hardwareScalingLevel;
-            this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;
+            this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
+        };
+
+        Engine.prototype.setSize = function (width, height) {
+            this._renderingCanvas.width = width;
+            this._renderingCanvas.height = height;
 
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
         };
@@ -1828,6 +1832,10 @@
         // Statics
         Engine.isSupported = function () {
             try  {
+                // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
+                if (navigator.isCocoonJS) {
+                    return true;
+                }
                 var tempcanvas = document.createElement("canvas");
                 var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
 

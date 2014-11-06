@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Tools/babylon.sceneOptimizer.js"></script>
   <script src="Babylon/Cameras/babylon.vrDeviceOrientationCamera.js"></script>
   <script src="Babylon/Cameras/babylon.webVRCamera.js"></script>
   <script src="Babylon/Tools/babylon.assetsManager.js"></script>
