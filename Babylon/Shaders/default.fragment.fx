@@ -248,11 +248,11 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)
 	poissonDisk[3] = vec2(0.34495938, 0.29387760);
 
 	// Poisson Sampling
-	for (int i = 0; i<4; i++){
-		if (unpack(texture2D(shadowSampler, uv + poissonDisk[i] / 1500.0))  <  depth.z){
-			visibility -= 0.2;
-		}
-	}
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / 1500.0))  <  depth.z) visibility -= 0.2;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / 1500.0))  <  depth.z) visibility -= 0.2;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / 1500.0))  <  depth.z) visibility -= 0.2;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / 1500.0))  <  depth.z) visibility -= 0.2;
+	
 	return visibility;
 }
 
