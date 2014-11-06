@@ -424,7 +424,7 @@
         }
 
         public static _MeasureFps(): void {
-            previousFramesDuration.push((new Date).getTime());
+            previousFramesDuration.push(Tools.Now);
             var length = previousFramesDuration.length;
 
             if (length >= 2) {
@@ -688,6 +688,98 @@
             else {
                 Tools.Error = Tools._ErrorDisabled;
             }
+        }
+
+        // Performances
+        private static _PerformanceNoneLogLevel = 0;
+        private static _PerformanceUserMarkLogLevel = 1;
+        private static _PerformanceConsoleLogLevel = 2;
+
+        private static _performance: Performance = window.performance;
+
+        static get PerformanceNoneLogLevel(): number {
+            return Tools._PerformanceNoneLogLevel;
+        }
+
+        static get PerformanceUserMarkLogLevel(): number {
+            return Tools._PerformanceUserMarkLogLevel;
+        }
+
+        static get PerformanceConsoleLogLevel(): number {
+            return Tools._PerformanceConsoleLogLevel;
+        }
+
+        public static set PerformanceLogLevel(level: number) {
+            if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
+                Tools.StartPerformanceCounter = Tools._StartUserMark;
+                Tools.EndPerformanceCounter = Tools._EndUserMark;
+                return;
+            }
+
+            if ((level & Tools.PerformanceConsoleLogLevel) === Tools.PerformanceConsoleLogLevel) {
+                Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
+                Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
+                return;
+            }
+
+            Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
+            Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
+        }
+
+        static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
+        }
+
+        static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {
+        }
+
+        static _StartUserMark(counterName: string, condition = true): void {
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-Begin");
+        }
+
+        static _EndUserMark(counterName: string, condition = true): void {
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-End");
+            Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
+        }
+
+        static _StartPerformanceConsole(counterName: string, condition = true): void {
+            if (!condition) {
+                return;
+            }
+
+            Tools._StartUserMark(counterName, condition);
+
+            if (console.time) {
+                console.time(counterName);
+            }
+        }
+
+        static _EndPerformanceConsole(counterName: string, condition = true): void {
+            if (!condition) {
+                return;
+            }
+
+            Tools._EndUserMark(counterName, condition);
+
+            if (console.time) {
+                console.timeEnd(counterName);
+            }
+        }
+
+        public static StartPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._StartPerformanceCounterDisabled;
+        public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
+
+        public static get Now(): number {
+            if (window.performance.now) {
+                return window.performance.now();
+            }
+
+            return new Date().getTime();
         }
     }
 } 

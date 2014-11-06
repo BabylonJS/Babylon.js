@@ -75,6 +75,25 @@
             return { width: this._texture._baseWidth, height: this._texture._baseHeight };
         }
 
+        public scale(ratio: number): void {
+        }
+
+        public get canRescale(): boolean {
+            return false;
+        }
+
+        public _removeFromCache(url: string, noMipmap: boolean): void {
+            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+            for (var index = 0; index < texturesCache.length; index++) {
+                var texturesCacheEntry = texturesCache[index];
+
+                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                    texturesCache.splice(index, 1);
+                    return;
+                }
+            }
+        }
+
         public _getFromCache(url: string, noMipmap: boolean): WebGLTexture {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {

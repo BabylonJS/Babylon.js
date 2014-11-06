@@ -389,7 +389,7 @@
         };
 
         Tools._MeasureFps = function () {
-            previousFramesDuration.push((new Date).getTime());
+            previousFramesDuration.push(Tools.Now);
             var length = previousFramesDuration.length;
 
             if (length >= 2) {
@@ -650,6 +650,112 @@
             enumerable: true,
             configurable: true
         });
+
+        Object.defineProperty(Tools, "PerformanceNoneLogLevel", {
+            get: function () {
+                return Tools._PerformanceNoneLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceUserMarkLogLevel", {
+            get: function () {
+                return Tools._PerformanceUserMarkLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceConsoleLogLevel", {
+            get: function () {
+                return Tools._PerformanceConsoleLogLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Tools, "PerformanceLogLevel", {
+            set: function (level) {
+                if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
+                    Tools.StartPerformanceCounter = Tools._StartUserMark;
+                    Tools.EndPerformanceCounter = Tools._EndUserMark;
+                    return;
+                }
+
+                if ((level & Tools.PerformanceConsoleLogLevel) === Tools.PerformanceConsoleLogLevel) {
+                    Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
+                    Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
+                    return;
+                }
+
+                Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
+                Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Tools._StartPerformanceCounterDisabled = function (counterName, condition) {
+        };
+
+        Tools._EndPerformanceCounterDisabled = function (counterName, condition) {
+        };
+
+        Tools._StartUserMark = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-Begin");
+        };
+
+        Tools._EndUserMark = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition || !Tools._performance.mark) {
+                return;
+            }
+            Tools._performance.mark(counterName + "-End");
+            Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
+        };
+
+        Tools._StartPerformanceConsole = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition) {
+                return;
+            }
+
+            Tools._StartUserMark(counterName, condition);
+
+            if (console.time) {
+                console.time(counterName);
+            }
+        };
+
+        Tools._EndPerformanceConsole = function (counterName, condition) {
+            if (typeof condition === "undefined") { condition = true; }
+            if (!condition) {
+                return;
+            }
+
+            Tools._EndUserMark(counterName, condition);
+
+            if (console.time) {
+                console.timeEnd(counterName);
+            }
+        };
+
+        Object.defineProperty(Tools, "Now", {
+            get: function () {
+                if (window.performance.now) {
+                    return window.performance.now();
+                }
+
+                return new Date().getTime();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Tools.BaseUrl = "";
 
         Tools.GetExponantOfTwo = function (value, max) {
@@ -675,6 +781,15 @@
         Tools.Warn = Tools._WarnEnabled;
 
         Tools.Error = Tools._ErrorEnabled;
+
+        Tools._PerformanceNoneLogLevel = 0;
+        Tools._PerformanceUserMarkLogLevel = 1;
+        Tools._PerformanceConsoleLogLevel = 2;
+
+        Tools._performance = window.performance;
+
+        Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
+        Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
     })();
     BABYLON.Tools = Tools;

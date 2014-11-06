@@ -34,6 +34,24 @@
             this._context = this._canvas.getContext("2d");
         }
 
+        public get canRescale(): boolean {
+            return true;
+        }
+
+        public scale(ratio: number): void {
+            var textureSize = this.getSize();
+
+            textureSize.width *= ratio;
+            textureSize.height *= ratio;
+
+            this._canvas.width = textureSize.width;
+            this._canvas.height = textureSize.height;
+
+            this.releaseInternalTexture();
+
+            this._texture = this.getScene().getEngine().createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+        }
+
         public getContext(): CanvasRenderingContext2D {
             return this._context;
         }

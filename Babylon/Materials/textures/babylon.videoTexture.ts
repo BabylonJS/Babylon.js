@@ -37,7 +37,7 @@
                 this.video.appendChild(source);
             });
 
-            this._lastUpdate = new Date().getTime();
+            this._lastUpdate = Tools.Now;
         }
 
         public update(): boolean {
@@ -46,7 +46,7 @@
                 this.video.play();
             }
 
-            var now = new Date().getTime();
+            var now = Tools.Now;
 
             if (now - this._lastUpdate < 15) {
                 return false;

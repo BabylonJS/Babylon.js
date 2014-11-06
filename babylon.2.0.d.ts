@@ -342,6 +342,7 @@ declare module BABYLON {
         public fogDensity: number;
         public fogStart: number;
         public fogEnd: number;
+        public shadowsEnabled: boolean;
         public lightsEnabled: boolean;
         public lights: Light[];
         public cameras: Camera[];
@@ -359,6 +360,7 @@ declare module BABYLON {
         public spriteManagers: SpriteManager[];
         public layers: Layer[];
         public skeletons: Skeleton[];
+        public lensFlaresEnabled: boolean;
         public lensFlareSystems: LensFlareSystem[];
         public collisionsEnabled: boolean;
         public gravity: Vector3;
@@ -1215,11 +1217,13 @@ declare module BABYLON {
         public getWorldMatrix(): Matrix;
         public _update(world: Matrix): void;
         public isInFrustum(frustumPlanes: Plane[]): boolean;
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
         public intersectsPoint(point: Vector3): boolean;
         public intersectsSphere(sphere: BoundingSphere): boolean;
         public intersectsMinMax(min: Vector3, max: Vector3): boolean;
         static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
         static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
         static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
     }
 }
@@ -1232,6 +1236,7 @@ declare module BABYLON {
         constructor(minimum: Vector3, maximum: Vector3);
         public _update(world: Matrix): void;
         public isInFrustum(frustumPlanes: Plane[]): boolean;
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
         public _checkCollision(collider: Collider): boolean;
         public intersectsPoint(point: Vector3): boolean;
         public intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
@@ -1648,6 +1653,7 @@ declare module BABYLON {
         public emissiveColor: Color3;
         public useAlphaFromDiffuseTexture: boolean;
         public useSpecularOverAlpha: boolean;
+        public fogEnabled: boolean;
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
         public reflectionFresnelParameters: FresnelParameters;
@@ -1707,6 +1713,9 @@ declare module BABYLON {
         public isReady(): boolean;
         public getSize(): ISize;
         public getBaseSize(): ISize;
+        public scale(ratio: number): void;
+        public canRescale : boolean;
+        public _removeFromCache(url: string, noMipmap: boolean): void;
         public _getFromCache(url: string, noMipmap: boolean): WebGLTexture;
         public delayLoad(): void;
         public releaseInternalTexture(): void;
@@ -1733,6 +1742,8 @@ declare module BABYLON {
         private _canvas;
         private _context;
         constructor(name: string, options: any, scene: Scene, generateMipMaps: boolean, samplingMode?: number);
+        public canRescale : boolean;
+        public scale(ratio: number): void;
         public getContext(): CanvasRenderingContext2D;
         public update(invertY?: boolean): void;
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean): void;
@@ -1815,7 +1826,9 @@ declare module BABYLON {
         public refreshRate : number;
         public _shouldRender(): boolean;
         public getRenderSize(): number;
-        public resize(size: any, generateMipMaps: any): void;
+        public canRescale : boolean;
+        public scale(ratio: number): void;
+        public resize(size: any, generateMipMaps?: boolean): void;
         public render(useCameraPostProcess?: boolean): void;
         public clone(): RenderTargetTexture;
     }
@@ -1858,7 +1871,7 @@ declare module BABYLON {
         private _cachedVAng;
         private _cachedWAng;
         private _cachedCoordinatesMode;
-        private _samplingMode;
+        public _samplingMode: number;
         private _buffer;
         private _deleteBuffer;
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any, deleteBuffer?: boolean);
@@ -2356,6 +2369,7 @@ declare module BABYLON {
         public locallyTranslate(vector3: Vector3): void;
         public lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void;
         public isInFrustum(frustumPlanes: Plane[]): boolean;
+        public isCompletelyInFrustum(camera?: Camera): boolean;
         public intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean;
         public intersectsPoint(point: Vector3): boolean;
         public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): void;
@@ -3581,6 +3595,51 @@ interface Navigator {
     webkitGamepads(func?: any): any;
 }
 declare module BABYLON {
+    class SceneOptimization {
+        public priority: number;
+        public apply: (scene: Scene) => boolean;
+        constructor(priority?: number);
+    }
+    class TextureSceneOptimization extends SceneOptimization {
+        public maximumSize: number;
+        public priority: number;
+        constructor(maximumSize?: number, priority?: number);
+        public apply: (scene: Scene) => boolean;
+    }
+    class HardwareScalingSceneOptimization extends SceneOptimization {
+        public maximumScale: number;
+        public priority: number;
+        private _currentScale;
+        constructor(maximumScale?: number, priority?: number);
+        public apply: (scene: Scene) => boolean;
+    }
+    class ShadowsSceneOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class PostProcessesSceneOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class LensFlaresSceneOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class ParticlesSceneOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class SceneOptimizerOptions {
+        public targetFrameRate: number;
+        public trackerDuration: number;
+        public optimizations: SceneOptimization[];
+        constructor(targetFrameRate?: number, trackerDuration?: number);
+        static LowDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
+        static ModerateDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
+        static HighDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
+    }
+    class SceneOptimizer {
+        static _CheckCurrentState(scene: Scene, options: SceneOptimizerOptions, currentPriorityLevel: number, onSuccess?: () => void, onFailure?: () => void): void;
+        static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): void;
+    }
+}
+declare module BABYLON {
     class SceneSerializer {
         static Serialize(scene: Scene): any;
     }
@@ -3685,6 +3744,23 @@ declare module BABYLON {
         private static _ErrorDisabled(message);
         private static _ErrorEnabled(message);
         static LogLevels : number;
+        private static _PerformanceNoneLogLevel;
+        private static _PerformanceUserMarkLogLevel;
+        private static _PerformanceConsoleLogLevel;
+        private static _performance;
+        static PerformanceNoneLogLevel : number;
+        static PerformanceUserMarkLogLevel : number;
+        static PerformanceConsoleLogLevel : number;
+        static PerformanceLogLevel : number;
+        static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void;
+        static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void;
+        static _StartUserMark(counterName: string, condition?: boolean): void;
+        static _EndUserMark(counterName: string, condition?: boolean): void;
+        static _StartPerformanceConsole(counterName: string, condition?: boolean): void;
+        static _EndPerformanceConsole(counterName: string, condition?: boolean): void;
+        static StartPerformanceCounter: (counterName: string, condition?: boolean) => void;
+        static EndPerformanceCounter: (counterName: string, condition?: boolean) => void;
+        static Now : number;
     }
 }
 declare module BABYLON.Internals {

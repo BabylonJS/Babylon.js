@@ -11,7 +11,7 @@
             }
 
             // Particles
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = BABYLON.Tools.Now;
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -25,7 +25,7 @@
                     this._scene._activeParticles += particleSystem.render();
                 }
             }
-            this._scene._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
 
         RenderingManager.prototype._renderSprites = function (index) {
@@ -34,7 +34,7 @@
             }
 
             // Sprites
-            var beforeSpritessDate = new Date().getTime();
+            var beforeSpritessDate = BABYLON.Tools.Now;
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
 
@@ -43,7 +43,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += new Date().getTime() - beforeSpritessDate;
+            this._scene._spritesDuration += BABYLON.Tools.Now - beforeSpritessDate;
         };
 
         RenderingManager.prototype._clearDepthBuffer = function () {

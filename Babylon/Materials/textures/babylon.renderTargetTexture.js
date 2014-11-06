@@ -66,6 +66,20 @@ var BABYLON;
             return this._size;
         };
 
+        Object.defineProperty(RenderTargetTexture.prototype, "canRescale", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        RenderTargetTexture.prototype.scale = function (ratio) {
+            var newSize = this._size * ratio;
+
+            this.resize(newSize, this._generateMipMaps);
+        };
+
         RenderTargetTexture.prototype.resize = function (size, generateMipMaps) {
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);

@@ -91,6 +91,10 @@
             return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
         }
 
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+        }
+
         public intersectsPoint(point: Vector3): boolean {
             var delta = Engine.Epsilon;
 
@@ -141,6 +145,17 @@
             var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
             var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
+        }
+
+        public static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {
+            for (var p = 0; p < 6; p++) {
+                for (var i = 0; i < 8; i++) {
+                    if (frustumPlanes[p].dotCoordinate(boundingVectors[i]) < 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         public static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean {

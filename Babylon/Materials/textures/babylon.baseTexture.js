@@ -68,6 +68,29 @@
             return { width: this._texture._baseWidth, height: this._texture._baseHeight };
         };
 
+        BaseTexture.prototype.scale = function (ratio) {
+        };
+
+        Object.defineProperty(BaseTexture.prototype, "canRescale", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        BaseTexture.prototype._removeFromCache = function (url, noMipmap) {
+            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+            for (var index = 0; index < texturesCache.length; index++) {
+                var texturesCacheEntry = texturesCache[index];
+
+                if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
+                    texturesCache.splice(index, 1);
+                    return;
+                }
+            }
+        };
+
         BaseTexture.prototype._getFromCache = function (url, noMipmap) {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {

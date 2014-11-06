@@ -440,6 +440,20 @@ var BABYLON;
             return true;
         };
 
+        AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
+
+            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
+                return false;
+            }
+
+            return true;
+        };
+
         AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;

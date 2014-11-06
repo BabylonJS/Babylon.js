@@ -330,7 +330,8 @@
 
                 var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
+                                                this.position.z + cameraGlobalPosition.z, this._localTranslation);
             } else {
                 BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
             }
@@ -429,6 +430,20 @@
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        public isCompletelyInFrustum(camera?: Camera): boolean {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
+
+            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
                 return false;
             }
 

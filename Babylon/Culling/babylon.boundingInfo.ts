@@ -44,6 +44,10 @@
             return this.boundingBox.isInFrustum(frustumPlanes);
         }
 
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+            return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
+        }
+       
         public _checkCollision(collider: Collider): boolean {
             return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
         }

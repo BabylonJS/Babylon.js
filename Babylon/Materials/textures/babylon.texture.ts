@@ -43,7 +43,7 @@
         private _cachedVAng: number;
         private _cachedWAng: number;
         private _cachedCoordinatesMode: number;
-        private _samplingMode: number;
+        public _samplingMode: number;
         private _buffer: any;
         private _deleteBuffer: boolean;
 

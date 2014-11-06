@@ -241,27 +241,29 @@
                     }
 
                     // Shadows
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        defines.push("#define SHADOW" + lightIndex);
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = light.getShadowGenerator();
+                        if (mesh && mesh.receiveShadows && shadowGenerator) {
+                            defines.push("#define SHADOW" + lightIndex);
+                            fallbacks.addFallback(0, "SHADOW" + lightIndex);
 
-                        if (!shadowsActivated) {
-                            defines.push("#define SHADOWS");
-                            shadowsActivated = true;
-                        }
-
-                        if (shadowGenerator.useVarianceShadowMap) {
-                            defines.push("#define SHADOWVSM" + lightIndex);
-                            if (lightIndex > 0) {
-                                fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                            if (!shadowsActivated) {
+                                defines.push("#define SHADOWS");
+                                shadowsActivated = true;
                             }
-                        }
 
-                        if (shadowGenerator.usePoissonSampling) {
-                            defines.push("#define SHADOWPCF" + lightIndex);
-                            if (lightIndex > 0) {
-                                fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                            if (shadowGenerator.useVarianceShadowMap) {
+                                defines.push("#define SHADOWVSM" + lightIndex);
+                                if (lightIndex > 0) {
+                                    fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                                }
+                            }
+
+                            if (shadowGenerator.usePoissonSampling) {
+                                defines.push("#define SHADOWPCF" + lightIndex);
+                                if (lightIndex > 0) {
+                                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                                }
                             }
                         }
                     }
@@ -521,11 +523,13 @@
                     this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
 
                     // Shadows
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
-                        this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                    if (scene.shadowsEnabled) {
+                        var shadowGenerator = light.getShadowGenerator();
+                        if (mesh.receiveShadows && shadowGenerator) {
+                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
+                            this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                        }
                     }
 
                     lightIndex++;

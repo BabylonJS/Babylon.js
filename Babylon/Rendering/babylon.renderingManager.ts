@@ -16,7 +16,7 @@
             }
 
             // Particles
-            var beforeParticlesDate = new Date().getTime();
+            var beforeParticlesDate = Tools.Now;
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -30,7 +30,7 @@
                     this._scene._activeParticles += particleSystem.render();
                 }
             }
-            this._scene._particlesDuration += new Date().getTime() - beforeParticlesDate;
+            this._scene._particlesDuration += Tools.Now - beforeParticlesDate;
         }
 
         private _renderSprites(index: number): void {
@@ -39,7 +39,7 @@
             }
 
             // Sprites       
-            var beforeSpritessDate = new Date().getTime();
+            var beforeSpritessDate = Tools.Now;
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
 
@@ -48,7 +48,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += new Date().getTime() - beforeSpritessDate;
+            this._scene._spritesDuration += Tools.Now - beforeSpritessDate;
         }
 
         private _clearDepthBuffer(): void {
