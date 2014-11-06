@@ -6,6 +6,7 @@
             this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
+            this.fogEnabled = true;
             this._vertexDeclaration = [3, 4, 4, 4];
             this._vertexStrideSize = 15 * 4;
             this._capacity = capacity;
@@ -107,7 +108,7 @@
             // Render
             var effect = this._effectBase;
 
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect = this._effectFog;
             }
 
@@ -121,7 +122,7 @@
             effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
 
             // Fog
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
                 effect.setColor3("vFogColor", this._scene.fogColor);
             }

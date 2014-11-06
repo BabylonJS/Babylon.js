@@ -45,6 +45,9 @@
         };
 
         Animatable.prototype.pause = function () {
+            if (this._paused) {
+                return;
+            }
             this._paused = true;
         };
 
@@ -66,11 +69,17 @@
 
         Animatable.prototype._animate = function (delay) {
             if (this._paused) {
+                if (!this._pausedDelay) {
+                    this._pausedDelay = delay;
+                }
                 return true;
             }
 
             if (!this._localDelayOffset) {
                 this._localDelayOffset = delay;
+            } else if (this._pausedDelay) {
+                this._localDelayOffset += delay - this._pausedDelay;
+                this._pausedDelay = null;
             }
 
             // Animating

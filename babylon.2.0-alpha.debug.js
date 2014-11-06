@@ -14995,6 +14995,7 @@ var BABYLON;
             this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
+            this.fogEnabled = true;
             this._vertexDeclaration = [3, 4, 4, 4];
             this._vertexStrideSize = 15 * 4;
             this._capacity = capacity;
@@ -15096,7 +15097,7 @@ var BABYLON;
            
             var effect = this._effectBase;
 
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect = this._effectFog;
             }
 
@@ -15110,7 +15111,7 @@ var BABYLON;
             effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
 
            
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
                 effect.setColor3("vFogColor", this._scene.fogColor);
             }
@@ -16140,6 +16141,9 @@ var BABYLON;
         };
 
         Animatable.prototype.pause = function () {
+            if (this._paused) {
+                return;
+            }
             this._paused = true;
         };
 
@@ -16161,11 +16165,17 @@ var BABYLON;
 
         Animatable.prototype._animate = function (delay) {
             if (this._paused) {
+                if (!this._pausedDelay) {
+                    this._pausedDelay = delay;
+                }
                 return true;
             }
 
             if (!this._localDelayOffset) {
                 this._localDelayOffset = delay;
+            } else if (this._pausedDelay) {
+                this._localDelayOffset += delay - this._pausedDelay;
+                this._pausedDelay = null;
             }
 
            
