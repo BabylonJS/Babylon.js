@@ -383,7 +383,7 @@
         }
 
         public static get Version(): string {
-            return "1.14.0";
+            return "2.0.0";
         }
 
         // Updatable statics so stick with vars here
@@ -703,8 +703,12 @@
         }
 
         public resize(): void {
-            this._renderingCanvas.width = this._renderingCanvas.clientWidth / this._hardwareScalingLevel;
-            this._renderingCanvas.height = this._renderingCanvas.clientHeight / this._hardwareScalingLevel;
+            this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
+        }
+
+        public setSize(width : number, height : number): void {
+            this._renderingCanvas.width = width;
+            this._renderingCanvas.height = height;
 
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
         }
@@ -1834,6 +1838,10 @@
         // Statics
         public static isSupported(): boolean {
             try {
+                // Avoid creating an unsized context for CocoonJS, since size determined on first creation.  Is not resizable
+                if (navigator.isCocoonJS){
+                    return true;
+                }
                 var tempcanvas = document.createElement("canvas");
                 var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
 
