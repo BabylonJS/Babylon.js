@@ -898,6 +898,304 @@
     })();
     BABYLON.Vector3 = Vector3;
 
+    var Vector4 = (function ()
+    {
+        function Vector4(x,y,z,w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        Vector4.prototype.toString = function ()
+        { return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}"; };
+
+        Vector4.prototype.asArray = function ()
+        {
+            var result = [];
+
+            this.toArray(result, 0);
+
+            return result;
+        };
+
+        Vector4.prototype.toArray = function (array, index)
+        {
+            if (index === undefined)
+            {
+                index = 0;
+            }
+
+            array[index] = this.x;
+            array[index + 1] = this.y;
+            array[index + 2] = this.z;
+            array[index + 3] = this.w;
+        };
+
+        Vector4.prototype.addInPlace = function (otherVector)
+        {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            this.z += otherVector.z;
+            this.w += otherVector.w;
+        };
+
+        Vector4.prototype.add = function (otherVector)
+        {
+            return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        };
+
+        Vector4.prototype.addToRef = function (otherVector, result)
+        {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            result.z = this.z + otherVector.z;
+            result.w = this.w + otherVector.w;
+        };
+
+        Vector4.prototype.subtractInPlace = function (otherVector)
+        {
+            this.x -= otherVector.x;
+            this.y -= otherVector.y;
+            this.z -= otherVector.z;
+            this.w -= otherVector.w;
+        };
+
+        Vector4.prototype.subtract = function (otherVector)
+        { return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w); };
+
+        Vector4.prototype.subtractToRef = function (otherVector, result)
+        {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            result.z = this.z - otherVector.z;
+            result.w = this.w - otherVector.w;
+        };
+
+        Vector4.prototype.subtractFromFloats = function (x, y, z, w)
+        { return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w); };
+
+        Vector4.prototype.subtractFromFloatsToRef = function (x, y, z, w, result)
+        {
+            result.x = this.x - x;
+            result.y = this.y - y;
+            result.z = this.z - z;
+            result.w = this.w - w;
+        };
+
+        Vector4.prototype.negate = function ()
+        { return new Vector4(-this.x, -this.y, -this.z, -this.w); };
+
+        Vector4.prototype.scaleInPlace = function (scale)
+        {
+            this.x *= scale;
+            this.y *= scale;
+            this.z *= scale;
+            this.w *= scale;
+            return this;
+        };
+
+        Vector4.prototype.scale = function (scale)
+        { return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale); };
+
+        Vector4.prototype.scaleToRef = function (scale, result)
+        {
+            result.x = this.x * scale;
+            result.y = this.y * scale;
+            result.z = this.z * scale;
+            result.w = this.w * scale;
+        };
+
+        Vector4.prototype.equals = function (otherVector)
+        { return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w; };
+
+        Vector4.prototype.equalsWithEpsilon = function (otherVector)
+        {
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
+                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
+                Math.abs(this.z - otherVector.z) < Engine.Epsilon &&
+                Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+        };
+
+        Vector4.prototype.equalsToFloats = function (x, y, z, w)
+        { return this.x === x && this.y === y && this.z === z && this.w === w; };
+
+        Vector4.prototype.multiplyInPlace = function (otherVector)
+        {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+            this.z *= otherVector.z;
+            this.w *= otherVector.w;
+        };
+
+        Vector4.prototype.multiply = function (otherVector)
+        { return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w); };
+        
+        Vector4.prototype.multiplyToRef = function (otherVector, result)
+        {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+            result.z = this.z * otherVector.z;
+            result.w = this.w * otherVector.w;
+        };
+
+        Vector4.prototype.multiplyByFloats = function (x, y, z, w)
+        { return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w); };
+
+        Vector4.prototype.divide = function (otherVector)
+        { return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w); };
+
+        Vector4.prototype.divideToRef = function (otherVector, result)
+        {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
+            result.z = this.z / otherVector.z;
+            result.w = this.w / otherVector.w;
+        };
+
+        Vector4.prototype.minimizeInPlace = function (other)
+        {
+            if (other.x < this.x) this.x = other.x;
+            if (other.y < this.y) this.y = other.y;
+            if (other.z < this.z) this.z = other.z;
+            if (other.w < this.w) this.w = other.w;
+        };
+
+        Vector4.prototype.MaximizeInPlace = function (other)
+        {
+            if (other.x > this.x) this.x = other.x;
+            if (other.y > this.y) this.y = other.y;
+            if (other.z > this.z) this.z = other.z;
+            if (other.w > this.w) this.w = other.w;
+        };
+
+        Vector4.prototype.length = function ()
+        { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w); };
+
+        Vector4.prototype.lengthSquared = function ()
+        { return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w); };
+
+        Vector4.prototype.normalize = function ()
+        {
+            var len = this.length();
+
+            if (len === 0)
+                return this;
+
+            var num = 1.0 / len;
+
+            this.x *= num;
+            this.y *= num;
+            this.z *= num;
+            this.w *= num;
+
+            return this;
+        };
+
+        Vector4.prototype.clone = function ()
+        { return new Vector4(this.x, this.y, this.z, this.w); };
+
+        Vector4.prototype.copyFrom = function (source)
+        {
+            this.x = source.x;
+            this.y = source.y;
+            this.z = source.z;
+            this.w = source.w;
+        };
+
+        Vector4.prototype.copyFromFloats = function (x, y, z, w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        };
+
+        Vector4.FromArray = function (array, offset)
+        {
+            if (!offset) { offset = 0; }
+
+            return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+        };
+
+        Vector4.FromArrayToRef = function (array, offset, result)
+        {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        };
+
+        Vector4.FromFloatArrayToRef = function (array, offset, result)
+        {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        };
+
+        Vector4.FromFloatsToRef = function (x, y, z, w, result)
+        {
+            result.x = x;
+            result.y = y;
+            result.z = z;
+            result.w = w;
+        };
+
+        Vector4.Zero = function () { return new Vector4(0, 0, 0, 0); };
+
+        Vector4.Normalize = function (vector)
+        {
+            var result = Vector4.Zero();
+            Vector4.NormalizeToRef(vector, result);
+            return result;
+        };
+
+        Vector4.NormalizeToRef = function (vector, result)
+        {
+            result.copyFrom(vector);
+            result.normalize();
+        };
+
+        Vector4.Minimize = function (left, right)
+        {
+            var min = left.clone();
+            min.MinimizeInPlace(right);
+            return min;
+        };
+
+        Vector4.Maximize = function (left, right)
+        {
+            var max = left.clone();
+            max.MaximizeInPlace(right);
+            return max;
+        };
+
+        Vector4.Distance = function (value1, value2) { return Math.sqrt(Vector4.DistanceSquared(value1, value2)); };
+
+        Vector4.DistanceSquared = function (value1, value2)
+        {
+            var x = value1.x - value2.x;
+            var y = value1.y - value2.y;
+            var z = value1.z - value2.z;
+            var w = value1.w - value2.w;
+
+            return (x * x) + (y * y) + (z * z) + (w * w);
+        };
+
+        Vector4.Center = function (value1, value2)
+        {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
+        };
+
+        return Vector4;
+
+    })();
+    BABYLON.Vector4 = Vector4;
+
     var Quaternion = (function () {
         function Quaternion(x, y, z, w) {
             if (typeof x === "undefined") { x = 0; }
@@ -979,7 +1277,7 @@
         };
 
         Quaternion.prototype.toEulerAngles = function () {
-            var result = {};
+            var result;
             result.alpha = 0;
             result.beta = 0;
             result.gamma = 0;
@@ -990,7 +1288,7 @@
         };
 
         Quaternion.prototype.toEulerAnglesTaitBryan = function () {
-            var result = {};
+            var result;
             result.roll = 0;
             result.pitch = 0;
             result.yaw = 0;
@@ -1000,14 +1298,17 @@
             return result;
         };
 
-        Quaternion.prototype.toEulerAnglesToRef = function (result) {
+        Quaternion.prototype.toEulerAnglesToRef = function (result)
+        {
             //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
+            var qxy = qx * qy;
             var qxz = qx * qz;
             var qwy = qw * qy;
+            var qwz = qw * qz;
             var qwx = qw * qx;
             var qyz = qy * qz;
             var sqx = qx * qx;
@@ -1021,20 +1322,22 @@
                 result.gamma = Math.atan2(qxz - qwy, qwx + qyz);
             }
             else
-                if (determinant == 0.000) {
-                    result.alpha = 0.0;
-                    result.beta = 0.0;
-                    result.gamma = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha+gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                }
-                else //determinant == 1.000
-                {
-                    result.alpha = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha-gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                    result.beta = Math.PI;
-                    result.gamma = 0.0;
-                }
+            if (determinant == 0.000)
+            {
+                result.alpha = 0.0;
+                result.beta = 0.0;
+                result.gamma = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha+gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+            }
+            else //determinant == 1.000
+            {
+                result.alpha = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha-gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                result.beta = Math.PI;
+                result.gamma = 0.0;
+            }
         };
 
-        Quaternion.prototype.toEulerAnglesToRefTaitBryan = function (result) {
+        Quaternion.prototype.toEulerAnglesToRefTaitBryan = function (result)
+        {
             //result is an EulerAngles in the in the z-y-x rotation convention
             var qx = this.x;
             var qy = this.y;
@@ -1058,21 +1361,23 @@
                 result.yaw = Math.atan2(qxy + qwz, 0.5 - sqy - sqz);
             }
             else
-                if (determinant == 1.00) {
-                    result.roll = 0;
-                    result.pitch = -0.5 * Math.PI;
-                    result.yaw = Math.atan2(qxy - qwz, qxz + qwy); //actually, choice of roll+yaw=Math.atan2(qxy - qwz, qxz + qwy)
-                }
-                else //determinant == -1.00
-                {
-                    result.roll = Math.atan2(qxy - qwz, qxz + qwy);
-                    result.pitch = 0.5 * Math.PI;
-                    result.yaw = 0; //actually, choice of roll-yaw=Math.atan2(qxy - qwz, qxz + qwy)
-                }
+            if (determinant == 1.00)
+            {
+                result.roll = 0;
+                result.pitch = -0.5 * Math.PI;
+                result.yaw = Math.atan2(qxy - qwz, qxz + qwy); //actually, choice of roll+yaw=Math.atan2(qxy - qwz, qxz + qwy)
+            }
+            else //determinant == -1.00
+            {
+                result.roll = Math.atan2(qxy - qwz, qxz + qwy);
+                result.pitch = 0.5 * Math.PI;
+                result.yaw = 0; //actually, choice of roll-yaw=Math.atan2(qxy - qwz, qxz + qwy)
+            }
         };
 
 
-        Quaternion.prototype.toRotationMatrix = function (result) {
+        Quaternion.prototype.toRotationMatrix = function (result)
+        {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
             var zz = this.z * this.z;
@@ -1101,7 +1406,8 @@
             result.m[15] = 1.0;
         };
 
-        Quaternion.prototype.fromRotationMatrix = function (matrix) {
+        Quaternion.prototype.fromRotationMatrix = function (matrix)
+        {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1229,7 +1535,6 @@
     })();
     BABYLON.Quaternion = Quaternion;
 
-    var BABYLON = {};
     var EulerAngles = (function () {
         function EulerAngles(alpha, beta, gamma) {
             if (typeof alpha === "undefined") { alpha = 0; }
@@ -1279,14 +1584,6 @@
             return new EulerAngles(this.alpha * value, this.beta * value, this.gamma * value);
         };
 
-        EulerAngles.prototype.multiply = function (ea) {
-            var result = new EulerAngles(0, 0, 0);
-
-            this.multiplyToRef(ea, result);
-
-            return result;
-        };
-
         EulerAngles.prototype.length = function () {
             return Math.sqrt((this.alpha * this.alpha) + (this.beta * this.beta) + (this.gamma * this.gamma));
         };
@@ -1318,7 +1615,7 @@
         };
 
         EulerAngles.prototype.toRotationMatrix = function (result) {
-            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[3]=12, etc
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
             //done in the z-x-z rotation convention
             var cosAlpha = Math.cos(this.alpha);
             var sinAlpha = Math.sin(this.alpha);
@@ -1330,20 +1627,20 @@
             result.m[0] = cosAlpha * cosGamma - cosBeta * sinAlpha * sinGamma;
             result.m[1] = cosBeta * sinAlpha * cosGamma + cosAlpha * sinGamma;
             result.m[2] = sinBeta * sinAlpha;
-            result.m[3] = -sinAlpha * cosGamma - cosBeta * cosAlpha * sinGamma;
-            result.m[4] = cosBeta * cosAlpha * cosGamma - sinAlpha * sinGamma;
-            result.m[5] = sinBeta * cosAlpha;
-            result.m[6] = sinBeta * sinGamma;
-            result.m[7] = -sinBeta * cosGamma;
-            result.m[8] = cosBeta;
+            result.m[4] = -sinAlpha * cosGamma - cosBeta * cosAlpha * sinGamma;
+            result.m[5] = cosBeta * cosAlpha * cosGamma - sinAlpha * sinGamma;
+            result.m[6] = sinBeta * cosAlpha;
+            result.m[8] = sinBeta * sinGamma;
+            result.m[9] = -sinBeta * cosGamma;
+            result.m[10] = cosBeta;
 
         };
 
         EulerAngles.prototype.fromRotationMatrix = function (matrix) {
             var data = matrix.m;
-            var m11 = data[0], m12 = data[3], m13 = data[6];
-            var m21 = data[1], m22 = data[4], m23 = data[7];
-            var m31 = data[2], m32 = data[5], m33 = data[8];
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
 
             if (m33 == -1) {
                 this.alpha = 0; //any angle works here
@@ -1362,15 +1659,6 @@
                     this.beta = Math.acos(m33); //principal value (between 0 and PI)
                     this.gamma = Math.atan2(m13, -m23);
                 }
-
-        };
-
-        EulerAngles.FromArray = function (array, offset) {
-            if (!offset) {
-                offset = 0;
-            }
-
-            return new EulerAngles(array[offset], array[offset + 1], array[offset + 2]);
         };
 
         return EulerAngles;
@@ -1445,9 +1733,10 @@
             this.yaw *= length;
         };
 
-        EulerAnglesTaitBryan.prototype.toQuaternion = function () {
+        EulerAnglesTaitBryan.prototype.toQuaternion = function ()
+        {
 
-            var result = {};
+            var result;
             var cosRoll = Math.cos(this.roll * 0.5);
             var cosPitch = Math.cos(this.pitch * 0.5);
             var cosYaw = Math.cos(this.yaw * 0.5);
@@ -1463,8 +1752,9 @@
             return result;
         };
 
-        EulerAnglesTaitBryan.prototype.toRotationMatrix = function (result) {
-            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[3]=12, etc
+        EulerAnglesTaitBryan.prototype.toRotationMatrix = function (result)
+        {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
             //done in the z-y-x rotation convention
             var cosRoll = Math.cos(this.roll);
             var sinRoll = Math.sin(this.roll);
@@ -1476,54 +1766,50 @@
             result.m[0] = cosYaw * cosPitch;
             result.m[1] = sinYaw * cosPitch;
             result.m[2] = -sinPitch;
-            result.m[3] = cosYaw * sinPitch * sinRoll - sinYaw * cosRoll;
-            result.m[4] = sinYaw * sinPitch * sinRoll + cosYaw * cosRoll;
-            result.m[5] = cosPitch * sinRoll;
-            result.m[6] = cosYaw * sinPitch * cosRoll + sinYaw * sinRoll;
-            result.m[7] = sinYaw * sinPitch * cosRoll - cosYaw * sinRoll;
-            result.m[8] = cosPitch * cosRoll;
+            result.m[4] = cosYaw * sinPitch * sinRoll - sinYaw * cosRoll;
+            result.m[5] = sinYaw * sinPitch * sinRoll + cosYaw * cosRoll;
+            result.m[6] = cosPitch * sinRoll;
+            result.m[8] = cosYaw * sinPitch * cosRoll + sinYaw * sinRoll;
+            result.m[9] = sinYaw * sinPitch * cosRoll - cosYaw * sinRoll;
+            result.m[10] = cosPitch * cosRoll;
 
         };
 
-        EulerAnglesTaitBryan.prototype.fromRotationMatrix = function (matrix) {
+        EulerAnglesTaitBryan.prototype.fromRotationMatrix = function (matrix)
+        {
             var data = matrix.m;
-            var m11 = data[0], m12 = data[3], m13 = data[6];
-            var m21 = data[1], m22 = data[4], m23 = data[7];
-            var m31 = data[2], m32 = data[5], m33 = data[8];
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
 
-            if (m31 == -1) {
+            if (m31 == -1)
+            {
                 this.roll = Math.atan2(m12, m13); //generally, atan2(m21,m11)+yaw
                 this.pitch = Math.PI * 0.5;
                 this.yaw = 0; //any angle works here
 
             }
             else
-                if (m31 == 1) {
-                    this.roll = Math.atan2(-m12, -m13); //generally, atan2(m21,m11)-yaw
-                    this.pitch = -Math.PI * 0.5;
-                    this.yaw = 0; //any angle works here
-                }
-                else {
-                    this.pitch = Math.asin(-m31);
-                    if (this.pitch > -Math.PI * 0.5 && this.pitch < Math.PI * 0.5) {
-                        this.roll = Math.atan2(m32, m33);
-                        this.yaw = Math.atan2(m21, m11);
-                    }
-                    else //this.pitch > Math.PI * 0.5 && this.pitch < Math.PI * 1.5
-                    {
-                        this.roll = Math.atan2(-m32, -m33);
-                        this.yaw = Math.atan2(-m21, -m11);
-                    }
-                }
-
-        };
-
-        EulerAnglesTaitBryan.FromArray = function (array, offset) {
-            if (!offset) {
-                offset = 0;
+            if (m31 == 1)
+            {
+                this.roll = Math.atan2(-m12, -m13); //generally, atan2(m21,m11)-yaw
+                this.pitch = -Math.PI * 0.5;
+                this.yaw = 0; //any angle works here
             }
-
-            return new EulerAnglesTaitBryan(array[offset], array[offset + 1], array[offset + 2]);
+            else
+            {
+                this.pitch = Math.asin(-m31);
+                if (this.pitch > -Math.PI * 0.5 && this.pitch < Math.PI * 0.5)
+                {
+                    this.roll = Math.atan2(m32, m33);
+                    this.yaw = Math.atan2(m21, m11);
+                }
+                else //this.pitch > Math.PI * 0.5 && this.pitch < Math.PI * 1.5
+                {
+                    this.roll = Math.atan2(-m32, -m33);
+                    this.yaw = Math.atan2(-m21, -m11);
+                }
+            }
         };
 
         return EulerAnglesTaitBryan;

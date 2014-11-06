@@ -446,17 +446,19 @@
         }
     }
 
-    export class Vector3 {
+    export class Vector3
+    {
 
-        constructor(public x: number, public y: number, public z: number) {
-        }
+        constructor(public x: number, public y: number, public z: number) {}
 
-        public toString(): string {
+        public toString(): string
+        {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
         }
 
         // Operators
-        public asArray(): number[] {
+        public asArray(): number[]
+        {
             var result = [];
 
             this.toArray(result, 0);
@@ -464,8 +466,10 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
-            if (index === undefined) {
+        public toArray(array: number[], index?: number): void
+        {
+            if (index === undefined)
+            {
                 index = 0;
             }
 
@@ -474,7 +478,8 @@
             array[index + 2] = this.z;
         }
 
-        public addInPlace(otherVector: Vector3): void {
+        public addInPlace(otherVector: Vector3): void
+        {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
@@ -484,126 +489,150 @@
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
-        public addToRef(otherVector: Vector3, result: Vector3): void {
+        public addToRef(otherVector: Vector3, result: Vector3): void
+        {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
         }
 
-        public subtractInPlace(otherVector: Vector3): void {
+        public subtractInPlace(otherVector: Vector3): void
+        {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
         }
 
-        public subtract(otherVector: Vector3): Vector3 {
+        public subtract(otherVector: Vector3): Vector3
+        {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
         }
 
-        public subtractToRef(otherVector: Vector3, result: Vector3): void {
+        public subtractToRef(otherVector: Vector3, result: Vector3): void
+        {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
         }
 
-        public subtractFromFloats(x: number, y: number, z: number): Vector3 {
+        public subtractFromFloats(x: number, y: number, z: number): Vector3
+        {
             return new Vector3(this.x - x, this.y - y, this.z - z);
         }
 
-        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void
+        {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
         }
 
-        public negate(): Vector3 {
+        public negate(): Vector3
+        {
             return new Vector3(-this.x, -this.y, -this.z);
         }
 
-        public scaleInPlace(scale: number): Vector3 {
+        public scaleInPlace(scale: number): Vector3
+        {
             this.x *= scale;
             this.y *= scale;
             this.z *= scale;
             return this;
         }
 
-        public scale(scale: number): Vector3 {
+        public scale(scale: number): Vector3
+        {
             return new Vector3(this.x * scale, this.y * scale, this.z * scale);
         }
 
-        public scaleToRef(scale: number, result: Vector3) {
+        public scaleToRef(scale: number, result: Vector3)
+        {
             result.x = this.x * scale;
             result.y = this.y * scale;
             result.z = this.z * scale;
         }
 
-        public equals(otherVector: Vector3): boolean {
+        public equals(otherVector: Vector3): boolean
+        {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
-        public equalsWithEpsilon(otherVector: Vector3): boolean {
+        public equalsWithEpsilon(otherVector: Vector3): boolean
+        {
             return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
                 Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
                 Math.abs(this.z - otherVector.z) < Engine.Epsilon;
         }
 
-        public equalsToFloats(x: number, y: number, z: number): boolean {
+        public equalsToFloats(x: number, y: number, z: number): boolean
+        {
             return this.x === x && this.y === y && this.z === z;
         }
 
-        public multiplyInPlace(otherVector: Vector3): void {
+        public multiplyInPlace(otherVector: Vector3): void
+        {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
         }
 
-        public multiply(otherVector: Vector3): Vector3 {
+        public multiply(otherVector: Vector3): Vector3
+        {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
-        public multiplyToRef(otherVector: Vector3, result: Vector3): void {
+        public multiplyToRef(otherVector: Vector3, result: Vector3): void
+        {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
         }
 
-        public multiplyByFloats(x: number, y: number, z: number): Vector3 {
+        public multiplyByFloats(x: number, y: number, z: number): Vector3
+        {
             return new Vector3(this.x * x, this.y * y, this.z * z);
         }
 
-        public divide(otherVector: Vector3): Vector3 {
+        public divide(otherVector: Vector3): Vector3
+        {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
-        public divideToRef(otherVector: Vector3, result: Vector3): void {
+        public divideToRef(otherVector: Vector3, result: Vector3): void
+        {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
         }
 
-        public MinimizeInPlace(other: Vector3): void {
+        public MinimizeInPlace(other: Vector3): void
+        {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
         }
 
-        public MaximizeInPlace(other: Vector3): void {
+        public MaximizeInPlace(other: Vector3): void
+        {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
         }
 
         // Properties
-        public length(): number {
+        public length(): number
+        {
             return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
-        public lengthSquared(): number {
+        public lengthSquared(): number
+        {
             return (this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
         // Methods
-        public normalize(): Vector3 {
+        public normalize(): Vector3
+        {
             var len = this.length();
 
             if (len === 0)
@@ -618,24 +647,28 @@
             return this;
         }
 
-        public clone(): Vector3 {
+        public clone(): Vector3
+        {
             return new Vector3(this.x, this.y, this.z);
         }
 
-        public copyFrom(source: Vector3): void {
+        public copyFrom(source: Vector3): void
+        {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
         }
 
-        public copyFromFloats(x: number, y: number, z: number): void {
+        public copyFromFloats(x: number, y: number, z: number): void
+        {
             this.x = x;
             this.y = y;
             this.z = z;
         }
 
         // Statics
-        public static FromArray(array: number[], offset?: number): Vector3 {
+        public static FromArray(array: number[], offset?: number): Vector3
+        {
             if (!offset) {
                 offset = 0;
             }
@@ -643,33 +676,39 @@
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
-        public static FromArrayToRef(array: number[], offset: number, result: Vector3): void {
+        public static FromArrayToRef(array: number[], offset: number, result: Vector3): void
+        {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
         }
 
-        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
+        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void
+        {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];
         }
 
-        public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
+        public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void
+        {
             result.x = x;
             result.y = y;
             result.z = z;
         }
 
-        public static Zero(): Vector3 {
+        public static Zero(): Vector3
+        {
             return new Vector3(0, 0, 0);
         }
 
-        public static Up(): Vector3 {
+        public static Up(): Vector3
+        {
             return new Vector3(0, 1.0, 0);
         }
 
-        public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3
+        {
             var result = Vector3.Zero();
 
             Vector3.TransformCoordinatesToRef(vector, transformation, result);
@@ -677,7 +716,8 @@
             return result;
         }
 
-        public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void
+        {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]) + transformation.m[12];
             var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]) + transformation.m[13];
             var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]) + transformation.m[14];
@@ -688,7 +728,8 @@
             result.z = z / w;
         }
 
-        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void
+        {
             var rx = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]) + transformation.m[12];
             var ry = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]) + transformation.m[13];
             var rz = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]) + transformation.m[14];
@@ -699,7 +740,8 @@
             result.z = rz / rw;
         }
 
-        public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
+        public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3
+        {
             var result = Vector3.Zero();
 
             Vector3.TransformNormalToRef(vector, transformation, result);
@@ -707,19 +749,22 @@
             return result;
         }
 
-        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void
+        {
             result.x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
             result.y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
             result.z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
         }
 
-        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+        public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void
+        {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
             result.y = (x * transformation.m[1]) + (y * transformation.m[5]) + (z * transformation.m[9]);
             result.z = (x * transformation.m[2]) + (y * transformation.m[6]) + (z * transformation.m[10]);
         }
 
-        public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
+        public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3
+        {
             var squared = amount * amount;
             var cubed = amount * squared;
 
@@ -738,7 +783,8 @@
             return new Vector3(x, y, z);
         }
 
-        public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
+        public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3
+        {
             var x = value.x;
             x = (x > max.x) ? max.x : x;
             x = (x < min.x) ? min.x : x;
@@ -754,7 +800,8 @@
             return new Vector3(x, y, z);
         }
 
-        public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
+        public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3
+        {
             var squared = amount * amount;
             var cubed = amount * squared;
             var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
@@ -769,7 +816,8 @@
             return new Vector3(x, y, z);
         }
 
-        public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
+        public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3
+        {
             var x = start.x + ((end.x - start.x) * amount);
             var y = start.y + ((end.y - start.y) * amount);
             var z = start.z + ((end.z - start.z) * amount);
@@ -777,11 +825,13 @@
             return new Vector3(x, y, z);
         }
 
-        public static Dot(left: Vector3, right: Vector3): number {
+        public static Dot(left: Vector3, right: Vector3): number
+        {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
         }
 
-        public static Cross(left: Vector3, right: Vector3): Vector3 {
+        public static Cross(left: Vector3, right: Vector3): Vector3
+        {
             var result = Vector3.Zero();
 
             Vector3.CrossToRef(left, right, result);
@@ -789,24 +839,28 @@
             return result;
         }
 
-        public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
+        public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void
+        {
             result.x = left.y * right.z - left.z * right.y;
             result.y = left.z * right.x - left.x * right.z;
             result.z = left.x * right.y - left.y * right.x;
         }
 
-        public static Normalize(vector: Vector3): Vector3 {
+        public static Normalize(vector: Vector3): Vector3
+        {
             var result = Vector3.Zero();
             Vector3.NormalizeToRef(vector, result);
             return result;
         }
 
-        public static NormalizeToRef(vector: Vector3, result: Vector3): void {
+        public static NormalizeToRef(vector: Vector3, result: Vector3): void
+        {
             result.copyFrom(vector);
             result.normalize();
         }
 
-        public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
+        public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3
+        {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
@@ -823,7 +877,8 @@
             return Vector3.TransformCoordinates(vector, finalMatrix);
         }
 
-        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
+        public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3
+        {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
@@ -831,30 +886,35 @@
             var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0))
+            {
                 vector = vector.scale(1.0 / num);
             }
 
             return vector;
         }
 
-        public static Minimize(left: Vector3, right: Vector3): Vector3 {
+        public static Minimize(left: Vector3, right: Vector3): Vector3
+        {
             var min = left.clone();
             min.MinimizeInPlace(right);
             return min;
         }
 
-        public static Maximize(left: Vector3, right: Vector3): Vector3 {
+        public static Maximize(left: Vector3, right: Vector3): Vector3
+        {
             var max = left.clone();
             max.MaximizeInPlace(right);
             return max;
         }
 
-        public static Distance(value1: Vector3, value2: Vector3): number {
+        public static Distance(value1: Vector3, value2: Vector3): number
+        {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
         }
 
-        public static DistanceSquared(value1: Vector3, value2: Vector3): number {
+        public static DistanceSquared(value1: Vector3, value2: Vector3): number
+        {
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             var z = value1.z - value2.z;
@@ -862,7 +922,335 @@
             return (x * x) + (y * y) + (z * z);
         }
 
-        public static Center(value1: Vector3, value2: Vector3): Vector3 {
+        public static Center(value1: Vector3, value2: Vector3): Vector3
+        {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
+        }
+    }
+
+    //Vector4 class created for EulerAngle class conversion to Quaternion
+    export class Vector4
+    {
+
+        constructor(public x: number, public y: number, public z: number, public w: number) {}
+
+        public toString(): string
+        {
+            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+        }
+
+        // Operators
+        public asArray(): number[]
+        {
+            var result = [];
+
+            this.toArray(result, 0);
+
+            return result;
+        }
+
+        public toArray(array: number[], index?: number): void
+        {
+            if (index === undefined) {
+                index = 0;
+            }
+
+            array[index] = this.x;
+            array[index + 1] = this.y;
+            array[index + 2] = this.z;
+            array[index + 3] = this.w;
+        }
+
+        public addInPlace(otherVector: Vector4): void
+        {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            this.z += otherVector.z;
+            this.w += otherVector.w;
+        }
+
+        public add(otherVector: Vector4): Vector4
+        {
+            return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        }
+
+        public addToRef(otherVector: Vector4, result: Vector4): void
+        {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            result.z = this.z + otherVector.z;
+            result.w = this.w + otherVector.w;
+        }
+
+        public subtractInPlace(otherVector: Vector4): void
+        {
+            this.x -= otherVector.x;
+            this.y -= otherVector.y;
+            this.z -= otherVector.z;
+            this.w -= otherVector.w;
+        }
+
+        public subtract(otherVector: Vector4): Vector4
+        {
+            return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        }
+
+        public subtractToRef(otherVector: Vector4, result: Vector4): void
+        {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            result.z = this.z - otherVector.z;
+            result.w = this.w - otherVector.w;
+        }
+
+        public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4
+        {
+            return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
+        }
+
+        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void
+        {
+            result.x = this.x - x;
+            result.y = this.y - y;
+            result.z = this.z - z;
+            result.w = this.w - w;
+        }
+
+        public negate(): Vector4
+        {
+            return new Vector4(-this.x, -this.y, -this.z, -this.w);
+        }
+
+        public scaleInPlace(scale: number): Vector4
+        {
+            this.x *= scale;
+            this.y *= scale;
+            this.z *= scale;
+            this.w *= scale;
+            return this;
+        }
+
+        public scale(scale: number): Vector4
+        {
+            return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        }
+
+        public scaleToRef(scale: number, result: Vector4)
+        {
+            result.x = this.x * scale;
+            result.y = this.y * scale;
+            result.z = this.z * scale;
+            result.w = this.w * scale;
+        }
+
+        public equals(otherVector: Vector4): boolean
+        {
+            return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
+        }
+
+        public equalsWithEpsilon(otherVector: Vector4): boolean
+        {
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
+                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
+                Math.abs(this.z - otherVector.z) < Engine.Epsilon &&
+                Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+        }
+
+        public equalsToFloats(x: number, y: number, z: number, w: number): boolean
+        {
+            return this.x === x && this.y === y && this.z === z && this.w === w;
+        }
+
+        public multiplyInPlace(otherVector: Vector4): void
+        {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+            this.z *= otherVector.z;
+            this.w *= otherVector.w;
+        }
+
+        public multiply(otherVector: Vector4): Vector4
+        {
+            return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        }
+
+        public multiplyToRef(otherVector: Vector4, result: Vector4): void
+        {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+            result.z = this.z * otherVector.z;
+            result.w = this.w * otherVector.w;
+        }
+
+        public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4
+        {
+            return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
+        }
+
+        public divide(otherVector: Vector4): Vector4
+        {
+            return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        }
+
+        public divideToRef(otherVector: Vector4, result: Vector4): void
+        {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
+            result.z = this.z / otherVector.z;
+            result.w = this.w / otherVector.w;
+        }
+
+        public MinimizeInPlace(other: Vector4): void
+        {
+            if (other.x < this.x) this.x = other.x;
+            if (other.y < this.y) this.y = other.y;
+            if (other.z < this.z) this.z = other.z;
+            if (other.w < this.w) this.w = other.w;
+        }
+
+        public MaximizeInPlace(other: Vector4): void
+        {
+            if (other.x > this.x) this.x = other.x;
+            if (other.y > this.y) this.y = other.y;
+            if (other.z > this.z) this.z = other.z;
+            if (other.w > this.w) this.w = other.w;
+        }
+
+        // Properties
+        public length(): number
+        {
+            return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        }
+
+        public lengthSquared(): number
+        {
+            return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        }
+
+        // Methods
+        public normalize(): Vector4
+        {
+            var len = this.length();
+
+            if (len === 0)
+                return this;
+
+            var num = 1.0 / len;
+
+            this.x *= num;
+            this.y *= num;
+            this.z *= num;
+            this.w *= num;
+
+            return this;
+        }
+
+        public clone(): Vector4
+        {
+            return new Vector4(this.x, this.y, this.z, this.w);
+        }
+
+        public copyFrom(source: Vector4): void
+        {
+            this.x = source.x;
+            this.y = source.y;
+            this.z = source.z;
+            this.w = source.w;
+        }
+
+        public copyFromFloats(x: number, y: number, z: number, w: number): void
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        // Statics
+        public static FromArray(array: number[], offset?: number): Vector4
+        {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+        }
+
+        public static FromArrayToRef(array: number[], offset: number, result: Vector4): void
+        {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        }
+
+        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void
+        {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        }
+
+        public static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void
+        {
+            result.x = x;
+            result.y = y;
+            result.z = z;
+            result.w = w;
+        }
+
+        public static Zero(): Vector4
+        {
+            return new Vector4(0, 0, 0, 0);
+        }
+
+        public static Normalize(vector: Vector4): Vector4
+        {
+            var result = Vector4.Zero();
+            Vector4.NormalizeToRef(vector, result);
+            return result;
+        }
+
+        public static NormalizeToRef(vector: Vector4, result: Vector4): void
+        {
+            result.copyFrom(vector);
+            result.normalize();
+        }
+
+        public static Minimize(left: Vector4, right: Vector4): Vector4
+        {
+            var min = left.clone();
+            min.MinimizeInPlace(right);
+            return min;
+        }
+
+        public static Maximize(left: Vector4, right: Vector4): Vector4
+        {
+            var max = left.clone();
+            max.MaximizeInPlace(right);
+            return max;
+        }
+
+        public static Distance(value1: Vector4, value2: Vector4): number
+        {
+            return Math.sqrt(Vector4.DistanceSquared(value1, value2));
+        }
+
+        public static DistanceSquared(value1: Vector4, value2: Vector4): number
+        {
+            var x = value1.x - value2.x;
+            var y = value1.y - value2.y;
+            var z = value1.z - value2.z;
+            var w = value1.w - value2.w;
+
+            return (x * x) + (y * y) + (z * z) + (w * w);
+        }
+
+        public static Center(value1: Vector4, value2: Vector4): Vector4
+        {
             var center = value1.add(value2);
             center.scaleInPlace(0.5);
             return center;
@@ -943,40 +1331,98 @@
             this.w *= length;
         }
 
-        public toEulerAngles(): Vector3 {
-            var result = Vector3.Zero();
+        public toEulerAngles(): EulerAngles
+        {
+            var result = new EulerAngles(0, 0, 0);
 
             this.toEulerAnglesToRef(result);
 
             return result;
         }
 
-        public toEulerAnglesToRef(result: Vector3): void {
+        public toEulerAnglesTaitBryan(): EulerAnglesTaitBryan
+        {
+            var result= new EulerAnglesTaitBryan(0,0,0);
+
+            this.toEulerAnglesToRefTaitBryan(result);
+
+            return result;
+        }
+
+        public toEulerAnglesToRef(result: EulerAngles): void
+        {
+            //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
+            var qxy = qx * qy;
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qwz = qw * qz;
+            var qwx = qw * qx;
+            var qyz = qy * qz;
+            var sqx = qx * qx;
+            var sqy = qy * qy;
 
+            var determinant = sqx + sqy;
+
+            if (determinant != 0.000 && determinant != 1.000) {
+                result.alpha = Math.atan2(qxz + qwy, qwx - qyz);
+                result.beta = Math.acos(1 - 2 * determinant);
+                result.gamma = Math.atan2(qxz - qwy, qwx + qyz);
+            }
+            else
+            if (determinant == 0.000)
+            {
+                result.alpha = 0.0;
+                result.beta = 0.0;
+                result.gamma = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha+gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+            }
+            else //determinant == 1.000
+            {
+                result.alpha = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with alpha-gamma=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                result.beta = Math.PI;
+                result.gamma = 0.0;
+            }
+        }
+
+        public toEulerAnglesToRefTaitBryan(result: EulerAnglesTaitBryan): void {
+            //result is an EulerAngles in the in the z-y-x rotation convention
+            var qx = this.x;
+            var qy = this.y;
+            var qz = this.z;
+            var qw = this.w;
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qyz = qy * qz;
+            var qwx = qw * qx;
             var sqx = qx * qx;
             var sqy = qy * qy;
             var sqz = qz * qz;
+            var qxy = qx * qy;
+            var qwz = qw * qz;
 
-            var yaw = Math.atan2(2.0 * (qy * qw - qx * qz), 1.0 - 2.0 * (sqy + sqz));
-            var pitch = Math.asin(2.0 * (qx * qy + qz * qw));
-            var roll = Math.atan2(2.0 * (qx * qw - qy * qz), 1.0 - 2.0 * (sqx + sqz));
+            var determinant = 2.0 * (qxz - qwy);
 
-            var gimbaLockTest = qx * qy + qz * qw;
-            if (gimbaLockTest > 0.499) {
-                yaw = 2.0 * Math.atan2(qx, qw);
-                roll = 0;
-            } else if (gimbaLockTest < -0.499) {
-                yaw = -2.0 * Math.atan2(qx, qw);
-                roll = 0;
+            if (determinant != 1.00 && determinant != -1.00) {
+                result.roll = Math.atan2(qyz + qwx, 0.5 - sqx - sqy);
+                result.pitch = Math.asin(-determinant);
+                result.yaw = Math.atan2(qxy + qwz, 0.5 - sqy - sqz);
             }
-
-            result.x = pitch;
-            result.y = yaw;
-            result.z = roll;
+            else
+            if (determinant == 1.00)
+            {
+                result.roll = 0;
+                result.pitch = -0.5 * Math.PI;
+                result.yaw = Math.atan2(qxy - qwz, qxz + qwy); //actually, choice of roll+yaw=Math.atan2(qxy - qwz, qxz + qwy)
+            }
+            else //determinant == -1.00
+            {
+                result.roll = Math.atan2(qxy - qwz, qxz + qwy);
+                result.pitch = 0.5 * Math.PI;
+                result.yaw = 0; //actually, choice of roll-yaw=Math.atan2(qxy - qwz, qxz + qwy)
+            }
         }
 
         public toRotationMatrix(result: Matrix): void {
@@ -1135,6 +1581,289 @@
             }
 
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+        }
+    }
+
+    export class EulerAngles 
+    {
+        constructor(public alpha: number = 0, public beta: number = 0, public gamma: number = 0) { }
+
+        public toString(): string
+        {
+            return "{alpha: " + this.alpha + " beta:" + this.beta + " gamma:" + this.gamma + "}";
+        }
+
+        public asArray(): number[]
+        {
+            return [this.alpha, this.beta, this.gamma];
+        }
+
+        public equals(otherEulerAngles: EulerAngles): boolean
+        {
+            return otherEulerAngles && this.alpha === otherEulerAngles.alpha && this.beta === otherEulerAngles.beta && this.gamma === otherEulerAngles.gamma;
+        }
+
+        public clone(): EulerAngles
+        {
+            return new EulerAngles(this.alpha, this.beta, this.gamma);
+        }
+
+        public copyFrom(other: EulerAngles): void
+        {
+            this.alpha = other.alpha;
+            this.beta = other.beta;
+            this.gamma = other.gamma;
+        }
+
+        public copyFromFloats(alpha: number, beta: number, gamma: number): void
+        {
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+        }
+
+        public add(other: EulerAngles): EulerAngles
+        {
+            return new EulerAngles(this.alpha + other.alpha, this.beta + other.beta, this.gamma + other.gamma);
+        }
+
+        public subtract(other: EulerAngles): EulerAngles
+        {
+            return new EulerAngles(this.alpha - other.alpha, this.beta - other.beta, this.gamma - other.gamma);
+        }
+
+        public scale(value: number): EulerAngles
+        {
+            return new EulerAngles(this.alpha * value, this.beta * value, this.gamma * value);
+        }
+
+        public length(): number
+        {
+            return Math.sqrt((this.alpha * this.alpha) + (this.beta * this.beta) + (this.gamma * this.gamma));
+        }
+
+        public normalize(): void
+        {
+            var length = 1.0 / this.length();
+            this.alpha *= length;
+            this.beta *= length;
+            this.gamma *= length;
+        }
+
+        public toQuaternion(): Vector4
+        {
+            var result;
+
+            //result is a Quaternion in the z-x-z rotation convention
+            var cosAlphaPlusGamma = Math.cos((this.alpha + this.gamma) * 0.5);
+            var sinAlphaPlusGamma = Math.sin((this.alpha + this.gamma) * 0.5);
+            var cosGammaMinusAlpha = Math.cos((this.gamma - this.alpha) * 0.5);
+            var sinGammaMinusAlpha = Math.sin((this.gamma - this.alpha) * 0.5);
+            var cosBeta = Math.cos(this.beta * 0.5);
+            var sinBeta = Math.sin(this.beta * 0.5);
+
+            result.x = cosGammaMinusAlpha * sinBeta;
+            result.y = -sinGammaMinusAlpha * sinBeta; //the negative sign is a hack, must discover justification
+            result.z = sinAlphaPlusGamma * cosBeta;
+            result.w = cosAlphaPlusGamma * cosBeta;
+
+            return result;
+
+        }
+
+        public toRotationMatrix(result: Matrix): void
+        {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
+            //done in the z-x-z rotation convention
+            var cosAlpha = Math.cos(this.alpha);
+            var sinAlpha = Math.sin(this.alpha);
+            var cosBeta = Math.cos(this.beta);
+            var sinBeta = Math.sin(this.beta);
+            var cosGamma = Math.cos(this.gamma);
+            var sinGamma = Math.sin(this.gamma);
+
+            result.m[0] = cosAlpha * cosGamma - cosBeta * sinAlpha * sinGamma;
+            result.m[1] = cosBeta * sinAlpha * cosGamma + cosAlpha * sinGamma;
+            result.m[2] = sinBeta * sinAlpha;
+            result.m[4] = -sinAlpha * cosGamma - cosBeta * cosAlpha * sinGamma;
+            result.m[5] = cosBeta * cosAlpha * cosGamma - sinAlpha * sinGamma;
+            result.m[6] = sinBeta * cosAlpha;
+            result.m[8] = sinBeta * sinGamma;
+            result.m[9] = -sinBeta * cosGamma;
+            result.m[10] = cosBeta;
+        }
+
+        public fromRotationMatrix(matrix: Matrix): void
+        {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
+
+            if (m33 == -1) {
+                this.alpha = 0; //any angle works here
+                this.beta = Math.PI;
+                this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+
+            }
+            else
+            if (m33 == 1)
+            {
+                this.alpha = 0; //any angle works here
+                this.beta = 0;
+                this.gamma = Math.atan2(m21, m11); //generally, atan2(m21,m11)-alpha
+            }
+            else
+            {
+                this.alpha = Math.atan2(m31, m32);
+                this.beta = Math.acos(m33); //principal value (between 0 and PI)
+                this.gamma = Math.atan2(m13, -m23);
+            }
+        }
+    }
+
+    export class EulerAnglesTaitBryan
+    {
+        constructor(public roll: number = 0, public pitch: number = 0, public yaw: number = 0) { }
+
+        public toString(): string
+        {
+            return "{roll: " + this.roll + " pitch:" + this.pitch + " yaw:" + this.yaw + "}";
+        }
+
+        public asArray(): number[]
+        {
+            return [this.roll, this.pitch, this.yaw];
+        }
+
+        public equals(otherEulerAnglesTaitBryan: EulerAnglesTaitBryan): boolean
+        {
+            return otherEulerAnglesTaitBryan && this.roll === otherEulerAnglesTaitBryan.roll && this.pitch === otherEulerAnglesTaitBryan.pitch && this.yaw === otherEulerAnglesTaitBryan.yaw;
+        }
+
+        public clone(): EulerAnglesTaitBryan
+        {
+            return new EulerAnglesTaitBryan(this.roll, this.pitch, this.yaw);
+        }
+
+        public copyFrom(other: EulerAnglesTaitBryan): void
+        {
+            this.roll = other.roll;
+            this.pitch = other.pitch;
+            this.yaw = other.yaw;
+        }
+
+        public copyFromFloats(roll: number, pitch: number, yaw: number): void
+        {
+            this.roll = roll;
+            this.pitch = pitch;
+            this.yaw = yaw;
+        }
+
+        public add(other: EulerAnglesTaitBryan): EulerAnglesTaitBryan
+        {
+            return new EulerAnglesTaitBryan(this.roll + other.roll, this.pitch + other.pitch, this.yaw + other.yaw);
+        }
+
+        public subtract(other: EulerAnglesTaitBryan): EulerAnglesTaitBryan
+        {
+            return new EulerAnglesTaitBryan(this.roll - other.roll, this.pitch - other.pitch, this.yaw - other.yaw);
+        }
+
+        public scale(value: number): EulerAnglesTaitBryan
+        {
+            return new EulerAnglesTaitBryan(this.roll * value, this.pitch * value, this.yaw * value);
+        }
+
+        public length(): number
+        {
+            return Math.sqrt((this.roll * this.roll) + (this.pitch * this.pitch) + (this.yaw * this.yaw));
+        }
+
+        public normalize(): void
+        {
+            var length = 1.0 / this.length();
+            this.roll *= length;
+            this.pitch *= length;
+            this.yaw *= length;
+        }
+
+        public toQuaternion(): Vector4
+        {
+            var result;
+            var cosRoll = Math.cos(this.roll * 0.5);
+            var cosPitch = Math.cos(this.pitch * 0.5);
+            var cosYaw = Math.cos(this.yaw * 0.5);
+            var sinRoll = Math.sin(this.roll * 0.5);
+            var sinPitch = Math.sin(this.pitch * 0.5);
+            var sinYaw = Math.sin(this.yaw * 0.5);
+
+            result.x = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
+            result.y = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
+            result.z = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
+            result.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
+
+            return result;
+
+        }
+
+        public toRotationMatrix(result: Matrix): void
+        {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
+            //done in the z-y-x rotation convention
+            var cosRoll = Math.cos(this.roll);
+            var sinRoll = Math.sin(this.roll);
+            var cosPitch = Math.cos(this.pitch);
+            var sinPitch = Math.sin(this.pitch);
+            var cosYaw = Math.cos(this.yaw);
+            var sinYaw = Math.sin(this.yaw);
+
+            result.m[0] = cosYaw * cosPitch;
+            result.m[1] = sinYaw * cosPitch;
+            result.m[2] = -sinPitch;
+            result.m[4] = cosYaw * sinPitch * sinRoll - sinYaw * cosRoll;
+            result.m[5] = sinYaw * sinPitch * sinRoll + cosYaw * cosRoll;
+            result.m[6] = cosPitch * sinRoll;
+            result.m[8] = cosYaw * sinPitch * cosRoll + sinYaw * sinRoll;
+            result.m[9] = sinYaw * sinPitch * cosRoll - cosYaw * sinRoll;
+            result.m[10] = cosPitch * cosRoll;
+        }
+
+        public fromRotationMatrix(matrix: Matrix): void
+        {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
+
+            if (m31 == -1)
+            {
+                this.roll = Math.atan2(m12, m13); //generally, atan2(m21,m11)+yaw
+                this.pitch = Math.PI * 0.5;
+                this.yaw = 0; //any angle works here
+
+            }
+            else
+            if (m31 == 1)
+            {
+                this.roll = Math.atan2(-m12, -m13); //generally, atan2(m21,m11)-yaw
+                this.pitch = -Math.PI * 0.5;
+                this.yaw = 0; //any angle works here
+            }
+            else
+            {
+                this.pitch = Math.asin(-m31);
+                if (this.pitch > -Math.PI * 0.5 && this.pitch < Math.PI * 0.5)
+                {
+                    this.roll = Math.atan2(m32, m33);
+                    this.yaw = Math.atan2(m21, m11);
+                }
+                else //this.pitch > Math.PI * 0.5 && this.pitch < Math.PI * 1.5
+                {
+                    this.roll = Math.atan2(-m32, -m33);
+                    this.yaw = Math.atan2(-m21, -m11);
+                }
+            }
         }
     }
 
