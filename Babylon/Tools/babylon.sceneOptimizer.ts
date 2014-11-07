@@ -9,7 +9,7 @@
         }
     }
 
-    export class TextureSceneOptimization extends SceneOptimization {
+    export class TextureOptimization extends SceneOptimization {
         constructor(public priority: number = 0, public maximumSize: number = 1024) {
             super(priority);
         }
@@ -37,7 +37,7 @@
         }
     }
 
-    export class HardwareScalingSceneOptimization extends SceneOptimization {
+    export class HardwareScalingOptimization extends SceneOptimization {
         private _currentScale = 1;
 
         constructor(public priority: number = 0, public maximumScale: number = 2) {
@@ -53,35 +53,35 @@
         };
     }
 
-    export class ShadowsSceneOptimization extends SceneOptimization {
+    export class ShadowsOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.shadowsEnabled = false;
             return true;
         };
     }
 
-    export class PostProcessesSceneOptimization extends SceneOptimization {
+    export class PostProcessesOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.postProcessesEnabled = false;
             return true;
         };
     }
 
-    export class LensFlaresSceneOptimization extends SceneOptimization {
+    export class LensFlaresOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.lensFlaresEnabled = false;
             return true;
         };
     }
 
-    export class ParticlesSceneOptimization extends SceneOptimization {
+    export class ParticlesOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.particlesEnabled = false;
             return true;
         };
     }
 
-    export class RenderTargetsSceneOptimization extends SceneOptimization {
+    export class RenderTargetsOptimization extends SceneOptimization {
         public apply = (scene: Scene): boolean => {
             scene.renderTargetsEnabled = false;
             return true;
@@ -99,17 +99,17 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 1024));
+            result.optimizations.push(new TextureOptimization(priority, 1024));
 
             return result;
         }
@@ -118,25 +118,25 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 512));
+            result.optimizations.push(new TextureOptimization(priority, 512));
 
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 2));
 
             return result;
         }
@@ -145,25 +145,25 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 256));
+            result.optimizations.push(new TextureOptimization(priority, 256));
 
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 4));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 4));
 
             return result;
         }
