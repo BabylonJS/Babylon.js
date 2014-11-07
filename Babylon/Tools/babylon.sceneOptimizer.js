@@ -19,9 +19,9 @@ var BABYLON;
     })();
     BABYLON.SceneOptimization = SceneOptimization;
 
-    var TextureSceneOptimization = (function (_super) {
-        __extends(TextureSceneOptimization, _super);
-        function TextureSceneOptimization(priority, maximumSize) {
+    var TextureOptimization = (function (_super) {
+        __extends(TextureOptimization, _super);
+        function TextureOptimization(priority, maximumSize) {
             if (typeof priority === "undefined") { priority = 0; }
             if (typeof maximumSize === "undefined") { maximumSize = 1024; }
             var _this = this;
@@ -49,13 +49,13 @@ var BABYLON;
                 return allDone;
             };
         }
-        return TextureSceneOptimization;
+        return TextureOptimization;
     })(SceneOptimization);
-    BABYLON.TextureSceneOptimization = TextureSceneOptimization;
+    BABYLON.TextureOptimization = TextureOptimization;
 
-    var HardwareScalingSceneOptimization = (function (_super) {
-        __extends(HardwareScalingSceneOptimization, _super);
-        function HardwareScalingSceneOptimization(priority, maximumScale) {
+    var HardwareScalingOptimization = (function (_super) {
+        __extends(HardwareScalingOptimization, _super);
+        function HardwareScalingOptimization(priority, maximumScale) {
             if (typeof priority === "undefined") { priority = 0; }
             if (typeof maximumScale === "undefined") { maximumScale = 2; }
             var _this = this;
@@ -71,74 +71,74 @@ var BABYLON;
                 return _this._currentScale >= _this.maximumScale;
             };
         }
-        return HardwareScalingSceneOptimization;
+        return HardwareScalingOptimization;
     })(SceneOptimization);
-    BABYLON.HardwareScalingSceneOptimization = HardwareScalingSceneOptimization;
+    BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
 
-    var ShadowsSceneOptimization = (function (_super) {
-        __extends(ShadowsSceneOptimization, _super);
-        function ShadowsSceneOptimization() {
+    var ShadowsOptimization = (function (_super) {
+        __extends(ShadowsOptimization, _super);
+        function ShadowsOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
             };
         }
-        return ShadowsSceneOptimization;
+        return ShadowsOptimization;
     })(SceneOptimization);
-    BABYLON.ShadowsSceneOptimization = ShadowsSceneOptimization;
+    BABYLON.ShadowsOptimization = ShadowsOptimization;
 
-    var PostProcessesSceneOptimization = (function (_super) {
-        __extends(PostProcessesSceneOptimization, _super);
-        function PostProcessesSceneOptimization() {
+    var PostProcessesOptimization = (function (_super) {
+        __extends(PostProcessesOptimization, _super);
+        function PostProcessesOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
             };
         }
-        return PostProcessesSceneOptimization;
+        return PostProcessesOptimization;
     })(SceneOptimization);
-    BABYLON.PostProcessesSceneOptimization = PostProcessesSceneOptimization;
+    BABYLON.PostProcessesOptimization = PostProcessesOptimization;
 
-    var LensFlaresSceneOptimization = (function (_super) {
-        __extends(LensFlaresSceneOptimization, _super);
-        function LensFlaresSceneOptimization() {
+    var LensFlaresOptimization = (function (_super) {
+        __extends(LensFlaresOptimization, _super);
+        function LensFlaresOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
             };
         }
-        return LensFlaresSceneOptimization;
+        return LensFlaresOptimization;
     })(SceneOptimization);
-    BABYLON.LensFlaresSceneOptimization = LensFlaresSceneOptimization;
+    BABYLON.LensFlaresOptimization = LensFlaresOptimization;
 
-    var ParticlesSceneOptimization = (function (_super) {
-        __extends(ParticlesSceneOptimization, _super);
-        function ParticlesSceneOptimization() {
+    var ParticlesOptimization = (function (_super) {
+        __extends(ParticlesOptimization, _super);
+        function ParticlesOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
             };
         }
-        return ParticlesSceneOptimization;
+        return ParticlesOptimization;
     })(SceneOptimization);
-    BABYLON.ParticlesSceneOptimization = ParticlesSceneOptimization;
+    BABYLON.ParticlesOptimization = ParticlesOptimization;
 
-    var RenderTargetsSceneOptimization = (function (_super) {
-        __extends(RenderTargetsSceneOptimization, _super);
-        function RenderTargetsSceneOptimization() {
+    var RenderTargetsOptimization = (function (_super) {
+        __extends(RenderTargetsOptimization, _super);
+        function RenderTargetsOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
             };
         }
-        return RenderTargetsSceneOptimization;
+        return RenderTargetsOptimization;
     })(SceneOptimization);
-    BABYLON.RenderTargetsSceneOptimization = RenderTargetsSceneOptimization;
+    BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
 
     // Options
     var SceneOptimizerOptions = (function () {
@@ -153,17 +153,17 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 1024));
+            result.optimizations.push(new TextureOptimization(priority, 1024));
 
             return result;
         };
@@ -172,25 +172,25 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 512));
+            result.optimizations.push(new TextureOptimization(priority, 512));
 
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 2));
 
             return result;
         };
@@ -199,25 +199,25 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 256));
+            result.optimizations.push(new TextureOptimization(priority, 256));
 
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 4));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 4));
 
             return result;
         };
