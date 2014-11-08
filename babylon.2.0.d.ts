@@ -2139,6 +2139,59 @@ declare module BABYLON {
         static DistanceSquared(value1: Vector3, value2: Vector3): number;
         static Center(value1: Vector3, value2: Vector3): Vector3;
     }
+
+    class Vector4 {
+        public x: number;
+        public y: number;
+        public z: number;
+        public w: number;
+        constructor(x: number, y: number, z: number, w: number);
+        public toString(): string;
+        public asArray(): number[];
+        public toArray(array: number[], index?: number): void;
+        public addInPlace(otherVector: Vector4): void;
+        public add(otherVector: Vector4): Vector4;
+        public addToRef(otherVector: Vector4, result: Vector4): void;
+        public subtractInPlace(otherVector: Vector4): void;
+        public subtract(otherVector: Vector4): Vector4;
+        public subtractToRef(otherVector: Vector4, result: Vector4): void;
+        public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        public negate(): Vector4;
+        public scaleInPlace(scale: number): Vector4;
+        public scale(scale: number): Vector4;
+        public scaleToRef(scale: number, result: Vector4);
+        public equals(otherVector: Vector4): boolean;
+        public equalsWithEpsilon(otherVector: Vector4): boolean;
+        public equalsToFloats(x: number, y: number, z: number, w: number): boolean;
+        public multiplyInPlace(otherVector: Vector4): void;
+        public multiply(otherVector: Vector4): Vector4;
+        public multiplyToRef(otherVector: Vector4, result: Vector4): void
+        public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
+        public divide(otherVector: Vector4): Vector4;
+        public divideToRef(otherVector: Vector4, result: Vector4): void;
+        public MinimizeInPlace(other: Vector4): void;
+        public MaximizeInPlace(other: Vector4): void;
+        public length(): number;
+        public lengthSquared(): number;
+        public normalize(): Vector4;
+        public clone(): Vector4;
+        public copyFrom(source: Vector4): void;
+        public copyFromFloats(x: number, y: number, z: number, w: number): void;
+        static FromArray(array: number[], offset?: number): Vector4;
+        static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
+        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        static Zero(): Vector4;
+        static Normalize(vector: Vector4): Vector4;
+        static NormalizeToRef(vector: Vector4, result: Vector4): void;
+        static Minimize(left: Vector4, right: Vector4): Vector4;
+        static Maximize(left: Vector4, right: Vector4): Vector4;
+        static Distance(value1: Vector4, value2: Vector4): number;
+        static DistanceSquared(value1: Vector4, value2: Vector4): number;
+        static Center(value1: Vector4, value2: Vector4): Vector4;
+    }
+
     class Quaternion {
         public x: number;
         public y: number;
@@ -2169,6 +2222,28 @@ declare module BABYLON {
         static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
         static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
     }
+
+    class EulerAngles {
+        public x: number;
+        public y: number;
+        public z: number;
+        constructor(x?: number, y?: number, z?: number);
+        public toString(): string;
+        public asArray(): number[];
+        public equals(otherEulerAngles: EulerAngles): boolean;
+        public clone(): EulerAngles;
+        public copyFrom(other: EulerAngles): void;
+        public copyFromFloats(x: number, y: number, z: number): void;
+        public add(other: EulerAngles): EulerAngles;
+        public subtract(other: EulerAngles): EulerAngles;
+        public scale(value: number): EulerAngles;
+        public length(): number;
+        public normalize(): void;
+        public toQuaternion(): Vector4;
+        public toRotationMatrix(result: Matrix): void;
+        public fromRotationMatrix(matrix: Matrix): void;
+    }
+
     class Matrix {
         private static _tempQuaternion;
         private static _xAxis;
