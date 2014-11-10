@@ -869,6 +869,288 @@
         }
     }
 
+    //Vector4 class created for EulerAngle class conversion to Quaternion
+    export class Vector4 {
+
+        constructor(public x: number, public y: number, public z: number, public w: number) { }
+
+        public toString(): string {
+            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+        }
+
+        // Operators
+        public asArray(): number[] {
+            var result = [];
+
+            this.toArray(result, 0);
+
+            return result;
+        }
+
+        public toArray(array: number[], index?: number): void {
+            if (index === undefined) {
+                index = 0;
+            }
+
+            array[index] = this.x;
+            array[index + 1] = this.y;
+            array[index + 2] = this.z;
+            array[index + 3] = this.w;
+        }
+
+        public addInPlace(otherVector: Vector4): void {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            this.z += otherVector.z;
+            this.w += otherVector.w;
+        }
+
+        public add(otherVector: Vector4): Vector4 {
+            return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        }
+
+        public addToRef(otherVector: Vector4, result: Vector4): void {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            result.z = this.z + otherVector.z;
+            result.w = this.w + otherVector.w;
+        }
+
+        public subtractInPlace(otherVector: Vector4): void {
+            this.x -= otherVector.x;
+            this.y -= otherVector.y;
+            this.z -= otherVector.z;
+            this.w -= otherVector.w;
+        }
+
+        public subtract(otherVector: Vector4): Vector4 {
+            return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        }
+
+        public subtractToRef(otherVector: Vector4, result: Vector4): void {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            result.z = this.z - otherVector.z;
+            result.w = this.w - otherVector.w;
+        }
+
+        public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
+            return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
+        }
+
+        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
+            result.x = this.x - x;
+            result.y = this.y - y;
+            result.z = this.z - z;
+            result.w = this.w - w;
+        }
+
+        public negate(): Vector4 {
+            return new Vector4(-this.x, -this.y, -this.z, -this.w);
+        }
+
+        public scaleInPlace(scale: number): Vector4 {
+            this.x *= scale;
+            this.y *= scale;
+            this.z *= scale;
+            this.w *= scale;
+            return this;
+        }
+
+        public scale(scale: number): Vector4 {
+            return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        }
+
+        public scaleToRef(scale: number, result: Vector4) {
+            result.x = this.x * scale;
+            result.y = this.y * scale;
+            result.z = this.z * scale;
+            result.w = this.w * scale;
+        }
+
+        public equals(otherVector: Vector4): boolean {
+            return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
+        }
+
+        public equalsWithEpsilon(otherVector: Vector4): boolean {
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
+                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
+                Math.abs(this.z - otherVector.z) < Engine.Epsilon &&
+                Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+        }
+
+        public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
+            return this.x === x && this.y === y && this.z === z && this.w === w;
+        }
+
+        public multiplyInPlace(otherVector: Vector4): void {
+            this.x *= otherVector.x;
+            this.y *= otherVector.y;
+            this.z *= otherVector.z;
+            this.w *= otherVector.w;
+        }
+
+        public multiply(otherVector: Vector4): Vector4 {
+            return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        }
+
+        public multiplyToRef(otherVector: Vector4, result: Vector4): void {
+            result.x = this.x * otherVector.x;
+            result.y = this.y * otherVector.y;
+            result.z = this.z * otherVector.z;
+            result.w = this.w * otherVector.w;
+        }
+
+        public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
+            return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
+        }
+
+        public divide(otherVector: Vector4): Vector4 {
+            return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        }
+
+        public divideToRef(otherVector: Vector4, result: Vector4): void {
+            result.x = this.x / otherVector.x;
+            result.y = this.y / otherVector.y;
+            result.z = this.z / otherVector.z;
+            result.w = this.w / otherVector.w;
+        }
+
+        public MinimizeInPlace(other: Vector4): void {
+            if (other.x < this.x) this.x = other.x;
+            if (other.y < this.y) this.y = other.y;
+            if (other.z < this.z) this.z = other.z;
+            if (other.w < this.w) this.w = other.w;
+        }
+
+        public MaximizeInPlace(other: Vector4): void {
+            if (other.x > this.x) this.x = other.x;
+            if (other.y > this.y) this.y = other.y;
+            if (other.z > this.z) this.z = other.z;
+            if (other.w > this.w) this.w = other.w;
+        }
+
+        // Properties
+        public length(): number {
+            return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        }
+
+        public lengthSquared(): number {
+            return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        }
+
+        // Methods
+        public normalize(): Vector4 {
+            var len = this.length();
+
+            if (len === 0)
+                return this;
+
+            var num = 1.0 / len;
+
+            this.x *= num;
+            this.y *= num;
+            this.z *= num;
+            this.w *= num;
+
+            return this;
+        }
+
+        public clone(): Vector4 {
+            return new Vector4(this.x, this.y, this.z, this.w);
+        }
+
+        public copyFrom(source: Vector4): void {
+            this.x = source.x;
+            this.y = source.y;
+            this.z = source.z;
+            this.w = source.w;
+        }
+
+        public copyFromFloats(x: number, y: number, z: number, w: number): void {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        // Statics
+        public static FromArray(array: number[], offset?: number): Vector4 {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+        }
+
+        public static FromArrayToRef(array: number[], offset: number, result: Vector4): void {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        }
+
+        public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void {
+            result.x = array[offset];
+            result.y = array[offset + 1];
+            result.z = array[offset + 2];
+            result.w = array[offset + 3];
+        }
+
+        public static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
+            result.x = x;
+            result.y = y;
+            result.z = z;
+            result.w = w;
+        }
+
+        public static Zero(): Vector4 {
+            return new Vector4(0, 0, 0, 0);
+        }
+
+        public static Normalize(vector: Vector4): Vector4 {
+            var result = Vector4.Zero();
+            Vector4.NormalizeToRef(vector, result);
+            return result;
+        }
+
+        public static NormalizeToRef(vector: Vector4, result: Vector4): void {
+            result.copyFrom(vector);
+            result.normalize();
+        }
+
+        public static Minimize(left: Vector4, right: Vector4): Vector4 {
+            var min = left.clone();
+            min.MinimizeInPlace(right);
+            return min;
+        }
+
+        public static Maximize(left: Vector4, right: Vector4): Vector4 {
+            var max = left.clone();
+            max.MaximizeInPlace(right);
+            return max;
+        }
+
+        public static Distance(value1: Vector4, value2: Vector4): number {
+            return Math.sqrt(Vector4.DistanceSquared(value1, value2));
+        }
+
+        public static DistanceSquared(value1: Vector4, value2: Vector4): number {
+            var x = value1.x - value2.x;
+            var y = value1.y - value2.y;
+            var z = value1.z - value2.z;
+            var w = value1.w - value2.w;
+
+            return (x * x) + (y * y) + (z * z) + (w * w);
+        }
+
+        public static Center(value1: Vector4, value2: Vector4): Vector4 {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
+        }
+    }
+
     export class Quaternion {
         constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
 
@@ -952,31 +1234,39 @@
         }
 
         public toEulerAnglesToRef(result: Vector3): void {
+            //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
-
+            var qxy = qx * qy;
+            var qxz = qx * qz;
+            var qwy = qw * qy;
+            var qwz = qw * qz;
+            var qwx = qw * qx;
+            var qyz = qy * qz;
             var sqx = qx * qx;
             var sqy = qy * qy;
-            var sqz = qz * qz;
 
-            var yaw = Math.atan2(2.0 * (qy * qw - qx * qz), 1.0 - 2.0 * (sqy + sqz));
-            var pitch = Math.asin(2.0 * (qx * qy + qz * qw));
-            var roll = Math.atan2(2.0 * (qx * qw - qy * qz), 1.0 - 2.0 * (sqx + sqz));
+            var determinant = sqx + sqy;
 
-            var gimbaLockTest = qx * qy + qz * qw;
-            if (gimbaLockTest > 0.499) {
-                yaw = 2.0 * Math.atan2(qx, qw);
-                roll = 0;
-            } else if (gimbaLockTest < -0.499) {
-                yaw = -2.0 * Math.atan2(qx, qw);
-                roll = 0;
+            if (determinant != 0.000 && determinant != 1.000) {
+                result.x = Math.atan2(qxz + qwy, qwx - qyz);
+                result.y = Math.acos(1 - 2 * determinant);
+                result.z = Math.atan2(qxz - qwy, qwx + qyz);
             }
-
-            result.x = pitch;
-            result.y = yaw;
-            result.z = roll;
+            else
+            if (determinant == 0.000) {
+                result.x = 0.0;
+                result.y = 0.0;
+                result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+            }
+            else //determinant == 1.000
+            {
+                result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                result.y = Math.PI;
+                result.z = 0.0;
+            }
         }
 
         public toRotationMatrix(result: Matrix): void {
@@ -1135,6 +1425,127 @@
             }
 
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+        }
+    }
+
+    export class EulerAngles {
+        constructor(public x: number = 0, public y: number = 0, public z: number = 0) { }
+
+        public toString(): string {
+            return "{x: " + this.x + " y:" + this.y + " z:" + this.z + "}";
+        }
+
+        public asArray(): number[] {
+            return [this.x, this.y, this.z];
+        }
+
+        public equals(otherEulerAngles: EulerAngles): boolean {
+            return otherEulerAngles && this.x === otherEulerAngles.x && this.y === otherEulerAngles.y && this.z === otherEulerAngles.z;
+        }
+
+        public clone(): EulerAngles {
+            return new EulerAngles(this.x, this.y, this.z);
+        }
+
+        public copyFrom(other: EulerAngles): void {
+            this.x = other.x;
+            this.y = other.y;
+            this.z = other.z;
+        }
+
+        public copyFromFloats(x: number, y: number, z: number): void {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public add(other: EulerAngles): EulerAngles {
+            return new EulerAngles(this.x + other.x, this.y + other.y, this.z + other.z);
+        }
+
+        public subtract(other: EulerAngles): EulerAngles {
+            return new EulerAngles(this.x - other.x, this.y - other.y, this.z - other.z);
+        }
+
+        public scale(value: number): EulerAngles {
+            return new EulerAngles(this.x * value, this.y * value, this.z * value);
+        }
+
+        public length(): number {
+            return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+        }
+
+        public normalize(): void {
+            var length = 1.0 / this.length();
+            this.x *= length;
+            this.y *= length;
+            this.z *= length;
+        }
+
+        public toQuaternion(): Vector4 {
+            var result;
+
+            //result is a Quaternion in the z-x-z rotation convention
+            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
+            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
+            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
+            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
+            var cosy = Math.cos(this.y * 0.5);
+            var siny = Math.sin(this.y * 0.5);
+
+            result.x = coszMinusx * siny;
+            result.y = -sinzMinusx * siny; 
+            result.z = sinxPlusz * cosy;
+            result.w = cosxPlusz * cosy;
+
+            return result;
+
+        }
+
+        public toRotationMatrix(result: Matrix): void {
+            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
+            //done in the z-x-z rotation convention
+            var cosx = Math.cos(this.x);
+            var sinx = Math.sin(this.x);
+            var cosy = Math.cos(this.y);
+            var siny = Math.sin(this.y);
+            var cosz = Math.cos(this.z);
+            var sinz = Math.sin(this.z);
+
+            result.m[0] = cosx * cosz - cosy * sinx * sinz;
+            result.m[1] = cosy * sinx * cosz + cosx * sinz;
+            result.m[2] = siny * sinx;
+            result.m[4] = -sinx * cosz - cosy * cosx * sinz;
+            result.m[5] = cosy * cosx * cosz - sinx * sinz;
+            result.m[6] = siny * cosx;
+            result.m[8] = siny * sinz;
+            result.m[9] = -siny * cosz;
+            result.m[10] = cosy;
+        }
+
+        public fromRotationMatrix(matrix: Matrix): void {
+            var data = matrix.m;
+            var m11 = data[0], m12 = data[4], m13 = data[8];
+            var m21 = data[1], m22 = data[5], m23 = data[9];
+            var m31 = data[2], m32 = data[6], m33 = data[10];
+
+            if (m33 == -1) {
+                this.x = 0; //any angle works here
+                this.y = Math.PI;
+                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
+
+            }
+            else
+            if (m33 == 1) {
+                this.x = 0; //any angle works here
+                this.y = 0;
+                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
+            }
+            else {
+                this.x = Math.atan2(m31, m32);
+                this.y = Math.acos(m33); //principal value (between 0 and PI)
+                this.z = Math.atan2(m13, -m23);
+            }
         }
     }
 
