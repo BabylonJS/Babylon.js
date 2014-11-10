@@ -48,7 +48,7 @@
                     this._colorShader.bind(worldMatrix);
 
                     // Draw order
-                    engine.draw(false, 0, 24);
+                    engine.draw(WebGLRenderingContext.LINES, 0, 24);
                 }
 
                 // Front
@@ -57,7 +57,7 @@
                 this._colorShader.bind(worldMatrix);
 
                 // Draw order
-                engine.draw(false, 0, 24);
+                engine.draw(WebGLRenderingContext.LINES, 0, 24);
             }
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();

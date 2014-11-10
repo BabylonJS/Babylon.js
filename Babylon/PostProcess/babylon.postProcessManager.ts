@@ -80,7 +80,7 @@
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.draw(WebGLRenderingContext.TRIANGLES, 0, 6);
                 }
             }
 

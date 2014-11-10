@@ -5,7 +5,7 @@
         public checkReadyOnlyOnce = false;
         public state = "";
         public alpha = 1.0;
-        public wireframe = false;
+        public drawAs = WebGLRenderingContext.TRIANGLES;
         public backFaceCulling = true;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
