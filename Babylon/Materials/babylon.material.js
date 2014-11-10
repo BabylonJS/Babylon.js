@@ -7,7 +7,7 @@
             this.checkReadyOnlyOnce = false;
             this.state = "";
             this.alpha = 1.0;
-            this.wireframe = false;
+            this.drawAs = WebGLRenderingContext.TRIANGLES;
             this.backFaceCulling = true;
             this._wasPreviouslyReady = false;
             this.id = name;

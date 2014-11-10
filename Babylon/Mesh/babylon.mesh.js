@@ -245,40 +245,93 @@ var BABYLON;
             }
         };
 
-        Mesh.prototype._bind = function (subMesh, effect, wireframe) {
+        Mesh.prototype._bind = function (subMesh, effect, drawAs) {
             var engine = this.getScene().getEngine();
 
-            // Wireframe
-            var indexToBind = this._geometry.getIndexBuffer();
+            var indexToBind = undefined;
+            switch (drawAs) {
+                case WebGLRenderingContext.LINES:
+                    indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+                    break;
 
-            if (wireframe) {
-                indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+                case WebGLRenderingContext.POINTS:
+                    indexToBind = null;
+                    break;
+
+                case WebGLRenderingContext.TRIANGLES:
+                default:
+                    indexToBind = this._geometry.getIndexBuffer();
+                    break;
             }
 
             // VBOs
             engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         };
 
-        Mesh.prototype._draw = function (subMesh, useTriangles, instancesCount) {
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+        Mesh.prototype._getStartIndexOfMesh = function (subMesh, drawAs) {
+            var start = 0;
+            switch (drawAs) {
+                case WebGLRenderingContext.LINES:
+                    start = 0;
+                    break;
+                case WebGLRenderingContext.POINTS:
+                    start = 0;
+                    break;
+
+                case WebGLRenderingContext.TRIANGLES:
+                default:
+                    start = subMesh.indexStart;
+                    break;
             }
 
-            var engine = this.getScene().getEngine();
-
-            // Draw order
-            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
+            return start;
         };
 
-        Mesh.prototype._fullDraw = function (subMesh, useTriangles, instancesCount) {
+        Mesh.prototype._getCountOfMesh = function (subMesh, drawAs) {
+            var count = 0;
+            switch (drawAs) {
+                case WebGLRenderingContext.LINES:
+                    count = subMesh.linesIndexCount;
+                    break;
+                case WebGLRenderingContext.POINTS:
+                    count = subMesh.verticesCount;
+                    break;
+
+                case WebGLRenderingContext.TRIANGLES:
+                default:
+                    count = subMesh.indexCount;
+                    break;
+            }
+
+            return count;
+        };
+
+        Mesh.prototype._draw = function (subMesh, drawAs, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
 
             var engine = this.getScene().getEngine();
 
+            var start = this._getStartIndexOfMesh(subMesh, drawAs);
+            var count = this._getCountOfMesh(subMesh, drawAs);
+
             // Draw order
-            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
+            engine.draw(drawAs, start, count, instancesCount);
+        };
+
+        Mesh.prototype._fullDraw = function (subMesh, drawAs, instancesCount) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
+                return;
+            }
+
+            var engine = this.getScene().getEngine();
+
+            var start = this._getStartIndexOfMesh(subMesh, drawAs);
+            var count = this._getCountOfMesh(subMesh, drawAs);
+
+            // Draw order
+            engine.draw(drawAs, start, count, instancesCount);
         };
 
         Mesh.prototype.registerBeforeRender = function (func) {
@@ -338,7 +391,7 @@ var BABYLON;
             return this._batchCache;
         };
 
-        Mesh.prototype._renderWithInstances = function (subMesh, wireFrame, batch, effect, engine) {
+        Mesh.prototype._renderWithInstances = function (subMesh, drawAs, batch, effect, engine) {
             var matricesCount = this.instances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
@@ -385,7 +438,7 @@ var BABYLON;
 
             engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
 
-            this._draw(subMesh, !wireFrame, instancesCount);
+            this._draw(subMesh, drawAs, instancesCount);
 
             engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         };
@@ -430,19 +483,20 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var wireFrame = engine.forceWireframe || effectiveMaterial.wireframe;
-            this._bind(subMesh, effect, wireFrame);
+            var drawAs = engine.forceWireframe ? WebGLRenderingContext.LINES : effectiveMaterial.drawAs;
+
+            this._bind(subMesh, effect, drawAs);
 
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
 
             // Instances rendering
             if (hardwareInstancedRendering) {
-                this._renderWithInstances(subMesh, wireFrame, batch, effect, engine);
+                this._renderWithInstances(subMesh, drawAs, batch, effect, engine);
             } else {
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
-                    this._draw(subMesh, !wireFrame);
+                    this._draw(subMesh, drawAs);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -454,7 +508,7 @@ var BABYLON;
                         effectiveMaterial.bindOnlyWorldMatrix(world);
 
                         // Draw
-                        this._draw(subMesh, !wireFrame);
+                        this._draw(subMesh, drawAs);
                     }
                 }
             }
