@@ -19,7 +19,6 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
 
 ## Documentation
 - [Wiki](https://github.com/babylonjs/babylon.js/wiki)
-- [Tutorials](https://github.com/BabylonJS/Babylon.js/wiki/Tutorials)
 - [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
 - [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
 - [Samples](https://github.com/BabylonJS/Samples)
@@ -77,10 +76,12 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Dynamic textures (canvas)
  - Video textures
  - Compressed (DDS) textures
+ - TGA textures
 -  Cameras (Perspective and orthographic):
  - Arc rotate camera
  - Free camera
  - Touch camera
+ - Anaglyph camera
  - Virtual Joysticks camera
  - Oculus Rift camera
  - Gamepad camera
