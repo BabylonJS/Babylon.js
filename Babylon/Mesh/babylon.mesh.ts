@@ -11,6 +11,7 @@
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
+        private _LODLevels = new Array<BABYLON.Internals.MeshLODLevel>();
 
         // Private
         public _geometry: Geometry;
@@ -26,9 +27,88 @@
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
+        private _attachedLODLevel: BABYLON.Internals.MeshLODLevel;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
+        }
+
+        // Methods
+        private _sortLODLevels(): void {
+            this._LODLevels.sort((a, b) => {
+                if (a.distance < b.distance) {
+                    return 1;
+                }
+                if (a.distance > b.distance) {
+                    return -1;
+                }
+
+                return 0;
+            });
+        }
+
+        public addLODLevel(distance: number, mesh: Mesh): Mesh {
+            var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
+            this._LODLevels.push(level);
+
+            if (mesh) {
+                mesh._attachedLODLevel = level;
+            }
+
+            this._sortLODLevels();
+
+            return this;
+        }
+
+        public removeLODLevel(mesh: Mesh): Mesh {
+            if (mesh && !mesh._attachedLODLevel) {
+                return this;
+            }
+
+            var index;
+
+            if (mesh) {
+                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
+                mesh._attachedLODLevel = null;
+
+                this._LODLevels.splice(index, 1);
+
+                this._sortLODLevels();
+            } else {
+                for (index = 0; index < this._LODLevels.length; index++) {
+                    if (this._LODLevels[index].mesh === null) {
+                        this._LODLevels.splice(index, 1);
+                        break;
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public getLOD(camera: Camera): AbstractMesh {
+            if (!this._LODLevels || this._LODLevels.length === 0) {
+                return this;
+            }
+
+            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+
+            if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+                return this;
+            }
+
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance < distanceToCamera) {
+                    if (level.mesh) {
+                        level.mesh._worldMatrix = this._worldMatrix;
+                    }
+                    return level.mesh;
+                }
+            }
+
+            return this;
         }
 
         public getTotalVertices(): number {
@@ -87,6 +167,10 @@
                 return [];
             }
             return this._geometry.getIndices();
+        }
+
+        public get isBlocked(): boolean {
+            return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
         }
 
         public isReady(): boolean {
@@ -258,14 +342,15 @@
             var indexToBind;
 
             switch (fillMode) {
-                case Material.TriangleFillMode:
-                    indexToBind = this._geometry.getIndexBuffer();
+                case Material.PointFillMode:
+                    indexToBind = null;
                     break;
                 case Material.WireFrameFillMode:
                     indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
                     break;
                 default:
-                    indexToBind = null;
+                case Material.TriangleFillMode:
+                    indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
 

@@ -792,6 +792,10 @@
             for (var meshIndex = 0; meshIndex < len; meshIndex++) {
                 var mesh = meshes[meshIndex];
 
+                if (mesh.isBlocked) {
+                    continue;
+                }
+
                 this._totalVertices += mesh.getTotalVertices();
 
                 if (!mesh.isReady()) {
@@ -842,27 +846,29 @@
 
             if (mesh.showBoundingBox) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
-            }
+            }            
 
-            if (mesh.subMeshes) {
+            var activeMesh = mesh.getLOD(this.activeCamera);
+
+            if (activeMesh && activeMesh.subMeshes) {
                 // Submeshes Octrees
                 var len: number;
                 var subMeshes: SubMesh[];
 
-                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
+                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
+                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = mesh.subMeshes;
+                    subMeshes = activeMesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, mesh);
+                    this._evaluateSubMesh(subMesh, activeMesh);
                 }
             }
         }

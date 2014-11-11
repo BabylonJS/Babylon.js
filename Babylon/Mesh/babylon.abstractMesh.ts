@@ -79,7 +79,7 @@
         private _localPivotScaling = BABYLON.Matrix.Zero();
         private _localPivotScalingRotation = BABYLON.Matrix.Zero();
         private _localWorld = BABYLON.Matrix.Zero();
-        private _worldMatrix = BABYLON.Matrix.Zero();
+        public _worldMatrix = BABYLON.Matrix.Zero();
         private _rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
         private _absolutePosition = BABYLON.Vector3.Zero();
         private _collisionsTransformMatrix = BABYLON.Matrix.Zero();
@@ -103,6 +103,14 @@
         }
 
         // Methods
+        public get isBlocked(): boolean {
+            return false;
+        }
+
+        public getLOD(camera: Camera): AbstractMesh {
+            return this;
+        }
+
         public getTotalVertices(): number {
             return 0;
         }

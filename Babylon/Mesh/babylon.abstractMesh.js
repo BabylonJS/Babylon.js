@@ -103,7 +103,19 @@ var BABYLON;
             configurable: true
         });
 
-        // Methods
+        Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
+            // Methods
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        AbstractMesh.prototype.getLOD = function (camera) {
+            return this;
+        };
+
         AbstractMesh.prototype.getTotalVertices = function () {
             return 0;
         };
