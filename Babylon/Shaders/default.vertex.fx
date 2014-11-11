@@ -73,6 +73,10 @@ uniform mat4 bumpMatrix;
 uniform mat4 mBones[BonesPerMesh];
 #endif
 
+#ifdef POINTSIZE
+uniform float pointSize;
+#endif
+
 // Output
 varying vec3 vPositionW;
 varying vec3 vNormalW;
@@ -248,5 +252,10 @@ void main(void) {
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
+#endif
+
+	// Point size
+#ifdef POINTSIZE
+	gl_PointSize = pointSize;
 #endif
 }

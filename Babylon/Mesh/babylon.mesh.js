@@ -245,22 +245,21 @@ var BABYLON;
             }
         };
 
-        Mesh.prototype._bind = function (subMesh, effect, drawAs) {
+        Mesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
 
-            var indexToBind = undefined;
-            switch (drawAs) {
-                case WebGLRenderingContext.LINES:
+            // Wireframe
+            var indexToBind;
+
+            switch (fillMode) {
+                case BABYLON.Material.TriangleFillMode:
+                    indexToBind = this._geometry.getIndexBuffer();
+                    break;
+                case BABYLON.Material.WireFrameFillMode:
                     indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
                     break;
-
-                case WebGLRenderingContext.POINTS:
-                    indexToBind = null;
-                    break;
-
-                case WebGLRenderingContext.TRIANGLES:
                 default:
-                    indexToBind = this._geometry.getIndexBuffer();
+                    indexToBind = null;
                     break;
             }
 
@@ -268,70 +267,24 @@ var BABYLON;
             engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         };
 
-        Mesh.prototype._getStartIndexOfMesh = function (subMesh, drawAs) {
-            var start = 0;
-            switch (drawAs) {
-                case WebGLRenderingContext.LINES:
-                    start = 0;
-                    break;
-                case WebGLRenderingContext.POINTS:
-                    start = 0;
-                    break;
-
-                case WebGLRenderingContext.TRIANGLES:
-                default:
-                    start = subMesh.indexStart;
-                    break;
-            }
-
-            return start;
-        };
-
-        Mesh.prototype._getCountOfMesh = function (subMesh, drawAs) {
-            var count = 0;
-            switch (drawAs) {
-                case WebGLRenderingContext.LINES:
-                    count = subMesh.linesIndexCount;
-                    break;
-                case WebGLRenderingContext.POINTS:
-                    count = subMesh.verticesCount;
-                    break;
-
-                case WebGLRenderingContext.TRIANGLES:
-                default:
-                    count = subMesh.indexCount;
-                    break;
-            }
-
-            return count;
-        };
-
-        Mesh.prototype._draw = function (subMesh, drawAs, instancesCount) {
+        Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
 
             var engine = this.getScene().getEngine();
 
-            var start = this._getStartIndexOfMesh(subMesh, drawAs);
-            var count = this._getCountOfMesh(subMesh, drawAs);
+            switch (fillMode) {
+                case BABYLON.Material.PointFillMode:
+                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    break;
+                case BABYLON.Material.WireFrameFillMode:
+                    engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    break;
 
-            // Draw order
-            engine.draw(drawAs, start, count, instancesCount);
-        };
-
-        Mesh.prototype._fullDraw = function (subMesh, drawAs, instancesCount) {
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                default:
+                    engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
-
-            var engine = this.getScene().getEngine();
-
-            var start = this._getStartIndexOfMesh(subMesh, drawAs);
-            var count = this._getCountOfMesh(subMesh, drawAs);
-
-            // Draw order
-            engine.draw(drawAs, start, count, instancesCount);
         };
 
         Mesh.prototype.registerBeforeRender = function (func) {
@@ -391,7 +344,7 @@ var BABYLON;
             return this._batchCache;
         };
 
-        Mesh.prototype._renderWithInstances = function (subMesh, drawAs, batch, effect, engine) {
+        Mesh.prototype._renderWithInstances = function (subMesh, fillMode, batch, effect, engine) {
             var matricesCount = this.instances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
@@ -438,7 +391,7 @@ var BABYLON;
 
             engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
 
-            this._draw(subMesh, drawAs, instancesCount);
+            this._draw(subMesh, fillMode, instancesCount);
 
             engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         };
@@ -483,20 +436,19 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var drawAs = engine.forceWireframe ? WebGLRenderingContext.LINES : effectiveMaterial.drawAs;
-
-            this._bind(subMesh, effect, drawAs);
+            var fillMode = engine.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
 
             // Instances rendering
             if (hardwareInstancedRendering) {
-                this._renderWithInstances(subMesh, drawAs, batch, effect, engine);
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
             } else {
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
-                    this._draw(subMesh, drawAs);
+                    this._draw(subMesh, fillMode);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -508,7 +460,7 @@ var BABYLON;
                         effectiveMaterial.bindOnlyWorldMatrix(world);
 
                         // Draw
-                        this._draw(subMesh, drawAs);
+                        this._draw(subMesh, fillMode);
                     }
                 }
             }

@@ -1,11 +1,26 @@
 ﻿module BABYLON {
     export class Material {
+        private static _TriangleFillMode = 0;
+        private static _WireFrameFillMode = 1;
+        private static _PointFillMode = 2;
+
+        public static get TriangleFillMode(): number {
+            return Material._TriangleFillMode;
+        }
+
+        public static get WireFrameFillMode(): number {
+            return Material._WireFrameFillMode;
+        }
+
+        public static get PointFillMode(): number {
+            return Material._PointFillMode;
+        }
+
         public id: string;
         public checkReadyOnEveryCall = true;
         public checkReadyOnlyOnce = false;
         public state = "";
         public alpha = 1.0;
-        public drawAs = WebGLRenderingContext.TRIANGLES;
         public backFaceCulling = true;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
@@ -15,6 +30,33 @@
         public _effect: Effect;
         public _wasPreviouslyReady = false;
         private _scene: Scene;
+        private _fillMode = Material.TriangleFillMode;
+
+        public pointSize = 1.0;
+
+        public get wireframe(): boolean {
+            return this._fillMode === Material.WireFrameFillMode;
+        }
+
+        public set wireframe(value:boolean) {
+            this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+        }
+
+        public get pointsCloud(): boolean {
+            return this._fillMode === Material.PointFillMode;
+        }
+
+        public set pointsCloud(value: boolean) {
+            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+        }
+
+        public get fillMode(): number {
+            return this._fillMode;
+        }
+
+        public set fillMode(value: number) {
+            this._fillMode = value;
+        }
 
         constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
             this.id = name;

@@ -248,5 +248,17 @@ var BABYLON;
         return FireProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.FireProceduralTexture = FireProceduralTexture;
+
+    var CloudProceduralTexture = (function (_super) {
+        __extends(CloudProceduralTexture, _super);
+        function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+        }
+        return CloudProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.CloudProceduralTexture = CloudProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.standardProceduralTexture.js.map

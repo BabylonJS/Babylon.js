@@ -1254,18 +1254,17 @@
                 result.x = Math.atan2(qxz + qwy, qwx - qyz);
                 result.y = Math.acos(1 - 2 * determinant);
                 result.z = Math.atan2(qxz - qwy, qwx + qyz);
-            }
-            else
-            if (determinant == 0.000) {
-                result.x = 0.0;
-                result.y = 0.0;
-                result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-            }
-            else //determinant == 1.000
-            {
-                result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                result.y = Math.PI;
-                result.z = 0.0;
+            } else {
+                if (determinant == 0.000) {
+                    result.x = 0.0;
+                    result.y = 0.0;
+                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                } else //determinant == 1.000
+                {
+                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
+                    result.y = Math.PI;
+                    result.z = 0.0;
+                }
             }
         }
 
@@ -1425,127 +1424,6 @@
             }
 
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
-        }
-    }
-
-    export class EulerAngles {
-        constructor(public x: number = 0, public y: number = 0, public z: number = 0) { }
-
-        public toString(): string {
-            return "{x: " + this.x + " y:" + this.y + " z:" + this.z + "}";
-        }
-
-        public asArray(): number[] {
-            return [this.x, this.y, this.z];
-        }
-
-        public equals(otherEulerAngles: EulerAngles): boolean {
-            return otherEulerAngles && this.x === otherEulerAngles.x && this.y === otherEulerAngles.y && this.z === otherEulerAngles.z;
-        }
-
-        public clone(): EulerAngles {
-            return new EulerAngles(this.x, this.y, this.z);
-        }
-
-        public copyFrom(other: EulerAngles): void {
-            this.x = other.x;
-            this.y = other.y;
-            this.z = other.z;
-        }
-
-        public copyFromFloats(x: number, y: number, z: number): void {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public add(other: EulerAngles): EulerAngles {
-            return new EulerAngles(this.x + other.x, this.y + other.y, this.z + other.z);
-        }
-
-        public subtract(other: EulerAngles): EulerAngles {
-            return new EulerAngles(this.x - other.x, this.y - other.y, this.z - other.z);
-        }
-
-        public scale(value: number): EulerAngles {
-            return new EulerAngles(this.x * value, this.y * value, this.z * value);
-        }
-
-        public length(): number {
-            return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
-        }
-
-        public normalize(): void {
-            var length = 1.0 / this.length();
-            this.x *= length;
-            this.y *= length;
-            this.z *= length;
-        }
-
-        public toQuaternion(): Vector4 {
-            var result;
-
-            //result is a Quaternion in the z-x-z rotation convention
-            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
-            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
-            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
-            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
-            var cosy = Math.cos(this.y * 0.5);
-            var siny = Math.sin(this.y * 0.5);
-
-            result.x = coszMinusx * siny;
-            result.y = -sinzMinusx * siny; 
-            result.z = sinxPlusz * cosy;
-            result.w = cosxPlusz * cosy;
-
-            return result;
-
-        }
-
-        public toRotationMatrix(result: Matrix): void {
-            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
-            //done in the z-x-z rotation convention
-            var cosx = Math.cos(this.x);
-            var sinx = Math.sin(this.x);
-            var cosy = Math.cos(this.y);
-            var siny = Math.sin(this.y);
-            var cosz = Math.cos(this.z);
-            var sinz = Math.sin(this.z);
-
-            result.m[0] = cosx * cosz - cosy * sinx * sinz;
-            result.m[1] = cosy * sinx * cosz + cosx * sinz;
-            result.m[2] = siny * sinx;
-            result.m[4] = -sinx * cosz - cosy * cosx * sinz;
-            result.m[5] = cosy * cosx * cosz - sinx * sinz;
-            result.m[6] = siny * cosx;
-            result.m[8] = siny * sinz;
-            result.m[9] = -siny * cosz;
-            result.m[10] = cosy;
-        }
-
-        public fromRotationMatrix(matrix: Matrix): void {
-            var data = matrix.m;
-            var m11 = data[0], m12 = data[4], m13 = data[8];
-            var m21 = data[1], m22 = data[5], m23 = data[9];
-            var m31 = data[2], m32 = data[6], m33 = data[10];
-
-            if (m33 == -1) {
-                this.x = 0; //any angle works here
-                this.y = Math.PI;
-                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
-
-            }
-            else
-            if (m33 == 1) {
-                this.x = 0; //any angle works here
-                this.y = 0;
-                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
-            }
-            else {
-                this.x = Math.atan2(m31, m32);
-                this.y = Math.acos(m33); //principal value (between 0 and PI)
-                this.z = Math.atan2(m13, -m23);
-            }
         }
     }
 
