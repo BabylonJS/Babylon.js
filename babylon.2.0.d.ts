@@ -1775,6 +1775,50 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class ProceduralTexture extends Texture {
+        private _size;
+        public _generateMipMaps: boolean;
+        private _doNotChangeAspectRatio;
+        private _currentRefreshId;
+        private _refreshRate;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _uniforms;
+        private _samplers;
+        private _fragment;
+        private _textures;
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _matrices;
+        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
+        public isReady(): boolean;
+        public resetRefreshCounter(): void;
+        public refreshRate : number;
+        public _shouldRender(): boolean;
+        public getRenderSize(): number;
+        public resize(size: any, generateMipMaps: any): void;
+        private _checkUniform(uniformName);
+        public setTexture(name: string, texture: Texture): ProceduralTexture;
+        public setFloat(name: string, value: number): ProceduralTexture;
+        public setFloats(name: string, value: number[]): ProceduralTexture;
+        public setColor3(name: string, value: Color3): ProceduralTexture;
+        public setColor4(name: string, value: Color4): ProceduralTexture;
+        public setVector2(name: string, value: Vector2): ProceduralTexture;
+        public setVector3(name: string, value: Vector3): ProceduralTexture;
+        public setMatrix(name: string, value: Matrix): ProceduralTexture;
+        public render(useCameraPostProcess?: boolean): void;
+        public clone(): ProceduralTexture;
+        public dispose(): void;
+    }
+}
+declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -2353,7 +2397,7 @@ declare module BABYLON {
         private _localPivotScaling;
         private _localPivotScalingRotation;
         private _localWorld;
-        private _worldMatrix;
+        public _worldMatrix: Matrix;
         private _rotateYByPI;
         private _absolutePosition;
         private _collisionsTransformMatrix;
@@ -2368,6 +2412,8 @@ declare module BABYLON {
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress: AbstractMesh[];
         constructor(name: string, scene: Scene);
+        public isBlocked : boolean;
+        public getLOD(camera: Camera): AbstractMesh;
         public getTotalVertices(): number;
         public getIndices(): number[];
         public getVerticesData(kind: string): number[];
@@ -2644,6 +2690,7 @@ declare module BABYLON {
         public instances: InstancedMesh[];
         public delayLoadingFile: string;
         public _binaryInfo: any;
+        private _LODLevels;
         public _geometry: Geometry;
         private _onBeforeRenderCallbacks;
         private _onAfterRenderCallbacks;
@@ -2657,7 +2704,12 @@ declare module BABYLON {
         private _instancesBufferSize;
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId;
+        private _attachedLODLevel;
         constructor(name: string, scene: Scene);
+        private _sortLODLevels();
+        public addLODLevel(distance: number, mesh: Mesh): Mesh;
+        public removeLODLevel(mesh: Mesh): Mesh;
+        public getLOD(camera: Camera): AbstractMesh;
         public getTotalVertices(): number;
         public getVerticesData(kind: string): number[];
         public getVertexBuffer(kind: any): VertexBuffer;
@@ -2665,6 +2717,7 @@ declare module BABYLON {
         public getVerticesDataKinds(): string[];
         public getTotalIndices(): number;
         public getIndices(): number[];
+        public isBlocked : boolean;
         public isReady(): boolean;
         public isDisposed(): boolean;
         public _preActivate(): void;
@@ -2773,6 +2826,13 @@ declare module BABYLON {
         static CreatePlane(size: number): VertexData;
         static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number): VertexData;
         static ComputeNormals(positions: number[], indices: number[], normals: number[]): void;
+    }
+}
+declare module BABYLON.Internals {
+    class MeshLODLevel {
+        public distance: number;
+        public mesh: Mesh;
+        constructor(distance: number, mesh: Mesh);
     }
 }
 declare module BABYLON {

@@ -23,6 +23,7 @@ var BABYLON;
             // Members
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.instances = new Array();
+            this._LODLevels = new Array();
             this._onBeforeRenderCallbacks = new Array();
             this._onAfterRenderCallbacks = new Array();
             this._visibleInstances = {};
@@ -30,6 +31,84 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
         }
+        // Methods
+        Mesh.prototype._sortLODLevels = function () {
+            this._LODLevels.sort(function (a, b) {
+                if (a.distance < b.distance) {
+                    return 1;
+                }
+                if (a.distance > b.distance) {
+                    return -1;
+                }
+
+                return 0;
+            });
+        };
+
+        Mesh.prototype.addLODLevel = function (distance, mesh) {
+            var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
+            this._LODLevels.push(level);
+
+            if (mesh) {
+                mesh._attachedLODLevel = level;
+            }
+
+            this._sortLODLevels();
+
+            return this;
+        };
+
+        Mesh.prototype.removeLODLevel = function (mesh) {
+            if (mesh && !mesh._attachedLODLevel) {
+                return this;
+            }
+
+            var index;
+
+            if (mesh) {
+                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
+                mesh._attachedLODLevel = null;
+
+                this._LODLevels.splice(index, 1);
+
+                this._sortLODLevels();
+            } else {
+                for (index = 0; index < this._LODLevels.length; index++) {
+                    if (this._LODLevels[index].mesh === null) {
+                        this._LODLevels.splice(index, 1);
+                        break;
+                    }
+                }
+            }
+
+            return this;
+        };
+
+        Mesh.prototype.getLOD = function (camera) {
+            if (!this._LODLevels || this._LODLevels.length === 0) {
+                return this;
+            }
+
+            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+
+            if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+                return this;
+            }
+
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance < distanceToCamera) {
+                    if (level.mesh) {
+                        level.mesh._worldMatrix = this._worldMatrix;
+                    }
+                    return level.mesh;
+                }
+            }
+
+            return this;
+        };
+
         Mesh.prototype.getTotalVertices = function () {
             if (!this._geometry) {
                 return 0;
@@ -87,6 +166,14 @@ var BABYLON;
             }
             return this._geometry.getIndices();
         };
+
+        Object.defineProperty(Mesh.prototype, "isBlocked", {
+            get: function () {
+                return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
         Mesh.prototype.isReady = function () {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
@@ -252,14 +339,15 @@ var BABYLON;
             var indexToBind;
 
             switch (fillMode) {
-                case BABYLON.Material.TriangleFillMode:
-                    indexToBind = this._geometry.getIndexBuffer();
+                case BABYLON.Material.PointFillMode:
+                    indexToBind = null;
                     break;
                 case BABYLON.Material.WireFrameFillMode:
                     indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
                     break;
                 default:
-                    indexToBind = null;
+                case BABYLON.Material.TriangleFillMode:
+                    indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
 

@@ -896,8 +896,6 @@
                         var subMesh = new BABYLON.SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
-
-                return;
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
                 mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, parsedGeometry.positions, false);
                 mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, parsedGeometry.normals, false);
@@ -939,15 +937,15 @@
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
-            }
 
-            // SubMeshes
-            if (parsedGeometry.subMeshes) {
-                mesh.subMeshes = [];
-                for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
-                    var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
+                // SubMeshes
+                if (parsedGeometry.subMeshes) {
+                    mesh.subMeshes = [];
+                    for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
+                        var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                        var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    }
                 }
             }
 

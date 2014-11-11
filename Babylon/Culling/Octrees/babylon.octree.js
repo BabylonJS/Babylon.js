@@ -87,7 +87,7 @@
         };
 
         Octree.CreationFuncForMeshes = function (entry, block) {
-            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };

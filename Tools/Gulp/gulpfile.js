@@ -157,6 +157,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Cameras/babylon.vrDeviceOrientationCamera.js',
       '../../Babylon/Cameras/babylon.webVRCamera.js',
       '../../Babylon/Tools/babylon.sceneOptimizer.js',
+      '../../Babylon/Mesh/babylon.meshLODLevel.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))

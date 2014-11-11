@@ -203,6 +203,7 @@
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
+
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
@@ -224,10 +225,20 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
+                // Is it a problem with precision?
+                if (e.message.indexOf("highp") !== -1) {
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+
+                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
+
+                    return;
+                }
+                // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
-                } else {
+                } else { // SOrry we did everything we can
                     Tools.Error("Unable to compile effect: " + this.name);
                     Tools.Error("Defines: " + defines);
                     Tools.Error("Error: " + e.message);

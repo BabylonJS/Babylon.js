@@ -96,7 +96,7 @@
         }
 
         public static CreationFuncForMeshes = (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>): void => {
-            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         }

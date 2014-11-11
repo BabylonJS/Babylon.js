@@ -8819,6 +8819,10 @@ var BABYLON;
             for (var meshIndex = 0; meshIndex < len; meshIndex++) {
                 var mesh = meshes[meshIndex];
 
+                if (mesh.isBlocked) {
+                    continue;
+                }
+
                 this._totalVertices += mesh.getTotalVertices();
 
                 if (!mesh.isReady()) {
@@ -8871,25 +8875,27 @@ var BABYLON;
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
-            if (mesh.subMeshes) {
+            var activeMesh = mesh.getLOD(this.activeCamera);
+
+            if (activeMesh && activeMesh.subMeshes) {
                
                 var len;
                 var subMeshes;
 
-                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
+                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
+                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = mesh.subMeshes;
+                    subMeshes = activeMesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, mesh);
+                    this._evaluateSubMesh(subMesh, activeMesh);
                 }
             }
         };
@@ -9846,7 +9852,19 @@ var BABYLON;
             configurable: true
         });
 
-       
+        Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
+           
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        AbstractMesh.prototype.getLOD = function (camera) {
+            return this;
+        };
+
         AbstractMesh.prototype.getTotalVertices = function () {
             return 0;
         };
@@ -10580,6 +10598,7 @@ var BABYLON;
            
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.instances = new Array();
+            this._LODLevels = new Array();
             this._onBeforeRenderCallbacks = new Array();
             this._onAfterRenderCallbacks = new Array();
             this._visibleInstances = {};
@@ -10587,6 +10606,84 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
         }
+       
+        Mesh.prototype._sortLODLevels = function () {
+            this._LODLevels.sort(function (a, b) {
+                if (a.distance < b.distance) {
+                    return 1;
+                }
+                if (a.distance > b.distance) {
+                    return -1;
+                }
+
+                return 0;
+            });
+        };
+
+        Mesh.prototype.addLODLevel = function (distance, mesh) {
+            var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
+            this._LODLevels.push(level);
+
+            if (mesh) {
+                mesh._attachedLODLevel = level;
+            }
+
+            this._sortLODLevels();
+
+            return this;
+        };
+
+        Mesh.prototype.removeLODLevel = function (mesh) {
+            if (mesh && !mesh._attachedLODLevel) {
+                return this;
+            }
+
+            var index;
+
+            if (mesh) {
+                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
+                mesh._attachedLODLevel = null;
+
+                this._LODLevels.splice(index, 1);
+
+                this._sortLODLevels();
+            } else {
+                for (index = 0; index < this._LODLevels.length; index++) {
+                    if (this._LODLevels[index].mesh === null) {
+                        this._LODLevels.splice(index, 1);
+                        break;
+                    }
+                }
+            }
+
+            return this;
+        };
+
+        Mesh.prototype.getLOD = function (camera) {
+            if (!this._LODLevels || this._LODLevels.length === 0) {
+                return this;
+            }
+
+            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+
+            if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+                return this;
+            }
+
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance < distanceToCamera) {
+                    if (level.mesh) {
+                        level.mesh._worldMatrix = this._worldMatrix;
+                    }
+                    return level.mesh;
+                }
+            }
+
+            return this;
+        };
+
         Mesh.prototype.getTotalVertices = function () {
             if (!this._geometry) {
                 return 0;
@@ -10644,6 +10741,14 @@ var BABYLON;
             }
             return this._geometry.getIndices();
         };
+
+        Object.defineProperty(Mesh.prototype, "isBlocked", {
+            get: function () {
+                return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
         Mesh.prototype.isReady = function () {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
@@ -10809,14 +10914,15 @@ var BABYLON;
             var indexToBind;
 
             switch (fillMode) {
-                case BABYLON.Material.TriangleFillMode:
-                    indexToBind = this._geometry.getIndexBuffer();
+                case BABYLON.Material.PointFillMode:
+                    indexToBind = null;
                     break;
                 case BABYLON.Material.WireFrameFillMode:
                     indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
                     break;
                 default:
-                    indexToBind = null;
+                case BABYLON.Material.TriangleFillMode:
+                    indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
 
@@ -13774,6 +13880,7 @@ var BABYLON;
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try  {
                 var engine = this._engine;
+
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
@@ -13795,6 +13902,17 @@ var BABYLON;
                     this.onCompiled(this);
                 }
             } catch (e) {
+               
+                if (e.message.indexOf("highp") !== -1) {
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+
+                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
+
+                    return;
+                }
+
+               
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
@@ -16705,7 +16823,7 @@ var BABYLON;
         };
 
         Octree.CreationFuncForMeshes = function (entry, block) {
-            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            if (!entry.isBlocked && entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         };
@@ -20148,8 +20266,6 @@ var BABYLON;
                         var subMesh = new BABYLON.SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
                     }
                 }
-
-                return;
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
                 mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, parsedGeometry.positions, false);
                 mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, parsedGeometry.normals, false);
@@ -20191,15 +20307,15 @@ var BABYLON;
                 }
 
                 mesh.setIndices(parsedGeometry.indices);
-            }
 
-           
-            if (parsedGeometry.subMeshes) {
-                mesh.subMeshes = [];
-                for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
-                    var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
+               
+                if (parsedGeometry.subMeshes) {
+                    mesh.subMeshes = [];
+                    for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
+                        var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                        var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    }
                 }
             }
 
@@ -27624,4 +27740,18 @@ var BABYLON;
         return SceneOptimizer;
     })();
     BABYLON.SceneOptimizer = SceneOptimizer;
+})(BABYLON || (BABYLON = {}));
+var BABYLON;
+(function (BABYLON) {
+    (function (Internals) {
+        var MeshLODLevel = (function () {
+            function MeshLODLevel(distance, mesh) {
+                this.distance = distance;
+                this.mesh = mesh;
+            }
+            return MeshLODLevel;
+        })();
+        Internals.MeshLODLevel = MeshLODLevel;
+    })(BABYLON.Internals || (BABYLON.Internals = {}));
+    var Internals = BABYLON.Internals;
 })(BABYLON || (BABYLON = {}));
