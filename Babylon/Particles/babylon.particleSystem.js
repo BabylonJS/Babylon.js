@@ -341,7 +341,7 @@
                 engine.setDepthWrite(true);
             }
 
-            engine.draw(WebGLRenderingContext.TRIANGLES, 0, this.particles.length * 6);
+            engine.draw(true, 0, this.particles.length * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
 
             return this.particles.length;

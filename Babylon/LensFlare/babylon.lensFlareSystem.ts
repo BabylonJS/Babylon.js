@@ -201,7 +201,7 @@
                 this._effect.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
 
                 // Draw order
-                engine.draw(WebGLRenderingContext.TRIANGLES, 0, 6);
+                engine.draw(true, 0, 6);
             }
 
             engine.setDepthBuffer(true);

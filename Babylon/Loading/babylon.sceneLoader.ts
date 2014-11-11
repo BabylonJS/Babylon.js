@@ -56,7 +56,7 @@
             var manifestChecked = success => {
                 scene.database = database;
 
-                var plugin = this._getPluginForFilename(sceneFilename);
+                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
 
                 var importMeshFromData = data => {
                     var meshes = [];

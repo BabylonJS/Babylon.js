@@ -170,6 +170,11 @@ var BABYLON;
                 defines.push("#define ALPHAFROMDIFFUSE");
             }
 
+            // Point size
+            if (this.pointsCloud) {
+                defines.push("#define POINTSIZE");
+            }
+
             // Fog
             if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
@@ -353,7 +358,7 @@ var BABYLON;
                     "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                     "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                     "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                    "vFogInfos", "vFogColor",
+                    "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
@@ -542,6 +547,11 @@ var BABYLON;
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
+
+            // Point size
+            if (this.pointsCloud) {
+                this._effect.setFloat("pointSize", this.pointSize);
+            }
         };
 
         StandardMaterial.prototype.getAnimatables = function () {
@@ -616,7 +626,7 @@ var BABYLON;
             // Base material
             newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
             newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.drawAs = this.drawAs;
+            newStandardMaterial.fillMode = this.fillMode;
             newStandardMaterial.backFaceCulling = this.backFaceCulling;
 
             // Standard material

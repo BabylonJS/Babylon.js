@@ -143,6 +143,7 @@ declare module BABYLON {
         public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocations: number[]): void;
         public applyStates(): void;
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
+        public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void;
         public _releaseEffect(effect: Effect): void;
         public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
         public createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
@@ -1566,12 +1567,17 @@ declare module BABYLON {
 declare module BABYLON {
     class Material {
         public name: string;
+        private static _TriangleFillMode;
+        private static _WireFrameFillMode;
+        private static _PointFillMode;
+        static TriangleFillMode : number;
+        static WireFrameFillMode : number;
+        static PointFillMode : number;
         public id: string;
         public checkReadyOnEveryCall: boolean;
         public checkReadyOnlyOnce: boolean;
         public state: string;
         public alpha: number;
-        public wireframe: boolean;
         public backFaceCulling: boolean;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
@@ -1580,6 +1586,11 @@ declare module BABYLON {
         public _effect: Effect;
         public _wasPreviouslyReady: boolean;
         private _scene;
+        private _fillMode;
+        public pointSize: number;
+        public wireframe : boolean;
+        public pointsCloud : boolean;
+        public fillMode : number;
         constructor(name: string, scene: Scene, doNotAdd?: boolean);
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         public getEffect(): Effect;
@@ -1764,50 +1775,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class ProceduralTexture extends Texture {
-        private _size;
-        public _generateMipMaps: boolean;
-        private _doNotChangeAspectRatio;
-        private _currentRefreshId;
-        private _refreshRate;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _uniforms;
-        private _samplers;
-        private _fragment;
-        private _textures;
-        private _floats;
-        private _floatsArrays;
-        private _colors3;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _matrices;
-        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
-        public isReady(): boolean;
-        public resetRefreshCounter(): void;
-        public refreshRate : number;
-        public _shouldRender(): boolean;
-        public getRenderSize(): number;
-        public resize(size: any, generateMipMaps: any): void;
-        private _checkUniform(uniformName);
-        public setTexture(name: string, texture: Texture): ProceduralTexture;
-        public setFloat(name: string, value: number): ProceduralTexture;
-        public setFloats(name: string, value: number[]): ProceduralTexture;
-        public setColor3(name: string, value: Color3): ProceduralTexture;
-        public setColor4(name: string, value: Color4): ProceduralTexture;
-        public setVector2(name: string, value: Vector2): ProceduralTexture;
-        public setVector3(name: string, value: Vector3): ProceduralTexture;
-        public setMatrix(name: string, value: Matrix): ProceduralTexture;
-        public render(useCameraPostProcess?: boolean): void;
-        public clone(): ProceduralTexture;
-        public dispose(): void;
-    }
-}
-declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -1972,6 +1939,9 @@ declare module BABYLON {
         public speed : Vector2;
         public shift : number;
         public alpha : number;
+    }
+    class CloudProceduralTexture extends ProceduralTexture {
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
     }
 }
 declare module BABYLON {
@@ -2139,7 +2109,6 @@ declare module BABYLON {
         static DistanceSquared(value1: Vector3, value2: Vector3): number;
         static Center(value1: Vector3, value2: Vector3): Vector3;
     }
-
     class Vector4 {
         public x: number;
         public y: number;
@@ -2160,13 +2129,13 @@ declare module BABYLON {
         public negate(): Vector4;
         public scaleInPlace(scale: number): Vector4;
         public scale(scale: number): Vector4;
-        public scaleToRef(scale: number, result: Vector4);
+        public scaleToRef(scale: number, result: Vector4): void;
         public equals(otherVector: Vector4): boolean;
         public equalsWithEpsilon(otherVector: Vector4): boolean;
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean;
         public multiplyInPlace(otherVector: Vector4): void;
         public multiply(otherVector: Vector4): Vector4;
-        public multiplyToRef(otherVector: Vector4, result: Vector4): void
+        public multiplyToRef(otherVector: Vector4, result: Vector4): void;
         public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
         public divide(otherVector: Vector4): Vector4;
         public divideToRef(otherVector: Vector4, result: Vector4): void;
@@ -2191,7 +2160,6 @@ declare module BABYLON {
         static DistanceSquared(value1: Vector4, value2: Vector4): number;
         static Center(value1: Vector4, value2: Vector4): Vector4;
     }
-
     class Quaternion {
         public x: number;
         public y: number;
@@ -2222,28 +2190,6 @@ declare module BABYLON {
         static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
         static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
     }
-
-    class EulerAngles {
-        public x: number;
-        public y: number;
-        public z: number;
-        constructor(x?: number, y?: number, z?: number);
-        public toString(): string;
-        public asArray(): number[];
-        public equals(otherEulerAngles: EulerAngles): boolean;
-        public clone(): EulerAngles;
-        public copyFrom(other: EulerAngles): void;
-        public copyFromFloats(x: number, y: number, z: number): void;
-        public add(other: EulerAngles): EulerAngles;
-        public subtract(other: EulerAngles): EulerAngles;
-        public scale(value: number): EulerAngles;
-        public length(): number;
-        public normalize(): void;
-        public toQuaternion(): Vector4;
-        public toRotationMatrix(result: Matrix): void;
-        public fromRotationMatrix(matrix: Matrix): void;
-    }
-
     class Matrix {
         private static _tempQuaternion;
         private static _xAxis;
@@ -2681,8 +2627,8 @@ declare module BABYLON {
         public material : Material;
         public isPickable : boolean;
         public checkCollisions : boolean;
-        public _bind(subMesh: SubMesh, effect: Effect, wireframe?: boolean): void;
-        public _draw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void;
+        public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
         public intersects(ray: Ray, fastCheck?: boolean): any;
         public dispose(doNotRecurse?: boolean): void;
     }
@@ -2731,15 +2677,14 @@ declare module BABYLON {
         public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void;
         public makeGeometryUnique(): void;
         public setIndices(indices: number[]): void;
-        public _bind(subMesh: SubMesh, effect: Effect, wireframe?: boolean): void;
-        public _draw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void;
-        public _fullDraw(subMesh: SubMesh, useTriangles: boolean, instancesCount?: number): void;
+        public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
         public registerBeforeRender(func: () => void): void;
         public unregisterBeforeRender(func: () => void): void;
         public registerAfterRender(func: () => void): void;
         public unregisterAfterRender(func: () => void): void;
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch;
-        public _renderWithInstances(subMesh: SubMesh, wireFrame: boolean, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
+        public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
         public render(subMesh: SubMesh): void;
         public getEmittedParticleSystems(): ParticleSystem[];
         public getHierarchyEmittedParticleSystems(): ParticleSystem[];
@@ -3680,32 +3625,32 @@ declare module BABYLON {
         public apply: (scene: Scene) => boolean;
         constructor(priority?: number);
     }
-    class TextureSceneOptimization extends SceneOptimization {
+    class TextureOptimization extends SceneOptimization {
         public priority: number;
         public maximumSize: number;
         constructor(priority?: number, maximumSize?: number);
         public apply: (scene: Scene) => boolean;
     }
-    class HardwareScalingSceneOptimization extends SceneOptimization {
+    class HardwareScalingOptimization extends SceneOptimization {
         public priority: number;
         public maximumScale: number;
         private _currentScale;
         constructor(priority?: number, maximumScale?: number);
         public apply: (scene: Scene) => boolean;
     }
-    class ShadowsSceneOptimization extends SceneOptimization {
+    class ShadowsOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
-    class PostProcessesSceneOptimization extends SceneOptimization {
+    class PostProcessesOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
-    class LensFlaresSceneOptimization extends SceneOptimization {
+    class LensFlaresOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
-    class ParticlesSceneOptimization extends SceneOptimization {
+    class ParticlesOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
-    class RenderTargetsSceneOptimization extends SceneOptimization {
+    class RenderTargetsOptimization extends SceneOptimization {
         public apply: (scene: Scene) => boolean;
     }
     class SceneOptimizerOptions {

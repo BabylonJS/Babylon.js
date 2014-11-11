@@ -150,12 +150,12 @@
             // Draw order
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.draw(WebGLRenderingContext.TRIANGLES, 0, max * 6);
+            engine.draw(true, 0, max * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            engine.draw(WebGLRenderingContext.TRIANGLES, 0, max * 6);
+            engine.draw(true, 0, max * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         }
 

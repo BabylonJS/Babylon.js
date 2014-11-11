@@ -151,7 +151,6 @@
                 [0.0, 0.2, 0.9]
             ];
         }
-       
 
         public get fireColors(): number[][] {
             return this._fireColors;
@@ -199,4 +198,17 @@
         }
 
     }
+
+    export class CloudProceduralTexture extends ProceduralTexture {
+
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+            super(name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+
+        }
+    }
+
 }

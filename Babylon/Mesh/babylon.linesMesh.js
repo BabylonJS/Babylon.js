@@ -45,7 +45,7 @@ var BABYLON;
             configurable: true
         });
 
-        LinesMesh.prototype._bind = function (subMesh, effect, drawAs) {
+        LinesMesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
 
             var indexToBind = this._geometry.getIndexBuffer();
@@ -57,7 +57,7 @@ var BABYLON;
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         };
 
-        LinesMesh.prototype._draw = function (subMesh, drawAs, instancesCount) {
+        LinesMesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
@@ -65,7 +65,7 @@ var BABYLON;
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.draw(WebGLRenderingContext.LINES, subMesh.indexStart, subMesh.indexCount);
+            engine.draw(false, subMesh.indexStart, subMesh.indexCount);
         };
 
         LinesMesh.prototype.intersects = function (ray, fastCheck) {

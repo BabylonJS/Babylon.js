@@ -59,7 +59,7 @@
 
             // Draw order
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            engine.draw(WebGLRenderingContext.TRIANGLES, 0, 6);
+            engine.draw(true, 0, 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         };
 

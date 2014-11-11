@@ -51,11 +51,10 @@
         };
 
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
-            var _this = this;
             var manifestChecked = function (success) {
                 scene.database = database;
 
-                var plugin = _this._getPluginForFilename(sceneFilename);
+                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
 
                 var importMeshFromData = function (data) {
                     var meshes = [];

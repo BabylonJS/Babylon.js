@@ -898,6 +898,7 @@ var BABYLON;
     })();
     BABYLON.Vector3 = Vector3;
 
+   
     var Vector4 = (function () {
         function Vector4(x, y, z, w) {
             this.x = x;
@@ -905,10 +906,11 @@ var BABYLON;
             this.z = z;
             this.w = w;
         }
+        Vector4.prototype.toString = function () {
+            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+        };
 
-        Vector4.prototype.toString = function ()
-        { return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}"; };
-
+       
         Vector4.prototype.asArray = function () {
             var result = [];
 
@@ -953,8 +955,9 @@ var BABYLON;
             this.w -= otherVector.w;
         };
 
-        Vector4.prototype.subtract = function (otherVector)
-        { return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w); };
+        Vector4.prototype.subtract = function (otherVector) {
+            return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        };
 
         Vector4.prototype.subtractToRef = function (otherVector, result) {
             result.x = this.x - otherVector.x;
@@ -963,8 +966,9 @@ var BABYLON;
             result.w = this.w - otherVector.w;
         };
 
-        Vector4.prototype.subtractFromFloats = function (x, y, z, w)
-        { return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w); };
+        Vector4.prototype.subtractFromFloats = function (x, y, z, w) {
+            return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
+        };
 
         Vector4.prototype.subtractFromFloatsToRef = function (x, y, z, w, result) {
             result.x = this.x - x;
@@ -973,8 +977,9 @@ var BABYLON;
             result.w = this.w - w;
         };
 
-        Vector4.prototype.negate = function ()
-        { return new Vector4(-this.x, -this.y, -this.z, -this.w); };
+        Vector4.prototype.negate = function () {
+            return new Vector4(-this.x, -this.y, -this.z, -this.w);
+        };
 
         Vector4.prototype.scaleInPlace = function (scale) {
             this.x *= scale;
@@ -984,8 +989,9 @@ var BABYLON;
             return this;
         };
 
-        Vector4.prototype.scale = function (scale)
-        { return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale); };
+        Vector4.prototype.scale = function (scale) {
+            return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        };
 
         Vector4.prototype.scaleToRef = function (scale, result) {
             result.x = this.x * scale;
@@ -994,18 +1000,17 @@ var BABYLON;
             result.w = this.w * scale;
         };
 
-        Vector4.prototype.equals = function (otherVector)
-        { return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w; };
-
-        Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < Engine.Epsilon &&
-                Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+        Vector4.prototype.equals = function (otherVector) {
+            return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         };
 
-        Vector4.prototype.equalsToFloats = function (x, y, z, w)
-        { return this.x === x && this.y === y && this.z === z && this.w === w; };
+        Vector4.prototype.equalsWithEpsilon = function (otherVector) {
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon && Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
+        };
+
+        Vector4.prototype.equalsToFloats = function (x, y, z, w) {
+            return this.x === x && this.y === y && this.z === z && this.w === w;
+        };
 
         Vector4.prototype.multiplyInPlace = function (otherVector) {
             this.x *= otherVector.x;
@@ -1014,8 +1019,9 @@ var BABYLON;
             this.w *= otherVector.w;
         };
 
-        Vector4.prototype.multiply = function (otherVector)
-        { return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w); };
+        Vector4.prototype.multiply = function (otherVector) {
+            return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        };
 
         Vector4.prototype.multiplyToRef = function (otherVector, result) {
             result.x = this.x * otherVector.x;
@@ -1024,11 +1030,13 @@ var BABYLON;
             result.w = this.w * otherVector.w;
         };
 
-        Vector4.prototype.multiplyByFloats = function (x, y, z, w)
-        { return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w); };
+        Vector4.prototype.multiplyByFloats = function (x, y, z, w) {
+            return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
+        };
 
-        Vector4.prototype.divide = function (otherVector)
-        { return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w); };
+        Vector4.prototype.divide = function (otherVector) {
+            return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        };
 
         Vector4.prototype.divideToRef = function (otherVector, result) {
             result.x = this.x / otherVector.x;
@@ -1037,26 +1045,38 @@ var BABYLON;
             result.w = this.w / otherVector.w;
         };
 
-        Vector4.prototype.minimizeInPlace = function (other) {
-            if (other.x < this.x) this.x = other.x;
-            if (other.y < this.y) this.y = other.y;
-            if (other.z < this.z) this.z = other.z;
-            if (other.w < this.w) this.w = other.w;
+        Vector4.prototype.MinimizeInPlace = function (other) {
+            if (other.x < this.x)
+                this.x = other.x;
+            if (other.y < this.y)
+                this.y = other.y;
+            if (other.z < this.z)
+                this.z = other.z;
+            if (other.w < this.w)
+                this.w = other.w;
         };
 
         Vector4.prototype.MaximizeInPlace = function (other) {
-            if (other.x > this.x) this.x = other.x;
-            if (other.y > this.y) this.y = other.y;
-            if (other.z > this.z) this.z = other.z;
-            if (other.w > this.w) this.w = other.w;
+            if (other.x > this.x)
+                this.x = other.x;
+            if (other.y > this.y)
+                this.y = other.y;
+            if (other.z > this.z)
+                this.z = other.z;
+            if (other.w > this.w)
+                this.w = other.w;
         };
 
-        Vector4.prototype.length = function ()
-        { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w); };
+       
+        Vector4.prototype.length = function () {
+            return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        };
 
-        Vector4.prototype.lengthSquared = function ()
-        { return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w); };
+        Vector4.prototype.lengthSquared = function () {
+            return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        };
 
+       
         Vector4.prototype.normalize = function () {
             var len = this.length();
 
@@ -1073,8 +1093,9 @@ var BABYLON;
             return this;
         };
 
-        Vector4.prototype.clone = function ()
-        { return new Vector4(this.x, this.y, this.z, this.w); };
+        Vector4.prototype.clone = function () {
+            return new Vector4(this.x, this.y, this.z, this.w);
+        };
 
         Vector4.prototype.copyFrom = function (source) {
             this.x = source.x;
@@ -1090,8 +1111,11 @@ var BABYLON;
             this.w = w;
         };
 
+       
         Vector4.FromArray = function (array, offset) {
-            if (!offset) { offset = 0; }
+            if (!offset) {
+                offset = 0;
+            }
 
             return new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
@@ -1117,7 +1141,9 @@ var BABYLON;
             result.w = w;
         };
 
-        Vector4.Zero = function () { return new Vector4(0, 0, 0, 0); };
+        Vector4.Zero = function () {
+            return new Vector4(0, 0, 0, 0);
+        };
 
         Vector4.Normalize = function (vector) {
             var result = Vector4.Zero();
@@ -1142,7 +1168,9 @@ var BABYLON;
             return max;
         };
 
-        Vector4.Distance = function (value1, value2) { return Math.sqrt(Vector4.DistanceSquared(value1, value2)); };
+        Vector4.Distance = function (value1, value2) {
+            return Math.sqrt(Vector4.DistanceSquared(value1, value2));
+        };
 
         Vector4.DistanceSquared = function (value1, value2) {
             var x = value1.x - value2.x;
@@ -1158,9 +1186,7 @@ var BABYLON;
             center.scaleInPlace(0.5);
             return center;
         };
-
         return Vector4;
-
     })();
     BABYLON.Vector4 = Vector4;
 
@@ -1253,7 +1279,7 @@ var BABYLON;
         };
 
         Quaternion.prototype.toEulerAnglesToRef = function (result) {
-            //result is an EulerAngles in the in the z-x-z convention
+           
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
@@ -1273,18 +1299,16 @@ var BABYLON;
                 result.x = Math.atan2(qxz + qwy, qwx - qyz);
                 result.y = Math.acos(1 - 2 * determinant);
                 result.z = Math.atan2(qxz - qwy, qwx + qyz);
-            }
-            else
-            if (determinant == 0.000) {
-                result.x = 0.0;
-                result.y = 0.0;
-                result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-            }
-            else //determinant == 1.000
-            {
-                result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                result.y = Math.PI;
-                result.z = 0.0;
+            } else {
+                if (determinant == 0.000) {
+                    result.x = 0.0;
+                    result.y = 0.0;
+                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz);
+                } else {
+                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz);
+                    result.y = Math.PI;
+                    result.z = 0.0;
+                }
             }
         };
 
@@ -1444,153 +1468,6 @@ var BABYLON;
         return Quaternion;
     })();
     BABYLON.Quaternion = Quaternion;
-
-    var EulerAngles = (function () {
-        function EulerAngles(x, y, z) {
-            if (typeof x === "undefined") { x = 0; }
-            if (typeof y === "undefined") { y = 0; }
-            if (typeof z === "undefined") { z = 0; }
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        EulerAngles.prototype.toString = function () {
-            return "{x: " + this.x + " y:" + this.y + " z:" + this.z + "}";
-        };
-
-        EulerAngles.prototype.asArray = function () {
-            return [this.x, this.y, this.z];
-        };
-
-        EulerAngles.prototype.equals = function (otherEulerAngles) {
-            return otherEulerAngles && this.x === otherEulerAngles.x && this.y === otherEulerAngles.y && this.z === otherEulerAngles.z;
-        };
-
-        EulerAngles.prototype.clone = function () {
-            return new EulerAngles(this.x, this.y, this.z);
-        };
-
-        EulerAngles.prototype.copyFrom = function (other) {
-            this.x = other.x;
-            this.y = other.y;
-            this.z = other.z;
-        };
-
-        EulerAngles.prototype.copyFromFloats = function (x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        };
-
-        EulerAngles.prototype.add = function (other) {
-            return new EulerAngles(this.x + other.x, this.y + other.y, this.z + other.z);
-        };
-
-        EulerAngles.prototype.subtract = function (other) {
-            return new EulerAngles(this.x - other.x, this.y - other.y, this.z - other.z);
-        };
-
-        EulerAngles.prototype.scale = function (value) {
-            return new EulerAngles(this.x * value, this.y * value, this.z * value);
-        };
-
-        EulerAngles.prototype.multiply = function (ea) {
-            var result = new EulerAngles(0, 0, 0);
-
-            this.multiplyToRef(ea, result);
-
-            return result;
-        };
-
-        EulerAngles.prototype.length = function () {
-            return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
-        };
-
-        EulerAngles.prototype.normalize = function () {
-            var length = 1.0 / this.length();
-            this.x *= length;
-            this.y *= length;
-            this.z *= length;
-        };
-
-        EulerAngles.prototype.toQuaternion = function () {
-            var result;
-
-            //result is a Quaternion in the z-x-z rotation convention
-            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
-            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
-            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
-            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
-            var cosy = Math.cos(this.y * 0.5);
-            var siny = Math.sin(this.y * 0.5);
-
-            result.x = coszMinusx * siny;
-            result.y = -sinzMinusx * siny;
-            result.z = sinxPlusz * cosy;
-            result.w = cosxPlusz * cosy;
-
-            return result;
-        };
-
-        EulerAngles.prototype.toRotationMatrix = function (result) {
-            //returns matrix with result.m[0]=m11,result.m[1]=m21,result.m[2]=m31,result.m[4]=12, etc
-            //done in the z-x-z rotation convention
-            var cosx = Math.cos(this.x);
-            var sinx = Math.sin(this.x);
-            var cosy = Math.cos(this.y);
-            var siny = Math.sin(this.y);
-            var cosz = Math.cos(this.z);
-            var sinz = Math.sin(this.z);
-
-            result.m[0] = cosx * cosz - cosy * sinx * sinz;
-            result.m[1] = cosy * sinx * cosz + cosx * sinz;
-            result.m[2] = siny * sinx;
-            result.m[4] = -sinx * cosz - cosy * cosx * sinz;
-            result.m[5] = cosy * cosx * cosz - sinx * sinz;
-            result.m[6] = siny * cosx;
-            result.m[8] = siny * sinz;
-            result.m[9] = -siny * cosz;
-            result.m[10] = cosy;
-
-        };
-
-        EulerAngles.prototype.fromRotationMatrix = function (matrix) {
-            var data = matrix.m;
-            var m11 = data[0], m12 = data[4], m13 = data[8];
-            var m21 = data[1], m22 = data[5], m23 = data[9];
-            var m31 = data[2], m32 = data[6], m33 = data[10];
-
-            if (m33 == -1) {
-                this.x = 0; //any angle works here
-                this.y = Math.PI;
-                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
-
-            }
-            else
-            if (m33 == 1) {
-                this.x = 0; //any angle works here
-                this.y = 0;
-                this.z = Math.atan2(m21, m11); //generally, atan2(m21,m11)-x
-            }
-            else {
-                this.x = Math.atan2(m31, m32);
-                this.y = Math.acos(m33); //principal value (between 0 and PI)
-                this.z = Math.atan2(m13, -m23);
-            }
-
-        };
-
-        EulerAngles.FromArray = function (array, offset) {
-            if (!offset) {
-                offset = 0;
-            }
-
-            return new EulerAngles(array[offset], array[offset + 1], array[offset + 2]);
-        };
-
-        return EulerAngles;
-    })();
-    BABYLON.EulerAngles = EulerAngles;
 
     var Matrix = (function () {
         function Matrix() {
@@ -4221,7 +4098,7 @@ var BABYLON;
                 }
             }
 
-            if (this._cachedIndexBuffer !== indexBuffer) {
+            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             }
@@ -4289,6 +4166,18 @@ var BABYLON;
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
+        };
+
+        Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
+           
+            this.applyStates();
+
+            if (instancesCount) {
+                this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
+                return;
+            }
+
+            this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
         };
 
        
@@ -6050,7 +5939,7 @@ var BABYLON;
 
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
-                    mesh._bind(subMesh, _this._effect, false);
+                    mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);
                     var material = subMesh.getMaterial();
 
                     _this._effect.setMatrix("viewProjection", _this.getTransformMatrix());
@@ -6070,13 +5959,13 @@ var BABYLON;
                     }
 
                     if (hardwareInstancedRendering) {
-                        mesh._renderWithInstances(subMesh, false, batch, _this._effect, engine);
+                        mesh._renderWithInstances(subMesh, BABYLON.Material.TriangleFillMode, batch, _this._effect, engine);
                     } else {
                         if (batch.renderSelf[subMesh._id]) {
                             _this._effect.setMatrix("world", mesh.getWorldMatrix());
 
                            
-                            mesh._draw(subMesh, true);
+                            mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
                         }
 
                         if (batch.visibleInstances[subMesh._id]) {
@@ -6086,7 +5975,7 @@ var BABYLON;
                                 _this._effect.setMatrix("world", instance.getWorldMatrix());
 
                                
-                                mesh._draw(subMesh, true);
+                                mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
                             }
                         }
                     }
@@ -10913,40 +10802,46 @@ var BABYLON;
             }
         };
 
-        Mesh.prototype._bind = function (subMesh, effect, wireframe) {
+        Mesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
 
            
-            var indexToBind = this._geometry.getIndexBuffer();
+            var indexToBind;
 
-            if (wireframe) {
-                indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+            switch (fillMode) {
+                case BABYLON.Material.TriangleFillMode:
+                    indexToBind = this._geometry.getIndexBuffer();
+                    break;
+                case BABYLON.Material.WireFrameFillMode:
+                    indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+                    break;
+                default:
+                    indexToBind = null;
+                    break;
             }
 
            
             engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         };
 
-        Mesh.prototype._draw = function (subMesh, useTriangles, instancesCount) {
+        Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
 
             var engine = this.getScene().getEngine();
 
-           
-            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
-        };
+            switch (fillMode) {
+                case BABYLON.Material.PointFillMode:
+                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    break;
+                case BABYLON.Material.WireFrameFillMode:
+                    engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    break;
 
-        Mesh.prototype._fullDraw = function (subMesh, useTriangles, instancesCount) {
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                default:
+                    engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
-
-            var engine = this.getScene().getEngine();
-
-           
-            engine.draw(useTriangles, useTriangles ? subMesh.indexStart : 0, useTriangles ? subMesh.indexCount : subMesh.linesIndexCount, instancesCount);
         };
 
         Mesh.prototype.registerBeforeRender = function (func) {
@@ -11006,7 +10901,7 @@ var BABYLON;
             return this._batchCache;
         };
 
-        Mesh.prototype._renderWithInstances = function (subMesh, wireFrame, batch, effect, engine) {
+        Mesh.prototype._renderWithInstances = function (subMesh, fillMode, batch, effect, engine) {
             var matricesCount = this.instances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
@@ -11053,7 +10948,7 @@ var BABYLON;
 
             engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
 
-            this._draw(subMesh, !wireFrame, instancesCount);
+            this._draw(subMesh, fillMode, instancesCount);
 
             engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         };
@@ -11098,19 +10993,19 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
            
-            var wireFrame = engine.forceWireframe || effectiveMaterial.wireframe;
-            this._bind(subMesh, effect, wireFrame);
+            var fillMode = engine.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
 
            
             if (hardwareInstancedRendering) {
-                this._renderWithInstances(subMesh, wireFrame, batch, effect, engine);
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
             } else {
                 if (batch.renderSelf[subMesh._id]) {
                    
-                    this._draw(subMesh, !wireFrame);
+                    this._draw(subMesh, fillMode);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -11122,7 +11017,7 @@ var BABYLON;
                         effectiveMaterial.bindOnlyWorldMatrix(world);
 
                        
-                        this._draw(subMesh, !wireFrame);
+                        this._draw(subMesh, fillMode);
                     }
                 }
             }
@@ -13441,6 +13336,18 @@ var BABYLON;
         return FireProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.FireProceduralTexture = FireProceduralTexture;
+
+    var CloudProceduralTexture = (function (_super) {
+        __extends(CloudProceduralTexture, _super);
+        function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+
+           
+            this.refreshRate = 0;
+        }
+        return CloudProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.CloudProceduralTexture = CloudProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14074,11 +13981,12 @@ var BABYLON;
         Effect.ShadersStore={anaglyphPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D leftSampler;\n\nvoid main(void)\n{\n    vec4 leftFrag = texture2D(leftSampler, vUV);\n    leftFrag = vec4(1.0, leftFrag.g, leftFrag.b, 1.0);\n\n	vec4 rightFrag = texture2D(textureSampler, vUV);\n    rightFrag = vec4(rightFrag.r, 1.0, 1.0, 1.0);\n\n    gl_FragColor = vec4(rightFrag.rgb * leftFrag.rgb, 1.0);\n}",
 blackAndWhitePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nvoid main(void) \n{\n	float luminance = dot(texture2D(textureSampler, vUV).rgb, vec3(0.3, 0.59, 0.11));\n	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);\n}",
 blurPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Parameters\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\n\nvoid main(void)\n{\n	float weights[7];\n	weights[0] = 0.05;\n	weights[1] = 0.1;\n	weights[2] = 0.2;\n	weights[3] = 0.3;\n	weights[4] = 0.2;\n	weights[5] = 0.1;\n	weights[6] = 0.05;\n\n	vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);\n	vec2 texelStep = texelSize * direction * blurWidth;\n	vec2 start = vUV - 3.0 * texelStep;\n\n	vec4 baseColor = vec4(0., 0., 0., 0.);\n	vec2 texelOffset = vec2(0., 0.);\n\n	for (int i = 0; i < 7; i++)\n	{\n		baseColor += texture2D(textureSampler, start + texelOffset) * weights[i];\n		texelOffset += texelStep;\n	}\n\n	gl_FragColor = baseColor;\n}",
+cloudPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float iGlobalTime;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alpha;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 12.0;\n	vec3 c = mix(vec3(0.15, 0.68, 1.0), vec3(1,1,1), fbm(p));\n	gl_FragColor = vec4(c, 1);\n\n}",
 colorPixelShader:"precision highp float;\n\nuniform vec4 color;\n\nvoid main(void) {\n	gl_FragColor = color;\n}",
 colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 position;\n\n// Uniforms\nuniform mat4 worldViewProjection;\n\nvoid main(void) {\n	gl_Position = worldViewProjection * vec4(position, 1.0);\n}",
 convolutionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec2 screenSize;\nuniform float kernel[9];\n\nvoid main(void)\n{\n	vec2 onePixel = vec2(1.0, 1.0) / screenSize;\n	vec4 colorSum =\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, -1)) * kernel[0] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, -1)) * kernel[1] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, -1)) * kernel[2] +\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, 0)) * kernel[3] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, 0)) * kernel[4] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, 0)) * kernel[5] +\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, 1)) * kernel[6] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, 1)) * kernel[7] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, 1)) * kernel[8];\n\n	float kernelWeight =\n		kernel[0] +\n		kernel[1] +\n		kernel[2] +\n		kernel[3] +\n		kernel[4] +\n		kernel[5] +\n		kernel[6] +\n		kernel[7] +\n		kernel[8];\n\n	if (kernelWeight <= 0.0) {\n		kernelWeight = 1.0;\n	}\n\n	gl_FragColor = vec4((colorSum / kernelWeight).rgb, 1);\n}",
 defaultPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_EXPLICIT	0.\n#define MAP_SPHERICAL	1.\n#define MAP_PLANAR		2.\n#define MAP_CUBIC		3.\n#define MAP_PROJECTION	4.\n#define MAP_SKYBOX		5.\n\n// Constants\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\nuniform vec4 vSpecularColor;\nuniform vec3 vEmissiveColor;\n\n// Input\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec3 vColor;\n#endif\n\n// Lights\n#ifdef LIGHT0\nuniform vec4 vLightData0;\nuniform vec4 vLightDiffuse0;\nuniform vec3 vLightSpecular0;\n#ifdef SHADOW0\nvarying vec4 vPositionFromLight0;\nuniform sampler2D shadowSampler0;\nuniform float darkness0;\n#endif\n#ifdef SPOTLIGHT0\nuniform vec4 vLightDirection0;\n#endif\n#ifdef HEMILIGHT0\nuniform vec3 vLightGround0;\n#endif\n#endif\n\n#ifdef LIGHT1\nuniform vec4 vLightData1;\nuniform vec4 vLightDiffuse1;\nuniform vec3 vLightSpecular1;\n#ifdef SHADOW1\nvarying vec4 vPositionFromLight1;\nuniform sampler2D shadowSampler1;\nuniform float darkness1;\n#endif\n#ifdef SPOTLIGHT1\nuniform vec4 vLightDirection1;\n#endif\n#ifdef HEMILIGHT1\nuniform vec3 vLightGround1;\n#endif\n#endif\n\n#ifdef LIGHT2\nuniform vec4 vLightData2;\nuniform vec4 vLightDiffuse2;\nuniform vec3 vLightSpecular2;\n#ifdef SHADOW2\nvarying vec4 vPositionFromLight2;\nuniform sampler2D shadowSampler2;\nuniform float darkness2;\n#endif\n#ifdef SPOTLIGHT2\nuniform vec4 vLightDirection2;\n#endif\n#ifdef HEMILIGHT2\nuniform vec3 vLightGround2;\n#endif\n#endif\n\n#ifdef LIGHT3\nuniform vec4 vLightData3;\nuniform vec4 vLightDiffuse3;\nuniform vec3 vLightSpecular3;\n#ifdef SHADOW3\nvarying vec4 vPositionFromLight3;\nuniform sampler2D shadowSampler3;\nuniform float darkness3;\n#endif\n#ifdef SPOTLIGHT3\nuniform vec4 vLightDirection3;\n#endif\n#ifdef HEMILIGHT3\nuniform vec3 vLightGround3;\n#endif\n#endif\n\n// Samplers\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY	\nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n// Fresnel\n#ifdef FRESNEL\nfloat computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)\n{\n	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);\n	return clamp(fresnelTerm, 0., 1.);\n}\n#endif\n\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n\n// Reflection\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\nuniform samplerCube reflectionCubeSampler;\nuniform sampler2D reflection2DSampler;\nuniform vec3 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform mat4 view;\n\nvec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)\n{\n	if (mode == MAP_SPHERICAL)\n	{\n		vec3 coords = vec3(view * vec4(worldNormal, 0.0));\n\n		return vec3(reflectionMatrix * vec4(coords, 1.0));\n	}\n	else if (mode == MAP_PLANAR)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = normalize(reflect(viewDir, worldNormal));\n\n		return vec3(reflectionMatrix * vec4(coords, 1));\n	}\n	else if (mode == MAP_CUBIC)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = reflect(viewDir, worldNormal);\n\n		return vec3(reflectionMatrix * vec4(coords, 0));\n	}\n	else if (mode == MAP_PROJECTION)\n	{\n		return vec3(reflectionMatrix * (view * worldPos));\n	}\n	else if (mode == MAP_SKYBOX)\n	{\n		return vPositionUVW;\n	}\n\n	return vec3(0, 0, 0);\n}\n#endif\n\n// Shadows\n#ifdef SHADOWS\n\nfloat unpack(vec4 color)\n{\n	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);\n	return dot(color, bitShift);\n}\n\nfloat unpackHalf(vec2 color)\n{\n	return color.x + (color.y / 255.0);\n}\n\nfloat computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float shadow = unpack(texture2D(shadowSampler, uv));\n\n	if (depth.z > shadow)\n	{\n		return darkness;\n	}\n	return 1.;\n}\n\nfloat computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float visibility = 1.;\n\n	vec2 poissonDisk[4];\n	poissonDisk[0] = vec2(-0.94201624, -0.39906216);\n	poissonDisk[1] = vec2(0.94558609, -0.76890725);\n	poissonDisk[2] = vec2(-0.094184101, -0.92938870);\n	poissonDisk[3] = vec2(0.34495938, 0.29387760);\n\n	// Poisson Sampling\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / 1500.0))  <  depth.z) visibility -= 0.2;\n\n	return visibility;\n}\n\n// Thanks to http://devmaster.net/\nfloat ChebychevInequality(vec2 moments, float t)\n{\n	if (t <= moments.x)\n	{\n		return 1.0;\n	}\n\n	float variance = moments.y - (moments.x * moments.x);\n	variance = max(variance, 0.);\n\n	float d = t - moments.x;\n	return variance / (variance + d * d);\n}\n\nfloat computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	vec4 texel = texture2D(shadowSampler, uv);\n\n	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));\n	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);\n}\n#endif\n\n// Bump\n#ifdef BUMP\n#extension GL_OES_standard_derivatives : enable\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform sampler2D bumpSampler;\n\n// Thanks to http://www.thetenthplanet.de/archives/1180\nmat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)\n{\n	// get edge vectors of the pixel triangle\n	vec3 dp1 = dFdx(p);\n	vec3 dp2 = dFdy(p);\n	vec2 duv1 = dFdx(uv);\n	vec2 duv2 = dFdy(uv);\n\n	// solve the linear system\n	vec3 dp2perp = cross(dp2, normal);\n	vec3 dp1perp = cross(normal, dp1);\n	vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;\n	vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;\n\n	// construct a scale-invariant frame \n	float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));\n	return mat3(tangent * invmax, binormal * invmax, normal);\n}\n\nvec3 perturbNormal(vec3 viewDir)\n{\n	vec3 map = texture2D(bumpSampler, vBumpUV).xyz * vBumpInfos.y;\n	map = map * 255. / 127. - 128. / 127.;\n	mat3 TBN = cotangent_frame(vNormalW, -viewDir, vBumpUV);\n	return normalize(TBN * map);\n}\n#endif\n\n#ifdef CLIPPLANE\nvarying float fClipDistance;\n#endif\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return clamp(fogCoeff, 0.0, 1.0);\n}\n#endif\n\n// Light Computing\nstruct lightingInfo\n{\n	vec3 diffuse;\n	vec3 specular;\n};\n\nlightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 lightVectorW;\n	float attenuation = 1.0;\n	if (lightData.w == 0.)\n	{\n		vec3 direction = lightData.xyz - vPositionW;\n\n		attenuation = max(0., 1.0 - length(direction) / range);\n		lightVectorW = normalize(direction);\n	}\n	else\n	{\n		lightVectorW = normalize(-lightData.xyz);\n	}\n\n	// diffuse\n	float ndl = max(0., dot(vNormal, lightVectorW));\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightVectorW);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, max(1., vSpecularColor.a));\n\n	result.diffuse = ndl * diffuseColor * attenuation;\n	result.specular = specComp * specularColor * attenuation;\n\n	return result;\n}\n\nlightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 direction = lightData.xyz - vPositionW;\n	vec3 lightVectorW = normalize(direction);\n	float attenuation = max(0., 1.0 - length(direction) / range);\n\n	// diffuse\n	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));\n	float spotAtten = 0.0;\n\n	if (cosAngle >= lightDirection.w)\n	{\n		cosAngle = max(0., pow(cosAngle, lightData.w));\n		spotAtten = max(0., (cosAngle - lightDirection.w) / (1. - cosAngle));\n\n		// Diffuse\n		float ndl = max(0., dot(vNormal, -lightDirection.xyz));\n\n		// Specular\n		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);\n		float specComp = max(0., dot(vNormal, angleW));\n		specComp = pow(specComp, vSpecularColor.a);\n\n		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;\n		result.specular = specComp * specularColor * spotAtten * attenuation;\n\n		return result;\n	}\n\n	result.diffuse = vec3(0.);\n	result.specular = vec3(0.);\n\n	return result;\n}\n\nlightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor) {\n	lightingInfo result;\n\n	// Diffuse\n	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightData.xyz);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, vSpecularColor.a);\n\n	result.diffuse = mix(groundColor, diffuseColor, ndl);\n	result.specular = specComp * specularColor;\n\n	return result;\n}\n\nvoid main(void) {\n	// Clip plane\n#ifdef CLIPPLANE\n	if (fClipDistance > 0.0)\n		discard;\n#endif\n\n	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);\n\n	// Base color\n	vec4 baseColor = vec4(1., 1., 1., 1.);\n	vec3 diffuseColor = vDiffuseColor.rgb;\n\n	// Alpha\n	float alpha = vDiffuseColor.a;\n\n#ifdef VERTEXCOLOR\n	diffuseColor *= vColor;\n#endif\n\n#ifdef DIFFUSE\n	baseColor = texture2D(diffuseSampler, vDiffuseUV);\n\n#ifdef ALPHATEST\n	if (baseColor.a < 0.4)\n		discard;\n#endif\n\n#ifdef ALPHAFROMDIFFUSE\n	alpha *= baseColor.a;\n#endif\n\n	baseColor.rgb *= vDiffuseInfos.y;\n#endif\n\n	// Bump\n	vec3 normalW = normalize(vNormalW);\n\n#ifdef BUMP\n	normalW = perturbNormal(viewDirectionW);\n#endif\n\n	// Ambient color\n	vec3 baseAmbientColor = vec3(1., 1., 1.);\n\n#ifdef AMBIENT\n	baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;\n#endif\n\n	// Lighting\n	vec3 diffuseBase = vec3(0., 0., 0.);\n	vec3 specularBase = vec3(0., 0., 0.);\n	float shadow = 1.;\n\n#ifdef LIGHT0\n#ifdef SPOTLIGHT0\n	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef HEMILIGHT0\n	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0);\n#endif\n#ifdef POINTDIRLIGHT0\n	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef SHADOW0\n#ifdef SHADOWVSM0\n	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);\n#else\n	#ifdef SHADOWPCF0\n		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0);\n	#else\n		shadow = computeShadow(vPositionFromLight0, shadowSampler0, darkness0);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT1\n#ifdef SPOTLIGHT1\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef HEMILIGHT1\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1);\n#endif\n#ifdef POINTDIRLIGHT1\n	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef SHADOW1\n#ifdef SHADOWVSM1\n	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);\n#else\n	#ifdef SHADOWPCF1\n		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1);\n	#else\n		shadow = computeShadow(vPositionFromLight1, shadowSampler1, darkness1);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT2\n#ifdef SPOTLIGHT2\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef HEMILIGHT2\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2);\n#endif\n#ifdef POINTDIRLIGHT2\n	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef SHADOW2\n#ifdef SHADOWVSM2\n	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);\n#else\n	#ifdef SHADOWPCF2\n		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2);\n	#else\n		shadow = computeShadow(vPositionFromLight2, shadowSampler2, darkness2);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT3\n#ifdef SPOTLIGHT3\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef HEMILIGHT3\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3);\n#endif\n#ifdef POINTDIRLIGHT3\n	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef SHADOW3\n#ifdef SHADOWVSM3\n	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);\n#else\n	#ifdef SHADOWPCF3\n		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3);\n	#else\n		shadow = computeShadow(vPositionFromLight3, shadowSampler3, darkness3);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n	// Reflection\n	vec3 reflectionColor = vec3(0., 0., 0.);\n\n#ifdef REFLECTION\n	vec3 vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), normalW);\n\n	if (vReflectionInfos.z != 0.0)\n	{\n		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y * shadow;\n	}\n	else\n	{\n		vec2 coords = vReflectionUVW.xy;\n\n		if (vReflectionInfos.x == MAP_PROJECTION)\n		{\n			coords /= vReflectionUVW.z;\n		}\n\n		coords.y = 1.0 - coords.y;\n\n		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;\n	}\n\n#ifdef REFLECTIONFRESNEL\n	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);\n\n	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;\n#endif\n#endif\n\n#ifdef OPACITY\n	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);\n\n#ifdef OPACITYRGB\n	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);\n	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;\n#else\n	alpha *= opacityMap.a * vOpacityInfos.y;\n#endif\n\n#endif\n\n#ifdef OPACITYFRESNEL\n	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);\n\n	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;\n#endif\n\n	// Emissive\n	vec3 emissiveColor = vEmissiveColor;\n#ifdef EMISSIVE\n	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;\n#endif\n\n#ifdef EMISSIVEFRESNEL\n	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);\n\n	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;\n#endif\n\n	// Specular map\n	vec3 specularColor = vSpecularColor.rgb;\n#ifdef SPECULAR\n	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;\n#endif\n\n	// Fresnel\n#ifdef DIFFUSEFRESNEL\n	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);\n\n	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;\n#endif\n\n	// Composition\n	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;\n	vec3 finalSpecular = specularBase * specularColor;\n\n#ifdef SPECULAROVERALPHA\n	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);\n#endif\n\n	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = color;\n}",
-defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec3 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec3 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef REFLECTION\n	vPositionUVW = position;\n#endif \n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = world * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = world * (m0 + m1 + m2);\n#endif \n\n#else\n#ifdef INSTANCES\n	finalWorld = mat4(world0, world1, world2, world3);\n#else\n	finalWorld = world;\n#endif\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n}",
+defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec3 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec3 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef REFLECTION\n	vPositionUVW = position;\n#endif \n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = world * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = world * (m0 + m1 + m2);\n#endif \n\n#else\n#ifdef INSTANCES\n	finalWorld = mat4(world0, world1, world2, world3);\n#else\n	finalWorld = world;\n#endif\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n\n	// Point size\n#ifdef POINTSIZE\n	gl_PointSize = pointSize;\n#endif\n}",
 displayPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(passSampler, vUV);\n}",
 filterPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform mat4 kernelMatrix;\n\nvoid main(void)\n{\n	vec3 baseColor = texture2D(textureSampler, vUV).rgb;\n	vec3 updatedColor = (kernelMatrix * vec4(baseColor, 1.0)).rgb;\n\n	gl_FragColor = vec4(updatedColor, 1.0);\n}",
 firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float iGlobalTime;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alpha;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - iGlobalTime * 0.1);\n	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	gl_FragColor = vec4(c * cos(shift * vUV.y), alpha);\n\n}",
@@ -14117,9 +14025,10 @@ var BABYLON;
             this.checkReadyOnlyOnce = false;
             this.state = "";
             this.alpha = 1.0;
-            this.wireframe = false;
             this.backFaceCulling = true;
             this._wasPreviouslyReady = false;
+            this._fillMode = Material.TriangleFillMode;
+            this.pointSize = 1.0;
             this.id = name;
 
             this._scene = scene;
@@ -14128,6 +14037,66 @@ var BABYLON;
                 scene.materials.push(this);
             }
         }
+        Object.defineProperty(Material, "TriangleFillMode", {
+            get: function () {
+                return Material._TriangleFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material, "WireFrameFillMode", {
+            get: function () {
+                return Material._WireFrameFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material, "PointFillMode", {
+            get: function () {
+                return Material._PointFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material.prototype, "wireframe", {
+            get: function () {
+                return this._fillMode === Material.WireFrameFillMode;
+            },
+            set: function (value) {
+                this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(Material.prototype, "pointsCloud", {
+            get: function () {
+                return this._fillMode === Material.PointFillMode;
+            },
+            set: function (value) {
+                this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(Material.prototype, "fillMode", {
+            get: function () {
+                return this._fillMode;
+            },
+            set: function (value) {
+                this._fillMode = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
         Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };
@@ -14187,6 +14156,9 @@ var BABYLON;
                 this.onDispose();
             }
         };
+        Material._TriangleFillMode = 0;
+        Material._WireFrameFillMode = 1;
+        Material._PointFillMode = 2;
         return Material;
     })();
     BABYLON.Material = Material;
@@ -14361,6 +14333,11 @@ var BABYLON;
 
             if (this._shouldUseAlphaFromDiffuseTexture()) {
                 defines.push("#define ALPHAFROMDIFFUSE");
+            }
+
+           
+            if (this.pointsCloud) {
+                defines.push("#define POINTSIZE");
             }
 
            
@@ -14546,7 +14523,7 @@ var BABYLON;
                     "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                     "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                     "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                    "vFogInfos", "vFogColor",
+                    "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
@@ -14735,6 +14712,11 @@ var BABYLON;
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
+
+           
+            if (this.pointsCloud) {
+                this._effect.setFloat("pointSize", this.pointSize);
+            }
         };
 
         StandardMaterial.prototype.getAnimatables = function () {
@@ -14809,7 +14791,7 @@ var BABYLON;
            
             newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
             newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.wireframe = this.wireframe;
+            newStandardMaterial.fillMode = this.fillMode;
             newStandardMaterial.backFaceCulling = this.backFaceCulling;
 
            
@@ -19148,11 +19130,10 @@ var BABYLON;
         };
 
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
-            var _this = this;
             var manifestChecked = function (success) {
                 scene.database = database;
 
-                var plugin = _this._getPluginForFilename(sceneFilename);
+                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
 
                 var importMeshFromData = function (data) {
                     var meshes = [];
@@ -26825,7 +26806,7 @@ var BABYLON;
             configurable: true
         });
 
-        LinesMesh.prototype._bind = function (subMesh, effect, wireframe) {
+        LinesMesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
 
             var indexToBind = this._geometry.getIndexBuffer();
@@ -26837,7 +26818,7 @@ var BABYLON;
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         };
 
-        LinesMesh.prototype._draw = function (subMesh, useTriangles, instancesCount) {
+        LinesMesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
@@ -26891,7 +26872,7 @@ var BABYLON;
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
-            mesh._bind(subMesh, this._effect, false);
+            mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
 
            
             if (material && material.needAlphaTesting()) {
@@ -26901,13 +26882,13 @@ var BABYLON;
             }
 
             if (hardwareInstancedRendering) {
-                mesh._renderWithInstances(subMesh, false, batch, this._effect, engine);
+                mesh._renderWithInstances(subMesh, BABYLON.Material.TriangleFillMode, batch, this._effect, engine);
             } else {
                 if (batch.renderSelf[subMesh._id]) {
                     this._effect.setMatrix("world", mesh.getWorldMatrix());
 
                    
-                    mesh._draw(subMesh, true);
+                    mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -26917,7 +26898,7 @@ var BABYLON;
                         this._effect.setMatrix("world", instance.getWorldMatrix());
 
                        
-                        mesh._draw(subMesh, true);
+                        mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
                     }
                 }
             }
@@ -27374,9 +27355,9 @@ var BABYLON;
     })();
     BABYLON.SceneOptimization = SceneOptimization;
 
-    var TextureSceneOptimization = (function (_super) {
-        __extends(TextureSceneOptimization, _super);
-        function TextureSceneOptimization(priority, maximumSize) {
+    var TextureOptimization = (function (_super) {
+        __extends(TextureOptimization, _super);
+        function TextureOptimization(priority, maximumSize) {
             if (typeof priority === "undefined") { priority = 0; }
             if (typeof maximumSize === "undefined") { maximumSize = 1024; }
             var _this = this;
@@ -27404,13 +27385,13 @@ var BABYLON;
                 return allDone;
             };
         }
-        return TextureSceneOptimization;
+        return TextureOptimization;
     })(SceneOptimization);
-    BABYLON.TextureSceneOptimization = TextureSceneOptimization;
+    BABYLON.TextureOptimization = TextureOptimization;
 
-    var HardwareScalingSceneOptimization = (function (_super) {
-        __extends(HardwareScalingSceneOptimization, _super);
-        function HardwareScalingSceneOptimization(priority, maximumScale) {
+    var HardwareScalingOptimization = (function (_super) {
+        __extends(HardwareScalingOptimization, _super);
+        function HardwareScalingOptimization(priority, maximumScale) {
             if (typeof priority === "undefined") { priority = 0; }
             if (typeof maximumScale === "undefined") { maximumScale = 2; }
             var _this = this;
@@ -27426,74 +27407,74 @@ var BABYLON;
                 return _this._currentScale >= _this.maximumScale;
             };
         }
-        return HardwareScalingSceneOptimization;
+        return HardwareScalingOptimization;
     })(SceneOptimization);
-    BABYLON.HardwareScalingSceneOptimization = HardwareScalingSceneOptimization;
+    BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
 
-    var ShadowsSceneOptimization = (function (_super) {
-        __extends(ShadowsSceneOptimization, _super);
-        function ShadowsSceneOptimization() {
+    var ShadowsOptimization = (function (_super) {
+        __extends(ShadowsOptimization, _super);
+        function ShadowsOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
             };
         }
-        return ShadowsSceneOptimization;
+        return ShadowsOptimization;
     })(SceneOptimization);
-    BABYLON.ShadowsSceneOptimization = ShadowsSceneOptimization;
+    BABYLON.ShadowsOptimization = ShadowsOptimization;
 
-    var PostProcessesSceneOptimization = (function (_super) {
-        __extends(PostProcessesSceneOptimization, _super);
-        function PostProcessesSceneOptimization() {
+    var PostProcessesOptimization = (function (_super) {
+        __extends(PostProcessesOptimization, _super);
+        function PostProcessesOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
             };
         }
-        return PostProcessesSceneOptimization;
+        return PostProcessesOptimization;
     })(SceneOptimization);
-    BABYLON.PostProcessesSceneOptimization = PostProcessesSceneOptimization;
+    BABYLON.PostProcessesOptimization = PostProcessesOptimization;
 
-    var LensFlaresSceneOptimization = (function (_super) {
-        __extends(LensFlaresSceneOptimization, _super);
-        function LensFlaresSceneOptimization() {
+    var LensFlaresOptimization = (function (_super) {
+        __extends(LensFlaresOptimization, _super);
+        function LensFlaresOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
             };
         }
-        return LensFlaresSceneOptimization;
+        return LensFlaresOptimization;
     })(SceneOptimization);
-    BABYLON.LensFlaresSceneOptimization = LensFlaresSceneOptimization;
+    BABYLON.LensFlaresOptimization = LensFlaresOptimization;
 
-    var ParticlesSceneOptimization = (function (_super) {
-        __extends(ParticlesSceneOptimization, _super);
-        function ParticlesSceneOptimization() {
+    var ParticlesOptimization = (function (_super) {
+        __extends(ParticlesOptimization, _super);
+        function ParticlesOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
             };
         }
-        return ParticlesSceneOptimization;
+        return ParticlesOptimization;
     })(SceneOptimization);
-    BABYLON.ParticlesSceneOptimization = ParticlesSceneOptimization;
+    BABYLON.ParticlesOptimization = ParticlesOptimization;
 
-    var RenderTargetsSceneOptimization = (function (_super) {
-        __extends(RenderTargetsSceneOptimization, _super);
-        function RenderTargetsSceneOptimization() {
+    var RenderTargetsOptimization = (function (_super) {
+        __extends(RenderTargetsOptimization, _super);
+        function RenderTargetsOptimization() {
             _super.apply(this, arguments);
             this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
             };
         }
-        return RenderTargetsSceneOptimization;
+        return RenderTargetsOptimization;
     })(SceneOptimization);
-    BABYLON.RenderTargetsSceneOptimization = RenderTargetsSceneOptimization;
+    BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
 
    
     var SceneOptimizerOptions = (function () {
@@ -27508,17 +27489,17 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 1024));
+            result.optimizations.push(new TextureOptimization(priority, 1024));
 
             return result;
         };
@@ -27527,25 +27508,25 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 512));
+            result.optimizations.push(new TextureOptimization(priority, 512));
 
            
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 2));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 2));
 
             return result;
         };
@@ -27554,25 +27535,25 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
-            result.optimizations.push(new ShadowsSceneOptimization(priority));
-            result.optimizations.push(new LensFlaresSceneOptimization(priority));
+            result.optimizations.push(new ShadowsOptimization(priority));
+            result.optimizations.push(new LensFlaresOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new PostProcessesSceneOptimization(priority));
-            result.optimizations.push(new ParticlesSceneOptimization(priority));
+            result.optimizations.push(new PostProcessesOptimization(priority));
+            result.optimizations.push(new ParticlesOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new TextureSceneOptimization(priority, 256));
+            result.optimizations.push(new TextureOptimization(priority, 256));
 
            
             priority++;
-            result.optimizations.push(new RenderTargetsSceneOptimization(priority));
+            result.optimizations.push(new RenderTargetsOptimization(priority));
 
            
             priority++;
-            result.optimizations.push(new HardwareScalingSceneOptimization(priority, 4));
+            result.optimizations.push(new HardwareScalingOptimization(priority, 4));
 
             return result;
         };

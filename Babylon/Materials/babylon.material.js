@@ -7,9 +7,10 @@
             this.checkReadyOnlyOnce = false;
             this.state = "";
             this.alpha = 1.0;
-            this.drawAs = WebGLRenderingContext.TRIANGLES;
             this.backFaceCulling = true;
             this._wasPreviouslyReady = false;
+            this._fillMode = Material.TriangleFillMode;
+            this.pointSize = 1.0;
             this.id = name;
 
             this._scene = scene;
@@ -18,6 +19,66 @@
                 scene.materials.push(this);
             }
         }
+        Object.defineProperty(Material, "TriangleFillMode", {
+            get: function () {
+                return Material._TriangleFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material, "WireFrameFillMode", {
+            get: function () {
+                return Material._WireFrameFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material, "PointFillMode", {
+            get: function () {
+                return Material._PointFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Material.prototype, "wireframe", {
+            get: function () {
+                return this._fillMode === Material.WireFrameFillMode;
+            },
+            set: function (value) {
+                this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(Material.prototype, "pointsCloud", {
+            get: function () {
+                return this._fillMode === Material.PointFillMode;
+            },
+            set: function (value) {
+                this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(Material.prototype, "fillMode", {
+            get: function () {
+                return this._fillMode;
+            },
+            set: function (value) {
+                this._fillMode = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
         Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };
@@ -77,6 +138,9 @@
                 this.onDispose();
             }
         };
+        Material._TriangleFillMode = 0;
+        Material._WireFrameFillMode = 1;
+        Material._PointFillMode = 2;
         return Material;
     })();
     BABYLON.Material = Material;
