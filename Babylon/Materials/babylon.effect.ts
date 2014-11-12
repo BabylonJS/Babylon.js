@@ -44,6 +44,7 @@
         public defines: string;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
+        public onBind: (effect: Effect) => void;
 
         private _engine: Engine;
         private _uniformsNames: string[];

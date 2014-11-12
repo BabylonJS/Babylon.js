@@ -1,12 +1,10 @@
 ﻿module BABYLON {
     export class WoodProceduralTexture extends ProceduralTexture {
 
-        private _ampScale: number = 0.03;
-        private _ringScale: number = 5;
-        private _woodColor1: BABYLON.Color3 = new BABYLON.Color3(0.80, 0.55, 0.01);
-        private _woodColor2: BABYLON.Color3 = new BABYLON.Color3(0.60, 0.41, 0.0);
+        private _ampScale: number = 100.0;
+        private _woodColor: BABYLON.Color3 = new BABYLON.Color3(0.32, 0.17, 0.09);
 
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture,  generateMipMaps?: boolean) {
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "wood", scene, fallbackTexture, generateMipMaps);
 
             this.updateShaderUniforms();
@@ -18,9 +16,7 @@
 
         public updateShaderUniforms() {
             this.setFloat("ampScale", this._ampScale);
-            this.setFloat("ringScale", this._ringScale);
-            this.setColor3("woodColor1", this._woodColor1);
-            this.setColor3("woodColor2", this._woodColor2);
+            this.setColor3("woodColor", this._woodColor);
         }
 
         public get ampScale(): number {
@@ -32,30 +28,13 @@
             this.updateShaderUniforms();
         }
 
-        public get ringScale(): number {
-            return this._ringScale;
+
+        public get woodColor(): BABYLON.Color3 {
+            return this._woodColor;
         }
 
-        public set ringScale(value: number) {
-            this._ringScale = value;
-            this.updateShaderUniforms();
-        }
-
-        public get woodColor1(): BABYLON.Color3 {
-            return this._woodColor1;
-        }
-
-        public set woodColor1(value: BABYLON.Color3) {
-            this._woodColor1 = value;
-            this.updateShaderUniforms();
-        }
-
-        public get woodColor2(): BABYLON.Color3 {
-            return this._woodColor2;
-        }
-
-        public set woodColor2(value: BABYLON.Color3) {
-            this._woodColor2 = value;
+        public set woodColor(value: BABYLON.Color3) {
+            this._woodColor = value;
             this.updateShaderUniforms();
         }
 
@@ -201,9 +180,46 @@
 
     export class CloudProceduralTexture extends ProceduralTexture {
 
+        private _skyColor: BABYLON.Color3 = new BABYLON.Color3(0.15, 0.68, 1.0);
+        private _cloudColor: BABYLON.Color3 = new BABYLON.Color3(1, 1, 1);
+
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "cloud", scene, fallbackTexture, generateMipMaps);
 
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+
+        }
+
+        public updateShaderUniforms() {
+
+            this.setColor3("skyColor", this._skyColor);
+            this.setColor3("cloudColor", this._cloudColor);
+        }
+
+        public get skyColor(): BABYLON.Color3 {
+            return this._skyColor;
+        }
+
+        public set skyColor(value: BABYLON.Color3) {
+            this._skyColor = value;
+            this.updateShaderUniforms();
+        }
+
+        public get cloudColor(): BABYLON.Color3 {
+            return this._cloudColor;
+        }
+
+        public set cloudColor(value: BABYLON.Color3) {
+            this._cloudColor = value;
+            this.updateShaderUniforms();
+        }
+    }
+
+    export class GrassProceduralTexture extends ProceduralTexture {
+
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+            super(name, size, "grass", scene, fallbackTexture, generateMipMaps);
 
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;

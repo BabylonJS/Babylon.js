@@ -109,6 +109,14 @@ var BABYLON;
             return this;
         };
 
+        Object.defineProperty(Mesh.prototype, "geometry", {
+            get: function () {
+                return this._geometry;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Mesh.prototype.getTotalVertices = function () {
             if (!this._geometry) {
                 return 0;

@@ -111,6 +111,10 @@
             return this;
         }
 
+        public get geometry(): Geometry {
+            return this._geometry;
+        }
+
         public getTotalVertices(): number {
             if (!this._geometry) {
                 return 0;
