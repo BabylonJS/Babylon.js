@@ -2,18 +2,10 @@
 precision highp float;
 #endif
 
-uniform float iGlobalTime;
-uniform vec3 c1;
-uniform vec3 c2;
-uniform vec3 c3;
-uniform vec3 c4;
-uniform vec3 c5;
-uniform vec3 c6;
-uniform vec2 speed;
-uniform float shift;
-uniform float alpha;
-
 varying vec2 vUV;
+
+uniform vec3 skyColor;
+uniform vec3 cloudColor;
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -38,7 +30,7 @@ float fbm(vec2 n) {
 void main() {
 
 	vec2 p = vUV * 12.0;
-	vec3 c = mix(vec3(0.15, 0.68, 1.0), vec3(1,1,1), fbm(p));
+	vec3 c = mix(skyColor, cloudColor, fbm(p));
 	gl_FragColor = vec4(c, 1);
 
 }

@@ -1005,6 +1005,9 @@
 
         Engine.prototype.enableEffect = function (effect) {
             if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
+                if (effect && effect.onBind) {
+                    effect.onBind(effect);
+                }
                 return;
             }
 
@@ -1033,6 +1036,10 @@
             }
 
             this._currentEffect = effect;
+
+            if (effect.onBind) {
+                effect.onBind(effect);
+            }
         };
 
         Engine.prototype.setArray = function (uniform, array) {

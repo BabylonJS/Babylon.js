@@ -1518,6 +1518,7 @@ declare module BABYLON {
         public defines: string;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
+        public onBind: (effect: Effect) => void;
         private _engine;
         private _uniformsNames;
         private _samplers;
@@ -1954,15 +1955,11 @@ declare module BABYLON {
 declare module BABYLON {
     class WoodProceduralTexture extends ProceduralTexture {
         private _ampScale;
-        private _ringScale;
-        private _woodColor1;
-        private _woodColor2;
+        private _woodColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public updateShaderUniforms(): void;
         public ampScale : number;
-        public ringScale : number;
-        public woodColor1 : Color3;
-        public woodColor2 : Color3;
+        public woodColor : Color3;
     }
     class FireProceduralTexture extends ProceduralTexture {
         private _time;
@@ -1985,6 +1982,14 @@ declare module BABYLON {
         public alpha : number;
     }
     class CloudProceduralTexture extends ProceduralTexture {
+        private _skyColor;
+        private _cloudColor;
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        public updateShaderUniforms(): void;
+        public skyColor : Color3;
+        public cloudColor : Color3;
+    }
+    class GrassProceduralTexture extends ProceduralTexture {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
     }
 }
@@ -2710,6 +2715,7 @@ declare module BABYLON {
         public addLODLevel(distance: number, mesh: Mesh): Mesh;
         public removeLODLevel(mesh: Mesh): Mesh;
         public getLOD(camera: Camera): AbstractMesh;
+        public geometry : Geometry;
         public getTotalVertices(): number;
         public getVerticesData(kind: string): number[];
         public getVertexBuffer(kind: any): VertexBuffer;

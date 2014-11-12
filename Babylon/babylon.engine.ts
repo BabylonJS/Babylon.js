@@ -1019,6 +1019,10 @@
 
         public enableEffect(effect: Effect): void {
             if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
+
+                if (effect && effect.onBind) {
+                    effect.onBind(effect);
+                }
                 return;
             }
 
@@ -1047,6 +1051,10 @@
             }
 
             this._currentEffect = effect;
+
+            if (effect.onBind) {
+                effect.onBind(effect);
+            }
         }
 
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {

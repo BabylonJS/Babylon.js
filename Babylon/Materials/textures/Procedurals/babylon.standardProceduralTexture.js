@@ -10,10 +10,8 @@ var BABYLON;
         __extends(WoodProceduralTexture, _super);
         function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "wood", scene, fallbackTexture, generateMipMaps);
-            this._ampScale = 0.03;
-            this._ringScale = 5;
-            this._woodColor1 = new BABYLON.Color3(0.80, 0.55, 0.01);
-            this._woodColor2 = new BABYLON.Color3(0.60, 0.41, 0.0);
+            this._ampScale = 100.0;
+            this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
 
             this.updateShaderUniforms();
 
@@ -22,9 +20,7 @@ var BABYLON;
         }
         WoodProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("ampScale", this._ampScale);
-            this.setFloat("ringScale", this._ringScale);
-            this.setColor3("woodColor1", this._woodColor1);
-            this.setColor3("woodColor2", this._woodColor2);
+            this.setColor3("woodColor", this._woodColor);
         };
 
         Object.defineProperty(WoodProceduralTexture.prototype, "ampScale", {
@@ -40,38 +36,12 @@ var BABYLON;
         });
 
 
-        Object.defineProperty(WoodProceduralTexture.prototype, "ringScale", {
+        Object.defineProperty(WoodProceduralTexture.prototype, "woodColor", {
             get: function () {
-                return this._ringScale;
+                return this._woodColor;
             },
             set: function (value) {
-                this._ringScale = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-
-        Object.defineProperty(WoodProceduralTexture.prototype, "woodColor1", {
-            get: function () {
-                return this._woodColor1;
-            },
-            set: function (value) {
-                this._woodColor1 = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-
-        Object.defineProperty(WoodProceduralTexture.prototype, "woodColor2", {
-            get: function () {
-                return this._woodColor2;
-            },
-            set: function (value) {
-                this._woodColor2 = value;
+                this._woodColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -253,12 +223,56 @@ var BABYLON;
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+            this._skyColor = new BABYLON.Color3(0.15, 0.68, 1.0);
+            this._cloudColor = new BABYLON.Color3(1, 1, 1);
 
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
         }
+        CloudProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setColor3("skyColor", this._skyColor);
+            this.setColor3("cloudColor", this._cloudColor);
+        };
+
+        Object.defineProperty(CloudProceduralTexture.prototype, "skyColor", {
+            get: function () {
+                return this._skyColor;
+            },
+            set: function (value) {
+                this._skyColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(CloudProceduralTexture.prototype, "cloudColor", {
+            get: function () {
+                return this._cloudColor;
+            },
+            set: function (value) {
+                this._cloudColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return CloudProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.CloudProceduralTexture = CloudProceduralTexture;
+
+    var GrassProceduralTexture = (function (_super) {
+        __extends(GrassProceduralTexture, _super);
+        function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "grass", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+        }
+        return GrassProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.GrassProceduralTexture = GrassProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.standardProceduralTexture.js.map
