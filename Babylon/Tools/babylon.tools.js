@@ -747,7 +747,7 @@
 
         Object.defineProperty(Tools, "Now", {
             get: function () {
-                if (window.performance.now) {
+                if (window.performance && window.performance.now) {
                     return window.performance.now();
                 }
 

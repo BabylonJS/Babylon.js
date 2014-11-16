@@ -186,6 +186,8 @@
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "cloud", scene, fallbackTexture, generateMipMaps);
 
+            this.updateShaderUniforms();
+
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
 
@@ -220,6 +222,29 @@
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "grass", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+
+        }
+    }
+
+
+    export class RockProceduralTexture extends ProceduralTexture {
+
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+            super(name, size, "rock", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+
+        }
+    }
+
+    export class RoadProceduralTexture extends ProceduralTexture {
+
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+            super(name, size, "road", scene, fallbackTexture, generateMipMaps);
 
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
