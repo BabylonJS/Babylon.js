@@ -1776,50 +1776,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class ProceduralTexture extends Texture {
-        private _size;
-        public _generateMipMaps: boolean;
-        private _doNotChangeAspectRatio;
-        private _currentRefreshId;
-        private _refreshRate;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _uniforms;
-        private _samplers;
-        private _fragment;
-        private _textures;
-        private _floats;
-        private _floatsArrays;
-        private _colors3;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _matrices;
-        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
-        public isReady(): boolean;
-        public resetRefreshCounter(): void;
-        public refreshRate : number;
-        public _shouldRender(): boolean;
-        public getRenderSize(): number;
-        public resize(size: any, generateMipMaps: any): void;
-        private _checkUniform(uniformName);
-        public setTexture(name: string, texture: Texture): ProceduralTexture;
-        public setFloat(name: string, value: number): ProceduralTexture;
-        public setFloats(name: string, value: number[]): ProceduralTexture;
-        public setColor3(name: string, value: Color3): ProceduralTexture;
-        public setColor4(name: string, value: Color4): ProceduralTexture;
-        public setVector2(name: string, value: Vector2): ProceduralTexture;
-        public setVector3(name: string, value: Vector3): ProceduralTexture;
-        public setMatrix(name: string, value: Matrix): ProceduralTexture;
-        public render(useCameraPostProcess?: boolean): void;
-        public clone(): ProceduralTexture;
-        public dispose(): void;
-    }
-}
-declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -1990,6 +1946,12 @@ declare module BABYLON {
         public cloudColor : Color3;
     }
     class GrassProceduralTexture extends ProceduralTexture {
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+    }
+    class RockProceduralTexture extends ProceduralTexture {
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+    }
+    class RoadProceduralTexture extends ProceduralTexture {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
     }
 }

@@ -226,6 +226,8 @@ var BABYLON;
             this._skyColor = new BABYLON.Color3(0.15, 0.68, 1.0);
             this._cloudColor = new BABYLON.Color3(1, 1, 1);
 
+            this.updateShaderUniforms();
+
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
         }
@@ -274,5 +276,29 @@ var BABYLON;
         return GrassProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
+
+    var RockProceduralTexture = (function (_super) {
+        __extends(RockProceduralTexture, _super);
+        function RockProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "rock", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+        }
+        return RockProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.RockProceduralTexture = RockProceduralTexture;
+
+    var RoadProceduralTexture = (function (_super) {
+        __extends(RoadProceduralTexture, _super);
+        function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "road", scene, fallbackTexture, generateMipMaps);
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+        }
+        return RoadProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.RoadProceduralTexture = RoadProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.standardProceduralTexture.js.map

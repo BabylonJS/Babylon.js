@@ -775,7 +775,7 @@
         public static EndPerformanceCounter: (counterName: string, condition?: boolean) => void = Tools._EndPerformanceCounterDisabled;
 
         public static get Now(): number {
-            if (window.performance.now) {
+            if (window.performance && window.performance.now) {
                 return window.performance.now();
             }
 

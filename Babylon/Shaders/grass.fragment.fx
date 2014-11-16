@@ -2,8 +2,8 @@
 precision highp float;
 #endif
 
-varying vec2 vPosition;              
-varying vec2 vUV;                    
+varying vec2 vPosition;
+varying vec2 vUV;
 
 uniform float ampScale;
 uniform float ringScale;
@@ -33,17 +33,25 @@ float fbm(vec2 n) {
 
 void main(void) {
 
-	float amplifier = 100.0;
+	float herbwidth = 8.0;
 
-	vec3 dirt = vec3(0.47, 0.27, 0.09);
+	vec3 dirt = vec3(0.32, 0.17, 0.09);
 	vec3 herb = vec3(0.0, 0.39, 0.09);
+	vec3 ground = dirt;
 
-	float ratioy = mod(vUV.y * amplifier, 2.0 + fbm(vPosition * 2.0));
-	float ratiox = mod(vUV.x * amplifier, 2.0 + fbm(vUV * 2.0));
-		
-	dirt = dirt * ratioy;
-	herb = herb * ratiox;
-	vec3 ground = mix(dirt, herb, fbm(vUV * 2.0));
+	herbwidth = floor(herbwidth - noise(vUV * 8.0 ));
+
+	float ratioy = mod(floor(gl_FragCoord.y), herbwidth);
+	float ratiox = mod(floor(gl_FragCoord.x), herbwidth);
+
+	/*herb = herb * ratiox;
+	dirt = dirt * ratioy;*/
+
+	if (ratioy >= 0.0 && ratioy < herbwidth / fbm(vUV * 2.0))
+		ground = herb;
+
+	if (ratiox >= 0.0 && ratiox < herbwidth / 2.0)
+		ground = herb;
 
 	gl_FragColor = vec4(ground, 1.0);
 }
