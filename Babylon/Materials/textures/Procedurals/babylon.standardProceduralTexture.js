@@ -300,5 +300,55 @@ var BABYLON;
         return RoadProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.RoadProceduralTexture = RoadProceduralTexture;
+
+    var BrickProceduralTexture = (function (_super) {
+        __extends(BrickProceduralTexture, _super);
+        function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "brick", scene, fallbackTexture, generateMipMaps);
+            this._numberOfBricksHeight = 15;
+            this._numberOfBricksWidth = 5;
+
+            this.updateShaderUniforms();
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+        }
+        BrickProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
+            this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+        };
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksHeight", {
+            get: function () {
+                return this._numberOfBricksHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "cloudColor", {
+            set: function (value) {
+                this._numberOfBricksHeight = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksWidth", {
+            get: function () {
+                return this._numberOfBricksWidth;
+            },
+            set: function (value) {
+                this._numberOfBricksHeight = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        return BrickProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.BrickProceduralTexture = BrickProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.standardProceduralTexture.js.map

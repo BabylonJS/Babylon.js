@@ -13509,6 +13509,56 @@ var BABYLON;
         return RoadProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.RoadProceduralTexture = RoadProceduralTexture;
+
+    var BrickProceduralTexture = (function (_super) {
+        __extends(BrickProceduralTexture, _super);
+        function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+            _super.call(this, name, size, "brick", scene, fallbackTexture, generateMipMaps);
+            this._numberOfBricksHeight = 15;
+            this._numberOfBricksWidth = 5;
+
+            this.updateShaderUniforms();
+
+           
+            this.refreshRate = 0;
+        }
+        BrickProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
+            this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+        };
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksHeight", {
+            get: function () {
+                return this._numberOfBricksHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "cloudColor", {
+            set: function (value) {
+                this._numberOfBricksHeight = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksWidth", {
+            get: function () {
+                return this._numberOfBricksWidth;
+            },
+            set: function (value) {
+                this._numberOfBricksHeight = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        return BrickProceduralTexture;
+    })(BABYLON.ProceduralTexture);
+    BABYLON.BrickProceduralTexture = BrickProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14154,6 +14204,7 @@ var BABYLON;
         Effect.ShadersStore={anaglyphPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D leftSampler;\n\nvoid main(void)\n{\n    vec4 leftFrag = texture2D(leftSampler, vUV);\n    leftFrag = vec4(1.0, leftFrag.g, leftFrag.b, 1.0);\n\n	vec4 rightFrag = texture2D(textureSampler, vUV);\n    rightFrag = vec4(rightFrag.r, 1.0, 1.0, 1.0);\n\n    gl_FragColor = vec4(rightFrag.rgb * leftFrag.rgb, 1.0);\n}",
 blackAndWhitePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nvoid main(void) \n{\n	float luminance = dot(texture2D(textureSampler, vUV).rgb, vec3(0.3, 0.59, 0.11));\n	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);\n}",
 blurPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Parameters\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\n\nvoid main(void)\n{\n	float weights[7];\n	weights[0] = 0.05;\n	weights[1] = 0.1;\n	weights[2] = 0.2;\n	weights[3] = 0.3;\n	weights[4] = 0.2;\n	weights[5] = 0.1;\n	weights[6] = 0.05;\n\n	vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);\n	vec2 texelStep = texelSize * direction * blurWidth;\n	vec2 start = vUV - 3.0 * texelStep;\n\n	vec4 baseColor = vec4(0., 0., 0., 0.);\n	vec2 texelOffset = vec2(0., 0.);\n\n	for (int i = 0; i < 7; i++)\n	{\n		baseColor += texture2D(textureSampler, start + texelOffset) * weights[i];\n		texelOffset += texelStep;\n	}\n\n	gl_FragColor = baseColor;\n}",
+brickPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvoid main(void)\n{\n	vec3 brick = vec3(0.77, 0.47, 0.40);\n	vec3 joint = vec3(0.72, 0.72, 0.72);\n\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.05;\n\n	vec3 color = brick;\n\n\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n\n\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float momo = mod(floor(yi) + floor(xi), 3.0);\n\n		if (momo == 0.0)\n			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);\n		else if (momo == 2.0)\n			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);\n\n\n		//color = mix(color, vec3(0.1, 0.1, 0.1), fbm(vUV * 64.0));\n	}\n\n\n	gl_FragColor = vec4(color, 1.0);\n}",
 cloudPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;\n\nuniform vec3 skyColor;\nuniform vec3 cloudColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 12.0;\n	vec3 c = mix(skyColor, cloudColor, fbm(p));\n	gl_FragColor = vec4(c, 1);\n\n}",
 colorPixelShader:"precision highp float;\n\nuniform vec4 color;\n\nvoid main(void) {\n	gl_FragColor = color;\n}",
 colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 position;\n\n// Uniforms\nuniform mat4 worldViewProjection;\n\nvoid main(void) {\n	gl_Position = worldViewProjection * vec4(position, 1.0);\n}",
@@ -14181,7 +14232,7 @@ postprocessVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attr
 proceduralVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec2 position;\n\n// Output\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nconst vec2 madd = vec2(0.5, 0.5);\n\nvoid main(void) {	\n	vPosition = position;\n	vUV = position * madd + madd;\n	gl_Position = vec4(position, 0.0, 1.0);\n}",
 refractionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D refractionSampler;\n\n// Parameters\nuniform vec3 baseColor;\nuniform float depth;\nuniform float colorLevel;\n\nvoid main() {\n	float ref = 1.0 - texture2D(refractionSampler, vUV).r;\n\n	vec2 uv = vUV - vec2(0.5);\n	vec2 offset = uv * depth * ref;\n	vec3 sourceColor = texture2D(textureSampler, vUV - offset).rgb;\n\n	gl_FragColor = vec4(sourceColor + sourceColor * ref * colorLevel, 1.0);\n}",
 roadPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;                    \n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n\n\n	vec3 gray = vec3(0.53, 0.53, 0.53);\n\n	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));\n		\n	gray = gray * ratioy;\n\n	gl_FragColor = vec4(gray, 1.0);\n}",
-rockPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float ampScale;\nuniform float ringScale;\nuniform vec3 woodColor1;\nuniform vec3 woodColor2;\n\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\n\n\nvoid main(void) {\n\n\n	/*vec3 rock = vec3(0.53, 0.53, 0.53);\n	vec3 roll = vec3(0.18, 0.18, 0.18);\n\n	float ratioy = mod(vUV.y * 50.0, fbm(vUV * 8.0));\n\n	rock = rock * ratioy;\n	roll = roll * ratioy;\n\n	vec3 stone = mix(rock, roll, 0.5);\n\n\n	gl_FragColor = vec4(stone, 1.0);*/\n\n\n	/* voronoi.frag */\n\n\n	vec2 seeds[16];\n	vec3 colors[16];\n\n	colors[0] = vec3(0.53, 0.53, 0.53);\n	colors[1] = vec3(0.28, 0.28, 0.28);\n	colors[2] = vec3(0.23, 0.23, 0.23);\n	colors[3] = vec3(0.38, 0.38, 0.38);\n	colors[4] = vec3(0.63, 0.63, 0.63);\n	colors[5] = vec3(0.78, 0.78, 0.78);\n	colors[6] = vec3(0.93, 0.93, 0.93);\n	colors[7] = vec3(0.73, 0.73, 0.73);\n	colors[8] = vec3(0.43, 0.43, 0.43);\n	colors[9] = vec3(0.11, 0.11, 0.11);\n	colors[10] = vec3(0.12, 0.12, 0.12);\n	colors[11] = vec3(0.64, 0.64, 0.64);\n	colors[12] = vec3(0.79, 0.79, 0.79);\n	colors[13] = vec3(0.43, 0.43, 0.43);\n	colors[14] = vec3(0.21, 0.21, 0.21);\n	colors[15] = vec3(0.37, 0.37, 0.37);\n\n	seeds[0] = vec2(0.1, 0.9);\n	seeds[1] = vec2(0.2, 0.8);\n	seeds[2] = vec2(0.3, 0.7);\n	seeds[3] = vec2(0.4, 0.4);\n	seeds[4] = vec2(0.5, 0.5);\n	seeds[5] = vec2(0.6, 0.3);\n	seeds[6] = vec2(0.7, 0.2);\n	seeds[7] = vec2(0.8, 0.3);\n	seeds[8] = vec2(0.9, 0.4);\n	seeds[9] = vec2(1.0, 0.3);\n	seeds[10] = vec2(0.5, 0.4);\n	seeds[11] = vec2(0.7, 0.8);\n	seeds[12] = vec2(0.5, 0.3);\n	seeds[13] = vec2(0.7, 0.7);\n	seeds[14] = vec2(0.3, 0.3);\n	seeds[15] = vec2(0.7, 0.7);\n\n	float dist = distance(seeds[0], vPosition);\n	vec3 color = colors[0];\n\n	float hotpoint = 1.0;\n	float current = 1.0;\n	for (int i = 1; i < 16; i++) {\n		current = distance(seeds[i], vPosition);\n		if (current < dist) {\n			hotpoint++;\n			color = colors[i];\n			dist = current;\n		}\n	}\n\n	if (hotpoint > 3.0)\n		color = mix(vec3(0.39, 0.32, 0), color, 1.0 / hotpoint);\n\n	gl_FragColor = vec4(color, 1.0);\n\n\n\n}",
+rockPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nvec3 hash(vec3 x)\n{\n	x = vec3(dot(x, vec3(127.1, 311.7, 74.7)),\n		dot(x, vec3(269.5, 183.3, 246.1)),\n		dot(x, vec3(113.5, 271.9, 124.6)));\n\n	return fract(sin(x)*43758.5453123);\n}\n\n// returns closest, second closest, and cell id\nvec3 voronoi(in vec3 x)\n{\n	vec3 p = floor(x);\n	vec3 f = fract(x);\n\n	float id = 0.0;\n	vec2 res = vec2(100.0);\n	for (int k = -1; k <= 1; k++)\n		for (int j = -1; j <= 1; j++)\n			for (int i = -1; i <= 1; i++)\n			{\n		vec3 b = vec3(float(i), float(j), float(k));\n		vec3 r = vec3(b) - f + hash(p + b);\n		float d = dot(r, r);\n\n		if (d < res.x)\n		{\n			id = dot(p + b, vec3(1.0, 57.0, 113.0));\n			res = vec2(d, res.x);\n		}\n		else if (d < res.y)\n		{\n			res.y = d;\n		}\n			}\n\n	return vec3(sqrt(res), abs(id));\n}\n\nconst mat3 m = mat3(0.00, 0.80, 0.60,\n	-0.80, 0.36, -0.48,\n	-0.60, -0.48, 0.64);\n\nvoid main(void)\n{\n	vec2 p = vUV;\n\n	// camera movement	\n	float an = 0.5*0.1;\n	vec3 ro = vec3(2.5*cos(an), 1.0, 2.5*sin(an));\n	vec3 ta = vec3(0.0, 1.0, 0.0);\n	// camera matrix\n	vec3 ww = normalize(ta - ro);\n	vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));\n	vec3 vv = normalize(cross(uu, ww));\n	// create view ray\n	vec3 rd = normalize(p.x*uu + p.y*vv + 1.5*ww);\n\n	// sphere center	\n	vec3 sc = vec3(0.0, 1.0, 0.0);\n\n	// raytrace\n	float tmin = 10000.0;\n	vec3  nor = vec3(0.0);\n	float occ = 1.0;\n	vec3  pos = vec3(0.0);\n\n	// raytrace-plane\n	float h = (0.0 - ro.y) / rd.y;\n	if (h>0.0)\n	{\n		tmin = h;\n		nor = vec3(0.0, 1.0, 0.0);\n		pos = ro + h*rd;\n		vec3 di = sc - pos;\n		float l = length(di);\n		occ = 1.0 - dot(nor, di / l)*1.0*1.0 / (l*l);\n	}\n\n	// raytrace-sphere\n	vec3  ce = ro - sc;\n	float b = dot(rd, ce);\n	float c = dot(ce, ce) - 1.0;\n	h = b*b - c;\n	if (h>0.0)\n	{\n		h = -b - sqrt(h);\n		if (h<tmin)\n		{\n			tmin = h;\n			nor = normalize(ro + h*rd - sc);\n			occ = 0.5 + 0.5*nor.y;\n		}\n	}\n\n	// shading/lighting	\n	vec3 col = vec3(0.9);\n	if (tmin<100.0)\n	{\n		pos = ro + tmin*rd;\n\n		float f = voronoi(4.0*pos).x;\n\n		f *= occ;\n		col = vec3(f*1.2);\n		col = mix(col, vec3(0.9), 1.0 - exp(-0.003*tmin*tmin));\n	}\n\n	col = sqrt(col);\n\n\n	gl_FragColor = vec4(col, 1.0);\n}",
 shadowMapPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvec4 pack(float depth)\n{\n	const vec4 bitOffset = vec4(255. * 255. * 255., 255. * 255., 255., 1.);\n	const vec4 bitMask = vec4(0., 1. / 255., 1. / 255., 1. / 255.);\n	\n	vec4 comp = mod(depth * bitOffset * vec4(254.), vec4(255.)) / vec4(254.);\n	comp -= comp.xxyz * bitMask;\n	\n	return comp;\n}\n\n// Thanks to http://devmaster.net/\nvec2 packHalf(float depth) \n{ \n	const vec2 bitOffset = vec2(1.0 / 255., 0.);\n	vec2 color = vec2(depth, fract(depth * 255.));\n\n	return color - (color.yy * bitOffset);\n}\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n#ifdef VSM\n	float moment1 = gl_FragCoord.z / gl_FragCoord.w;\n	float moment2 = moment1 * moment1;\n	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));\n#else\n	gl_FragColor = pack(vPosition.z / vPosition.w);\n#endif\n}",
 shadowMapVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n#ifndef VSM\n	vPosition = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool alphaTest;\n\nvarying vec4 vColor;\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return min(1., max(0., fogCoeff));\n}\n#endif\n\n\nvoid main(void) {\n	vec4 baseColor = texture2D(diffuseSampler, vUV);\n\n	if (alphaTest) \n	{\n		if (baseColor.a < 0.95)\n			discard;\n	}\n\n	baseColor *= vColor;\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	baseColor.rgb = fog * baseColor.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = baseColor;\n}",
@@ -20969,11 +21020,11 @@ var BABYLON;
                 for (var i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
                     vertices = [];
                     for (var j = 0; j < 3; j++) {
-                        normal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
+                        var sourceNormal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
                         uv = new BABYLON.Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
-                        position = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
-                        BABYLON.Vector3.TransformCoordinatesToRef(position, matrix, position);
-                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
+                        var sourcePosition = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
+                        position = BABYLON.Vector3.TransformCoordinates(sourcePosition, matrix);
+                        normal = BABYLON.Vector3.TransformNormal(sourceNormal, matrix);
 
                         vertex = new Vertex(position, normal, uv);
                         vertices.push(vertex);
@@ -21172,17 +21223,17 @@ var BABYLON;
                         vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
                         normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
                         uv.copyFrom(polygon.vertices[polygonIndices[k]].uv);
-                        BABYLON.Vector3.TransformCoordinatesToRef(vertex, matrix, vertex);
-                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
+                        var localVertex = BABYLON.Vector3.TransformCoordinates(vertex, matrix);
+                        var localNormal = BABYLON.Vector3.TransformNormal(normal, matrix);
 
-                        vertex_idx = vertice_dict[vertex.x + ',' + vertex.y + ',' + vertex.z];
+                        vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
 
                        
-                        if (!(typeof vertex_idx !== 'undefined' && normals[vertex_idx * 3] === normal.x && normals[vertex_idx * 3 + 1] === normal.y && normals[vertex_idx * 3 + 2] === normal.z && uvs[vertex_idx * 2] === uv.x && uvs[vertex_idx * 2 + 1] === uv.y)) {
-                            vertices.push(vertex.x, vertex.y, vertex.z);
+                        if (!(typeof vertex_idx !== 'undefined' && normals[vertex_idx * 3] === localNormal.x && normals[vertex_idx * 3 + 1] === localNormal.y && normals[vertex_idx * 3 + 2] === localNormal.z && uvs[vertex_idx * 2] === uv.x && uvs[vertex_idx * 2 + 1] === uv.y)) {
+                            vertices.push(localVertex.x, localVertex.y, localVertex.z);
                             uvs.push(uv.x, uv.y);
                             normals.push(normal.x, normal.y, normal.z);
-                            vertex_idx = vertice_dict[vertex.x + ',' + vertex.y + ',' + vertex.z] = (vertices.length / 3) - 1;
+                            vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
                         }
 
                         indices.push(vertex_idx);

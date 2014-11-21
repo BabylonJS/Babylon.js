@@ -252,4 +252,46 @@
         }
     }
 
+
+    export class BrickProceduralTexture extends ProceduralTexture {
+
+        private _numberOfBricksHeight: number = 15;
+        private _numberOfBricksWidth: number = 5;
+
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+            super(name, size, "brick", scene, fallbackTexture, generateMipMaps);
+
+            this.updateShaderUniforms();
+
+            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this.refreshRate = 0;
+
+        }
+
+        public updateShaderUniforms() {
+
+            this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
+            this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+        }
+
+
+        public get numberOfBricksHeight(): number {
+            return this._numberOfBricksHeight;
+        }
+
+        public set cloudColor(value: number) {
+            this._numberOfBricksHeight = value;
+            this.updateShaderUniforms();
+        }
+
+        public get numberOfBricksWidth(): number {
+            return this._numberOfBricksWidth;
+        }
+
+        public set numberOfBricksWidth(value: number) {
+            this._numberOfBricksHeight = value;
+            this.updateShaderUniforms();
+        }
+    }
+
 }
