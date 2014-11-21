@@ -1954,6 +1954,15 @@ declare module BABYLON {
     class RoadProceduralTexture extends ProceduralTexture {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
     }
+    class BrickProceduralTexture extends ProceduralTexture {
+        private _numberOfBricksHeight;
+        private _numberOfBricksWidth;
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        public updateShaderUniforms(): void;
+        public numberOfBricksHeight : number;
+        public cloudColor : number;
+        public numberOfBricksWidth : number;
+    }
 }
 declare module BABYLON {
     class Color3 {
