@@ -2299,6 +2299,10 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
+				if(max == -Infinity) {
+					max = Infinity; 
+				}
+				
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2322,6 +2326,10 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
+				if(max == -Infinity) {
+					max = Infinity; 
+				}
+				
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2345,6 +2353,10 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
+				if(max == -Infinity) {
+					max = Infinity; 
+				}
+				
                 if (min > max) {
                     temp = min;
                     min = max;
