@@ -306,11 +306,11 @@
                 for (var i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
                     vertices = [];
                     for (var j = 0; j < 3; j++) {
-                        normal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
+                        var sourceNormal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
                         uv = new BABYLON.Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
-                        position = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
-                        BABYLON.Vector3.TransformCoordinatesToRef(position, matrix, position);
-                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
+                        var sourcePosition = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
+                        position = BABYLON.Vector3.TransformCoordinates(sourcePosition, matrix);
+                        normal = BABYLON.Vector3.TransformNormal(sourceNormal, matrix);
 
                         vertex = new Vertex(position, normal, uv);
                         vertices.push(vertex);
@@ -522,24 +522,22 @@
                         vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
                         normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
                         uv.copyFrom(polygon.vertices[polygonIndices[k]].uv);
-                        BABYLON.Vector3.TransformCoordinatesToRef(vertex, matrix, vertex);
-                        BABYLON.Vector3.TransformNormalToRef(normal, matrix, normal);
+                        var localVertex = BABYLON.Vector3.TransformCoordinates(vertex, matrix);
+                        var localNormal = BABYLON.Vector3.TransformNormal(normal, matrix);
 
-
-
-                        vertex_idx = vertice_dict[vertex.x + ',' + vertex.y + ',' + vertex.z];
+                        vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
 
                         // Check if 2 points can be merged
                         if (!(typeof vertex_idx !== 'undefined' &&
-                            normals[vertex_idx * 3] === normal.x &&
-                            normals[vertex_idx * 3 + 1] === normal.y &&
-                            normals[vertex_idx * 3 + 2] === normal.z &&
+                            normals[vertex_idx * 3] === localNormal.x &&
+                            normals[vertex_idx * 3 + 1] === localNormal.y &&
+                            normals[vertex_idx * 3 + 2] === localNormal.z &&
                             uvs[vertex_idx * 2] === uv.x &&
                             uvs[vertex_idx * 2 + 1] === uv.y)) {
-                            vertices.push(vertex.x, vertex.y, vertex.z);
+                            vertices.push(localVertex.x, localVertex.y, localVertex.z);
                             uvs.push(uv.x, uv.y);
                             normals.push(normal.x, normal.y, normal.z);
-                            vertex_idx = vertice_dict[vertex.x + ',' + vertex.y + ',' + vertex.z] = (vertices.length / 3) - 1;
+                            vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
                         }
 
                         indices.push(vertex_idx);
