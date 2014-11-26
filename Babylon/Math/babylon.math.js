@@ -2281,9 +2281,11 @@
     BABYLON.Frustum = Frustum;
 
     var Ray = (function () {
-        function Ray(origin, direction) {
+        function Ray(origin, direction, length) {
+            if (typeof length === "undefined") { length = Number.MAX_VALUE; }
             this.origin = origin;
             this.direction = direction;
+            this.length = length;
         }
         // Methods
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
@@ -2422,7 +2424,13 @@
                 return null;
             }
 
-            return new BABYLON.IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
+            //check if the distance is longer than the predefined length.
+            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
+            if (distance > this.length) {
+                return null;
+            }
+
+            return new BABYLON.IntersectionInfo(bu, bv, distance);
         };
 
         // Statics
@@ -2436,11 +2444,27 @@
             return new Ray(start, direction);
         };
 
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        Ray.CreateNewFromTo = function (origin, end, world) {
+            if (typeof world === "undefined") { world = BABYLON.Matrix.Identity(); }
+            var direction = end.subtract(origin);
+            var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
+            direction.normalize();
+
+            return Ray.Transform(new Ray(origin, direction, length), world);
+        };
+
         Ray.Transform = function (ray, matrix) {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
 
-            return new Ray(newOrigin, newDirection);
+            return new Ray(newOrigin, newDirection, ray.length);
         };
         return Ray;
     })();

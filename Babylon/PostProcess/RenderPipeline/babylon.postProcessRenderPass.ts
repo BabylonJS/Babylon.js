@@ -19,10 +19,11 @@
             this._renderTexture.onAfterRender = afterRender;
 
             this._scene = scene;
+
+            this._renderList = renderList;
         }
 
         // private
-
         public _incRefCount(): number {
             if (this._refCount === 0) {
                 this._scene.customRenderTargets.push(this._renderTexture);
