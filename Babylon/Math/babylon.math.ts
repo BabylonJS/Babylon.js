@@ -2280,7 +2280,7 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
-        constructor(public origin: Vector3, public direction: Vector3) {
+        constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
 
         // Methods
@@ -2422,8 +2422,14 @@
             if (bv < 0 || bu + bv > 1.0) {
                 return null;
             }
+			
+			//check if the distance is longer than the predefined length.
+			var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
+			if(distance > this.length) {
+				return null;
+			}
 
-            return new IntersectionInfo(bu, bv, Vector3.Dot(this._edge2, this._qvec) * invdet);
+            return new IntersectionInfo(bu, bv, distance);
         }
 
         // Statics
@@ -2436,12 +2442,27 @@
 
             return new Ray(start, direction);
         }
+		
+		/**
+		* Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be 
+		* transformed to the given world matrix.
+		* @param origin The origin point
+		* @param end The end point
+		* @param world a matrix to transform the ray to. Default is the identity matrix.
+		*/
+		public static CreateNewFromTo(origin : BABYLON.Vector3, end : BABYLON.Vector3, world: Matrix = BABYLON.Matrix.Identity()): Ray {
+			var direction = end.subtract(origin);
+			var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
+            direction.normalize();
+			
+			return Ray.Transform(new Ray(origin, direction, length), world);
+		}
 
         public static Transform(ray: Ray, matrix: Matrix): Ray {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
 
-            return new Ray(newOrigin, newDirection);
+            return new Ray(newOrigin, newDirection, ray.length);
         }
     }
 
