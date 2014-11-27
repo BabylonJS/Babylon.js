@@ -102,7 +102,7 @@ namespace Max2Babylon
 
                 if (mesh.NumVerts >= 65536)
                 {
-                    RaiseError(string.Format("Mesh {0} has too many vertices (more than 65535)", babylonMesh.name), 2);
+                    RaiseWarning(string.Format("Mesh {0} has tmore than 65536 vertices which means that it will require specific WebGL extension to be rendered. This may impact portability of your scene on low end devices.", babylonMesh.name), 2);
                 }
 
                 // Material
@@ -129,6 +129,8 @@ namespace Max2Babylon
 
                 var hasUV = mesh.NumTVerts > 0;
                 var hasUV2 = mesh.GetNumMapVerts(2) > 0;
+                var hasColor = mesh.NumVertCol > 0;
+                var hasAlpha = mesh.GetNumMapVerts(-2) > 0;
 
                 var optimizeVertices = meshNode.GetBoolProperty("babylonjs_optimizevertices");
 
@@ -151,9 +153,9 @@ namespace Max2Babylon
 
                 for (var face = 0; face < mesh.NumFaces; face++)
                 {
-                    indices.Add(CreateGlobalVertex(mesh, face, vx1, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
-                    indices.Add(CreateGlobalVertex(mesh, face, vx2, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
-                    indices.Add(CreateGlobalVertex(mesh, face, vx3, vertices, hasUV, hasUV2, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx1, vertices, hasUV, hasUV2, hasColor, hasAlpha, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx2, vertices, hasUV, hasUV2, hasColor, hasAlpha, vnorms, verticesAlreadyExported, skinContext));
+                    indices.Add(CreateGlobalVertex(mesh, face, vx3, vertices, hasUV, hasUV2, hasColor, hasAlpha, vnorms, verticesAlreadyExported, skinContext));
                     matIDs.Add(mesh.Faces[face].MatID % multiMatsCount);
                     CheckCancelled();
                 }
@@ -186,6 +188,12 @@ namespace Max2Babylon
                 {
                     babylonMesh.matricesWeights = vertices.SelectMany(v => v.Weights.ToArray()).ToArray();
                     babylonMesh.matricesIndices = vertices.Select(v => v.BonesIndices).ToArray();
+                }
+
+                if (hasColor)
+                {
+                    babylonMesh.colors = vertices.SelectMany(v => v.Color.ToArray()).ToArray();
+                    babylonMesh.hasVertexAlpha = hasAlpha;
                 }
 
                 // Submeshes
@@ -360,7 +368,7 @@ namespace Max2Babylon
             }
         }
 
-        int CreateGlobalVertex(IMesh mesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)
+        int CreateGlobalVertex(IMesh mesh, int face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, VNormal[] vnorms, List<GlobalVertex>[] verticesAlreadyExported, IISkinContextData skinContextData)
         {
             var faceObject = mesh.Faces[face];
             var vertexIndex = (int)faceObject.V[facePart];
@@ -382,6 +390,15 @@ namespace Max2Babylon
             {
                 var tvertexIndex = (int)mesh.MapFaces(2)[face].T[facePart];
                 vertex.UV2 = Loader.Global.Point2.Create(mesh.MapVerts(2)[tvertexIndex].X, mesh.MapVerts(2)[tvertexIndex].Y);
+            }
+
+            if (hasColor)
+            {
+                var vertexColorIndex = (int)mesh.VcFace[face].T[facePart];
+                var vertexColor = mesh.VertCol[vertexColorIndex];
+                var alpha = hasAlpha ? mesh.MapVerts(-2)[vertexColorIndex].X : 1;
+
+                vertex.Color = new float[] { vertexColor.X, vertexColor.Y, vertexColor.Z, alpha};
             }
 
             if (skinContextData != null)

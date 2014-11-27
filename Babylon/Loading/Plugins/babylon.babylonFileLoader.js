@@ -1,6 +1,24 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     (function (Internals) {
+        var checkColors4 = function (colors, count) {
+            // Check if color3 was used
+            if (colors.length === count * 3) {
+                var colors4 = [];
+                for (var index = 0; index < colors.length; index += 3) {
+                    var newIndex = (index / 3) * 4;
+                    colors4[newIndex] = colors[index];
+                    colors4[newIndex + 1] = colors[index + 1];
+                    colors4[newIndex + 2] = colors[index + 2];
+                    colors4[newIndex + 3] = 1.0;
+                }
+
+                return colors4;
+            }
+
+            return colors;
+        };
+
         var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
             var texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene);
 
@@ -650,6 +668,8 @@
             }
 
             // Geometry
+            mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
+
             if (parsedMesh.delayLoadingFile) {
                 mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
@@ -810,7 +830,7 @@
             // colors
             var colors = parsedVertexData.colors;
             if (colors) {
-                vertexData.set(colors, BABYLON.VertexBuffer.ColorKind);
+                vertexData.set(checkColors4(colors, positions.length / 3), BABYLON.VertexBuffer.ColorKind);
             }
 
             // matricesIndices
@@ -914,7 +934,7 @@
                 }
 
                 if (parsedGeometry.colors) {
-                    mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, parsedGeometry.colors, false);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, checkColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), false);
                 }
 
                 if (parsedGeometry.matricesIndices) {

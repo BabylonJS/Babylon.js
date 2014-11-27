@@ -1735,6 +1735,14 @@
             return result;
         }
 
+        public static Invert(source: Matrix): Matrix {
+            var result = new Matrix();
+
+            source.invertToRef(result);
+
+            return result;
+        }
+
         public static RotationXToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);

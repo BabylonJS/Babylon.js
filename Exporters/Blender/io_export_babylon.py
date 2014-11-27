@@ -744,6 +744,7 @@ class Mesh(FCurveAnimatable):
                             self.colors.append(vertex_Color.r)
                             self.colors.append(vertex_Color.g)
                             self.colors.append(vertex_Color.b)
+							self.colors.append(1.0)
                         if hasSkeleton:
                             self.skeletonWeights.append(matricesWeights[0])
                             self.skeletonWeights.append(matricesWeights[1])

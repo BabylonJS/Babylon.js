@@ -43,6 +43,9 @@ namespace BabylonExport.Entities
         public float[] colors { get; set; }
 
         [DataMember]
+        public bool hasVertexAlpha { get; set; }
+
+        [DataMember]
         public int[] matricesIndices { get; set; }
 
         [DataMember]

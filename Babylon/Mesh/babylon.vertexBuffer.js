@@ -37,7 +37,7 @@
                     this._strideSize = 2;
                     break;
                 case VertexBuffer.ColorKind:
-                    this._strideSize = 3;
+                    this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesIndicesKind:
                     this._strideSize = 4;

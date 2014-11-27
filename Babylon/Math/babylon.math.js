@@ -1743,6 +1743,14 @@
             return result;
         };
 
+        Matrix.Invert = function (source) {
+            var result = new Matrix();
+
+            source.invertToRef(result);
+
+            return result;
+        };
+
         Matrix.RotationXToRef = function (angle, result) {
             var s = Math.sin(angle);
             var c = Math.cos(angle);

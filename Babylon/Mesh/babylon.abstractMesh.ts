@@ -50,6 +50,7 @@
         public renderOutline = false;
         public outlineColor = BABYLON.Color3.Red();
         public outlineWidth = 0.02;
+        public hasVertexAlpha = false;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;

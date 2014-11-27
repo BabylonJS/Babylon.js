@@ -321,6 +321,10 @@ var BABYLON;
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                     defines.push("#define VERTEXCOLOR");
+
+                    if (mesh.hasVertexAlpha) {
+                        defines.push("#define VERTEXALPHA");
+                    }
                 }
                 if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                     attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
