@@ -333,11 +333,6 @@
         if (parsedLight.excludedMeshesIds) {
             light._excludedMeshesIds = parsedLight.excludedMeshesIds;
         }
-		
-		// Parent
-        if (parsedLight.parentId) {
-            light._waitingParentId = parsedLight.parentId;
-        }
 
         // Parent
         if (parsedLight.parentId) {
@@ -1220,14 +1215,6 @@
                 if (camera._waitingParentId) {
                     camera.parent = scene.getLastEntryByID(camera._waitingParentId);
                     camera._waitingParentId = undefined;
-                }
-            }
-			
-			for (index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-                if (light._waitingParentId) {
-                    light.parent = scene.getLastEntryByID(light._waitingParentId);
-                    light._waitingParentId = undefined;
                 }
             }
 

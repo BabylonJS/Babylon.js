@@ -274,7 +274,7 @@ var BABYLON;
             this.synchronizeInstances();
         };
 
-        Mesh.prototype.setVerticesData = function (kind, data, updatable) {
+        Mesh.prototype.setVerticesData = function (kind, data, updatable, stride) {
             if (kind instanceof Array) {
                 var temp = data;
                 data = kind;
@@ -291,7 +291,7 @@ var BABYLON;
 
                 new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, updatable, this);
             } else {
-                this._geometry.setVerticesData(kind, data, updatable);
+                this._geometry.setVerticesData(kind, data, updatable, stride);
             }
         };
 
