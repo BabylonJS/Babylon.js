@@ -66,6 +66,7 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
 
+      
         public isReady(): boolean {
             var engine = this.getScene().getEngine();
 
@@ -85,6 +86,10 @@
 
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;
+        }
+
+        public setFragment(fragment: any) {
+            this._fragment = fragment;
         }
 
         public get refreshRate(): number {

@@ -190,6 +190,14 @@ var BABYLON;
 
             return newTexture;
         };
+
+        // Statics
+        Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
+            if (typeof samplingMode === "undefined") { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
+            if (typeof onLoad === "undefined") { onLoad = null; }
+            if (typeof onError === "undefined") { onError = null; }
+            return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
+        };
         Texture.NEAREST_SAMPLINGMODE = 1;
         Texture.BILINEAR_SAMPLINGMODE = 2;
         Texture.TRILINEAR_SAMPLINGMODE = 3;

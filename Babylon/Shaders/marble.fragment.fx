@@ -5,8 +5,13 @@ precision highp float;
 varying vec2 vPosition;
 varying vec2 vUV;
 
+
 uniform float numberOfBricksHeight;
-uniform float numberOfBricksWidth;
+uniform float numberOfBricksWidth ;
+
+const vec3 tileSize = vec3(1.1, 1.0, 1.1);
+const vec3 tilePct = vec3(0.98, 1.0, 0.98);
+
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -18,29 +23,44 @@ float noise(vec2 n) {
 	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
 }
 
-float fbm(vec2 n) {
-	float total = 0.0, amplitude = 1.0;
-	for (int i = 0; i < 4; i++) {
-		total += noise(n) * amplitude;
-		n += n;
-		amplitude *= 0.5;
+float turbulence(vec2 P)
+{
+	float val = 0.0;
+	float freq = 1.0;
+	for (int i = 0; i < 4; i++)
+	{
+		val += abs(noise(P*freq) / freq);
+		freq *= 2.07;
 	}
-	return total;
+	return val;
 }
 
 float round(float number){
 	return sign(number)*floor(abs(number) + 0.5);
 }
 
-void main(void)
+
+vec3 marble_color(float x)
 {
+	vec3 col;
+	x = 0.5*(x + 1.);
+	x = sqrt(x);             
+	x = sqrt(x);
+	x = sqrt(x);
+	col = vec3(.2 + .75*x);  
+	col.b *= 0.95;           
+	return col;
+}
+void main()
+{
+
 	vec3 brick = vec3(0.77, 0.47, 0.40);
 	vec3 joint = vec3(0.72, 0.72, 0.72);
 
 	float brickW = 1.0 / numberOfBricksWidth;
 	float brickH = 1.0 / numberOfBricksHeight;
 	float jointWPercentage = 0.01;
-	float jointHPercentage = 0.05;
+	float jointHPercentage = 0.01;
 
 	vec3 color = brick;
 
@@ -56,7 +76,7 @@ void main(void)
 
 	float nxi = round(xi);
 
-	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);
+	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) / brickW);
 
 
 	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){
@@ -66,17 +86,19 @@ void main(void)
 		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
 	}
 	else {
-		float momo = mod(floor(yi) + floor(xi), 3.0);
 
-		if (momo == 0.0)
-			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);
-		else if (momo == 2.0)
-			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);
+		float amplitude = 9.0;
+
+		float t = 6.28 * brickvUV.x / (tileSize.x + noise(vec2(vUV)*6.0));
+		t += amplitude * turbulence(brickvUV.xy);
+
+		t = sin(t);
+		color = marble_color(t);
 
 
-		//color = mix(momo, vec3(0.53, 0.2, 0.0), fbm(brickvUV * 2.0));
 	}
 
+	gl_FragColor = vec4(color, 0.0);
 
-	gl_FragColor = vec4(color, 1.0);
+	
 }

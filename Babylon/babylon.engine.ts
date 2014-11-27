@@ -341,6 +341,7 @@
         public textureAnisotropicFilterExtension;
         public maxAnisotropy: number;
         public instancedArrays;
+        public uintIndices: boolean;
     }
 
     export class Engine {
@@ -439,6 +440,7 @@
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
         private _canvasClientRect: ClientRect;
+        private _uintIndicesCurrentlySet = false;
 
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
@@ -495,6 +497,7 @@
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
+            this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
 
             // Depth buffer
             this.setDepthBuffer(true);
@@ -740,6 +743,7 @@
         }
 
         public restoreDefaultFramebuffer(): void {
+            this._currentRenderTarget = null;
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
 
             this.setViewport(this._cachedViewport);
@@ -794,9 +798,29 @@
         public createIndexBuffer(indices: number[]): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this._gl.STATIC_DRAW);
+
+            // Check for 32 bits indices
+            var arrayBuffer;
+            var need32Bits = false;
+
+            if (this._caps.uintIndices) {
+                
+                for (var index = 0; index < indices.length; index++) {
+                    if (indices[index] > 65535) {
+                        need32Bits = true;
+                        break;
+                    }
+                }
+
+                arrayBuffer = need32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+            } else {
+                arrayBuffer = new Uint16Array(indices);
+            }
+
+            this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
             this._resetIndexBufferBinding();
             vbo.references = 1;
+            vbo.is32Bits = need32Bits;
             return vbo;
         }
 
@@ -821,6 +845,7 @@
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         }
 
@@ -849,6 +874,7 @@
             if (indexBuffer!= null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         }
 
@@ -909,12 +935,13 @@
             this.applyStates();
 
             // Render
+            var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             if (instancesCount) {
-                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2, instancesCount);
+                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2, instancesCount);
                 return;
             }
 
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, this._gl.UNSIGNED_SHORT, indexStart * 2);
+            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
         }
 
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {

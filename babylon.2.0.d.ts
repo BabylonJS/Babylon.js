@@ -41,6 +41,7 @@ declare module BABYLON {
         public textureAnisotropicFilterExtension: any;
         public maxAnisotropy: number;
         public instancedArrays: any;
+        public uintIndices: boolean;
     }
     class Engine {
         private static _ALPHA_DISABLE;
@@ -97,6 +98,7 @@ declare module BABYLON {
         private _cachedEffectForVertexBuffers;
         private _currentRenderTarget;
         private _canvasClientRect;
+        private _uintIndicesCurrentlySet;
         private _workingCanvas;
         private _workingContext;
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: any);
@@ -255,6 +257,7 @@ interface WebGLTexture {
 interface WebGLBuffer {
     references: number;
     capacity: number;
+    is32Bits: boolean;
 }
 interface MouseEvent {
     movementX: number;
@@ -1776,6 +1779,50 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class ProceduralTexture extends Texture {
+        private _size;
+        public _generateMipMaps: boolean;
+        private _doNotChangeAspectRatio;
+        private _currentRefreshId;
+        private _refreshRate;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _uniforms;
+        private _samplers;
+        private _fragment;
+        private _textures;
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _matrices;
+        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
+        public isReady(): boolean;
+        public resetRefreshCounter(): void;
+        public refreshRate : number;
+        public _shouldRender(): boolean;
+        public getRenderSize(): number;
+        public resize(size: any, generateMipMaps: any): void;
+        private _checkUniform(uniformName);
+        public setTexture(name: string, texture: Texture): ProceduralTexture;
+        public setFloat(name: string, value: number): ProceduralTexture;
+        public setFloats(name: string, value: number[]): ProceduralTexture;
+        public setColor3(name: string, value: Color3): ProceduralTexture;
+        public setColor4(name: string, value: Color4): ProceduralTexture;
+        public setVector2(name: string, value: Vector2): ProceduralTexture;
+        public setVector3(name: string, value: Vector3): ProceduralTexture;
+        public setMatrix(name: string, value: Matrix): ProceduralTexture;
+        public render(useCameraPostProcess?: boolean): void;
+        public clone(): ProceduralTexture;
+        public dispose(): void;
+    }
+}
+declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -1852,6 +1899,7 @@ declare module BABYLON {
         public getTextureMatrix(): Matrix;
         public getReflectionTextureMatrix(): Matrix;
         public clone(): Texture;
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void): Texture;
     }
 }
 declare module BABYLON {
@@ -1861,6 +1909,20 @@ declare module BABYLON {
         private _lastUpdate;
         constructor(name: string, urls: string[], size: any, scene: Scene, generateMipMaps: boolean, invertY: boolean, samplingMode?: number);
         public update(): boolean;
+    }
+}
+declare module BABYLON {
+    class CustomProceduralTexture extends ProceduralTexture {
+        private _generateTime;
+        private _time;
+        private _shaderLoaded;
+        private _config;
+        private _texturePath;
+        constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        private loadJson(jsonUrl);
+        public render(useCameraPostProcess?: boolean): void;
+        public updateShaderUniforms(): void;
+        public generateTime : boolean;
     }
 }
 declare module BABYLON {
@@ -1890,6 +1952,7 @@ declare module BABYLON {
         constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public isReady(): boolean;
         public resetRefreshCounter(): void;
+        public setFragment(fragment: any): void;
         public refreshRate : number;
         public _shouldRender(): boolean;
         public getRenderSize(): number;
@@ -1955,6 +2018,15 @@ declare module BABYLON {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
     }
     class BrickProceduralTexture extends ProceduralTexture {
+        private _numberOfBricksHeight;
+        private _numberOfBricksWidth;
+        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        public updateShaderUniforms(): void;
+        public numberOfBricksHeight : number;
+        public cloudColor : number;
+        public numberOfBricksWidth : number;
+    }
+    class MarbleProceduralTexture extends ProceduralTexture {
         private _numberOfBricksHeight;
         private _numberOfBricksWidth;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
@@ -2295,17 +2367,26 @@ declare module BABYLON {
     class Ray {
         public origin: Vector3;
         public direction: Vector3;
+        public length: number;
         private _edge1;
         private _edge2;
         private _pvec;
         private _tvec;
         private _qvec;
-        constructor(origin: Vector3, direction: Vector3);
+        constructor(origin: Vector3, direction: Vector3, length?: number);
         public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
         public intersectsBox(box: BoundingBox): boolean;
         public intersectsSphere(sphere: any): boolean;
         public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
         static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
         static Transform(ray: Ray, matrix: Matrix): Ray;
     }
     enum Space {
@@ -2424,6 +2505,8 @@ declare module BABYLON {
         public getPhysicsMass(): number;
         public getPhysicsFriction(): number;
         public getPhysicsRestitution(): number;
+        public getPositionInCameraSpace(camera?: Camera): Vector3;
+        public getDistanceToCamera(camera?: Camera): Vector3;
         public applyImpulse(force: Vector3, contactPoint: Vector3): void;
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void;
         public updatePhysicsBodyPosition(): void;
@@ -2487,7 +2570,7 @@ declare module BABYLON {
         public getEngine(): Engine;
         public isReady(): boolean;
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
-        public setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+        public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void;
         public updateVerticesDataDirectly(kind: string, data: Float32Array): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
         public getTotalVertices(): number;
@@ -2702,7 +2785,7 @@ declare module BABYLON {
         public refreshBoundingInfo(): void;
         public _createGlobalSubMesh(): SubMesh;
         public subdivide(count: number): void;
-        public setVerticesData(kind: any, data: any, updatable?: boolean): void;
+        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
         public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void;
         public makeGeometryUnique(): void;
@@ -2857,7 +2940,7 @@ declare module BABYLON {
         private _updatable;
         private _kind;
         private _strideSize;
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean);
+        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number);
         public isUpdatable(): boolean;
         public getData(): number[];
         public getBuffer(): WebGLBuffer;

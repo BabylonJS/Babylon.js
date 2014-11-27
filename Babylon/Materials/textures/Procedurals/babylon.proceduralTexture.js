@@ -77,6 +77,10 @@ var BABYLON;
             this._currentRefreshId = -1;
         };
 
+        ProceduralTexture.prototype.setFragment = function (fragment) {
+            this._fragment = fragment;
+        };
+
         Object.defineProperty(ProceduralTexture.prototype, "refreshRate", {
             get: function () {
                 return this._refreshRate;
