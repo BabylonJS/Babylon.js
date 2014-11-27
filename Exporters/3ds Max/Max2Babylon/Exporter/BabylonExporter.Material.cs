@@ -18,7 +18,7 @@ namespace Max2Babylon
 
             if (materialNode.NumSubMtls > 0)
             {
-                var babylonMultimaterial = new BabylonMultiMaterial {name = name, id = id};
+                var babylonMultimaterial = new BabylonMultiMaterial { name = name, id = id };
 
                 var guids = new List<string>();
 
@@ -56,7 +56,7 @@ namespace Max2Babylon
                 ambient = materialNode.GetAmbient(0, false).ToArray(),
                 diffuse = materialNode.GetDiffuse(0, false).ToArray(),
                 specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false)),
-                specularPower = materialNode.GetShininess(0, false)*256,
+                specularPower = materialNode.GetShininess(0, false) * 256,
                 emissive =
                     materialNode.GetSelfIllumColorOn(0, false)
                         ? materialNode.GetSelfIllumColor(0, false).ToArray()
@@ -87,18 +87,24 @@ namespace Max2Babylon
                 if (fresnelParameters != null)
                 {
                     babylonMaterial.emissiveFresnelParameters = fresnelParameters;
-                    if (babylonMaterial.emissive[0] == 0 && 
+                    if (babylonMaterial.emissive[0] == 0 &&
                         babylonMaterial.emissive[1] == 0 &&
-                        babylonMaterial.emissive[2] == 0)
+                        babylonMaterial.emissive[2] == 0 &&
+                        babylonMaterial.emissiveTexture == null)
                     {
-                        babylonMaterial.emissive = new float[]{1, 1, 1};
+                        babylonMaterial.emissive = new float[] { 1, 1, 1 };
                     }
                 }
-                
+
                 babylonMaterial.opacityTexture = ExportTexture(stdMat, 6, out fresnelParameters, babylonScene, false, true);   // Opacity
                 if (fresnelParameters != null)
                 {
                     babylonMaterial.opacityFresnelParameters = fresnelParameters;
+                    if (babylonMaterial.alpha == 1 &&
+                         babylonMaterial.opacityTexture == null)
+                    {
+                        babylonMaterial.alpha = 0;
+                    }
                 }
 
                 babylonMaterial.bumpTexture = ExportTexture(stdMat, 8, out fresnelParameters, babylonScene);                   // Bump
@@ -111,19 +117,19 @@ namespace Max2Babylon
                     }
                     else
                     {
-                        babylonMaterial.reflectionFresnelParameters = fresnelParameters;                        
+                        babylonMaterial.reflectionFresnelParameters = fresnelParameters;
                     }
                 }
 
                 // Constraints
                 if (babylonMaterial.diffuseTexture != null)
                 {
-                    babylonMaterial.diffuse = new [] { 1.0f, 1.0f, 1.0f };
+                    babylonMaterial.diffuse = new[] { 1.0f, 1.0f, 1.0f };
                 }
 
                 if (babylonMaterial.emissiveTexture != null)
                 {
-                    babylonMaterial.emissive = new float[]{0, 0, 0};
+                    babylonMaterial.emissive = new float[] { 0, 0, 0 };
                 }
 
                 if (babylonMaterial.opacityTexture != null && babylonMaterial.diffuseTexture != null &&

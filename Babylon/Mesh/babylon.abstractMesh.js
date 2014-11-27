@@ -29,6 +29,7 @@ var BABYLON;
             this.renderOutline = false;
             this.outlineColor = BABYLON.Color3.Red();
             this.outlineWidth = 0.02;
+            this.hasVertexAlpha = false;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
