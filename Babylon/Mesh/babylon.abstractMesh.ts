@@ -540,6 +540,22 @@
             return this._physicRestitution;
         }
 
+        public getPositionInCameraSpace(camera?: Camera): Vector3 {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        }
+
+        public getDistanceToCamera(camera?: Camera): Vector3 {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return this.absolutePosition.subtract(camera.position);
+        }
+
         public applyImpulse(force: Vector3, contactPoint: Vector3): void {
             if (!this._physicImpostor) {
                 return;

@@ -8,7 +8,7 @@
         private _kind: string;
         private _strideSize: number;
 
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean) {
+        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -26,6 +26,12 @@
 
             this._kind = kind;
 
+            if (stride) {
+                this._strideSize = stride;
+                return;
+            }
+
+            // Deduce stride from kind
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this._strideSize = 3;

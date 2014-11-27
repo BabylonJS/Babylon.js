@@ -547,6 +547,22 @@ var BABYLON;
             return this._physicRestitution;
         };
 
+        AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return BABYLON.Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        };
+
+        AbstractMesh.prototype.getDistanceToCamera = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return this.absolutePosition.subtract(camera.position);
+        };
+
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
             if (!this._physicImpostor) {
                 return;
