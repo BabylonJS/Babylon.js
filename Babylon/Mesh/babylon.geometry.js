@@ -45,17 +45,17 @@ var BABYLON;
             vertexData.applyToGeometry(this, updatable);
         };
 
-        Geometry.prototype.setVerticesData = function (kind, data, updatable) {
+        Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
             this._vertexBuffers = this._vertexBuffers || {};
 
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
 
-            this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0);
+            this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             if (kind === BABYLON.VertexBuffer.PositionKind) {
-                var stride = this._vertexBuffers[kind].getStrideSize();
+                stride = this._vertexBuffers[kind].getStrideSize();
 
                 this._totalVertices = data.length / stride;
 

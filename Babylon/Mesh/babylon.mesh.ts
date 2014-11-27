@@ -269,7 +269,7 @@
             this.synchronizeInstances();
         }
 
-        public setVerticesData(kind: any, data: any, updatable?: boolean): void {
+        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void {
             if (kind instanceof Array) {
                 var temp = data;
                 data = kind;
@@ -287,7 +287,7 @@
                 new BABYLON.Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
             }
             else {
-                this._geometry.setVerticesData(kind, data, updatable);
+                this._geometry.setVerticesData(kind, data, updatable, stride);
             }
         }
 

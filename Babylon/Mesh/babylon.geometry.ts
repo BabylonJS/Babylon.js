@@ -54,17 +54,17 @@
             vertexData.applyToGeometry(this, updatable);
         }
 
-        public setVerticesData(kind: string, data: number[], updatable?: boolean): void {
+        public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void {
             this._vertexBuffers = this._vertexBuffers || {};
 
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
 
-            this._vertexBuffers[kind] = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0);
+            this._vertexBuffers[kind] = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             if (kind === BABYLON.VertexBuffer.PositionKind) {
-                var stride = this._vertexBuffers[kind].getStrideSize();
+                stride = this._vertexBuffers[kind].getStrideSize();
 
                 this._totalVertices = data.length / stride;
 

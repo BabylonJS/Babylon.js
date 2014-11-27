@@ -1,7 +1,7 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var VertexBuffer = (function () {
-        function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation) {
+        function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation, stride) {
             if (engine instanceof BABYLON.Mesh) {
                 this._engine = engine.getScene().getEngine();
             } else {
@@ -17,6 +17,11 @@
             }
 
             this._kind = kind;
+
+            if (stride) {
+                this._strideSize = stride;
+                return;
+            }
 
             switch (kind) {
                 case VertexBuffer.PositionKind:

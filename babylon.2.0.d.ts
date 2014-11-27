@@ -41,6 +41,7 @@ declare module BABYLON {
         public textureAnisotropicFilterExtension: any;
         public maxAnisotropy: number;
         public instancedArrays: any;
+        public uintIndices: boolean;
     }
     class Engine {
         private static _ALPHA_DISABLE;
@@ -97,6 +98,7 @@ declare module BABYLON {
         private _cachedEffectForVertexBuffers;
         private _currentRenderTarget;
         private _canvasClientRect;
+        private _uintIndicesCurrentlySet;
         private _workingCanvas;
         private _workingContext;
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: any);
@@ -255,6 +257,7 @@ interface WebGLTexture {
 interface WebGLBuffer {
     references: number;
     capacity: number;
+    is32Bits: boolean;
 }
 interface MouseEvent {
     movementX: number;
@@ -2567,7 +2570,7 @@ declare module BABYLON {
         public getEngine(): Engine;
         public isReady(): boolean;
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
-        public setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+        public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void;
         public updateVerticesDataDirectly(kind: string, data: Float32Array): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
         public getTotalVertices(): number;
@@ -2782,7 +2785,7 @@ declare module BABYLON {
         public refreshBoundingInfo(): void;
         public _createGlobalSubMesh(): SubMesh;
         public subdivide(count: number): void;
-        public setVerticesData(kind: any, data: any, updatable?: boolean): void;
+        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void;
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
         public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void;
         public makeGeometryUnique(): void;
@@ -2937,7 +2940,7 @@ declare module BABYLON {
         private _updatable;
         private _kind;
         private _strideSize;
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean);
+        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number);
         public isUpdatable(): boolean;
         public getData(): number[];
         public getBuffer(): WebGLBuffer;
