@@ -335,7 +335,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             # skip if mesh already written by that name, since this one is an instance
             skip = False
             for n in range(0, m):
-                skip |= mesh.dataName == self.meshesAndNodes[n].dataName # nodes have no dataname, so no need to check for
+                skip |= hasattr(mesh, "dataName") and hasattr(self.meshesAndNodes[n], "dataName") and mesh.dataName == self.meshesAndNodes[n].dataName # nodes have no dataname, so no need to check for
              
             if skip: continue
                 
@@ -458,15 +458,17 @@ class FCurveAnimatable:
                     self.animations.append(VectorAnimation(object, 'scale', 'scaling', 1))
                     scaAnim = True
             #Set Animations
-            self.autoAnimate = True
-            self.autoAnimateFrom = 0
-            self.autoAnimateTo =  bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1
-          #  for animation in self.animations:
-          #      if self.autoAnimateFrom > animation.get_first_frame():
-          #          self.autoAnimateFrom = animation.get_first_frame()
-          #      if self.autoAnimateTo < animation.get_last_frame():
-          #          self.autoAnimateTo = animation.get_last_frame()
-            self.autoAnimateLoop = True
+
+            if (hasattr(object.data, "autoAnimate") and object.data.autoAnimate):
+                self.autoAnimate = True
+                self.autoAnimateFrom = 0
+                self.autoAnimateTo =  bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1
+              #  for animation in self.animations:
+              #      if self.autoAnimateFrom > animation.get_first_frame():
+              #          self.autoAnimateFrom = animation.get_first_frame()
+              #      if self.autoAnimateTo < animation.get_last_frame():
+              #          self.autoAnimateTo = animation.get_last_frame()
+                self.autoAnimateLoop = True
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):     
         if (self.animationsPresent):
@@ -479,16 +481,17 @@ class FCurveAnimatable:
                 first = False
             file_handler.write(']')
             
-            write_bool(file_handler, 'autoAnimate', self.autoAnimate)
-            write_int(file_handler, 'autoAnimateFrom', self.autoAnimateFrom)
-            write_int(file_handler, 'autoAnimateTo', self.autoAnimateTo)
-            write_bool(file_handler, 'autoAnimateLoop', self.autoAnimateLoop)
+            if (hasattr(self, "autoAnimate") and self.autoAnimate):
+                write_bool(file_handler, 'autoAnimate', self.autoAnimate)
+                write_int(file_handler, 'autoAnimateFrom', self.autoAnimateFrom)
+                write_int(file_handler, 'autoAnimateTo', self.autoAnimateTo)
+                write_bool(file_handler, 'autoAnimateLoop', self.autoAnimateLoop)
 #===============================================================================
 class Mesh(FCurveAnimatable):
     def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID):
         super().__init__(object, True, True, True)  #Should animations be done when foredParent
         
-        self.name = object.name + nameID
+        self.name = object.name + str(nameID)
         BabylonExporter.log('processing begun of mesh:  ' + self.name)
         self.isVisible = not object.hide_render
         self.isEnabled = True
@@ -744,7 +747,7 @@ class Mesh(FCurveAnimatable):
                             self.colors.append(vertex_Color.r)
                             self.colors.append(vertex_Color.g)
                             self.colors.append(vertex_Color.b)
-							self.colors.append(1.0)
+                            self.colors.append(1.0)
                         if hasSkeleton:
                             self.skeletonWeights.append(matricesWeights[0])
                             self.skeletonWeights.append(matricesWeights[1])
@@ -882,7 +885,7 @@ class Mesh(FCurveAnimatable):
         first = True
         file_handler.write('\n,"instances":[')
         for mesh in meshesAndNodes:
-            if mesh.dataName == self.dataName and mesh != self:  # nodes have no dataname, so no need to check for
+            if hasattr(mesh, "dataName") and mesh.dataName == self.dataName and mesh != self:  # nodes have no dataname, so no need to check for
                 if first == False:
                     file_handler.write(',')
                 file_handler.write('{')
@@ -1637,6 +1640,11 @@ def write_bool(file_handler, name, bool, noComma = False):
 #===============================================================================
 # custom properties definition and display 
 #===============================================================================
+bpy.types.Mesh.autoAnimate = bpy.props.BoolProperty(
+    name='Automatically launch animations', 
+    description='',
+    default = False
+)
 bpy.types.Mesh.useFlatShading = bpy.props.BoolProperty(
     name='Use Flat Shading', 
     description='',
@@ -1658,6 +1666,11 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     default = False
 )
 #===============================================================================
+bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
+    name='Automatically launch animations', 
+    description='',
+    default = False
+)
 bpy.types.Camera.CameraType = bpy.props.EnumProperty(
     name='Camera Type', 
     description='',
@@ -1696,6 +1709,11 @@ bpy.types.Camera.anaglyphEyeSpace = bpy.props.IntProperty(
     default = 1
 )    
 #===============================================================================
+bpy.types.Lamp.autoAnimate = bpy.props.BoolProperty(
+    name='Automatically launch animations', 
+    description='',
+    default = False
+)
 bpy.types.Lamp.shadowMap = bpy.props.EnumProperty(
     name='Shadow Map Type', 
     description='',
@@ -1728,6 +1746,10 @@ class ObjectPanel(bpy.types.Panel):
             layout.prop(ob.data, 'checkCollisions')     
             layout.prop(ob.data, 'castShadows')     
             layout.prop(ob.data, 'receiveShadows')   
+
+            layout.separator()
+
+            layout.prop(ob.data, 'autoAnimate')   
             
         elif isCamera:
             layout.prop(ob.data, 'CameraType')
@@ -1738,7 +1760,15 @@ class ObjectPanel(bpy.types.Panel):
             layout.separator()
             
             layout.prop(ob.data, 'anaglyphEyeSpace')
+
+            layout.separator()
+
+            layout.prop(ob.data, 'autoAnimate')   
             
         elif isLight:
             layout.prop(ob.data, 'shadowMap')
             layout.prop(ob.data, 'shadowMapSize')        
+
+            layout.separator()
+
+            layout.prop(ob.data, 'autoAnimate')   
