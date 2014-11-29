@@ -67,6 +67,7 @@ interface WebGLTexture {
 interface WebGLBuffer {
     references: number;
     capacity: number;
+    is32Bits: boolean;
 }
 
 interface MouseEvent {

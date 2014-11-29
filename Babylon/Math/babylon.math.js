@@ -575,7 +575,7 @@
         };
 
         Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
         };
 
         Vector3.prototype.equalsToFloats = function (x, y, z) {
@@ -1005,7 +1005,7 @@
         };
 
         Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon && Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon && Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
         };
 
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
@@ -1743,6 +1743,14 @@
             return result;
         };
 
+        Matrix.Invert = function (source) {
+            var result = new Matrix();
+
+            source.invertToRef(result);
+
+            return result;
+        };
+
         Matrix.RotationXToRef = function (angle, result) {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
@@ -2430,7 +2438,7 @@
                 return null;
             }
 
-            return new IntersectionInfo(bu, bv, distance);
+            return new BABYLON.IntersectionInfo(bu, bv, distance);
         };
 
         // Statics
@@ -2487,3 +2495,4 @@
     BABYLON.Axis = Axis;
     ;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.math.js.map

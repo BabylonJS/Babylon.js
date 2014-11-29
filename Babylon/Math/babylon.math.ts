@@ -1735,6 +1735,14 @@
             return result;
         }
 
+        public static Invert(source: Matrix): Matrix {
+            var result = new Matrix();
+
+            source.invertToRef(result);
+
+            return result;
+        }
+
         public static RotationXToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
@@ -2422,12 +2430,12 @@
             if (bv < 0 || bu + bv > 1.0) {
                 return null;
             }
-			
-			//check if the distance is longer than the predefined length.
-			var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
-			if(distance > this.length) {
-				return null;
-			}
+
+            //check if the distance is longer than the predefined length.
+            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
+            if (distance > this.length) {
+                return null;
+            }
 
             return new IntersectionInfo(bu, bv, distance);
         }
@@ -2442,21 +2450,21 @@
 
             return new Ray(start, direction);
         }
-		
-		/**
-		* Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be 
-		* transformed to the given world matrix.
-		* @param origin The origin point
-		* @param end The end point
-		* @param world a matrix to transform the ray to. Default is the identity matrix.
-		*/
-		public static CreateNewFromTo(origin : BABYLON.Vector3, end : BABYLON.Vector3, world: Matrix = BABYLON.Matrix.Identity()): Ray {
-			var direction = end.subtract(origin);
-			var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
+
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be 
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        public static CreateNewFromTo(origin: BABYLON.Vector3, end: BABYLON.Vector3, world: Matrix = BABYLON.Matrix.Identity()): Ray {
+            var direction = end.subtract(origin);
+            var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
-			
-			return Ray.Transform(new Ray(origin, direction, length), world);
-		}
+
+            return Ray.Transform(new Ray(origin, direction, length), world);
+        }
 
         public static Transform(ray: Ray, matrix: Matrix): Ray {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);

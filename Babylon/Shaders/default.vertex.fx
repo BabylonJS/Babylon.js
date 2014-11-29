@@ -12,7 +12,7 @@ attribute vec2 uv;
 attribute vec2 uv2;
 #endif
 #ifdef VERTEXCOLOR
-attribute vec3 color;
+attribute vec4 color;
 #endif
 #ifdef BONES
 attribute vec4 matricesIndices;
@@ -82,7 +82,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 
 #ifdef VERTEXCOLOR
-varying vec3 vColor;
+varying vec4 vColor;
 #endif
 
 #ifdef CLIPPLANE
