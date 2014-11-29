@@ -21,7 +21,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 
 #ifdef VERTEXCOLOR
-varying vec3 vColor;
+varying vec4 vColor;
 #endif
 
 // Lights
@@ -473,7 +473,7 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef VERTEXCOLOR
-	diffuseColor *= vColor;
+	baseColor.rgb *= vColor.rgb;
 #endif
 
 #ifdef DIFFUSE
@@ -659,6 +659,10 @@ void main(void) {
 	alpha *= opacityMap.a * vOpacityInfos.y;
 #endif
 
+#endif
+
+#ifdef VERTEXALPHA
+	alpha *= vColor.a;
 #endif
 
 #ifdef OPACITYFRESNEL

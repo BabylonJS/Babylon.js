@@ -87,7 +87,7 @@
             var material = subMesh.getMaterial();
             var mesh = subMesh.getMesh();
 
-            if (material.needAlphaBlending() || mesh.visibility < 1.0) {
+            if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
                 if (material.alpha > 0 || mesh.visibility < 1.0) {
                     this._transparentSubMeshes.push(subMesh);
                 }

@@ -29,6 +29,7 @@ var BABYLON;
             this.renderOutline = false;
             this.outlineColor = BABYLON.Color3.Red();
             this.outlineWidth = 0.02;
+            this.hasVertexAlpha = false;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -545,6 +546,22 @@ var BABYLON;
             }
 
             return this._physicRestitution;
+        };
+
+        AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return BABYLON.Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        };
+
+        AbstractMesh.prototype.getDistanceToCamera = function (camera) {
+            if (!camera) {
+                camera = this.getScene().activeCamera;
+            }
+
+            return this.absolutePosition.subtract(camera.position);
         };
 
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {

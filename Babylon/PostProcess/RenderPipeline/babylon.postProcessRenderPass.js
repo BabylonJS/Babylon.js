@@ -13,6 +13,8 @@
             this._renderTexture.onAfterRender = afterRender;
 
             this._scene = scene;
+
+            this._renderList = renderList;
         }
         // private
         PostProcessRenderPass.prototype._incRefCount = function () {
