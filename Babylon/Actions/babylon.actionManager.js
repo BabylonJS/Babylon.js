@@ -8,9 +8,9 @@
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
         }
-        ActionEvent.CreateNew = function (source) {
+        ActionEvent.CreateNew = function (source, sourceEvent) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, sourceEvent);
         };
 
         ActionEvent.CreateNewFromScene = function (scene, evt) {

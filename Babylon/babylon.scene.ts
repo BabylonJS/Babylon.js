@@ -112,6 +112,7 @@
         public actionManager: ActionManager;
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
+        public asyncEventTriggers = true;
 
         // Procedural textures
         public proceduralTexturesEnabled = true;
@@ -281,7 +282,7 @@
                 this._updatePointerPosition(evt);
 
                 var pickResult = this.pick(this._pointerX, this._pointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers,
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady()/* && mesh.actionManager && mesh.actionManager.hasPointerTriggers*/,
                     false,
                     this.cameraToUseForPointers);
 
@@ -303,7 +304,7 @@
 
                 if (!this.onPointerDown) {
                     predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady()/* && mesh.actionManager && mesh.actionManager.hasPickTriggers*/;
                     };
                 }
 
@@ -312,20 +313,22 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
-                    if (pickResult.pickedMesh.actionManager) {
+                    var actionEvent = ActionEvent.CreateNew(pickResult.pickedMesh, evt);
+                    this._triggerJsEvent("pick", actionEvent, pickResult.pickedMesh.htmlId);
+                    if (pickResult.pickedMesh.actionManager && pickResult.pickedMesh.actionManager.hasPickTriggers) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, actionEvent);
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, actionEvent);
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, actionEvent);
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
-                    }
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, actionEvent);
+                    }                    
                 }
 
                 if (this.onPointerDown) {
@@ -334,17 +337,20 @@
             };
 
             this._onKeyDown = (evt: Event) => {
+                var actionEvent = ActionEvent.CreateNewFromScene(this, evt);
+                this._triggerJsEvent("keyDown", actionEvent);
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, actionEvent);
                 }
             };
 
             this._onKeyUp = (evt: Event) => {
+                var actionEvent = ActionEvent.CreateNewFromScene(this, evt);
+                this._triggerJsEvent("keyUp", actionEvent);
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, actionEvent);
                 }
             };
-
 
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
@@ -352,6 +358,16 @@
 
             window.addEventListener("keydown", this._onKeyDown, false);
             window.addEventListener("keyup", this._onKeyUp, false);
+        }
+
+        private _triggerJsEvent(evt: string, eventData: any, htmlId?: string) {
+            if (!this.asyncEventTriggers) {
+                return;
+            }
+            var newEvent: CustomEvent = <CustomEvent> document.createEvent('CustomEvent');
+            newEvent.initCustomEvent(evt /*+ "_babylon"*/, true, true, eventData);
+            var htmlElement = htmlId ? document.querySelector("#" + htmlId) : this._engine.getRenderingCanvas();
+            htmlElement.dispatchEvent(newEvent);
         }
 
         public detachControl() {
@@ -542,6 +558,71 @@
             this._projectionMatrix = projection;
 
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+        }
+
+        //Node adding
+        public addMesh(mesh: AbstractMesh) {
+            this.meshes.push(mesh);
+            this._generateHtmlElement("mesh", mesh);
+        }
+
+        public removeMesh(mesh: AbstractMesh) {
+            var index = this.meshes.indexOf(mesh);
+            if (index != -1) {
+                this.meshes.splice(index, 1);
+            }
+            this._removeHtmlElement("mesh", mesh.htmlId);
+        }
+
+        public addLight(light: Light) {
+            this.lights.push(light);
+            this._generateHtmlElement("light", light);
+        }
+
+        public removeLight(light: Light) {
+            var index = this.lights.indexOf(light);
+            if (index != -1) {
+                this.lights.splice(index, 1);
+            }
+            this._removeHtmlElement("light", light.htmlId);
+        }
+
+        public addCamera(camera: Camera) {
+            this.cameras.push(camera);
+            this._generateHtmlElement("camera", camera);
+        }
+
+        public removeCamera(camera: Camera) {
+            var index = this.cameras.indexOf(camera);
+            if (index != -1) {
+                this.cameras.splice(index, 1);
+            }
+            this._removeHtmlElement("camera", camera.htmlId);
+        }
+
+        private _generateHtmlElement(kind: string, node:Node) {
+            var element: HTMLElement = document.createElement(kind);
+            var htmlId = kind + "-" + node.id;
+            var idNumeration = 0;
+            if (document.getElementById(htmlId)) {
+                while (document.getElementById(htmlId + "_" + idNumeration++)) {
+                    
+                }
+                
+                htmlId = htmlId + "_" + idNumeration;
+                Tools.Warn("Extra " + kind + " with the same id was added with id " + htmlId);
+            }
+            node.htmlId = htmlId;
+            element.id = htmlId;
+            var canvas = this.getEngine().getRenderingCanvas();
+            canvas.insertBefore(element, null);
+            this._triggerJsEvent("nodeAdded", { kind: kind, originalId:node.id, htmlId: htmlId });
+        }
+
+        private _removeHtmlElement(kind:string, id: string) {
+            var element = document.getElementById(id);
+            element.parentElement.removeChild(element);
+            this._triggerJsEvent("nodeRemoved", { kind: kind, id: id });
         }
 
         // Methods
@@ -1029,11 +1110,15 @@
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                         if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, ActionEvent.CreateNew(sourceMesh));
+                            var actionEvent = ActionEvent.CreateNew(sourceMesh);
+                            this._triggerJsEvent("intersectionEnter", actionEvent, sourceMesh.htmlId);
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, actionEvent);
                             sourceMesh._intersectionsInProgress.push(otherMesh);
 
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, ActionEvent.CreateNew(sourceMesh));
+                            var actionEvent = ActionEvent.CreateNew(sourceMesh);
+                            this._triggerJsEvent("intersectionExit", actionEvent, sourceMesh.htmlId);
+                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, actionEvent);
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -1419,14 +1504,26 @@
                 return;
             }
 
-            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            if (this._pointerOverMesh) {
+                var actionEvent = ActionEvent.CreateNew(this._pointerOverMesh);
+                this._triggerJsEvent("pointerOut", actionEvent, this._pointerOverMesh.htmlId);
+                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, actionEvent);
+                }
             }
 
+            
+
             this._pointerOverMesh = mesh;
-            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            if (this._pointerOverMesh) {
+                actionEvent = ActionEvent.CreateNew(this._pointerOverMesh);
+                this._triggerJsEvent("pointerOver", actionEvent, this._pointerOverMesh.htmlId);
+                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    this._pointerOverMesh.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, actionEvent);
+                }
             }
+
+            
         }
 
         public getPointerOverMesh(): AbstractMesh {
