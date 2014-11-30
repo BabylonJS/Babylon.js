@@ -56,6 +56,7 @@
             this.importedMeshesFiles = new Array();
             this._actionManagers = new Array();
             this._meshesForIntersections = new BABYLON.SmartArray(256);
+            this.asyncEventTriggers = true;
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
@@ -206,8 +207,8 @@
                 _this._updatePointerPosition(evt);
 
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) {
-                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
-                }, false, _this.cameraToUseForPointers);
+                    return mesh.isPickable && mesh.isVisible && mesh.isReady();
+                } /* && mesh.actionManager && mesh.actionManager.hasPointerTriggers*/ , false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
                     _this._meshUnderPointer = pickResult.pickedMesh;
@@ -226,7 +227,7 @@
 
                 if (!_this.onPointerDown) {
                     predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
                     };
                 }
 
@@ -235,19 +236,21 @@
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
 
                 if (pickResult.hit) {
-                    if (pickResult.pickedMesh.actionManager) {
+                    var actionEvent = BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt);
+                    _this._triggerJsEvent("pick", actionEvent, pickResult.pickedMesh.htmlId);
+                    if (pickResult.pickedMesh.actionManager && pickResult.pickedMesh.actionManager.hasPickTriggers) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, actionEvent);
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, actionEvent);
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, actionEvent);
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, actionEvent);
                     }
                 }
 
@@ -257,14 +260,18 @@
             };
 
             this._onKeyDown = function (evt) {
+                var actionEvent = BABYLON.ActionEvent.CreateNewFromScene(_this, evt);
+                _this._triggerJsEvent("keyDown", actionEvent);
                 if (_this.actionManager) {
-                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
+                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, actionEvent);
                 }
             };
 
             this._onKeyUp = function (evt) {
+                var actionEvent = BABYLON.ActionEvent.CreateNewFromScene(_this, evt);
+                _this._triggerJsEvent("keyUp", actionEvent);
                 if (_this.actionManager) {
-                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
+                    _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, actionEvent);
                 }
             };
 
@@ -274,6 +281,16 @@
 
             window.addEventListener("keydown", this._onKeyDown, false);
             window.addEventListener("keyup", this._onKeyUp, false);
+        };
+
+        Scene.prototype._triggerJsEvent = function (evt, eventData, htmlId) {
+            if (!this.asyncEventTriggers) {
+                return;
+            }
+            var newEvent = document.createEvent('CustomEvent');
+            newEvent.initCustomEvent(evt, true, true, eventData);
+            var htmlElement = htmlId ? document.querySelector("#" + htmlId) : this._engine.getRenderingCanvas();
+            htmlElement.dispatchEvent(newEvent);
         };
 
         Scene.prototype.detachControl = function () {
@@ -466,6 +483,70 @@
             this._projectionMatrix = projection;
 
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+        };
+
+        //Node adding
+        Scene.prototype.addMesh = function (mesh) {
+            this.meshes.push(mesh);
+            this._generateHtmlElement("mesh", mesh);
+        };
+
+        Scene.prototype.removeMesh = function (mesh) {
+            var index = this.meshes.indexOf(mesh);
+            if (index != -1) {
+                this.meshes.splice(index, 1);
+            }
+            this._removeHtmlElement("mesh", mesh.htmlId);
+        };
+
+        Scene.prototype.addLight = function (light) {
+            this.lights.push(light);
+            this._generateHtmlElement("light", light);
+        };
+
+        Scene.prototype.removeLight = function (light) {
+            var index = this.lights.indexOf(light);
+            if (index != -1) {
+                this.lights.splice(index, 1);
+            }
+            this._removeHtmlElement("light", light.htmlId);
+        };
+
+        Scene.prototype.addCamera = function (camera) {
+            this.cameras.push(camera);
+            this._generateHtmlElement("camera", camera);
+        };
+
+        Scene.prototype.removeCamera = function (camera) {
+            var index = this.cameras.indexOf(camera);
+            if (index != -1) {
+                this.cameras.splice(index, 1);
+            }
+            this._removeHtmlElement("camera", camera.htmlId);
+        };
+
+        Scene.prototype._generateHtmlElement = function (kind, node) {
+            var element = document.createElement(kind);
+            var htmlId = kind + "-" + node.id;
+            var idNumeration = 0;
+            if (document.getElementById(htmlId)) {
+                while (document.getElementById(htmlId + "_" + idNumeration++)) {
+                }
+
+                htmlId = htmlId + "_" + idNumeration;
+                BABYLON.Tools.Warn("Extra " + kind + " with the same id was added with id " + htmlId);
+            }
+            node.htmlId = htmlId;
+            element.id = htmlId;
+            var canvas = this.getEngine().getRenderingCanvas();
+            canvas.insertBefore(element, null);
+            this._triggerJsEvent("nodeAdded", { kind: kind, originalId: node.id, htmlId: htmlId });
+        };
+
+        Scene.prototype._removeHtmlElement = function (kind, id) {
+            var element = document.getElementById(id);
+            element.parentElement.removeChild(element);
+            this._triggerJsEvent("nodeRemoved", { kind: kind, id: id });
         };
 
         // Methods
@@ -952,10 +1033,14 @@
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                         if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                            var actionEvent = BABYLON.ActionEvent.CreateNew(sourceMesh);
+                            this._triggerJsEvent("intersectionEnter", actionEvent, sourceMesh.htmlId);
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, actionEvent);
                             sourceMesh._intersectionsInProgress.push(otherMesh);
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                            var actionEvent = BABYLON.ActionEvent.CreateNew(sourceMesh);
+                            this._triggerJsEvent("intersectionExit", actionEvent, sourceMesh.htmlId);
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, actionEvent);
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -1338,13 +1423,21 @@
                 return;
             }
 
-            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, BABYLON.ActionEvent.CreateNew(this._pointerOverMesh));
+            if (this._pointerOverMesh) {
+                var actionEvent = BABYLON.ActionEvent.CreateNew(this._pointerOverMesh);
+                this._triggerJsEvent("pointerOut", actionEvent, this._pointerOverMesh.htmlId);
+                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, actionEvent);
+                }
             }
 
             this._pointerOverMesh = mesh;
-            if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-                this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, BABYLON.ActionEvent.CreateNew(this._pointerOverMesh));
+            if (this._pointerOverMesh) {
+                actionEvent = BABYLON.ActionEvent.CreateNew(this._pointerOverMesh);
+                this._triggerJsEvent("pointerOver", actionEvent, this._pointerOverMesh.htmlId);
+                if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
+                    this._pointerOverMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, actionEvent);
+                }
             }
         };
 

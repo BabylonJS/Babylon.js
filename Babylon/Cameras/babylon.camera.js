@@ -31,7 +31,7 @@ var BABYLON;
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
 
-            scene.cameras.push(this);
+            scene.addCamera(this);
 
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -287,8 +287,7 @@ var BABYLON;
 
         Camera.prototype.dispose = function () {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            this.getScene().removeCamera(this);
 
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
