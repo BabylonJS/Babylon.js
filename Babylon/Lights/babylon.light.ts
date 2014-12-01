@@ -15,7 +15,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.addLight(this);
+            scene.lights.push(this);
         }
 
         public getShadowGenerator(): ShadowGenerator {
@@ -70,7 +70,8 @@
             }
 
             // Remove from scene
-            this.getScene().removeLight(this);
+            var index = this.getScene().lights.indexOf(this);
+            this.getScene().lights.splice(index, 1);
         }
     }
 } 

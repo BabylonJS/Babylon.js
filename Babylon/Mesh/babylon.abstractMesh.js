@@ -62,7 +62,7 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
 
-            scene.addMesh(this);
+            scene.meshes.push(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
             get: function () {
@@ -794,10 +794,14 @@ var BABYLON;
             this.releaseSubMeshes();
 
             // Remove from scene
-            this.getScene().removeMesh(this);
+            var index = this.getScene().meshes.indexOf(this);
+            if (index != -1) {
+                // Remove from the scene if mesh found
+                this.getScene().meshes.splice(index, 1);
+            }
 
             if (!doNotRecurse) {
-                for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+                for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter == this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;

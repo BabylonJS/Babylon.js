@@ -100,7 +100,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.addMesh(this);
+            scene.meshes.push(this);
         }
 
         // Methods
@@ -786,11 +786,15 @@
             this.releaseSubMeshes();
 
             // Remove from scene
-            this.getScene().removeMesh(this);
+            var index = this.getScene().meshes.indexOf(this);
+            if (index != -1) {
+                // Remove from the scene if mesh found 
+                this.getScene().meshes.splice(index, 1);
+            }
 
             if (!doNotRecurse) {
                 // Particles
-                for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+                for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter == this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;
