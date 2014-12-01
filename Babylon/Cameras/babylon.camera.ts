@@ -29,7 +29,7 @@
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.addCamera(this);
+            scene.cameras.push(this);
 
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -303,7 +303,8 @@
 
         public dispose(): void {
             // Remove from scene
-            this.getScene().removeCamera(this);
+            var index = this.getScene().cameras.indexOf(this);
+            this.getScene().cameras.splice(index, 1);
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {

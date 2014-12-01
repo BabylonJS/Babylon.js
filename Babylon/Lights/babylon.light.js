@@ -19,7 +19,7 @@ var BABYLON;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
 
-            scene.addLight(this);
+            scene.lights.push(this);
         }
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
@@ -73,7 +73,8 @@ var BABYLON;
             }
 
             // Remove from scene
-            this.getScene().removeLight(this);
+            var index = this.getScene().lights.indexOf(this);
+            this.getScene().lights.splice(index, 1);
         };
         return Light;
     })(BABYLON.Node);
