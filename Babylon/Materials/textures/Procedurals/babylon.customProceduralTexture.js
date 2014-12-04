@@ -10,9 +10,10 @@ var BABYLON;
         __extends(CustomProceduralTexture, _super);
         function CustomProceduralTexture(name, texturePath, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "empty", scene, fallbackTexture, generateMipMaps);
-            this._generateTime = true;
+            this._animate = true;
             this._time = 0;
             this._shaderLoaded = false;
+            this._updateTexture = false;
 
             this._texturePath = texturePath;
 
@@ -20,17 +21,15 @@ var BABYLON;
             this.loadJson(texturePath);
 
             // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
-            this.refreshRate = 0;
+            this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
-            var _this = this;
             function noConfigFile() {
                 BABYLON.Tools.Log("No config file found in " + jsonUrl);
             }
 
             var that = this;
             var configFileUrl = jsonUrl + "/config.json";
-
             var xhr = new XMLHttpRequest();
 
             xhr.open("GET", configFileUrl, true);
@@ -38,13 +37,8 @@ var BABYLON;
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
                         that._config = JSON.parse(xhr.response);
-                        that.updateShaderUniforms();
-                        that.setFragment(jsonUrl + "/custom");
-                        that._generateTime = that._config.generateTime;
-                        if (that._generateTime)
-                            _this.refreshRate = 1;
+                        that._updateTexture = true;
                         that._shaderLoaded = true;
-                        that.render();
                     } catch (ex) {
                         noConfigFile();
                     }
@@ -69,7 +63,20 @@ var BABYLON;
             if (!this._shaderLoaded)
                 return;
 
-            if (this._generateTime) {
+            if (this._updateTexture) {
+                this.reset();
+                this.setFragment(this._texturePath + "/custom");
+                this.updateTextures();
+                this.updateShaderUniforms();
+                this._shaderLoaded = true;
+                this._animate = this._config.animate;
+                this.refreshRate = this._config.refreshrate;
+                this.isReady();
+                this._updateTexture = false;
+                return;
+            }
+
+            if (this._animate) {
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
@@ -77,11 +84,13 @@ var BABYLON;
             _super.prototype.render.call(this, useCameraPostProcess);
         };
 
-        CustomProceduralTexture.prototype.updateShaderUniforms = function () {
+        CustomProceduralTexture.prototype.updateTextures = function () {
             for (var i = 0; i < this._config.texture2Ds.length; i++) {
-                this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene()));
+                this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene(), false, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, null, null, null, true));
             }
+        };
 
+        CustomProceduralTexture.prototype.updateShaderUniforms = function () {
             for (var j = 0; j < this._config.uniforms.length; j++) {
                 var uniform = this._config.uniforms[j];
 
@@ -105,12 +114,12 @@ var BABYLON;
             }
         };
 
-        Object.defineProperty(CustomProceduralTexture.prototype, "generateTime", {
+        Object.defineProperty(CustomProceduralTexture.prototype, "animate", {
             get: function () {
-                return this.generateTime;
+                return this._animate;
             },
             set: function (value) {
-                this.generateTime = value;
+                this._animate = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

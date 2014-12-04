@@ -66,6 +66,11 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
 
+        public reset(): void {
+            var engine = this.getScene().getEngine();
+            engine._releaseEffect(this._effect);
+        }
+
       
         public isReady(): boolean {
             var engine = this.getScene().getEngine();
