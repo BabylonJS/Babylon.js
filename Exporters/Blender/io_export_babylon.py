@@ -1184,7 +1184,7 @@ class Light(FCurveAnimatable):
         else:
             matrix_world = light.matrix_world.copy()
             matrix_world.translation = mathutils.Vector((0, 0, 0))
-            self.direction = -(mathutils.Vector((0, 0, -1)) * matrix_world)
+            self.direction = (mathutils.Vector((0, 0, -1)) * matrix_world)
             self.groundColor = mathutils.Color((0, 0, 0))
             
         self.intensity = light.data.energy        
