@@ -54,6 +54,7 @@
   <script src="Babylon/Culling/Octrees/babylon.octree.js"></script>
   <script src="Babylon/Animations/babylon.animatable.js"></script>
   <script src="Babylon/Animations/babylon.animation.js"></script>
+  <script src="Babylon/Animations/babylon.easing.js"></script>
   <script src="Babylon/Particles/babylon.particleSystem.js"></script>
   <script src="Babylon/Particles/babylon.particle.js"></script>
   <script src="Babylon/Layer/babylon.layer.js"></script>
