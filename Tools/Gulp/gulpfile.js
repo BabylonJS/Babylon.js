@@ -104,6 +104,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Particles/babylon.particleSystem.js',
       '../../Babylon/Animations/babylon.animation.js',
       '../../Babylon/Animations/babylon.animatable.js',
+      '../../Babylon/Animations/babylon.easing.js',
       '../../Babylon/Culling/Octrees/babylon.octree.js',
       '../../Babylon/Culling/Octrees/babylon.octreeBlock.js',
       '../../Babylon/Bones/babylon.bone.js',
