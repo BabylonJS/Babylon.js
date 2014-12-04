@@ -97,6 +97,8 @@
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
+        private _onAfterWorldMatrixUpdate = new Array<(mesh: BABYLON.AbstractMesh) => void>();
+
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
@@ -395,7 +397,28 @@
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
+            // Callbacks
+            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
+                this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
             return this._worldMatrix;
+        }
+
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        public registerAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+            this._onAfterWorldMatrixUpdate.push(func);
+        }
+
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterWorldMatrixUpdate.splice(index, 1);
+            }
         }
 
         public setPositionWithLocalVector(vector3: Vector3): void {
@@ -817,6 +840,8 @@
                     }
                 }
             }
+
+            this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
 

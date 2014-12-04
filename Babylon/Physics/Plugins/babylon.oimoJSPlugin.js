@@ -304,6 +304,7 @@ var BABYLON;
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                         }
                         mesh.rotationQuaternion.fromRotationMatrix(mtx);
+                        mesh.computeWorldMatrix();
                     } else {
                         m = body.getMatrix();
                         mtx = BABYLON.Matrix.FromArray(m);
@@ -325,6 +326,7 @@ var BABYLON;
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                         }
                         mesh.rotationQuaternion.fromRotationMatrix(mtx);
+                        mesh.computeWorldMatrix();
                     }
                 }
             }

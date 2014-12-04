@@ -51,6 +51,7 @@ declare module BABYLON {
         private static _DELAYLOADSTATE_LOADED;
         private static _DELAYLOADSTATE_LOADING;
         private static _DELAYLOADSTATE_NOTLOADED;
+        private _audioEngine;
         static ALPHA_DISABLE : number;
         static ALPHA_ADD : number;
         static ALPHA_COMBINE : number;
@@ -102,6 +103,7 @@ declare module BABYLON {
         private _workingCanvas;
         private _workingContext;
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: any);
+        public getAudioEngine(): AudioEngine;
         public getAspectRatio(camera: Camera): number;
         public getRenderWidth(): number;
         public getRenderHeight(): number;
@@ -486,6 +488,7 @@ declare module BABYLON {
         private _processSubCameras(camera);
         private _checkIntersections();
         public render(): void;
+        private _updateAudioParameters();
         public dispose(): void;
         public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh?: AbstractMesh): void;
         private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
@@ -740,11 +743,14 @@ declare module BABYLON {
         private _highLimitsCache;
         private _stopped;
         public _target: any;
+        private _easingFunction;
         public targetPropertyPath: string[];
         public currentFrame: number;
         constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number);
         public isStopped(): boolean;
         public getKeys(): any[];
+        public getEasingFunction(): IEasingFunction;
+        public setEasingFunction(easingFunction: EasingFunction): void;
         public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
         public quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
@@ -772,6 +778,114 @@ declare module BABYLON {
         static ANIMATIONLOOPMODE_RELATIVE : number;
         static ANIMATIONLOOPMODE_CYCLE : number;
         static ANIMATIONLOOPMODE_CONSTANT : number;
+    }
+}
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private _easingMode;
+        public setEasingMode(easingMode: number): void;
+        public getEasingMode(): number;
+        public easeInCore(gradient: number): number;
+        public ease(gradient: number): number;
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static EASINGMODE_EASEIN : number;
+        static EASINGMODE_EASEOUT : number;
+        static EASINGMODE_EASEINOUT : number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        public amplitude: number;
+        constructor(amplitude?: number);
+        public easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        public bounces: number;
+        public bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        public easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        public oscillations: number;
+        public springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        public easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        public exponent: number;
+        constructor(exponent?: number);
+        public easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        public power: number;
+        constructor(power?: number);
+        public easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        public easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        public x1: number;
+        public y1: number;
+        public x2: number;
+        public y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        public easeInCore(gradient: number): number;
+    }
+}
+declare module BABYLON {
+    class AudioEngine {
+        public audioContext: AudioContext;
+        public canUseWebAudio: boolean;
+        public masterGain: GainNode;
+        constructor();
+        public getGlobalVolume(): number;
+        public setGlobalVolume(newVolume: number): void;
+    }
+}
+declare module BABYLON {
+    class Sound {
+        private _audioBuffer;
+        public distanceMax: number;
+        public autoplay: boolean;
+        public loop: boolean;
+        private _position;
+        private _orientation;
+        private _volume;
+        private _currentVolume;
+        private _isLoaded;
+        private _isReadyToPlay;
+        private _audioEngine;
+        private _readyToPlayCallback;
+        private _soundSource;
+        private _soundPanner;
+        constructor(url: string, engine: Engine, readyToPlayCallback: any, distanceMax?: number, autoplay?: boolean, loop?: boolean);
+        public setPosition(newPosition: Vector3): void;
+        public setOrientiation(newOrientation: Vector3): void;
+        public play(): void;
+        public stop(): void;
+        public pause(): void;
+        public attachToMesh(meshToConnectTo: AbstractMesh): void;
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        private _soundLoaded(audioData);
     }
 }
 declare module BABYLON {
@@ -1779,6 +1893,50 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class ProceduralTexture extends Texture {
+        private _size;
+        public _generateMipMaps: boolean;
+        private _doNotChangeAspectRatio;
+        private _currentRefreshId;
+        private _refreshRate;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _uniforms;
+        private _samplers;
+        private _fragment;
+        private _textures;
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _matrices;
+        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
+        public isReady(): boolean;
+        public resetRefreshCounter(): void;
+        public refreshRate : number;
+        public _shouldRender(): boolean;
+        public getRenderSize(): number;
+        public resize(size: any, generateMipMaps: any): void;
+        private _checkUniform(uniformName);
+        public setTexture(name: string, texture: Texture): ProceduralTexture;
+        public setFloat(name: string, value: number): ProceduralTexture;
+        public setFloats(name: string, value: number[]): ProceduralTexture;
+        public setColor3(name: string, value: Color3): ProceduralTexture;
+        public setColor4(name: string, value: Color4): ProceduralTexture;
+        public setVector2(name: string, value: Vector2): ProceduralTexture;
+        public setVector3(name: string, value: Vector3): ProceduralTexture;
+        public setMatrix(name: string, value: Matrix): ProceduralTexture;
+        public render(useCameraPostProcess?: boolean): void;
+        public clone(): ProceduralTexture;
+        public dispose(): void;
+    }
+}
+declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -1869,16 +2027,18 @@ declare module BABYLON {
 }
 declare module BABYLON {
     class CustomProceduralTexture extends ProceduralTexture {
-        private _generateTime;
+        private _animate;
         private _time;
         private _shaderLoaded;
         private _config;
         private _texturePath;
+        private _updateTexture;
         constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         private loadJson(jsonUrl);
         public render(useCameraPostProcess?: boolean): void;
+        public updateTextures(): void;
         public updateShaderUniforms(): void;
-        public generateTime : boolean;
+        public animate : boolean;
     }
 }
 declare module BABYLON {
@@ -1906,6 +2066,7 @@ declare module BABYLON {
         private _matrices;
         private _fallbackTexture;
         constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        public reset(): void;
         public isReady(): boolean;
         public resetRefreshCounter(): void;
         public setFragment(fragment: any): void;
@@ -2355,6 +2516,9 @@ declare module BABYLON {
         static Y: Vector3;
         static Z: Vector3;
     }
+    class BezierCurve {
+        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
 }
 declare module BABYLON {
     class AbstractMesh extends Node implements IDisposable {
@@ -2426,6 +2590,7 @@ declare module BABYLON {
         public subMeshes: SubMesh[];
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress: AbstractMesh[];
+        private _onAfterWorldMatrixUpdate;
         constructor(name: string, scene: Scene);
         public isBlocked : boolean;
         public getLOD(camera: Camera): AbstractMesh;
@@ -2450,6 +2615,12 @@ declare module BABYLON {
         public markAsDirty(property: string): void;
         public _updateBoundingInfo(): void;
         public computeWorldMatrix(force?: boolean): Matrix;
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
         public setPositionWithLocalVector(vector3: Vector3): void;
         public getPositionExpressedInLocalSpace(): Vector3;
         public locallyTranslate(vector3: Vector3): void;

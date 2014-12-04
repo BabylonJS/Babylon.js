@@ -12,7 +12,6 @@
         private _cull: boolean;
         private _cullFace: number;
 
-
         public get isDirty(): boolean {
             return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
         }
@@ -355,6 +354,8 @@
         private static _DELAYLOADSTATE_LOADING = 2;
         private static _DELAYLOADSTATE_NOTLOADED = 4;
 
+        private _audioEngine: BABYLON.AudioEngine;
+
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
         }
@@ -547,6 +548,12 @@
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+            this._audioEngine = new BABYLON.AudioEngine();
+        }
+
+        public getAudioEngine(): AudioEngine {
+            return this._audioEngine;
         }
 
         public getAspectRatio(camera: Camera): number {
