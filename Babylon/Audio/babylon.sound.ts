@@ -74,8 +74,8 @@
             this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
                 this._audioBuffer = buffer;
                 this._isReadyToPlay = true;
-                if (this.autoplay) this.play();
-                if (this._readyToPlayCallback) this._readyToPlayCallback();
+                if (this.autoplay) { this.play(); }
+                if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
             }, function (error) {
                 BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
             });
