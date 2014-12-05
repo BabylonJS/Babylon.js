@@ -14,6 +14,37 @@
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
+        Animation.CreateAndStartAnimation = function (name, mesh, tartgetProperty, framePerSecond, totalFrame, from, to, loopMode) {
+            var dataType = undefined;
+
+            if (!isNaN(parseFloat(from)) && isFinite(from)) {
+                dataType = Animation.ANIMATIONTYPE_FLOAT;
+            } else if (from instanceof BABYLON.Quaternion) {
+                dataType = Animation.ANIMATIONTYPE_QUATERNION;
+            } else if (from instanceof BABYLON.Vector3) {
+                dataType = Animation.ANIMATIONTYPE_VECTOR3;
+            } else if (from instanceof BABYLON.Vector2) {
+                dataType = Animation.ANIMATIONTYPE_VECTOR2;
+            } else if (from instanceof BABYLON.Color3) {
+                dataType = Animation.ANIMATIONTYPE_COLOR3;
+            }
+
+            if (dataType == undefined) {
+                return;
+            }
+
+            var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
+
+            var keys = [];
+            keys.push({ frame: 0, value: from });
+            keys.push({ frame: totalFrame, value: to });
+            animation.setKeys(keys);
+
+            mesh.animations.push(animation);
+
+            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode == 1));
+        };
+
         // Methods
         Animation.prototype.isStopped = function () {
             return this._stopped;
@@ -21,6 +52,14 @@
 
         Animation.prototype.getKeys = function () {
             return this._keys;
+        };
+
+        Animation.prototype.getEasingFunction = function () {
+            return this._easingFunction;
+        };
+
+        Animation.prototype.setEasingFunction = function (easingFunction) {
+            this._easingFunction = easingFunction;
         };
 
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
@@ -65,10 +104,18 @@
             this.currentFrame = currentFrame;
 
             for (var key = 0; key < this._keys.length; key++) {
+                // for each frame, we need the key just before the frame superior
                 if (this._keys[key + 1].frame >= currentFrame) {
                     var startValue = this._keys[key].value;
                     var endValue = this._keys[key + 1].value;
+
+                    // gradient : percent of currentFrame between the frame inf and the frame sup
                     var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+
+                    // check for easingFunction and correction of gradient
+                    if (this._easingFunction != null) {
+                        gradient = this._easingFunction.ease(gradient);
+                    }
 
                     switch (this.dataType) {
                         case Animation.ANIMATIONTYPE_FLOAT:
@@ -143,16 +190,11 @@
                 this._stopped = true;
                 return false;
             }
-
             var returnValue = true;
 
             // Adding a start key at frame 0 if missing
             if (this._keys[0].frame != 0) {
-                var newKey = {
-                    frame: 0,
-                    value: this._keys[0].value
-                };
-
+                var newKey = { frame: 0, value: this._keys[0].value };
                 this._keys.splice(0, 0, newKey);
             }
 
@@ -167,6 +209,8 @@
             // Compute ratio
             var range = to - from;
             var offsetValue;
+
+            // ratio represents the frame delta between from and to
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
             if (ratio > range && !loop) {
@@ -175,6 +219,7 @@
             } else {
                 // Get max value if required
                 var highLimitValue = 0;
+
                 if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {

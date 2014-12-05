@@ -2494,6 +2494,33 @@ var BABYLON;
     })();
     BABYLON.Axis = Axis;
     ;
+
+    var BezierCurve = (function () {
+        function BezierCurve() {
+        }
+        BezierCurve.interpolate = function (t, x1, y1, x2, y2) {
+           
+            var f0 = 1 - 3 * x2 + 3 * x1;
+            var f1 = 3 * x2 - 6 * x1;
+            var f2 = 3 * x1;
+
+            var refinedT = t;
+            for (var i = 0; i < 5; i++) {
+                var refinedT2 = refinedT * refinedT;
+                var refinedT3 = refinedT2 * refinedT;
+
+                var x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
+                var slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
+                refinedT -= (x - t) * slope;
+                refinedT = Math.min(1, Math.max(0, refinedT));
+            }
+
+           
+            return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
+        };
+        return BezierCurve;
+    })();
+    BABYLON.BezierCurve = BezierCurve;
 })(BABYLON || (BABYLON = {}));
 var BABYLON;
 (function (BABYLON) {
@@ -3764,6 +3791,8 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+            this._audioEngine = new BABYLON.AudioEngine();
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
@@ -3828,6 +3857,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+        Engine.prototype.getAudioEngine = function () {
+            return this._audioEngine;
+        };
 
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
@@ -8894,18 +8927,26 @@ var BABYLON;
                 }
 
                 mesh.computeWorldMatrix();
-                mesh._preActivate();
 
                
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
+               
+                var meshLOD = mesh.getLOD(this.activeCamera);
+
+                if (!meshLOD) {
+                    continue;
+                }
+
+                mesh._preActivate();
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(mesh);
+                    this._activeMesh(meshLOD);
                 }
             }
 
@@ -8939,27 +8980,25 @@ var BABYLON;
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
-            var activeMesh = mesh.getLOD(this.activeCamera);
-
-            if (activeMesh && activeMesh.subMeshes) {
+            if (mesh && mesh.subMeshes) {
                
                 var len;
                 var subMeshes;
 
-                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
-                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
+                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = activeMesh.subMeshes;
+                    subMeshes = mesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, activeMesh);
+                    this._evaluateSubMesh(subMesh, mesh);
                 }
             }
         };
@@ -9257,6 +9296,9 @@ var BABYLON;
             this._checkIntersections();
 
            
+            this._updateAudioParameters();
+
+           
             if (this.afterRender) {
                 this.afterRender();
             }
@@ -9272,6 +9314,25 @@ var BABYLON;
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
 
+        Scene.prototype._updateAudioParameters = function () {
+            var listeningCamera;
+            var audioEngine = this._engine.getAudioEngine();
+
+            if (this.activeCameras.length > 0) {
+                listeningCamera = this.activeCameras[0];
+            } else {
+                listeningCamera = this.activeCamera;
+            }
+
+            if (listeningCamera && audioEngine.canUseWebAudio) {
+                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
+                var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
+                cameraDirection.normalize();
+                audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+            }
+        };
+
         Scene.prototype.dispose = function () {
             this.beforeRender = null;
             this.afterRender = null;
@@ -9284,6 +9345,8 @@ var BABYLON;
             if (this.onDispose) {
                 this.onDispose();
             }
+
+            this._onBeforeRenderCallbacks = [];
 
             this.detachControl();
 
@@ -9879,6 +9942,7 @@ var BABYLON;
             this._isDisposed = false;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
+            this._onAfterWorldMatrixUpdate = new Array();
 
             scene.meshes.push(this);
         }
@@ -9952,6 +10016,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getBoundingInfo = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getBoundingInfo();
+            }
+
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -9966,6 +10034,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getWorldMatrix = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getWorldMatrix();
+            }
+
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -10126,6 +10198,10 @@ var BABYLON;
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+        };
+
+        AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
             }
@@ -10133,7 +10209,7 @@ var BABYLON;
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+                subMesh.updateBoundingInfo(matrix);
             }
         };
 
@@ -10222,7 +10298,27 @@ var BABYLON;
            
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
+            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
+                this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
             return this._worldMatrix;
+        };
+
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
+            this._onAfterWorldMatrixUpdate.push(func);
+        };
+
+        AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
+            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterWorldMatrixUpdate.splice(index, 1);
+            }
         };
 
         AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
@@ -10643,6 +10739,8 @@ var BABYLON;
                 }
             }
 
+            this._onAfterWorldMatrixUpdate = [];
+
             this._isDisposed = true;
 
            
@@ -10692,7 +10790,15 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
         }
-       
+        Object.defineProperty(Mesh.prototype, "hasLODLevels", {
+           
+            get: function () {
+                return this._LODLevels.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Mesh.prototype._sortLODLevels = function () {
             this._LODLevels.sort(function (a, b) {
                 if (a.distance < b.distance) {
@@ -10711,7 +10817,7 @@ var BABYLON;
             this._LODLevels.push(level);
 
             if (mesh) {
-                mesh._attachedLODLevel = level;
+                mesh._masterMesh = this;
             }
 
             this._sortLODLevels();
@@ -10720,37 +10826,25 @@ var BABYLON;
         };
 
         Mesh.prototype.removeLODLevel = function (mesh) {
-            if (mesh && !mesh._attachedLODLevel) {
-                return this;
-            }
-
-            var index;
-
-            if (mesh) {
-                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
-                mesh._attachedLODLevel = null;
-
-                this._LODLevels.splice(index, 1);
-
-                this._sortLODLevels();
-            } else {
-                for (index = 0; index < this._LODLevels.length; index++) {
-                    if (this._LODLevels[index].mesh === null) {
-                        this._LODLevels.splice(index, 1);
-                        break;
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                if (this._LODLevels[index].mesh === mesh) {
+                    this._LODLevels.splice(index, 1);
+                    if (mesh) {
+                        mesh._masterMesh = null;
                     }
                 }
             }
 
+            this._sortLODLevels();
             return this;
         };
 
-        Mesh.prototype.getLOD = function (camera) {
+        Mesh.prototype.getLOD = function (camera, boundingSphere) {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
 
-            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 return this;
@@ -10761,7 +10855,8 @@ var BABYLON;
 
                 if (level.distance < distanceToCamera) {
                     if (level.mesh) {
-                        level.mesh._worldMatrix = this._worldMatrix;
+                        level.mesh._preActivate();
+                        level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                     }
                     return level.mesh;
                 }
@@ -10838,7 +10933,7 @@ var BABYLON;
 
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
-                return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+                return this._masterMesh !== null && this._masterMesh !== undefined;
             },
             enumerable: true,
             configurable: true
@@ -11102,7 +11197,8 @@ var BABYLON;
         };
 
         Mesh.prototype._renderWithInstances = function (subMesh, fillMode, batch, effect, engine) {
-            var matricesCount = this.instances.length + 1;
+            var visibleInstances = batch.visibleInstances[subMesh._id];
+            var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
             while (this._instancesBufferSize < bufferSize) {
@@ -11127,8 +11223,6 @@ var BABYLON;
                 offset += 16;
                 instancesCount++;
             }
-
-            var visibleInstances = batch.visibleInstances[subMesh._id];
 
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
@@ -11173,7 +11267,7 @@ var BABYLON;
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
            
             var effectiveMaterial = subMesh.getMaterial();
@@ -11951,11 +12045,21 @@ var BABYLON;
         };
 
         InstancedMesh.prototype._preActivate = function () {
-            this.sourceMesh._preActivate();
+            if (this._currentLOD) {
+                this._currentLOD._preActivate();
+            }
         };
 
         InstancedMesh.prototype._activate = function (renderId) {
-            this.sourceMesh._registerInstanceForRenderId(this, renderId);
+            if (this._currentLOD) {
+                this._currentLOD._registerInstanceForRenderId(this, renderId);
+            }
+        };
+
+        InstancedMesh.prototype.getLOD = function (camera) {
+            this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+
+            return this._currentLOD;
         };
 
         InstancedMesh.prototype._syncSubMeshes = function () {
@@ -13088,6 +13192,11 @@ var BABYLON;
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
+        ProceduralTexture.prototype.reset = function () {
+            var engine = this.getScene().getEngine();
+            engine._releaseEffect(this._effect);
+        };
+
         ProceduralTexture.prototype.isReady = function () {
             var _this = this;
             var engine = this.getScene().getEngine();
@@ -13714,9 +13823,10 @@ var BABYLON;
         __extends(CustomProceduralTexture, _super);
         function CustomProceduralTexture(name, texturePath, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "empty", scene, fallbackTexture, generateMipMaps);
-            this._generateTime = true;
+            this._animate = true;
             this._time = 0;
             this._shaderLoaded = false;
+            this._updateTexture = false;
 
             this._texturePath = texturePath;
 
@@ -13724,17 +13834,15 @@ var BABYLON;
             this.loadJson(texturePath);
 
            
-            this.refreshRate = 0;
+            this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
-            var _this = this;
             function noConfigFile() {
                 BABYLON.Tools.Log("No config file found in " + jsonUrl);
             }
 
             var that = this;
             var configFileUrl = jsonUrl + "/config.json";
-
             var xhr = new XMLHttpRequest();
 
             xhr.open("GET", configFileUrl, true);
@@ -13742,13 +13850,8 @@ var BABYLON;
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
                         that._config = JSON.parse(xhr.response);
-                        that.updateShaderUniforms();
-                        that.setFragment(jsonUrl + "/custom");
-                        that._generateTime = that._config.generateTime;
-                        if (that._generateTime)
-                            _this.refreshRate = 1;
+                        that._updateTexture = true;
                         that._shaderLoaded = true;
-                        that.render();
                     } catch (ex) {
                         noConfigFile();
                     }
@@ -13773,7 +13876,20 @@ var BABYLON;
             if (!this._shaderLoaded)
                 return;
 
-            if (this._generateTime) {
+            if (this._updateTexture) {
+                this.reset();
+                this.setFragment(this._texturePath + "/custom");
+                this.updateTextures();
+                this.updateShaderUniforms();
+                this._shaderLoaded = true;
+                this._animate = this._config.animate;
+                this.refreshRate = this._config.refreshrate;
+                this.isReady();
+                this._updateTexture = false;
+                return;
+            }
+
+            if (this._animate) {
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
@@ -13781,11 +13897,13 @@ var BABYLON;
             _super.prototype.render.call(this, useCameraPostProcess);
         };
 
-        CustomProceduralTexture.prototype.updateShaderUniforms = function () {
+        CustomProceduralTexture.prototype.updateTextures = function () {
             for (var i = 0; i < this._config.texture2Ds.length; i++) {
-                this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene()));
+                this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene(), false, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, null, null, null, true));
             }
+        };
 
+        CustomProceduralTexture.prototype.updateShaderUniforms = function () {
             for (var j = 0; j < this._config.uniforms.length; j++) {
                 var uniform = this._config.uniforms[j];
 
@@ -13809,12 +13927,12 @@ var BABYLON;
             }
         };
 
-        Object.defineProperty(CustomProceduralTexture.prototype, "generateTime", {
+        Object.defineProperty(CustomProceduralTexture.prototype, "animate", {
             get: function () {
-                return this.generateTime;
+                return this._animate;
             },
             set: function (value) {
-                this.generateTime = value;
+                this._animate = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -16679,6 +16797,37 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
+        Animation.CreateAndStartAnimation = function (name, mesh, tartgetProperty, framePerSecond, totalFrame, from, to, loopMode) {
+            var dataType = undefined;
+
+            if (!isNaN(parseFloat(from)) && isFinite(from)) {
+                dataType = Animation.ANIMATIONTYPE_FLOAT;
+            } else if (from instanceof BABYLON.Quaternion) {
+                dataType = Animation.ANIMATIONTYPE_QUATERNION;
+            } else if (from instanceof BABYLON.Vector3) {
+                dataType = Animation.ANIMATIONTYPE_VECTOR3;
+            } else if (from instanceof BABYLON.Vector2) {
+                dataType = Animation.ANIMATIONTYPE_VECTOR2;
+            } else if (from instanceof BABYLON.Color3) {
+                dataType = Animation.ANIMATIONTYPE_COLOR3;
+            }
+
+            if (dataType == undefined) {
+                return;
+            }
+
+            var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
+
+            var keys = [];
+            keys.push({ frame: 0, value: from });
+            keys.push({ frame: totalFrame, value: to });
+            animation.setKeys(keys);
+
+            mesh.animations.push(animation);
+
+            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode == 1));
+        };
+
        
         Animation.prototype.isStopped = function () {
             return this._stopped;
@@ -16686,6 +16835,14 @@ var BABYLON;
 
         Animation.prototype.getKeys = function () {
             return this._keys;
+        };
+
+        Animation.prototype.getEasingFunction = function () {
+            return this._easingFunction;
+        };
+
+        Animation.prototype.setEasingFunction = function (easingFunction) {
+            this._easingFunction = easingFunction;
         };
 
         Animation.prototype.floatInterpolateFunction = function (startValue, endValue, gradient) {
@@ -16730,10 +16887,18 @@ var BABYLON;
             this.currentFrame = currentFrame;
 
             for (var key = 0; key < this._keys.length; key++) {
+               
                 if (this._keys[key + 1].frame >= currentFrame) {
                     var startValue = this._keys[key].value;
                     var endValue = this._keys[key + 1].value;
+
+                   
                     var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
+
+                   
+                    if (this._easingFunction != null) {
+                        gradient = this._easingFunction.ease(gradient);
+                    }
 
                     switch (this.dataType) {
                         case Animation.ANIMATIONTYPE_FLOAT:
@@ -16808,16 +16973,11 @@ var BABYLON;
                 this._stopped = true;
                 return false;
             }
-
             var returnValue = true;
 
            
             if (this._keys[0].frame != 0) {
-                var newKey = {
-                    frame: 0,
-                    value: this._keys[0].value
-                };
-
+                var newKey = { frame: 0, value: this._keys[0].value };
                 this._keys.splice(0, 0, newKey);
             }
 
@@ -16832,6 +16992,8 @@ var BABYLON;
            
             var range = to - from;
             var offsetValue;
+
+           
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
 
             if (ratio > range && !loop) {
@@ -16840,6 +17002,7 @@ var BABYLON;
             } else {
                
                 var highLimitValue = 0;
+
                 if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {
@@ -17113,6 +17276,275 @@ var BABYLON;
         return Animatable;
     })();
     BABYLON.Animatable = Animatable;
+})(BABYLON || (BABYLON = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var BABYLON;
+(function (BABYLON) {
+    var EasingFunction = (function () {
+        function EasingFunction() {
+           
+            this._easingMode = EasingFunction.EASINGMODE_EASEIN;
+        }
+        Object.defineProperty(EasingFunction, "EASINGMODE_EASEIN", {
+            get: function () {
+                return EasingFunction._EASINGMODE_EASEIN;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(EasingFunction, "EASINGMODE_EASEOUT", {
+            get: function () {
+                return EasingFunction._EASINGMODE_EASEOUT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(EasingFunction, "EASINGMODE_EASEINOUT", {
+            get: function () {
+                return EasingFunction._EASINGMODE_EASEINOUT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        EasingFunction.prototype.setEasingMode = function (easingMode) {
+            var n = Math.min(Math.max(easingMode, 0), 2);
+            this._easingMode = n;
+        };
+        EasingFunction.prototype.getEasingMode = function () {
+            return this._easingMode;
+        };
+
+        EasingFunction.prototype.easeInCore = function (gradient) {
+            throw new Error('You must implement this method');
+        };
+
+        EasingFunction.prototype.ease = function (gradient) {
+            switch (this._easingMode) {
+                case EasingFunction.EASINGMODE_EASEIN:
+                    return this.easeInCore(gradient);
+                case EasingFunction.EASINGMODE_EASEOUT:
+                    return (1 - this.easeInCore(1 - gradient));
+            }
+
+            if (gradient >= 0.5) {
+                return (((1 - this.easeInCore((1 - gradient) * 2)) * 0.5) + 0.5);
+            }
+
+            return (this.easeInCore(gradient * 2) * 0.5);
+        };
+        EasingFunction._EASINGMODE_EASEIN = 0;
+        EasingFunction._EASINGMODE_EASEOUT = 1;
+        EasingFunction._EASINGMODE_EASEINOUT = 2;
+        return EasingFunction;
+    })();
+    BABYLON.EasingFunction = EasingFunction;
+
+    var CircleEase = (function (_super) {
+        __extends(CircleEase, _super);
+        function CircleEase() {
+            _super.apply(this, arguments);
+        }
+        CircleEase.prototype.easeInCore = function (gradient) {
+            gradient = Math.max(0, Math.min(1, gradient));
+            return (1.0 - Math.sqrt(1.0 - (gradient * gradient)));
+        };
+        return CircleEase;
+    })(EasingFunction);
+    BABYLON.CircleEase = CircleEase;
+
+    var BackEase = (function (_super) {
+        __extends(BackEase, _super);
+        function BackEase(amplitude) {
+            if (typeof amplitude === "undefined") { amplitude = 1; }
+            _super.call(this);
+            this.amplitude = amplitude;
+        }
+        BackEase.prototype.easeInCore = function (gradient) {
+            var num = Math.max(0, this.amplitude);
+            return (Math.pow(gradient, 3.0) - ((gradient * num) * Math.sin(3.1415926535897931 * gradient)));
+        };
+        return BackEase;
+    })(EasingFunction);
+    BABYLON.BackEase = BackEase;
+
+    var BounceEase = (function (_super) {
+        __extends(BounceEase, _super);
+        function BounceEase(bounces, bounciness) {
+            if (typeof bounces === "undefined") { bounces = 3; }
+            if (typeof bounciness === "undefined") { bounciness = 2; }
+            _super.call(this);
+            this.bounces = bounces;
+            this.bounciness = bounciness;
+        }
+        BounceEase.prototype.easeInCore = function (gradient) {
+            var y = Math.max(0.0, this.bounces);
+            var bounciness = this.bounciness;
+            if (bounciness <= 1.0) {
+                bounciness = 1.001;
+            }
+            var num9 = Math.pow(bounciness, y);
+            var num5 = 1.0 - bounciness;
+            var num4 = ((1.0 - num9) / num5) + (num9 * 0.5);
+            var num15 = gradient * num4;
+            var num65 = Math.log((-num15 * (1.0 - bounciness)) + 1.0) / Math.log(bounciness);
+            var num3 = Math.floor(num65);
+            var num13 = num3 + 1.0;
+            var num8 = (1.0 - Math.pow(bounciness, num3)) / (num5 * num4);
+            var num12 = (1.0 - Math.pow(bounciness, num13)) / (num5 * num4);
+            var num7 = (num8 + num12) * 0.5;
+            var num6 = gradient - num7;
+            var num2 = num7 - num8;
+            return (((-Math.pow(1.0 / bounciness, y - num3) / (num2 * num2)) * (num6 - num2)) * (num6 + num2));
+        };
+        return BounceEase;
+    })(EasingFunction);
+    BABYLON.BounceEase = BounceEase;
+
+    var CubicEase = (function (_super) {
+        __extends(CubicEase, _super);
+        function CubicEase() {
+            _super.apply(this, arguments);
+        }
+        CubicEase.prototype.easeInCore = function (gradient) {
+            return (gradient * gradient * gradient);
+        };
+        return CubicEase;
+    })(EasingFunction);
+    BABYLON.CubicEase = CubicEase;
+
+    var ElasticEase = (function (_super) {
+        __extends(ElasticEase, _super);
+        function ElasticEase(oscillations, springiness) {
+            if (typeof oscillations === "undefined") { oscillations = 3; }
+            if (typeof springiness === "undefined") { springiness = 3; }
+            _super.call(this);
+            this.oscillations = oscillations;
+            this.springiness = springiness;
+        }
+        ElasticEase.prototype.easeInCore = function (gradient) {
+            var num2;
+            var num3 = Math.max(0.0, this.oscillations);
+            var num = Math.max(0.0, this.springiness);
+
+            if (num == 0) {
+                num2 = gradient;
+            } else {
+                num2 = (Math.exp(num * gradient) - 1.0) / (Math.exp(num) - 1.0);
+            }
+            return (num2 * Math.sin(((6.2831853071795862 * num3) + 1.5707963267948966) * gradient));
+        };
+        return ElasticEase;
+    })(EasingFunction);
+    BABYLON.ElasticEase = ElasticEase;
+
+    var ExponentialEase = (function (_super) {
+        __extends(ExponentialEase, _super);
+        function ExponentialEase(exponent) {
+            if (typeof exponent === "undefined") { exponent = 2; }
+            _super.call(this);
+            this.exponent = exponent;
+        }
+        ExponentialEase.prototype.easeInCore = function (gradient) {
+            if (this.exponent <= 0) {
+                return gradient;
+            }
+
+            return ((Math.exp(this.exponent * gradient) - 1.0) / (Math.exp(this.exponent) - 1.0));
+        };
+        return ExponentialEase;
+    })(EasingFunction);
+    BABYLON.ExponentialEase = ExponentialEase;
+
+    var PowerEase = (function (_super) {
+        __extends(PowerEase, _super);
+        function PowerEase(power) {
+            if (typeof power === "undefined") { power = 2; }
+            _super.call(this);
+            this.power = power;
+        }
+        PowerEase.prototype.easeInCore = function (gradient) {
+            var y = Math.max(0.0, this.power);
+            return Math.pow(gradient, y);
+        };
+        return PowerEase;
+    })(EasingFunction);
+    BABYLON.PowerEase = PowerEase;
+
+    var QuadraticEase = (function (_super) {
+        __extends(QuadraticEase, _super);
+        function QuadraticEase() {
+            _super.apply(this, arguments);
+        }
+        QuadraticEase.prototype.easeInCore = function (gradient) {
+            return (gradient * gradient);
+        };
+        return QuadraticEase;
+    })(EasingFunction);
+    BABYLON.QuadraticEase = QuadraticEase;
+
+    var QuarticEase = (function (_super) {
+        __extends(QuarticEase, _super);
+        function QuarticEase() {
+            _super.apply(this, arguments);
+        }
+        QuarticEase.prototype.easeInCore = function (gradient) {
+            return (gradient * gradient * gradient * gradient);
+        };
+        return QuarticEase;
+    })(EasingFunction);
+    BABYLON.QuarticEase = QuarticEase;
+
+    var QuinticEase = (function (_super) {
+        __extends(QuinticEase, _super);
+        function QuinticEase() {
+            _super.apply(this, arguments);
+        }
+        QuinticEase.prototype.easeInCore = function (gradient) {
+            return (gradient * gradient * gradient * gradient * gradient);
+        };
+        return QuinticEase;
+    })(EasingFunction);
+    BABYLON.QuinticEase = QuinticEase;
+
+    var SineEase = (function (_super) {
+        __extends(SineEase, _super);
+        function SineEase() {
+            _super.apply(this, arguments);
+        }
+        SineEase.prototype.easeInCore = function (gradient) {
+            return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
+        };
+        return SineEase;
+    })(EasingFunction);
+    BABYLON.SineEase = SineEase;
+
+    var BezierCurveEase = (function (_super) {
+        __extends(BezierCurveEase, _super);
+        function BezierCurveEase(x1, y1, x2, y2) {
+            if (typeof x1 === "undefined") { x1 = 0; }
+            if (typeof y1 === "undefined") { y1 = 0; }
+            if (typeof x2 === "undefined") { x2 = 1; }
+            if (typeof y2 === "undefined") { y2 = 1; }
+            _super.call(this);
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+        BezierCurveEase.prototype.easeInCore = function (gradient) {
+            return BABYLON.BezierCurve.interpolate(gradient, this.x1, this.y1, this.x2, this.y2);
+        };
+        return BezierCurveEase;
+    })(EasingFunction);
+    BABYLON.BezierCurveEase = BezierCurveEase;
 })(BABYLON || (BABYLON = {}));
 var BABYLON;
 (function (BABYLON) {
@@ -18688,6 +19120,7 @@ var BABYLON;
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                         }
                         mesh.rotationQuaternion.fromRotationMatrix(mtx);
+                        mesh.computeWorldMatrix();
                     } else {
                         m = body.getMatrix();
                         mtx = BABYLON.Matrix.FromArray(m);
@@ -18709,6 +19142,7 @@ var BABYLON;
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                         }
                         mesh.rotationQuaternion.fromRotationMatrix(mtx);
+                        mesh.computeWorldMatrix();
                     }
                 }
             }
@@ -19641,14 +20075,14 @@ var BABYLON;
                     try  {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene);
+                                onerror(scene, 'unable to load the scene');
                             }
 
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene);
+                            onerror(scene, e);
                         }
 
                         return;
@@ -28169,4 +28603,137 @@ var BABYLON;
         Internals.MeshLODLevel = MeshLODLevel;
     })(BABYLON.Internals || (BABYLON.Internals = {}));
     var Internals = BABYLON.Internals;
+})(BABYLON || (BABYLON = {}));
+var BABYLON;
+(function (BABYLON) {
+    var AudioEngine = (function () {
+        function AudioEngine() {
+            this.audioContext = null;
+            this.canUseWebAudio = false;
+            try  {
+                if (typeof AudioContext !== 'undefined') {
+                    this.audioContext = new AudioContext();
+                    this.canUseWebAudio = true;
+                } else if (typeof webkitAudioContext !== 'undefined') {
+                    this.audioContext = new webkitAudioContext();
+                    this.canUseWebAudio = true;
+                }
+            } catch (e) {
+                this.canUseWebAudio = false;
+            }
+
+           
+            if (this.canUseWebAudio) {
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 1;
+                this.masterGain.connect(this.audioContext.destination);
+            }
+        }
+        AudioEngine.prototype.getGlobalVolume = function () {
+            if (this.canUseWebAudio) {
+                return this.masterGain.gain.value;
+            } else {
+                return -1;
+            }
+        };
+
+        AudioEngine.prototype.setGlobalVolume = function (newVolume) {
+            if (this.canUseWebAudio) {
+                this.masterGain.gain.value = newVolume;
+            }
+        };
+        return AudioEngine;
+    })();
+    BABYLON.AudioEngine = AudioEngine;
+})(BABYLON || (BABYLON = {}));
+var BABYLON;
+(function (BABYLON) {
+    var Sound = (function () {
+        function Sound(url, engine, readyToPlayCallback, distanceMax, autoplay, loop) {
+            var _this = this;
+            this.distanceMax = 10;
+            this.autoplay = false;
+            this.loop = false;
+            this._position = BABYLON.Vector3.Zero();
+            this._orientation = BABYLON.Vector3.Zero();
+            this._isLoaded = false;
+            this._isReadyToPlay = false;
+            this._audioEngine = engine.getAudioEngine();
+            ;
+            this._readyToPlayCallback = readyToPlayCallback;
+            if (distanceMax)
+                this.distanceMax = distanceMax;
+            if (autoplay)
+                this.autoplay = autoplay;
+            if (loop)
+                this.loop = loop;
+            if (this._audioEngine.canUseWebAudio) {
+                BABYLON.Tools.LoadFile(url, function (data) {
+                    _this._soundLoaded(data);
+                }, null, null, true);
+            }
+        }
+        Sound.prototype.setPosition = function (newPosition) {
+            this._position = newPosition;
+
+            if (this._isReadyToPlay) {
+                this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+            }
+        };
+
+        Sound.prototype.setOrientiation = function (newOrientation) {
+            this._orientation = newOrientation;
+
+            if (this._isReadyToPlay) {
+                this._soundPanner.setOrientation(this._orientation.x, this._orientation.y, this._orientation.z);
+            }
+        };
+
+        Sound.prototype.play = function () {
+            if (this._isReadyToPlay) {
+                this._soundSource = this._audioEngine.audioContext.createBufferSource();
+                this._soundSource.buffer = this._audioBuffer;
+                this._soundPanner = this._audioEngine.audioContext.createPanner();
+                this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                this._soundPanner.connect(this._audioEngine.masterGain);
+                this._soundSource.connect(this._soundPanner);
+                this._soundSource.loop = this.loop;
+                this._soundSource.start(0);
+            }
+        };
+
+        Sound.prototype.stop = function () {
+        };
+
+        Sound.prototype.pause = function () {
+        };
+
+        Sound.prototype.attachToMesh = function (meshToConnectTo) {
+            var _this = this;
+            meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
+                return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            });
+        };
+
+        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
+            this.setPosition(connectedMesh.position);
+        };
+
+        Sound.prototype._soundLoaded = function (audioData) {
+            var _this = this;
+            this._isLoaded = true;
+            this._audioEngine.audioContext.decodeAudioData(audioData, function (buffer) {
+                _this._audioBuffer = buffer;
+                _this._isReadyToPlay = true;
+                if (_this.autoplay)
+                    _this.play();
+                if (_this._readyToPlayCallback)
+                    _this._readyToPlayCallback();
+            }, function (error) {
+                BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
+            });
+        };
+        return Sound;
+    })();
+    BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));

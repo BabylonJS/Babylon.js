@@ -59,6 +59,11 @@ var BABYLON;
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
+        ProceduralTexture.prototype.reset = function () {
+            var engine = this.getScene().getEngine();
+            engine._releaseEffect(this._effect);
+        };
+
         ProceduralTexture.prototype.isReady = function () {
             var _this = this;
             var engine = this.getScene().getEngine();

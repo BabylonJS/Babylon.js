@@ -403,6 +403,7 @@
             return new Vector2(x, y);
         }
 
+     
         public static Dot(left: Vector2, right: Vector2): number {
             return left.x * right.x + left.y * right.y;
         }
@@ -444,6 +445,7 @@
 
             return (x * x) + (y * y);
         }
+
     }
 
     export class Vector3 {
@@ -2484,4 +2486,33 @@
         public static Y: Vector3 = new BABYLON.Vector3(0, 1, 0);
         public static Z: Vector3 = new BABYLON.Vector3(0, 0, 1);
     };
+
+    export class BezierCurve {
+
+        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number) :number {
+
+            // Extract X (which is equal to time here)
+            var f0 = 1 - 3 * x2 + 3 * x1;
+            var f1 = 3 * x2 - 6 * x1;
+            var f2 = 3 * x1;
+
+            var refinedT = t;
+            for (var i = 0; i < 5; i++) {
+                var refinedT2 = refinedT * refinedT;
+                var refinedT3 = refinedT2 * refinedT;
+
+                var x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
+                var slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
+                refinedT -= (x - t) * slope;
+                refinedT = Math.min(1, Math.max(0, refinedT));
+
+                }
+
+            // Resolve cubic bezier for the given x
+            return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
+                   3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
+                   Math.pow(refinedT, 3);
+
+        }
+    }
 }
