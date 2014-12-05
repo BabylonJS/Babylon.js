@@ -87,6 +87,7 @@
         private _collisionsScalingMatrix = BABYLON.Matrix.Zero();
         public _positions: Vector3[];
         private _isDirty = false;
+        public _masterMesh: AbstractMesh;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = BABYLON.Matrix.Identity();
@@ -131,6 +132,10 @@
         }
 
         public getBoundingInfo(): BoundingInfo {
+            if (this._masterMesh) {
+                return this._masterMesh.getBoundingInfo();
+            }
+
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -145,6 +150,10 @@
         }
 
         public getWorldMatrix(): Matrix {
+            if (this._masterMesh) {
+                return this._masterMesh.getWorldMatrix();
+            }
+
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -300,6 +309,10 @@
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+        }
+
+        public _updateSubMeshesBoundingInfo(matrix: Matrix): void {
             if (!this.subMeshes) {
                 return;
             }
@@ -307,7 +320,7 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+                subMesh.updateBoundingInfo(matrix);
             }
         }
 

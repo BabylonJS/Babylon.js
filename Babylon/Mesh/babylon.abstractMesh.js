@@ -61,6 +61,7 @@ var BABYLON;
             this._isDisposed = false;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
+            this._onAfterWorldMatrixUpdate = new Array();
 
             scene.meshes.push(this);
         }
@@ -134,6 +135,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getBoundingInfo = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getBoundingInfo();
+            }
+
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -148,6 +153,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getWorldMatrix = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getWorldMatrix();
+            }
+
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -308,6 +317,10 @@ var BABYLON;
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+        };
+
+        AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
             }
@@ -315,7 +328,7 @@ var BABYLON;
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+                subMesh.updateBoundingInfo(matrix);
             }
         };
 
@@ -404,7 +417,27 @@ var BABYLON;
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
+            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
+                this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
             return this._worldMatrix;
+        };
+
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
+            this._onAfterWorldMatrixUpdate.push(func);
+        };
+
+        AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
+            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterWorldMatrixUpdate.splice(index, 1);
+            }
         };
 
         AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
@@ -824,6 +857,8 @@ var BABYLON;
                     }
                 }
             }
+
+            this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
 
