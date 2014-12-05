@@ -10,8 +10,7 @@
             this._orientation = BABYLON.Vector3.Zero();
             this._isLoaded = false;
             this._isReadyToPlay = false;
-            this._audioEngine = engine.getAudioEngine();
-            ;
+            this._audioEngine = engine.getAudioEngine();            
             this._readyToPlayCallback = readyToPlayCallback;
             if (distanceMax)
                 this.distanceMax = distanceMax;
@@ -77,10 +76,12 @@
             this._audioEngine.audioContext.decodeAudioData(audioData, function (buffer) {
                 _this._audioBuffer = buffer;
                 _this._isReadyToPlay = true;
-                if (_this.autoplay)
+                if (_this.autoplay) {
                     _this.play();
-                if (_this._readyToPlayCallback)
+				}
+                if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
+				}
             }, function (error) {
                 BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
             });
