@@ -52,7 +52,7 @@
             SceneLoader._registeredPlugins.push(plugin);
         }
 
-        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene) => void): void {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e:any) => void): void {
             var manifestChecked = success => {
                 scene.database = database;
 
@@ -66,14 +66,14 @@
                     try {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene);
+                                onerror(scene, 'unable to load the scene');
                             }
 
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene);
+                            onerror(scene, e);
                         }
 
                         return;

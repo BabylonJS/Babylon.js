@@ -31,7 +31,15 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
         }
-        // Methods
+        Object.defineProperty(Mesh.prototype, "hasLODLevels", {
+            // Methods
+            get: function () {
+                return this._LODLevels.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Mesh.prototype._sortLODLevels = function () {
             this._LODLevels.sort(function (a, b) {
                 if (a.distance < b.distance) {
@@ -50,7 +58,7 @@ var BABYLON;
             this._LODLevels.push(level);
 
             if (mesh) {
-                mesh._attachedLODLevel = level;
+                mesh._masterMesh = this;
             }
 
             this._sortLODLevels();
@@ -59,37 +67,25 @@ var BABYLON;
         };
 
         Mesh.prototype.removeLODLevel = function (mesh) {
-            if (mesh && !mesh._attachedLODLevel) {
-                return this;
-            }
-
-            var index;
-
-            if (mesh) {
-                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
-                mesh._attachedLODLevel = null;
-
-                this._LODLevels.splice(index, 1);
-
-                this._sortLODLevels();
-            } else {
-                for (index = 0; index < this._LODLevels.length; index++) {
-                    if (this._LODLevels[index].mesh === null) {
-                        this._LODLevels.splice(index, 1);
-                        break;
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                if (this._LODLevels[index].mesh === mesh) {
+                    this._LODLevels.splice(index, 1);
+                    if (mesh) {
+                        mesh._masterMesh = null;
                     }
                 }
             }
 
+            this._sortLODLevels();
             return this;
         };
 
-        Mesh.prototype.getLOD = function (camera) {
+        Mesh.prototype.getLOD = function (camera, boundingSphere) {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
 
-            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 return this;
@@ -100,7 +96,8 @@ var BABYLON;
 
                 if (level.distance < distanceToCamera) {
                     if (level.mesh) {
-                        level.mesh._worldMatrix = this._worldMatrix;
+                        level.mesh._preActivate();
+                        level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                     }
                     return level.mesh;
                 }
@@ -177,7 +174,7 @@ var BABYLON;
 
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
-                return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+                return this._masterMesh !== null && this._masterMesh !== undefined;
             },
             enumerable: true,
             configurable: true
@@ -441,7 +438,8 @@ var BABYLON;
         };
 
         Mesh.prototype._renderWithInstances = function (subMesh, fillMode, batch, effect, engine) {
-            var matricesCount = this.instances.length + 1;
+            var visibleInstances = batch.visibleInstances[subMesh._id];
+            var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
             while (this._instancesBufferSize < bufferSize) {
@@ -466,8 +464,6 @@ var BABYLON;
                 offset += 16;
                 instancesCount++;
             }
-
-            var visibleInstances = batch.visibleInstances[subMesh._id];
 
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
@@ -512,7 +508,7 @@ var BABYLON;
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             // Material
             var effectiveMaterial = subMesh.getMaterial();

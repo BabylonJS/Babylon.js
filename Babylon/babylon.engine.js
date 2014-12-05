@@ -471,6 +471,8 @@
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+            this._audioEngine = new BABYLON.AudioEngine();
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
@@ -535,6 +537,10 @@
             enumerable: true,
             configurable: true
         });
+
+        Engine.prototype.getAudioEngine = function () {
+            return this._audioEngine;
+        };
 
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;

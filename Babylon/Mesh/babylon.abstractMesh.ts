@@ -87,6 +87,7 @@
         private _collisionsScalingMatrix = BABYLON.Matrix.Zero();
         public _positions: Vector3[];
         private _isDirty = false;
+        public _masterMesh: AbstractMesh;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = BABYLON.Matrix.Identity();
@@ -96,6 +97,8 @@
         public subMeshes: SubMesh[];
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress = new Array<AbstractMesh>();
+
+        private _onAfterWorldMatrixUpdate = new Array<(mesh: BABYLON.AbstractMesh) => void>();
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -129,6 +132,10 @@
         }
 
         public getBoundingInfo(): BoundingInfo {
+            if (this._masterMesh) {
+                return this._masterMesh.getBoundingInfo();
+            }
+
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -143,6 +150,10 @@
         }
 
         public getWorldMatrix(): Matrix {
+            if (this._masterMesh) {
+                return this._masterMesh.getWorldMatrix();
+            }
+
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -298,6 +309,10 @@
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+        }
+
+        public _updateSubMeshesBoundingInfo(matrix: Matrix): void {
             if (!this.subMeshes) {
                 return;
             }
@@ -305,7 +320,7 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+                subMesh.updateBoundingInfo(matrix);
             }
         }
 
@@ -395,7 +410,28 @@
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
+            // Callbacks
+            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
+                this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
             return this._worldMatrix;
+        }
+
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        public registerAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+            this._onAfterWorldMatrixUpdate.push(func);
+        }
+
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterWorldMatrixUpdate.splice(index, 1);
+            }
         }
 
         public setPositionWithLocalVector(vector3: Vector3): void {
@@ -817,6 +853,8 @@
                     }
                 }
             }
+
+            this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
 

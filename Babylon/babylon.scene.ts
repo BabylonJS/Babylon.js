@@ -803,18 +803,26 @@
                 }
 
                 mesh.computeWorldMatrix();
-                mesh._preActivate();
 
                 // Intersections
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
+                // Switch to current LOD
+                var meshLOD = mesh.getLOD(this.activeCamera);
+
+                if (!meshLOD) {
+                    continue;
+                }
+
+                mesh._preActivate();
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(mesh);
+                    this._activeMesh(meshLOD);
                 }
             }
 
@@ -848,27 +856,25 @@
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }            
 
-            var activeMesh = mesh.getLOD(this.activeCamera);
-
-            if (activeMesh && activeMesh.subMeshes) {
+            if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
                 var len: number;
                 var subMeshes: SubMesh[];
 
-                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
-                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
+                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = activeMesh.subMeshes;
+                    subMeshes = mesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, activeMesh);
+                    this._evaluateSubMesh(subMesh, mesh);
                 }
             }
         }
@@ -1167,6 +1173,9 @@
             // Intersection checks
             this._checkIntersections();
 
+            // Update the audio listener attached to the camera
+            this._updateAudioParameters();
+
             // After render
             if (this.afterRender) {
                 this.afterRender();
@@ -1185,6 +1194,26 @@
             this._lastFrameDuration = Tools.Now - startDate;
         }
 
+        private _updateAudioParameters() {
+            var listeningCamera;
+            var audioEngine = this._engine.getAudioEngine();
+
+            if (this.activeCameras.length > 0) {
+                listeningCamera = this.activeCameras[0];
+            } else {
+                listeningCamera = this.activeCamera;
+            }
+
+            if (listeningCamera && audioEngine.canUseWebAudio) {
+                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
+                var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
+                cameraDirection.normalize();
+                audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+            }
+
+        }
+
         public dispose(): void {
             this.beforeRender = null;
             this.afterRender = null;
@@ -1197,6 +1226,8 @@
             if (this.onDispose) {
                 this.onDispose();
             }
+
+            this._onBeforeRenderCallbacks = [];
 
             this.detachControl();
 
