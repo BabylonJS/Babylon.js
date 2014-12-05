@@ -3791,6 +3791,8 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+            this._audioEngine = new BABYLON.AudioEngine();
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
@@ -3855,6 +3857,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+        Engine.prototype.getAudioEngine = function () {
+            return this._audioEngine;
+        };
 
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
@@ -8921,18 +8927,26 @@ var BABYLON;
                 }
 
                 mesh.computeWorldMatrix();
-                mesh._preActivate();
 
                
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
+               
+                var meshLOD = mesh.getLOD(this.activeCamera);
+
+                if (!meshLOD) {
+                    continue;
+                }
+
+                mesh._preActivate();
+
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(mesh);
+                    this._activeMesh(meshLOD);
                 }
             }
 
@@ -8966,27 +8980,25 @@ var BABYLON;
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
-            var activeMesh = mesh.getLOD(this.activeCamera);
-
-            if (activeMesh && activeMesh.subMeshes) {
+            if (mesh && mesh.subMeshes) {
                
                 var len;
                 var subMeshes;
 
-                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
-                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
+                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = activeMesh.subMeshes;
+                    subMeshes = mesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, activeMesh);
+                    this._evaluateSubMesh(subMesh, mesh);
                 }
             }
         };
@@ -9284,6 +9296,9 @@ var BABYLON;
             this._checkIntersections();
 
            
+            this._updateAudioParameters();
+
+           
             if (this.afterRender) {
                 this.afterRender();
             }
@@ -9299,6 +9314,25 @@ var BABYLON;
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
 
+        Scene.prototype._updateAudioParameters = function () {
+            var listeningCamera;
+            var audioEngine = this._engine.getAudioEngine();
+
+            if (this.activeCameras.length > 0) {
+                listeningCamera = this.activeCameras[0];
+            } else {
+                listeningCamera = this.activeCamera;
+            }
+
+            if (listeningCamera && audioEngine.canUseWebAudio) {
+                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
+                var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
+                cameraDirection.normalize();
+                audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+            }
+        };
+
         Scene.prototype.dispose = function () {
             this.beforeRender = null;
             this.afterRender = null;
@@ -9311,6 +9345,8 @@ var BABYLON;
             if (this.onDispose) {
                 this.onDispose();
             }
+
+            this._onBeforeRenderCallbacks = [];
 
             this.detachControl();
 
@@ -9980,6 +10016,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getBoundingInfo = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getBoundingInfo();
+            }
+
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -9994,6 +10034,10 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getWorldMatrix = function () {
+            if (this._masterMesh) {
+                return this._masterMesh.getWorldMatrix();
+            }
+
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -10154,6 +10198,10 @@ var BABYLON;
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+        };
+
+        AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
             }
@@ -10161,7 +10209,7 @@ var BABYLON;
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
+                subMesh.updateBoundingInfo(matrix);
             }
         };
 
@@ -10258,7 +10306,7 @@ var BABYLON;
         };
 
         /**
-        * If you'd like to be callbacked after the mesh position or rotation has been updated
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
         * @param func: callback function to add
         */
         AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
@@ -10691,9 +10739,7 @@ var BABYLON;
                 }
             }
 
-            while (this._onAfterWorldMatrixUpdate.length > 0) {
-                this._onAfterWorldMatrixUpdate.pop();
-            }
+            this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
 
@@ -10744,7 +10790,15 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
         }
-       
+        Object.defineProperty(Mesh.prototype, "hasLODLevels", {
+           
+            get: function () {
+                return this._LODLevels.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Mesh.prototype._sortLODLevels = function () {
             this._LODLevels.sort(function (a, b) {
                 if (a.distance < b.distance) {
@@ -10763,7 +10817,7 @@ var BABYLON;
             this._LODLevels.push(level);
 
             if (mesh) {
-                mesh._attachedLODLevel = level;
+                mesh._masterMesh = this;
             }
 
             this._sortLODLevels();
@@ -10772,37 +10826,25 @@ var BABYLON;
         };
 
         Mesh.prototype.removeLODLevel = function (mesh) {
-            if (mesh && !mesh._attachedLODLevel) {
-                return this;
-            }
-
-            var index;
-
-            if (mesh) {
-                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
-                mesh._attachedLODLevel = null;
-
-                this._LODLevels.splice(index, 1);
-
-                this._sortLODLevels();
-            } else {
-                for (index = 0; index < this._LODLevels.length; index++) {
-                    if (this._LODLevels[index].mesh === null) {
-                        this._LODLevels.splice(index, 1);
-                        break;
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                if (this._LODLevels[index].mesh === mesh) {
+                    this._LODLevels.splice(index, 1);
+                    if (mesh) {
+                        mesh._masterMesh = null;
                     }
                 }
             }
 
+            this._sortLODLevels();
             return this;
         };
 
-        Mesh.prototype.getLOD = function (camera) {
+        Mesh.prototype.getLOD = function (camera, boundingSphere) {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
 
-            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 return this;
@@ -10813,7 +10855,8 @@ var BABYLON;
 
                 if (level.distance < distanceToCamera) {
                     if (level.mesh) {
-                        level.mesh._worldMatrix = this._worldMatrix;
+                        level.mesh._preActivate();
+                        level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                     }
                     return level.mesh;
                 }
@@ -10890,7 +10933,7 @@ var BABYLON;
 
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
-                return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+                return this._masterMesh !== null && this._masterMesh !== undefined;
             },
             enumerable: true,
             configurable: true
@@ -11154,7 +11197,8 @@ var BABYLON;
         };
 
         Mesh.prototype._renderWithInstances = function (subMesh, fillMode, batch, effect, engine) {
-            var matricesCount = this.instances.length + 1;
+            var visibleInstances = batch.visibleInstances[subMesh._id];
+            var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
             while (this._instancesBufferSize < bufferSize) {
@@ -11179,8 +11223,6 @@ var BABYLON;
                 offset += 16;
                 instancesCount++;
             }
-
-            var visibleInstances = batch.visibleInstances[subMesh._id];
 
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
@@ -11225,7 +11267,7 @@ var BABYLON;
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
            
             var effectiveMaterial = subMesh.getMaterial();
@@ -12003,11 +12045,21 @@ var BABYLON;
         };
 
         InstancedMesh.prototype._preActivate = function () {
-            this.sourceMesh._preActivate();
+            if (this._currentLOD) {
+                this._currentLOD._preActivate();
+            }
         };
 
         InstancedMesh.prototype._activate = function (renderId) {
-            this.sourceMesh._registerInstanceForRenderId(this, renderId);
+            if (this._currentLOD) {
+                this._currentLOD._registerInstanceForRenderId(this, renderId);
+            }
+        };
+
+        InstancedMesh.prototype.getLOD = function (camera) {
+            this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+
+            return this._currentLOD;
         };
 
         InstancedMesh.prototype._syncSubMeshes = function () {
@@ -20023,14 +20075,14 @@ var BABYLON;
                     try  {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene);
+                                onerror(scene, 'unable to load the scene');
                             }
 
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene);
+                            onerror(scene, e);
                         }
 
                         return;
@@ -28554,24 +28606,42 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 var BABYLON;
 (function (BABYLON) {
-   
     var AudioEngine = (function () {
         function AudioEngine() {
             this.audioContext = null;
-            this.canUseWebAudio = true;
+            this.canUseWebAudio = false;
             try  {
                 if (typeof AudioContext !== 'undefined') {
                     this.audioContext = new AudioContext();
+                    this.canUseWebAudio = true;
                 } else if (typeof webkitAudioContext !== 'undefined') {
                     this.audioContext = new webkitAudioContext();
-                } else {
-                    this.canUseWebAudio = false;
+                    this.canUseWebAudio = true;
                 }
             } catch (e) {
-               
                 this.canUseWebAudio = false;
             }
+
+           
+            if (this.canUseWebAudio) {
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 1;
+                this.masterGain.connect(this.audioContext.destination);
+            }
         }
+        AudioEngine.prototype.getGlobalVolume = function () {
+            if (this.canUseWebAudio) {
+                return this.masterGain.gain.value;
+            } else {
+                return -1;
+            }
+        };
+
+        AudioEngine.prototype.setGlobalVolume = function (newVolume) {
+            if (this.canUseWebAudio) {
+                this.masterGain.gain.value = newVolume;
+            }
+        };
         return AudioEngine;
     })();
     BABYLON.AudioEngine = AudioEngine;
@@ -28579,15 +28649,17 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var Sound = (function () {
-        function Sound(url, audioEngine, readyToPlayCallback, distanceMax, autoplay, loop) {
+        function Sound(url, engine, readyToPlayCallback, distanceMax, autoplay, loop) {
             var _this = this;
             this.distanceMax = 10;
             this.autoplay = false;
             this.loop = false;
             this._position = BABYLON.Vector3.Zero();
+            this._orientation = BABYLON.Vector3.Zero();
             this._isLoaded = false;
             this._isReadyToPlay = false;
-            this._audioEngine = audioEngine;
+            this._audioEngine = engine.getAudioEngine();
+            ;
             this._readyToPlayCallback = readyToPlayCallback;
             if (distanceMax)
                 this.distanceMax = distanceMax;
@@ -28595,16 +28667,25 @@ var BABYLON;
                 this.autoplay = autoplay;
             if (loop)
                 this.loop = loop;
-            if (audioEngine.canUseWebAudio) {
+            if (this._audioEngine.canUseWebAudio) {
                 BABYLON.Tools.LoadFile(url, function (data) {
                     _this._soundLoaded(data);
                 }, null, null, true);
             }
         }
         Sound.prototype.setPosition = function (newPosition) {
+            this._position = newPosition;
+
             if (this._isReadyToPlay) {
-                this._position = newPosition;
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+            }
+        };
+
+        Sound.prototype.setOrientiation = function (newOrientation) {
+            this._orientation = newOrientation;
+
+            if (this._isReadyToPlay) {
+                this._soundPanner.setOrientation(this._orientation.x, this._orientation.y, this._orientation.z);
             }
         };
 
@@ -28614,7 +28695,7 @@ var BABYLON;
                 this._soundSource.buffer = this._audioBuffer;
                 this._soundPanner = this._audioEngine.audioContext.createPanner();
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
-                this._soundPanner.connect(this._audioEngine.audioContext.destination);
+                this._soundPanner.connect(this._audioEngine.masterGain);
                 this._soundSource.connect(this._soundPanner);
                 this._soundSource.loop = this.loop;
                 this._soundSource.start(0);
@@ -28627,6 +28708,17 @@ var BABYLON;
         Sound.prototype.pause = function () {
         };
 
+        Sound.prototype.attachToMesh = function (meshToConnectTo) {
+            var _this = this;
+            meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
+                return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            });
+        };
+
+        Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
+            this.setPosition(connectedMesh.position);
+        };
+
         Sound.prototype._soundLoaded = function (audioData) {
             var _this = this;
             this._isLoaded = true;
@@ -28637,7 +28729,9 @@ var BABYLON;
                     _this.play();
                 if (_this._readyToPlayCallback)
                     _this._readyToPlayCallback();
-            }, null);
+            }, function (error) {
+                BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
+            });
         };
         return Sound;
     })();

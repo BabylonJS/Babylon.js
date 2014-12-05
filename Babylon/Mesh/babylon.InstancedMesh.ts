@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     export class InstancedMesh extends AbstractMesh {
         private _sourceMesh: Mesh;
+        private _currentLOD: Mesh;
 
         constructor(name: string, source: Mesh) {
             super(name, source.getScene());
@@ -78,11 +79,21 @@
         }
 
         public _preActivate(): void {
-            this.sourceMesh._preActivate();
+            if (this._currentLOD) {
+                this._currentLOD._preActivate();
+            }
         }
 
         public _activate(renderId: number): void {
-            this.sourceMesh._registerInstanceForRenderId(this, renderId);
+            if (this._currentLOD) {
+                this._currentLOD._registerInstanceForRenderId(this, renderId);
+            }
+        }
+
+        public getLOD(camera: Camera): AbstractMesh {
+            this._currentLOD = <Mesh>this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+
+            return this._currentLOD
         }
 
         public _syncSubMeshes(): void {
