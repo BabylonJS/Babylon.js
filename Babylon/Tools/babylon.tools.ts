@@ -312,7 +312,14 @@
             }
         }
 
-        // Misc.        
+        // Misc.   
+        public static Clamp(value:number, min = 0, max = 1): number {
+            return Math.min(max, Math.max(min, value));
+        }     
+
+        public static Format(value: number, decimals: number = 2): string {
+            return value.toFixed(decimals);
+        }
 
         public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
             if (v.x < min.x)

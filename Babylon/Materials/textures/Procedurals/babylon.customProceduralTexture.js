@@ -14,13 +14,10 @@ var BABYLON;
             this._time = 0;
             this._shaderLoaded = false;
             this._updateTexture = false;
-
             this._texturePath = texturePath;
 
             //readJson
             this.loadJson(texturePath);
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
@@ -112,6 +109,8 @@ var BABYLON;
                         break;
                 }
             }
+
+            this.setFloat("time", this._time);
         };
 
         Object.defineProperty(CustomProceduralTexture.prototype, "animate", {

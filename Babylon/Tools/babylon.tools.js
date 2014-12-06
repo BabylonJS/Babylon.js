@@ -280,6 +280,17 @@
         };
 
         // Misc.
+        Tools.Clamp = function (value, min, max) {
+            if (typeof min === "undefined") { min = 0; }
+            if (typeof max === "undefined") { max = 1; }
+            return Math.min(max, Math.max(min, value));
+        };
+
+        Tools.Format = function (value, decimals) {
+            if (typeof decimals === "undefined") { decimals = 2; }
+            return value.toFixed(decimals);
+        };
+
         Tools.CheckExtends = function (v, min, max) {
             if (v.x < min.x)
                 min.x = v.x;

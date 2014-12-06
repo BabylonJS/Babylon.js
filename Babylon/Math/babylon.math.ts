@@ -403,7 +403,7 @@
             return new Vector2(x, y);
         }
 
-     
+
         public static Dot(left: Vector2, right: Vector2): number {
             return left.x * right.x + left.y * right.y;
         }
@@ -2308,10 +2308,10 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2336,10 +2336,10 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2364,10 +2364,10 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2501,7 +2501,7 @@
 
     export class BezierCurve {
 
-        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number) :number {
+        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
 
             // Extract X (which is equal to time here)
             var f0 = 1 - 3 * x2 + 3 * x1;
@@ -2518,12 +2518,12 @@
                 refinedT -= (x - t) * slope;
                 refinedT = Math.min(1, Math.max(0, refinedT));
 
-                }
+            }
 
             // Resolve cubic bezier for the given x
             return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
-                   3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
-                   Math.pow(refinedT, 3);
+                3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
+                Math.pow(refinedT, 3);
 
         }
     }

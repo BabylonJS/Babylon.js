@@ -29,7 +29,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this._isReadyToPlay) {    
+            if (this._isReadyToPlay) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -54,9 +54,9 @@
                 this._soundSource.start(0);
             }
         }
-        
+
         public stop() {
-        }   
+        }
 
         public pause() {
         }
@@ -77,8 +77,8 @@
                 if (this.autoplay) { this.play(); }
                 if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
             }, function (error) {
-                BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
-            });
+                    BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
+                });
         }
     }
 }
