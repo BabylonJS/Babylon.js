@@ -11,6 +11,7 @@ using Autodesk.Max;
 using BabylonExport.Entities;
 using Newtonsoft.Json;
 using Color = System.Drawing.Color;
+using System.Runtime.InteropServices;
 
 namespace Max2Babylon
 {
@@ -79,11 +80,18 @@ namespace Max2Babylon
 
         public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, Form callerForm)
         {
+            var gameConversionManger = Loader.Global.ConversionManager;
+            gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
+
+            var gameScene = Loader.Global.IGameInterface;
+            gameScene.InitialiseIGame(onlySelected);
+            gameScene.SetStaticFrame(0);
+
             IsCancelled = false;
             RaiseMessage("Exportation started", Color.Blue);
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
-            var maxScene = Loader.Core.RootNode;
+            var rawScene = Loader.Core.RootNode;
             alreadyExportedTextures.Clear();
 
             if (!Directory.Exists(babylonScene.OutputPath))
@@ -114,19 +122,19 @@ namespace Max2Babylon
             babylonScene.clearColor = Loader.Core.GetBackGround(0, Tools.Forever).ToArray();
             babylonScene.ambientColor = Loader.Core.GetAmbient(0, Tools.Forever).ToArray();
 
-            babylonScene.gravity = maxScene.GetVector3Property("babylonjs_gravity");
-            exportQuaternionsInsteadOfEulers = maxScene.GetBoolProperty("babylonjs_exportquaternions", 1);
+            babylonScene.gravity = rawScene.GetVector3Property("babylonjs_gravity");
+            exportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
 
             // Cameras
             BabylonCamera mainCamera = null;
 
             RaiseMessage("Exporting cameras");
-            foreach (var cameraNode in maxScene.NodesListBySuperClass(SClass_ID.Camera))
+            var camerasTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
+            for(int ix = 0; ix < camerasTab.Count; ++ix)
             {
-                if (onlySelected && !cameraNode.Selected)
-                {
-                    continue;
-                }
+                var indexer = new IntPtr(ix);
+                var cameraNode = camerasTab[indexer];
+                Marshal.FreeHGlobal(indexer);
                 ExportCamera(cameraNode, babylonScene);
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
@@ -136,6 +144,7 @@ namespace Max2Babylon
                     RaiseMessage("Active camera set to " + mainCamera.name, Color.Green, 1, true);
                 }
             }
+
 
             if (mainCamera == null)
             {
@@ -165,8 +174,8 @@ namespace Max2Babylon
 
                         if (mainCamera != null)
                         {
-                            babylonScene.fogStart = mainCamera.minZ*fog.GetNear(0);
-                            babylonScene.fogEnd = mainCamera.maxZ*fog.GetFar(0);
+                            babylonScene.fogStart = mainCamera.minZ * fog.GetNear(0);
+                            babylonScene.fogEnd = mainCamera.maxZ * fog.GetFar(0);
                         }
                     }
                 }
@@ -175,26 +184,22 @@ namespace Max2Babylon
             // Meshes
             ReportProgressChanged(10);
             RaiseMessage("Exporting meshes");
-            var meshes = maxScene.NodesListBySuperClasses(new[] { SClass_ID.Geomobject, SClass_ID.Helper });
-            var progressionStep = 80.0f / meshes.Count();
+            var meshes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Mesh);
+            var progressionStep = 80.0f / meshes.Count;
             var progression = 10.0f;
-            foreach (var meshNode in meshes)
+            for (int ix = 0; ix < meshes.Count; ++ix)
             {
-                if (onlySelected && !meshNode.Selected)
-                {
-                    continue;
-                }
+                var indexer = new IntPtr(ix);
+                var meshNode = meshes[indexer];
+                Marshal.FreeHGlobal(indexer);
+                ExportMesh(gameScene, meshNode, babylonScene);
 
-                Tools.PreparePipeline(meshNode, true);
-                ExportMesh(meshNode, babylonScene);
-                Tools.PreparePipeline(meshNode, false);
 
-                progression += progressionStep;
                 ReportProgressChanged((int)progression);
 
                 CheckCancelled();
             }
-            RaiseMessage(string.Format("Total: {0}", babylonScene.MeshesList.Count), Color.Gray, 1);
+
 
             // Materials
             RaiseMessage("Exporting materials");
@@ -208,15 +213,13 @@ namespace Max2Babylon
 
             // Lights
             RaiseMessage("Exporting lights");
-            foreach (var lightNode in maxScene.NodesListBySuperClass(SClass_ID.Light))
+            var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
+            for(var i=0;i< lightNodes.Count; ++i)
             {
-                if (onlySelected && !lightNode.Selected)
-                {
-                    continue;
-                }
-                ExportLight(lightNode, babylonScene);
+                ExportLight(lightNodes[new IntPtr(i)], babylonScene);
                 CheckCancelled();
             }
+          
 
             if (babylonScene.LightsList.Count == 0)
             {
@@ -236,7 +239,6 @@ namespace Max2Babylon
                 foreach (var skin in skins)
                 {
                     ExportSkin(skin, babylonScene);
-                    skin.Dispose();
                 }
             }
 
@@ -267,5 +269,7 @@ namespace Max2Babylon
             watch.Stop();
             RaiseMessage(string.Format("Exportation done in {0:0.00}s", watch.ElapsedMilliseconds / 1000.0), Color.Blue);
         }
+
+        
     }
 }

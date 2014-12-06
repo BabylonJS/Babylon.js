@@ -84,7 +84,7 @@ namespace Max2Babylon
 
         public static string SceneFilename { get; set; }
         public static string SceneFolder { get; set; }
-
+        static Random r = new Random();
         static void Listen()
         {
             try
@@ -98,14 +98,26 @@ namespace Max2Babylon
                     context.Response.AddHeader("Cache-Control", "no-cache");
                     if (string.IsNullOrEmpty(url.LocalPath) || url.LocalPath == "/")
                     {
-                        var responseText = HtmlResponseText.Replace("###SCENE###", SceneFilename);
+
+                        var responseText = HtmlResponseText.Replace("###SCENE###", SceneFilename+"?once="+r.Next());
                         WriteResponse(context, responseText);
                     }
                     else
                     {
                         try
                         {
-                            var buffer = File.ReadAllBytes(Path.Combine(SceneFolder, HttpUtility.UrlDecode(url.PathAndQuery.Substring(1))));
+                            var path = Path.Combine(SceneFolder, HttpUtility.UrlDecode(url.PathAndQuery.Substring(1)));
+                            var questionMarkIndex = path.IndexOf("?");
+                            if (questionMarkIndex != -1)
+                            {
+                                path = path.Substring(0, questionMarkIndex);
+                            }
+                            var hashIndex = path.IndexOf("#");
+                            if (hashIndex != -1)
+                            {
+                                path = path.Substring(0, hashIndex);
+                            }
+                            var buffer = File.ReadAllBytes(path);
                             WriteResponse(context, buffer);
                         }
                         catch
