@@ -7,28 +7,28 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
-        readonly List<IMtl> referencedMaterials = new List<IMtl>();
+        readonly List<IIGameMaterial> referencedMaterials = new List<IIGameMaterial>();
 
-        private void ExportMaterial(IMtl materialNode, BabylonScene babylonScene)
+        private void ExportMaterial(IIGameMaterial materialNode, BabylonScene babylonScene)
         {
-            var name = materialNode.Name;
-            var id = materialNode.GetGuid().ToString();
+            var name = materialNode.MaterialName;
+            var id = materialNode.MaxMaterial.GetGuid().ToString();
 
             RaiseMessage(name, 1);
 
-            if (materialNode.NumSubMtls > 0)
+            if (materialNode.SubMaterialCount > 0)
             {
                 var babylonMultimaterial = new BabylonMultiMaterial { name = name, id = id };
 
                 var guids = new List<string>();
 
-                for (var index = 0; index < materialNode.NumSubMtls; index++)
+                for (var index = 0; index < materialNode.SubMaterialCount; index++)
                 {
-                    var subMat = materialNode.GetSubMtl(index);
+                    var subMat = materialNode.GetSubMaterial(index);
 
                     if (subMat != null)
                     {
-                        guids.Add(subMat.GetGuid().ToString());
+                        guids.Add(subMat.MaxMaterial.GetGuid().ToString());
 
                         if (!referencedMaterials.Contains(subMat))
                         {
@@ -53,19 +53,19 @@ namespace Max2Babylon
             {
                 name = name,
                 id = id,
-                ambient = materialNode.GetAmbient(0, false).ToArray(),
-                diffuse = materialNode.GetDiffuse(0, false).ToArray(),
-                specular = materialNode.GetSpecular(0, false).Scale(materialNode.GetShinStr(0, false)),
-                specularPower = materialNode.GetShininess(0, false) * 256,
+                ambient = materialNode.MaxMaterial.GetAmbient(0, false).ToArray(),
+                diffuse = materialNode.MaxMaterial.GetDiffuse(0, false).ToArray(),
+                specular = materialNode.MaxMaterial.GetSpecular(0, false).Scale(materialNode.MaxMaterial.GetShinStr(0, false)),
+                specularPower = materialNode.MaxMaterial.GetShininess(0, false) * 256,
                 emissive =
-                    materialNode.GetSelfIllumColorOn(0, false)
-                        ? materialNode.GetSelfIllumColor(0, false).ToArray()
-                        : materialNode.GetDiffuse(0, false).Scale(materialNode.GetSelfIllum(0, false)),
-                alpha = 1.0f - materialNode.GetXParency(0, false)
+                    materialNode.MaxMaterial.GetSelfIllumColorOn(0, false)
+                        ? materialNode.MaxMaterial.GetSelfIllumColor(0, false).ToArray()
+                        : materialNode.MaxMaterial.GetDiffuse(0, false).Scale(materialNode.MaxMaterial.GetSelfIllum(0, false)),
+                alpha = 1.0f - materialNode.MaxMaterial.GetXParency(0, false)
             };
 
 
-            var stdMat = materialNode.GetParamBlock(0).Owner as IStdMat2;
+            var stdMat = materialNode.MaxMaterial.GetParamBlock(0).Owner as IStdMat2;
 
             if (stdMat != null)
             {
