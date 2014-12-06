@@ -36,11 +36,9 @@ float fbm(vec2 n) {
 }
 
 void main() {
-
 	vec2 p = vUV * 8.0;
 	float q = fbm(p - iGlobalTime * 0.1);
 	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));
 	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);
 	gl_FragColor = vec4(c * cos(shift * vUV.y), alpha);
-
 }

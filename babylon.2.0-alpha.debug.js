@@ -2309,6 +2309,10 @@ var BABYLON;
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2332,6 +2336,10 @@ var BABYLON;
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2354,6 +2362,10 @@ var BABYLON;
                 inv = 1.0 / this.direction.z;
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
+
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
 
                 if (min > max) {
                     temp = min;
@@ -2804,6 +2816,17 @@ var BABYLON;
         };
 
        
+        Tools.Clamp = function (value, min, max) {
+            if (typeof min === "undefined") { min = 0; }
+            if (typeof max === "undefined") { max = 1; }
+            return Math.min(max, Math.max(min, value));
+        };
+
+        Tools.Format = function (value, decimals) {
+            if (typeof decimals === "undefined") { decimals = 2; }
+            return value.toFixed(decimals);
+        };
+
         Tools.CheckExtends = function (v, min, max) {
             if (v.x < min.x)
                 min.x = v.x;
@@ -3684,13 +3707,13 @@ var BABYLON;
            
             this.isFullscreen = false;
             this.isPointerLock = false;
-            this.forceWireframe = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._runningLoop = false;
             this._loadingDivBackgroundColor = "black";
+            this._drawCalls = 0;
            
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
@@ -3908,7 +3931,19 @@ var BABYLON;
             return this._caps;
         };
 
+        Object.defineProperty(Engine.prototype, "drawCalls", {
+            get: function () {
+                return this._drawCalls;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
        
+        Engine.prototype.resetDrawCalls = function () {
+            this._drawCalls = 0;
+        };
+
         Engine.prototype.setDepthFunctionToGreater = function () {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         };
@@ -4256,6 +4291,8 @@ var BABYLON;
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
+
+            this._drawCalls++;
         };
 
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
@@ -4268,6 +4305,7 @@ var BABYLON;
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+            this._drawCalls++;
         };
 
        
@@ -8208,6 +8246,7 @@ var BABYLON;
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
+            this.forceShowBoundingBoxes = false;
             this.cameraToUseForPointers = null;
            
             this.fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -8275,6 +8314,7 @@ var BABYLON;
             this._onReadyCallbacks = new Array();
             this._pendingData = [];
             this._onBeforeRenderCallbacks = new Array();
+            this._onAfterRenderCallbacks = new Array();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArray(256);
@@ -8298,9 +8338,19 @@ var BABYLON;
             this._outlineRenderer = new BABYLON.OutlineRenderer(this);
 
             this.attachControl();
+
+            this._debugLayer = new BABYLON.DebugLayer(this);
         }
-        Object.defineProperty(Scene.prototype, "meshUnderPointer", {
+        Object.defineProperty(Scene.prototype, "debugLayer", {
            
+            get: function () {
+                return this._debugLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Scene.prototype, "meshUnderPointer", {
             get: function () {
                 return this._meshUnderPointer;
             },
@@ -8526,6 +8576,18 @@ var BABYLON;
 
             if (index > -1) {
                 this._onBeforeRenderCallbacks.splice(index, 1);
+            }
+        };
+
+        Scene.prototype.registerAfterRender = function (func) {
+            this._onAfterRenderCallbacks.push(func);
+        };
+
+        Scene.prototype.unregisterAfterRender = function (func) {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
             }
         };
 
@@ -8976,7 +9038,7 @@ var BABYLON;
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
-            if (mesh.showBoundingBox) {
+            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
@@ -9180,9 +9242,11 @@ var BABYLON;
             this._spritesDuration = 0;
             this._activeParticles = 0;
             this._renderDuration = 0;
+            this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
 
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
@@ -9303,6 +9367,10 @@ var BABYLON;
                 this.afterRender();
             }
 
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
+            }
+
             for (var index = 0; index < this._toBeDisposed.length; index++) {
                 this._toBeDisposed.data[index].dispose();
                 this._toBeDisposed[index] = null;
@@ -9342,11 +9410,15 @@ var BABYLON;
             this._boundingBoxRenderer.dispose();
 
            
+            this.debugLayer.enabled = false;
+
+           
             if (this.onDispose) {
                 this.onDispose();
             }
 
             this._onBeforeRenderCallbacks = [];
+            this._onAfterRenderCallbacks = [];
 
             this.detachControl();
 
@@ -9911,6 +9983,7 @@ var BABYLON;
             this.outlineColor = BABYLON.Color3.Red();
             this.outlineWidth = 0.02;
             this.hasVertexAlpha = false;
+            this.useVertexColors = true;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -10813,6 +10886,11 @@ var BABYLON;
         };
 
         Mesh.prototype.addLODLevel = function (distance, mesh) {
+            if (mesh && mesh._masterMesh) {
+                BABYLON.Tools.Warn("You cannot use a mesh as LOD level twice");
+                return this;
+            }
+
             var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
@@ -11287,7 +11365,7 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
            
-            var fillMode = engine.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
@@ -12618,11 +12696,10 @@ var BABYLON;
                         }
                     })) {
                         this._renderingGroups.splice(index, 1);
+                    } else if (renderSprites) {
+                        this._renderSprites(index);
                     }
-                } else if (renderSprites) {
-                    this._renderSprites(index);
                 }
-
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }
@@ -13421,10 +13498,7 @@ var BABYLON;
             _super.call(this, name, size, "wood", scene, fallbackTexture, generateMipMaps);
             this._ampScale = 100.0;
             this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
-
             this.updateShaderUniforms();
-
-           
             this.refreshRate = 0;
         }
         WoodProceduralTexture.prototype.updateShaderUniforms = function () {
@@ -13468,13 +13542,10 @@ var BABYLON;
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
             this._shift = 1.6;
-            this._alpha = 1.0;
+            this._alpha = 0.0;
             this._autoGenerateTime = true;
-
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
-
-           
             this.refreshRate = 1;
         }
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
@@ -13482,13 +13553,12 @@ var BABYLON;
             this.setVector2("speed", this._speed);
             this.setFloat("shift", this._shift);
             this.setFloat("alpha", this._alpha);
-
-            this.setColor3("c1", new BABYLON.Color3(this._fireColors[0][0], this._fireColors[0][1], this._fireColors[0][2]));
-            this.setColor3("c2", new BABYLON.Color3(this._fireColors[1][0], this._fireColors[1][1], this._fireColors[1][2]));
-            this.setColor3("c3", new BABYLON.Color3(this._fireColors[2][0], this._fireColors[2][1], this._fireColors[2][2]));
-            this.setColor3("c4", new BABYLON.Color3(this._fireColors[3][0], this._fireColors[3][1], this._fireColors[3][2]));
-            this.setColor3("c5", new BABYLON.Color3(this._fireColors[4][0], this._fireColors[4][1], this._fireColors[4][2]));
-            this.setColor3("c6", new BABYLON.Color3(this._fireColors[5][0], this._fireColors[5][1], this._fireColors[5][2]));
+            this.setColor3("c1", this._fireColors[0]);
+            this.setColor3("c2", this._fireColors[1]);
+            this.setColor3("c3", this._fireColors[2]);
+            this.setColor3("c4", this._fireColors[3]);
+            this.setColor3("c5", this._fireColors[4]);
+            this.setColor3("c6", this._fireColors[5]);
         };
 
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
@@ -13496,19 +13566,18 @@ var BABYLON;
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
-
             _super.prototype.render.call(this, useCameraPostProcess);
         };
 
         Object.defineProperty(FireProceduralTexture, "PurpleFireColors", {
             get: function () {
                 return [
-                    [0.5, 0.0, 1.0],
-                    [0.9, 0.0, 1.0],
-                    [0.2, 0.0, 1.0],
-                    [1.0, 0.9, 1.0],
-                    [0.1, 0.1, 1.0],
-                    [0.9, 0.9, 1.0]
+                    new BABYLON.Color3(0.5, 0.0, 1.0),
+                    new BABYLON.Color3(0.9, 0.0, 1.0),
+                    new BABYLON.Color3(0.2, 0.0, 1.0),
+                    new BABYLON.Color3(1.0, 0.9, 1.0),
+                    new BABYLON.Color3(0.1, 0.1, 1.0),
+                    new BABYLON.Color3(0.9, 0.9, 1.0)
                 ];
             },
             enumerable: true,
@@ -13518,12 +13587,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "GreenFireColors", {
             get: function () {
                 return [
-                    [0.5, 1.0, 0.0],
-                    [0.5, 1.0, 0.0],
-                    [0.3, 0.4, 0.0],
-                    [0.5, 1.0, 0.0],
-                    [0.2, 0.0, 0.0],
-                    [0.5, 1.0, 0.0]
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.3, 0.4, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.2, 0.0, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0)
                 ];
             },
             enumerable: true,
@@ -13533,12 +13602,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "RedFireColors", {
             get: function () {
                 return [
-                    [0.5, 0.0, 0.1],
-                    [0.9, 0.0, 0.0],
-                    [0.2, 0.0, 0.0],
-                    [1.0, 0.9, 0.0],
-                    [0.1, 0.1, 0.1],
-                    [0.9, 0.9, 0.9]
+                    new BABYLON.Color3(0.5, 0.0, 0.1),
+                    new BABYLON.Color3(0.9, 0.0, 0.0),
+                    new BABYLON.Color3(0.2, 0.0, 0.0),
+                    new BABYLON.Color3(1.0, 0.9, 0.0),
+                    new BABYLON.Color3(0.1, 0.1, 0.1),
+                    new BABYLON.Color3(0.9, 0.9, 0.9)
                 ];
             },
             enumerable: true,
@@ -13548,12 +13617,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "BlueFireColors", {
             get: function () {
                 return [
-                    [0.1, 0.0, 0.5],
-                    [0.0, 0.0, 0.5],
-                    [0.1, 0.0, 0.2],
-                    [0.0, 0.0, 1.0],
-                    [0.1, 0.2, 0.3],
-                    [0.0, 0.2, 0.9]
+                    new BABYLON.Color3(0.1, 0.0, 0.5),
+                    new BABYLON.Color3(0.0, 0.0, 0.5),
+                    new BABYLON.Color3(0.1, 0.0, 0.2),
+                    new BABYLON.Color3(0.0, 0.0, 1.0),
+                    new BABYLON.Color3(0.1, 0.2, 0.3),
+                    new BABYLON.Color3(0.0, 0.2, 0.9)
                 ];
             },
             enumerable: true,
@@ -13634,12 +13703,8 @@ var BABYLON;
             _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
             this._skyColor = new BABYLON.Color3(0.15, 0.68, 1.0);
             this._cloudColor = new BABYLON.Color3(1, 1, 1);
-
             this.updateShaderUniforms();
-
-           
             this.refreshRate = 0;
-           
         }
         CloudProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor3("skyColor", this._skyColor);
@@ -13679,34 +13744,114 @@ var BABYLON;
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "grass", scene, fallbackTexture, generateMipMaps);
-
-           
+            this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
+            this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
+            this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
+            this._dirt = new BABYLON.Color3(0.6, 0.46, 0.13);
+            this._ground = new BABYLON.Color3(1, 1, 1);
+            this.updateShaderUniforms();
             this.refreshRate = 0;
         }
+        GrassProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setColor3("herb1", this._herb1);
+            this.setColor3("herb2", this._herb2);
+            this.setColor3("herb3", this._herb2);
+            this.setColor3("dirt", this._dirt);
+            this.setColor3("ground", this._ground);
+        };
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "herb1", {
+            get: function () {
+                return this._herb1;
+            },
+            set: function (value) {
+                this._herb1 = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "herb2", {
+            get: function () {
+                return this._herb2;
+            },
+            set: function (value) {
+                this._herb2 = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "herb3", {
+            get: function () {
+                return this._herb3;
+            },
+            set: function (value) {
+                this._herb3 = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "dirt", {
+            get: function () {
+                return this._dirt;
+            },
+            set: function (value) {
+                this._dirt = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "ground", {
+            get: function () {
+                return this._ground;
+            },
+            set: function (value) {
+                this._ground = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return GrassProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
-
-    var RockProceduralTexture = (function (_super) {
-        __extends(RockProceduralTexture, _super);
-        function RockProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "rock", scene, fallbackTexture, generateMipMaps);
-
-           
-            this.refreshRate = 0;
-        }
-        return RockProceduralTexture;
-    })(BABYLON.ProceduralTexture);
-    BABYLON.RockProceduralTexture = RockProceduralTexture;
 
     var RoadProceduralTexture = (function (_super) {
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "road", scene, fallbackTexture, generateMipMaps);
-
-           
+            this._macadamColor = new BABYLON.Color3(0.53, 0.53, 0.53);
+            this.updateShaderUniforms();
             this.refreshRate = 0;
         }
+        RoadProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setColor3("macadamColor", this._macadamColor);
+        };
+
+        Object.defineProperty(RoadProceduralTexture.prototype, "macadamColor", {
+            get: function () {
+                return this._macadamColor;
+            },
+            set: function (value) {
+                this._macadamColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return RoadProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.RoadProceduralTexture = RoadProceduralTexture;
@@ -13717,15 +13862,16 @@ var BABYLON;
             _super.call(this, name, size, "brick", scene, fallbackTexture, generateMipMaps);
             this._numberOfBricksHeight = 15;
             this._numberOfBricksWidth = 5;
-
+            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
+            this._brickColor = new BABYLON.Color3(0.77, 0.47, 0.40);
             this.updateShaderUniforms();
-
-           
             this.refreshRate = 0;
         }
         BrickProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
             this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+            this.setColor3("brick", this._brickColor);
+            this.setColor3("joint", this._jointColor);
         };
 
         Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksHeight", {
@@ -13757,6 +13903,32 @@ var BABYLON;
             configurable: true
         });
 
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "jointColor", {
+            get: function () {
+                return this._jointColor;
+            },
+            set: function (value) {
+                this._jointColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "brickColor", {
+            get: function () {
+                return this._brickColor;
+            },
+            set: function (value) {
+                this._brickColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return BrickProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.BrickProceduralTexture = BrickProceduralTexture;
@@ -13765,42 +13937,67 @@ var BABYLON;
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "marble", scene, fallbackTexture, generateMipMaps);
-            this._numberOfBricksHeight = 3;
-            this._numberOfBricksWidth = 3;
-
+            this._numberOfTilesHeight = 3;
+            this._numberOfTilesWidth = 3;
+            this._amplitude = 9.0;
+            this._marbleColor = new BABYLON.Color3(0.77, 0.47, 0.40);
+            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
             this.updateShaderUniforms();
-
-           
             this.refreshRate = 0;
         }
         MarbleProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
-            this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+            this.setFloat("numberOfBricksHeight", this._numberOfTilesHeight);
+            this.setFloat("numberOfBricksWidth", this._numberOfTilesWidth);
+            this.setFloat("amplitude", this._amplitude);
+            this.setColor3("brick", this._marbleColor);
+            this.setColor3("joint", this._jointColor);
         };
 
-        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfBricksHeight", {
+        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesHeight", {
             get: function () {
-                return this._numberOfBricksHeight;
+                return this._numberOfTilesHeight;
             },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(MarbleProceduralTexture.prototype, "cloudColor", {
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfTilesHeight = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfBricksWidth", {
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesWidth", {
             get: function () {
-                return this._numberOfBricksWidth;
+                return this._numberOfTilesWidth;
             },
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfTilesWidth = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "jointColor", {
+            get: function () {
+                return this._jointColor;
+            },
+            set: function (value) {
+                this._jointColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "marbleColor", {
+            get: function () {
+                return this._marbleColor;
+            },
+            set: function (value) {
+                this._marbleColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -13827,13 +14024,10 @@ var BABYLON;
             this._time = 0;
             this._shaderLoaded = false;
             this._updateTexture = false;
-
             this._texturePath = texturePath;
 
            
             this.loadJson(texturePath);
-
-           
             this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
@@ -13925,6 +14119,8 @@ var BABYLON;
                         break;
                 }
             }
+
+            this.setFloat("time", this._time);
         };
 
         Object.defineProperty(CustomProceduralTexture.prototype, "animate", {
@@ -14587,7 +14783,7 @@ var BABYLON;
         Effect.ShadersStore={anaglyphPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D leftSampler;\n\nvoid main(void)\n{\n    vec4 leftFrag = texture2D(leftSampler, vUV);\n    leftFrag = vec4(1.0, leftFrag.g, leftFrag.b, 1.0);\n\n	vec4 rightFrag = texture2D(textureSampler, vUV);\n    rightFrag = vec4(rightFrag.r, 1.0, 1.0, 1.0);\n\n    gl_FragColor = vec4(rightFrag.rgb * leftFrag.rgb, 1.0);\n}",
 blackAndWhitePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nvoid main(void) \n{\n	float luminance = dot(texture2D(textureSampler, vUV).rgb, vec3(0.3, 0.59, 0.11));\n	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);\n}",
 blurPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Parameters\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\n\nvoid main(void)\n{\n	float weights[7];\n	weights[0] = 0.05;\n	weights[1] = 0.1;\n	weights[2] = 0.2;\n	weights[3] = 0.3;\n	weights[4] = 0.2;\n	weights[5] = 0.1;\n	weights[6] = 0.05;\n\n	vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);\n	vec2 texelStep = texelSize * direction * blurWidth;\n	vec2 start = vUV - 3.0 * texelStep;\n\n	vec4 baseColor = vec4(0., 0., 0., 0.);\n	vec2 texelOffset = vec2(0., 0.);\n\n	for (int i = 0; i < 7; i++)\n	{\n		baseColor += texture2D(textureSampler, start + texelOffset) * weights[i];\n		texelOffset += texelStep;\n	}\n\n	gl_FragColor = baseColor;\n}",
-brickPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvoid main(void)\n{\n	vec3 brick = vec3(0.77, 0.47, 0.40);\n	vec3 joint = vec3(0.72, 0.72, 0.72);\n\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.05;\n\n	vec3 color = brick;\n\n\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);\n\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float momo = mod(floor(yi) + floor(xi), 3.0);\n\n		if (momo == 0.0)\n			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);\n		else if (momo == 2.0)\n			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);\n\n\n		//color = mix(momo, vec3(0.53, 0.2, 0.0), fbm(brickvUV * 2.0));\n	}\n\n\n	gl_FragColor = vec4(color, 1.0);\n}",
+brickPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brick;\nuniform vec3 joint;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvoid main(void)\n{\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.05;\n	vec3 color = brick;\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float brickColorSwitch = mod(floor(yi) + floor(xi), 3.0);\n\n		if (brickColorSwitch == 0.0)\n			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);\n		else if (brickColorSwitch == 2.0)\n			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);\n	}\n\n	gl_FragColor = vec4(color, 1.0);\n}",
 cloudPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;\n\nuniform vec3 skyColor;\nuniform vec3 cloudColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 12.0;\n	vec3 c = mix(skyColor, cloudColor, fbm(p));\n	gl_FragColor = vec4(c, 1);\n\n}",
 colorPixelShader:"precision highp float;\n\nuniform vec4 color;\n\nvoid main(void) {\n	gl_FragColor = color;\n}",
 colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 position;\n\n// Uniforms\nuniform mat4 worldViewProjection;\n\nvoid main(void) {\n	gl_Position = worldViewProjection * vec4(position, 1.0);\n}",
@@ -14597,16 +14793,16 @@ defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribut
 displayPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(passSampler, vUV);\n}",
 emptyPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvoid main(void)\n{\n	\n}",
 filterPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform mat4 kernelMatrix;\n\nvoid main(void)\n{\n	vec3 baseColor = texture2D(textureSampler, vUV).rgb;\n	vec3 updatedColor = (kernelMatrix * vec4(baseColor, 1.0)).rgb;\n\n	gl_FragColor = vec4(updatedColor, 1.0);\n}",
-firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float iGlobalTime;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alpha;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - iGlobalTime * 0.1);\n	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	gl_FragColor = vec4(c * cos(shift * vUV.y), alpha);\n\n}",
+firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float iGlobalTime;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alpha;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - iGlobalTime * 0.1);\n	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	gl_FragColor = vec4(c * cos(shift * vUV.y), alpha);\n}",
 fxaaPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define FXAA_REDUCE_MIN   (1.0/128.0)\n#define FXAA_REDUCE_MUL   (1.0/8.0)\n#define FXAA_SPAN_MAX     8.0\n\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 texelSize;\n\nvoid main(){\n	vec2 localTexelSize = texelSize;\n	vec4 rgbNW = texture2D(textureSampler, (vUV + vec2(-1.0, -1.0) * localTexelSize));\n	vec4 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize));\n	vec4 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize));\n	vec4 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize));\n	vec4 rgbM = texture2D(textureSampler, vUV);\n	vec4 luma = vec4(0.299, 0.587, 0.114, 1.0);\n	float lumaNW = dot(rgbNW, luma);\n	float lumaNE = dot(rgbNE, luma);\n	float lumaSW = dot(rgbSW, luma);\n	float lumaSE = dot(rgbSE, luma);\n	float lumaM = dot(rgbM, luma);\n	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));\n	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));\n\n	vec2 dir = vec2(-((lumaNW + lumaNE) - (lumaSW + lumaSE)), ((lumaNW + lumaSW) - (lumaNE + lumaSE)));\n\n	float dirReduce = max(\n		(lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),\n		FXAA_REDUCE_MIN);\n\n	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);\n	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),\n		max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),\n		dir * rcpDirMin)) * localTexelSize;\n\n	vec4 rgbA = 0.5 * (\n		texture2D(textureSampler, vUV + dir * (1.0 / 3.0 - 0.5)) +\n		texture2D(textureSampler, vUV + dir * (2.0 / 3.0 - 0.5)));\n\n	vec4 rgbB = rgbA * 0.5 + 0.25 * (\n		texture2D(textureSampler, vUV + dir *  -0.5) +\n		texture2D(textureSampler, vUV + dir * 0.5));\n	float lumaB = dot(rgbB, luma);\n	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {\n		gl_FragColor = rgbA;\n	}\n	else {\n		gl_FragColor = rgbB;\n	}\n}",
-grassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n\n	vec3 herb1 = vec3(0.29, 0.38, 0.02);\n	vec3 herb2 = vec3(0.36, 0.49, 0.09);\n	vec3 herb3 = vec3(0.51, 0.6, 0.28);\n	vec3 dirt = vec3(0.6, 0.46, 0.13);\n\n	vec3 ground = vec3(1,1,1);\n	\n	ground = mix(ground, herb1, rand(gl_FragCoord.xy * 4.0));\n	ground = mix(ground, herb2, rand(gl_FragCoord.xy * 8.0));\n	ground = mix(ground, herb3, rand(gl_FragCoord.xy));\n	ground = mix(ground, herb1, fbm(gl_FragCoord.xy * 16.0));\n\n	gl_FragColor = vec4(ground, 1.0);\n}",
+grassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform vec3 herb1;\nuniform vec3 herb2;\nuniform vec3 herb3;\nuniform vec3 dirt;\nuniform vec3 ground;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n	vec3 color = mix(ground, herb1, rand(gl_FragCoord.xy * 4.0));\n	color = mix(color, herb2, rand(gl_FragCoord.xy * 8.0));\n	color = mix(color, herb3, rand(gl_FragCoord.xy));\n	color = mix(color, herb1, fbm(gl_FragCoord.xy * 16.0));\n	gl_FragColor = vec4(color, 1.0);\n}",
 layerPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Color\nuniform vec4 color;\n\nvoid main(void) {\n	vec4 baseColor = texture2D(textureSampler, vUV);\n\n	gl_FragColor = baseColor * color;\n}",
 layerVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec2 position;\n\n// Uniforms\nuniform mat4 textureMatrix;\n\n// Output\nvarying vec2 vUV;\n\nconst vec2 madd = vec2(0.5, 0.5);\n\nvoid main(void) {	\n\n	vUV = vec2(textureMatrix * vec4(position * madd + madd, 1.0, 0.0));\n	gl_Position = vec4(position, 0.0, 1.0);\n}",
 legacydefaultPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_PROJECTION	4.\n\n// Constants\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\nuniform vec4 vSpecularColor;\nuniform vec3 vEmissiveColor;\n\n// Input\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n// Lights\n#ifdef LIGHT0\nuniform vec4 vLightData0;\nuniform vec4 vLightDiffuse0;\nuniform vec3 vLightSpecular0;\n#ifdef SHADOW0\nvarying vec4 vPositionFromLight0;\nuniform sampler2D shadowSampler0;\n#endif\n#ifdef SPOTLIGHT0\nuniform vec4 vLightDirection0;\n#endif\n#ifdef HEMILIGHT0\nuniform vec3 vLightGround0;\n#endif\n#endif\n\n#ifdef LIGHT1\nuniform vec4 vLightData1;\nuniform vec4 vLightDiffuse1;\nuniform vec3 vLightSpecular1;\n#ifdef SHADOW1\nvarying vec4 vPositionFromLight1;\nuniform sampler2D shadowSampler1;\n#endif\n#ifdef SPOTLIGHT1\nuniform vec4 vLightDirection1;\n#endif\n#ifdef HEMILIGHT1\nuniform vec3 vLightGround1;\n#endif\n#endif\n\n#ifdef LIGHT2\nuniform vec4 vLightData2;\nuniform vec4 vLightDiffuse2;\nuniform vec3 vLightSpecular2;\n#ifdef SHADOW2\nvarying vec4 vPositionFromLight2;\nuniform sampler2D shadowSampler2;\n#endif\n#ifdef SPOTLIGHT2\nuniform vec4 vLightDirection2;\n#endif\n#ifdef HEMILIGHT2\nuniform vec3 vLightGround2;\n#endif\n#endif\n\n#ifdef LIGHT3\nuniform vec4 vLightData3;\nuniform vec4 vLightDiffuse3;\nuniform vec3 vLightSpecular3;\n#ifdef SHADOW3\nvarying vec4 vPositionFromLight3;\nuniform sampler2D shadowSampler3;\n#endif\n#ifdef SPOTLIGHT3\nuniform vec4 vLightDirection3;\n#endif\n#ifdef HEMILIGHT3\nuniform vec3 vLightGround3;\n#endif\n#endif\n\n// Samplers\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY	\nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vReflectionUVW;\nuniform samplerCube reflectionCubeSampler;\nuniform sampler2D reflection2DSampler;\nuniform vec3 vReflectionInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n// Fresnel\n#ifdef FRESNEL\nfloat computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)\n{\n	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);\n	return clamp(fresnelTerm, 0., 1.);\n}\n#endif\n\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n\n// Shadows\n#ifdef SHADOWS\n\nfloat unpack(vec4 color)\n{\n	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);\n	return dot(color, bitShift);\n}\n\nfloat unpackHalf(vec2 color)\n{\n	return color.x + (color.y / 255.0);\n}\n\nfloat computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float shadow = unpack(texture2D(shadowSampler, uv));\n\n	if (depth.z > shadow)\n	{\n		return 0.;\n	}\n	return 1.;\n}\n\n// Thanks to http://devmaster.net/\nfloat ChebychevInequality(vec2 moments, float t)\n{\n	if (t <= moments.x)\n	{\n		return 1.0;\n	}\n\n	float variance = moments.y - (moments.x * moments.x);\n	variance = max(variance, 0.);\n\n	float d = t - moments.x;\n	return variance / (variance + d * d);\n}\n\nfloat computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	vec4 texel = texture2D(shadowSampler, uv);\n\n	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));\n	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);\n}\n#endif\n\n#ifdef CLIPPLANE\nvarying float fClipDistance;\n#endif\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return clamp(fogCoeff, 0.0, 1.0);\n}\n#endif\n\n// Light Computing\nmat3 computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 diffuseColor, vec3 specularColor) {\n	mat3 result;\n\n	vec3 lightVectorW;\n	if (lightData.w == 0.)\n	{\n		lightVectorW = normalize(lightData.xyz - vPositionW);\n	}\n	else\n	{\n		lightVectorW = normalize(-lightData.xyz);\n	}\n\n	// diffuse\n	float ndl = max(0., dot(vNormal, lightVectorW));\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightVectorW);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = max(0., pow(specComp, max(1.0, vSpecularColor.a)));\n\n	result[0] = ndl * diffuseColor.rgb;\n	result[1] = specComp * specularColor;\n	result[2] = vec3(0.);\n\n	return result;\n}\n\nmat3 computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec4 diffuseColor, vec3 specularColor) {\n	mat3 result;\n\n	vec3 lightVectorW = normalize(lightData.xyz - vPositionW);\n\n	// diffuse\n	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));\n	float spotAtten = 0.0;\n\n	if (cosAngle >= lightDirection.w)\n	{\n		cosAngle = max(0., pow(cosAngle, lightData.w));\n		spotAtten = max(0., (cosAngle - lightDirection.w) / (1. - cosAngle));\n\n		// Diffuse\n		float ndl = max(0., dot(vNormal, -lightDirection.xyz));\n\n		// Specular\n		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);\n		float specComp = max(0., dot(vNormal, angleW));\n		specComp = pow(specComp, vSpecularColor.a);\n\n		result[0] = ndl * spotAtten * diffuseColor.rgb;\n		result[1] = specComp * specularColor * spotAtten;\n		result[2] = vec3(0.);\n\n		return result;\n	}\n\n	result[0] = vec3(0.);\n	result[1] = vec3(0.);\n	result[2] = vec3(0.);\n\n	return result;\n}\n\nmat3 computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 diffuseColor, vec3 specularColor, vec3 groundColor) {\n	mat3 result;\n\n	// Diffuse\n	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightData.xyz);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, vSpecularColor.a);\n\n	result[0] = mix(groundColor, diffuseColor.rgb, ndl);\n	result[1] = specComp * specularColor;\n	result[2] = vec3(0.);\n\n	return result;\n}\n\nvoid main(void) {\n	// Clip plane\n#ifdef CLIPPLANE\n	if (fClipDistance > 0.0)\n		discard;\n#endif\n\n	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);\n\n	// Base color\n	vec4 baseColor = vec4(1., 1., 1., 1.);\n	vec3 diffuseColor = vDiffuseColor.rgb;\n\n#ifdef VERTEXCOLOR\n	baseColor.rgb *= vColor.rgb;\n#endif\n\n#ifdef DIFFUSE\n	baseColor = texture2D(diffuseSampler, vDiffuseUV);\n\n#ifdef ALPHATEST\n	if (baseColor.a < 0.4)\n		discard;\n#endif\n\n	baseColor.rgb *= vDiffuseInfos.y;\n#endif\n\n	// Bump\n	vec3 normalW = normalize(vNormalW);\n\n	// Ambient color\n	vec3 baseAmbientColor = vec3(1., 1., 1.);\n\n#ifdef AMBIENT\n	baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;\n#endif\n\n	// Lighting\n	vec3 diffuseBase = vec3(0., 0., 0.);\n	vec3 specularBase = vec3(0., 0., 0.);\n	float shadow = 1.;\n\n#ifdef LIGHT0\n#ifdef SPOTLIGHT0\n	mat3 info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0, vLightSpecular0);\n#endif\n#ifdef HEMILIGHT0\n	mat3 info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0, vLightSpecular0, vLightGround0);\n#endif\n#ifdef POINTDIRLIGHT0\n	mat3 info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0, vLightSpecular0);\n#endif\n#ifdef SHADOW0\n#ifdef SHADOWVSM0\n	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);\n#else\n	shadow = computeShadow(vPositionFromLight0, shadowSampler0);\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info[0] * shadow;\n	specularBase += info[1] * shadow;\n#endif\n\n#ifdef LIGHT1\n#ifdef SPOTLIGHT1\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1, vLightSpecular1);\n#endif\n#ifdef HEMILIGHT1\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1, vLightSpecular1, vLightGround1);\n#endif\n#ifdef POINTDIRLIGHT1\n	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1, vLightSpecular1);\n#endif\n#ifdef SHADOW1\n#ifdef SHADOWVSM1\n	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);\n#else\n	shadow = computeShadow(vPositionFromLight1, shadowSampler1);\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info[0] * shadow;\n	specularBase += info[1] * shadow;\n#endif\n\n#ifdef LIGHT2\n#ifdef SPOTLIGHT2\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2, vLightSpecular2);\n#endif\n#ifdef HEMILIGHT2\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2, vLightSpecular2, vLightGround2);\n#endif\n#ifdef POINTDIRLIGHT2\n	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2, vLightSpecular2);\n#endif\n#ifdef SHADOW2\n#ifdef SHADOWVSM2\n	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);\n#else\n	shadow = computeShadow(vPositionFromLight2, shadowSampler2);\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info[0] * shadow;\n	specularBase += info[1] * shadow;\n#endif\n\n#ifdef LIGHT3\n#ifdef SPOTLIGHT3\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3, vLightSpecular3);\n#endif\n#ifdef HEMILIGHT3\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3, vLightSpecular3, vLightGround3);\n#endif\n#ifdef POINTDIRLIGHT3\n	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3, vLightSpecular3);\n#endif\n#ifdef SHADOW3\n#ifdef SHADOWVSM3\n	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);\n#else\n	shadow = computeShadow(vPositionFromLight3, shadowSampler3);\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info[0] * shadow;\n	specularBase += info[1] * shadow;\n#endif\n\n	// Reflection\n	vec3 reflectionColor = vec3(0., 0., 0.);\n\n#ifdef REFLECTION\n	if (vReflectionInfos.z != 0.0)\n	{\n		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;\n	}\n	else\n	{\n		vec2 coords = vReflectionUVW.xy;\n\n		if (vReflectionInfos.x == MAP_PROJECTION)\n		{\n			coords /= vReflectionUVW.z;\n		}\n\n		coords.y = 1.0 - coords.y;\n\n		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y;\n	}\n\n#ifdef REFLECTIONFRESNEL\n	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);\n\n	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;\n#endif\n#endif\n\n	// Alpha\n	float alpha = vDiffuseColor.a;\n\n#ifdef OPACITY\n	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);\n#ifdef OPACITYRGB\n	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);\n	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;\n#else\n	alpha *= opacityMap.a * vOpacityInfos.y;\n#endif\n#endif\n\n#ifdef VERTEXALPHA\n	alpha *= vColor.a;\n#endif\n\n#ifdef OPACITYFRESNEL\n	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);\n\n	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;\n#endif\n\n	// Emissive\n	vec3 emissiveColor = vEmissiveColor;\n#ifdef EMISSIVE\n	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;\n#endif\n\n#ifdef EMISSIVEFRESNEL\n	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);\n\n	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;\n#endif\n\n	// Specular map\n	vec3 specularColor = vSpecularColor.rgb;\n#ifdef SPECULAR\n	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;\n#endif\n\n	// Fresnel\n#ifdef DIFFUSEFRESNEL\n	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);\n\n	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;\n#endif\n\n	// Composition\n	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;\n	vec3 finalSpecular = specularBase * specularColor;\n\n	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = color;\n}",
 legacydefaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_EXPLICIT	0.\n#define MAP_SPHERICAL	1.\n#define MAP_PLANAR		2.\n#define MAP_CUBIC		3.\n#define MAP_PROJECTION	4.\n#define MAP_SKYBOX		5.\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\nuniform mat4 world;\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef REFLECTION\nuniform vec3 vEyePosition;\nvarying vec3 vReflectionUVW;\nuniform vec3 vReflectionInfos;\nuniform mat4 reflectionMatrix;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)\n{\n	if (mode == MAP_SPHERICAL)\n	{\n		vec3 coords = vec3(view * vec4(worldNormal, 0.0));\n\n		return vec3(reflectionMatrix * vec4(coords, 1.0));\n	}\n	else if (mode == MAP_PLANAR)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = normalize(reflect(viewDir, worldNormal));\n\n		return vec3(reflectionMatrix * vec4(coords, 1));\n	}\n	else if (mode == MAP_CUBIC)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = reflect(viewDir, worldNormal);\n\n		return vec3(reflectionMatrix * vec4(coords, 0));\n	}\n	else if (mode == MAP_PROJECTION)\n	{\n		return vec3(reflectionMatrix * (view * worldPos));\n	}\n	else if (mode == MAP_SKYBOX)\n	{\n		return position;\n	}\n\n	return vec3(0, 0, 0);\n}\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = world * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = world * (m0 + m1 + m2);\n#endif \n\n#else\n	finalWorld = world;\n#endif\n\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef REFLECTION\n	vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), vNormalW);\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n}",
 lensFlarePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Color\nuniform vec4 color;\n\nvoid main(void) {\n	vec4 baseColor = texture2D(textureSampler, vUV);\n\n	gl_FragColor = baseColor * color;\n}",
 lensFlareVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec2 position;\n\n// Uniforms\nuniform mat4 viewportMatrix;\n\n// Output\nvarying vec2 vUV;\n\nconst vec2 madd = vec2(0.5, 0.5);\n\nvoid main(void) {	\n\n	vUV = position * madd + madd;\n	gl_Position = viewportMatrix * vec4(position, 0.0, 1.0);\n}",
-marblePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth ;\n\nconst vec3 tileSize = vec3(1.1, 1.0, 1.1);\nconst vec3 tilePct = vec3(0.98, 1.0, 0.98);\n\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat turbulence(vec2 P)\n{\n	float val = 0.0;\n	float freq = 1.0;\n	for (int i = 0; i < 4; i++)\n	{\n		val += abs(noise(P*freq) / freq);\n		freq *= 2.07;\n	}\n	return val;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\n\nvec3 marble_color(float x)\n{\n	vec3 col;\n	x = 0.5*(x + 1.);\n	x = sqrt(x);             \n	x = sqrt(x);\n	x = sqrt(x);\n	col = vec3(.2 + .75*x);  \n	col.b *= 0.95;           \n	return col;\n}\nvoid main()\n{\n\n	vec3 brick = vec3(0.77, 0.47, 0.40);\n	vec3 joint = vec3(0.72, 0.72, 0.72);\n\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.01;\n\n	vec3 color = brick;\n\n\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) / brickW);\n\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n\n		float amplitude = 9.0;\n\n		float t = 6.28 * brickvUV.x / (tileSize.x + noise(vec2(vUV)*6.0));\n		t += amplitude * turbulence(brickvUV.xy);\n\n		t = sin(t);\n		color = marble_color(t);\n\n\n	}\n\n	gl_FragColor = vec4(color, 0.0);\n\n	\n}",
+marblePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth ;\nuniform float amplitude;\nuniform vec3 brick;\nuniform vec3 joint;\n\nconst vec3 tileSize = vec3(1.1, 1.0, 1.1);\nconst vec3 tilePct = vec3(0.98, 1.0, 0.98);\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat turbulence(vec2 P)\n{\n	float val = 0.0;\n	float freq = 1.0;\n	for (int i = 0; i < 4; i++)\n	{\n		val += abs(noise(P*freq) / freq);\n		freq *= 2.07;\n	}\n	return val;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvec3 marble_color(float x)\n{\n	vec3 col;\n	x = 0.5*(x + 1.);\n	x = sqrt(x);             \n	x = sqrt(x);\n	x = sqrt(x);\n	col = vec3(.2 + .75*x);  \n	col.b *= 0.95;           \n	return col;\n}\n\nvoid main()\n{\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.01;\n	vec3 color = brick;\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) / brickW);\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float t = 6.28 * brickvUV.x / (tileSize.x + noise(vec2(vUV)*6.0));\n		t += amplitude * turbulence(brickvUV.xy);\n		t = sin(t);\n		color = marble_color(t);\n	}\n\n	gl_FragColor = vec4(color, 0.0);\n}",
 oculusDistortionCorrectionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 LensCenter;\nuniform vec2 Scale;\nuniform vec2 ScaleIn;\nuniform vec4 HmdWarpParam;\n\nvec2 HmdWarp(vec2 in01) {\n\n	vec2 theta = (in01 - LensCenter) * ScaleIn; // Scales to [-1, 1]\n	float rSq = theta.x * theta.x + theta.y * theta.y;\n	vec2 rvector = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);\n	return LensCenter + Scale * rvector;\n}\n\nvoid main(void)\n{\n	vec2 tc = HmdWarp(vUV);\n	if (tc.x <0.0 || tc.x>1.0 || tc.y<0.0 || tc.y>1.0)\n		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n	else{\n		gl_FragColor = vec4(texture2D(textureSampler, tc).rgb, 1.0);\n	}\n}",
 outlinePixelShader:"precision highp float;\n\nuniform vec3 color;\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nvoid main(void) {\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n	gl_FragColor = vec4(color, 1.);\n}",
 outlineVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\nattribute vec3 normal;\n\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\nuniform float offset;\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n	vec3 offsetPosition = position + normal * offset;\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(offsetPosition, 1.0);\n#else\n	gl_Position = viewProjection * finalWorld * vec4(offsetPosition, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
@@ -14616,13 +14812,12 @@ passPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nva
 postprocessVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec2 position;\n\n// Output\nvarying vec2 vUV;\n\nconst vec2 madd = vec2(0.5, 0.5);\n\nvoid main(void) {	\n\n	vUV = position * madd + madd;\n	gl_Position = vec4(position, 0.0, 1.0);\n}",
 proceduralVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec2 position;\n\n// Output\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nconst vec2 madd = vec2(0.5, 0.5);\n\nvoid main(void) {	\n	vPosition = position;\n	vUV = position * madd + madd;\n	gl_Position = vec4(position, 0.0, 1.0);\n}",
 refractionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D refractionSampler;\n\n// Parameters\nuniform vec3 baseColor;\nuniform float depth;\nuniform float colorLevel;\n\nvoid main() {\n	float ref = 1.0 - texture2D(refractionSampler, vUV).r;\n\n	vec2 uv = vUV - vec2(0.5);\n	vec2 offset = uv * depth * ref;\n	vec3 sourceColor = texture2D(textureSampler, vUV - offset).rgb;\n\n	gl_FragColor = vec4(sourceColor + sourceColor * ref * colorLevel, 1.0);\n}",
-roadPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;                    \n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n\n\n	vec3 gray = vec3(0.53, 0.53, 0.53);\n\n	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));\n		\n	gray = gray * ratioy;\n\n	gl_FragColor = vec4(gray, 1.0);\n}",
-rockPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nvec3 hash(vec3 x)\n{\n	x = vec3(dot(x, vec3(127.1, 311.7, 74.7)),\n		dot(x, vec3(269.5, 183.3, 246.1)),\n		dot(x, vec3(113.5, 271.9, 124.6)));\n\n	return fract(sin(x)*43758.5453123);\n}\n\n// returns closest, second closest, and cell id\nvec3 voronoi(in vec3 x)\n{\n	vec3 p = floor(x);\n	vec3 f = fract(x);\n\n	float id = 0.0;\n	vec2 res = vec2(100.0);\n	for (int k = -1; k <= 1; k++)\n		for (int j = -1; j <= 1; j++)\n			for (int i = -1; i <= 1; i++)\n			{\n		vec3 b = vec3(float(i), float(j), float(k));\n		vec3 r = vec3(b) - f + hash(p + b);\n		float d = dot(r, r);\n\n		if (d < res.x)\n		{\n			id = dot(p + b, vec3(1.0, 57.0, 113.0));\n			res = vec2(d, res.x);\n		}\n		else if (d < res.y)\n		{\n			res.y = d;\n		}\n			}\n\n	return vec3(sqrt(res), abs(id));\n}\n\nconst mat3 m = mat3(0.00, 0.80, 0.60,\n	-0.80, 0.36, -0.48,\n	-0.60, -0.48, 0.64);\n\nvoid main(void)\n{\n	vec2 p = vUV;\n\n	// camera movement	\n	float an = 0.5*0.1;\n	vec3 ro = vec3(2.5*cos(an), 1.0, 2.5*sin(an));\n	vec3 ta = vec3(0.0, 1.0, 0.0);\n	// camera matrix\n	vec3 ww = normalize(ta - ro);\n	vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));\n	vec3 vv = normalize(cross(uu, ww));\n	// create view ray\n	vec3 rd = normalize(p.x*uu + p.y*vv + 1.5*ww);\n\n	// sphere center	\n	vec3 sc = vec3(0.0, 1.0, 0.0);\n\n	// raytrace\n	float tmin = 10000.0;\n	vec3  nor = vec3(0.0);\n	float occ = 1.0;\n	vec3  pos = vec3(0.0);\n\n	// raytrace-plane\n	float h = (0.0 - ro.y) / rd.y;\n	if (h>0.0)\n	{\n		tmin = h;\n		nor = vec3(0.0, 1.0, 0.0);\n		pos = ro + h*rd;\n		vec3 di = sc - pos;\n		float l = length(di);\n		occ = 1.0 - dot(nor, di / l)*1.0*1.0 / (l*l);\n	}\n\n	// raytrace-sphere\n	vec3  ce = ro - sc;\n	float b = dot(rd, ce);\n	float c = dot(ce, ce) - 1.0;\n	h = b*b - c;\n	if (h>0.0)\n	{\n		h = -b - sqrt(h);\n		if (h<tmin)\n		{\n			tmin = h;\n			nor = normalize(ro + h*rd - sc);\n			occ = 0.5 + 0.5*nor.y;\n		}\n	}\n\n	// shading/lighting	\n	vec3 col = vec3(0.9);\n	if (tmin<100.0)\n	{\n		pos = ro + tmin*rd;\n\n		float f = voronoi(4.0*pos).x;\n\n		f *= occ;\n		col = vec3(f*1.2);\n		col = mix(col, vec3(0.9), 1.0 - exp(-0.003*tmin*tmin));\n	}\n\n	col = sqrt(col);\n\n\n	gl_FragColor = vec4(col, 1.0);\n}",
+roadPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;                    \nuniform vec3 macadamColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));\n	vec3 color = macadamColor * ratioy;\n	gl_FragColor = vec4(color, 1.0);\n}",
 shadowMapPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvec4 pack(float depth)\n{\n	const vec4 bitOffset = vec4(255. * 255. * 255., 255. * 255., 255., 1.);\n	const vec4 bitMask = vec4(0., 1. / 255., 1. / 255., 1. / 255.);\n	\n	vec4 comp = mod(depth * bitOffset * vec4(254.), vec4(255.)) / vec4(254.);\n	comp -= comp.xxyz * bitMask;\n	\n	return comp;\n}\n\n// Thanks to http://devmaster.net/\nvec2 packHalf(float depth) \n{ \n	const vec2 bitOffset = vec2(1.0 / 255., 0.);\n	vec2 color = vec2(depth, fract(depth * 255.));\n\n	return color - (color.yy * bitOffset);\n}\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n#ifdef VSM\n	float moment1 = gl_FragCoord.z / gl_FragCoord.w;\n	float moment2 = moment1 * moment1;\n	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));\n#else\n	gl_FragColor = pack(vPosition.z / vPosition.w);\n#endif\n}",
 shadowMapVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n#ifndef VSM\n	vPosition = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool alphaTest;\n\nvarying vec4 vColor;\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return min(1., max(0., fogCoeff));\n}\n#endif\n\n\nvoid main(void) {\n	vec4 baseColor = texture2D(diffuseSampler, vUV);\n\n	if (alphaTest) \n	{\n		if (baseColor.a < 0.95)\n			discard;\n	}\n\n	baseColor *= vColor;\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	baseColor.rgb = fog * baseColor.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = baseColor;\n}",
 spritesVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\n// Uniforms\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Output\nvarying vec2 vUV;\nvarying vec4 vColor;\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\nvoid main(void) {	\n	vec3 viewPos = (view * vec4(position, 1.0)).xyz; \n	vec3 cornerPos;\n	\n	float angle = options.x;\n	float size = options.y;\n	vec2 offset = options.zw;\n	vec2 uvScale = textureInfos.xy;\n\n	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;\n\n	// Rotate\n	vec3 rotatedCorner;\n	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);\n	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);\n	rotatedCorner.z = 0.;\n\n	// Position\n	viewPos += rotatedCorner;\n	gl_Position = projection * vec4(viewPos, 1.0);   \n\n	// Color\n	vColor = color;\n	\n	// Texture\n	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));\n\n	vUV = (uvOffset + cellInfo.zw) * uvScale;\n\n	// Fog\n#ifdef FOG\n	fFogDistance = viewPos.z;\n#endif\n}",
-woodPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float ampScale;\nuniform vec3 woodColor;\n\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n\n	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));\n	vec3 wood = woodColor * ratioy;\n\n	gl_FragColor = vec4(wood, 1.0);\n}",
+woodPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float ampScale;\nuniform vec3 woodColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));\n	vec3 wood = woodColor * ratioy;\n	gl_FragColor = vec4(wood, 1.0);\n}",
 };
         return Effect;
     })();
@@ -15095,7 +15290,7 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.UV2Kind);
                     defines.push("#define UV2");
                 }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
+                if (mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                     defines.push("#define VERTEXCOLOR");
 
@@ -15258,10 +15453,19 @@ var BABYLON;
            
             scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
+           
+            this._scaledDiffuse.r = this.diffuseColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
+            this._scaledDiffuse.g = this.diffuseColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
+            this._scaledDiffuse.b = this.diffuseColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
+
+            this._scaledSpecular.r = this.specularColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
+            this._scaledSpecular.g = this.specularColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
+            this._scaledSpecular.b = this.specularColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
+
             this._effect.setVector3("vEyePosition", scene.activeCamera.position);
             this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-            this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
             this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
             if (scene.lightsEnabled) {
@@ -16695,6 +16899,7 @@ var BABYLON;
 
            
             engine.enableEffect(effect);
+            engine.setState(false);
 
             var viewMatrix = this._scene.getViewMatrix();
             effect.setTexture("diffuseSampler", this.particleTexture);
@@ -28725,10 +28930,12 @@ var BABYLON;
             this._audioEngine.audioContext.decodeAudioData(audioData, function (buffer) {
                 _this._audioBuffer = buffer;
                 _this._isReadyToPlay = true;
-                if (_this.autoplay)
+                if (_this.autoplay) {
                     _this.play();
-                if (_this._readyToPlayCallback)
+                }
+                if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
+                }
             }, function (error) {
                 BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
             });
@@ -28736,4 +28943,278 @@ var BABYLON;
         return Sound;
     })();
     BABYLON.Sound = Sound;
+})(BABYLON || (BABYLON = {}));
+var BABYLON;
+(function (BABYLON) {
+    var DebugLayer = (function () {
+        function DebugLayer(scene) {
+            var _this = this;
+            this._enabled = false;
+            this._labelsEnabled = false;
+            this._displayStatistics = true;
+            this._scene = scene;
+
+            this._syncPositions = function () {
+                var engine = _this._scene.getEngine();
+                var canvasRect = engine.getRenderingCanvasClientRect();
+                _this._statsDiv.style.left = (canvasRect.right - 300) + "px";
+                _this._statsDiv.style.bottom = "10px";
+                _this._statsDiv.style.width = "300px";
+                _this._statsDiv.style.height = "300px";
+
+                _this._optionsDiv.style.left = "10px";
+                _this._optionsDiv.style.top = "10px";
+                _this._optionsDiv.style.width = "300px";
+                _this._optionsDiv.style.height = "300px";
+
+                _this._drawingCanvas.style.left = "0px";
+                _this._drawingCanvas.style.top = "0px";
+                _this._drawingCanvas.style.width = "100%";
+                _this._drawingCanvas.style.height = "100%";
+                _this._drawingCanvas.width = engine.getRenderWidth();
+                _this._drawingCanvas.height = engine.getRenderHeight();
+            };
+
+            this._syncData = function () {
+                if (_this._displayStatistics) {
+                    _this._displayStats();
+                    _this._statsDiv.style.display = "";
+                } else {
+                    _this._statsDiv.style.display = "none";
+                }
+
+                _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
+
+                if (_this._labelsEnabled) {
+                    _this._drawingContext.font = "normal 12px Segoe UI";
+                    _this._drawingContext.strokeStyle = '#FFFFFF';
+                    _this._drawingContext.lineWidth = 1;
+
+                    var engine = _this._scene.getEngine();
+                    var viewport = _this._scene.activeCamera.viewport;
+                    var globalViewport = viewport.toGlobal(engine);
+
+                    for (var index = 0; index < _this._scene.meshes.length; index++) {
+                        var mesh = _this._scene.meshes[index];
+                        var position = mesh.getBoundingInfo().boundingSphere.center;
+
+                        var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
+
+                        if (projectedPosition.z > 0) {
+                            var textMetrics = _this._drawingContext.measureText(mesh.name);
+                            var centerX = projectedPosition.x - textMetrics.width / 2;
+                            var centerY = projectedPosition.y - 5;
+
+                            _this._drawingContext.beginPath();
+                            _this._drawingContext.rect(centerX - 5, centerY - 12, textMetrics.width + 10, 17);
+                            _this._drawingContext.fillStyle = 'black';
+                            _this._drawingContext.globalAlpha = 0.5;
+                            _this._drawingContext.fill();
+                            _this._drawingContext.globalAlpha = 1.0;
+                            _this._drawingContext.stroke();
+
+                            _this._drawingContext.fillStyle = "#FFFFFF";
+                            _this._drawingContext.fillText(mesh.name, centerX, centerY);
+
+                            _this._drawingContext.beginPath();
+                            _this._drawingContext.arc(projectedPosition.x, centerY + 12, 5, 0, 2 * Math.PI, false);
+                            _this._drawingContext.fill();
+                        }
+                    }
+                }
+            };
+        }
+        Object.defineProperty(DebugLayer.prototype, "enabled", {
+            get: function () {
+                return this._enabled;
+            },
+            set: function (value) {
+                if (this._enabled === value) {
+                    return;
+                }
+
+                this._enabled = value;
+
+                var engine = this._scene.getEngine();
+                var parentElement = engine.getRenderingCanvas().parentElement;
+
+                if (this._enabled) {
+                    this._scene.registerAfterRender(this._syncData);
+
+                    this._globalDiv = document.createElement("div");
+
+                    parentElement.appendChild(this._globalDiv);
+
+                    this._generateDOMelements();
+
+                    window.addEventListener("resize", this._syncPositions);
+                    this._syncPositions();
+                } else {
+                    this._scene.unregisterAfterRender(this._syncData);
+                    parentElement.removeChild(this._globalDiv);
+
+                    window.removeEventListener("resize", this._syncPositions);
+
+                    this._scene.forceShowBoundingBoxes = false;
+                    this._scene.forceWireframe = false;
+
+                    BABYLON.StandardMaterial.DiffuseTextureEnabled = true;
+                    BABYLON.StandardMaterial.AmbientTextureEnabled = true;
+                    BABYLON.StandardMaterial.SpecularTextureEnabled = true;
+                    BABYLON.StandardMaterial.EmissiveTextureEnabled = true;
+                    BABYLON.StandardMaterial.BumpTextureEnabled = true;
+                    BABYLON.StandardMaterial.OpacityTextureEnabled = true;
+                    BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
+
+                    this._scene.shadowsEnabled = true;
+                    this._scene.particlesEnabled = true;
+                    this._scene.postProcessesEnabled = true;
+                    this._scene.collisionsEnabled = true;
+                    this._scene.lightsEnabled = true;
+                    this._scene.texturesEnabled = true;
+                    this._scene.lensFlaresEnabled = true;
+                    this._scene.proceduralTexturesEnabled = true;
+                    this._scene.renderTargetsEnabled = true;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        DebugLayer.prototype._generateTexBox = function (root, title) {
+            var label = document.createElement("label");
+            label.innerHTML = title;
+
+            root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        };
+
+        DebugLayer.prototype._generateCheckBox = function (root, title, initialState, task) {
+            var label = document.createElement("label");
+
+            var boundingBoxesCheckbox = document.createElement("input");
+            boundingBoxesCheckbox.type = "checkbox";
+            boundingBoxesCheckbox.checked = initialState;
+
+            boundingBoxesCheckbox.addEventListener("change", function (evt) {
+                task(evt.target);
+            });
+
+            label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(document.createTextNode(title));
+            root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        };
+
+        DebugLayer.prototype._generateDOMelements = function () {
+            var _this = this;
+            var background = "rgba(255, 255, 255, 0.2)";
+
+           
+            this._statsDiv = document.createElement("div");
+            this._statsDiv.id = "Debug Layer - Stats";
+            this._statsDiv.style.position = "absolute";
+            this._statsDiv.style.background = background;
+            this._statsDiv.style.padding = "10px";
+            this._statsDiv.style.pointerEvents = "none";
+
+           
+            this._drawingCanvas = document.createElement("canvas");
+            this._drawingCanvas.id = "Debug Layer - Drawing canvas";
+            this._drawingCanvas.style.position = "absolute";
+            this._drawingCanvas.style.pointerEvents = "none";
+            this._drawingContext = this._drawingCanvas.getContext("2d");
+
+           
+            this._optionsDiv = document.createElement("div");
+            this._optionsDiv.id = "Debug Layer - Options";
+            this._optionsDiv.style.position = "absolute";
+
+            this._generateTexBox(this._optionsDiv, "General:");
+            this._generateCheckBox(this._optionsDiv, "Statistics", this._displayStatistics, function (element) {
+                _this._displayStatistics = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, function (element) {
+                _this._scene.forceShowBoundingBoxes = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Wireframe", this._scene.forceWireframe, function (element) {
+                _this._scene.forceWireframe = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Labels", this._labelsEnabled, function (element) {
+                _this._labelsEnabled = element.checked;
+            });
+            this._optionsDiv.appendChild(document.createElement("br"));
+            this._generateTexBox(this._optionsDiv, "Texture Channels:");
+            this._generateCheckBox(this._optionsDiv, "Diffuse", BABYLON.StandardMaterial.DiffuseTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.DiffuseTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Ambient", BABYLON.StandardMaterial.AmbientTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.AmbientTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Specular", BABYLON.StandardMaterial.SpecularTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.SpecularTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Emissive", BABYLON.StandardMaterial.EmissiveTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.EmissiveTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Bump", BABYLON.StandardMaterial.BumpTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.BumpTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) {
+                BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked;
+            });
+            this._optionsDiv.appendChild(document.createElement("br"));
+            this._generateTexBox(this._optionsDiv, "Options:");
+            this._generateCheckBox(this._optionsDiv, "Shadows", this._scene.shadowsEnabled, function (element) {
+                _this._scene.shadowsEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Particles", this._scene.particlesEnabled, function (element) {
+                _this._scene.particlesEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Post-processes", this._scene.postProcessesEnabled, function (element) {
+                _this._scene.postProcessesEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
+                _this._scene.collisionsEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Lights", this._scene.lightsEnabled, function (element) {
+                _this._scene.lightsEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Textures", this._scene.texturesEnabled, function (element) {
+                _this._scene.texturesEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Lens flares", this._scene.lensFlaresEnabled, function (element) {
+                _this._scene.lensFlaresEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Render targets", this._scene.renderTargetsEnabled, function (element) {
+                _this._scene.renderTargetsEnabled = element.checked;
+            });
+            this._generateCheckBox(this._optionsDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) {
+                _this._scene.proceduralTexturesEnabled = element.checked;
+            });
+
+           
+            this._globalDiv.appendChild(this._statsDiv);
+            this._globalDiv.appendChild(this._optionsDiv);
+            this._globalDiv.appendChild(this._drawingCanvas);
+            this._globalDiv.id = "Debug Layer";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
+        };
+
+        DebugLayer.prototype._displayStats = function () {
+            var scene = this._scene;
+            var engine = scene.getEngine();
+
+            this._statsDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(BABYLON.Tools.GetFps(), 0) + " fps</b><br><br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> " + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms";
+        };
+        return DebugLayer;
+    })();
+    BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));

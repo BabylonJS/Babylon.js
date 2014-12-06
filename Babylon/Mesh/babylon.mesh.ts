@@ -51,6 +51,11 @@
         }
 
         public addLODLevel(distance: number, mesh: Mesh): Mesh {
+            if (mesh && mesh._masterMesh) {
+                Tools.Warn("You cannot use a mesh as LOD level twice");
+                return this;
+            }
+
             var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
@@ -527,7 +532,7 @@
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var fillMode = engine.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode;
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();

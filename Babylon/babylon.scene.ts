@@ -23,6 +23,7 @@
         public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
         public forceWireframe = false;
+        public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
 
         // Pointers
@@ -140,6 +141,7 @@
         private _pendingData = [];//ANY
 
         private _onBeforeRenderCallbacks = new Array<() => void>();
+        private _onAfterRenderCallbacks = new Array<() => void>();
 
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
@@ -169,6 +171,8 @@
 
         private _pointerOverMesh: AbstractMesh;
 
+        private _debugLayer: DebugLayer;
+
         // Constructor
         constructor(engine: Engine) {
             this._engine = engine;
@@ -185,9 +189,15 @@
             this._outlineRenderer = new OutlineRenderer(this);
 
             this.attachControl();
+
+            this._debugLayer = new DebugLayer(this);
         }
 
         // Properties 
+        public get debugLayer(): DebugLayer {
+            return this._debugLayer;
+        }
+
         public get meshUnderPointer(): AbstractMesh {
             return this._meshUnderPointer;
         }
@@ -405,6 +415,18 @@
 
             if (index > -1) {
                 this._onBeforeRenderCallbacks.splice(index, 1);
+            }
+        }
+
+        public registerAfterRender(func: () => void): void {
+            this._onAfterRenderCallbacks.push(func);
+        }
+
+        public unregisterAfterRender(func: () => void): void {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
             }
         }
 
@@ -852,7 +874,7 @@
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
-            if (mesh.showBoundingBox) {
+            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }            
 
@@ -1058,9 +1080,11 @@
             this._spritesDuration = 0;
             this._activeParticles = 0;
             this._renderDuration = 0;
+            this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
 
             Tools.StartPerformanceCounter("Scene rendering");
@@ -1181,6 +1205,10 @@
                 this.afterRender();
             }
 
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
+            }
+
             // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
                 this._toBeDisposed.data[index].dispose();
@@ -1222,12 +1250,16 @@
 
             this._boundingBoxRenderer.dispose();
 
+            // Debug layer
+            this.debugLayer.enabled = false;
+
             // Events
             if (this.onDispose) {
                 this.onDispose();
             }
 
             this._onBeforeRenderCallbacks = [];
+            this._onAfterRenderCallbacks = [];
 
             this.detachControl();
 

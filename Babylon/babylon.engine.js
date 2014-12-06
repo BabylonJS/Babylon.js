@@ -364,13 +364,13 @@
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
-            this.forceWireframe = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._runningLoop = false;
             this._loadingDivBackgroundColor = "black";
+            this._drawCalls = 0;
             // States
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
@@ -588,7 +588,19 @@
             return this._caps;
         };
 
+        Object.defineProperty(Engine.prototype, "drawCalls", {
+            get: function () {
+                return this._drawCalls;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         // Methods
+        Engine.prototype.resetDrawCalls = function () {
+            this._drawCalls = 0;
+        };
+
         Engine.prototype.setDepthFunctionToGreater = function () {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         };
@@ -936,6 +948,8 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
+
+            this._drawCalls++;
         };
 
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
@@ -948,6 +962,7 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+            this._drawCalls++;
         };
 
         // Shaders

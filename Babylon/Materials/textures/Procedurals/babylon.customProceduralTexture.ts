@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     export class CustomProceduralTexture extends ProceduralTexture {
-
         private _animate: boolean = true;
         private _time: number = 0;
         private _shaderLoaded: boolean = false;
@@ -10,13 +9,10 @@
 
         constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "empty", scene, fallbackTexture, generateMipMaps);
-
             this._texturePath = texturePath;
-
+          
             //readJson
             this.loadJson(texturePath);
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 1;
         }
 
@@ -112,6 +108,8 @@
                         break;
                 }
             }
+
+            this.setFloat("time", this._time);
         }
 
         public get animate(): boolean {
