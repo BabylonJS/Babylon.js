@@ -527,6 +527,7 @@ var BABYLON;
             if (this.renderOutline) {
                 engine.setDepthWrite(false);
                 scene.getOutlineRenderer().render(subMesh, batch);
+                engine.setDepthWrite(savedDepthWrite);
             }
 
             effectiveMaterial._preBind();
@@ -571,6 +572,14 @@ var BABYLON;
                 engine.setColorWrite(false);
                 scene.getOutlineRenderer().render(subMesh, batch);
                 engine.setColorWrite(true);
+            }
+
+            // Overlay
+            if (this.renderOverlay) {
+                var currentMode = engine.getAlphaMode();
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                scene.getOutlineRenderer().render(subMesh, batch, true);
+                engine.setAlphaMode(currentMode);
             }
 
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {

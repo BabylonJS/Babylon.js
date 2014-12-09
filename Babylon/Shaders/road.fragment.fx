@@ -3,7 +3,7 @@ precision highp float;
 #endif
 
 varying vec2 vUV;                    
-uniform vec3 macadamColor;
+uniform vec3 roadColor;
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -27,6 +27,6 @@ float fbm(vec2 n) {
 
 void main(void) {
 	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));
-	vec3 color = macadamColor * ratioy;
+	vec3 color = roadColor * ratioy;
 	gl_FragColor = vec4(color, 1.0);
 }

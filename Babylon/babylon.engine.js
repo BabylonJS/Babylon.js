@@ -374,6 +374,7 @@
             // States
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
+            this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._loadedTexturesCache = new Array();
             this._activeTexturesCache = new Array();
@@ -473,6 +474,8 @@
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
             this._audioEngine = new BABYLON.AudioEngine();
+
+            BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
@@ -746,7 +749,7 @@
         };
 
         Engine.prototype.flushFramebuffer = function () {
-            this._gl.flush();
+            //   this._gl.flush();
         };
 
         Engine.prototype.restoreDefaultFramebuffer = function () {
@@ -1204,6 +1207,12 @@
                     this._alphaState.alphaBlend = true;
                     break;
             }
+
+            this._alphaMode = mode;
+        };
+
+        Engine.prototype.getAlphaMode = function () {
+            return this._alphaMode;
         };
 
         Engine.prototype.setAlphaTesting = function (enable) {

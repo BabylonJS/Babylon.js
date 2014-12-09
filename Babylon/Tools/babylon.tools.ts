@@ -619,6 +619,9 @@
         private static _MessageLogLevel = 1;
         private static _WarningLogLevel = 2;
         private static _ErrorLogLevel = 4;
+        private static _LogCache = "";
+
+        public static OnNewCacheEntry: (entry: string) => void;
 
         static get NoneLogLevel(): number {
             return Tools._NoneLogLevel;
@@ -640,11 +643,19 @@
             return Tools._MessageLogLevel | Tools._WarningLogLevel | Tools._ErrorLogLevel;
         }
 
+        private static _AddLogEntry(entry: string) {
+            Tools._LogCache = entry + Tools._LogCache;
+
+            if (Tools.OnNewCacheEntry) {
+                Tools.OnNewCacheEntry(entry);
+            }
+        }
+
         private static _FormatMessage(message: string): string {
             var padStr = i => (i < 10) ? "0" + i : "" + i;
 
             var date = new Date();
-            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
+            return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
         }
 
         public static Log: (message: string) => void = Tools._LogEnabled;
@@ -653,7 +664,11 @@
             // nothing to do
         }
         private static _LogEnabled(message: string): void {
-            console.log(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.log("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
         }
 
         public static Warn: (message: string) => void = Tools._WarnEnabled;
@@ -662,7 +677,11 @@
             // nothing to do
         }
         private static _WarnEnabled(message: string): void {
-            console.warn(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.warn("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:orange'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
         }
 
         public static Error: (message: string) => void = Tools._ErrorEnabled;
@@ -671,7 +690,15 @@
             // nothing to do
         }
         private static _ErrorEnabled(message: string): void {
-            console.error(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.error("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
+        }
+
+        public static get LogCache(): string {
+            return Tools._LogCache;
         }
 
         public static set LogLevels(level: number) {

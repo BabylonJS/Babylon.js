@@ -608,35 +608,63 @@
             configurable: true
         });
 
+        Tools._AddLogEntry = function (entry) {
+            Tools._LogCache = entry + Tools._LogCache;
+
+            if (Tools.OnNewCacheEntry) {
+                Tools.OnNewCacheEntry(entry);
+            }
+        };
+
         Tools._FormatMessage = function (message) {
             var padStr = function (i) {
                 return (i < 10) ? "0" + i : "" + i;
             };
 
             var date = new Date();
-            return "BJS - [" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
+            return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
         };
 
         Tools._LogDisabled = function (message) {
             // nothing to do
         };
         Tools._LogEnabled = function (message) {
-            console.log(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.log("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
         };
 
         Tools._WarnDisabled = function (message) {
             // nothing to do
         };
         Tools._WarnEnabled = function (message) {
-            console.warn(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.warn("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:orange'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
         };
 
         Tools._ErrorDisabled = function (message) {
             // nothing to do
         };
         Tools._ErrorEnabled = function (message) {
-            console.error(Tools._FormatMessage(message));
+            var formattedMessage = Tools._FormatMessage(message);
+            console.error("BJS - " + formattedMessage);
+
+            var entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
+            Tools._AddLogEntry(entry);
         };
+
+        Object.defineProperty(Tools, "LogCache", {
+            get: function () {
+                return Tools._LogCache;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
         Object.defineProperty(Tools, "LogLevels", {
             set: function (level) {
@@ -786,6 +814,7 @@
         Tools._MessageLogLevel = 1;
         Tools._WarningLogLevel = 2;
         Tools._ErrorLogLevel = 4;
+        Tools._LogCache = "";
 
         Tools.Log = Tools._LogEnabled;
 
