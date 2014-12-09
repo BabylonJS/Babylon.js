@@ -429,6 +429,7 @@
         // States
         private _depthCullingState = new _DepthCullingState();
         private _alphaState = new _AlphaState();
+        private _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _loadedTexturesCache = new Array<WebGLTexture>();
@@ -551,6 +552,8 @@
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
             this._audioEngine = new BABYLON.AudioEngine();
+
+            Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
 
         public getAudioEngine(): AudioEngine {
@@ -755,7 +758,7 @@
         }
 
         public flushFramebuffer(): void {
-            this._gl.flush();
+         //   this._gl.flush();
         }
 
         public restoreDefaultFramebuffer(): void {
@@ -1203,7 +1206,6 @@
         }
 
         public setAlphaMode(mode: number): void {
-
             switch (mode) {
                 case BABYLON.Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
@@ -1220,6 +1222,12 @@
                     this._alphaState.alphaBlend = true;
                     break;
             }
+
+            this._alphaMode = mode;
+        }
+
+        public getAlphaMode(): number {
+            return this._alphaMode;
         }
 
         public setAlphaTesting(enable: boolean): void {

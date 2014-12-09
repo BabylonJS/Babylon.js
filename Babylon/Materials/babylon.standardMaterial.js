@@ -474,7 +474,7 @@ var BABYLON;
             if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
                 this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
+                this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
                 this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
             }
 

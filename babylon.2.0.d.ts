@@ -88,6 +88,7 @@ declare module BABYLON {
         private _drawCalls;
         private _depthCullingState;
         private _alphaState;
+        private _alphaMode;
         private _loadedTexturesCache;
         public _activeTexturesCache: BaseTexture[];
         private _currentEffect;
@@ -173,6 +174,7 @@ declare module BABYLON {
         public setDepthWrite(enable: boolean): void;
         public setColorWrite(enable: boolean): void;
         public setAlphaMode(mode: number): void;
+        public getAlphaMode(): number;
         public setAlphaTesting(enable: boolean): void;
         public getAlphaTesting(): boolean;
         public wipeCaches(): void;
@@ -873,22 +875,34 @@ declare module BABYLON {
 declare module BABYLON {
     class Sound {
         private _audioBuffer;
-        public distanceMax: number;
+        public maxDistance: number;
         public autoplay: boolean;
         public loop: boolean;
         private _position;
-        private _orientation;
+        private _direction;
         private _volume;
         private _currentVolume;
         private _isLoaded;
         private _isReadyToPlay;
+        private _isPlaying;
+        private _isDirectional;
         private _audioEngine;
         private _readyToPlayCallback;
         private _soundSource;
         private _soundPanner;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
         constructor(url: string, engine: Engine, readyToPlayCallback: any, distanceMax?: number, autoplay?: boolean, loop?: boolean);
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
         public setPosition(newPosition: Vector3): void;
-        public setOrientiation(newOrientation: Vector3): void;
+        public setDirection(newDirection: Vector3): void;
         public play(): void;
         public stop(): void;
         public pause(): void;
@@ -1439,15 +1453,24 @@ declare module BABYLON {
         private _enabled;
         private _labelsEnabled;
         private _displayStatistics;
+        private _displayLogs;
         private _globalDiv;
         private _statsDiv;
         private _optionsDiv;
+        private _logDiv;
         private _drawingCanvas;
         private _drawingContext;
         private _syncPositions;
         private _syncData;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
         constructor(scene: Scene);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
         public enabled : boolean;
+        private _clearLabels();
         private _generateTexBox(root, title);
         private _generateCheckBox(root, title, initialState, task);
         private _generateDOMelements();
@@ -2090,6 +2113,7 @@ declare module BABYLON {
         private _alpha;
         private _autoGenerateTime;
         private _fireColors;
+        private _alphaThreshold;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public updateShaderUniforms(): void;
         public render(useCameraPostProcess?: boolean): void;
@@ -2112,24 +2136,24 @@ declare module BABYLON {
         public cloudColor : Color3;
     }
     class GrassProceduralTexture extends ProceduralTexture {
+        private _grassColors;
         private _herb1;
         private _herb2;
         private _herb3;
-        private _dirt;
-        private _ground;
+        private _dirtColor;
+        private _groundColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public updateShaderUniforms(): void;
-        public herb1 : Color3;
-        public herb2 : Color3;
-        public herb3 : Color3;
-        public dirt : Color3;
+        public grassColors : Color3[];
+        public dirtColor : Color3;
+        public groundColor : Color3;
         public ground : Color3;
     }
     class RoadProceduralTexture extends ProceduralTexture {
-        private _macadamColor;
+        private _roadColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public updateShaderUniforms(): void;
-        public macadamColor : Color3;
+        public roadColor : Color3;
     }
     class BrickProceduralTexture extends ProceduralTexture {
         private _numberOfBricksHeight;
@@ -2559,6 +2583,9 @@ declare module BABYLON {
         public renderOutline: boolean;
         public outlineColor: Color3;
         public outlineWidth: number;
+        public renderOverlay: boolean;
+        public overlayColor: Color3;
+        public overlayAlpha: number;
         public hasVertexAlpha: boolean;
         public useVertexColors: boolean;
         public useOctreeForRenderingSelection: boolean;
@@ -3522,7 +3549,7 @@ declare module BABYLON {
         private _effect;
         private _cachedDefines;
         constructor(scene: Scene);
-        public render(subMesh: SubMesh, batch: _InstancesBatch): void;
+        public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean;
     }
 }
@@ -4017,11 +4044,14 @@ declare module BABYLON {
         private static _MessageLogLevel;
         private static _WarningLogLevel;
         private static _ErrorLogLevel;
+        private static _LogCache;
+        static OnNewCacheEntry: (entry: string) => void;
         static NoneLogLevel : number;
         static MessageLogLevel : number;
         static WarningLogLevel : number;
         static ErrorLogLevel : number;
         static AllLogLevel : number;
+        private static _AddLogEntry(entry);
         private static _FormatMessage(message);
         static Log: (message: string) => void;
         private static _LogDisabled(message);
@@ -4032,6 +4062,7 @@ declare module BABYLON {
         static Error: (message: string) => void;
         private static _ErrorDisabled(message);
         private static _ErrorEnabled(message);
+        static LogCache : string;
         static LogLevels : number;
         private static _PerformanceNoneLogLevel;
         private static _PerformanceUserMarkLogLevel;

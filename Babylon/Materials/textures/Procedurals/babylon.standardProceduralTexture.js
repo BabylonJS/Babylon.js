@@ -58,6 +58,7 @@ var BABYLON;
             this._shift = 1.6;
             this._alpha = 0.0;
             this._autoGenerateTime = true;
+            this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
             this.refreshRate = 1;
@@ -73,6 +74,7 @@ var BABYLON;
             this.setColor3("c4", this._fireColors[3]);
             this.setColor3("c5", this._fireColors[4]);
             this.setColor3("c6", this._fireColors[5]);
+            this.setFloat("alphaThreshold", this._alphaThreshold);
         };
 
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
@@ -261,25 +263,32 @@ var BABYLON;
             this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
             this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
             this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
-            this._dirt = new BABYLON.Color3(0.6, 0.46, 0.13);
-            this._ground = new BABYLON.Color3(1, 1, 1);
+            this._dirtColor = new BABYLON.Color3(0.6, 0.46, 0.13);
+            this._groundColor = new BABYLON.Color3(1, 1, 1);
+
+            this._grassColors = [
+                new BABYLON.Color3(0.29, 0.38, 0.02),
+                new BABYLON.Color3(0.36, 0.49, 0.09),
+                new BABYLON.Color3(0.51, 0.6, 0.28)
+            ];
+
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
         GrassProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setColor3("herb1", this._herb1);
-            this.setColor3("herb2", this._herb2);
-            this.setColor3("herb3", this._herb2);
-            this.setColor3("dirt", this._dirt);
-            this.setColor3("ground", this._ground);
+            this.setColor3("herb1", this._grassColors[0]);
+            this.setColor3("herb2", this._grassColors[1]);
+            this.setColor3("herb3", this._grassColors[2]);
+            this.setColor3("dirt", this._dirtColor);
+            this.setColor3("ground", this._groundColor);
         };
 
-        Object.defineProperty(GrassProceduralTexture.prototype, "herb1", {
+        Object.defineProperty(GrassProceduralTexture.prototype, "grassColors", {
             get: function () {
-                return this._herb1;
+                return this._grassColors;
             },
             set: function (value) {
-                this._herb1 = value;
+                this._grassColors = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -287,12 +296,12 @@ var BABYLON;
         });
 
 
-        Object.defineProperty(GrassProceduralTexture.prototype, "herb2", {
+        Object.defineProperty(GrassProceduralTexture.prototype, "dirtColor", {
             get: function () {
-                return this._herb2;
+                return this._dirtColor;
             },
             set: function (value) {
-                this._herb2 = value;
+                this._dirtColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -300,44 +309,22 @@ var BABYLON;
         });
 
 
-        Object.defineProperty(GrassProceduralTexture.prototype, "herb3", {
+        Object.defineProperty(GrassProceduralTexture.prototype, "groundColor", {
             get: function () {
-                return this._herb3;
-            },
-            set: function (value) {
-                this._herb3 = value;
-                this.updateShaderUniforms();
+                return this._groundColor;
             },
             enumerable: true,
             configurable: true
         });
-
-
-        Object.defineProperty(GrassProceduralTexture.prototype, "dirt", {
-            get: function () {
-                return this._dirt;
-            },
-            set: function (value) {
-                this._dirt = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-
 
         Object.defineProperty(GrassProceduralTexture.prototype, "ground", {
-            get: function () {
-                return this._ground;
-            },
             set: function (value) {
-                this._ground = value;
+                this.groundColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
             configurable: true
         });
-
         return GrassProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
@@ -346,20 +333,20 @@ var BABYLON;
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "road", scene, fallbackTexture, generateMipMaps);
-            this._macadamColor = new BABYLON.Color3(0.53, 0.53, 0.53);
+            this._roadColor = new BABYLON.Color3(0.53, 0.53, 0.53);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
         RoadProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setColor3("macadamColor", this._macadamColor);
+            this.setColor3("roadColor", this._roadColor);
         };
 
-        Object.defineProperty(RoadProceduralTexture.prototype, "macadamColor", {
+        Object.defineProperty(RoadProceduralTexture.prototype, "roadColor", {
             get: function () {
-                return this._macadamColor;
+                return this._roadColor;
             },
             set: function (value) {
-                this._macadamColor = value;
+                this._roadColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

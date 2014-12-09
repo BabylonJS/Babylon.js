@@ -40,6 +40,7 @@
         private _alpha: number = 0.0;
         private _autoGenerateTime: boolean = true;
         private _fireColors: BABYLON.Color3[];
+        private _alphaThreshold: number = 0.5;
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "fire", scene, fallbackTexture, generateMipMaps);
@@ -59,6 +60,7 @@
             this.setColor3("c4", this._fireColors[3]);
             this.setColor3("c5", this._fireColors[4]);
             this.setColor3("c6", this._fireColors[5]);
+            this.setFloat("alphaThreshold", this._alphaThreshold);
         }
 
         public render(useCameraPostProcess?: boolean) {
@@ -194,74 +196,64 @@
     }
 
     export class GrassProceduralTexture extends ProceduralTexture {
+        private _grassColors: BABYLON.Color3[];
         private _herb1: BABYLON.Color3 = new BABYLON.Color3(0.29, 0.38, 0.02);
         private _herb2: BABYLON.Color3 = new BABYLON.Color3(0.36, 0.49, 0.09);
         private _herb3: BABYLON.Color3 = new BABYLON.Color3(0.51, 0.6, 0.28);
-        private _dirt: BABYLON.Color3 = new BABYLON.Color3(0.6, 0.46, 0.13);
-        private _ground: BABYLON.Color3 = new BABYLON.Color3(1, 1, 1);
+        private _dirtColor: BABYLON.Color3 = new BABYLON.Color3(0.6, 0.46, 0.13);
+        private _groundColor: BABYLON.Color3 = new BABYLON.Color3(1, 1, 1);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "grass", scene, fallbackTexture, generateMipMaps);
+
+            this._grassColors = [
+                new BABYLON.Color3(0.29, 0.38, 0.02),
+                new BABYLON.Color3(0.36, 0.49, 0.09),
+                new BABYLON.Color3(0.51, 0.6, 0.28),
+            ];
+
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
 
         public updateShaderUniforms() {
-            this.setColor3("herb1", this._herb1);
-            this.setColor3("herb2", this._herb2);
-            this.setColor3("herb3", this._herb2);
-            this.setColor3("dirt", this._dirt);
-            this.setColor3("ground", this._ground);
+            this.setColor3("herb1", this._grassColors[0]);
+            this.setColor3("herb2", this._grassColors[1]);
+            this.setColor3("herb3", this._grassColors[2]);
+            this.setColor3("dirt", this._dirtColor);
+            this.setColor3("ground", this._groundColor);
         }
 
-        public get herb1(): BABYLON.Color3 {
-            return this._herb1;
+        public get grassColors(): BABYLON.Color3[] {
+            return this._grassColors;
         }
 
-        public set herb1(value: BABYLON.Color3) {
-            this._herb1 = value;
+        public set grassColors(value: BABYLON.Color3[]) {
+            this._grassColors = value;
             this.updateShaderUniforms();
         }
 
-        public get herb2(): BABYLON.Color3 {
-            return this._herb2;
+        public get dirtColor(): BABYLON.Color3 {
+            return this._dirtColor;
         }
 
-        public set herb2(value: BABYLON.Color3) {
-            this._herb2 = value;
+        public set dirtColor(value: BABYLON.Color3) {
+            this._dirtColor = value;
             this.updateShaderUniforms();
         }
 
-        public get herb3(): BABYLON.Color3 {
-            return this._herb3;
-        }
-
-        public set herb3(value: BABYLON.Color3) {
-            this._herb3 = value;
-            this.updateShaderUniforms();
-        }
-
-        public get dirt(): BABYLON.Color3 {
-            return this._dirt;
-        }
-
-        public set dirt(value: BABYLON.Color3) {
-            this._dirt = value;
-            this.updateShaderUniforms();
-        }
-
-        public get ground(): BABYLON.Color3 {
-            return this._ground;
+        public get groundColor(): BABYLON.Color3 {
+            return this._groundColor;
         }
 
         public set ground(value: BABYLON.Color3) {
-            this._ground = value;
+            this.groundColor = value;
             this.updateShaderUniforms();
         }
     }
 
     export class RoadProceduralTexture extends ProceduralTexture {
-        private _macadamColor: BABYLON.Color3 = new BABYLON.Color3(0.53, 0.53, 0.53);
+        private _roadColor: BABYLON.Color3 = new BABYLON.Color3(0.53, 0.53, 0.53);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "road", scene, fallbackTexture, generateMipMaps);
@@ -270,15 +262,15 @@
         }
 
         public updateShaderUniforms() {
-            this.setColor3("macadamColor", this._macadamColor);
+            this.setColor3("roadColor", this._roadColor);
         }
 
-        public get macadamColor(): BABYLON.Color3 {
-            return this._macadamColor;
+        public get roadColor(): BABYLON.Color3 {
+            return this._roadColor;
         }
 
-        public set macadamColor(value: BABYLON.Color3) {
-            this._macadamColor = value;
+        public set roadColor(value: BABYLON.Color3) {
+            this._roadColor = value;
             this.updateShaderUniforms();
         }
     }
