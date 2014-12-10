@@ -42,7 +42,7 @@ var BABYLON;
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
                         that._config = JSON.parse(xhr.response);
-                        that._customFragment = this._texturePath + "/custom";
+                        that._customFragment = that._texturePath + "/custom";
                         that._updateTexture = true;
                         that._shaderLoaded = true;
                     } catch (ex) {
