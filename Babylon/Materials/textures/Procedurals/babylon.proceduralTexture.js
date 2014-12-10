@@ -67,8 +67,15 @@ var BABYLON;
         ProceduralTexture.prototype.isReady = function () {
             var _this = this;
             var engine = this.getScene().getEngine();
+            var shaders;
 
-            this._effect = engine.createEffect({ vertex: "procedural", fragment: this._fragment }, ["position"], this._uniforms, this._samplers, "", null, null, function () {
+            if (this._fragment.fragmentElement == undefined) {
+                shaders = { vertex: "procedural", fragment: this._fragment };
+            } else {
+                shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
+            }
+
+            this._effect = engine.createEffect(shaders, ["position"], this._uniforms, this._samplers, "", null, null, function () {
                 _this.releaseInternalTexture();
 
                 _this._texture = _this._fallbackTexture._texture;

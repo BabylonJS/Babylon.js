@@ -48,12 +48,22 @@
             if (this._transparentSubMeshes.length) {
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
+                    submesh._alphaLayer = submesh.getMesh().alphaLayer;
                     submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
                 }
 
                 var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
 
                 sortedArray.sort(function (a, b) {
+                    // Alpha layer first
+                    if (a._alphaLayer > b._alphaLayer) {
+                        return 1;
+                    }
+                    if (a._alphaLayer < b._alphaLayer) {
+                        return -1;
+                    }
+
+                    // Then distance to camera
                     if (a._distanceToCamera < b._distanceToCamera) {
                         return 1;
                     }

@@ -8,7 +8,6 @@ varying vec2 vUV;
 uniform float ampScale;
 uniform vec3 woodColor;
 
-
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
@@ -30,9 +29,7 @@ float fbm(vec2 n) {
 }
 
 void main(void) {
-
 	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));
 	vec3 wood = woodColor * ratioy;
-
 	gl_FragColor = vec4(wood, 1.0);
 }

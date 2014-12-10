@@ -136,6 +136,10 @@ var BABYLON;
                 this._effect.setMatrix("worldViewProjection", world.multiply(this.getScene().getTransformMatrix()));
             }
 
+            if (this._options.uniforms.indexOf("viewProjection") !== -1) {
+                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            }
+
             for (var name in this._textures) {
                 this._effect.setTexture(name, this._textures[name]);
             }

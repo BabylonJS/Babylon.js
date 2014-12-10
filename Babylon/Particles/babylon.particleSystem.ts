@@ -347,6 +347,7 @@
 
             // Render
             engine.enableEffect(effect);
+            engine.setState(false);
 
             var viewMatrix = this._scene.getViewMatrix();
             effect.setTexture("diffuseSampler", this.particleTexture);

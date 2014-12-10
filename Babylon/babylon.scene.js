@@ -8,6 +8,7 @@
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
+            this.forceShowBoundingBoxes = false;
             this.cameraToUseForPointers = null;
             // Fog
             this.fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -75,6 +76,7 @@
             this._onReadyCallbacks = new Array();
             this._pendingData = [];
             this._onBeforeRenderCallbacks = new Array();
+            this._onAfterRenderCallbacks = new Array();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArray(256);
@@ -98,9 +100,19 @@
             this._outlineRenderer = new BABYLON.OutlineRenderer(this);
 
             this.attachControl();
+
+            this._debugLayer = new BABYLON.DebugLayer(this);
         }
-        Object.defineProperty(Scene.prototype, "meshUnderPointer", {
+        Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties
+            get: function () {
+                return this._debugLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Scene.prototype, "meshUnderPointer", {
             get: function () {
                 return this._meshUnderPointer;
             },
@@ -326,6 +338,18 @@
 
             if (index > -1) {
                 this._onBeforeRenderCallbacks.splice(index, 1);
+            }
+        };
+
+        Scene.prototype.registerAfterRender = function (func) {
+            this._onAfterRenderCallbacks.push(func);
+        };
+
+        Scene.prototype.unregisterAfterRender = function (func) {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
             }
         };
 
@@ -776,7 +800,7 @@
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
-            if (mesh.showBoundingBox) {
+            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
@@ -980,9 +1004,11 @@
             this._spritesDuration = 0;
             this._activeParticles = 0;
             this._renderDuration = 0;
+            this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
 
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
@@ -1103,6 +1129,10 @@
                 this.afterRender();
             }
 
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
+            }
+
             for (var index = 0; index < this._toBeDisposed.length; index++) {
                 this._toBeDisposed.data[index].dispose();
                 this._toBeDisposed[index] = null;
@@ -1141,12 +1171,16 @@
 
             this._boundingBoxRenderer.dispose();
 
+            // Debug layer
+            this.debugLayer.enabled = false;
+
             // Events
             if (this.onDispose) {
                 this.onDispose();
             }
 
             this._onBeforeRenderCallbacks = [];
+            this._onAfterRenderCallbacks = [];
 
             this.detachControl();
 

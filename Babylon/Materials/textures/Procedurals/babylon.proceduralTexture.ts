@@ -74,8 +74,16 @@
       
         public isReady(): boolean {
             var engine = this.getScene().getEngine();
+            var shaders;
 
-            this._effect = engine.createEffect({ vertex: "procedural", fragment: this._fragment },
+            if (this._fragment.fragmentElement == undefined) {
+                shaders = { vertex: "procedural", fragment: this._fragment };
+            }
+            else {
+                shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
+            }
+
+            this._effect = engine.createEffect(shaders,
                 ["position"],
                 this._uniforms,
                 this._samplers,

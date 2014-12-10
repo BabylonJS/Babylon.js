@@ -5,13 +5,14 @@ precision highp float;
 varying vec2 vPosition;
 varying vec2 vUV;
 
-
 uniform float numberOfBricksHeight;
 uniform float numberOfBricksWidth ;
+uniform float amplitude;
+uniform vec3 brick;
+uniform vec3 joint;
 
 const vec3 tileSize = vec3(1.1, 1.0, 1.1);
 const vec3 tilePct = vec3(0.98, 1.0, 0.98);
-
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -39,7 +40,6 @@ float round(float number){
 	return sign(number)*floor(abs(number) + 0.5);
 }
 
-
 vec3 marble_color(float x)
 {
 	vec3 col;
@@ -51,23 +51,16 @@ vec3 marble_color(float x)
 	col.b *= 0.95;           
 	return col;
 }
+
 void main()
 {
-
-	vec3 brick = vec3(0.77, 0.47, 0.40);
-	vec3 joint = vec3(0.72, 0.72, 0.72);
-
 	float brickW = 1.0 / numberOfBricksWidth;
 	float brickH = 1.0 / numberOfBricksHeight;
 	float jointWPercentage = 0.01;
 	float jointHPercentage = 0.01;
-
 	vec3 color = brick;
-
-
 	float yi = vUV.y / brickH;
 	float nyi = round(yi);
-
 	float xi = vUV.x / brickW;
 
 	if (mod(floor(yi), 2.0) == 0.0){
@@ -75,9 +68,7 @@ void main()
 	}
 
 	float nxi = round(xi);
-
 	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) / brickW);
-
 
 	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){
 		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);
@@ -86,19 +77,11 @@ void main()
 		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
 	}
 	else {
-
-		float amplitude = 9.0;
-
 		float t = 6.28 * brickvUV.x / (tileSize.x + noise(vec2(vUV)*6.0));
 		t += amplitude * turbulence(brickvUV.xy);
-
 		t = sin(t);
 		color = marble_color(t);
-
-
 	}
 
 	gl_FragColor = vec4(color, 0.0);
-
-	
 }
