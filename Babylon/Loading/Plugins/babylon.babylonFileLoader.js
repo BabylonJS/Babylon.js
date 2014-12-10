@@ -647,6 +647,10 @@
             mesh.showBoundingBox = parsedMesh.showBoundingBox;
             mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
 
+            if (parseMesh.applyFog !== undefined) {
+                mesh.applyFog = parseMesh.applyFog;
+            }
+
             if (parsedMesh.pickable !== undefined) {
                 mesh.isPickable = parsedMesh.pickable;
             }

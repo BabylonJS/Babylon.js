@@ -403,7 +403,7 @@
             return new Vector2(x, y);
         }
 
-     
+
         public static Dot(left: Vector2, right: Vector2): number {
             return left.x * right.x + left.y * right.y;
         }
@@ -823,6 +823,21 @@
             var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
 
             return Vector3.TransformCoordinates(vector, finalMatrix);
+        }
+
+        public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
+            var matrix = world.multiply(transform);
+            matrix.invert();
+            source.x = source.x / viewportWidth * 2 - 1;
+            source.y = -(source.y / viewportHeight * 2 - 1);
+            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+                vector = vector.scale(1.0 / num);
+            }
+
+            return vector;
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
@@ -2308,10 +2323,10 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2336,10 +2351,10 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2364,10 +2379,10 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2501,7 +2516,7 @@
 
     export class BezierCurve {
 
-        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number) :number {
+        public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
 
             // Extract X (which is equal to time here)
             var f0 = 1 - 3 * x2 + 3 * x1;
@@ -2518,12 +2533,12 @@
                 refinedT -= (x - t) * slope;
                 refinedT = Math.min(1, Math.max(0, refinedT));
 
-                }
+            }
 
             // Resolve cubic bezier for the given x
             return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
-                   3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
-                   Math.pow(refinedT, 3);
+                3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
+                Math.pow(refinedT, 3);
 
         }
     }

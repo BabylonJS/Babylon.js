@@ -34,6 +34,7 @@
         public scaling = new BABYLON.Vector3(1, 1, 1);
         public billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
+        public alphaLayer = Number.MAX_VALUE;
         public infiniteDistance = false;
         public isVisible = true;
         public isPickable = true;
@@ -50,7 +51,12 @@
         public renderOutline = false;
         public outlineColor = BABYLON.Color3.Red();
         public outlineWidth = 0.02;
+        public renderOverlay = false;
+        public overlayColor = BABYLON.Color3.Red();
+        public overlayAlpha = 0.5;
         public hasVertexAlpha = false;
+        public useVertexColors = true;
+        public applyFog = true;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;

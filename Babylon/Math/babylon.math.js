@@ -850,6 +850,21 @@
             return Vector3.TransformCoordinates(vector, finalMatrix);
         };
 
+        Vector3.UnprojectFromTransform = function (source, viewportWidth, viewportHeight, world, transform) {
+            var matrix = world.multiply(transform);
+            matrix.invert();
+            source.x = source.x / viewportWidth * 2 - 1;
+            source.y = -(source.y / viewportHeight * 2 - 1);
+            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+                vector = vector.scale(1.0 / num);
+            }
+
+            return vector;
+        };
+
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
@@ -2309,10 +2324,10 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2336,10 +2351,10 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2363,10 +2378,10 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
-				if(max == -Infinity) {
-					max = Infinity; 
-				}
-				
+                if (max == -Infinity) {
+                    max = Infinity;
+                }
+
                 if (min > max) {
                     temp = min;
                     min = max;

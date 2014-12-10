@@ -12,10 +12,7 @@ var BABYLON;
             _super.call(this, name, size, "wood", scene, fallbackTexture, generateMipMaps);
             this._ampScale = 100.0;
             this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
-
             this.updateShaderUniforms();
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
         }
         WoodProceduralTexture.prototype.updateShaderUniforms = function () {
@@ -59,13 +56,11 @@ var BABYLON;
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
             this._shift = 1.6;
-            this._alpha = 1.0;
+            this._alpha = 0.0;
             this._autoGenerateTime = true;
-
+            this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 1;
         }
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
@@ -73,13 +68,13 @@ var BABYLON;
             this.setVector2("speed", this._speed);
             this.setFloat("shift", this._shift);
             this.setFloat("alpha", this._alpha);
-
-            this.setColor3("c1", new BABYLON.Color3(this._fireColors[0][0], this._fireColors[0][1], this._fireColors[0][2]));
-            this.setColor3("c2", new BABYLON.Color3(this._fireColors[1][0], this._fireColors[1][1], this._fireColors[1][2]));
-            this.setColor3("c3", new BABYLON.Color3(this._fireColors[2][0], this._fireColors[2][1], this._fireColors[2][2]));
-            this.setColor3("c4", new BABYLON.Color3(this._fireColors[3][0], this._fireColors[3][1], this._fireColors[3][2]));
-            this.setColor3("c5", new BABYLON.Color3(this._fireColors[4][0], this._fireColors[4][1], this._fireColors[4][2]));
-            this.setColor3("c6", new BABYLON.Color3(this._fireColors[5][0], this._fireColors[5][1], this._fireColors[5][2]));
+            this.setColor3("c1", this._fireColors[0]);
+            this.setColor3("c2", this._fireColors[1]);
+            this.setColor3("c3", this._fireColors[2]);
+            this.setColor3("c4", this._fireColors[3]);
+            this.setColor3("c5", this._fireColors[4]);
+            this.setColor3("c6", this._fireColors[5]);
+            this.setFloat("alphaThreshold", this._alphaThreshold);
         };
 
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
@@ -87,19 +82,18 @@ var BABYLON;
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
-
             _super.prototype.render.call(this, useCameraPostProcess);
         };
 
         Object.defineProperty(FireProceduralTexture, "PurpleFireColors", {
             get: function () {
                 return [
-                    [0.5, 0.0, 1.0],
-                    [0.9, 0.0, 1.0],
-                    [0.2, 0.0, 1.0],
-                    [1.0, 0.9, 1.0],
-                    [0.1, 0.1, 1.0],
-                    [0.9, 0.9, 1.0]
+                    new BABYLON.Color3(0.5, 0.0, 1.0),
+                    new BABYLON.Color3(0.9, 0.0, 1.0),
+                    new BABYLON.Color3(0.2, 0.0, 1.0),
+                    new BABYLON.Color3(1.0, 0.9, 1.0),
+                    new BABYLON.Color3(0.1, 0.1, 1.0),
+                    new BABYLON.Color3(0.9, 0.9, 1.0)
                 ];
             },
             enumerable: true,
@@ -109,12 +103,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "GreenFireColors", {
             get: function () {
                 return [
-                    [0.5, 1.0, 0.0],
-                    [0.5, 1.0, 0.0],
-                    [0.3, 0.4, 0.0],
-                    [0.5, 1.0, 0.0],
-                    [0.2, 0.0, 0.0],
-                    [0.5, 1.0, 0.0]
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.3, 0.4, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0),
+                    new BABYLON.Color3(0.2, 0.0, 0.0),
+                    new BABYLON.Color3(0.5, 1.0, 0.0)
                 ];
             },
             enumerable: true,
@@ -124,12 +118,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "RedFireColors", {
             get: function () {
                 return [
-                    [0.5, 0.0, 0.1],
-                    [0.9, 0.0, 0.0],
-                    [0.2, 0.0, 0.0],
-                    [1.0, 0.9, 0.0],
-                    [0.1, 0.1, 0.1],
-                    [0.9, 0.9, 0.9]
+                    new BABYLON.Color3(0.5, 0.0, 0.1),
+                    new BABYLON.Color3(0.9, 0.0, 0.0),
+                    new BABYLON.Color3(0.2, 0.0, 0.0),
+                    new BABYLON.Color3(1.0, 0.9, 0.0),
+                    new BABYLON.Color3(0.1, 0.1, 0.1),
+                    new BABYLON.Color3(0.9, 0.9, 0.9)
                 ];
             },
             enumerable: true,
@@ -139,12 +133,12 @@ var BABYLON;
         Object.defineProperty(FireProceduralTexture, "BlueFireColors", {
             get: function () {
                 return [
-                    [0.1, 0.0, 0.5],
-                    [0.0, 0.0, 0.5],
-                    [0.1, 0.0, 0.2],
-                    [0.0, 0.0, 1.0],
-                    [0.1, 0.2, 0.3],
-                    [0.0, 0.2, 0.9]
+                    new BABYLON.Color3(0.1, 0.0, 0.5),
+                    new BABYLON.Color3(0.0, 0.0, 0.5),
+                    new BABYLON.Color3(0.1, 0.0, 0.2),
+                    new BABYLON.Color3(0.0, 0.0, 1.0),
+                    new BABYLON.Color3(0.1, 0.2, 0.3),
+                    new BABYLON.Color3(0.0, 0.2, 0.9)
                 ];
             },
             enumerable: true,
@@ -225,12 +219,8 @@ var BABYLON;
             _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
             this._skyColor = new BABYLON.Color3(0.15, 0.68, 1.0);
             this._cloudColor = new BABYLON.Color3(1, 1, 1);
-
             this.updateShaderUniforms();
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
-            // https://www.shadertoy.com/view/XsjSRt
         }
         CloudProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor3("skyColor", this._skyColor);
@@ -270,34 +260,99 @@ var BABYLON;
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "grass", scene, fallbackTexture, generateMipMaps);
+            this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
+            this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
+            this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
+            this._dirtColor = new BABYLON.Color3(0.6, 0.46, 0.13);
+            this._groundColor = new BABYLON.Color3(1, 1, 1);
 
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this._grassColors = [
+                new BABYLON.Color3(0.29, 0.38, 0.02),
+                new BABYLON.Color3(0.36, 0.49, 0.09),
+                new BABYLON.Color3(0.51, 0.6, 0.28)
+            ];
+
+            this.updateShaderUniforms();
             this.refreshRate = 0;
         }
+        GrassProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setColor3("herb1", this._grassColors[0]);
+            this.setColor3("herb2", this._grassColors[1]);
+            this.setColor3("herb3", this._grassColors[2]);
+            this.setColor3("dirt", this._dirtColor);
+            this.setColor3("ground", this._groundColor);
+        };
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "grassColors", {
+            get: function () {
+                return this._grassColors;
+            },
+            set: function (value) {
+                this._grassColors = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "dirtColor", {
+            get: function () {
+                return this._dirtColor;
+            },
+            set: function (value) {
+                this._dirtColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "groundColor", {
+            get: function () {
+                return this._groundColor;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(GrassProceduralTexture.prototype, "ground", {
+            set: function (value) {
+                this.groundColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
         return GrassProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
-
-    var RockProceduralTexture = (function (_super) {
-        __extends(RockProceduralTexture, _super);
-        function RockProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "rock", scene, fallbackTexture, generateMipMaps);
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
-            this.refreshRate = 0;
-        }
-        return RockProceduralTexture;
-    })(BABYLON.ProceduralTexture);
-    BABYLON.RockProceduralTexture = RockProceduralTexture;
 
     var RoadProceduralTexture = (function (_super) {
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "road", scene, fallbackTexture, generateMipMaps);
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
+            this._roadColor = new BABYLON.Color3(0.53, 0.53, 0.53);
+            this.updateShaderUniforms();
             this.refreshRate = 0;
         }
+        RoadProceduralTexture.prototype.updateShaderUniforms = function () {
+            this.setColor3("roadColor", this._roadColor);
+        };
+
+        Object.defineProperty(RoadProceduralTexture.prototype, "roadColor", {
+            get: function () {
+                return this._roadColor;
+            },
+            set: function (value) {
+                this._roadColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return RoadProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.RoadProceduralTexture = RoadProceduralTexture;
@@ -308,15 +363,16 @@ var BABYLON;
             _super.call(this, name, size, "brick", scene, fallbackTexture, generateMipMaps);
             this._numberOfBricksHeight = 15;
             this._numberOfBricksWidth = 5;
-
+            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
+            this._brickColor = new BABYLON.Color3(0.77, 0.47, 0.40);
             this.updateShaderUniforms();
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
         }
         BrickProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
             this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+            this.setColor3("brick", this._brickColor);
+            this.setColor3("joint", this._jointColor);
         };
 
         Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksHeight", {
@@ -348,6 +404,32 @@ var BABYLON;
             configurable: true
         });
 
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "jointColor", {
+            get: function () {
+                return this._jointColor;
+            },
+            set: function (value) {
+                this._jointColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(BrickProceduralTexture.prototype, "brickColor", {
+            get: function () {
+                return this._brickColor;
+            },
+            set: function (value) {
+                this._brickColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         return BrickProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.BrickProceduralTexture = BrickProceduralTexture;
@@ -356,42 +438,67 @@ var BABYLON;
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             _super.call(this, name, size, "marble", scene, fallbackTexture, generateMipMaps);
-            this._numberOfBricksHeight = 3;
-            this._numberOfBricksWidth = 3;
-
+            this._numberOfTilesHeight = 3;
+            this._numberOfTilesWidth = 3;
+            this._amplitude = 9.0;
+            this._marbleColor = new BABYLON.Color3(0.77, 0.47, 0.40);
+            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
             this.updateShaderUniforms();
-
-            // Use 0 to render just once, 1 to render on every frame, 2 to render every two frames and so on...
             this.refreshRate = 0;
         }
         MarbleProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
-            this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
+            this.setFloat("numberOfBricksHeight", this._numberOfTilesHeight);
+            this.setFloat("numberOfBricksWidth", this._numberOfTilesWidth);
+            this.setFloat("amplitude", this._amplitude);
+            this.setColor3("brick", this._marbleColor);
+            this.setColor3("joint", this._jointColor);
         };
 
-        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfBricksHeight", {
+        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesHeight", {
             get: function () {
-                return this._numberOfBricksHeight;
+                return this._numberOfTilesHeight;
             },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(MarbleProceduralTexture.prototype, "cloudColor", {
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfTilesHeight = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfBricksWidth", {
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesWidth", {
             get: function () {
-                return this._numberOfBricksWidth;
+                return this._numberOfTilesWidth;
             },
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfTilesWidth = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "jointColor", {
+            get: function () {
+                return this._jointColor;
+            },
+            set: function (value) {
+                this._jointColor = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(MarbleProceduralTexture.prototype, "marbleColor", {
+            get: function () {
+                return this._marbleColor;
+            },
+            set: function (value) {
+                this._marbleColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

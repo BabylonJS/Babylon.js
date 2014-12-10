@@ -180,7 +180,7 @@
             }
 
             // Fog
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
+            if (mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
                 fallbacks.addFallback(1, "FOG");
             }
@@ -327,7 +327,7 @@
                     attribs.push(BABYLON.VertexBuffer.UV2Kind);
                     defines.push("#define UV2");
                 }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
+                if (mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                     defines.push("#define VERTEXCOLOR");
 
@@ -486,17 +486,26 @@
             if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
                 this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
+                this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
                 this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
             }
 
             // Colors
             scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
+            // Scaling down colors according to emissive
+            this._scaledDiffuse.r = this.diffuseColor.r * Tools.Clamp(1.0 - this.emissiveColor.r);
+            this._scaledDiffuse.g = this.diffuseColor.g * Tools.Clamp(1.0 - this.emissiveColor.g);
+            this._scaledDiffuse.b = this.diffuseColor.b * Tools.Clamp(1.0 - this.emissiveColor.b);
+
+            this._scaledSpecular.r = this.specularColor.r * Tools.Clamp(1.0 - this.emissiveColor.r);
+            this._scaledSpecular.g = this.specularColor.g * Tools.Clamp(1.0 - this.emissiveColor.g);
+            this._scaledSpecular.b = this.specularColor.b * Tools.Clamp(1.0 - this.emissiveColor.b);
+
             this._effect.setVector3("vEyePosition", scene.activeCamera.position);
             this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-            this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
             this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
             if (scene.lightsEnabled) {
@@ -554,12 +563,12 @@
             }
 
             // View
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
+            if (mesh.applyFog &&scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
-            if (scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
