@@ -11,7 +11,7 @@
         constructor(name: string, texturePath: any, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "empty", scene, fallbackTexture, generateMipMaps);
             this._texturePath = texturePath;
-
+          
             //readJson
             this.loadJson(texturePath);
             this.refreshRate = 1;

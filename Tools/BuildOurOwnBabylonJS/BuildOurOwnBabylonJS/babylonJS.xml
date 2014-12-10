@@ -74,6 +74,9 @@
   <script src="Babylon/Materials/textures/babylon.cubeTexture.js"></script>
   <script src="Babylon/Materials/textures/babylon.texture.js"></script>
   <script src="Babylon/Materials/textures/babylon.baseTexture.js"></script>
+  <script src="Babylon/Materials/textures/babylon.customProceduralTexture.js"></script>
+  <script src="Babylon/Materials/textures/babylon.proceduralTexture.js"></script>
+  <script src="Babylon/Materials/textures/babylon.standardProceduralTexture.js"></script>
   <script src="Babylon/Mesh/babylon.subMesh.js"></script>
   <script src="Babylon/Mesh/babylon.mesh.js"></script>
   <script src="Babylon/Mesh/babylon.InstancedMesh.js"></script>
