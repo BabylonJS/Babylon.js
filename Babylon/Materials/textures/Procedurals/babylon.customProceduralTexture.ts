@@ -2,33 +2,28 @@
     export class CustomProceduralTexture extends ProceduralTexture {
         private _animate: boolean = true;
         private _time: number = 0;
-        private _shaderLoaded: boolean = false;
         private _config: any;
         private _texturePath: any;
-        private _updateTexture: boolean = false;
-        private _customFragment: string;
 
         constructor(name: string, texturePath: any, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "empty", scene, fallbackTexture, generateMipMaps);
+            super(name, size, null, scene, fallbackTexture, generateMipMaps);
             this._texturePath = texturePath;
 
-            //readJson
+            //Try to load json
             this.loadJson(texturePath);
             this.refreshRate = 1;
         }
 
-        private loadJson(jsonUrl: string) {
+        private loadJson(jsonUrl: string): void {
             var that = this;
 
             function noConfigFile() {
-                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying as a shaderstore or dom");
+                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShaderStore or DOM element");
                 try {
-                    that._customFragment = that._texturePath;
-                    that._updateTexture = true;
-                    that._shaderLoaded = true;
+                    that.setFragment(that._texturePath);
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("No json or shaderStore or Dom element found for the Custom Procedural Texture");
+                    BABYLON.Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
             }
 
@@ -36,13 +31,17 @@
             var xhr: XMLHttpRequest = new XMLHttpRequest();
 
             xhr.open("GET", configFileUrl, true);
-            xhr.addEventListener("load", function () {
+            xhr.addEventListener("load", () => {
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try {
-                        that._config = JSON.parse(xhr.response);
-                        that._customFragment = that._texturePath + "/custom";
-                        that._updateTexture = true;
-                        that._shaderLoaded = true;
+                        this._config = JSON.parse(xhr.response);
+
+                        this.updateShaderUniforms();
+                        this.updateTextures();
+                        this.setFragment(this._texturePath + "/custom");
+
+                        this._animate = this._config.animate;
+                        this.refreshRate = this._config.refreshrate;
                     }
                     catch (ex) {
                         noConfigFile();
@@ -61,30 +60,27 @@
                 xhr.send();
             }
             catch (ex) {
-                BABYLON.Tools.Error("Error on XHR send request.");
+                BABYLON.Tools.Error("CustomProceduralTexture: Error on XHR send request.");
             }
         }
 
-        public render(useCameraPostProcess?: boolean) {
-            //if config and shader not loaded, do not render
-            if (!this._shaderLoaded)
-                return;
-
-            if (this._updateTexture) {
-                this.reset();
-                this.setFragment(this._customFragment);
-                this.updateTextures();
-                this.updateShaderUniforms();
-                this._shaderLoaded = true;
-                if (this._config) {
-                    this._animate = this._config.animate;
-                    this.refreshRate = this._config.refreshrate;
-                }
-                this.isReady();
-                this._updateTexture = false;
-                return;
+        public isReady(): boolean {
+            if (!super.isReady()) {
+                return false;
             }
 
+            for (var name in this._textures) {
+                var texture = this._textures[name];
+
+                if (!texture.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public render(useCameraPostProcess?: boolean): void {
             if (this._animate) {
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
@@ -93,15 +89,13 @@
             super.render(useCameraPostProcess);
         }
 
-        public updateTextures() {
-            if (this._config) {
-                for (var i = 0; i < this._config.texture2Ds.length; i++) {
-                    this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene(), false, false, Texture.TRILINEAR_SAMPLINGMODE, null, null, null, true));
-                }
+        public updateTextures(): void {
+            for (var i = 0; i < this._config.sampler2Ds.length; i++) {
+                this.setTexture(this._config.sampler2Ds[i].sample2Dname, new Texture(this._texturePath + "/" + this._config.sampler2Ds[i].textureRelativeUrl, this.getScene()));
             }
         }
 
-        public updateShaderUniforms() {
+        public updateShaderUniforms(): void {
             if (this._config) {
                 for (var j = 0; j < this._config.uniforms.length; j++) {
                     var uniform = this._config.uniforms[j];
@@ -111,16 +105,16 @@
                             this.setFloat(uniform.name, uniform.value);
                             break;
                         case "color3":
-                            this.setColor3(uniform.name, new BABYLON.Color3(uniform.r, uniform.g, uniform.b));
+                            this.setColor3(uniform.name, new Color3(uniform.r, uniform.g, uniform.b));
                             break;
                         case "color4":
-                            this.setColor4(uniform.name, new BABYLON.Color4(uniform.r, uniform.g, uniform.b, uniform.a));
+                            this.setColor4(uniform.name, new Color4(uniform.r, uniform.g, uniform.b, uniform.a));
                             break;
                         case "vector2":
-                            this.setVector2(uniform.name, new BABYLON.Vector2(uniform.x, uniform.y));
+                            this.setVector2(uniform.name, new Vector2(uniform.x, uniform.y));
                             break;
                         case "vector3":
-                            this.setVector3(uniform.name, new BABYLON.Vector3(uniform.x, uniform.y, uniform.z));
+                            this.setVector3(uniform.name, new Vector3(uniform.x, uniform.y, uniform.z));
                             break;
                     }
                 }
@@ -135,7 +129,6 @@
 
         public set animate(value: boolean) {
             this._animate = value;
-            this.updateShaderUniforms();
         }
     }
 }
