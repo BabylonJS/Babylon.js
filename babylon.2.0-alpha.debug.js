@@ -8351,6 +8351,8 @@ var BABYLON;
            
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
+           
+            this._soundTracks = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -9463,7 +9465,7 @@ var BABYLON;
             this._boundingBoxRenderer.dispose();
 
            
-            this.debugLayer.enabled = false;
+            this.debugLayer.hide();
 
            
             if (this.onDispose) {
@@ -13296,6 +13298,7 @@ var BABYLON;
     var ProceduralTexture = (function (_super) {
         __extends(ProceduralTexture, _super);
         function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps) {
+            if (typeof generateMipMaps === "undefined") { generateMipMaps = true; }
             _super.call(this, null, scene, !generateMipMaps);
             this._currentRefreshId = -1;
             this._refreshRate = 1;
@@ -13319,7 +13322,7 @@ var BABYLON;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
 
-            this._fragment = fragment;
+            this.setFragment(fragment);
 
             this._fallbackTexture = fallbackTexture;
 
@@ -13347,6 +13350,9 @@ var BABYLON;
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
         ProceduralTexture.prototype.reset = function () {
+            if (this._effect === undefined) {
+                return;
+            }
             var engine = this.getScene().getEngine();
             engine._releaseEffect(this._effect);
         };
@@ -13356,10 +13362,14 @@ var BABYLON;
             var engine = this.getScene().getEngine();
             var shaders;
 
-            if (this._fragment.fragmentElement == undefined) {
-                shaders = { vertex: "procedural", fragment: this._fragment };
-            } else {
+            if (!this._fragment) {
+                return false;
+            }
+
+            if (this._fragment.fragmentElement !== undefined) {
                 shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
+            } else {
+                shaders = { vertex: "procedural", fragment: this._fragment };
             }
 
             this._effect = engine.createEffect(shaders, ["position"], this._uniforms, this._samplers, "", null, null, function () {
@@ -14090,11 +14100,9 @@ var BABYLON;
     var CustomProceduralTexture = (function (_super) {
         __extends(CustomProceduralTexture, _super);
         function CustomProceduralTexture(name, texturePath, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "empty", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, null, scene, fallbackTexture, generateMipMaps);
             this._animate = true;
             this._time = 0;
-            this._shaderLoaded = false;
-            this._updateTexture = false;
             this._texturePath = texturePath;
 
            
@@ -14102,16 +14110,15 @@ var BABYLON;
             this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
+            var _this = this;
             var that = this;
 
             function noConfigFile() {
-                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying as a shaderstore or dom");
+                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShaderStore or DOM element");
                 try  {
-                    that._customFragment = that._texturePath;
-                    that._updateTexture = true;
-                    that._shaderLoaded = true;
+                    that.setFragment(that._texturePath);
                 } catch (ex) {
-                    BABYLON.Tools.Error("No json or shaderStore or Dom element found for the Custom Procedural Texture");
+                    BABYLON.Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
             }
 
@@ -14122,10 +14129,14 @@ var BABYLON;
             xhr.addEventListener("load", function () {
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
-                        that._config = JSON.parse(xhr.response);
-                        that._customFragment = this._texturePath + "/custom";
-                        that._updateTexture = true;
-                        that._shaderLoaded = true;
+                        _this._config = JSON.parse(xhr.response);
+
+                        _this.updateShaderUniforms();
+                        _this.updateTextures();
+                        _this.setFragment(_this._texturePath + "/custom");
+
+                        _this._animate = _this._config.animate;
+                        _this.refreshRate = _this._config.refreshrate;
                     } catch (ex) {
                         noConfigFile();
                     }
@@ -14141,30 +14152,27 @@ var BABYLON;
             try  {
                 xhr.send();
             } catch (ex) {
-                BABYLON.Tools.Error("Error on XHR send request.");
+                BABYLON.Tools.Error("CustomProceduralTexture: Error on XHR send request.");
             }
         };
 
-        CustomProceduralTexture.prototype.render = function (useCameraPostProcess) {
-           
-            if (!this._shaderLoaded)
-                return;
-
-            if (this._updateTexture) {
-                this.reset();
-                this.setFragment(this._customFragment);
-                this.updateTextures();
-                this.updateShaderUniforms();
-                this._shaderLoaded = true;
-                if (this._config) {
-                    this._animate = this._config.animate;
-                    this.refreshRate = this._config.refreshrate;
-                }
-                this.isReady();
-                this._updateTexture = false;
-                return;
+        CustomProceduralTexture.prototype.isReady = function () {
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
             }
 
+            for (var name in this._textures) {
+                var texture = this._textures[name];
+
+                if (!texture.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        CustomProceduralTexture.prototype.render = function (useCameraPostProcess) {
             if (this._animate) {
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
@@ -14174,10 +14182,8 @@ var BABYLON;
         };
 
         CustomProceduralTexture.prototype.updateTextures = function () {
-            if (this._config) {
-                for (var i = 0; i < this._config.texture2Ds.length; i++) {
-                    this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene(), false, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, null, null, null, true));
-                }
+            for (var i = 0; i < this._config.sampler2Ds.length; i++) {
+                this.setTexture(this._config.sampler2Ds[i].sample2Dname, new BABYLON.Texture(this._texturePath + "/" + this._config.sampler2Ds[i].textureRelativeUrl, this.getScene()));
             }
         };
 
@@ -14215,7 +14221,6 @@ var BABYLON;
             },
             set: function (value) {
                 this._animate = value;
-                this.updateShaderUniforms();
             },
             enumerable: true,
             configurable: true
@@ -14877,7 +14882,6 @@ convolutionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Sampl
 defaultPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_EXPLICIT	0.\n#define MAP_SPHERICAL	1.\n#define MAP_PLANAR		2.\n#define MAP_CUBIC		3.\n#define MAP_PROJECTION	4.\n#define MAP_SKYBOX		5.\n\n// Constants\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\nuniform vec4 vSpecularColor;\nuniform vec3 vEmissiveColor;\n\n// Input\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n// Lights\n#ifdef LIGHT0\nuniform vec4 vLightData0;\nuniform vec4 vLightDiffuse0;\nuniform vec3 vLightSpecular0;\n#ifdef SHADOW0\nvarying vec4 vPositionFromLight0;\nuniform sampler2D shadowSampler0;\nuniform float darkness0;\n#endif\n#ifdef SPOTLIGHT0\nuniform vec4 vLightDirection0;\n#endif\n#ifdef HEMILIGHT0\nuniform vec3 vLightGround0;\n#endif\n#endif\n\n#ifdef LIGHT1\nuniform vec4 vLightData1;\nuniform vec4 vLightDiffuse1;\nuniform vec3 vLightSpecular1;\n#ifdef SHADOW1\nvarying vec4 vPositionFromLight1;\nuniform sampler2D shadowSampler1;\nuniform float darkness1;\n#endif\n#ifdef SPOTLIGHT1\nuniform vec4 vLightDirection1;\n#endif\n#ifdef HEMILIGHT1\nuniform vec3 vLightGround1;\n#endif\n#endif\n\n#ifdef LIGHT2\nuniform vec4 vLightData2;\nuniform vec4 vLightDiffuse2;\nuniform vec3 vLightSpecular2;\n#ifdef SHADOW2\nvarying vec4 vPositionFromLight2;\nuniform sampler2D shadowSampler2;\nuniform float darkness2;\n#endif\n#ifdef SPOTLIGHT2\nuniform vec4 vLightDirection2;\n#endif\n#ifdef HEMILIGHT2\nuniform vec3 vLightGround2;\n#endif\n#endif\n\n#ifdef LIGHT3\nuniform vec4 vLightData3;\nuniform vec4 vLightDiffuse3;\nuniform vec3 vLightSpecular3;\n#ifdef SHADOW3\nvarying vec4 vPositionFromLight3;\nuniform sampler2D shadowSampler3;\nuniform float darkness3;\n#endif\n#ifdef SPOTLIGHT3\nuniform vec4 vLightDirection3;\n#endif\n#ifdef HEMILIGHT3\nuniform vec3 vLightGround3;\n#endif\n#endif\n\n// Samplers\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY	\nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n// Fresnel\n#ifdef FRESNEL\nfloat computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)\n{\n	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);\n	return clamp(fresnelTerm, 0., 1.);\n}\n#endif\n\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n\n// Reflection\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\nuniform samplerCube reflectionCubeSampler;\nuniform sampler2D reflection2DSampler;\nuniform vec3 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform mat4 view;\n\nvec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)\n{\n	if (mode == MAP_SPHERICAL)\n	{\n		vec3 coords = vec3(view * vec4(worldNormal, 0.0));\n\n		return vec3(reflectionMatrix * vec4(coords, 1.0));\n	}\n	else if (mode == MAP_PLANAR)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = normalize(reflect(viewDir, worldNormal));\n\n		return vec3(reflectionMatrix * vec4(coords, 1));\n	}\n	else if (mode == MAP_CUBIC)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = reflect(viewDir, worldNormal);\n\n		return vec3(reflectionMatrix * vec4(coords, 0));\n	}\n	else if (mode == MAP_PROJECTION)\n	{\n		return vec3(reflectionMatrix * (view * worldPos));\n	}\n	else if (mode == MAP_SKYBOX)\n	{\n		return vPositionUVW;\n	}\n\n	return vec3(0, 0, 0);\n}\n#endif\n\n// Shadows\n#ifdef SHADOWS\n\nfloat unpack(vec4 color)\n{\n	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);\n	return dot(color, bitShift);\n}\n\nfloat unpackHalf(vec2 color)\n{\n	return color.x + (color.y / 255.0);\n}\n\nfloat computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float shadow = unpack(texture2D(shadowSampler, uv));\n\n	if (depth.z > shadow)\n	{\n		return darkness;\n	}\n	return 1.;\n}\n\nfloat computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float visibility = 1.;\n\n	vec2 poissonDisk[4];\n	poissonDisk[0] = vec2(-0.94201624, -0.39906216);\n	poissonDisk[1] = vec2(0.94558609, -0.76890725);\n	poissonDisk[2] = vec2(-0.094184101, -0.92938870);\n	poissonDisk[3] = vec2(0.34495938, 0.29387760);\n\n	// Poisson Sampling\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / 1500.0))  <  depth.z) visibility -= 0.2;\n\n	return visibility;\n}\n\n// Thanks to http://devmaster.net/\nfloat ChebychevInequality(vec2 moments, float t)\n{\n	if (t <= moments.x)\n	{\n		return 1.0;\n	}\n\n	float variance = moments.y - (moments.x * moments.x);\n	variance = max(variance, 0.);\n\n	float d = t - moments.x;\n	return variance / (variance + d * d);\n}\n\nfloat computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	vec4 texel = texture2D(shadowSampler, uv);\n\n	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));\n	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);\n}\n#endif\n\n// Bump\n#ifdef BUMP\n#extension GL_OES_standard_derivatives : enable\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform sampler2D bumpSampler;\n\n// Thanks to http://www.thetenthplanet.de/archives/1180\nmat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)\n{\n	// get edge vectors of the pixel triangle\n	vec3 dp1 = dFdx(p);\n	vec3 dp2 = dFdy(p);\n	vec2 duv1 = dFdx(uv);\n	vec2 duv2 = dFdy(uv);\n\n	// solve the linear system\n	vec3 dp2perp = cross(dp2, normal);\n	vec3 dp1perp = cross(normal, dp1);\n	vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;\n	vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;\n\n	// construct a scale-invariant frame \n	float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));\n	return mat3(tangent * invmax, binormal * invmax, normal);\n}\n\nvec3 perturbNormal(vec3 viewDir)\n{\n	vec3 map = texture2D(bumpSampler, vBumpUV).xyz;\n	map = map * 255. / 127. - 128. / 127.;\n	mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDir, vBumpUV);\n	return normalize(TBN * map);\n}\n#endif\n\n#ifdef CLIPPLANE\nvarying float fClipDistance;\n#endif\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return clamp(fogCoeff, 0.0, 1.0);\n}\n#endif\n\n// Light Computing\nstruct lightingInfo\n{\n	vec3 diffuse;\n	vec3 specular;\n};\n\nlightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 lightVectorW;\n	float attenuation = 1.0;\n	if (lightData.w == 0.)\n	{\n		vec3 direction = lightData.xyz - vPositionW;\n\n		attenuation = max(0., 1.0 - length(direction) / range);\n		lightVectorW = normalize(direction);\n	}\n	else\n	{\n		lightVectorW = normalize(-lightData.xyz);\n	}\n\n	// diffuse\n	float ndl = max(0., dot(vNormal, lightVectorW));\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightVectorW);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, max(1., vSpecularColor.a));\n\n	result.diffuse = ndl * diffuseColor * attenuation;\n	result.specular = specComp * specularColor * attenuation;\n\n	return result;\n}\n\nlightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 direction = lightData.xyz - vPositionW;\n	vec3 lightVectorW = normalize(direction);\n	float attenuation = max(0., 1.0 - length(direction) / range);\n\n	// diffuse\n	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));\n	float spotAtten = 0.0;\n\n	if (cosAngle >= lightDirection.w)\n	{\n		cosAngle = max(0., pow(cosAngle, lightData.w));\n		spotAtten = max(0., (cosAngle - lightDirection.w) / (1. - cosAngle));\n\n		// Diffuse\n		float ndl = max(0., dot(vNormal, -lightDirection.xyz));\n\n		// Specular\n		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);\n		float specComp = max(0., dot(vNormal, angleW));\n		specComp = pow(specComp, vSpecularColor.a);\n\n		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;\n		result.specular = specComp * specularColor * spotAtten * attenuation;\n\n		return result;\n	}\n\n	result.diffuse = vec3(0.);\n	result.specular = vec3(0.);\n\n	return result;\n}\n\nlightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor) {\n	lightingInfo result;\n\n	// Diffuse\n	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightData.xyz);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, vSpecularColor.a);\n\n	result.diffuse = mix(groundColor, diffuseColor, ndl);\n	result.specular = specComp * specularColor;\n\n	return result;\n}\n\nvoid main(void) {\n	// Clip plane\n#ifdef CLIPPLANE\n	if (fClipDistance > 0.0)\n		discard;\n#endif\n\n	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);\n\n	// Base color\n	vec4 baseColor = vec4(1., 1., 1., 1.);\n	vec3 diffuseColor = vDiffuseColor.rgb;\n\n	// Alpha\n	float alpha = vDiffuseColor.a;\n\n#ifdef VERTEXCOLOR\n	baseColor.rgb *= vColor.rgb;\n#endif\n\n#ifdef DIFFUSE\n	baseColor = texture2D(diffuseSampler, vDiffuseUV);\n\n#ifdef ALPHATEST\n	if (baseColor.a < 0.4)\n		discard;\n#endif\n\n#ifdef ALPHAFROMDIFFUSE\n	alpha *= baseColor.a;\n#endif\n\n	baseColor.rgb *= vDiffuseInfos.y;\n#endif\n\n	// Bump\n	vec3 normalW = normalize(vNormalW);\n\n#ifdef BUMP\n	normalW = perturbNormal(viewDirectionW);\n#endif\n\n	// Ambient color\n	vec3 baseAmbientColor = vec3(1., 1., 1.);\n\n#ifdef AMBIENT\n	baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;\n#endif\n\n	// Lighting\n	vec3 diffuseBase = vec3(0., 0., 0.);\n	vec3 specularBase = vec3(0., 0., 0.);\n	float shadow = 1.;\n\n#ifdef LIGHT0\n#ifdef SPOTLIGHT0\n	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef HEMILIGHT0\n	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0);\n#endif\n#ifdef POINTDIRLIGHT0\n	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef SHADOW0\n#ifdef SHADOWVSM0\n	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);\n#else\n	#ifdef SHADOWPCF0\n		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0);\n	#else\n		shadow = computeShadow(vPositionFromLight0, shadowSampler0, darkness0);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT1\n#ifdef SPOTLIGHT1\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef HEMILIGHT1\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1);\n#endif\n#ifdef POINTDIRLIGHT1\n	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef SHADOW1\n#ifdef SHADOWVSM1\n	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);\n#else\n	#ifdef SHADOWPCF1\n		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1);\n	#else\n		shadow = computeShadow(vPositionFromLight1, shadowSampler1, darkness1);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT2\n#ifdef SPOTLIGHT2\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef HEMILIGHT2\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2);\n#endif\n#ifdef POINTDIRLIGHT2\n	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef SHADOW2\n#ifdef SHADOWVSM2\n	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);\n#else\n	#ifdef SHADOWPCF2\n		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2);\n	#else\n		shadow = computeShadow(vPositionFromLight2, shadowSampler2, darkness2);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT3\n#ifdef SPOTLIGHT3\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef HEMILIGHT3\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3);\n#endif\n#ifdef POINTDIRLIGHT3\n	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef SHADOW3\n#ifdef SHADOWVSM3\n	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);\n#else\n	#ifdef SHADOWPCF3\n		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3);\n	#else\n		shadow = computeShadow(vPositionFromLight3, shadowSampler3, darkness3);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n	// Reflection\n	vec3 reflectionColor = vec3(0., 0., 0.);\n\n#ifdef REFLECTION\n	vec3 vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), normalW);\n\n	if (vReflectionInfos.z != 0.0)\n	{\n		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y * shadow;\n	}\n	else\n	{\n		vec2 coords = vReflectionUVW.xy;\n\n		if (vReflectionInfos.x == MAP_PROJECTION)\n		{\n			coords /= vReflectionUVW.z;\n		}\n\n		coords.y = 1.0 - coords.y;\n\n		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;\n	}\n\n#ifdef REFLECTIONFRESNEL\n	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);\n\n	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;\n#endif\n#endif\n\n#ifdef OPACITY\n	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);\n\n#ifdef OPACITYRGB\n	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);\n	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;\n#else\n	alpha *= opacityMap.a * vOpacityInfos.y;\n#endif\n\n#endif\n\n#ifdef VERTEXALPHA\n	alpha *= vColor.a;\n#endif\n\n#ifdef OPACITYFRESNEL\n	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);\n\n	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;\n#endif\n\n	// Emissive\n	vec3 emissiveColor = vEmissiveColor;\n#ifdef EMISSIVE\n	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;\n#endif\n\n#ifdef EMISSIVEFRESNEL\n	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);\n\n	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;\n#endif\n\n	// Specular map\n	vec3 specularColor = vSpecularColor.rgb;\n#ifdef SPECULAR\n	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;\n#endif\n\n	// Fresnel\n#ifdef DIFFUSEFRESNEL\n	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);\n\n	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;\n#endif\n\n	// Composition\n	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;\n	vec3 finalSpecular = specularBase * specularColor;\n\n#ifdef SPECULAROVERALPHA\n	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);\n#endif\n\n	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = color;\n}",
 defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef REFLECTION\n	vPositionUVW = position;\n#endif \n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = world * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = world * (m0 + m1 + m2);\n#endif \n\n#else\n#ifdef INSTANCES\n	finalWorld = mat4(world0, world1, world2, world3);\n#else\n	finalWorld = world;\n#endif\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n\n	// Point size\n#ifdef POINTSIZE\n	gl_PointSize = pointSize;\n#endif\n}",
 displayPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(passSampler, vUV);\n}",
-emptyPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvoid main(void)\n{\n	\n}",
 filterPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform mat4 kernelMatrix;\n\nvoid main(void)\n{\n	vec3 baseColor = texture2D(textureSampler, vUV).rgb;\n	vec3 updatedColor = (kernelMatrix * vec4(baseColor, 1.0)).rgb;\n\n	gl_FragColor = vec4(updatedColor, 1.0);\n}",
 firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float iGlobalTime;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alphaThreshold;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - iGlobalTime * 0.1);\n	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	vec3 color = c * cos(shift * vUV.y);\n	float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));\n\n	gl_FragColor = vec4(color, luminance * alphaThreshold + (1.0 - alphaThreshold));\n}",
 fxaaPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define FXAA_REDUCE_MIN   (1.0/128.0)\n#define FXAA_REDUCE_MUL   (1.0/8.0)\n#define FXAA_SPAN_MAX     8.0\n\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 texelSize;\n\nvoid main(){\n	vec2 localTexelSize = texelSize;\n	vec4 rgbNW = texture2D(textureSampler, (vUV + vec2(-1.0, -1.0) * localTexelSize));\n	vec4 rgbNE = texture2D(textureSampler, (vUV + vec2(1.0, -1.0) * localTexelSize));\n	vec4 rgbSW = texture2D(textureSampler, (vUV + vec2(-1.0, 1.0) * localTexelSize));\n	vec4 rgbSE = texture2D(textureSampler, (vUV + vec2(1.0, 1.0) * localTexelSize));\n	vec4 rgbM = texture2D(textureSampler, vUV);\n	vec4 luma = vec4(0.299, 0.587, 0.114, 1.0);\n	float lumaNW = dot(rgbNW, luma);\n	float lumaNE = dot(rgbNE, luma);\n	float lumaSW = dot(rgbSW, luma);\n	float lumaSE = dot(rgbSE, luma);\n	float lumaM = dot(rgbM, luma);\n	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));\n	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));\n\n	vec2 dir = vec2(-((lumaNW + lumaNE) - (lumaSW + lumaSE)), ((lumaNW + lumaSW) - (lumaNE + lumaSE)));\n\n	float dirReduce = max(\n		(lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),\n		FXAA_REDUCE_MIN);\n\n	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);\n	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),\n		max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),\n		dir * rcpDirMin)) * localTexelSize;\n\n	vec4 rgbA = 0.5 * (\n		texture2D(textureSampler, vUV + dir * (1.0 / 3.0 - 0.5)) +\n		texture2D(textureSampler, vUV + dir * (2.0 / 3.0 - 0.5)));\n\n	vec4 rgbB = rgbA * 0.5 + 0.25 * (\n		texture2D(textureSampler, vUV + dir *  -0.5) +\n		texture2D(textureSampler, vUV + dir * 0.5));\n	float lumaB = dot(rgbB, luma);\n	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {\n		gl_FragColor = rgbA;\n	}\n	else {\n		gl_FragColor = rgbB;\n	}\n}",
@@ -23193,6 +23197,10 @@ var BABYLON;
                 this._effect.setMatrix("worldViewProjection", world.multiply(this.getScene().getTransformMatrix()));
             }
 
+            if (this._options.uniforms.indexOf("viewProjection") !== -1) {
+                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            }
+
             for (var name in this._textures) {
                 this._effect.setTexture(name, this._textures[name]);
             }
@@ -28958,7 +28966,7 @@ var BABYLON;
             this.autoplay = false;
             this.loop = false;
             this._position = BABYLON.Vector3.Zero();
-            this._direction = BABYLON.Vector3.Zero();
+            this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._isLoaded = false;
             this._isReadyToPlay = false;
             this._isPlaying = false;
@@ -28985,11 +28993,20 @@ var BABYLON;
             }
 
             if (this._audioEngine.canUseWebAudio) {
+                this._soundGain = this._audioEngine.audioContext.createGain();
+                this._soundGain.connect(this._audioEngine.masterGain);
+                this._soundPanner = this._audioEngine.audioContext.createPanner();
+                this._soundPanner.connect(this._soundGain);
                 BABYLON.Tools.LoadFile(url, function (data) {
                     _this._soundLoaded(data);
                 }, null, null, true);
             }
         }
+        Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
+            this._soundGain.disconnect();
+            this._soundGain.connect(soundTrackAudioNode);
+        };
+
         /**
         * Transform this sound into a directional source
         * @param coneInnerAngle Size of the inner cone in degree
@@ -29020,34 +29037,41 @@ var BABYLON;
             }
         };
 
-        Sound.prototype.setDirection = function (newDirection) {
-            this._direction = newDirection;
+        Sound.prototype.setLocalDirectionToMesh = function (newLocalDirection) {
+            this._localDirection = newLocalDirection;
 
-            if (this._isPlaying) {
-                console.log(this._direction.x + " " + this._direction.y + " " + this._direction.z);
-                this._soundPanner.setOrientation(this._direction.x, this._direction.y, this._direction.z);
+            if (this._connectedMesh && this._isPlaying) {
+                this._updateDirection();
             }
         };
 
-        Sound.prototype.play = function () {
+        Sound.prototype._updateDirection = function () {
+            var mat = this._connectedMesh.getWorldMatrix();
+            var direction = BABYLON.Vector3.TransformNormal(this._localDirection, mat);
+            direction.normalize();
+            this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
+        };
+
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        */
+        Sound.prototype.play = function (time) {
             if (this._isReadyToPlay) {
                 try  {
+                    var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
                     this._soundSource = this._audioEngine.audioContext.createBufferSource();
                     this._soundSource.buffer = this._audioBuffer;
-                    this._soundPanner = this._audioEngine.audioContext.createPanner();
                     this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
-
-                   
                     if (this._isDirectional) {
                         this._soundPanner.coneInnerAngle = this._coneInnerAngle;
                         this._soundPanner.coneOuterAngle = this._coneOuterAngle;
                         this._soundPanner.coneOuterGain = this._coneOuterGain;
-                        this._soundPanner.setOrientation(this._direction.x, this._direction.y, this._direction.z);
+                        this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
                     }
-                    this._soundPanner.connect(this._audioEngine.masterGain);
                     this._soundSource.connect(this._soundPanner);
                     this._soundSource.loop = this.loop;
-                    this._soundSource.start(0);
+                    this._soundSource.start(startTime);
                     this._isPlaying = true;
                 } catch (ex) {
                     BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
@@ -29055,16 +29079,23 @@ var BABYLON;
             }
         };
 
-        Sound.prototype.stop = function () {
-            this._soundSource.stop(0);
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        Sound.prototype.stop = function (time) {
+            var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+            this._soundSource.stop(stopTime);
             this._isPlaying = false;
         };
 
         Sound.prototype.pause = function () {
+           
         };
 
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
+            this._connectedMesh = meshToConnectTo;
             meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             });
@@ -29072,11 +29103,8 @@ var BABYLON;
 
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             this.setPosition(connectedMesh.position);
-            if (this._isDirectional) {
-                var mat = connectedMesh.getWorldMatrix();
-                var direction = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, 1), mat);
-                direction.normalize();
-                this.setDirection(direction);
+            if (this._isDirectional && this._isPlaying) {
+                this._updateDirection();
             }
         };
 
@@ -29102,6 +29130,36 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 var BABYLON;
 (function (BABYLON) {
+    var SoundTrack = (function () {
+        function SoundTrack(scene, options) {
+            this._scene = scene;
+            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._trackGain = this._audioEngine.audioContext.createGain();
+            this._trackConvolver = this._audioEngine.audioContext.createConvolver();
+            this._trackConvolver.connect(this._trackGain);
+            this._trackGain.connect(this._audioEngine.masterGain);
+            this._soundCollection = new Array();
+            this._scene._soundTracks.push(this);
+        }
+        SoundTrack.prototype.AddSound = function (newSound) {
+            newSound.connectToSoundTrackAudioNode(this._trackConvolver);
+            this._soundCollection.push(newSound);
+        };
+
+        SoundTrack.prototype.RemoveSound = function (sound) {
+        };
+
+        SoundTrack.prototype.setVolume = function (newVolume) {
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain.gain.value = newVolume;
+            }
+        };
+        return SoundTrack;
+    })();
+    BABYLON.SoundTrack = SoundTrack;
+})(BABYLON || (BABYLON = {}));
+var BABYLON;
+(function (BABYLON) {
     var DebugLayer = (function () {
         function DebugLayer(scene) {
             var _this = this;
@@ -29115,22 +29173,25 @@ var BABYLON;
             this._syncPositions = function () {
                 var engine = _this._scene.getEngine();
                 var canvasRect = engine.getRenderingCanvasClientRect();
-                _this._statsDiv.style.right = "0";
-                _this._statsDiv.style.bottom = "10px";
-                _this._statsDiv.style.width = "300px";
-                _this._statsDiv.style.height = "auto";
-                _this._statsDiv.style.maxHeight = (canvasRect.height - 40) + "px";
 
-                _this._optionsDiv.style.left = "0px";
-                _this._optionsDiv.style.top = "10px";
-                _this._optionsDiv.style.width = "200px";
-                _this._optionsDiv.style.height = "auto";
-                _this._optionsDiv.style.maxHeight = (canvasRect.height - 40) + "px";
+                if (_this._showUI) {
+                    _this._statsDiv.style.right = "0";
+                    _this._statsDiv.style.bottom = "10px";
+                    _this._statsDiv.style.width = "300px";
+                    _this._statsDiv.style.height = "auto";
+                    _this._statsDiv.style.maxHeight = (canvasRect.height - 40) + "px";
 
-                _this._logDiv.style.left = "0px";
-                _this._logDiv.style.bottom = "10px";
-                _this._logDiv.style.width = "600px";
-                _this._logDiv.style.height = "auto";
+                    _this._optionsDiv.style.left = "0px";
+                    _this._optionsDiv.style.top = "10px";
+                    _this._optionsDiv.style.width = "200px";
+                    _this._optionsDiv.style.height = "auto";
+                    _this._optionsDiv.style.maxHeight = (canvasRect.height - 40) + "px";
+
+                    _this._logDiv.style.left = "0px";
+                    _this._logDiv.style.bottom = "10px";
+                    _this._logDiv.style.width = "600px";
+                    _this._logDiv.style.height = "auto";
+                }
 
                 _this._drawingCanvas.style.left = "0px";
                 _this._drawingCanvas.style.top = "0px";
@@ -29155,20 +29216,22 @@ var BABYLON;
             };
 
             this._syncData = function () {
-                if (_this._displayStatistics) {
-                    _this._displayStats();
-                    _this._statsDiv.style.display = "";
-                } else {
-                    _this._statsDiv.style.display = "none";
+                if (_this._showUI) {
+                    if (_this._displayStatistics) {
+                        _this._displayStats();
+                        _this._statsDiv.style.display = "";
+                    } else {
+                        _this._statsDiv.style.display = "none";
+                    }
+
+                    if (_this._displayLogs) {
+                        _this._logDiv.style.display = "";
+                    } else {
+                        _this._logDiv.style.display = "none";
+                    }
                 }
 
-                if (_this._displayLogs) {
-                    _this._logDiv.style.display = "";
-                } else {
-                    _this._logDiv.style.display = "none";
-                }
-
-                if (_this._labelsEnabled) {
+                if (_this._labelsEnabled || !_this._showUI) {
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
 
                     var engine = _this._scene.getEngine();
@@ -29184,19 +29247,23 @@ var BABYLON;
 
                         var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
 
-                        if (mesh.renderOverlay) {
+                        if (mesh.renderOverlay || _this.shouldDisplayAxis && _this.shouldDisplayAxis(mesh)) {
                             _this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
 
-                        _this._renderLabel(mesh.name, projectedPosition, 12, function () {
-                            mesh.renderOverlay = !mesh.renderOverlay;
-                        }, function () {
-                            return mesh.renderOverlay ? 'red' : 'black';
-                        });
+                        if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(mesh)) {
+                            _this._renderLabel(mesh.name, projectedPosition, 12, function () {
+                                mesh.renderOverlay = !mesh.renderOverlay;
+                            }, function () {
+                                return mesh.renderOverlay ? 'red' : 'black';
+                            });
+                        }
                     }
 
-                    for (index = 0; index < _this._scene.cameras.length; index++) {
-                        var camera = _this._scene.cameras[index];
+                   
+                    var cameras = _this._scene.cameras;
+                    for (index = 0; index < cameras.length; index++) {
+                        var camera = cameras[index];
 
                         if (camera === _this._scene.activeCamera) {
                             continue;
@@ -29204,26 +29271,32 @@ var BABYLON;
 
                         projectedPosition = BABYLON.Vector3.Project(camera.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
 
-                        _this._renderLabel(camera.name, projectedPosition, 12, function () {
-                            _this._scene.activeCamera.detachControl(engine.getRenderingCanvas());
-                            _this._scene.activeCamera = camera;
-                            _this._scene.activeCamera.attachControl(engine.getRenderingCanvas());
-                        }, function () {
-                            return "purple";
-                        });
+                        if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(camera)) {
+                            _this._renderLabel(camera.name, projectedPosition, 12, function () {
+                                _this._scene.activeCamera.detachControl(engine.getRenderingCanvas());
+                                _this._scene.activeCamera = camera;
+                                _this._scene.activeCamera.attachControl(engine.getRenderingCanvas());
+                            }, function () {
+                                return "purple";
+                            });
+                        }
                     }
 
-                    for (index = 0; index < _this._scene.lights.length; index++) {
-                        var light = _this._scene.lights[index];
+                   
+                    var lights = _this._scene.lights;
+                    for (index = 0; index < lights.length; index++) {
+                        var light = lights[index];
 
                         if (light.position) {
                             projectedPosition = BABYLON.Vector3.Project(light.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
 
-                            _this._renderLabel(light.name, projectedPosition, -20, function () {
-                                light.setEnabled(!light.isEnabled());
-                            }, function () {
-                                return light.isEnabled() ? "orange" : "gray";
-                            });
+                            if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(light)) {
+                                _this._renderLabel(light.name, projectedPosition, -20, function () {
+                                    light.setEnabled(!light.isEnabled());
+                                }, function () {
+                                    return light.isEnabled() ? "orange" : "gray";
+                                });
+                            }
                         }
                     }
                 }
@@ -29315,67 +29388,74 @@ var BABYLON;
             return true;
         };
 
-        Object.defineProperty(DebugLayer.prototype, "enabled", {
-            get: function () {
-                return this._enabled;
-            },
-            set: function (value) {
-                if (this._enabled === value) {
-                    return;
-                }
+        DebugLayer.prototype.isVisible = function () {
+            return this._enabled;
+        };
 
-                this._enabled = value;
+        DebugLayer.prototype.hide = function () {
+            if (!this._enabled) {
+                return;
+            }
 
-                var engine = this._scene.getEngine();
-                var parentElement = engine.getRenderingCanvas().parentElement;
+            this._enabled = false;
 
-                if (this._enabled) {
-                    this._scene.registerAfterRender(this._syncData);
+            var engine = this._scene.getEngine();
+            var parentElement = engine.getRenderingCanvas().parentElement;
 
-                    this._globalDiv = document.createElement("div");
+            this._scene.unregisterAfterRender(this._syncData);
+            parentElement.removeChild(this._globalDiv);
 
-                    parentElement.appendChild(this._globalDiv);
+            window.removeEventListener("resize", this._syncPositions);
 
-                    this._generateDOMelements();
+            this._scene.forceShowBoundingBoxes = false;
+            this._scene.forceWireframe = false;
 
-                    window.addEventListener("resize", this._syncPositions);
-                    engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
+            BABYLON.StandardMaterial.DiffuseTextureEnabled = true;
+            BABYLON.StandardMaterial.AmbientTextureEnabled = true;
+            BABYLON.StandardMaterial.SpecularTextureEnabled = true;
+            BABYLON.StandardMaterial.EmissiveTextureEnabled = true;
+            BABYLON.StandardMaterial.BumpTextureEnabled = true;
+            BABYLON.StandardMaterial.OpacityTextureEnabled = true;
+            BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
 
-                    this._syncPositions();
-                } else {
-                    this._scene.unregisterAfterRender(this._syncData);
-                    parentElement.removeChild(this._globalDiv);
+            this._scene.shadowsEnabled = true;
+            this._scene.particlesEnabled = true;
+            this._scene.postProcessesEnabled = true;
+            this._scene.collisionsEnabled = true;
+            this._scene.lightsEnabled = true;
+            this._scene.texturesEnabled = true;
+            this._scene.lensFlaresEnabled = true;
+            this._scene.proceduralTexturesEnabled = true;
+            this._scene.renderTargetsEnabled = true;
 
-                    window.removeEventListener("resize", this._syncPositions);
+            engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
+        };
 
-                    this._scene.forceShowBoundingBoxes = false;
-                    this._scene.forceWireframe = false;
+        DebugLayer.prototype.show = function (showUI) {
+            if (typeof showUI === "undefined") { showUI = true; }
+            if (this._enabled) {
+                return;
+            }
 
-                    BABYLON.StandardMaterial.DiffuseTextureEnabled = true;
-                    BABYLON.StandardMaterial.AmbientTextureEnabled = true;
-                    BABYLON.StandardMaterial.SpecularTextureEnabled = true;
-                    BABYLON.StandardMaterial.EmissiveTextureEnabled = true;
-                    BABYLON.StandardMaterial.BumpTextureEnabled = true;
-                    BABYLON.StandardMaterial.OpacityTextureEnabled = true;
-                    BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
+            this._enabled = true;
+            this._showUI = showUI;
 
-                    this._scene.shadowsEnabled = true;
-                    this._scene.particlesEnabled = true;
-                    this._scene.postProcessesEnabled = true;
-                    this._scene.collisionsEnabled = true;
-                    this._scene.lightsEnabled = true;
-                    this._scene.texturesEnabled = true;
-                    this._scene.lensFlaresEnabled = true;
-                    this._scene.proceduralTexturesEnabled = true;
-                    this._scene.renderTargetsEnabled = true;
+            var engine = this._scene.getEngine();
+            var parentElement = engine.getRenderingCanvas().parentElement;
 
-                    engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
+            this._scene.registerAfterRender(this._syncData);
 
+            this._globalDiv = document.createElement("div");
+
+            parentElement.appendChild(this._globalDiv);
+
+            this._generateDOMelements();
+
+            window.addEventListener("resize", this._syncPositions);
+            engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
+
+            this._syncPositions();
+        };
 
         DebugLayer.prototype._clearLabels = function () {
             this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
@@ -29413,33 +29493,7 @@ var BABYLON;
 
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
-            var background = "rgba(128, 128, 128, 0.4)";
-
-           
-            this._statsDiv = document.createElement("div");
-            this._statsDiv.id = "Debug Layer - Stats";
-            this._statsDiv.style.position = "absolute";
-            this._statsDiv.style.background = background;
-            this._statsDiv.style.padding = "10px";
-            this._statsDiv.style.pointerEvents = "none";
-            this._statsDiv.style.overflowY = "auto";
-
-           
-            this._logDiv = document.createElement("div");
-            this._logDiv.id = "Debug Layer - Logs";
-            this._logDiv.style.position = "absolute";
-            this._logDiv.style.background = background;
-            this._logDiv.style.padding = "10px";
-            this._logDiv.style.pointerEvents = "none";
-            this._logDiv.style.fontSize = "12px";
-            this._logDiv.style.fontFamily = "consolas";
-            this._logDiv.style.maxHeight = "300px";
-            this._logDiv.style.overflowY = "auto";
-            this._logDiv.style.display = "none";
-            this._logDiv.innerHTML = BABYLON.Tools.LogCache;
-            BABYLON.Tools.OnNewCacheEntry = function (entry) {
-                _this._logDiv.innerHTML = entry + _this._logDiv.innerHTML;
-            };
+            this._globalDiv.id = "Debug Layer";
 
            
             this._drawingCanvas = document.createElement("canvas");
@@ -29447,97 +29501,133 @@ var BABYLON;
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
             this._drawingContext = this._drawingCanvas.getContext("2d");
-
-           
-            this._optionsDiv = document.createElement("div");
-            this._optionsDiv.id = "Debug Layer - Options";
-            this._optionsDiv.style.position = "absolute";
-            this._optionsDiv.style.background = background;
-            this._optionsDiv.style.padding = "10px";
-            this._optionsDiv.style.overflowY = "auto";
-
-            this._generateTexBox(this._optionsDiv, "<b>General:</b>");
-            this._generateCheckBox(this._optionsDiv, "Statistics", this._displayStatistics, function (element) {
-                _this._displayStatistics = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Logs", this._displayLogs, function (element) {
-                _this._displayLogs = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, function (element) {
-                _this._scene.forceShowBoundingBoxes = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Wireframe", this._scene.forceWireframe, function (element) {
-                _this._scene.forceWireframe = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Labels", this._labelsEnabled, function (element) {
-                _this._labelsEnabled = element.checked;
-                if (!_this._labelsEnabled) {
-                    _this._clearLabels();
-                }
-            });
-            this._optionsDiv.appendChild(document.createElement("br"));
-            this._generateTexBox(this._optionsDiv, "<b>Texture Channels:</b>");
-            this._generateCheckBox(this._optionsDiv, "Diffuse", BABYLON.StandardMaterial.DiffuseTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.DiffuseTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Ambient", BABYLON.StandardMaterial.AmbientTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.AmbientTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Specular", BABYLON.StandardMaterial.SpecularTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.SpecularTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Emissive", BABYLON.StandardMaterial.EmissiveTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.EmissiveTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Bump", BABYLON.StandardMaterial.BumpTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.BumpTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) {
-                BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked;
-            });
-            this._optionsDiv.appendChild(document.createElement("br"));
-            this._generateTexBox(this._optionsDiv, "<b>Options:</b>");
-            this._generateCheckBox(this._optionsDiv, "Shadows", this._scene.shadowsEnabled, function (element) {
-                _this._scene.shadowsEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Particles", this._scene.particlesEnabled, function (element) {
-                _this._scene.particlesEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Post-processes", this._scene.postProcessesEnabled, function (element) {
-                _this._scene.postProcessesEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
-                _this._scene.collisionsEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Lights", this._scene.lightsEnabled, function (element) {
-                _this._scene.lightsEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Textures", this._scene.texturesEnabled, function (element) {
-                _this._scene.texturesEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Lens flares", this._scene.lensFlaresEnabled, function (element) {
-                _this._scene.lensFlaresEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Render targets", this._scene.renderTargetsEnabled, function (element) {
-                _this._scene.renderTargetsEnabled = element.checked;
-            });
-            this._generateCheckBox(this._optionsDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) {
-                _this._scene.proceduralTexturesEnabled = element.checked;
-            });
-
-           
             this._globalDiv.appendChild(this._drawingCanvas);
-            this._globalDiv.appendChild(this._statsDiv);
-            this._globalDiv.appendChild(this._logDiv);
-            this._globalDiv.appendChild(this._optionsDiv);
-            this._globalDiv.id = "Debug Layer";
 
-            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-            this._globalDiv.style.fontSize = "14px";
-            this._globalDiv.style.color = "white";
+            if (this._showUI) {
+                var background = "rgba(128, 128, 128, 0.4)";
+
+               
+                this._statsDiv = document.createElement("div");
+                this._statsDiv.id = "Debug Layer - Stats";
+                this._statsDiv.style.position = "absolute";
+                this._statsDiv.style.background = background;
+                this._statsDiv.style.padding = "10px";
+                this._statsDiv.style.pointerEvents = "none";
+                this._statsDiv.style.overflowY = "auto";
+
+               
+                this._logDiv = document.createElement("div");
+                this._logDiv.id = "Debug Layer - Logs";
+                this._logDiv.style.position = "absolute";
+                this._logDiv.style.background = background;
+                this._logDiv.style.padding = "10px";
+                this._logDiv.style.fontSize = "12px";
+                this._logDiv.style.fontFamily = "consolas";
+                this._logDiv.style.maxHeight = "200px";
+                this._logDiv.style.overflowY = "auto";
+                this._logDiv.style.display = "none";
+                this._logDiv.innerHTML = BABYLON.Tools.LogCache;
+                BABYLON.Tools.OnNewCacheEntry = function (entry) {
+                    _this._logDiv.innerHTML = entry + _this._logDiv.innerHTML;
+                };
+
+               
+                this._optionsDiv = document.createElement("div");
+                this._optionsDiv.id = "Debug Layer - Options";
+                this._optionsDiv.style.position = "absolute";
+                this._optionsDiv.style.background = background;
+                this._optionsDiv.style.padding = "10px";
+                this._optionsDiv.style.overflowY = "auto";
+
+                this._generateTexBox(this._optionsDiv, "<b>General:</b>");
+                this._generateCheckBox(this._optionsDiv, "Statistics", this._displayStatistics, function (element) {
+                    _this._displayStatistics = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Logs", this._displayLogs, function (element) {
+                    _this._displayLogs = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, function (element) {
+                    _this._scene.forceShowBoundingBoxes = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Wireframe", this._scene.forceWireframe, function (element) {
+                    _this._scene.forceWireframe = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Clickable labels", this._labelsEnabled, function (element) {
+                    _this._labelsEnabled = element.checked;
+                    if (!_this._labelsEnabled) {
+                        _this._clearLabels();
+                    }
+                });
+                this._generateCheckBox(this._optionsDiv, "Generate user marks", BABYLON.Tools.PerformanceLogLevel === BABYLON.Tools.PerformanceUserMarkLogLevel, function (element) {
+                    if (element.checked) {
+                        BABYLON.Tools.PerformanceLogLevel = BABYLON.Tools.PerformanceUserMarkLogLevel;
+                    } else {
+                        BABYLON.Tools.PerformanceLogLevel = BABYLON.Tools.PerformanceNoneLogLevel;
+                    }
+                });
+                ;
+                this._optionsDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsDiv, "<b>Texture Channels:</b>");
+                this._generateCheckBox(this._optionsDiv, "Diffuse", BABYLON.StandardMaterial.DiffuseTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.DiffuseTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Ambient", BABYLON.StandardMaterial.AmbientTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.AmbientTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Specular", BABYLON.StandardMaterial.SpecularTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.SpecularTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Emissive", BABYLON.StandardMaterial.EmissiveTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.EmissiveTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Bump", BABYLON.StandardMaterial.BumpTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.BumpTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) {
+                    BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked;
+                });
+                this._optionsDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsDiv, "<b>Options:</b>");
+                this._generateCheckBox(this._optionsDiv, "Shadows", this._scene.shadowsEnabled, function (element) {
+                    _this._scene.shadowsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Particles", this._scene.particlesEnabled, function (element) {
+                    _this._scene.particlesEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Post-processes", this._scene.postProcessesEnabled, function (element) {
+                    _this._scene.postProcessesEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
+                    _this._scene.collisionsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Lights", this._scene.lightsEnabled, function (element) {
+                    _this._scene.lightsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Textures", this._scene.texturesEnabled, function (element) {
+                    _this._scene.texturesEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Lens flares", this._scene.lensFlaresEnabled, function (element) {
+                    _this._scene.lensFlaresEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Render targets", this._scene.renderTargetsEnabled, function (element) {
+                    _this._scene.renderTargetsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) {
+                    _this._scene.proceduralTexturesEnabled = element.checked;
+                });
+
+               
+                this._globalDiv.appendChild(this._statsDiv);
+                this._globalDiv.appendChild(this._logDiv);
+                this._globalDiv.appendChild(this._optionsDiv);
+
+                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+                this._globalDiv.style.fontSize = "14px";
+                this._globalDiv.style.color = "white";
+            }
         };
 
         DebugLayer.prototype._displayStats = function () {
@@ -29549,111 +29639,4 @@ var BABYLON;
         return DebugLayer;
     })();
     BABYLON.DebugLayer = DebugLayer;
-})(BABYLON || (BABYLON = {}));
-var BABYLON;
-(function (BABYLON) {
-    var Boxels = (function () {
-        function Boxels() {
-        }
-        Boxels.CreateBox = function (name, size, scene, updatable) {
-            var box = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.Boxels.CreateBoxVertexData(size);
-
-            vertexData.applyToMesh(box, updatable);
-
-            return box;
-        };
-
-        Boxels.CreateBoxVertexData = function (size) {
-            var normalsSource = [
-                new BABYLON.Vector3(0, 0, 1),
-                new BABYLON.Vector3(0, 0, -1),
-                new BABYLON.Vector3(1, 0, 0),
-                new BABYLON.Vector3(-1, 0, 0),
-                new BABYLON.Vector3(0, 1, 0),
-                new BABYLON.Vector3(0, -1, 0)
-            ];
-
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
-
-            size = size || 1;
-
-            for (var index = 0; index < normalsSource.length; index++) {
-                var normal = normalsSource[index];
-
-               
-                var side1 = new BABYLON.Vector3(normal.y, normal.z, normal.x);
-                var side2 = BABYLON.Vector3.Cross(normal, side1);
-
-               
-                var verticesLength = positions.length / 3;
-                indices.push(verticesLength);
-                indices.push(verticesLength + 1);
-                indices.push(verticesLength + 2);
-
-                indices.push(verticesLength);
-                indices.push(verticesLength + 2);
-                indices.push(verticesLength + 3);
-
-               
-                var vertex = normal.subtract(side1).subtract(side2).scale(size / 2);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(normal.x, normal.y, normal.z);
-
-                vertex = normal.subtract(side1).add(side2).scale(size / 2);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(normal.x, normal.y, normal.z);
-
-                vertex = normal.add(side1).add(side2).scale(size / 2);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(normal.x, normal.y, normal.z);
-
-                vertex = normal.add(side1).subtract(side2).scale(size / 2);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(normal.x, normal.y, normal.z);
-
-                if (normal.x == 1) {
-                    uvs.push(1.0, 0.0);
-                    uvs.push(1.0, 1.0);
-                    uvs.push(0.0, 1.0);
-                    uvs.push(0.0, 0.0);
-                } else if (normal.z == 1) {
-                    uvs.push(1.0, 1.0);
-                    uvs.push(0.0, 1.0);
-                    uvs.push(0.0, 0.0);
-                    uvs.push(1.0, 0.0);
-                } else if (normal.x == -1) {
-                    uvs.push(1.0, 0.0);
-                    uvs.push(1.0, 1.0);
-                    uvs.push(0.0, 1.0);
-                    uvs.push(0.0, 0.0);
-                } else if (normal.z == -1) {
-                    uvs.push(0.0, 0.0);
-                    uvs.push(1.0, 0.0);
-                    uvs.push(1.0, 1.0);
-                    uvs.push(0.0, 1.0);
-                } else {
-                    uvs.push(1.0, 1.0);
-                    uvs.push(0.0, 1.0);
-                    uvs.push(0.0, 0.0);
-                    uvs.push(1.0, 0.0);
-                }
-            }
-
-           
-            var vertexData = new BABYLON.VertexData();
-
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-            vertexData.normals = normals;
-            vertexData.uvs = uvs;
-
-            return vertexData;
-        };
-        return Boxels;
-    })();
-    BABYLON.Boxels = Boxels;
 })(BABYLON || (BABYLON = {}));

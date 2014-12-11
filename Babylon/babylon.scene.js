@@ -60,6 +60,8 @@
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
+            // Sound Tracks
+            this._soundTracks = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -1172,7 +1174,7 @@
             this._boundingBoxRenderer.dispose();
 
             // Debug layer
-            this.debugLayer.enabled = false;
+            this.debugLayer.hide();
 
             // Events
             if (this.onDispose) {

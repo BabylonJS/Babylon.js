@@ -14,7 +14,7 @@
             this.autoplay = false;
             this.loop = false;
             this._position = BABYLON.Vector3.Zero();
-            this._direction = BABYLON.Vector3.Zero();
+            this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._isLoaded = false;
             this._isReadyToPlay = false;
             this._isPlaying = false;
@@ -41,11 +41,20 @@
             }
 
             if (this._audioEngine.canUseWebAudio) {
+                this._soundGain = this._audioEngine.audioContext.createGain();
+                this._soundGain.connect(this._audioEngine.masterGain);
+                this._soundPanner = this._audioEngine.audioContext.createPanner();
+                this._soundPanner.connect(this._soundGain);
                 BABYLON.Tools.LoadFile(url, function (data) {
                     _this._soundLoaded(data);
                 }, null, null, true);
             }
         }
+        Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
+            this._soundGain.disconnect();
+            this._soundGain.connect(soundTrackAudioNode);
+        };
+
         /**
         * Transform this sound into a directional source
         * @param coneInnerAngle Size of the inner cone in degree
@@ -76,34 +85,41 @@
             }
         };
 
-        Sound.prototype.setDirection = function (newDirection) {
-            this._direction = newDirection;
+        Sound.prototype.setLocalDirectionToMesh = function (newLocalDirection) {
+            this._localDirection = newLocalDirection;
 
-            if (this._isPlaying) {
-                console.log(this._direction.x + " " + this._direction.y + " " + this._direction.z);
-                this._soundPanner.setOrientation(this._direction.x, this._direction.y, this._direction.z);
+            if (this._connectedMesh && this._isPlaying) {
+                this._updateDirection();
             }
         };
 
-        Sound.prototype.play = function () {
+        Sound.prototype._updateDirection = function () {
+            var mat = this._connectedMesh.getWorldMatrix();
+            var direction = BABYLON.Vector3.TransformNormal(this._localDirection, mat);
+            direction.normalize();
+            this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
+        };
+
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        */
+        Sound.prototype.play = function (time) {
             if (this._isReadyToPlay) {
                 try  {
+                    var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
                     this._soundSource = this._audioEngine.audioContext.createBufferSource();
                     this._soundSource.buffer = this._audioBuffer;
-                    this._soundPanner = this._audioEngine.audioContext.createPanner();
                     this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
-
-                    //this._soundPanner.maxDistance = this.maxDistance;
                     if (this._isDirectional) {
                         this._soundPanner.coneInnerAngle = this._coneInnerAngle;
                         this._soundPanner.coneOuterAngle = this._coneOuterAngle;
                         this._soundPanner.coneOuterGain = this._coneOuterGain;
-                        this._soundPanner.setOrientation(this._direction.x, this._direction.y, this._direction.z);
+                        this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
                     }
-                    this._soundPanner.connect(this._audioEngine.masterGain);
                     this._soundSource.connect(this._soundPanner);
                     this._soundSource.loop = this.loop;
-                    this._soundSource.start(0);
+                    this._soundSource.start(startTime);
                     this._isPlaying = true;
                 } catch (ex) {
                     BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
@@ -111,16 +127,23 @@
             }
         };
 
-        Sound.prototype.stop = function () {
-            this._soundSource.stop(0);
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        Sound.prototype.stop = function (time) {
+            var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+            this._soundSource.stop(stopTime);
             this._isPlaying = false;
         };
 
         Sound.prototype.pause = function () {
+            //this._soundSource.p
         };
 
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
+            this._connectedMesh = meshToConnectTo;
             meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             });
@@ -128,11 +151,8 @@
 
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             this.setPosition(connectedMesh.position);
-            if (this._isDirectional) {
-                var mat = connectedMesh.getWorldMatrix();
-                var direction = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, 1), mat);
-                direction.normalize();
-                this.setDirection(direction);
+            if (this._isDirectional && this._isPlaying) {
+                this._updateDirection();
             }
         };
 

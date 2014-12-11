@@ -390,6 +390,7 @@ declare module BABYLON {
         private _meshesForIntersections;
         public proceduralTexturesEnabled: boolean;
         public _proceduralTextures: ProceduralTexture[];
+        public _soundTracks: SoundTrack[];
         private _engine;
         private _totalVertices;
         public _activeVertices: number;
@@ -874,12 +875,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     class Sound {
-        private _audioBuffer;
         public maxDistance: number;
         public autoplay: boolean;
         public loop: boolean;
         private _position;
-        private _direction;
+        private _localDirection;
         private _volume;
         private _currentVolume;
         private _isLoaded;
@@ -888,13 +888,16 @@ declare module BABYLON {
         private _isDirectional;
         private _audioEngine;
         private _readyToPlayCallback;
+        private _audioBuffer;
         private _soundSource;
         private _soundPanner;
+        private _soundGain;
         private _coneInnerAngle;
         private _coneOuterAngle;
         private _coneOuterGain;
         private _scene;
         private _name;
+        private _connectedMesh;
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
@@ -903,6 +906,7 @@ declare module BABYLON {
         * @param options Objects to provide with the current available options: autoplay, loop, distanceMax
         */
         constructor(name: string, url: string, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
         /**
         * Transform this sound into a directional source
         * @param coneInnerAngle Size of the inner cone in degree
@@ -911,13 +915,36 @@ declare module BABYLON {
         */
         public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
         public setPosition(newPosition: Vector3): void;
-        public setDirection(newDirection: Vector3): void;
-        public play(): void;
-        public stop(): void;
+        public setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        */
+        public play(time?: number): void;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        public stop(time?: number): void;
         public pause(): void;
         public attachToMesh(meshToConnectTo: AbstractMesh): void;
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
         private _soundLoaded(audioData);
+    }
+}
+declare module BABYLON {
+    class SoundTrack {
+        private _audioEngine;
+        private _trackGain;
+        private _trackConvolver;
+        private _scene;
+        private _id;
+        private _soundCollection;
+        constructor(scene: Scene, options?: any);
+        public AddSound(newSound: Sound): void;
+        public RemoveSound(sound: Sound): void;
+        public setVolume(newVolume: number): void;
     }
 }
 declare module BABYLON {
@@ -1475,12 +1502,17 @@ declare module BABYLON {
         private _clickPosition;
         private _ratio;
         private _identityMatrix;
+        private _showUI;
+        public shouldDisplayLabel: (node: Node) => boolean;
+        public shouldDisplayAxis: (mesh: Mesh) => boolean;
         constructor(scene: Scene);
         private _renderSingleAxis(zero, unit, unitText, label, color);
         private _renderAxis(projectedPosition, mesh, globalViewport);
         private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
         private _isClickInsideRect(x, y, width, height);
-        public enabled : boolean;
+        public isVisible(): boolean;
+        public hide(): void;
+        public show(showUI?: boolean): void;
         private _clearLabels();
         private _generateTexBox(root, title);
         private _generateCheckBox(root, title, initialState, task);
@@ -2093,13 +2125,11 @@ declare module BABYLON {
     class CustomProceduralTexture extends ProceduralTexture {
         private _animate;
         private _time;
-        private _shaderLoaded;
         private _config;
         private _texturePath;
-        private _updateTexture;
-        private _customFragment;
         constructor(name: string, texturePath: any, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         private loadJson(jsonUrl);
+        public isReady(): boolean;
         public render(useCameraPostProcess?: boolean): void;
         public updateTextures(): void;
         public updateShaderUniforms(): void;
@@ -2121,7 +2151,7 @@ declare module BABYLON {
         private _uniforms;
         private _samplers;
         private _fragment;
-        private _textures;
+        public _textures: Texture[];
         private _floats;
         private _floatsArrays;
         private _colors3;

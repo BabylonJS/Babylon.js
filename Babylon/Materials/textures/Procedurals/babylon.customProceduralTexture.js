@@ -9,28 +9,25 @@ var BABYLON;
     var CustomProceduralTexture = (function (_super) {
         __extends(CustomProceduralTexture, _super);
         function CustomProceduralTexture(name, texturePath, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "empty", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, null, scene, fallbackTexture, generateMipMaps);
             this._animate = true;
             this._time = 0;
-            this._shaderLoaded = false;
-            this._updateTexture = false;
             this._texturePath = texturePath;
 
-            //readJson
+            //Try to load json
             this.loadJson(texturePath);
             this.refreshRate = 1;
         }
         CustomProceduralTexture.prototype.loadJson = function (jsonUrl) {
+            var _this = this;
             var that = this;
 
             function noConfigFile() {
-                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying as a shaderstore or dom");
+                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShaderStore or DOM element");
                 try  {
-                    that._customFragment = that._texturePath;
-                    that._updateTexture = true;
-                    that._shaderLoaded = true;
+                    that.setFragment(that._texturePath);
                 } catch (ex) {
-                    BABYLON.Tools.Error("No json or shaderStore or Dom element found for the Custom Procedural Texture");
+                    BABYLON.Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
             }
 
@@ -41,10 +38,14 @@ var BABYLON;
             xhr.addEventListener("load", function () {
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try  {
-                        that._config = JSON.parse(xhr.response);
-                        that._customFragment = that._texturePath + "/custom";
-                        that._updateTexture = true;
-                        that._shaderLoaded = true;
+                        _this._config = JSON.parse(xhr.response);
+
+                        _this.updateShaderUniforms();
+                        _this.updateTextures();
+                        _this.setFragment(_this._texturePath + "/custom");
+
+                        _this._animate = _this._config.animate;
+                        _this.refreshRate = _this._config.refreshrate;
                     } catch (ex) {
                         noConfigFile();
                     }
@@ -60,30 +61,27 @@ var BABYLON;
             try  {
                 xhr.send();
             } catch (ex) {
-                BABYLON.Tools.Error("Error on XHR send request.");
+                BABYLON.Tools.Error("CustomProceduralTexture: Error on XHR send request.");
             }
         };
 
-        CustomProceduralTexture.prototype.render = function (useCameraPostProcess) {
-            //if config and shader not loaded, do not render
-            if (!this._shaderLoaded)
-                return;
-
-            if (this._updateTexture) {
-                this.reset();
-                this.setFragment(this._customFragment);
-                this.updateTextures();
-                this.updateShaderUniforms();
-                this._shaderLoaded = true;
-                if (this._config) {
-                    this._animate = this._config.animate;
-                    this.refreshRate = this._config.refreshrate;
-                }
-                this.isReady();
-                this._updateTexture = false;
-                return;
+        CustomProceduralTexture.prototype.isReady = function () {
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
             }
 
+            for (var name in this._textures) {
+                var texture = this._textures[name];
+
+                if (!texture.isReady()) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        CustomProceduralTexture.prototype.render = function (useCameraPostProcess) {
             if (this._animate) {
                 this._time += this.getScene().getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
@@ -93,10 +91,8 @@ var BABYLON;
         };
 
         CustomProceduralTexture.prototype.updateTextures = function () {
-            if (this._config) {
-                for (var i = 0; i < this._config.texture2Ds.length; i++) {
-                    this.setTexture(this._config.texture2Ds[i].textureName, new BABYLON.Texture(this._texturePath + "/" + this._config.texture2Ds[i].textureRelativeUrl, this.getScene(), false, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, null, null, null, true));
-                }
+            for (var i = 0; i < this._config.sampler2Ds.length; i++) {
+                this.setTexture(this._config.sampler2Ds[i].sample2Dname, new BABYLON.Texture(this._texturePath + "/" + this._config.sampler2Ds[i].textureRelativeUrl, this.getScene()));
             }
         };
 
@@ -134,7 +130,6 @@ var BABYLON;
             },
             set: function (value) {
                 this._animate = value;
-                this.updateShaderUniforms();
             },
             enumerable: true,
             configurable: true

@@ -118,6 +118,9 @@
         public proceduralTexturesEnabled = true;
         public _proceduralTextures = new Array<ProceduralTexture>();
 
+        // Sound Tracks
+        public _soundTracks = new Array<SoundTrack>();
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
@@ -1251,7 +1254,7 @@
             this._boundingBoxRenderer.dispose();
 
             // Debug layer
-            this.debugLayer.enabled = false;
+            this.debugLayer.hide();
 
             // Events
             if (this.onDispose) {

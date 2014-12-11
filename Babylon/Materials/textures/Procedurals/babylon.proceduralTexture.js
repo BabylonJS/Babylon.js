@@ -9,6 +9,7 @@ var BABYLON;
     var ProceduralTexture = (function (_super) {
         __extends(ProceduralTexture, _super);
         function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps) {
+            if (typeof generateMipMaps === "undefined") { generateMipMaps = true; }
             _super.call(this, null, scene, !generateMipMaps);
             this._currentRefreshId = -1;
             this._refreshRate = 1;
@@ -32,7 +33,7 @@ var BABYLON;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
 
-            this._fragment = fragment;
+            this.setFragment(fragment);
 
             this._fallbackTexture = fallbackTexture;
 
@@ -60,6 +61,9 @@ var BABYLON;
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
         ProceduralTexture.prototype.reset = function () {
+            if (this._effect === undefined) {
+                return;
+            }
             var engine = this.getScene().getEngine();
             engine._releaseEffect(this._effect);
         };
@@ -69,10 +73,14 @@ var BABYLON;
             var engine = this.getScene().getEngine();
             var shaders;
 
-            if (this._fragment.fragmentElement == undefined) {
-                shaders = { vertex: "procedural", fragment: this._fragment };
-            } else {
+            if (!this._fragment) {
+                return false;
+            }
+
+            if (this._fragment.fragmentElement !== undefined) {
                 shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
+            } else {
+                shaders = { vertex: "procedural", fragment: this._fragment };
             }
 
             this._effect = engine.createEffect(shaders, ["position"], this._uniforms, this._samplers, "", null, null, function () {
