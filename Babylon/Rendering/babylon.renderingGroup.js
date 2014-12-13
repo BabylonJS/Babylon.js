@@ -48,18 +48,18 @@
             if (this._transparentSubMeshes.length) {
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
-                    submesh._alphaLayer = submesh.getMesh().alphaLayer;
+                    submesh._alphaIndex = submesh.getMesh().alphaIndex;
                     submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
                 }
 
                 var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
 
                 sortedArray.sort(function (a, b) {
-                    // Alpha layer first
-                    if (a._alphaLayer > b._alphaLayer) {
+                    // Alpha index first
+                    if (a._alphaIndex > b._alphaIndex) {
                         return 1;
                     }
-                    if (a._alphaLayer < b._alphaLayer) {
+                    if (a._alphaIndex < b._alphaIndex) {
                         return -1;
                     }
 
@@ -98,9 +98,7 @@
             var mesh = subMesh.getMesh();
 
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
-                if (material.alpha > 0 || mesh.visibility < 1.0) {
-                    this._transparentSubMeshes.push(subMesh);
-                }
+                this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) {
                 this._alphaTestSubMeshes.push(subMesh);
             } else {

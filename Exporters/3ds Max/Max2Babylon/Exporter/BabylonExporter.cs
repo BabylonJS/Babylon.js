@@ -119,6 +119,7 @@ namespace Max2Babylon
 
             // Cameras
             BabylonCamera mainCamera = null;
+            ICameraObject mainCameraNode = null;
 
             RaiseMessage("Exporting cameras");
             foreach (var cameraNode in maxScene.NodesListBySuperClass(SClass_ID.Camera))
@@ -131,6 +132,7 @@ namespace Max2Babylon
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
                 {
+                    mainCameraNode = (cameraNode.ObjectRef as ICameraObject);
                     mainCamera = babylonScene.CamerasList[0];
                     babylonScene.activeCameraID = mainCamera.id;
                     RaiseMessage("Active camera set to " + mainCamera.name, Color.Green, 1, true);
@@ -155,19 +157,26 @@ namespace Max2Babylon
                 {
                     var fog = atmospheric as IStdFog;
 
+                    RaiseMessage("Exporting fog");
+
                     if (fog != null)
                     {
-                        RaiseMessage("Exporting fog");
-
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
-                        babylonScene.fogDensity = fog.GetDensity(0);
-                        babylonScene.fogMode = fog.GetType_ == 0 ? 3 : 1;
+                        babylonScene.fogMode = 3;
+                    }
+#if !MAX2015
+                    else
+                    {
+                        var paramBlock = atmospheric.GetReference(0) as IIParamBlock;
 
-                        if (mainCamera != null)
-                        {
-                            babylonScene.fogStart = mainCamera.minZ*fog.GetNear(0);
-                            babylonScene.fogEnd = mainCamera.maxZ*fog.GetFar(0);
-                        }
+                        babylonScene.fogColor = Tools.GetParamBlockValueColor(paramBlock, "Fog Color");
+                        babylonScene.fogMode = 3;
+                    }
+#endif
+                    if (mainCamera != null)
+                    {
+                        babylonScene.fogStart = mainCameraNode.GetEnvRange(0, 0, Tools.Forever);
+                        babylonScene.fogEnd = mainCameraNode.GetEnvRange(0, 1, Tools.Forever);
                     }
                 }
             }

@@ -16,7 +16,7 @@ var BABYLON;
             this.scaling = new BABYLON.Vector3(1, 1, 1);
             this.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
             this.visibility = 1.0;
-            this.alphaLayer = Number.MAX_VALUE;
+            this.alphaIndex = Number.MAX_VALUE;
             this.infiniteDistance = false;
             this.isVisible = true;
             this.isPickable = true;

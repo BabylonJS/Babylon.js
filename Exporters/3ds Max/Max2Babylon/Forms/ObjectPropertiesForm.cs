@@ -27,6 +27,8 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkLoop, objects, "babylonjs_autoanimateloop");
             Tools.UpdateNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
             Tools.UpdateNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to");
+
+            Tools.UpdateNumericUpDown(nupAlphaIndex, objects, "babylonjs_alphaindex");
         }
 
         private void ObjectPropertiesForm_Load(object sender, EventArgs e)
@@ -52,6 +54,7 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkLoop, objects, "babylonjs_autoanimateloop", 1);
             Tools.PrepareNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
             Tools.PrepareNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to", 100.0f);
+            Tools.PrepareNumericUpDown(nupAlphaIndex, objects, "babylonjs_alphaindex", 1000);
         }
 
         private void chkAutoAnimate_CheckedChanged(object sender, EventArgs e)
