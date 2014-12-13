@@ -25,6 +25,7 @@ var BABYLON;
             this._vectors2 = new Array();
             this._vectors3 = new Array();
             this._matrices = new Array();
+            this._fallbackTextureUsed = false;
 
             scene._proceduralTextures.push(this);
 
@@ -77,6 +78,10 @@ var BABYLON;
                 return false;
             }
 
+            if (this._fallbackTextureUsed) {
+                return true;
+            }
+
             if (this._fragment.fragmentElement !== undefined) {
                 shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
             } else {
@@ -86,8 +91,12 @@ var BABYLON;
             this._effect = engine.createEffect(shaders, ["position"], this._uniforms, this._samplers, "", null, null, function () {
                 _this.releaseInternalTexture();
 
-                _this._texture = _this._fallbackTexture._texture;
-                _this._texture.references++;
+                if (_this._fallbackTexture) {
+                    _this._texture = _this._fallbackTexture._texture;
+                    _this._texture.references++;
+                }
+
+                _this._fallbackTextureUsed = true;
             });
 
             return this._effect.isReady();
@@ -120,12 +129,16 @@ var BABYLON;
                 return false;
             }
 
+            if (this._fallbackTextureUsed) {
+                return false;
+            }
+
             if (this._currentRefreshId === -1) {
                 this._currentRefreshId = 1;
                 return true;
             }
 
-            if (this.refreshRate == this._currentRefreshId) {
+            if (this.refreshRate === this._currentRefreshId) {
                 this._currentRefreshId = 1;
                 return true;
             }
@@ -139,6 +152,10 @@ var BABYLON;
         };
 
         ProceduralTexture.prototype.resize = function (size, generateMipMaps) {
+            if (this._fallbackTextureUsed) {
+                return;
+            }
+
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         };
@@ -265,7 +282,7 @@ var BABYLON;
 
         ProceduralTexture.prototype.clone = function () {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
+            var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

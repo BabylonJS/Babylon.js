@@ -34,7 +34,7 @@
         public scaling = new BABYLON.Vector3(1, 1, 1);
         public billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
-        public alphaLayer = Number.MAX_VALUE;
+        public alphaIndex = Number.MAX_VALUE;
         public infiniteDistance = false;
         public isVisible = true;
         public isPickable = true;

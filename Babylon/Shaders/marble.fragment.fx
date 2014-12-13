@@ -5,11 +5,11 @@ precision highp float;
 varying vec2 vPosition;
 varying vec2 vUV;
 
-uniform float numberOfBricksHeight;
-uniform float numberOfBricksWidth ;
+uniform float numberOfTilesHeight;
+uniform float numberOfTilesWidth;
 uniform float amplitude;
-uniform vec3 brick;
-uniform vec3 joint;
+uniform vec3 brickColor;
+uniform vec3 jointColor;
 
 const vec3 tileSize = vec3(1.1, 1.0, 1.1);
 const vec3 tilePct = vec3(0.98, 1.0, 0.98);
@@ -54,11 +54,11 @@ vec3 marble_color(float x)
 
 void main()
 {
-	float brickW = 1.0 / numberOfBricksWidth;
-	float brickH = 1.0 / numberOfBricksHeight;
+	float brickW = 1.0 / numberOfTilesWidth;
+	float brickH = 1.0 / numberOfTilesHeight;
 	float jointWPercentage = 0.01;
 	float jointHPercentage = 0.01;
-	vec3 color = brick;
+	vec3 color = brickColor;
 	float yi = vUV.y / brickH;
 	float nyi = round(yi);
 	float xi = vUV.x / brickW;
@@ -71,10 +71,10 @@ void main()
 	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) / brickW);
 
 	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){
-		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);
+		color = mix(jointColor, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);
 	}
 	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){
-		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
+		color = mix(jointColor, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
 	}
 	else {
 		float t = 6.28 * brickvUV.x / (tileSize.x + noise(vec2(vUV)*6.0));

@@ -28,6 +28,8 @@
 
         private _fallbackTexture: Texture;
 
+        private _fallbackTextureUsed = false;
+
         constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true) {
             super(null, scene, !generateMipMaps);
 
@@ -74,13 +76,17 @@
             engine._releaseEffect(this._effect);
         }
 
-      
+
         public isReady(): boolean {
             var engine = this.getScene().getEngine();
             var shaders;
 
             if (!this._fragment) {
                 return false;
+            }
+
+            if (this._fallbackTextureUsed) {
+                return true;
             }
 
             if (this._fragment.fragmentElement !== undefined) {
@@ -97,8 +103,12 @@
                 "", null, null, () => {
                     this.releaseInternalTexture();
 
-                    this._texture = this._fallbackTexture._texture;
-                    this._texture.references++;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
+                        this._texture.references++;
+                    }
+
+                    this._fallbackTextureUsed = true;
                 });
 
             return this._effect.isReady();
@@ -127,12 +137,16 @@
                 return false;
             }
 
+            if (this._fallbackTextureUsed) {
+                return false;
+            }
+
             if (this._currentRefreshId === -1) { // At least render once
                 this._currentRefreshId = 1;
                 return true;
             }
 
-            if (this.refreshRate == this._currentRefreshId) {
+            if (this.refreshRate === this._currentRefreshId) {
                 this._currentRefreshId = 1;
                 return true;
             }
@@ -146,6 +160,10 @@
         }
 
         public resize(size, generateMipMaps) {
+            if (this._fallbackTextureUsed) {
+                return;
+            }
+
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
@@ -280,7 +298,7 @@
 
         public clone(): ProceduralTexture {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
+            var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

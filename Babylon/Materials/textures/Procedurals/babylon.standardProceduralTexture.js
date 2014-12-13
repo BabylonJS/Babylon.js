@@ -56,7 +56,6 @@ var BABYLON;
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
             this._shift = 1.6;
-            this._alpha = 0.0;
             this._autoGenerateTime = true;
             this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
@@ -64,10 +63,9 @@ var BABYLON;
             this.refreshRate = 1;
         }
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setFloat("iGlobalTime", this._time);
+            this.setFloat("time", this._time);
             this.setVector2("speed", this._speed);
             this.setFloat("shift", this._shift);
-            this.setFloat("alpha", this._alpha);
             this.setColor3("c1", this._fireColors[0]);
             this.setColor3("c2", this._fireColors[1]);
             this.setColor3("c3", this._fireColors[2]);
@@ -197,12 +195,12 @@ var BABYLON;
         });
 
 
-        Object.defineProperty(FireProceduralTexture.prototype, "alpha", {
+        Object.defineProperty(FireProceduralTexture.prototype, "alphaThreshold", {
             get: function () {
-                return this._alpha;
+                return this._alphaThreshold;
             },
             set: function (value) {
-                this._alpha = value;
+                this._alphaThreshold = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -263,7 +261,6 @@ var BABYLON;
             this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
             this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
             this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
-            this._dirtColor = new BABYLON.Color3(0.6, 0.46, 0.13);
             this._groundColor = new BABYLON.Color3(1, 1, 1);
 
             this._grassColors = [
@@ -276,11 +273,10 @@ var BABYLON;
             this.refreshRate = 0;
         }
         GrassProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setColor3("herb1", this._grassColors[0]);
-            this.setColor3("herb2", this._grassColors[1]);
-            this.setColor3("herb3", this._grassColors[2]);
-            this.setColor3("dirt", this._dirtColor);
-            this.setColor3("ground", this._groundColor);
+            this.setColor3("herb1Color", this._grassColors[0]);
+            this.setColor3("herb2Color", this._grassColors[1]);
+            this.setColor3("herb3Color", this._grassColors[2]);
+            this.setColor3("groundColor", this._groundColor);
         };
 
         Object.defineProperty(GrassProceduralTexture.prototype, "grassColors", {
@@ -296,28 +292,10 @@ var BABYLON;
         });
 
 
-        Object.defineProperty(GrassProceduralTexture.prototype, "dirtColor", {
-            get: function () {
-                return this._dirtColor;
-            },
-            set: function (value) {
-                this._dirtColor = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-
         Object.defineProperty(GrassProceduralTexture.prototype, "groundColor", {
             get: function () {
                 return this._groundColor;
             },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(GrassProceduralTexture.prototype, "ground", {
             set: function (value) {
                 this.groundColor = value;
                 this.updateShaderUniforms();
@@ -325,6 +303,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         return GrassProceduralTexture;
     })(BABYLON.ProceduralTexture);
     BABYLON.GrassProceduralTexture = GrassProceduralTexture;
@@ -371,8 +350,8 @@ var BABYLON;
         BrickProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
             this.setFloat("numberOfBricksWidth", this._numberOfBricksWidth);
-            this.setColor3("brick", this._brickColor);
-            this.setColor3("joint", this._jointColor);
+            this.setColor3("brickColor", this._brickColor);
+            this.setColor3("jointColor", this._jointColor);
         };
 
         Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksHeight", {
@@ -447,11 +426,11 @@ var BABYLON;
             this.refreshRate = 0;
         }
         MarbleProceduralTexture.prototype.updateShaderUniforms = function () {
-            this.setFloat("numberOfBricksHeight", this._numberOfTilesHeight);
-            this.setFloat("numberOfBricksWidth", this._numberOfTilesWidth);
+            this.setFloat("numberOfTilesHeight", this._numberOfTilesHeight);
+            this.setFloat("numberOfTilesWidth", this._numberOfTilesWidth);
             this.setFloat("amplitude", this._amplitude);
-            this.setColor3("brick", this._marbleColor);
-            this.setColor3("joint", this._jointColor);
+            this.setColor3("marbleColor", this._marbleColor);
+            this.setColor3("jointColor", this._jointColor);
         };
 
         Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesHeight", {

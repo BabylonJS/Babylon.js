@@ -25,8 +25,17 @@ namespace Max2Babylon
             }
 
             babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
-            babylonCamera.minZ = maxCamera.GetEnvRange(0, 0, Tools.Forever);
-            babylonCamera.maxZ = maxCamera.GetEnvRange(0, 1, Tools.Forever);
+
+            if (maxCamera.ManualClip == 1)
+            {
+                babylonCamera.minZ = maxCamera.GetClipDist(0, 1, Tools.Forever);
+                babylonCamera.maxZ = maxCamera.GetClipDist(0, 2, Tools.Forever);
+            }
+            else
+            {
+                 babylonCamera.minZ = 0.1f;
+                 babylonCamera.maxZ = 10000.0f;
+            }
 
             if (babylonCamera.minZ == 0.0f)
             {
