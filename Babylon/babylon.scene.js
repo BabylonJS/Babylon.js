@@ -8,10 +8,11 @@
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
+            this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.cameraToUseForPointers = null;
             // Fog
-            this.fogMode = BABYLON.Scene.FOGMODE_NONE;
+            this.fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.fogDensity = 0.1;
             this.fogStart = 0;
@@ -41,6 +42,7 @@
             // Layers
             this.layers = new Array();
             // Skeletons
+            this.skeletonsEnabled = true;
             this.skeletons = new Array();
             // Lens flares
             this.lensFlaresEnabled = true;
@@ -84,6 +86,7 @@
             this._renderTargets = new BABYLON.SmartArray(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
             this._activeSkeletons = new BABYLON.SmartArray(32);
+            this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._scaledPosition = BABYLON.Vector3.Zero();
@@ -138,6 +141,10 @@
             configurable: true
         });
 
+        Scene.prototype.getCachedMaterial = function () {
+            return this._cachedMaterial;
+        };
+
         Scene.prototype.getBoundingBoxRenderer = function () {
             return this._boundingBoxRenderer;
         };
@@ -160,6 +167,10 @@
 
         Scene.prototype.getActiveParticles = function () {
             return this._activeParticles;
+        };
+
+        Scene.prototype.getActiveBones = function () {
+            return this._activeBones;
         };
 
         // Stats
@@ -329,6 +340,10 @@
             }
 
             return true;
+        };
+
+        Scene.prototype.resetCachedMaterial = function () {
+            this._cachedMaterial = null;
         };
 
         Scene.prototype.registerBeforeRender = function (func) {
@@ -688,7 +703,7 @@
         };
 
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -768,7 +783,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
@@ -798,7 +813,7 @@
         };
 
         Scene.prototype._activeMesh = function (mesh) {
-            if (mesh.skeleton) {
+            if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
@@ -865,6 +880,8 @@
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
+
+                this._activeBones += skeleton.bones.length;
             }
 
             // Render targets
@@ -954,7 +971,7 @@
         };
 
         Scene.prototype._processSubCameras = function (camera) {
-            if (camera.subCameras.length == 0) {
+            if (camera.subCameras.length === 0) {
                 this._renderForCamera(camera);
                 return;
             }
@@ -977,17 +994,17 @@
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -1010,8 +1027,10 @@
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
+            this.resetCachedMaterial();
 
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
 
@@ -1088,7 +1107,7 @@
             }
 
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
 
             // Shadows
             if (this.shadowsEnabled) {
@@ -1280,7 +1299,7 @@
                 return;
             }
 
-            if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
+            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
                 collider._getResponse(position, velocity);
             }
 

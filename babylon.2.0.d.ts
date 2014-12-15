@@ -339,6 +339,7 @@ declare module BABYLON {
         public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
         public forceWireframe: boolean;
+        public forcePointsCloud: boolean;
         public forceShowBoundingBoxes: boolean;
         public clipPlane: Plane;
         private _onPointerMove;
@@ -372,6 +373,7 @@ declare module BABYLON {
         public particleSystems: ParticleSystem[];
         public spriteManagers: SpriteManager[];
         public layers: Layer[];
+        public skeletonsEnabled: boolean;
         public skeletons: Skeleton[];
         public lensFlaresEnabled: boolean;
         public lensFlareSystems: LensFlareSystem[];
@@ -403,6 +405,7 @@ declare module BABYLON {
         public _spritesDuration: number;
         private _animationRatio;
         private _animationStartDate;
+        public _cachedMaterial: Material;
         private _renderId;
         private _executeWhenReadyTimeoutId;
         public _toBeDisposed: SmartArray<IDisposable>;
@@ -415,6 +418,7 @@ declare module BABYLON {
         private _renderTargets;
         public _activeParticleSystems: SmartArray<ParticleSystem>;
         private _activeSkeletons;
+        private _activeBones;
         private _renderingManager;
         private _physicsEngine;
         public _activeAnimatables: Animatable[];
@@ -435,12 +439,14 @@ declare module BABYLON {
         public meshUnderPointer : AbstractMesh;
         public pointerX : number;
         public pointerY : number;
+        public getCachedMaterial(): Material;
         public getBoundingBoxRenderer(): BoundingBoxRenderer;
         public getOutlineRenderer(): OutlineRenderer;
         public getEngine(): Engine;
         public getTotalVertices(): number;
         public getActiveVertices(): number;
         public getActiveParticles(): number;
+        public getActiveBones(): number;
         public getLastFrameDuration(): number;
         public getEvaluateActiveMeshesDuration(): number;
         public getActiveMeshes(): SmartArray<Mesh>;
@@ -454,6 +460,7 @@ declare module BABYLON {
         public attachControl(): void;
         public detachControl(): void;
         public isReady(): boolean;
+        public resetCachedMaterial(): void;
         public registerBeforeRender(func: () => void): void;
         public unregisterBeforeRender(func: () => void): void;
         public registerAfterRender(func: () => void): void;
@@ -1489,11 +1496,17 @@ declare module BABYLON {
         private _enabled;
         private _labelsEnabled;
         private _displayStatistics;
+        private _displayTree;
         private _displayLogs;
         private _globalDiv;
         private _statsDiv;
+        private _statsSubsetDiv;
         private _optionsDiv;
+        private _optionsSubsetDiv;
         private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
         private _drawingCanvas;
         private _drawingContext;
         private _syncPositions;
@@ -1505,6 +1518,7 @@ declare module BABYLON {
         private _showUI;
         public shouldDisplayLabel: (node: Node) => boolean;
         public shouldDisplayAxis: (mesh: Mesh) => boolean;
+        public axisRatio: number;
         constructor(scene: Scene);
         private _renderSingleAxis(zero, unit, unitText, label, color);
         private _renderAxis(projectedPosition, mesh, globalViewport);
@@ -1514,8 +1528,11 @@ declare module BABYLON {
         public hide(): void;
         public show(showUI?: boolean): void;
         private _clearLabels();
+        private _generateheader(root, text);
         private _generateTexBox(root, title);
-        private _generateCheckBox(root, title, initialState, task);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
         private _generateDOMelements();
         private _displayStats();
     }
@@ -1796,6 +1813,7 @@ declare module BABYLON {
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
+        public onBind: (material: Material) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         public _effect: Effect;
         public _wasPreviouslyReady: boolean;
@@ -1841,6 +1859,7 @@ declare module BABYLON {
         private _vectors3;
         private _matrices;
         private _cachedWorldViewMatrix;
+        private _renderId;
         constructor(name: string, scene: Scene, shaderPath: any, options: any);
         public needAlphaBlending(): boolean;
         public needAlphaTesting(): boolean;
@@ -1854,6 +1873,7 @@ declare module BABYLON {
         public setVector3(name: string, value: Vector3): ShaderMaterial;
         public setMatrix(name: string, value: Matrix): ShaderMaterial;
         public isReady(): boolean;
+        public bindOnlyWorldMatrix(world: Matrix): void;
         public bind(world: Matrix): void;
         public dispose(forceDisposeEffect?: boolean): void;
     }
@@ -2160,6 +2180,7 @@ declare module BABYLON {
         private _vectors3;
         private _matrices;
         private _fallbackTexture;
+        private _fallbackTextureUsed;
         constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public reset(): void;
         public isReady(): boolean;
@@ -2196,7 +2217,6 @@ declare module BABYLON {
         private _time;
         private _speed;
         private _shift;
-        private _alpha;
         private _autoGenerateTime;
         private _fireColors;
         private _alphaThreshold;
@@ -2211,7 +2231,7 @@ declare module BABYLON {
         public time : number;
         public speed : Vector2;
         public shift : number;
-        public alpha : number;
+        public alphaThreshold : number;
     }
     class CloudProceduralTexture extends ProceduralTexture {
         private _skyColor;
@@ -2226,14 +2246,11 @@ declare module BABYLON {
         private _herb1;
         private _herb2;
         private _herb3;
-        private _dirtColor;
         private _groundColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         public updateShaderUniforms(): void;
         public grassColors : Color3[];
-        public dirtColor : Color3;
         public groundColor : Color3;
-        public ground : Color3;
     }
     class RoadProceduralTexture extends ProceduralTexture {
         private _roadColor;
@@ -2654,7 +2671,7 @@ declare module BABYLON {
         public scaling: Vector3;
         public billboardMode: number;
         public visibility: number;
-        public alphaLayer: number;
+        public alphaIndex: number;
         public infiniteDistance: boolean;
         public isVisible: boolean;
         public isPickable: boolean;
@@ -3166,7 +3183,7 @@ declare module BABYLON {
         public _trianglePlanes: Plane[];
         public _lastColliderTransformMatrix: Matrix;
         public _renderId: number;
-        public _alphaLayer: number;
+        public _alphaIndex: number;
         public _distanceToCamera: number;
         public _id: number;
         constructor(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: any, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);

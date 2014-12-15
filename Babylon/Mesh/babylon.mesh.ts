@@ -533,10 +533,11 @@
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var fillMode = scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
+
             effectiveMaterial.bind(world, this);
 
             // Instances rendering

@@ -6140,7 +6140,7 @@ var BABYLON;
                     }
 
                    
-                    var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
 
                     if (useBones) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
@@ -6248,6 +6248,7 @@ var BABYLON;
             var attribs = [BABYLON.VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
+            var scene = mesh.getScene();
             var material = subMesh.getMaterial();
 
            
@@ -6264,7 +6265,7 @@ var BABYLON;
             }
 
            
-            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
@@ -8299,10 +8300,11 @@ var BABYLON;
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
+            this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.cameraToUseForPointers = null;
            
-            this.fogMode = BABYLON.Scene.FOGMODE_NONE;
+            this.fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.fogDensity = 0.1;
             this.fogStart = 0;
@@ -8332,6 +8334,7 @@ var BABYLON;
            
             this.layers = new Array();
            
+            this.skeletonsEnabled = true;
             this.skeletons = new Array();
            
             this.lensFlaresEnabled = true;
@@ -8375,6 +8378,7 @@ var BABYLON;
             this._renderTargets = new BABYLON.SmartArray(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
             this._activeSkeletons = new BABYLON.SmartArray(32);
+            this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._scaledPosition = BABYLON.Vector3.Zero();
@@ -8429,6 +8433,10 @@ var BABYLON;
             configurable: true
         });
 
+        Scene.prototype.getCachedMaterial = function () {
+            return this._cachedMaterial;
+        };
+
         Scene.prototype.getBoundingBoxRenderer = function () {
             return this._boundingBoxRenderer;
         };
@@ -8451,6 +8459,10 @@ var BABYLON;
 
         Scene.prototype.getActiveParticles = function () {
             return this._activeParticles;
+        };
+
+        Scene.prototype.getActiveBones = function () {
+            return this._activeBones;
         };
 
        
@@ -8620,6 +8632,10 @@ var BABYLON;
             }
 
             return true;
+        };
+
+        Scene.prototype.resetCachedMaterial = function () {
+            this._cachedMaterial = null;
         };
 
         Scene.prototype.registerBeforeRender = function (func) {
@@ -8979,7 +8995,7 @@ var BABYLON;
         };
 
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -9059,7 +9075,7 @@ var BABYLON;
 
                 mesh._preActivate();
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
@@ -9089,7 +9105,7 @@ var BABYLON;
         };
 
         Scene.prototype._activeMesh = function (mesh) {
-            if (mesh.skeleton) {
+            if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
@@ -9156,6 +9172,8 @@ var BABYLON;
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
+
+                this._activeBones += skeleton.bones.length;
             }
 
            
@@ -9245,7 +9263,7 @@ var BABYLON;
         };
 
         Scene.prototype._processSubCameras = function (camera) {
-            if (camera.subCameras.length == 0) {
+            if (camera.subCameras.length === 0) {
                 this._renderForCamera(camera);
                 return;
             }
@@ -9268,17 +9286,17 @@ var BABYLON;
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -9301,8 +9319,10 @@ var BABYLON;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
+            this.resetCachedMaterial();
 
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
 
@@ -9379,7 +9399,7 @@ var BABYLON;
             }
 
            
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
 
            
             if (this.shadowsEnabled) {
@@ -9571,7 +9591,7 @@ var BABYLON;
                 return;
             }
 
-            if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
+            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
                 collider._getResponse(position, velocity);
             }
 
@@ -11426,10 +11446,11 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
            
-            var fillMode = scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
+
             effectiveMaterial.bind(world, this);
 
            
@@ -12939,6 +12960,8 @@ var BABYLON;
                 this._cachedTextureMatrix = BABYLON.Matrix.Zero();
                 this._projectionModeMatrix = BABYLON.Matrix.Zero();
             }
+
+            this._cachedCoordinatesMode = this.coordinatesMode;
 
             switch (this.coordinatesMode) {
                 case BABYLON.Texture.SPHERICAL_MODE:
@@ -15022,6 +15045,11 @@ var BABYLON;
         };
 
         Material.prototype.bind = function (world, mesh) {
+            this._scene._cachedMaterial = this;
+
+            if (this.onBind) {
+                this.onBind(this);
+            }
         };
 
         Material.prototype.bindOnlyWorldMatrix = function (world) {
@@ -15143,7 +15171,7 @@ var BABYLON;
 
            
             if (scene.texturesEnabled) {
-                if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
+                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this.diffuseTexture.isReady()) {
                         return false;
                     } else {
@@ -15151,7 +15179,7 @@ var BABYLON;
                     }
                 }
 
-                if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
+                if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                     if (!this.ambientTexture.isReady()) {
                         return false;
                     } else {
@@ -15159,7 +15187,7 @@ var BABYLON;
                     }
                 }
 
-                if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
+                if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                     if (!this.opacityTexture.isReady()) {
                         return false;
                     } else {
@@ -15171,7 +15199,7 @@ var BABYLON;
                     }
                 }
 
-                if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
+                if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (!this.reflectionTexture.isReady()) {
                         return false;
                     } else {
@@ -15180,7 +15208,7 @@ var BABYLON;
                     }
                 }
 
-                if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
+                if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     if (!this.emissiveTexture.isReady()) {
                         return false;
                     } else {
@@ -15188,7 +15216,7 @@ var BABYLON;
                     }
                 }
 
-                if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
+                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
                     if (!this.specularTexture.isReady()) {
                         return false;
                     } else {
@@ -15198,7 +15226,7 @@ var BABYLON;
                 }
             }
 
-            if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled) {
+            if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 if (!this.bumpTexture.isReady()) {
                     return false;
                 } else {
@@ -15226,7 +15254,7 @@ var BABYLON;
             }
 
            
-            if (this.pointsCloud) {
+            if (this.pointsCloud || scene.forcePointsCloud) {
                 defines.push("#define POINTSIZE");
             }
 
@@ -15325,7 +15353,7 @@ var BABYLON;
                     }
 
                     lightIndex++;
-                    if (lightIndex == maxSimultaneousLights)
+                    if (lightIndex === maxSimultaneousLights)
                         break;
                 }
             }
@@ -15381,7 +15409,7 @@ var BABYLON;
                         defines.push("#define VERTEXALPHA");
                     }
                 }
-                if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                     attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                     defines.push("#define BONES");
@@ -15402,8 +15430,10 @@ var BABYLON;
 
            
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
+
+                scene.resetCachedMaterial();
 
                
                 var shaderName = "default";
@@ -15455,101 +15485,116 @@ var BABYLON;
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
            
-            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
-           
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                this._effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
-                this._effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
-            }
-
-            if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                this._effect.setColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
-            }
-
-            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
-                this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
-            }
-
-            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                this._effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
-            }
-
-           
-            if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
-                this._effect.setTexture("diffuseSampler", this.diffuseTexture);
-
-                this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
-            }
-
-            if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
-                this._effect.setTexture("ambientSampler", this.ambientTexture);
-
-                this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
-                this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
-            }
-
-            if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
-                this._effect.setTexture("opacitySampler", this.opacityTexture);
-
-                this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
-            }
-
-            if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
-                if (this.reflectionTexture.isCube) {
-                    this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
-                } else {
-                    this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+            if (scene.getCachedMaterial() !== this) {
+               
+                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                    this._effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
+                    this._effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
                 }
 
-                this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                    this._effect.setColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                }
+
+                if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                    this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
+                    this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                }
+
+                if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                    this._effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                    this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                }
+
+               
+                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+
+                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                }
+
+                if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                    this._effect.setTexture("ambientSampler", this.ambientTexture);
+
+                    this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                    this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
+                }
+
+                if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                    this._effect.setTexture("opacitySampler", this.opacityTexture);
+
+                    this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
+                    this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
+                }
+
+                if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (this.reflectionTexture.isCube) {
+                        this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                    } else {
+                        this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+                    }
+
+                    this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
+                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                }
+
+                if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                    this._effect.setTexture("emissiveSampler", this.emissiveTexture);
+
+                    this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
+                    this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                }
+
+                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
+                    this._effect.setTexture("specularSampler", this.specularTexture);
+
+                    this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
+                    this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
+                }
+
+                if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                    this._effect.setTexture("bumpSampler", this.bumpTexture);
+
+                    this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                    this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                }
+
+               
+                if (scene.clipPlane) {
+                    var clipPlane = scene.clipPlane;
+                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+                }
+
+               
+                if (this.pointsCloud) {
+                    this._effect.setFloat("pointSize", this.pointSize);
+                }
+
+               
+                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+
+               
+                this._scaledSpecular.r = this.specularColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
+                this._scaledSpecular.g = this.specularColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
+                this._scaledSpecular.b = this.specularColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
+
+                this._effect.setVector3("vEyePosition", scene.activeCamera.position);
+                this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
+                this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
+                this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-
-            if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
-                this._effect.setTexture("emissiveSampler", this.emissiveTexture);
-
-                this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
-            }
-
-            if (this.specularTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
-                this._effect.setTexture("specularSampler", this.specularTexture);
-
-                this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
-            }
-
-            if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && BABYLON.StandardMaterial.BumpTextureEnabled) {
-                this._effect.setTexture("bumpSampler", this.bumpTexture);
-
-                this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
-                this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
-            }
-
-           
-            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
            
             this._scaledDiffuse.r = this.diffuseColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
             this._scaledDiffuse.g = this.diffuseColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
             this._scaledDiffuse.b = this.diffuseColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
 
-            this._scaledSpecular.r = this.specularColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
-            this._scaledSpecular.g = this.specularColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
-            this._scaledSpecular.b = this.specularColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
-
-            this._effect.setVector3("vEyePosition", scene.activeCamera.position);
-            this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
-            this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
-            this._effect.setColor3("vEmissiveColor", this.emissiveColor);
 
             if (scene.lightsEnabled) {
                 var lightIndex = 0;
@@ -15595,14 +15640,9 @@ var BABYLON;
 
                     lightIndex++;
 
-                    if (lightIndex == maxSimultaneousLights)
+                    if (lightIndex === maxSimultaneousLights)
                         break;
                 }
-            }
-
-            if (scene.clipPlane) {
-                var clipPlane = scene.clipPlane;
-                this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
 
            
@@ -15616,10 +15656,7 @@ var BABYLON;
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
 
-           
-            if (this.pointsCloud) {
-                this._effect.setFloat("pointSize", this.pointSize);
-            }
+            _super.prototype.bind.call(this, world, mesh);
         };
 
         StandardMaterial.prototype.getAnimatables = function () {
@@ -15689,7 +15726,7 @@ var BABYLON;
         };
 
         StandardMaterial.prototype.clone = function (name) {
-            var newStandardMaterial = new BABYLON.StandardMaterial(name, this.getScene());
+            var newStandardMaterial = new StandardMaterial(name, this.getScene());
 
            
             newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
@@ -16671,7 +16708,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var randomNumber = function (min, max) {
-        if (min == max) {
+        if (min === max) {
             return (min);
         }
 
@@ -16699,7 +16736,7 @@ var BABYLON;
             this.maxSize = 1;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
-            this.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+            this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
             this.forceDepthWrite = false;
             this.gravity = BABYLON.Vector3.Zero();
             this.direction1 = new BABYLON.Vector3(0, 1.0, 0);
@@ -16843,7 +16880,7 @@ var BABYLON;
             }
 
             for (index = 0; index < newParticles; index++) {
-                if (this.particles.length == this._capacity) {
+                if (this.particles.length === this._capacity) {
                     break;
                 }
 
@@ -16889,7 +16926,7 @@ var BABYLON;
 
            
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
                 this._effect = this._scene.getEngine().createEffect("particles", ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
@@ -17002,7 +17039,7 @@ var BABYLON;
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
            
-            if (this.blendMode === BABYLON.ParticleSystem.BLENDMODE_ONEONE) {
+            if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             } else {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
@@ -17046,7 +17083,7 @@ var BABYLON;
 
        
         ParticleSystem.prototype.clone = function (name, newEmitter) {
-            var result = new BABYLON.ParticleSystem(name, this._capacity, this._scene);
+            var result = new ParticleSystem(name, this._capacity, this._scene);
 
             BABYLON.Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
 
@@ -23160,76 +23197,100 @@ var BABYLON;
         };
 
         ShaderMaterial.prototype.isReady = function () {
-            var engine = this.getScene().getEngine();
+            var scene = this.getScene();
+            var engine = scene.getEngine();
 
+            if (!this.checkReadyOnEveryCall) {
+                if (this._renderId === scene.getRenderId()) {
+                    return true;
+                }
+            }
+
+            var previousEffect = this._effect;
             this._effect = engine.createEffect(this._shaderPath, this._options.attributes, this._options.uniforms, this._options.samplers, "", null, this.onCompiled, this.onError);
 
             if (!this._effect.isReady()) {
                 return false;
             }
 
+            if (previousEffect !== this._effect) {
+                scene.resetCachedMaterial();
+            }
+
+            this._renderId = scene.getRenderId();
+
             return true;
         };
 
-        ShaderMaterial.prototype.bind = function (world) {
-           
+        ShaderMaterial.prototype.bindOnlyWorldMatrix = function (world) {
+            var scene = this.getScene();
+
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);
             }
 
-            if (this._options.uniforms.indexOf("view") !== -1) {
-                this._effect.setMatrix("view", this.getScene().getViewMatrix());
-            }
-
             if (this._options.uniforms.indexOf("worldView") !== -1) {
-                world.multiplyToRef(this.getScene().getViewMatrix(), this._cachedWorldViewMatrix);
+                world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
                 this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
             }
 
-            if (this._options.uniforms.indexOf("projection") !== -1) {
-                this._effect.setMatrix("projection", this.getScene().getProjectionMatrix());
-            }
-
             if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
-                this._effect.setMatrix("worldViewProjection", world.multiply(this.getScene().getTransformMatrix()));
+                this._effect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            }
+        };
+
+        ShaderMaterial.prototype.bind = function (world) {
+           
+            this.bindOnlyWorldMatrix(world);
+
+            if (this.getScene().getCachedMaterial() !== this) {
+                if (this._options.uniforms.indexOf("view") !== -1) {
+                    this._effect.setMatrix("view", this.getScene().getViewMatrix());
+                }
+
+                if (this._options.uniforms.indexOf("projection") !== -1) {
+                    this._effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+                }
+
+                if (this._options.uniforms.indexOf("viewProjection") !== -1) {
+                    this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                }
+
+                for (var name in this._textures) {
+                    this._effect.setTexture(name, this._textures[name]);
+                }
+
+                for (name in this._floats) {
+                    this._effect.setFloat(name, this._floats[name]);
+                }
+
+                for (name in this._floatsArrays) {
+                    this._effect.setArray(name, this._floatsArrays[name]);
+                }
+
+                for (name in this._colors3) {
+                    this._effect.setColor3(name, this._colors3[name]);
+                }
+
+                for (name in this._colors4) {
+                    var color = this._colors4[name];
+                    this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+                }
+
+                for (name in this._vectors2) {
+                    this._effect.setVector2(name, this._vectors2[name]);
+                }
+
+                for (name in this._vectors3) {
+                    this._effect.setVector3(name, this._vectors3[name]);
+                }
+
+                for (name in this._matrices) {
+                    this._effect.setMatrix(name, this._matrices[name]);
+                }
             }
 
-            if (this._options.uniforms.indexOf("viewProjection") !== -1) {
-                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
-            }
-
-            for (var name in this._textures) {
-                this._effect.setTexture(name, this._textures[name]);
-            }
-
-            for (name in this._floats) {
-                this._effect.setFloat(name, this._floats[name]);
-            }
-
-            for (name in this._floatsArrays) {
-                this._effect.setArray(name, this._floatsArrays[name]);
-            }
-
-            for (name in this._colors3) {
-                this._effect.setColor3(name, this._colors3[name]);
-            }
-
-            for (name in this._colors4) {
-                var color = this._colors4[name];
-                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
-            }
-
-            for (name in this._vectors2) {
-                this._effect.setVector2(name, this._vectors2[name]);
-            }
-
-            for (name in this._vectors3) {
-                this._effect.setVector3(name, this._vectors3[name]);
-            }
-
-            for (name in this._matrices) {
-                this._effect.setMatrix(name, this._matrices[name]);
-            }
+            _super.prototype.bind.call(this, world, null);
         };
 
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
@@ -25040,7 +25101,7 @@ var BABYLON;
         };
 
         BoundingBoxRenderer.prototype.render = function () {
-            if (this.renderList.length == 0 || !this._colorShader.isReady()) {
+            if (this.renderList.length === 0 || !this._colorShader.isReady()) {
                 return;
             }
 
@@ -25062,6 +25123,7 @@ var BABYLON;
                 if (this.showBackLines) {
                    
                     engine.setDepthFunctionToGreaterOrEqual();
+                    this._scene.resetCachedMaterial();
                     this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
 
@@ -25071,6 +25133,7 @@ var BABYLON;
 
                
                 engine.setDepthFunctionToLess();
+                this._scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
 
@@ -26428,7 +26491,7 @@ var BABYLON;
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    if (trigger == ActionManager.OnKeyUpTrigger || trigger == ActionManager.OnKeyDownTrigger) {
+                    if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
 
                         if (parameter) {
@@ -28133,7 +28196,7 @@ var BABYLON;
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
            
-            var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+            var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
             if (useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
@@ -29166,6 +29229,7 @@ var BABYLON;
             this._displayTree = false;
             this._displayLogs = false;
             this._identityMatrix = BABYLON.Matrix.Identity();
+            this.axisRatio = 0.02;
             this._scene = scene;
 
             this._syncPositions = function () {
@@ -29177,13 +29241,13 @@ var BABYLON;
                     _this._statsDiv.style.bottom = "10px";
                     _this._statsDiv.style.width = "300px";
                     _this._statsDiv.style.height = "auto";
-                    _this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 40) + "px";
+                    _this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
 
                     _this._optionsDiv.style.left = "0px";
                     _this._optionsDiv.style.top = "10px";
                     _this._optionsDiv.style.width = "200px";
                     _this._optionsDiv.style.height = "auto";
-                    _this._optionsSubsetDiv.style.maxHeight = (canvasRect.height - 40) + "px";
+                    _this._optionsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
 
                     _this._logDiv.style.left = "0px";
                     _this._logDiv.style.bottom = "10px";
@@ -29331,7 +29395,7 @@ var BABYLON;
             var position = mesh.getBoundingInfo().boundingSphere.center;
             var worldMatrix = mesh.getWorldMatrix();
 
-            var unprojectedVector = BABYLON.Vector3.UnprojectFromTransform(projectedPosition.add(new BABYLON.Vector3(this._drawingCanvas.width * 0.02, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._scene.getTransformMatrix());
+            var unprojectedVector = BABYLON.Vector3.UnprojectFromTransform(projectedPosition.add(new BABYLON.Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._scene.getTransformMatrix());
             var unit = (unprojectedVector.subtract(position)).length();
 
             var xAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(unit, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
@@ -29497,6 +29561,36 @@ var BABYLON;
             root.appendChild(document.createElement("br"));
         };
 
+        DebugLayer.prototype._generateAdvancedCheckBox = function (root, leftTitle, rightTitle, initialState, task, tag) {
+            if (typeof tag === "undefined") { tag = null; }
+            var label = document.createElement("label");
+
+            var boundingBoxesCheckbox = document.createElement("input");
+            boundingBoxesCheckbox.type = "checkbox";
+            boundingBoxesCheckbox.checked = initialState;
+
+            boundingBoxesCheckbox.addEventListener("change", function (evt) {
+                task(evt.target, tag);
+            });
+
+            label.appendChild(boundingBoxesCheckbox);
+            var container = document.createElement("span");
+            var leftPart = document.createElement("span");
+            var rightPart = document.createElement("span");
+
+            rightPart.style.cssFloat = "right";
+
+            leftPart.innerHTML = leftTitle;
+            rightPart.innerHTML = rightTitle;
+
+            container.appendChild(leftPart);
+            container.appendChild(rightPart);
+
+            label.appendChild(container);
+            root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        };
+
         DebugLayer.prototype._generateCheckBox = function (root, title, initialState, task, tag) {
             if (typeof tag === "undefined") { tag = null; }
             var label = document.createElement("label");
@@ -29510,6 +29604,25 @@ var BABYLON;
             });
 
             label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(document.createTextNode(title));
+            root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        };
+
+        DebugLayer.prototype._generateRadio = function (root, title, name, initialState, task, tag) {
+            if (typeof tag === "undefined") { tag = null; }
+            var label = document.createElement("label");
+
+            var boundingBoxesRadio = document.createElement("input");
+            boundingBoxesRadio.type = "radio";
+            boundingBoxesRadio.name = name;
+            boundingBoxesRadio.checked = initialState;
+
+            boundingBoxesRadio.addEventListener("change", function (evt) {
+                task(evt.target, tag);
+            });
+
+            label.appendChild(boundingBoxesRadio);
             label.appendChild(document.createTextNode(title));
             root.appendChild(label);
             root.appendChild(document.createElement("br"));
@@ -29579,7 +29692,7 @@ var BABYLON;
                         continue;
                     }
 
-                    this._generateCheckBox(this._treeSubsetDiv, mesh.name, mesh.isVisible, function (element, mesh) {
+                    this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, function (element, mesh) {
                         mesh.isVisible = element.checked;
                     }, mesh);
                 }
@@ -29616,6 +29729,7 @@ var BABYLON;
                 this._generateheader(this._optionsDiv, "Options");
                 this._optionsSubsetDiv = document.createElement("div");
                 this._optionsSubsetDiv.style.paddingTop = "5px";
+                this._optionsSubsetDiv.style.paddingBottom = "5px";
                 this._optionsSubsetDiv.style.overflowY = "auto";
                 this._optionsSubsetDiv.style.maxHeight = "200px";
                 this._optionsDiv.appendChild(this._optionsSubsetDiv);
@@ -29633,9 +29747,6 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, function (element) {
                     _this._scene.forceShowBoundingBoxes = element.checked;
                 });
-                this._generateCheckBox(this._optionsSubsetDiv, "Wireframe", this._scene.forceWireframe, function (element) {
-                    _this._scene.forceWireframe = element.checked;
-                });
                 this._generateCheckBox(this._optionsSubsetDiv, "Clickable labels", this._labelsEnabled, function (element) {
                     _this._labelsEnabled = element.checked;
                     if (!_this._labelsEnabled) {
@@ -29651,7 +29762,27 @@ var BABYLON;
                 });
                 ;
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture Channels:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>");
+                this._generateRadio(this._optionsSubsetDiv, "Solid", "renderMode", !this._scene.forceWireframe && !this._scene.forcePointsCloud, function (element) {
+                    if (element.checked) {
+                        _this._scene.forceWireframe = false;
+                        _this._scene.forcePointsCloud = false;
+                    }
+                });
+                this._generateRadio(this._optionsSubsetDiv, "Wireframe", "renderMode", this._scene.forceWireframe, function (element) {
+                    if (element.checked) {
+                        _this._scene.forceWireframe = true;
+                        _this._scene.forcePointsCloud = false;
+                    }
+                });
+                this._generateRadio(this._optionsSubsetDiv, "Point", "renderMode", this._scene.forcePointsCloud, function (element) {
+                    if (element.checked) {
+                        _this._scene.forceWireframe = false;
+                        _this._scene.forcePointsCloud = true;
+                    }
+                });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>");
                 this._generateCheckBox(this._optionsSubsetDiv, "Diffuse", BABYLON.StandardMaterial.DiffuseTextureEnabled, function (element) {
                     BABYLON.StandardMaterial.DiffuseTextureEnabled = element.checked;
                 });
@@ -29675,8 +29806,14 @@ var BABYLON;
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>");
-                this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, function (element) {
-                    _this._scene.shadowsEnabled = element.checked;
+                this._generateCheckBox(this._optionsSubsetDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
+                    _this._scene.collisionsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lens flares", this._scene.lensFlaresEnabled, function (element) {
+                    _this._scene.lensFlaresEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lights", this._scene.lightsEnabled, function (element) {
+                    _this._scene.lightsEnabled = element.checked;
                 });
                 this._generateCheckBox(this._optionsSubsetDiv, "Particles", this._scene.particlesEnabled, function (element) {
                     _this._scene.particlesEnabled = element.checked;
@@ -29684,23 +29821,20 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Post-processes", this._scene.postProcessesEnabled, function (element) {
                     _this._scene.postProcessesEnabled = element.checked;
                 });
-                this._generateCheckBox(this._optionsSubsetDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
-                    _this._scene.collisionsEnabled = element.checked;
-                });
-                this._generateCheckBox(this._optionsSubsetDiv, "Lights", this._scene.lightsEnabled, function (element) {
-                    _this._scene.lightsEnabled = element.checked;
-                });
-                this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) {
-                    _this._scene.texturesEnabled = element.checked;
-                });
-                this._generateCheckBox(this._optionsSubsetDiv, "Lens flares", this._scene.lensFlaresEnabled, function (element) {
-                    _this._scene.lensFlaresEnabled = element.checked;
+                this._generateCheckBox(this._optionsSubsetDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) {
+                    _this._scene.proceduralTexturesEnabled = element.checked;
                 });
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, function (element) {
                     _this._scene.renderTargetsEnabled = element.checked;
                 });
-                this._generateCheckBox(this._optionsSubsetDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) {
-                    _this._scene.proceduralTexturesEnabled = element.checked;
+                this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, function (element) {
+                    _this._scene.shadowsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, function (element) {
+                    _this._scene.skeletonsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) {
+                    _this._scene.texturesEnabled = element.checked;
                 });
 
                
@@ -29719,7 +29853,7 @@ var BABYLON;
             var scene = this._scene;
             var engine = scene.getEngine();
 
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(BABYLON.Tools.GetFps(), 0) + " fps</b><br><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b>";
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(BABYLON.Tools.GetFps(), 0) + " fps</b><br><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b>";
         };
         return DebugLayer;
     })();
