@@ -1,7 +1,7 @@
 ﻿var BABYLON;
 (function (BABYLON) {
     var randomNumber = function (min, max) {
-        if (min == max) {
+        if (min === max) {
             return (min);
         }
 
@@ -29,7 +29,7 @@
             this.maxSize = 1;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
-            this.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+            this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
             this.forceDepthWrite = false;
             this.gravity = BABYLON.Vector3.Zero();
             this.direction1 = new BABYLON.Vector3(0, 1.0, 0);
@@ -173,7 +173,7 @@
             }
 
             for (index = 0; index < newParticles; index++) {
-                if (this.particles.length == this._capacity) {
+                if (this.particles.length === this._capacity) {
                     break;
                 }
 
@@ -219,7 +219,7 @@
 
             // Effect
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
                 this._effect = this._scene.getEngine().createEffect("particles", ["position", "color", "options"], ["invView", "view", "projection", "vClipPlane", "textureMask"], ["diffuseSampler"], join);
@@ -332,7 +332,7 @@
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
             // Draw order
-            if (this.blendMode === BABYLON.ParticleSystem.BLENDMODE_ONEONE) {
+            if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             } else {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
@@ -376,7 +376,7 @@
 
         // Clone
         ParticleSystem.prototype.clone = function (name, newEmitter) {
-            var result = new BABYLON.ParticleSystem(name, this._capacity, this._scene);
+            var result = new ParticleSystem(name, this._capacity, this._scene);
 
             BABYLON.Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
 

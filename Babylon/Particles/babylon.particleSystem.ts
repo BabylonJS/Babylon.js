@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     var randomNumber = (min: number, max: number): number => {
-        if (min == max) {
+        if (min === max) {
             return (min);
         }
 
@@ -39,19 +39,19 @@
 
         public onDispose: () => void;
 
-        public blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+        public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
         public forceDepthWrite = false;
 
-        public gravity = BABYLON.Vector3.Zero();
-        public direction1 = new BABYLON.Vector3(0, 1.0, 0);
-        public direction2 = new BABYLON.Vector3(0, 1.0, 0);
-        public minEmitBox = new BABYLON.Vector3(-0.5, -0.5, -0.5);
-        public maxEmitBox = new BABYLON.Vector3(0.5, 0.5, 0.5);
-        public color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-        public color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-        public colorDead = new BABYLON.Color4(0, 0, 0, 1.0);
-        public textureMask = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+        public gravity = Vector3.Zero();
+        public direction1 = new Vector3(0, 1.0, 0);
+        public direction2 = new Vector3(0, 1.0, 0);
+        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
+        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);
+        public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
+        public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
+        public colorDead = new Color4(0, 0, 0, 1.0);
+        public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
         public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
 
@@ -70,10 +70,10 @@
         private _customEffect: Effect;
         private _cachedDefines: string;
 
-        private _scaledColorStep = new BABYLON.Color4(0, 0, 0, 0);
-        private _colorDiff = new BABYLON.Color4(0, 0, 0, 0);
-        private _scaledDirection = BABYLON.Vector3.Zero();
-        private _scaledGravity = BABYLON.Vector3.Zero();
+        private _scaledColorStep = new Color4(0, 0, 0, 0);
+        private _colorDiff = new Color4(0, 0, 0, 0);
+        private _scaledDirection = Vector3.Zero();
+        private _scaledGravity = Vector3.Zero();
         private _currentRenderId = -1;
 
         private _alive: boolean;
@@ -117,7 +117,7 @@
                 var randY = randomNumber(this.direction1.y, this.direction2.y);
                 var randZ = randomNumber(this.direction1.z, this.direction2.z);
 
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
             }
 
             this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3): void => {
@@ -125,7 +125,7 @@
                 var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
                 var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
 
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
             }
         }
 
@@ -201,11 +201,11 @@
             if (this.emitter.position) {
                 worldMatrix = this.emitter.getWorldMatrix();
             } else {
-                worldMatrix = BABYLON.Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
+                worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
 
             for (index = 0; index < newParticles; index++) {
-                if (this.particles.length == this._capacity) {
+                if (this.particles.length === this._capacity) {
                     break;
                 }
 
@@ -213,7 +213,7 @@
                     particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
-                    particle = new BABYLON.Particle();
+                    particle = new Particle();
                 }
                 this.particles.push(particle);
 
@@ -230,7 +230,7 @@
 
                 var step = randomNumber(0, 1.0);
 
-                BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
+                Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
                 this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
@@ -250,7 +250,7 @@
 
             // Effect
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
                 this._effect = this._scene.getEngine().createEffect(
@@ -367,10 +367,10 @@
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
             // Draw order
-            if (this.blendMode === BABYLON.ParticleSystem.BLENDMODE_ONEONE) {
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
+            if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
+                engine.setAlphaMode(Engine.ALPHA_ADD);
             } else {
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
             }
 
             if (this.forceDepthWrite) {
@@ -378,7 +378,7 @@
             }
 
             engine.draw(true, 0, this.particles.length * 6);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
             return this.particles.length;
         }
@@ -411,9 +411,9 @@
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
-            var result = new BABYLON.ParticleSystem(name, this._capacity, this._scene);
+            var result = new ParticleSystem(name, this._capacity, this._scene);
 
-            BABYLON.Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
+            Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
@@ -421,7 +421,7 @@
 
             result.emitter = newEmitter;
             if (this.particleTexture) {
-                result.particleTexture = new BABYLON.Texture(this.particleTexture.url, this._scene);
+                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
 
             result.start();

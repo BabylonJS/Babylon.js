@@ -534,10 +534,11 @@ var BABYLON;
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var fillMode = scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forcePointsCloud ? BABYLON.Material.PointFillMode : (scene.forceWireframe ? BABYLON.Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
+
             effectiveMaterial.bind(world, this);
 
             // Instances rendering
