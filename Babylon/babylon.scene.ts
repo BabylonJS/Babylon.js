@@ -26,6 +26,7 @@
         public forcePointsCloud = false;
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
+        public animationsEnabled = true;
 
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
@@ -121,7 +122,8 @@
         public _proceduralTextures = new Array<ProceduralTexture>();
 
         // Sound Tracks
-        public _soundTracks = new Array<SoundTrack>();
+        public mainSoundTrack: SoundTrack;
+        public soundTracks = new Array<SoundTrack>();
 
         // Private
         private _engine: Engine;
@@ -198,6 +200,7 @@
             this.attachControl();
 
             this._debugLayer = new DebugLayer(this);
+            this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
         }
 
         // Properties 
@@ -550,6 +553,10 @@
         }
 
         private _animate(): void {
+            if (!this.animationsEnabled) {
+                return;
+            }
+
             if (!this._animationStartDate) {
                 this._animationStartDate = Tools.Now;
             }

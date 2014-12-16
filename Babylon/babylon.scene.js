@@ -10,6 +10,7 @@
             this.forceWireframe = false;
             this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
+            this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
             // Fog
             this.fogMode = Scene.FOGMODE_NONE;
@@ -62,8 +63,7 @@
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
-            // Sound Tracks
-            this._soundTracks = new Array();
+            this.soundTracks = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -107,6 +107,7 @@
             this.attachControl();
 
             this._debugLayer = new BABYLON.DebugLayer(this);
+            this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
         }
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties
@@ -473,6 +474,10 @@
         };
 
         Scene.prototype._animate = function () {
+            if (!this.animationsEnabled) {
+                return;
+            }
+
             if (!this._animationStartDate) {
                 this._animationStartDate = BABYLON.Tools.Now;
             }

@@ -92,13 +92,13 @@
                     return;
                 }
 
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, data => {
+                Tools.LoadFile(rootUrl + sceneFilename, data => {
                     importMeshFromData(data);
                 }, progressCallBack, database);
             };
 
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+            var database = new Database(rootUrl + sceneFilename, manifestChecked);
         }
 
         /**
@@ -108,7 +108,7 @@
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
-            SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
+            SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onsuccess, progressCallBack, onerror);
         }
 
         /**
@@ -150,7 +150,7 @@
             };
 
             var manifestChecked = success => {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
+                Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
             };
 
             if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
@@ -161,11 +161,11 @@
 
             if (rootUrl.indexOf("file:") === -1) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+                database = new Database(rootUrl + sceneFilename, manifestChecked);
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
+                Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
             }
         }
     };

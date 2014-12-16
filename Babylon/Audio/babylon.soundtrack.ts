@@ -4,27 +4,50 @@
         private _trackGain: GainNode;
         private _trackConvolver: ConvolverNode;
         private _scene: BABYLON.Scene;
-        private _id: number;
+        public id: number = -1;
         private _soundCollection: Array<BABYLON.Sound>;
+        private _isMainTrack: boolean = false;
 
-        constructor(scene: BABYLON.Scene, options?) {
+        constructor(scene: BABYLON.Scene, options?: any) {
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
-            this._trackGain = this._audioEngine.audioContext.createGain();
-            this._trackConvolver = this._audioEngine.audioContext.createConvolver();
-            this._trackConvolver.connect(this._trackGain);
-            this._trackGain.connect(this._audioEngine.masterGain);
             this._soundCollection = new Array();
-            this._scene._soundTracks.push(this);
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain = this._audioEngine.audioContext.createGain();
+                //this._trackConvolver = this._audioEngine.audioContext.createConvolver();
+                //this._trackConvolver.connect(this._trackGain);
+                this._trackGain.connect(this._audioEngine.masterGain);
+
+                if (options) {
+                    if (options.volume) { this._trackGain.gain.value = options.volume; }
+                    if (options.mainTrack) { this._isMainTrack = options.mainTrack; }
+                }
+            }
+            if (!this._isMainTrack) {
+                this._scene.soundTracks.push(this);
+                this.id = this._scene.soundTracks.length - 1;
+            }
         }
 
-        public AddSound(newSound: BABYLON.Sound) {
-            newSound.connectToSoundTrackAudioNode(this._trackConvolver);
-            this._soundCollection.push(newSound);
+        public AddSound(sound: BABYLON.Sound) {
+            sound.connectToSoundTrackAudioNode(this._trackGain);
+            if (sound.soundTrackId) {
+                if (sound.soundTrackId === -1) {
+                    this._scene.mainSoundTrack.RemoveSound(sound);
+                }
+                else {
+                    this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
+                }
+            }
+            this._soundCollection.push(sound);
+            sound.soundTrackId = this.id;
         }
 
         public RemoveSound(sound: BABYLON.Sound) {
-            
+            var index = this._soundCollection.indexOf(sound);
+            if (index !== -1) {
+                this._soundCollection.splice(index, 1);
+            }
         }
 
         public setVolume(newVolume: number) {
@@ -32,6 +55,5 @@
                 this._trackGain.gain.value = newVolume;
             }
         }
-     
     }
 }

@@ -3,10 +3,12 @@
         public maxDistance: number = 10;
         public autoplay: boolean = false;
         public loop: boolean = false;
+        public useBabylonJSAttenuation: boolean = false;
+        public soundTrackId: number;
         private _position: Vector3 = Vector3.Zero();
         private _localDirection: Vector3 = new Vector3(1,0,0);
-        private _volume: number;
-        private _currentVolume: number;
+        private _volume: number = 1;
+        private _distanceFromCamera: number = 1; 
         private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
         private _isPlaying: boolean = false;
@@ -42,20 +44,26 @@
                 if (options.distanceMax) { this.maxDistance = options.distanceMax; }
                 if (options.autoplay) { this.autoplay = options.autoplay; }
                 if (options.loop) { this.loop = options.loop; }
+                if (options.volume) { this._volume = options.volume; }
+                if (options.useBabylonJSAttenuation) { this.useBabylonJSAttenuation = options.useBabylonJSAttenuation; }
             }
 
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
-                this._soundGain.connect(this._audioEngine.masterGain);
+                this._soundGain.gain.value = this._volume;
+                //this._soundGain.connect(this._audioEngine.masterGain);
                 this._soundPanner = this._audioEngine.audioContext.createPanner();
                 this._soundPanner.connect(this._soundGain);
+                this._scene.mainSoundTrack.AddSound(this);
                 BABYLON.Tools.LoadFile(url, (data) => { this._soundLoaded(data); }, null, null, true);
             }
         }
 
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
-            this._soundGain.disconnect();
-            this._soundGain.connect(soundTrackAudioNode);
+            if (this._audioEngine.canUseWebAudio) {
+                this._soundGain.disconnect();
+                this._soundGain.connect(soundTrackAudioNode);
+            }
         }
 
         /**
@@ -143,6 +151,14 @@
 
         public pause() {
             //this._soundSource.p
+        }
+
+        public setVolume(newVolume: number) {
+            this._volume = newVolume;
+        }
+
+        public getVolume(): number {
+            return this._volume;
         }
 
         public attachToMesh(meshToConnectTo: BABYLON.AbstractMesh) {
