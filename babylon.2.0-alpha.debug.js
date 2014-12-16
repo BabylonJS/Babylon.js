@@ -8302,6 +8302,7 @@ var BABYLON;
             this.forceWireframe = false;
             this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
+            this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
            
             this.fogMode = Scene.FOGMODE_NONE;
@@ -8354,8 +8355,7 @@ var BABYLON;
            
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
-           
-            this._soundTracks = new Array();
+            this.soundTracks = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -8399,6 +8399,7 @@ var BABYLON;
             this.attachControl();
 
             this._debugLayer = new BABYLON.DebugLayer(this);
+            this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
         }
         Object.defineProperty(Scene.prototype, "debugLayer", {
            
@@ -8765,6 +8766,10 @@ var BABYLON;
         };
 
         Scene.prototype._animate = function () {
+            if (!this.animationsEnabled) {
+                return;
+            }
+
             if (!this._animationStartDate) {
                 this._animationStartDate = BABYLON.Tools.Now;
             }
@@ -29025,8 +29030,11 @@ var BABYLON;
             this.maxDistance = 10;
             this.autoplay = false;
             this.loop = false;
+            this.useBabylonJSAttenuation = false;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
+            this._volume = 1;
+            this._distanceFromCamera = 1;
             this._isLoaded = false;
             this._isReadyToPlay = false;
             this._isPlaying = false;
@@ -29050,21 +29058,32 @@ var BABYLON;
                 if (options.loop) {
                     this.loop = options.loop;
                 }
+                if (options.volume) {
+                    this._volume = options.volume;
+                }
+                if (options.useBabylonJSAttenuation) {
+                    this.useBabylonJSAttenuation = options.useBabylonJSAttenuation;
+                }
             }
 
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
-                this._soundGain.connect(this._audioEngine.masterGain);
+                this._soundGain.gain.value = this._volume;
+
+               
                 this._soundPanner = this._audioEngine.audioContext.createPanner();
                 this._soundPanner.connect(this._soundGain);
+                this._scene.mainSoundTrack.AddSound(this);
                 BABYLON.Tools.LoadFile(url, function (data) {
                     _this._soundLoaded(data);
                 }, null, null, true);
             }
         }
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
-            this._soundGain.disconnect();
-            this._soundGain.connect(soundTrackAudioNode);
+            if (this._audioEngine.canUseWebAudio) {
+                this._soundGain.disconnect();
+                this._soundGain.connect(soundTrackAudioNode);
+            }
         };
 
         /**
@@ -29153,6 +29172,14 @@ var BABYLON;
            
         };
 
+        Sound.prototype.setVolume = function (newVolume) {
+            this._volume = newVolume;
+        };
+
+        Sound.prototype.getVolume = function () {
+            return this._volume;
+        };
+
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
             this._connectedMesh = meshToConnectTo;
@@ -29192,21 +29219,50 @@ var BABYLON;
 (function (BABYLON) {
     var SoundTrack = (function () {
         function SoundTrack(scene, options) {
+            this.id = -1;
+            this._isMainTrack = false;
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
-            this._trackGain = this._audioEngine.audioContext.createGain();
-            this._trackConvolver = this._audioEngine.audioContext.createConvolver();
-            this._trackConvolver.connect(this._trackGain);
-            this._trackGain.connect(this._audioEngine.masterGain);
             this._soundCollection = new Array();
-            this._scene._soundTracks.push(this);
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain = this._audioEngine.audioContext.createGain();
+
+               
+               
+                this._trackGain.connect(this._audioEngine.masterGain);
+
+                if (options) {
+                    if (options.volume) {
+                        this._trackGain.gain.value = options.volume;
+                    }
+                    if (options.mainTrack) {
+                        this._isMainTrack = options.mainTrack;
+                    }
+                }
+            }
+            if (!this._isMainTrack) {
+                this._scene.soundTracks.push(this);
+                this.id = this._scene.soundTracks.length - 1;
+            }
         }
-        SoundTrack.prototype.AddSound = function (newSound) {
-            newSound.connectToSoundTrackAudioNode(this._trackConvolver);
-            this._soundCollection.push(newSound);
+        SoundTrack.prototype.AddSound = function (sound) {
+            sound.connectToSoundTrackAudioNode(this._trackGain);
+            if (sound.soundTrackId) {
+                if (sound.soundTrackId === -1) {
+                    this._scene.mainSoundTrack.RemoveSound(sound);
+                } else {
+                    this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
+                }
+            }
+            this._soundCollection.push(sound);
+            sound.soundTrackId = this.id;
         };
 
         SoundTrack.prototype.RemoveSound = function (sound) {
+            var index = this._soundCollection.indexOf(sound);
+            if (index !== -1) {
+                this._soundCollection.splice(index, 1);
+            }
         };
 
         SoundTrack.prototype.setVolume = function (newVolume) {
@@ -29630,11 +29686,11 @@ var BABYLON;
 
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
-            this._globalDiv.id = "Debug Layer";
+            this._globalDiv.id = "DebugLayer";
 
            
             this._drawingCanvas = document.createElement("canvas");
-            this._drawingCanvas.id = "Debug Layer - Drawing canvas";
+            this._drawingCanvas.id = "DebugLayerDrawingCanvas";
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
             this._drawingContext = this._drawingCanvas.getContext("2d");
@@ -29646,7 +29702,7 @@ var BABYLON;
 
                
                 this._statsDiv = document.createElement("div");
-                this._statsDiv.id = "Debug Layer - Stats";
+                this._statsDiv.id = "DebugLayerStats";
                 this._statsDiv.style.border = border;
                 this._statsDiv.style.position = "absolute";
                 this._statsDiv.style.background = background;
@@ -29661,7 +29717,7 @@ var BABYLON;
 
                
                 this._treeDiv = document.createElement("div");
-                this._treeDiv.id = "Debug Layer - Tree";
+                this._treeDiv.id = "DebugLayerTree";
                 this._treeDiv.style.border = border;
                 this._treeDiv.style.position = "absolute";
                 this._treeDiv.style.background = background;
@@ -29700,7 +29756,7 @@ var BABYLON;
                
                 this._logDiv = document.createElement("div");
                 this._logDiv.style.border = border;
-                this._logDiv.id = "Debug Layer - Logs";
+                this._logDiv.id = "DebugLayerLogs";
                 this._logDiv.style.position = "absolute";
                 this._logDiv.style.background = background;
                 this._logDiv.style.padding = "0px 0px 0px 5px";
@@ -29720,7 +29776,7 @@ var BABYLON;
 
                
                 this._optionsDiv = document.createElement("div");
-                this._optionsDiv.id = "Debug Layer - Options";
+                this._optionsDiv.id = "DebugLayerOptions";
                 this._optionsDiv.style.border = border;
                 this._optionsDiv.style.position = "absolute";
                 this._optionsDiv.style.background = background;
@@ -29806,6 +29862,9 @@ var BABYLON;
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>");
+                this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, function (element) {
+                    _this._scene.animationsEnabled = element.checked;
+                });
                 this._generateCheckBox(this._optionsSubsetDiv, "Collisions", this._scene.collisionsEnabled, function (element) {
                     _this._scene.collisionsEnabled = element.checked;
                 });

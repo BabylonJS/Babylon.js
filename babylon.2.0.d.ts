@@ -342,6 +342,7 @@ declare module BABYLON {
         public forcePointsCloud: boolean;
         public forceShowBoundingBoxes: boolean;
         public clipPlane: Plane;
+        public animationsEnabled: boolean;
         private _onPointerMove;
         private _onPointerDown;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
@@ -392,7 +393,8 @@ declare module BABYLON {
         private _meshesForIntersections;
         public proceduralTexturesEnabled: boolean;
         public _proceduralTextures: ProceduralTexture[];
-        public _soundTracks: SoundTrack[];
+        public mainSoundTrack: SoundTrack;
+        public soundTracks: SoundTrack[];
         private _engine;
         private _totalVertices;
         public _activeVertices: number;
@@ -885,10 +887,12 @@ declare module BABYLON {
         public maxDistance: number;
         public autoplay: boolean;
         public loop: boolean;
+        public useBabylonJSAttenuation: boolean;
+        public soundTrackId: number;
         private _position;
         private _localDirection;
         private _volume;
-        private _currentVolume;
+        private _distanceFromCamera;
         private _isLoaded;
         private _isReadyToPlay;
         private _isPlaying;
@@ -935,6 +939,8 @@ declare module BABYLON {
         */
         public stop(time?: number): void;
         public pause(): void;
+        public setVolume(newVolume: number): void;
+        public getVolume(): number;
         public attachToMesh(meshToConnectTo: AbstractMesh): void;
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
         private _soundLoaded(audioData);
@@ -946,10 +952,11 @@ declare module BABYLON {
         private _trackGain;
         private _trackConvolver;
         private _scene;
-        private _id;
+        public id: number;
         private _soundCollection;
+        private _isMainTrack;
         constructor(scene: Scene, options?: any);
-        public AddSound(newSound: Sound): void;
+        public AddSound(sound: Sound): void;
         public RemoveSound(sound: Sound): void;
         public setVolume(newVolume: number): void;
     }
@@ -2006,50 +2013,6 @@ declare module BABYLON {
         private _savedViewMatrix;
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
         public clone(): MirrorTexture;
-    }
-}
-declare module BABYLON {
-    class ProceduralTexture extends Texture {
-        private _size;
-        public _generateMipMaps: boolean;
-        private _doNotChangeAspectRatio;
-        private _currentRefreshId;
-        private _refreshRate;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _uniforms;
-        private _samplers;
-        private _fragment;
-        private _textures;
-        private _floats;
-        private _floatsArrays;
-        private _colors3;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _matrices;
-        constructor(name: string, size: any, fragment: any, scene: Scene, generateMipMaps?: boolean);
-        public isReady(): boolean;
-        public resetRefreshCounter(): void;
-        public refreshRate : number;
-        public _shouldRender(): boolean;
-        public getRenderSize(): number;
-        public resize(size: any, generateMipMaps: any): void;
-        private _checkUniform(uniformName);
-        public setTexture(name: string, texture: Texture): ProceduralTexture;
-        public setFloat(name: string, value: number): ProceduralTexture;
-        public setFloats(name: string, value: number[]): ProceduralTexture;
-        public setColor3(name: string, value: Color3): ProceduralTexture;
-        public setColor4(name: string, value: Color4): ProceduralTexture;
-        public setVector2(name: string, value: Vector2): ProceduralTexture;
-        public setVector3(name: string, value: Vector3): ProceduralTexture;
-        public setMatrix(name: string, value: Matrix): ProceduralTexture;
-        public render(useCameraPostProcess?: boolean): void;
-        public clone(): ProceduralTexture;
-        public dispose(): void;
     }
 }
 declare module BABYLON {
