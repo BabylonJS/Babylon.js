@@ -14,6 +14,7 @@ namespace Max2Babylon
     partial class BabylonExporter
     {
         readonly List<IIGameSkin> skins = new List<IIGameSkin>();
+        readonly List<IIGameNode> skinnedNodes = new List<IIGameNode>();
 
         //IISkin GetSkinModifier(IINode node, out IModifier skinModifier)
         //{
@@ -103,14 +104,23 @@ namespace Max2Babylon
         //    return Matrix.Identity.ToArray();
         //}
 
+        IGMatrix WithNoScale(IGMatrix mat)
+        {
+            var mat3 = mat.ExtractMatrix3();
+            mat3.NoScale();
+            return Loader.Global.GMatrix.Create(mat3);
+        }
         private void ExportSkin(IIGameSkin skin, BabylonScene babylonScene)
         {
             var babylonSkeleton = new BabylonSkeleton { id = skins.IndexOf(skin) };
             babylonSkeleton.name = "skeleton #" + babylonSkeleton.id;
 
             RaiseMessage(babylonSkeleton.name, 1);
-            IGMatrix skinInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
-            skin.GetInitSkinTM(skinInitMatrix);
+            //IGMatrix skinInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+            //skin.GetInitSkinTM(skinInitMatrix);
+            var skinIndex = skins.IndexOf(skin);
+            var meshNode = skinnedNodes[skinIndex];
+            var skinInitMatrix = meshNode.GetObjectTM(0);
 
             var bones = new List<BabylonBone>();
             var gameBones = new List<IIGameNode>();
@@ -119,11 +129,14 @@ namespace Max2Babylon
             for (var index = 0; index < skin.TotalSkinBoneCount; index++)
             {
                 var gameBone = skin.GetIGameBone(index, false);
-                gameBones.Add(skin.GetIGameBone(index, false));
+
+                gameBones.Add(gameBone);
                 boneIds.Add(gameBone.NodeID);
                 bones.Add(new BabylonBone { index = index, name = gameBone.Name });
-                IGMatrix boneInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
-                skin.GetInitBoneTM(gameBone, boneInitMatrix);
+                //IGMatrix boneInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+
+                //skin.GetInitBoneTM(gameBone, boneInitMatrix);
+                var boneInitMatrix = gameBone.GetObjectTM(0);
                 bindPoseInfos.Add(new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
             }
             // fix hierarchy an generate animation keys
@@ -136,9 +149,9 @@ namespace Max2Babylon
                 {
                     babBone.parentBoneIndex = boneIds.IndexOf(parent.NodeID);
                 }
-                if(babBone.parentBoneIndex == -1)
+                if (babBone.parentBoneIndex == -1)
                 {
-                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply( skinInitMatrix.Inverse);
+                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(skinInitMatrix.Inverse);
                 }
                 else
                 {
@@ -163,8 +176,19 @@ namespace Max2Babylon
                 var keys = new List<BabylonAnimationKey>();
                 for (var key = start; key <= end; key += Ticks)
                 {
-                    var current = gameBone.GetLocalTM(key).ToArray();
+                    var objectTM = gameBone.GetObjectTM(key);
+                    var parentNode = gameBone.NodeParent;
+                    IGMatrix mat;
+                    if (parentNode == null || babBone.parentBoneIndex == -1)
+                    {
+                        mat = objectTM.Multiply(meshNode.GetObjectTM(key).Inverse);
+                    }
+                    else
+                    {
+                        mat = objectTM.Multiply(parentNode.GetObjectTM(key).Inverse);
+                    }
 
+                    var current = mat.ToArray();
                     if (key == start || key == end || !(previous.IsEqualTo(current)))
                     {
                         keys.Add(new BabylonAnimationKey
