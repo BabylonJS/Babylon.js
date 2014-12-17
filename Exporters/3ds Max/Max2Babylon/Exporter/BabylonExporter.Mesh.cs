@@ -52,20 +52,22 @@ namespace Max2Babylon
             bool isSkinned = gameMesh.IsObjectSkinned;
             var skin = gameMesh.IGameSkin;
             var unskinnedMesh = gameMesh;
+            IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
             if (isSkinned)
             {
-                unskinnedMesh = skin.InitialPose;
+                //unskinnedMesh = skin.InitialPose;
                 bonesCount = skin.TotalSkinBoneCount;
                 skins.Add(skin);
+                skinnedNodes.Add(meshNode);
                 babylonMesh.skeletonId = skins.IndexOf(skin);
+                skin.GetInitSkinTM(skinInitPoseMatrix);
             }
-
 
             // Position / rotation / scaling
             {
-                var localTM = meshNode.GetLocalTM(0);
+                //var localTM = unskinnedMesh.IGameObjectTM;
                 //var worldTM = meshNode.GetWorldTM(0);
-                //var objTM = meshNode.GetObjectTM(0);
+                var localTM = meshNode.GetObjectTM(0);
                 var meshTrans = localTM.Translation;
                 var meshRotation = localTM.Rotation;
                 var meshScale = localTM.Scaling;
