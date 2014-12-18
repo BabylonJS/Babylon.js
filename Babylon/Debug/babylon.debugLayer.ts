@@ -43,10 +43,10 @@
                 var canvasRect = engine.getRenderingCanvasClientRect();
 
                 if (this._showUI) {
-                    this._statsDiv.style.right = "0";
-                    this._statsDiv.style.bottom = "10px";
+                    this._statsDiv.style.left = (canvasRect.right - 310) + "px";
+                    this._statsDiv.style.top = (canvasRect.bottom - 370) + "px";
                     this._statsDiv.style.width = "300px";
-                    this._statsDiv.style.height = "auto";
+                    this._statsDiv.style.height = "360px";
                     this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
 
                     this._optionsDiv.style.left = "0px";
@@ -56,11 +56,11 @@
                     this._optionsSubsetDiv.style.maxHeight = (canvasRect.height * 0.6) + "px";
 
                     this._logDiv.style.left = "0px";
-                    this._logDiv.style.bottom = "10px";
+                    this._logDiv.style.top = (canvasRect.bottom - 170) + "px";
                     this._logDiv.style.width = "600px";
-                    this._logDiv.style.height = "auto";
+                    this._logDiv.style.height = "160px";
 
-                    this._treeDiv.style.right = "0px";
+                    this._treeDiv.style.left = (canvasRect.right - 310) + "px";
                     this._treeDiv.style.top = "10px";
                     this._treeDiv.style.width = "300px";
                     this._treeDiv.style.height = "auto";
@@ -68,8 +68,6 @@
 
                 this._globalDiv.style.left = canvasRect.left + "px";
                 this._globalDiv.style.top = canvasRect.top + "px";
-                this._globalDiv.style.width = canvasRect.width + "px";
-                this._globalDiv.style.height = canvasRect.height + "px";
 
                 this._drawingCanvas.style.left = "0px";
                 this._drawingCanvas.style.top = "0px";
@@ -529,7 +527,6 @@
                 this._logSubsetDiv = document.createElement("div");
                 this._logSubsetDiv.style.paddingTop = "5px";
                 this._logSubsetDiv.style.overflowY = "auto";
-                this._logSubsetDiv.style.maxHeight = "200px";
                 this._logSubsetDiv.style.fontSize = "12px";
                 this._logSubsetDiv.style.fontFamily = "consolas";
                 this._logSubsetDiv.innerHTML = Tools.LogCache;
@@ -625,7 +622,6 @@
                 // Global
 
                 this._globalDiv.style.position = "absolute";
-                this._globalDiv.style.pointerEvents = "none";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
