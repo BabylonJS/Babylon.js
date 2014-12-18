@@ -28,7 +28,10 @@ namespace Max2Babylon
             }
 
             var gameMesh = meshNode.IGameObject.AsGameMesh();
-            bool initialized = gameMesh.InitializeData;
+            gameMesh.SetCreateOptimizedNormalList();
+            gameMesh.SetUseWeightedNormals();
+            bool initialized = gameMesh.InitializeData; //needed, the property is in fact a method initializing the exporter that has wrongly been auto 
+            // translated into a property because it has no parameters
 
             var babylonMesh = new BabylonMesh();
 
@@ -90,7 +93,6 @@ namespace Max2Babylon
             //babylonMesh.pivotMatrix = pivotMatrix.ToArray();
 
             // Mesh
-            
 
             RaiseMessage(meshNode.Name, 1);
             
@@ -133,9 +135,21 @@ namespace Max2Babylon
 
                 var vertices = new List<GlobalVertex>();
                 var indices = new List<int>();
-
-                var hasUV = unskinnedMesh.NumberOfTexVerts > 0;
-                var hasUV2 = unskinnedMesh.GetNumberOfMapVerts(2) > 0;
+                var mappingChannels = unskinnedMesh.ActiveMapChannelNum;
+                bool hasUV = false;
+                bool hasUV2 = false;
+                for(int i=0;i< mappingChannels.Count; ++i)
+                {
+                    IntPtr indexer = new IntPtr(i);
+                    var channelNum = mappingChannels[indexer];
+                    if(channelNum == 1)
+                    {
+                        hasUV = true;
+                    }else if(channelNum == 2)
+                    {
+                        hasUV2 = true;
+                    }
+                }
                 var hasColor = unskinnedMesh.NumberOfColorVerts > 0;
                 var hasAlpha = unskinnedMesh.GetNumberOfMapVerts(-2) > 0;
 
@@ -254,7 +268,7 @@ namespace Max2Babylon
 
                 // Buffers
                 babylonMesh.positions = vertices.SelectMany(v => new float[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
-                babylonMesh.normals = vertices.SelectMany(v => new float[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
+                babylonMesh.normals = vertices.SelectMany(v => new float[] { -v.Normal.X, -v.Normal.Y, -v.Normal.Z }).ToArray();
                 if (hasUV)
                 {
                     babylonMesh.uvs = vertices.SelectMany(v => new float[] { v.UV.X, 1-v.UV.Y }).ToArray();
@@ -474,18 +488,33 @@ namespace Max2Babylon
                 Position = mesh.GetVertex(vertexIndex, true),
                 Normal = mesh.GetNormal((int)face.Norm[facePart], true) //vnorms[vertexIndex].GetNormal(verticesAlreadyExported != null ? 1 : faceObject.SmGroup)
             };
-
+          
             if (hasUV)
             {
-                var tvertexIndex = (int)face.TexCoord[facePart];
-                vertex.UV = mesh.GetTexVertex(tvertexIndex);
+                int[] indices = new int[3];
+                unsafe
+                {
+                    fixed(int* indicesPtr = indices)
+                    {
+                        mesh.GetMapFaceIndex(1, face.MeshFaceIndex, new IntPtr(indicesPtr));
+                    }
+                }
+                var texCoord = mesh.GetMapVertex(1, indices[facePart]);
+                vertex.UV = Loader.Global.Point2.Create( texCoord.X, -texCoord.Y);
             }
 
             if (hasUV2)
             {
-                IPoint3 p = Loader.Global.Point3.Create();
-                var tvertexIndex = mesh.GetMapFaceIndex(2, face.MeshFaceIndex, p.GetNativeHandle());
-                vertex.UV2 = Loader.Global.Point2.Create(p.X, p.Y);
+                int[] indices = new int[3];
+                unsafe
+                {
+                    fixed (int* indicesPtr = indices)
+                    {
+                        mesh.GetMapFaceIndex(2, face.MeshFaceIndex, new IntPtr(indicesPtr));
+                    }
+                }
+                var texCoord = mesh.GetMapVertex(2, indices[facePart]);
+                vertex.UV2 = Loader.Global.Point2.Create(texCoord.X, -texCoord.Y);
             }
 
             if (hasColor)
