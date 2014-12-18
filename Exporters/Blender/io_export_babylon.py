@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 3, 0),
+    'version': (1, 3, 1),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -1287,7 +1287,7 @@ class Texture:
                 self.wrapV = WRAP_ADDRESSMODE
         else:
             self.wrapU = CLAMP_ADDRESSMODE     
-            self.wrapU = CLAMP_ADDRESSMODE
+            self.wrapV = CLAMP_ADDRESSMODE
             
         self.coordinatesIndex = 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
