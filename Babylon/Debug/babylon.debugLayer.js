@@ -17,8 +17,8 @@
                 var canvasRect = engine.getRenderingCanvasClientRect();
 
                 if (_this._showUI) {
-                    _this._statsDiv.style.left = (canvasRect.right - 310) + "px";
-                    _this._statsDiv.style.top = (canvasRect.bottom - 370) + "px";
+                    _this._statsDiv.style.left = (canvasRect.width - 310) + "px";
+                    _this._statsDiv.style.top = (canvasRect.height - 370) + "px";
                     _this._statsDiv.style.width = "300px";
                     _this._statsDiv.style.height = "360px";
                     _this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
@@ -27,17 +27,18 @@
                     _this._optionsDiv.style.top = "10px";
                     _this._optionsDiv.style.width = "200px";
                     _this._optionsDiv.style.height = "auto";
-                    _this._optionsSubsetDiv.style.maxHeight = (canvasRect.height * 0.6) + "px";
+                    _this._optionsSubsetDiv.style.maxHeight = (canvasRect.height - 225) + "px";
 
                     _this._logDiv.style.left = "0px";
-                    _this._logDiv.style.top = (canvasRect.bottom - 170) + "px";
+                    _this._logDiv.style.top = (canvasRect.height - 170) + "px";
                     _this._logDiv.style.width = "600px";
                     _this._logDiv.style.height = "160px";
 
-                    _this._treeDiv.style.left = (canvasRect.right - 310) + "px";
+                    _this._treeDiv.style.left = (canvasRect.width - 310) + "px";
                     _this._treeDiv.style.top = "10px";
                     _this._treeDiv.style.width = "300px";
                     _this._treeDiv.style.height = "auto";
+                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 420) + "px";
                 }
 
                 _this._globalDiv.style.left = canvasRect.left + "px";
@@ -498,6 +499,7 @@
                 this._logDiv.style.display = "none";
                 this._generateheader(this._logDiv, "Logs");
                 this._logSubsetDiv = document.createElement("div");
+                this._logSubsetDiv.style.height = "127px";
                 this._logSubsetDiv.style.paddingTop = "5px";
                 this._logSubsetDiv.style.overflowY = "auto";
                 this._logSubsetDiv.style.fontSize = "12px";
