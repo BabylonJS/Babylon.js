@@ -83,14 +83,14 @@
             }
         }
 
-        public updateVerticesDataDirectly(kind: string, data: Float32Array): void {
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
                 return;
             }
 
-            vertexBuffer.updateDirectly(data);
+            vertexBuffer.updateDirectly(data, offset);
         }
 
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
@@ -102,14 +102,15 @@
 
             vertexBuffer.update(data);
 
-            if (kind === BABYLON.VertexBuffer.PositionKind) {
+            if (kind === VertexBuffer.PositionKind) {
 
                 var extend;
 
+                var stride = vertexBuffer.getStrideSize();
+                this._totalVertices = data.length / stride;
+
                 if (updateExtends) {
-                    var stride = vertexBuffer.getStrideSize();
-                    this._totalVertices = data.length / stride;
-                    extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
                 }
 
                 var meshes = this._meshes;
@@ -119,7 +120,7 @@
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
-                        mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                        mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
                     }
                 }
             }
@@ -180,7 +181,7 @@
             return result;
         }
 
-        public setIndices(indices: number[]): void {
+        public setIndices(indices: number[], totalVertices?: number): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -188,6 +189,10 @@
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            }
+
+            if (totalVertices !== undefined) {
+                this._totalVertices = totalVertices;
             }
 
             var meshes = this._meshes;

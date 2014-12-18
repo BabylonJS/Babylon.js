@@ -28,15 +28,27 @@ namespace Max2Babylon
             margin: 0;
             overflow: hidden;
         }
+
+        #debugLayerButton {
+            position: absolute;
+            border: white solid 1px;
+            background: rgba(128, 128, 128, 0.3);
+            color: white;
+            left: 50%;
+            width: 100px;
+            margin-left:-50px;
+            bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
     <canvas id='canvas'></canvas>
+    <button id='debugLayerButton'>Debug layer</button>
     <script type='text/javascript'>
         var canvas = document.getElementById('canvas');
         var engine = new BABYLON.Engine(canvas, true);
-
+       
         BABYLON.SceneLoader.Load('', '###SCENE###', engine, function (newScene) {
             newScene.activeCamera.attachControl(canvas);
 
@@ -46,6 +58,14 @@ namespace Max2Babylon
 
             window.addEventListener('resize', function () {
                 engine.resize();
+            });
+
+            document.getElementById('debugLayerButton').addEventListener('click', function () {
+                if (newScene.debugLayer.isVisible()) {
+                    newScene.debugLayer.hide();
+                } else {
+                    newScene.debugLayer.show();
+                }
             });
         });
     </script>

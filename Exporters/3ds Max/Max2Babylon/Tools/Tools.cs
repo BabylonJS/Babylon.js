@@ -26,7 +26,58 @@ namespace Max2Babylon
 
         public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
 
+#if !MAX2015
+        unsafe public static int GetParamBlockIndex(IIParamBlock paramBlock, string name)
+        {
+            for (short index = 0; index < paramBlock.NumParams; index++)
+            {
+                IGetParamName gpn = Loader.Global.GetParamName.Create("", index);
 
+                paramBlock.NotifyDependents(Tools.Forever, (UIntPtr)gpn.Handle.ToPointer(), RefMessage.GetParamName, (SClass_ID)0xfffffff0, false, null);
+
+                if (gpn.Name == name)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+
+        public static int GetParamBlockValueInt(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return 0;
+            }
+            return paramBlock.GetInt(index, 0);
+        }
+
+        public static float GetParamBlockValueFloat(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return 0;
+            }
+            return paramBlock.GetFloat(index, 0);
+        }
+
+        public static float[] GetParamBlockValueColor(IIParamBlock paramBlock, string name)
+        {
+            var index = Tools.GetParamBlockIndex(paramBlock, name);
+
+            if (index == -1)
+            {
+                return null;
+            }
+            return paramBlock.GetColor(index, 0).ToArray();
+        }
+#endif
         public static Vector3 ToEulerAngles(this IQuat q)
         {
             // Store the Euler angles in radians
@@ -412,6 +463,24 @@ namespace Max2Babylon
             if (Math.Abs(current.Y - other.Y) > epsilon)
             {
                 return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsAlmostEqualTo(this float[] current, float[] other, float epsilon)
+        {
+            if (current.Length != other.Length)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < current.Length; index++)
+            {
+                if (Math.Abs(current[index] - other[index]) > epsilon)
+                {
+                    return false;
+                }
             }
 
             return true;

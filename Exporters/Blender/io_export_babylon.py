@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 1, 0),
+    'version': (1, 3, 1),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -52,7 +52,6 @@ MAX_VERTEX_ELEMENTS = 65535
 VERTEX_OUTPUT_PER_LINE = 1000
 MAX_FLOAT_PRECISION = '%.4f'
 MAX_INFLUENCERS_PER_VERTEX = 4
-INTERNAL_NS_VAR = 'internal'
 MATERIALS_PATH_VAR = 'materialsRootDir'
 
 # used in World constructor, defined in BABYLON.Scene
@@ -129,7 +128,6 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     filepath = bpy.props.StringProperty(subtype = 'FILE_PATH') # assigned once the file selector returns
     log_handler = None  # assigned in execute
     nameSpace   = None  # assigned in execute
-    versionCheckCode = 'if (typeof(BABYLON.Engine.Version) === "undefined" || Number(BABYLON.Engine.Version.substr(0, 4)) < 1.14) throw "Babylon version too old";\n'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     export_onlyCurrentLayer = bpy.props.BoolProperty(
         name="Export only current layer",
@@ -392,14 +390,6 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def isInSelectedLayer(self, obj, scene):
         return not self.export_onlyCurrentLayer or obj.layers[scene.active_layer]
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-    # not relying on python parentObj.children, since would not account for forced parents (those meshes with > MAX_VERTEX_ELEMENTS)
-    def get_kids(self, prospectiveParent):
-        kids = []
-        for mesh in self.meshesAndNodes:
-            if hasattr(mesh, 'parentId') and mesh.parentId == prospectiveParent.name:
-                kids.append(mesh)
-        return kids
 #===============================================================================
 class World:
     def __init__(self, scene):
@@ -461,13 +451,13 @@ class FCurveAnimatable:
 
             if (hasattr(object.data, "autoAnimate") and object.data.autoAnimate):
                 self.autoAnimate = True
-                self.autoAnimateFrom = 0
-                self.autoAnimateTo =  bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1
-              #  for animation in self.animations:
-              #      if self.autoAnimateFrom > animation.get_first_frame():
-              #          self.autoAnimateFrom = animation.get_first_frame()
-              #      if self.autoAnimateTo < animation.get_last_frame():
-              #          self.autoAnimateTo = animation.get_last_frame()
+                self.autoAnimateFrom = bpy.context.scene.frame_end
+                self.autoAnimateTo =  0
+                for animation in self.animations:
+                    if self.autoAnimateFrom > animation.get_first_frame():
+                        self.autoAnimateFrom = animation.get_first_frame()
+                    if self.autoAnimateTo < animation.get_last_frame():
+                        self.autoAnimateTo = animation.get_last_frame()
                 self.autoAnimateLoop = True
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):     
@@ -527,7 +517,7 @@ class Mesh(FCurveAnimatable):
             self.physicsFriction = object.rigid_body.friction
             self.physicsRestitution = object.rigid_body.restitution
         
-        # Geometry, awkward, maybe nuke hasSkeleton test; can there only be one?
+        # hasSkeleton detection & skeletonID determination
         hasSkeleton = True if object.parent and object.parent.type == 'ARMATURE' and len(object.vertex_groups) > 0 else False
         if hasSkeleton:
             # determine the skeleton ID by iterating thru objects counting armatures until parent is found
@@ -602,10 +592,9 @@ class Mesh(FCurveAnimatable):
 
         if hasSkeleton:
             self.skeletonWeights = []
-            self.skeletonIndices = []
             self.skeletonIndicesCompressed = []
     
-        # used tracking of vertices as they are recieved     
+        # used tracking of vertices as they are received     
         alreadySavedVertices = []
         vertices_UVs = []
         vertices_UV2s = []
@@ -656,11 +645,6 @@ class Mesh(FCurveAnimatable):
                         matricesWeights.append(0.0)
                         matricesWeights.append(0.0)
                         matricesWeights.append(0.0)
-                        matricesIndices = []
-                        matricesIndices.append(0.0)
-                        matricesIndices.append(0.0)
-                        matricesIndices.append(0.0)
-                        matricesIndices.append(0.0)
                         matricesIndicesCompressed = 0
 
                         # Getting influences
@@ -676,7 +660,6 @@ class Mesh(FCurveAnimatable):
                                         BabylonExporter.warn('WARNING: Maximum # of influencers exceeded for a vertex, extras ignored', 2)
                                         break
                                     matricesWeights[i] = weight
-                                    matricesIndices[i] = boneIndex
                                     matricesIndicesCompressed += boneIndex << offset
                                     offset = offset + 8
 
@@ -753,10 +736,6 @@ class Mesh(FCurveAnimatable):
                             self.skeletonWeights.append(matricesWeights[1])
                             self.skeletonWeights.append(matricesWeights[2])
                             self.skeletonWeights.append(matricesWeights[3])
-                            self.skeletonIndices.append(matricesIndices[0])
-                            self.skeletonIndices.append(matricesIndices[1])
-                            self.skeletonIndices.append(matricesIndices[2])
-                            self.skeletonIndices.append(matricesIndices[3])
                             self.skeletonIndicesCompressed.append(matricesIndicesCompressed)
 
                         vertices_indices[vertex_index].append(index)
@@ -778,7 +757,7 @@ class Mesh(FCurveAnimatable):
         BabylonExporter.log('num indices        :  ' + str(len(self.indices  )), 2)
         if hasattr(self, 'skeletonWeights'):
             BabylonExporter.log('num skeletonWeights:  ' + str(len(self.skeletonWeights)), 2)
-            BabylonExporter.log('num skeletonIndices:  ' + str(len(self.skeletonIndices)), 2)
+            BabylonExporter.log('num skeletonIndices:  ' + str(len(self.skeletonIndicesCompressed * 4)), 2)
             
         if uvRequired and len(self.uvs) == 0:
             BabylonExporter.warn('WARNING: textures being used, but no UV Map found', 2)
@@ -799,19 +778,6 @@ class Mesh(FCurveAnimatable):
             if same_vertex(p1, p2) or same_vertex(p1, p3) or same_vertex(p2, p3): nZeroAreaFaces += 1
            
         return nZeroAreaFaces       
-        
-    def get_key_order_map(self, basisKey):
-        basisData = basisKey.data
-        keySz =len(basisData)
-        
-        ret = []
-        positionsSz = len(self.positions)
-        for posIdx in range(0, positionsSz):
-            for keyIdx in range(0, keySz):
-                if same_vertex(basisData[keyIdx].co, self.positions[posIdx]): 
-                    ret.append(keyIdx)
-                    break
-        return ret
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -      
     @staticmethod
     def mesh_triangulate(mesh):
@@ -1058,8 +1024,9 @@ class Camera(FCurveAnimatable):
     def __init__(self, camera):         
         super().__init__(camera, True, True, False, math.pi / 2)
         
+        self.CameraType = camera.data.CameraType  
         self.name = camera.name        
-        BabylonExporter.log('processing begun of camera:  ' + self.name)
+        BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
         self.position = camera.location
         self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
         self.fov = camera.data.angle
@@ -1075,9 +1042,7 @@ class Camera(FCurveAnimatable):
             if constraint.type == 'TRACK_TO':
                 self.lockedTargetId = constraint.target.name
                 break
-            
-        self.CameraType = camera.data.CameraType  
-                   
+                               
         if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ANAGLYPH_FREE_CAM:
             self.anaglyphEyeSpace = camera.data.anaglyphEyeSpace
         
@@ -1160,7 +1125,7 @@ class Light(FCurveAnimatable):
         super().__init__(light, False, True, False)
         
         self.name = light.name        
-        BabylonExporter.log('processing begun of light:  ' + self.name)
+        BabylonExporter.log('processing begun of light (' + light.data.type + '):  ' + self.name)
         light_type_items = {'POINT': POINT_LIGHT, 'SUN': DIRECTIONAL_LIGHT, 'SPOT': SPOT_LIGHT, 'HEMI': HEMI_LIGHT, 'AREA': 0}
         self.light_type = light_type_items[light.data.type]
         
@@ -1182,9 +1147,10 @@ class Light(FCurveAnimatable):
                 self.range = light.data.distance            
             
         else:
+            # Hemi & Area
             matrix_world = light.matrix_world.copy()
             matrix_world.translation = mathutils.Vector((0, 0, 0))
-            self.direction = -(mathutils.Vector((0, 0, -1)) * matrix_world)
+            self.direction = (mathutils.Vector((0, 0, -1)) * matrix_world)
             self.groundColor = mathutils.Color((0, 0, 0))
             
         self.intensity = light.data.energy        
@@ -1321,7 +1287,7 @@ class Texture:
                 self.wrapV = WRAP_ADDRESSMODE
         else:
             self.wrapU = CLAMP_ADDRESSMODE     
-            self.wrapU = CLAMP_ADDRESSMODE
+            self.wrapV = CLAMP_ADDRESSMODE
             
         self.coordinatesIndex = 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
@@ -1466,22 +1432,10 @@ class VectorAnimation(Animation):
                     frames[frame] = 1
             
         #for each frame (next step ==> set for key frames)
-        i = 0
         for Frame in sorted(frames):
-            if i == 0 and Frame != 0.0:
-                self.frames.append(0)
-                bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
-                self.values.append(scale_vector(getattr(object, attrInBlender), mult, xOffset))                
-            
             self.frames.append(Frame)
             bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
             self.values.append(scale_vector(getattr(object, attrInBlender), mult, xOffset))
-
-            i = i + 1
-            if i == len(frames):
-                self.frames.append(bpy.context.scene.frame_end - bpy.context.scene.frame_start + 1)
-                bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
-                self.values.append(scale_vector(getattr(object, attrInBlender), mult, xOffset))
 #===============================================================================
 #  module level formatting methods, called from multiple classes 
 #===============================================================================

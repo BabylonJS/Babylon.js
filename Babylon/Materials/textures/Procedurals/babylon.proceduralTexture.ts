@@ -17,7 +17,7 @@
         private _samplers = new Array<string>();
         private _fragment: any;
 
-        private _textures = new Array<Texture>();
+        public _textures = new Array<Texture>();
         private _floats = new Array<number>();
         private _floatsArrays = {};
         private _colors3 = new Array<Color3>();
@@ -28,7 +28,9 @@
 
         private _fallbackTexture: Texture;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+        private _fallbackTextureUsed = false;
+
+        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true) {
             super(null, scene, !generateMipMaps);
 
             scene._proceduralTextures.push(this);
@@ -38,7 +40,7 @@
             this._size = size;
             this._generateMipMaps = generateMipMaps;
 
-            this._fragment = fragment;
+            this.setFragment(fragment);
 
             this._fallbackTexture = fallbackTexture;
 
@@ -66,19 +68,47 @@
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
         }
 
-      
+        public reset(): void {
+            if (this._effect === undefined) {
+                return;
+            }
+            var engine = this.getScene().getEngine();
+            engine._releaseEffect(this._effect);
+        }
+
+
         public isReady(): boolean {
             var engine = this.getScene().getEngine();
+            var shaders;
 
-            this._effect = engine.createEffect({ vertex: "procedural", fragment: this._fragment },
+            if (!this._fragment) {
+                return false;
+            }
+
+            if (this._fallbackTextureUsed) {
+                return true;
+            }
+
+            if (this._fragment.fragmentElement !== undefined) {
+                shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
+            }
+            else {
+                shaders = { vertex: "procedural", fragment: this._fragment };
+            }
+
+            this._effect = engine.createEffect(shaders,
                 ["position"],
                 this._uniforms,
                 this._samplers,
                 "", null, null, () => {
                     this.releaseInternalTexture();
 
-                    this._texture = this._fallbackTexture._texture;
-                    this._texture.references++;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
+                        this._texture.references++;
+                    }
+
+                    this._fallbackTextureUsed = true;
                 });
 
             return this._effect.isReady();
@@ -107,12 +137,16 @@
                 return false;
             }
 
+            if (this._fallbackTextureUsed) {
+                return false;
+            }
+
             if (this._currentRefreshId === -1) { // At least render once
                 this._currentRefreshId = 1;
                 return true;
             }
 
-            if (this.refreshRate == this._currentRefreshId) {
+            if (this.refreshRate === this._currentRefreshId) {
                 this._currentRefreshId = 1;
                 return true;
             }
@@ -126,6 +160,10 @@
         }
 
         public resize(size, generateMipMaps) {
+            if (this._fallbackTextureUsed) {
+                return;
+            }
+
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
@@ -217,7 +255,7 @@
                 this._effect.setFloat(name, this._floats[name]);
             }
 
-            // Float s   
+            // Floats   
             for (name in this._floatsArrays) {
                 this._effect.setArray(name, this._floatsArrays[name]);
             }
@@ -260,7 +298,7 @@
 
         public clone(): ProceduralTexture {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
+            var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

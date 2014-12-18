@@ -143,8 +143,8 @@
             }
 
             // Is in local store ?
-            if (BABYLON.Effect.ShadersStore[vertex + "VertexShader"]) {
-                callback(BABYLON.Effect.ShadersStore[vertex + "VertexShader"]);
+            if (Effect.ShadersStore[vertex + "VertexShader"]) {
+                callback(Effect.ShadersStore[vertex + "VertexShader"]);
                 return;
             }
 
@@ -169,13 +169,13 @@
             }
 
             // Is in local store ?
-            if (BABYLON.Effect.ShadersStore[fragment + "PixelShader"]) {
-                callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
+            if (Effect.ShadersStore[fragment + "PixelShader"]) {
+                callback(Effect.ShadersStore[fragment + "PixelShader"]);
                 return;
             }
 
-            if (BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]) {
-                callback(BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]);
+            if (Effect.ShadersStore[fragment + "FragmentShader"]) {
+                callback(Effect.ShadersStore[fragment + "FragmentShader"]);
                 return;
             }
 
@@ -208,7 +208,6 @@
                         index--;
                     }
                 }
-
                 engine.bindSamplers(this);
 
                 this._isReady = true;
@@ -340,7 +339,7 @@
         };
 
         Effect.prototype.setVector2 = function (uniformName, vector2) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector2.x && this._valueCache[uniformName][1] == vector2.y)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector2.x && this._valueCache[uniformName][1] === vector2.y)
                 return this;
 
             this._cacheFloat2(uniformName, vector2.x, vector2.y);
@@ -350,7 +349,7 @@
         };
 
         Effect.prototype.setFloat2 = function (uniformName, x, y) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y)
                 return this;
 
             this._cacheFloat2(uniformName, x, y);
@@ -360,7 +359,7 @@
         };
 
         Effect.prototype.setVector3 = function (uniformName, vector3) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector3.x && this._valueCache[uniformName][1] === vector3.y && this._valueCache[uniformName][2] === vector3.z)
                 return this;
 
             this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z);
@@ -371,7 +370,7 @@
         };
 
         Effect.prototype.setFloat3 = function (uniformName, x, y, z) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z)
                 return this;
 
             this._cacheFloat3(uniformName, x, y, z);
@@ -381,7 +380,7 @@
         };
 
         Effect.prototype.setFloat4 = function (uniformName, x, y, z, w) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z && this._valueCache[uniformName][3] == w)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
                 return this;
 
             this._cacheFloat4(uniformName, x, y, z, w);
@@ -391,7 +390,7 @@
         };
 
         Effect.prototype.setColor3 = function (uniformName, color3) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b)
                 return this;
 
             this._cacheFloat3(uniformName, color3.r, color3.g, color3.b);
@@ -401,7 +400,7 @@
         };
 
         Effect.prototype.setColor4 = function (uniformName, color3, alpha) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b && this._valueCache[uniformName][3] == alpha)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b && this._valueCache[uniformName][3] === alpha)
                 return this;
 
             this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
