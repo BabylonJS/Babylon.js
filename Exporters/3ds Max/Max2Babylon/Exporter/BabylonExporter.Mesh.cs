@@ -43,6 +43,8 @@ namespace Max2Babylon
             babylonMesh.receiveShadows = meshNode.RcvShadows == 1;
             babylonMesh.showBoundingBox = meshNode.GetBoolProperty("babylonjs_showboundingbox");
             babylonMesh.showSubMeshesBoundingBox = meshNode.GetBoolProperty("babylonjs_showsubmeshesboundingbox");
+            babylonMesh.applyFog = meshNode.ApplyAtmospherics == 1;
+            babylonMesh.alphaIndex = (int)meshNode.GetFloatProperty("babylonjs_alphaindex", 1000);
 
             // Collisions
             babylonMesh.checkCollisions = meshNode.GetBoolProperty("babylonjs_checkcollisions");

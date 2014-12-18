@@ -656,8 +656,16 @@
         mesh.showBoundingBox = parsedMesh.showBoundingBox;
         mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
 
+        if (parsedMesh.applyFog !== undefined) {
+            mesh.applyFog = parsedMesh.applyFog;
+        }
+
         if (parsedMesh.pickable !== undefined) {
             mesh.isPickable = parsedMesh.pickable;
+        }
+
+        if (parsedMesh.alphaIndex !== undefined) {
+            mesh.alphaIndex = parsedMesh.alphaIndex;
         }
 
         mesh.receiveShadows = parsedMesh.receiveShadows;

@@ -11,6 +11,7 @@
         public _lastColliderTransformMatrix: Matrix;
 
         public _renderId = 0;
+        public _alphaIndex: number;
         public _distanceToCamera: number;
         public _id: number;
 

@@ -96,6 +96,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool showSubMeshesBoundingBox { get; set; }
 
+        [DataMember]
+        public bool applyFog { get; set; }
+
+        [DataMember]
+        public int alphaIndex { get; set; }
+
         public BabylonMesh()
         {
             isEnabled = true;

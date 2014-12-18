@@ -7,6 +7,8 @@ varying vec2 vUV;
 
 uniform float numberOfBricksHeight;
 uniform float numberOfBricksWidth;
+uniform vec3 brickColor;
+uniform vec3 jointColor;
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -34,20 +36,13 @@ float round(float number){
 
 void main(void)
 {
-	vec3 brick = vec3(0.77, 0.47, 0.40);
-	vec3 joint = vec3(0.72, 0.72, 0.72);
-
 	float brickW = 1.0 / numberOfBricksWidth;
 	float brickH = 1.0 / numberOfBricksHeight;
 	float jointWPercentage = 0.01;
 	float jointHPercentage = 0.05;
-
-	vec3 color = brick;
-
-
+	vec3 color = brickColor;
 	float yi = vUV.y / brickH;
 	float nyi = round(yi);
-
 	float xi = vUV.x / brickW;
 
 	if (mod(floor(yi), 2.0) == 0.0){
@@ -55,28 +50,22 @@ void main(void)
 	}
 
 	float nxi = round(xi);
-
 	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);
 
-
 	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){
-		color = mix(joint, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);
+		color = mix(jointColor, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);
 	}
 	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){
-		color = mix(joint, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
+		color = mix(jointColor, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);
 	}
 	else {
-		float momo = mod(floor(yi) + floor(xi), 3.0);
+		float brickColorSwitch = mod(floor(yi) + floor(xi), 3.0);
 
-		if (momo == 0.0)
+		if (brickColorSwitch == 0.0)
 			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);
-		else if (momo == 2.0)
+		else if (brickColorSwitch == 2.0)
 			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);
-
-
-		//color = mix(momo, vec3(0.53, 0.2, 0.0), fbm(brickvUV * 2.0));
 	}
-
 
 	gl_FragColor = vec4(color, 1.0);
 }

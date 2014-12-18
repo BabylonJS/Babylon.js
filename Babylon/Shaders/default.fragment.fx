@@ -317,9 +317,9 @@ mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 
 vec3 perturbNormal(vec3 viewDir)
 {
-	vec3 map = texture2D(bumpSampler, vBumpUV).xyz * vBumpInfos.y;
+	vec3 map = texture2D(bumpSampler, vBumpUV).xyz;
 	map = map * 255. / 127. - 128. / 127.;
-	mat3 TBN = cotangent_frame(vNormalW, -viewDir, vBumpUV);
+	mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDir, vBumpUV);
 	return normalize(TBN * map);
 }
 #endif

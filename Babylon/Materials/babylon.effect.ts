@@ -147,14 +147,14 @@
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
-                var vertexCode = BABYLON.Tools.GetDOMTextContent(vertex);
+                var vertexCode = Tools.GetDOMTextContent(vertex);
                 callback(vertexCode);
                 return;
             }
 
             // Is in local store ?
-            if (BABYLON.Effect.ShadersStore[vertex + "VertexShader"]) {
-                callback(BABYLON.Effect.ShadersStore[vertex + "VertexShader"]);
+            if (Effect.ShadersStore[vertex + "VertexShader"]) {
+                callback(Effect.ShadersStore[vertex + "VertexShader"]);
                 return;
             }
 
@@ -163,29 +163,29 @@
             if (vertex[0] === ".") {
                 vertexShaderUrl = vertex;
             } else {
-                vertexShaderUrl = BABYLON.Engine.ShadersRepository + vertex;
+                vertexShaderUrl = Engine.ShadersRepository + vertex;
             }
 
             // Vertex shader
-            BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
             // DOM element ?
             if (fragment instanceof HTMLElement) {
-                var fragmentCode = BABYLON.Tools.GetDOMTextContent(fragment);
+                var fragmentCode = Tools.GetDOMTextContent(fragment);
                 callback(fragmentCode);
                 return;
             }
 
             // Is in local store ?
-            if (BABYLON.Effect.ShadersStore[fragment + "PixelShader"]) {
-                callback(BABYLON.Effect.ShadersStore[fragment + "PixelShader"]);
+            if (Effect.ShadersStore[fragment + "PixelShader"]) {
+                callback(Effect.ShadersStore[fragment + "PixelShader"]);
                 return;
             }
 
-            if (BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]) {
-                callback(BABYLON.Effect.ShadersStore[fragment + "FragmentShader"]);
+            if (Effect.ShadersStore[fragment + "FragmentShader"]) {
+                callback(Effect.ShadersStore[fragment + "FragmentShader"]);
                 return;
             }
 
@@ -194,11 +194,11 @@
             if (fragment[0] === ".") {
                 fragmentShaderUrl = fragment;
             } else {
-                fragmentShaderUrl = BABYLON.Engine.ShadersRepository + fragment;
+                fragmentShaderUrl = Engine.ShadersRepository + fragment;
             }
 
             // Fragment shader
-            BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
@@ -218,7 +218,6 @@
                         index--;
                     }
                 }
-
                 engine.bindSamplers(this);
 
                 this._isReady = true;
@@ -239,7 +238,7 @@
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
-                } else { // SOrry we did everything we can
+                } else { // Sorry we did everything we can
                     Tools.Error("Unable to compile effect: " + this.name);
                     Tools.Error("Defines: " + defines);
                     Tools.Error("Error: " + e.message);
@@ -352,7 +351,7 @@
         }
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector2.x && this._valueCache[uniformName][1] == vector2.y)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector2.x && this._valueCache[uniformName][1] === vector2.y)
                 return this;
 
             this._cacheFloat2(uniformName, vector2.x, vector2.y);
@@ -362,7 +361,7 @@
         }
 
         public setFloat2(uniformName: string, x: number, y: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y)
                 return this;
 
             this._cacheFloat2(uniformName, x, y);
@@ -372,7 +371,7 @@
         }
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == vector3.x && this._valueCache[uniformName][1] == vector3.y && this._valueCache[uniformName][2] == vector3.z)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector3.x && this._valueCache[uniformName][1] === vector3.y && this._valueCache[uniformName][2] === vector3.z)
                 return this;
 
             this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z);
@@ -383,7 +382,7 @@
         }
 
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z)
                 return this;
 
             this._cacheFloat3(uniformName, x, y, z);
@@ -393,7 +392,7 @@
         }
 
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == x && this._valueCache[uniformName][1] == y && this._valueCache[uniformName][2] == z && this._valueCache[uniformName][3] == w)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
                 return this;
 
             this._cacheFloat4(uniformName, x, y, z, w);
@@ -403,7 +402,7 @@
         }
 
         public setColor3(uniformName: string, color3: Color3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b)
                 return this;
 
             this._cacheFloat3(uniformName, color3.r, color3.g, color3.b);
@@ -413,7 +412,7 @@
         }
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] == color3.r && this._valueCache[uniformName][1] == color3.g && this._valueCache[uniformName][2] == color3.b && this._valueCache[uniformName][3] == alpha)
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b && this._valueCache[uniformName][3] === alpha)
                 return this;
 
             this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha);

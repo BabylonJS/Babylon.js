@@ -1,18 +1,18 @@
 ﻿module BABYLON {
     export class BaseTexture {
         public name: string;
-        public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public hasAlpha = false;
         public getAlphaFromRGB = false;
         public level = 1;
-        public isCube = false
+        public isCube = false;
         public isRenderTarget = false;
         public animations = new Array<Animation>();
         public onDispose: () => void;
         public coordinatesIndex = 0;
-        public coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
-        public wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-        public wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+        public coordinatesMode = Texture.EXPLICIT_MODE;
+        public wrapU = Texture.WRAP_ADDRESSMODE;
+        public wrapV = Texture.WRAP_ADDRESSMODE;
         public anisotropicFilteringLevel = 4;
         public _cachedAnisotropicFilteringLevel: number;
 
@@ -41,7 +41,7 @@
         }
 
         public isReady(): boolean {
-            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 return true;
             }
 
@@ -119,7 +119,7 @@
             this._texture.references--;
 
             // Final reference ?
-            if (this._texture.references == 0) {
+            if (this._texture.references === 0) {
                 var index = texturesCache.indexOf(this._texture);
                 texturesCache.splice(index, 1);
 
