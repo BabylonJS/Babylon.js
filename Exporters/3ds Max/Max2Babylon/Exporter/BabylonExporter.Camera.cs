@@ -50,7 +50,7 @@ namespace Max2Babylon
             babylonCamera.ellipsoid = cameraNode.MaxNode.GetVector3Property("babylonjs_ellipsoid");
 
             // Position
-            var wm = cameraNode.GetObjectTM(0);
+            var wm = cameraNode.GetLocalTM(0);
             var position = wm.Translation;
             babylonCamera.position = new float[] { position.X, position.Y, position.Z };
 
@@ -62,10 +62,8 @@ namespace Max2Babylon
             }
             else
             {
-                IPoint3 cameraTargetDist = Loader.Global.Point3.Create();
-                gameCamera.CameraTargetDist.GetPropertyValue(cameraTargetDist, 0);
-                var targetPos = position.Add(cameraTargetDist);
-                babylonCamera.target = new float[] { targetPos.X, targetPos.Y, targetPos.Z };
+                var dir = wm.GetRow(3);
+                babylonCamera.target = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
             }
 
             // todo : handle animations
