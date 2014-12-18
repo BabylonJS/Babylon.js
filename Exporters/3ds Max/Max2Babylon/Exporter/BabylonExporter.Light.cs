@@ -48,35 +48,31 @@ namespace Max2Babylon
 
             var directionScale = -1;
 
-            switch (gameLight.LightType)
+            switch (lightState.Type)
             {
-                case Autodesk.Max.IGameLight.LightType.Omni:
+                case LightType.OmniLgt:
                     babylonLight.type = 0;
                     break;
-                case Autodesk.Max.IGameLight.LightType.Fspot:
-                case Autodesk.Max.IGameLight.LightType.Tspot:
+                case LightType.SpotLgt:
                     babylonLight.type = 2;
-
-                    float fallOff = 0;
-                    gameLight.LightFallOff.GetPropertyValue(ref fallOff, 0, true);
-                    babylonLight.angle = (float)(fallOff * Math.PI / 180.0f);
+                    babylonLight.angle = (float)(maxLight.GetFallsize(0, Tools.Forever) * Math.PI / 180.0f);
                     babylonLight.exponent = 1;
                     break;
-                case Autodesk.Max.IGameLight.LightType.Dir:
-                case Autodesk.Max.IGameLight.LightType.Tdir:
+                case LightType.DirectLgt:
                     babylonLight.type = 1;
                     break;
-                case Autodesk.Max.IGameLight.LightType.Unknown:
+                case LightType.AmbientLgt:
                     babylonLight.type = 3;
                     babylonLight.groundColor = new float[] { 0, 0, 0 };
                     directionScale = 1;
                     break;
             }
 
-            // Shadows
-            if (gameLight.CastShadows)
+
+            // Shadows 
+            if (maxLight.ShadowMethod == 1)
             {
-                if (babylonLight.type == 1)
+                if (lightState.Type == LightType.DirectLgt)
                 {
                     ExportShadowGenerator(lightNode.MaxNode, babylonScene);
                 }
@@ -85,6 +81,7 @@ namespace Max2Babylon
                     RaiseWarning("Shadows maps are only supported for directional lights", 2);
                 }
             }
+
 
             // Position
             var wm = lightNode.GetObjectTM(0);
@@ -98,13 +95,14 @@ namespace Max2Babylon
                 var targetWm = target.GetObjectTM(0);
                 var targetPosition = targetWm.Translation;
 
-                var direction = targetPosition.Subtract(position);
+                var direction = targetPosition.Subtract(position).Normalize;
                 babylonLight.direction = new float[] { direction.X, direction.Y, direction.Z };
             }
             else
             {
-                var dir = wm.GetRow(3);
-                babylonLight.direction = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
+                var vDir = Loader.Global.Point3.Create(0, -1, 0);
+                vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
+                babylonLight.direction = new float[] { vDir.X, vDir.Y, vDir.Z };
             }
 
 
