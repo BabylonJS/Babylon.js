@@ -29602,10 +29602,9 @@ var BABYLON;
             this._enabled = false;
 
             var engine = this._scene.getEngine();
-            var parentElement = engine.getRenderingCanvas().parentElement;
 
             this._scene.unregisterAfterRender(this._syncData);
-            parentElement.removeChild(this._globalDiv);
+            document.body.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
 
@@ -29759,8 +29758,6 @@ var BABYLON;
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
             this._globalDiv.id = "DebugLayer";
-
-            this._globalDiv.style.position = "absolute";
 
            
             this._drawingCanvas = document.createElement("canvas");
@@ -29957,6 +29954,8 @@ var BABYLON;
                 });
 
                
+                this._globalDiv.style.position = "absolute";
+                this._globalDiv.style.pointerEvents = "none";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
