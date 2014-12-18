@@ -785,19 +785,19 @@
             return vbo;
         };
 
-        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
+        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
-            //if (length && length != vertices.length) {
-            //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
-            //} else {
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+            if (offset === undefined) {
+                offset = 0;
             }
 
-            //  }
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+            }
+
             this._resetVertexBufferBinding();
         };
 

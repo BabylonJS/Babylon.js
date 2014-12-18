@@ -214,11 +214,11 @@
         }
 
         public refreshBoundingInfo(): void {
-            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
             if (this.subMeshes) {
@@ -237,7 +237,7 @@
             }
 
             this.releaseSubMeshes();
-            return new BABYLON.SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
+            return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
         }
 
         public subdivide(count: number): void {
@@ -303,16 +303,16 @@
             }
         }
 
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void {
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
             if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data);
+                this._geometry.updateVerticesDataDirectly(kind, data, offset);
             }
             else {
                 this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, false);
+                this.updateVerticesDataDirectly(kind, data, offset, false);
             }
         }
 
@@ -324,17 +324,17 @@
             geometry.applyToMesh(this);
         }
 
-        public setIndices(indices: number[]): void {
+        public setIndices(indices: number[], totalVertices?: number): void {
             if (!this._geometry) {
-                var vertexData = new BABYLON.VertexData();
+                var vertexData = new VertexData();
                 vertexData.indices = indices;
 
                 var scene = this.getScene();
 
-                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, false, this);
+                new Geometry(Geometry.RandomId(), scene, vertexData, false, this);
             }
             else {
-                this._geometry.setIndices(indices);
+                this._geometry.setIndices(indices, totalVertices);
             }
         }
 

@@ -309,15 +309,15 @@ var BABYLON;
             }
         };
 
-        Mesh.prototype.updateVerticesDataDirectly = function (kind, data, makeItUnique) {
+        Mesh.prototype.updateVerticesDataDirectly = function (kind, data, offset, makeItUnique) {
             if (!this._geometry) {
                 return;
             }
             if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data);
+                this._geometry.updateVerticesDataDirectly(kind, data, offset);
             } else {
                 this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, false);
+                this.updateVerticesDataDirectly(kind, data, offset, false);
             }
         };
 
@@ -329,7 +329,7 @@ var BABYLON;
             geometry.applyToMesh(this);
         };
 
-        Mesh.prototype.setIndices = function (indices) {
+        Mesh.prototype.setIndices = function (indices, totalVertices) {
             if (!this._geometry) {
                 var vertexData = new BABYLON.VertexData();
                 vertexData.indices = indices;
@@ -338,7 +338,7 @@ var BABYLON;
 
                 new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, false, this);
             } else {
-                this._geometry.setIndices(indices);
+                this._geometry.setIndices(indices, totalVertices);
             }
         };
 

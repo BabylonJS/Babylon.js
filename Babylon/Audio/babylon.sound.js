@@ -10,14 +10,13 @@
         */
         function Sound(name, url, scene, readyToPlayCallback, options) {
             var _this = this;
-            this.maxDistance = 10;
+            this.maxDistance = 20;
             this.autoplay = false;
             this.loop = false;
-            this.useBabylonJSAttenuation = false;
+            this.useBabylonJSAttenuation = true;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._volume = 1;
-            this._distanceFromCamera = 1;
             this._isLoaded = false;
             this._isReadyToPlay = false;
             this._isPlaying = false;
@@ -32,8 +31,8 @@
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
             if (options) {
-                if (options.distanceMax) {
-                    this.maxDistance = options.distanceMax;
+                if (options.maxDistance) {
+                    this.maxDistance = options.maxDistance;
                 }
                 if (options.autoplay) {
                     this.autoplay = options.autoplay;
@@ -112,6 +111,22 @@
             var direction = BABYLON.Vector3.TransformNormal(this._localDirection, mat);
             direction.normalize();
             this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
+        };
+
+        Sound.prototype.updateDistanceFromListener = function () {
+            if (this._connectedMesh) {
+                var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
+
+                if (distance < 1)
+                    distance = 1;
+                if (this.useBabylonJSAttenuation) {
+                    if (distance < this.maxDistance) {
+                        this._soundGain.gain.value = this._volume / distance;
+                    } else {
+                        this._soundGain.gain.value = 0;
+                    }
+                }
+            }
         };
 
         /**

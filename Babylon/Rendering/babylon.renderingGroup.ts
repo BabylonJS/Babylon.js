@@ -27,7 +27,6 @@
 
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
-                this._activeVertices += submesh.verticesCount;
 
                 submesh.render();
             }
@@ -36,7 +35,6 @@
             engine.setAlphaTesting(true);
             for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
                 submesh = this._alphaTestSubMeshes.data[subIndex];
-                this._activeVertices += submesh.verticesCount;
 
                 submesh.render();
             }
@@ -81,7 +79,6 @@
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
-                    this._activeVertices += submesh.verticesCount;
 
                     submesh.render();
                 }
