@@ -50,46 +50,57 @@ namespace Max2Babylon
             babylonCamera.ellipsoid = cameraNode.MaxNode.GetVector3Property("babylonjs_ellipsoid");
 
             // Position
-            var wm = cameraNode.GetLocalTM(0);
-            var position = wm.Translation;
-            babylonCamera.position = new float[] { position.X, position.Y, position.Z };
-
-            // Target
-            var target = gameCamera.CameraTarget;
-            if (target != null)
             {
-                babylonCamera.lockedTargetId = target.MaxNode.GetGuid().ToString();
-            }
-            else
-            {
-                var dir = wm.GetRow(3);
-                babylonCamera.target = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
+                var wm = cameraNode.GetLocalTM(0);
+                var position = wm.Translation;
+                babylonCamera.position = new float[] { position.X, position.Y, position.Z };
+
+                // Target
+                var target = gameCamera.CameraTarget;
+                if (target != null)
+                {
+                    babylonCamera.lockedTargetId = target.MaxNode.GetGuid().ToString();
+                }
+                else
+                {
+                    var dir = wm.GetRow(3);
+                    babylonCamera.target = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
+                }
             }
 
-            // todo : handle animations
-            //// Animations
-            //var animations = new List<BabylonAnimation>();
-            //cameraNode.IGameControl.
+            // Animations
+            var animations = new List<BabylonAnimation>();
             //if (!ExportVector3Controller(cameraNode.TMController.PositionController, "position", animations))
             //{
-            //    ExportVector3Animation("position", animations, key =>
-            //    {
-            //        var worldMatrix = cameraNode.GetWorldMatrix(key, cameraNode.HasParent());
-            //        return worldMatrix.Trans.ToArraySwitched();
-            //    });
+                ExportVector3Animation("position", animations, key =>
+                {
+                    var wm = cameraNode.GetLocalTM(key);
+                    var position = wm.Translation;
+                    return  new float[] { position.X, position.Y, position.Z };
+                });
             //}
+            if (gameCamera.CameraTarget == null)
+            {
+                ExportVector3Animation("target", animations, key =>
+                {
+                    var wm = cameraNode.GetLocalTM(key);
+                    var position = wm.Translation;
+                    var dir = wm.GetRow(3);
+                    return new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
+                });
+            }
 
-            //ExportFloatAnimation("fov", animations, key => new[] {Tools.ConvertFov(maxCamera.GetFOV(key, Tools.Forever))});
+            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFov((gameCamera.MaxObject as ICameraObject).GetFOV(key, Tools.Forever)) });
 
-            //babylonCamera.animations = animations.ToArray();
+            babylonCamera.animations = animations.ToArray();
 
-            //if (cameraNode.GetBoolProperty("babylonjs_autoanimate"))
-            //{
-            //    babylonCamera.autoAnimate = true;
-            //    babylonCamera.autoAnimateFrom = (int)cameraNode.GetFloatProperty("babylonjs_autoanimate_from");
-            //    babylonCamera.autoAnimateTo = (int)cameraNode.GetFloatProperty("babylonjs_autoanimate_to");
-            //    babylonCamera.autoAnimateLoop = cameraNode.GetBoolProperty("babylonjs_autoanimateloop");
-            //}
+            if (cameraNode.MaxNode.GetBoolProperty("babylonjs_autoanimate"))
+            {
+                babylonCamera.autoAnimate = true;
+                babylonCamera.autoAnimateFrom = (int)cameraNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_from");
+                babylonCamera.autoAnimateTo = (int)cameraNode.MaxNode.GetFloatProperty("babylonjs_autoanimate_to");
+                babylonCamera.autoAnimateLoop = cameraNode.MaxNode.GetBoolProperty("babylonjs_autoanimateloop");
+            }
 
             babylonScene.CamerasList.Add(babylonCamera);
         }
