@@ -29643,13 +29643,12 @@ var BABYLON;
             this._showUI = showUI;
 
             var engine = this._scene.getEngine();
-            var parentElement = engine.getRenderingCanvas().parentElement;
 
             this._scene.registerAfterRender(this._syncData);
 
             this._globalDiv = document.createElement("div");
 
-            parentElement.appendChild(this._globalDiv);
+            document.body.appendChild(this._globalDiv);
 
             this._generateDOMelements();
 
