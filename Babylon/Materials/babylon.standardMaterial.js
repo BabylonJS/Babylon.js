@@ -176,7 +176,7 @@ var BABYLON;
             }
 
             // Fog
-            if (mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
+            if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 defines.push("#define FOG");
                 fallbacks.addFallback(1, "FOG");
             }
@@ -275,36 +275,38 @@ var BABYLON;
                 }
             }
 
-            // Fresnel
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled || this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled || this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                var fresnelRank = 1;
+            if (StandardMaterial.FresnelEnabled) {
+                // Fresnel
+                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled || this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled || this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                    var fresnelRank = 1;
 
-                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                    defines.push("#define DIFFUSEFRESNEL");
-                    fallbacks.addFallback(fresnelRank, "DIFFUSEFRESNEL");
-                    fresnelRank++;
+                    if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                        defines.push("#define DIFFUSEFRESNEL");
+                        fallbacks.addFallback(fresnelRank, "DIFFUSEFRESNEL");
+                        fresnelRank++;
+                    }
+
+                    if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                        defines.push("#define OPACITYFRESNEL");
+                        fallbacks.addFallback(fresnelRank, "OPACITYFRESNEL");
+                        fresnelRank++;
+                    }
+
+                    if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                        defines.push("#define REFLECTIONFRESNEL");
+                        fallbacks.addFallback(fresnelRank, "REFLECTIONFRESNEL");
+                        fresnelRank++;
+                    }
+
+                    if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                        defines.push("#define EMISSIVEFRESNEL");
+                        fallbacks.addFallback(fresnelRank, "EMISSIVEFRESNEL");
+                        fresnelRank++;
+                    }
+
+                    defines.push("#define FRESNEL");
+                    fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
                 }
-
-                if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                    defines.push("#define OPACITYFRESNEL");
-                    fallbacks.addFallback(fresnelRank, "OPACITYFRESNEL");
-                    fresnelRank++;
-                }
-
-                if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                    defines.push("#define REFLECTIONFRESNEL");
-                    fallbacks.addFallback(fresnelRank, "REFLECTIONFRESNEL");
-                    fresnelRank++;
-                }
-
-                if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                    defines.push("#define EMISSIVEFRESNEL");
-                    fallbacks.addFallback(fresnelRank, "EMISSIVEFRESNEL");
-                    fresnelRank++;
-                }
-
-                defines.push("#define FRESNEL");
-                fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
             }
 
             // Attribs
@@ -407,24 +409,26 @@ var BABYLON;
             }
 
             if (scene.getCachedMaterial() !== this) {
-                // Fresnel
-                if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                    this._effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
-                    this._effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
-                }
+                if (StandardMaterial.FresnelEnabled) {
+                    // Fresnel
+                    if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
+                        this._effect.setColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
+                        this._effect.setColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
+                    }
 
-                if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                    this._effect.setColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
-                }
+                    if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
+                        this._effect.setColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                    }
 
-                if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                    this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
-                    this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
-                }
+                    if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
+                        this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
+                        this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                    }
 
-                if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                    this._effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                    this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                    if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
+                        this._effect.setColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                        this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                    }
                 }
 
                 // Textures
@@ -563,12 +567,12 @@ var BABYLON;
             }
 
             // View
-            if (mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
 
             // Fog
-            if (mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
@@ -690,6 +694,7 @@ var BABYLON;
         StandardMaterial.EmissiveTextureEnabled = true;
         StandardMaterial.SpecularTextureEnabled = true;
         StandardMaterial.BumpTextureEnabled = true;
+        StandardMaterial.FresnelEnabled = true;
         return StandardMaterial;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;

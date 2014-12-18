@@ -100,13 +100,13 @@
             this.create(data);
         }
 
-        public updateDirectly(data: Float32Array): void {
+        public updateDirectly(data: Float32Array, offset: number): void {
             if (!this._buffer) {
                 return;
             }
 
             if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+                this._engine.updateDynamicVertexBuffer(this._buffer, data, offset);
                 this._data = null;
             }
         }

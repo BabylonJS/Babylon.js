@@ -28,11 +28,11 @@
         }
 
         // Properties
-        public position = new BABYLON.Vector3(0, 0, 0);
-        public rotation = new BABYLON.Vector3(0, 0, 0);
+        public position = new Vector3(0, 0, 0);
+        public rotation = new Vector3(0, 0, 0);
         public rotationQuaternion: Quaternion;
-        public scaling = new BABYLON.Vector3(1, 1, 1);
-        public billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
+        public scaling = new Vector3(1, 1, 1);
+        public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
         public alphaIndex = Number.MAX_VALUE;
         public infiniteDistance = false;
@@ -591,12 +591,12 @@
             return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
         }
 
-        public getDistanceToCamera(camera?: Camera): Vector3 {
+        public getDistanceToCamera(camera?: Camera): number {
             if (!camera) {
                 camera = this.getScene().activeCamera;
             }
 
-            return this.absolutePosition.subtract(camera.position);
+            return this.absolutePosition.subtract(camera.position).length();
         }
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): void {

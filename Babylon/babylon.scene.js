@@ -13,6 +13,7 @@
             this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
             // Fog
+            this.fogEnabled = true;
             this.fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.fogDensity = 0.1;
@@ -726,7 +727,7 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.verticesCount;
+                    this._activeVertices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -1186,6 +1187,20 @@
                 var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                    var sound = this.mainSoundTrack.soundCollection[i];
+                    if (sound.useBabylonJSAttenuation) {
+                        sound.updateDistanceFromListener();
+                    }
+                }
+                for (var i = 0; i < this.soundTracks.length; i++) {
+                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
+                        var sound = this.soundTracks[i].soundCollection[j];
+                        if (sound.useBabylonJSAttenuation) {
+                            sound.updateDistanceFromListener();
+                        }
+                    }
+                }
             }
         };
 

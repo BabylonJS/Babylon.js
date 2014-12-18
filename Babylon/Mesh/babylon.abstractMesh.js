@@ -14,7 +14,7 @@ var BABYLON;
             this.position = new BABYLON.Vector3(0, 0, 0);
             this.rotation = new BABYLON.Vector3(0, 0, 0);
             this.scaling = new BABYLON.Vector3(1, 1, 1);
-            this.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
+            this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
             this.visibility = 1.0;
             this.alphaIndex = Number.MAX_VALUE;
             this.infiniteDistance = false;
@@ -600,7 +600,7 @@ var BABYLON;
                 camera = this.getScene().activeCamera;
             }
 
-            return this.absolutePosition.subtract(camera.position);
+            return this.absolutePosition.subtract(camera.position).length();
         };
 
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {

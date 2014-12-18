@@ -6,7 +6,7 @@
             this._isMainTrack = false;
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
-            this._soundCollection = new Array();
+            this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();
 
@@ -37,14 +37,14 @@
                     this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
                 }
             }
-            this._soundCollection.push(sound);
+            this.soundCollection.push(sound);
             sound.soundTrackId = this.id;
         };
 
         SoundTrack.prototype.RemoveSound = function (sound) {
-            var index = this._soundCollection.indexOf(sound);
+            var index = this.soundCollection.indexOf(sound);
             if (index !== -1) {
-                this._soundCollection.splice(index, 1);
+                this.soundCollection.splice(index, 1);
             }
         };
 
