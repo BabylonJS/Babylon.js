@@ -28,8 +28,6 @@ namespace Max2Babylon
             }
 
             var gameMesh = meshNode.IGameObject.AsGameMesh();
-            gameMesh.SetCreateOptimizedNormalList();
-            gameMesh.SetUseWeightedNormals();
             bool initialized = gameMesh.InitializeData; //needed, the property is in fact a method initializing the exporter that has wrongly been auto 
             // translated into a property because it has no parameters
 
@@ -75,13 +73,13 @@ namespace Max2Babylon
                 var meshRotation = localTM.Rotation;
                 var meshScale = localTM.Scaling;
                 babylonMesh.position = new float[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
-                float rotx = 0, roty = 0, rotz = 0;
-                unsafe
-                {
-                    meshRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
-                }
-                babylonMesh.rotation = new float[] { rotx, roty, rotz };
-                //babylonMesh.rotationQuaternion = new float[] { meshRotation.X, meshRotation.Y, meshRotation.Z, meshRotation.W };
+                //float rotx = 0, roty = 0, rotz = 0;
+                //unsafe
+                //{
+                //    meshRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
+                //}
+                //babylonMesh.rotation = new float[] { rotx, roty, rotz };
+                babylonMesh.rotationQuaternion = new float[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
                 babylonMesh.scaling = new float[] { meshScale.X, meshScale.Y, meshScale.Z };
             }
             //// Pivot // something to do with GameMesh ?
@@ -268,7 +266,7 @@ namespace Max2Babylon
 
                 // Buffers
                 babylonMesh.positions = vertices.SelectMany(v => new float[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
-                babylonMesh.normals = vertices.SelectMany(v => new float[] { -v.Normal.X, -v.Normal.Y, -v.Normal.Z }).ToArray();
+                babylonMesh.normals = vertices.SelectMany(v => new float[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
                 if (hasUV)
                 {
                     babylonMesh.uvs = vertices.SelectMany(v => new float[] { v.UV.X, 1-v.UV.Y }).ToArray();
