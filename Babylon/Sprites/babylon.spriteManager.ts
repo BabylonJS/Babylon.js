@@ -125,7 +125,7 @@
             // Render
             var effect = this._effectBase;
 
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
+            if (this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect = this._effectFog;
             }
 
@@ -139,7 +139,7 @@
             effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
 
             // Fog
-            if (this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
+            if (this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
                 effect.setColor3("vFogColor", this._scene.fogColor);
             }

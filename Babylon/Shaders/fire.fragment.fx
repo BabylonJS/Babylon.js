@@ -2,7 +2,7 @@
 precision highp float;
 #endif
 
-uniform float iGlobalTime;
+uniform float time;
 uniform vec3 c1;
 uniform vec3 c2;
 uniform vec3 c3;
@@ -11,7 +11,7 @@ uniform vec3 c5;
 uniform vec3 c6;
 uniform vec2 speed;
 uniform float shift;
-uniform float alpha;
+uniform float alphaThreshold;
 
 varying vec2 vUV;
 
@@ -36,11 +36,12 @@ float fbm(vec2 n) {
 }
 
 void main() {
-
 	vec2 p = vUV * 8.0;
-	float q = fbm(p - iGlobalTime * 0.1);
-	vec2 r = vec2(fbm(p + q + iGlobalTime * speed.x - p.x - p.y), fbm(p + q - iGlobalTime * speed.y));
+	float q = fbm(p - time * 0.1);
+	vec2 r = vec2(fbm(p + q + time * speed.x - p.x - p.y), fbm(p + q - time * speed.y));
 	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);
-	gl_FragColor = vec4(c * cos(shift * vUV.y), alpha);
+	vec3 color = c * cos(shift * vUV.y);
+	float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));
 
+	gl_FragColor = vec4(color, luminance * alphaThreshold + (1.0 - alphaThreshold));
 }

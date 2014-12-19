@@ -22,6 +22,8 @@ namespace Max2Babylon
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, int> OnError;
 
+        string maxSceneFileName;
+
         readonly List<string> alreadyExportedTextures = new List<string>();
 
         public bool AutoSave3dsMaxFile { get; set; }
@@ -87,6 +89,8 @@ namespace Max2Babylon
             gameScene.InitialiseIGame(onlySelected);
             gameScene.SetStaticFrame(0);
 
+            maxSceneFileName = gameScene.SceneFileName;
+
             IsCancelled = false;
             RaiseMessage("Exportation started", Color.Blue);
             ReportProgressChanged(0);
@@ -127,6 +131,7 @@ namespace Max2Babylon
 
             // Cameras
             BabylonCamera mainCamera = null;
+            ICameraObject mainCameraNode = null;
 
             RaiseMessage("Exporting cameras");
             var camerasTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
@@ -139,6 +144,7 @@ namespace Max2Babylon
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
                 {
+                    mainCameraNode = (cameraNode.MaxNode.ObjectRef as ICameraObject);
                     mainCamera = babylonScene.CamerasList[0];
                     babylonScene.activeCameraID = mainCamera.id;
                     RaiseMessage("Active camera set to " + mainCamera.name, Color.Green, 1, true);
@@ -164,19 +170,26 @@ namespace Max2Babylon
                 {
                     var fog = atmospheric as IStdFog;
 
-                    if (fog != null)
-                    {
                         RaiseMessage("Exporting fog");
 
+                    if (fog != null)
+                    {
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
-                        babylonScene.fogDensity = fog.GetDensity(0);
-                        babylonScene.fogMode = fog.GetType_ == 0 ? 3 : 1;
+                        babylonScene.fogMode = 3;
+                    }
+#if !MAX2015
+                    else
+                    {
+                        var paramBlock = atmospheric.GetReference(0) as IIParamBlock;
 
+                        babylonScene.fogColor = Tools.GetParamBlockValueColor(paramBlock, "Fog Color");
+                        babylonScene.fogMode = 3;
+                    }
+#endif
                         if (mainCamera != null)
                         {
-                            babylonScene.fogStart = mainCamera.minZ * fog.GetNear(0);
-                            babylonScene.fogEnd = mainCamera.maxZ * fog.GetFar(0);
-                        }
+                        babylonScene.fogStart = mainCameraNode.GetEnvRange(0, 0, Tools.Forever);
+                        babylonScene.fogEnd = mainCameraNode.GetEnvRange(0, 1, Tools.Forever);
                     }
                 }
             }
@@ -188,7 +201,7 @@ namespace Max2Babylon
             var progressionStep = 80.0f / meshes.Count;
             var progression = 10.0f;
             for (int ix = 0; ix < meshes.Count; ++ix)
-            {
+                {
                 var indexer = new IntPtr(ix);
                 var meshNode = meshes[indexer];
                 Marshal.FreeHGlobal(indexer);
@@ -215,11 +228,11 @@ namespace Max2Babylon
             RaiseMessage("Exporting lights");
             var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
             for(var i=0;i< lightNodes.Count; ++i)
-            {
+                {
                 ExportLight(lightNodes[new IntPtr(i)], babylonScene);
                 CheckCancelled();
             }
-          
+
 
             if (babylonScene.LightsList.Count == 0)
             {

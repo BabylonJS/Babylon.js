@@ -5,6 +5,10 @@ precision highp float;
 varying vec2 vPosition;
 varying vec2 vUV;
 
+uniform vec3 herb1Color;
+uniform vec3 herb2Color;
+uniform vec3 herb3Color;
+uniform vec3 groundColor;
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -27,18 +31,9 @@ float fbm(vec2 n) {
 }
 
 void main(void) {
-
-	vec3 herb1 = vec3(0.29, 0.38, 0.02);
-	vec3 herb2 = vec3(0.36, 0.49, 0.09);
-	vec3 herb3 = vec3(0.51, 0.6, 0.28);
-	vec3 dirt = vec3(0.6, 0.46, 0.13);
-
-	vec3 ground = vec3(1,1,1);
-	
-	ground = mix(ground, herb1, rand(gl_FragCoord.xy * 4.0));
-	ground = mix(ground, herb2, rand(gl_FragCoord.xy * 8.0));
-	ground = mix(ground, herb3, rand(gl_FragCoord.xy));
-	ground = mix(ground, herb1, fbm(gl_FragCoord.xy * 16.0));
-
-	gl_FragColor = vec4(ground, 1.0);
+	vec3 color = mix(groundColor, herb1Color, rand(gl_FragCoord.xy * 4.0));
+	color = mix(color, herb2Color, rand(gl_FragCoord.xy * 8.0));
+	color = mix(color, herb3Color, rand(gl_FragCoord.xy));
+	color = mix(color, herb1Color, fbm(gl_FragCoord.xy * 16.0));
+	gl_FragColor = vec4(color, 1.0);
 }

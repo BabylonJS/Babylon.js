@@ -27,13 +27,16 @@
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
-        private _attachedLODLevel: BABYLON.Internals.MeshLODLevel;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
         }
 
         // Methods
+        public get hasLODLevels(): boolean {
+            return this._LODLevels.length > 0;
+        }
+
         private _sortLODLevels(): void {
             this._LODLevels.sort((a, b) => {
                 if (a.distance < b.distance) {
@@ -48,11 +51,16 @@
         }
 
         public addLODLevel(distance: number, mesh: Mesh): Mesh {
+            if (mesh && mesh._masterMesh) {
+                Tools.Warn("You cannot use a mesh as LOD level twice");
+                return this;
+            }
+
             var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {
-                mesh._attachedLODLevel = level;
+                mesh._masterMesh = this;
             }
 
             this._sortLODLevels();
@@ -61,37 +69,26 @@
         }
 
         public removeLODLevel(mesh: Mesh): Mesh {
-            if (mesh && !mesh._attachedLODLevel) {
-                return this;
-            }
 
-            var index;
-
-            if (mesh) {
-                index = this._LODLevels.indexOf(mesh._attachedLODLevel);
-                mesh._attachedLODLevel = null;
-
-                this._LODLevels.splice(index, 1);
-
-                this._sortLODLevels();
-            } else {
-                for (index = 0; index < this._LODLevels.length; index++) {
-                    if (this._LODLevels[index].mesh === null) {
-                        this._LODLevels.splice(index, 1);
-                        break;
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                if (this._LODLevels[index].mesh === mesh) {
+                    this._LODLevels.splice(index, 1);
+                    if (mesh) {
+                        mesh._masterMesh = null;
                     }
                 }
             }
 
+            this._sortLODLevels();
             return this;
         }
 
-        public getLOD(camera: Camera): AbstractMesh {
+        public getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
 
-            var distanceToCamera = this.getBoundingInfo().boundingSphere.centerWorld.subtract(camera.position).length();
+            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 return this;
@@ -101,8 +98,10 @@
                 var level = this._LODLevels[index];
 
                 if (level.distance < distanceToCamera) {
+
                     if (level.mesh) {
-                        level.mesh._worldMatrix = this._worldMatrix;
+                        level.mesh._preActivate();
+                        level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                     }
                     return level.mesh;
                 }
@@ -174,7 +173,7 @@
         }
 
         public get isBlocked(): boolean {
-            return this._attachedLODLevel !== null && this._attachedLODLevel !== undefined;
+            return this._masterMesh !== null && this._masterMesh !== undefined;
         }
 
         public isReady(): boolean {
@@ -215,11 +214,11 @@
         }
 
         public refreshBoundingInfo(): void {
-            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
+                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
             if (this.subMeshes) {
@@ -238,7 +237,7 @@
             }
 
             this.releaseSubMeshes();
-            return new BABYLON.SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
+            return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices(), this);
         }
 
         public subdivide(count: number): void {
@@ -304,16 +303,16 @@
             }
         }
 
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, makeItUnique?: boolean): void {
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
             if (!makeItUnique) {
-                this._geometry.updateVerticesDataDirectly(kind, data);
+                this._geometry.updateVerticesDataDirectly(kind, data, offset);
             }
             else {
                 this.makeGeometryUnique();
-                this.updateVerticesDataDirectly(kind, data, false);
+                this.updateVerticesDataDirectly(kind, data, offset, false);
             }
         }
 
@@ -325,17 +324,17 @@
             geometry.applyToMesh(this);
         }
 
-        public setIndices(indices: number[]): void {
+        public setIndices(indices: number[], totalVertices?: number): void {
             if (!this._geometry) {
-                var vertexData = new BABYLON.VertexData();
+                var vertexData = new VertexData();
                 vertexData.indices = indices;
 
                 var scene = this.getScene();
 
-                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene, vertexData, false, this);
+                new Geometry(Geometry.RandomId(), scene, vertexData, false, this);
             }
             else {
-                this._geometry.setIndices(indices);
+                this._geometry.setIndices(indices, totalVertices);
             }
         }
 
@@ -442,7 +441,8 @@
         }
 
         public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void {
-            var matricesCount = this.instances.length + 1;
+            var visibleInstances = batch.visibleInstances[subMesh._id];
+            var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
             while (this._instancesBufferSize < bufferSize) {
@@ -468,7 +468,6 @@
                 instancesCount++;
             }
 
-            var visibleInstances = batch.visibleInstances[subMesh._id];
 
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
@@ -513,7 +512,7 @@
             }
 
             var engine = scene.getEngine();
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
             // Material
             var effectiveMaterial = subMesh.getMaterial();
@@ -527,16 +526,18 @@
             if (this.renderOutline) {
                 engine.setDepthWrite(false);
                 scene.getOutlineRenderer().render(subMesh, batch);
+                engine.setDepthWrite(savedDepthWrite);
             }
 
             effectiveMaterial._preBind();
             var effect = effectiveMaterial.getEffect();
 
             // Bind
-            var fillMode = engine.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode;
+            var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : effectiveMaterial.fillMode);
             this._bind(subMesh, effect, fillMode);
 
             var world = this.getWorldMatrix();
+
             effectiveMaterial.bind(world, this);
 
             // Instances rendering
@@ -570,6 +571,14 @@
                 engine.setColorWrite(false);
                 scene.getOutlineRenderer().render(subMesh, batch);
                 engine.setColorWrite(true);
+            }
+
+            // Overlay
+            if (this.renderOverlay) {
+                var currentMode = engine.getAlphaMode();
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                scene.getOutlineRenderer().render(subMesh, batch, true);
+                engine.setAlphaMode(currentMode);
             }
 
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
