@@ -185,13 +185,13 @@ namespace Max2Babylon
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float);
         }
 
-        static void EliminateLinearAnimationKeys(List<BabylonAnimationKey> keys)
+        static void RemoveLinearAnimationKeys(List<BabylonAnimationKey> keys)
         {
             for(int ixFirst = keys.Count-3; ixFirst >=0; --ixFirst)
             {
                 while (keys.Count - ixFirst >= 3)
                 {
-                    if(!EliminateAnimationKey(keys, ixFirst))
+                    if(!RemoveAnimationKey(keys, ixFirst))
                     {
                         break;
                     }
@@ -211,9 +211,7 @@ namespace Max2Babylon
             return result;
         }
 
-
-
-        private static bool EliminateAnimationKey(List<BabylonAnimationKey> keys, int ixFirst)
+        private static bool RemoveAnimationKey(List<BabylonAnimationKey> keys, int ixFirst)
         {
             var first = keys[ixFirst];
             var middle = keys[ixFirst + 1];
@@ -258,7 +256,7 @@ namespace Max2Babylon
 
                 previous = current;
             }
-            EliminateLinearAnimationKeys(keys);
+            RemoveLinearAnimationKeys(keys);
             if (keys.Count > 0)
             {
                 var animationPresent = true;

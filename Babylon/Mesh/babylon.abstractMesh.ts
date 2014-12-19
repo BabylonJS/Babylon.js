@@ -361,7 +361,7 @@
                 var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
                 BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                                                this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                    this.position.z + cameraGlobalPosition.z, this._localTranslation);
             } else {
                 BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
             }
