@@ -10600,7 +10600,7 @@ var BABYLON;
             this._physicsFriction = options.friction;
             this._physicRestitution = options.restitution;
 
-            physicsEngine._registerMesh(this, impostor, options);
+            return physicsEngine._registerMesh(this, impostor, options);
         };
 
         AbstractMesh.prototype.getPhysicsImpostor = function () {

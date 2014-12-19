@@ -90,13 +90,13 @@
             this.create(data);
         };
 
-        VertexBuffer.prototype.updateDirectly = function (data) {
+        VertexBuffer.prototype.updateDirectly = function (data, offset) {
             if (!this._buffer) {
                 return;
             }
 
             if (this._updatable) {
-                this._engine.updateDynamicVertexBuffer(this._buffer, data);
+                this._engine.updateDynamicVertexBuffer(this._buffer, data, offset);
                 this._data = null;
             }
         };
