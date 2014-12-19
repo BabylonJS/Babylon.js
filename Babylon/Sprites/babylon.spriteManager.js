@@ -103,7 +103,7 @@
                 this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
                 this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
             }
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, max * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
 
             // Render
             var effect = this._effectBase;
