@@ -364,17 +364,16 @@
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
+            this.forceWireframe = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._runningLoop = false;
             this._loadingDivBackgroundColor = "black";
-            this._drawCalls = 0;
             // States
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
-            this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._loadedTexturesCache = new Array();
             this._activeTexturesCache = new Array();
@@ -472,10 +471,6 @@
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-
-            this._audioEngine = new BABYLON.AudioEngine();
-
-            BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
@@ -541,10 +536,6 @@
             configurable: true
         });
 
-        Engine.prototype.getAudioEngine = function () {
-            return this._audioEngine;
-        };
-
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
@@ -591,19 +582,7 @@
             return this._caps;
         };
 
-        Object.defineProperty(Engine.prototype, "drawCalls", {
-            get: function () {
-                return this._drawCalls;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
         // Methods
-        Engine.prototype.resetDrawCalls = function () {
-            this._drawCalls = 0;
-        };
-
         Engine.prototype.setDepthFunctionToGreater = function () {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         };
@@ -749,7 +728,7 @@
         };
 
         Engine.prototype.flushFramebuffer = function () {
-            //   this._gl.flush();
+            this._gl.flush();
         };
 
         Engine.prototype.restoreDefaultFramebuffer = function () {
@@ -785,19 +764,19 @@
             return vbo;
         };
 
-        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset) {
+        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, length) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
-            if (offset === undefined) {
-                offset = 0;
-            }
-
+            //if (length && length != vertices.length) {
+            //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
+            //} else {
             if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
             } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
             }
 
+            //  }
             this._resetVertexBufferBinding();
         };
 
@@ -951,8 +930,6 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
-
-            this._drawCalls++;
         };
 
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
@@ -965,7 +942,6 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
-            this._drawCalls++;
         };
 
         // Shaders
@@ -1207,12 +1183,6 @@
                     this._alphaState.alphaBlend = true;
                     break;
             }
-
-            this._alphaMode = mode;
-        };
-
-        Engine.prototype.getAlphaMode = function () {
-            return this._alphaMode;
         };
 
         Engine.prototype.setAlphaTesting = function (enable) {

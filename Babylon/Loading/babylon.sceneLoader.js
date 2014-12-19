@@ -64,14 +64,14 @@
                     try  {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene, 'unable to load the scene');
+                                onerror(scene);
                             }
 
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene, e);
+                            onerror(scene);
                         }
 
                         return;

@@ -8,13 +8,9 @@
             this.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.forceWireframe = false;
-            this.forcePointsCloud = false;
-            this.forceShowBoundingBoxes = false;
-            this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
             // Fog
-            this.fogEnabled = true;
-            this.fogMode = Scene.FOGMODE_NONE;
+            this.fogMode = BABYLON.Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
             this.fogDensity = 0.1;
             this.fogStart = 0;
@@ -44,7 +40,6 @@
             // Layers
             this.layers = new Array();
             // Skeletons
-            this.skeletonsEnabled = true;
             this.skeletons = new Array();
             // Lens flares
             this.lensFlaresEnabled = true;
@@ -64,7 +59,6 @@
             // Procedural textures
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
-            this.soundTracks = new Array();
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -81,13 +75,11 @@
             this._onReadyCallbacks = new Array();
             this._pendingData = [];
             this._onBeforeRenderCallbacks = new Array();
-            this._onAfterRenderCallbacks = new Array();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArray(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
             this._activeSkeletons = new BABYLON.SmartArray(32);
-            this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._scaledPosition = BABYLON.Vector3.Zero();
@@ -106,20 +98,9 @@
             this._outlineRenderer = new BABYLON.OutlineRenderer(this);
 
             this.attachControl();
-
-            this._debugLayer = new BABYLON.DebugLayer(this);
-            this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
         }
-        Object.defineProperty(Scene.prototype, "debugLayer", {
-            // Properties
-            get: function () {
-                return this._debugLayer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
         Object.defineProperty(Scene.prototype, "meshUnderPointer", {
+            // Properties
             get: function () {
                 return this._meshUnderPointer;
             },
@@ -143,10 +124,6 @@
             configurable: true
         });
 
-        Scene.prototype.getCachedMaterial = function () {
-            return this._cachedMaterial;
-        };
-
         Scene.prototype.getBoundingBoxRenderer = function () {
             return this._boundingBoxRenderer;
         };
@@ -169,10 +146,6 @@
 
         Scene.prototype.getActiveParticles = function () {
             return this._activeParticles;
-        };
-
-        Scene.prototype.getActiveBones = function () {
-            return this._activeBones;
         };
 
         // Stats
@@ -344,10 +317,6 @@
             return true;
         };
 
-        Scene.prototype.resetCachedMaterial = function () {
-            this._cachedMaterial = null;
-        };
-
         Scene.prototype.registerBeforeRender = function (func) {
             this._onBeforeRenderCallbacks.push(func);
         };
@@ -357,18 +326,6 @@
 
             if (index > -1) {
                 this._onBeforeRenderCallbacks.splice(index, 1);
-            }
-        };
-
-        Scene.prototype.registerAfterRender = function (func) {
-            this._onAfterRenderCallbacks.push(func);
-        };
-
-        Scene.prototype.unregisterAfterRender = function (func) {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
             }
         };
 
@@ -475,10 +432,6 @@
         };
 
         Scene.prototype._animate = function () {
-            if (!this.animationsEnabled) {
-                return;
-            }
-
             if (!this._animationStartDate) {
                 this._animationStartDate = BABYLON.Tools.Now;
             }
@@ -709,7 +662,7 @@
         };
 
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -727,7 +680,7 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeVertices += subMesh.verticesCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -774,26 +727,18 @@
                 }
 
                 mesh.computeWorldMatrix();
+                mesh._preActivate();
 
                 // Intersections
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
-                // Switch to current LOD
-                var meshLOD = mesh.getLOD(this.activeCamera);
-
-                if (!meshLOD) {
-                    continue;
-                }
-
-                mesh._preActivate();
-
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(meshLOD);
+                    this._activeMesh(mesh);
                 }
             }
 
@@ -819,33 +764,35 @@
         };
 
         Scene.prototype._activeMesh = function (mesh) {
-            if (mesh.skeleton && this.skeletonsEnabled) {
+            if (mesh.skeleton) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
-            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
+            if (mesh.showBoundingBox) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }
 
-            if (mesh && mesh.subMeshes) {
+            var activeMesh = mesh.getLOD(this.activeCamera);
+
+            if (activeMesh && activeMesh.subMeshes) {
                 // Submeshes Octrees
                 var len;
                 var subMeshes;
 
-                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
+                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
+                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = mesh.subMeshes;
+                    subMeshes = activeMesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, mesh);
+                    this._evaluateSubMesh(subMesh, activeMesh);
                 }
             }
         };
@@ -886,8 +833,6 @@
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
-
-                this._activeBones += skeleton.bones.length;
             }
 
             // Render targets
@@ -977,7 +922,7 @@
         };
 
         Scene.prototype._processSubCameras = function (camera) {
-            if (camera.subCameras.length === 0) {
+            if (camera.subCameras.length == 0) {
                 this._renderForCamera(camera);
                 return;
             }
@@ -1000,17 +945,17 @@
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionEnterTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                            sourceMesh.actionManager.processTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger, BABYLON.ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -1029,14 +974,10 @@
             this._spritesDuration = 0;
             this._activeParticles = 0;
             this._renderDuration = 0;
-            this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
-            this._activeBones = 0;
-            this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
-            this.resetCachedMaterial();
 
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
 
@@ -1113,7 +1054,7 @@
             }
 
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
 
             // Shadows
             if (this.shadowsEnabled) {
@@ -1148,16 +1089,9 @@
             // Intersection checks
             this._checkIntersections();
 
-            // Update the audio listener attached to the camera
-            this._updateAudioParameters();
-
             // After render
             if (this.afterRender) {
                 this.afterRender();
-            }
-
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
             }
 
             for (var index = 0; index < this._toBeDisposed.length; index++) {
@@ -1171,39 +1105,6 @@
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
 
-        Scene.prototype._updateAudioParameters = function () {
-            var listeningCamera;
-            var audioEngine = this._engine.getAudioEngine();
-
-            if (this.activeCameras.length > 0) {
-                listeningCamera = this.activeCameras[0];
-            } else {
-                listeningCamera = this.activeCamera;
-            }
-
-            if (listeningCamera && audioEngine.canUseWebAudio) {
-                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
-                var mat = BABYLON.Matrix.Invert(listeningCamera.getViewMatrix());
-                var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
-                cameraDirection.normalize();
-                audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
-                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
-                    var sound = this.mainSoundTrack.soundCollection[i];
-                    if (sound.useBabylonJSAttenuation) {
-                        sound.updateDistanceFromListener();
-                    }
-                }
-                for (var i = 0; i < this.soundTracks.length; i++) {
-                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
-                        var sound = this.soundTracks[i].soundCollection[j];
-                        if (sound.useBabylonJSAttenuation) {
-                            sound.updateDistanceFromListener();
-                        }
-                    }
-                }
-            }
-        };
-
         Scene.prototype.dispose = function () {
             this.beforeRender = null;
             this.afterRender = null;
@@ -1212,16 +1113,10 @@
 
             this._boundingBoxRenderer.dispose();
 
-            // Debug layer
-            this.debugLayer.hide();
-
             // Events
             if (this.onDispose) {
                 this.onDispose();
             }
-
-            this._onBeforeRenderCallbacks = [];
-            this._onAfterRenderCallbacks = [];
 
             this.detachControl();
 
@@ -1319,7 +1214,7 @@
                 return;
             }
 
-            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
+            if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
                 collider._getResponse(position, velocity);
             }
 

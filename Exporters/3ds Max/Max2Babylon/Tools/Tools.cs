@@ -7,11 +7,61 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using BabylonExport.Entities;
 using SharpDX;
+using System.Reflection;
 
 namespace Max2Babylon
 {
     public static class Tools
     {
+        public static IntPtr GetNativeHandle(this INativeObject obj)
+        {
+#if MAX2015
+            return obj.NativePointer;
+#else
+            return obj.Handle;
+#endif
+
+        }
+        static Assembly GetWrappersAssembly()
+        {
+            return Assembly.Load("Autodesk.Max.Wrappers, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+        }
+        public static IIGameCamera AsGameCamera(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameCamera");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameCamera)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
+        public static IIGameMesh AsGameMesh(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameMesh");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameMesh)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
+        public static IIGameLight AsGameLight(this IIGameObject obj)
+        {
+            var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameLight");
+            var constructor = type.GetConstructors()[0];
+            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
+            unsafe
+            {
+                var voidPtr = obj.GetNativeHandle().ToPointer();
+                return (IIGameLight)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
+            }
+        }
+
         public const float Epsilon = 0.001f;
 
         public static IPoint3 XAxis { get { return Loader.Global.Point3.Create(1, 0, 0); } }
@@ -114,7 +164,23 @@ namespace Max2Babylon
 
             return pitchYawRoll;
         }
-
+        public static float[] ToArray(this IGMatrix gmat)
+        {
+            //float eulX =0,  eulY=0,  eulZ=0;
+            //unsafe
+            //{
+            //    gmat.Rotation.GetEuler( new IntPtr(&eulX), new IntPtr(&eulY), new IntPtr(&eulZ));
+            //}
+            //return (Matrix.Scaling(gmat.Scaling.X, gmat.Scaling.Y, gmat.Scaling.Z) * Matrix.RotationYawPitchRoll(eulY, eulX, eulZ) * Matrix.Translation(gmat.Translation.X, gmat.Translation.Y, gmat.Translation.Z)).ToArray();
+            var r0 = gmat.GetRow(0);
+            var r1 = gmat.GetRow(1);
+            var r2 = gmat.GetRow(2);
+            var r3 = gmat.GetRow(3);
+            return new float[] {r0.X, r0.Y, r0.Z, r0.W,
+            r1.X, r1.Y,r1.Z, r1.W,
+            r2.X, r2.Y,r2.Z, r2.W,
+            r3.X, r3.Y,r3.Z, r3.W,};
+        }
         public static void PreparePipeline(IINode node, bool deactivate)
         {
             var obj = node.ObjectRef;
@@ -196,6 +262,7 @@ namespace Max2Babylon
 
         public static float[] ToArray(this IMatrix3 value)
         {
+
             var row0 = value.GetRow(0).ToArraySwitched();
             var row1 = value.GetRow(1).ToArraySwitched();
             var row2 = value.GetRow(2).ToArraySwitched();
@@ -407,7 +474,29 @@ namespace Max2Babylon
 
             return obj.ConvertToType(0, triObjectClassId) as ITriObject;
         }
-
+        public static bool IsAlmostEqualTo(this float[] current, float[] other, float epsilon)
+        {
+            if (current == null && other == null)
+            {
+                return true;
+            }
+            if (current == null || other == null)
+            {
+                return false;
+            }
+            if (current.Length != other.Length)
+            {
+                return false;
+            }
+            for (var i = 0; i < current.Length; ++i)
+            {
+                if (Math.Abs(current[i] - other[i]) > epsilon)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)
         {
             if (Math.Abs(current.X - other.X) > epsilon)
@@ -468,23 +557,7 @@ namespace Max2Babylon
             return true;
         }
 
-        public static bool IsAlmostEqualTo(this float[] current, float[] other, float epsilon)
-        {
-            if (current.Length != other.Length)
-            {
-                return false;
-            }
-
-            for (var index = 0; index < current.Length; index++)
-            {
-                if (Math.Abs(current[index] - other[index]) > epsilon)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+     
 
         public static bool GetBoolProperty(this IINode node, string propertyName, int defaultState = 0)
         {

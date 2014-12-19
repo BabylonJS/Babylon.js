@@ -69,10 +69,11 @@
                         }
                     })) {
                         this._renderingGroups.splice(index, 1);
-                    } else if (renderSprites) {
-                        this._renderSprites(index);
                     }
+                } else if (renderSprites) {
+                    this._renderSprites(index);
                 }
+
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }

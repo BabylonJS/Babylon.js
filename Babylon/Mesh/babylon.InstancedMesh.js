@@ -107,21 +107,11 @@ var BABYLON;
         };
 
         InstancedMesh.prototype._preActivate = function () {
-            if (this._currentLOD) {
-                this._currentLOD._preActivate();
-            }
+            this.sourceMesh._preActivate();
         };
 
         InstancedMesh.prototype._activate = function (renderId) {
-            if (this._currentLOD) {
-                this._currentLOD._registerInstanceForRenderId(this, renderId);
-            }
-        };
-
-        InstancedMesh.prototype.getLOD = function (camera) {
-            this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
-
-            return this._currentLOD;
+            this.sourceMesh._registerInstanceForRenderId(this, renderId);
         };
 
         InstancedMesh.prototype._syncSubMeshes = function () {
