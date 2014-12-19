@@ -518,7 +518,7 @@
         }
 
         // Physics
-        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): void {
+        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any {
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
@@ -548,7 +548,7 @@
             this._physicRestitution = options.restitution;
 
 
-            physicsEngine._registerMesh(this, impostor, options);
+            return physicsEngine._registerMesh(this, impostor, options);
         }
 
         public getPhysicsImpostor(): number {
