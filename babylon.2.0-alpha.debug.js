@@ -16472,7 +16472,7 @@ var BABYLON;
                 this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
                 this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
             }
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, max * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
 
            
             var effect = this._effectBase;
@@ -17027,7 +17027,7 @@ var BABYLON;
                 this._appendParticleVertex(offset++, particle, 0, 1);
             }
             var engine = this._scene.getEngine();
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, this.particles.length * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
         };
 
         ParticleSystem.prototype.render = function () {
