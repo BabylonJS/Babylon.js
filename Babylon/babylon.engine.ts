@@ -12,7 +12,6 @@
         private _cull: boolean;
         private _cullFace: number;
 
-
         public get isDirty(): boolean {
             return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
         }
@@ -396,7 +395,6 @@
         // Public members
         public isFullscreen = false;
         public isPointerLock = false;
-        public forceWireframe = false;
         public cullBackFaces = true;
         public renderEvenInBackground = true;
         public scenes = new Array<Scene>();
@@ -405,6 +403,8 @@
         private _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
+
+        private _audioEngine: BABYLON.AudioEngine;
 
         private _onBlur: () => void;
         private _onFocus: () => void;
@@ -424,9 +424,12 @@
         private _loadingTextDiv: HTMLDivElement;
         private _loadingDivBackgroundColor = "black";
 
+        private _drawCalls = 0;
+
         // States
         private _depthCullingState = new _DepthCullingState();
         private _alphaState = new _AlphaState();
+        private _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _loadedTexturesCache = new Array<WebGLTexture>();
@@ -547,6 +550,14 @@
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+            this._audioEngine = new BABYLON.AudioEngine();
+
+            Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+        }
+
+        public getAudioEngine(): AudioEngine {
+            return this._audioEngine;
         }
 
         public getAspectRatio(camera: Camera): number {
@@ -595,7 +606,15 @@
             return this._caps;
         }
 
+        public get drawCalls(): number {
+            return this._drawCalls;
+        }
+
         // Methods
+        public resetDrawCalls(): void {
+            this._drawCalls = 0;
+        }
+
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }
@@ -739,7 +758,7 @@
         }
 
         public flushFramebuffer(): void {
-            this._gl.flush();
+         //   this._gl.flush();
         }
 
         public restoreDefaultFramebuffer(): void {
@@ -775,17 +794,18 @@
             return vbo;
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, length?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, offset?: number): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
-            //if (length && length != vertices.length) {
-            //    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices, 0, length));
-            //} else {
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices);
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices));
+
+            if (offset === undefined) {
+                offset = 0;
             }
-            //  }
+
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+            }
 
             this._resetVertexBufferBinding();
         }
@@ -942,6 +962,8 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
+
+            this._drawCalls++;
         }
 
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
@@ -954,6 +976,7 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+            this._drawCalls++;
         }
 
         // Shaders
@@ -1184,7 +1207,6 @@
         }
 
         public setAlphaMode(mode: number): void {
-
             switch (mode) {
                 case BABYLON.Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
@@ -1201,6 +1223,12 @@
                     this._alphaState.alphaBlend = true;
                     break;
             }
+
+            this._alphaMode = mode;
+        }
+
+        public getAlphaMode(): number {
+            return this._alphaMode;
         }
 
         public setAlphaTesting(enable: boolean): void {

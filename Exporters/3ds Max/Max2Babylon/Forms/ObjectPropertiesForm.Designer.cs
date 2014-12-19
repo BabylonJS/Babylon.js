@@ -46,12 +46,15 @@
             this.nupFrom = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
+            this.nupAlphaIndex = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -82,7 +85,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 419);
+            this.butCancel.Location = new System.Drawing.Point(174, 430);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 6;
@@ -94,7 +97,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 419);
+            this.butOK.Location = new System.Drawing.Point(93, 430);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 5;
@@ -104,6 +107,8 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.nupAlphaIndex);
+            this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.chkNoExport);
             this.groupBox2.Controls.Add(this.chkShowSubMeshesBoundingBox);
             this.groupBox2.Controls.Add(this.chkShowBoundingBox);
@@ -112,7 +117,7 @@
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox2.Location = new System.Drawing.Point(12, 77);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(319, 154);
+            this.groupBox2.Size = new System.Drawing.Size(319, 179);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Misc.";
@@ -182,7 +187,7 @@
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox3.Location = new System.Drawing.Point(12, 237);
+            this.groupBox3.Location = new System.Drawing.Point(12, 262);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(319, 156);
             this.groupBox3.TabIndex = 4;
@@ -270,13 +275,34 @@
             this.chkAutoAnimate.UseVisualStyleBackColor = true;
             this.chkAutoAnimate.CheckedChanged += new System.EventHandler(this.chkAutoAnimate_CheckedChanged);
             // 
+            // nupAlphaIndex
+            // 
+            this.nupAlphaIndex.Location = new System.Drawing.Point(89, 143);
+            this.nupAlphaIndex.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.nupAlphaIndex.Name = "nupAlphaIndex";
+            this.nupAlphaIndex.Size = new System.Drawing.Size(120, 20);
+            this.nupAlphaIndex.TabIndex = 5;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(18, 145);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(65, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "Alpha index:";
+            // 
             // ObjectPropertiesForm
             // 
             this.AcceptButton = this.butOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 454);
+            this.ClientSize = new System.Drawing.Size(343, 465);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butCancel);
@@ -297,6 +323,7 @@
             this.grpAutoAnimate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -321,5 +348,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkAutoAnimate;
         private System.Windows.Forms.CheckBox chkNoExport;
+        private System.Windows.Forms.NumericUpDown nupAlphaIndex;
+        private System.Windows.Forms.Label label3;
     }
 }

@@ -187,7 +187,7 @@ namespace Max2Babylon
 
         static void EliminateLinearAnimationKeys(List<BabylonAnimationKey> keys)
         {
-            for(int ixFirst = 0; ixFirst < keys.Count; ++ixFirst)
+            for(int ixFirst = keys.Count-3; ixFirst >=0; --ixFirst)
             {
                 while (keys.Count - ixFirst >= 3)
                 {
@@ -219,6 +219,14 @@ namespace Max2Babylon
             var middle = keys[ixFirst + 1];
             var last = keys[ixFirst + 2];
 
+            // first pass, frame equality
+            if(first.values.IsEqualTo(last.values) && first.values.IsEqualTo(middle.values))
+            {
+                keys.RemoveAt(ixFirst + 1);
+                return true;
+            }
+
+            // second pass : linear interpolation detection
             var computedMiddleValue = weightedLerp(first.frame, middle.frame, last.frame, first.values, last.values);
             if (computedMiddleValue.IsEqualTo(middle.values))
             {

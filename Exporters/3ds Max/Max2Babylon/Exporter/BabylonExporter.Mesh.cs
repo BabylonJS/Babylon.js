@@ -46,6 +46,8 @@ namespace Max2Babylon
             babylonMesh.receiveShadows = meshNode.MaxNode.RcvShadows == 1;
             babylonMesh.showBoundingBox = meshNode.MaxNode.GetBoolProperty("babylonjs_showboundingbox");
             babylonMesh.showSubMeshesBoundingBox = meshNode.MaxNode.GetBoolProperty("babylonjs_showsubmeshesboundingbox");
+            babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics == 1;
+            babylonMesh.alphaIndex = (int)meshNode.MaxNode.GetFloatProperty("babylonjs_alphaindex", 1000);
 
             // Collisions
             babylonMesh.checkCollisions = meshNode.MaxNode.GetBoolProperty("babylonjs_checkcollisions");
@@ -142,13 +144,13 @@ namespace Max2Babylon
                     IntPtr indexer = new IntPtr(i);
                     var channelNum = mappingChannels[indexer];
                     if (channelNum == 1)
-                    {
+                {
                         hasUV = true;
-                    }
+                }
                     else if (channelNum == 2)
-                    {
+                {
                         hasUV2 = true;
-                    }
+                }
                 }
                 var hasColor = unskinnedMesh.NumberOfColorVerts > 0;
                 var hasAlpha = unskinnedMesh.GetNumberOfMapVerts(-2) > 0;
@@ -169,76 +171,43 @@ namespace Max2Babylon
                 var subMeshes = new List<BabylonSubMesh>();
                 var indexStart = 0;
 
-                List<Guid> orderedSubMeshes = new List<Guid>();
-                for (int i = 0; i < meshNode.NodeMaterial.SubMaterialCount; ++i)
+                
+                for (int i = 0; i < multiMatsCount; ++i)
                 {
-                    orderedSubMeshes.Add(meshNode.NodeMaterial.GetSubMaterial(i).MaxMaterial.GetGuid());
-                }
-
-                var materialIds = unskinnedMesh.ActiveMatIDs;
-                for (int i = 0; i < materialIds.Count; ++i)
-                {
-                    var materialIndexer = new IntPtr(i);
-                    int materialId = materialIds[materialIndexer];
-                    Marshal.FreeHGlobal(materialIndexer);
-                    var materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
-
+                    int materialId = meshNode.NodeMaterial.GetMaterialID(i);
+                    ITab<IFaceEx> materialFaces = null;
                     var indexCount = 0;
                     var minVertexIndex = int.MaxValue;
                     var maxVertexIndex = int.MinValue;
                     var subMesh = new BabylonSubMesh();
                     subMesh.indexStart = indexStart;
-                    subMesh.materialIndex = materialId;
+                    subMesh.materialIndex = i;
 
-
-
-                    for (int j = 0; j < materialFaces.Count; ++j)
+                    if (multiMatsCount == 1)
                     {
-                        var faceIndexer = new IntPtr(j);
-                        var face = materialFaces[faceIndexer];
-
-                        Marshal.FreeHGlobal(faceIndexer);
-                        var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-                        var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-                        var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-                        indices.Add(a);
-                        indices.Add(b);
-                        indices.Add(c);
-
-                        if (a < minVertexIndex)
+                        for(int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
                         {
-                            minVertexIndex = a;
+                            var face = unskinnedMesh.GetFace(j);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
                         }
-
-                        if (b < minVertexIndex)
-                        {
-                            minVertexIndex = b;
-                        }
-
-                        if (c < minVertexIndex)
-                        {
-                            minVertexIndex = c;
-                        }
-
-                        if (a > maxVertexIndex)
-                        {
-                            maxVertexIndex = a;
-                        }
-
-                        if (b > maxVertexIndex)
-                        {
-                            maxVertexIndex = b;
-                        }
-
-                        if (c > maxVertexIndex)
-                        {
-                            maxVertexIndex = c;
-                        }
-
-
-                        indexCount += 3;
-                        CheckCancelled();
                     }
+                    else
+                    {
+                        materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
+                        for (int j = 0; j < materialFaces.Count; ++j)
+                        {
+                            var faceIndexer = new IntPtr(j);
+                            var face = materialFaces[faceIndexer];
+
+                            Marshal.FreeHGlobal(faceIndexer);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
+                        }
+                    }
+                    
+
+
+
+                   
                     if (indexCount != 0)
                     {
 
@@ -358,7 +327,7 @@ namespace Max2Babylon
             // Animations
             var animations = new List<BabylonAnimation>();
             GenerateCoordinatesAnimations(meshNode, animations);
-
+            
 
             if (!ExportFloatController(meshNode.MaxNode.VisController, "visibility", animations))
             {
@@ -378,16 +347,60 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        public static void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
+        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face)
         {
+            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
+            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
+            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
+            indices.Add(a);
+            indices.Add(b);
+            indices.Add(c);
+
+            if (a < minVertexIndex)
+            {
+                minVertexIndex = a;
+            }
+
+            if (b < minVertexIndex)
+            {
+                minVertexIndex = b;
+            }
+
+            if (c < minVertexIndex)
+            {
+                minVertexIndex = c;
+            }
+
+            if (a > maxVertexIndex)
+            {
+                maxVertexIndex = a;
+            }
+
+            if (b > maxVertexIndex)
+            {
+                maxVertexIndex = b;
+            }
+
+            if (c > maxVertexIndex)
+            {
+                maxVertexIndex = c;
+            }
+
+
+            indexCount += 3;
+            CheckCancelled();
+        }
+
+        public static void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
+            {
             //if (!ExportVector3Controller(meshNode.TMController.PositionController, "position", animations))
             //{
-            ExportVector3Animation("position", animations, key =>
-            {
+                ExportVector3Animation("position", animations, key =>
+                {
                 var worldMatrix = meshNode.GetObjectTM(key);
                 var trans = worldMatrix.Translation;
                 return new float[] { trans.X, trans.Y, trans.Z };
-            });
+                });
             //}
 
 

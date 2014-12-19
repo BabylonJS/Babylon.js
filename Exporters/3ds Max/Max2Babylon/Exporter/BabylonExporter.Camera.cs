@@ -14,6 +14,7 @@ namespace Max2Babylon
                 return;
             }
             var gameCamera = cameraNode.IGameObject.AsGameCamera();
+            var maxCamera = gameCamera.MaxObject as ICameraObject;
             var initialized = gameCamera.InitializeData;
             var babylonCamera = new BabylonCamera();
 
@@ -25,15 +26,18 @@ namespace Max2Babylon
                 babylonCamera.parentId = cameraNode.NodeParent.MaxNode.GetGuid().ToString();
             }
 
-            float fov = 0;
-            gameCamera.CameraFOV.GetPropertyValue(ref fov, 0, false);
-            babylonCamera.fov = fov;
-            float minZ = 0;
-            gameCamera.CameraNearClip.GetPropertyValue(ref minZ, 0, false);
-            babylonCamera.minZ = minZ;
-            float maxZ = 0;
-            gameCamera.CameraFarClip.GetPropertyValue(ref maxZ, 0, false);
-            babylonCamera.maxZ = maxZ;
+            babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
+
+            if (maxCamera.ManualClip == 1)
+            {
+                babylonCamera.minZ = maxCamera.GetClipDist(0, 1, Tools.Forever);
+                babylonCamera.maxZ = maxCamera.GetClipDist(0, 2, Tools.Forever);
+            }
+            else
+            {
+                 babylonCamera.minZ = 0.1f;
+                 babylonCamera.maxZ = 10000.0f;
+            }
 
             if (babylonCamera.minZ == 0.0f)
             {
@@ -55,14 +59,14 @@ namespace Max2Babylon
                 var position = wm.Translation;
                 babylonCamera.position = new float[] { position.X, position.Y, position.Z };
 
-                // Target
+            // Target
                 var target = gameCamera.CameraTarget;
-                if (target != null)
-                {
+            if (target != null)
+            {
                     babylonCamera.lockedTargetId = target.MaxNode.GetGuid().ToString();
-                }
-                else
-                {
+            }
+            else
+            {
                     var dir = wm.GetRow(3);
                     babylonCamera.target = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
                 }

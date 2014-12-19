@@ -15,15 +15,18 @@
 
         // Members
         public autoClear = true;
-        public clearColor: any = new BABYLON.Color3(0.2, 0.2, 0.3);
-        public ambientColor = new BABYLON.Color3(0, 0, 0);
+        public clearColor: any = new Color3(0.2, 0.2, 0.3);
+        public ambientColor = new Color3(0, 0, 0);
         public beforeRender: () => void;
         public afterRender: () => void;
         public onDispose: () => void;
         public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
         public forceWireframe = false;
+        public forcePointsCloud = false;
+        public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
+        public animationsEnabled = true;
 
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
@@ -39,7 +42,8 @@
         private _onKeyUp: (evt: Event) => void;
 
         // Fog
-        public fogMode = BABYLON.Scene.FOGMODE_NONE;
+        public fogEnabled = true;
+        public fogMode = Scene.FOGMODE_NONE;
         public fogColor = new Color3(0.2, 0.2, 0.3);
         public fogDensity = 0.1;
         public fogStart = 0;
@@ -63,7 +67,7 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        public defaultMaterial = new BABYLON.StandardMaterial("default material", this);
+        public defaultMaterial = new StandardMaterial("default material", this);
 
         // Textures
         public texturesEnabled = true;
@@ -80,6 +84,7 @@
         public layers = new Array<Layer>();
 
         // Skeletons
+        public skeletonsEnabled = true;
         public skeletons = new Array<Skeleton>();
 
         // Lens flares
@@ -88,7 +93,7 @@
 
         // Collisions
         public collisionsEnabled = true;
-        public gravity = new BABYLON.Vector3(0, -9.0, 0);
+        public gravity = new Vector3(0, -9.0, 0);
 
         // Postprocesses
         public postProcessesEnabled = true;
@@ -117,6 +122,10 @@
         public proceduralTexturesEnabled = true;
         public _proceduralTextures = new Array<ProceduralTexture>();
 
+        // Sound Tracks
+        public mainSoundTrack: SoundTrack;
+        public soundTracks = new Array<SoundTrack>();
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
@@ -130,6 +139,7 @@
         public _spritesDuration = 0;
         private _animationRatio = 0;
         private _animationStartDate: number;
+        public _cachedMaterial: Material;
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
@@ -140,12 +150,14 @@
         private _pendingData = [];//ANY
 
         private _onBeforeRenderCallbacks = new Array<() => void>();
+        private _onAfterRenderCallbacks = new Array<() => void>();
 
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
+        private _activeBones = 0;
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
@@ -169,6 +181,8 @@
 
         private _pointerOverMesh: AbstractMesh;
 
+        private _debugLayer: DebugLayer;
+
         // Constructor
         constructor(engine: Engine) {
             this._engine = engine;
@@ -185,9 +199,16 @@
             this._outlineRenderer = new OutlineRenderer(this);
 
             this.attachControl();
+
+            this._debugLayer = new DebugLayer(this);
+            this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
         }
 
         // Properties 
+        public get debugLayer(): DebugLayer {
+            return this._debugLayer;
+        }
+
         public get meshUnderPointer(): AbstractMesh {
             return this._meshUnderPointer;
         }
@@ -198,6 +219,10 @@
 
         public get pointerY(): number {
             return this._pointerY;
+        }
+
+        public getCachedMaterial(): Material {
+            return this._cachedMaterial;
         }
 
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
@@ -222,6 +247,10 @@
 
         public getActiveParticles(): number {
             return this._activeParticles;
+        }
+
+        public getActiveBones(): number {
+            return this._activeBones;
         }
 
         // Stats
@@ -315,16 +344,16 @@
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
                     }
                 }
 
@@ -335,13 +364,13 @@
 
             this._onKeyDown = (evt: Event) => {
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(ActionManager.OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
             this._onKeyUp = (evt: Event) => {
                 if (this.actionManager) {
-                    this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
+                    this.actionManager.processTrigger(ActionManager.OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
                 }
             };
 
@@ -372,7 +401,7 @@
             for (var index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
 
-                if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+                if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                     return false;
                 }
             }
@@ -396,6 +425,10 @@
             return true;
         }
 
+        public resetCachedMaterial(): void {
+            this._cachedMaterial = null;
+        }
+
         public registerBeforeRender(func: () => void): void {
             this._onBeforeRenderCallbacks.push(func);
         }
@@ -405,6 +438,18 @@
 
             if (index > -1) {
                 this._onBeforeRenderCallbacks.splice(index, 1);
+            }
+        }
+
+        public registerAfterRender(func: () => void): void {
+            this._onAfterRenderCallbacks.push(func);
+        }
+
+        public unregisterAfterRender(func: () => void): void {
+            var index = this._onAfterRenderCallbacks.indexOf(func);
+
+            if (index > -1) {
+                this._onAfterRenderCallbacks.splice(index, 1);
             }
         }
 
@@ -485,7 +530,7 @@
                 speedRatio = 1.0;
             }
 
-            var animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
+            var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
 
             return animatable;
         }
@@ -509,6 +554,10 @@
         }
 
         private _animate(): void {
+            if (!this.animationsEnabled) {
+                return;
+            }
+
             if (!this._animationStartDate) {
                 this._animationStartDate = Tools.Now;
             }
@@ -738,7 +787,7 @@
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-            if (mesh.subMeshes.length == 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -756,7 +805,7 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.verticesCount;
+                    this._activeVertices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -771,9 +820,9 @@
             this._boundingBoxRenderer.reset();
 
             if (!this._frustumPlanes) {
-                this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
+                this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
             } else {
-                BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+                Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
             }
 
             // Meshes
@@ -803,18 +852,26 @@
                 }
 
                 mesh.computeWorldMatrix();
-                mesh._preActivate();
 
                 // Intersections
                 if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) != 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                // Switch to current LOD
+                var meshLOD = mesh.getLOD(this.activeCamera);
+
+                if (!meshLOD) {
+                    continue;
+                }
+
+                mesh._preActivate();
+
+                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(mesh);
+                    this._activeMesh(meshLOD);
                 }
             }
 
@@ -840,35 +897,33 @@
         }
 
         private _activeMesh(mesh: AbstractMesh): void {
-            if (mesh.skeleton) {
+            if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
             }
 
-            if (mesh.showBoundingBox) {
+            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
             }            
 
-            var activeMesh = mesh.getLOD(this.activeCamera);
-
-            if (activeMesh && activeMesh.subMeshes) {
+            if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
                 var len: number;
                 var subMeshes: SubMesh[];
 
-                if (activeMesh._submeshesOctree && activeMesh.useOctreeForRenderingSelection) {
-                    var intersections = activeMesh._submeshesOctree.select(this._frustumPlanes);
+                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                    var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
                     subMeshes = intersections.data;
                 } else {
-                    subMeshes = activeMesh.subMeshes;
+                    subMeshes = mesh.subMeshes;
                     len = subMeshes.length;
                 }
 
                 for (var subIndex = 0; subIndex < len; subIndex++) {
                     var subMesh = subMeshes[subIndex];
 
-                    this._evaluateSubMesh(subMesh, activeMesh);
+                    this._evaluateSubMesh(subMesh, mesh);
                 }
             }
         }
@@ -910,6 +965,8 @@
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
+
+                this._activeBones += skeleton.bones.length;
             }
 
             // Render targets
@@ -998,7 +1055,7 @@
         }
 
         private _processSubCameras(camera: Camera): void {
-            if (camera.subCameras.length == 0) {
+            if (camera.subCameras.length === 0) {
                 this._renderForCamera(camera);
                 return;
             }
@@ -1022,18 +1079,18 @@
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
-                    if (action.trigger == ActionManager.OnIntersectionEnterTrigger || action.trigger == ActionManager.OnIntersectionExitTrigger) {
+                    if (action.trigger === ActionManager.OnIntersectionEnterTrigger || action.trigger === ActionManager.OnIntersectionExitTrigger) {
                         var otherMesh = action.getTriggerParameter();
 
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger == ActionManager.OnIntersectionEnterTrigger) {
-                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionEnterTrigger, ActionEvent.CreateNew(sourceMesh));
+                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === ActionManager.OnIntersectionEnterTrigger) {
+                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
 
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger == ActionManager.OnIntersectionExitTrigger) {
-                            sourceMesh.actionManager.processTrigger(ActionManager.OnIntersectionExitTrigger, ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
 
                             var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
@@ -1052,10 +1109,14 @@
             this._spritesDuration = 0;
             this._activeParticles = 0;
             this._renderDuration = 0;
+            this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
             this._activeVertices = 0;
+            this._activeBones = 0;
+            this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
+            this.resetCachedMaterial();
 
             Tools.StartPerformanceCounter("Scene rendering");
 
@@ -1074,7 +1135,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(Tools.GetDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
@@ -1132,7 +1193,7 @@
             }
 
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
 
             // Shadows
             if (this.shadowsEnabled) {
@@ -1167,9 +1228,16 @@
             // Intersection checks
             this._checkIntersections();
 
+            // Update the audio listener attached to the camera
+            this._updateAudioParameters();
+
             // After render
             if (this.afterRender) {
                 this.afterRender();
+            }
+
+            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
+                this._onAfterRenderCallbacks[callbackIndex]();
             }
 
             // Cleaning
@@ -1185,6 +1253,39 @@
             this._lastFrameDuration = Tools.Now - startDate;
         }
 
+        private _updateAudioParameters() {
+            var listeningCamera: Camera;
+            var audioEngine = this._engine.getAudioEngine();
+
+            if (this.activeCameras.length > 0) {
+                listeningCamera = this.activeCameras[0];
+            } else {
+                listeningCamera = this.activeCamera;
+            }
+
+            if (listeningCamera && audioEngine.canUseWebAudio) {
+                audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+                var mat = Matrix.Invert(listeningCamera.getViewMatrix());
+                var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
+                cameraDirection.normalize();
+                audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                    var sound = this.mainSoundTrack.soundCollection[i];
+                    if (sound.useBabylonJSAttenuation) {
+                        sound.updateDistanceFromListener();
+                    }
+                }
+                for (var i = 0; i < this.soundTracks.length; i++) {
+                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
+                        var sound = this.soundTracks[i].soundCollection[j];
+                        if (sound.useBabylonJSAttenuation) {
+                            sound.updateDistanceFromListener();
+                        }
+                    }
+                }
+            }
+        }
+
         public dispose(): void {
             this.beforeRender = null;
             this.afterRender = null;
@@ -1193,10 +1294,16 @@
 
             this._boundingBoxRenderer.dispose();
 
+            // Debug layer
+            this.debugLayer.hide();
+
             // Events
             if (this.onDispose) {
                 this.onDispose();
             }
+
+            this._onBeforeRenderCallbacks = [];
+            this._onAfterRenderCallbacks = [];
 
             this.detachControl();
 
@@ -1279,7 +1386,7 @@
         }
 
         private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
-            var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
+            var closeDistance = Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {
                 finalPosition.copyFrom(position);
@@ -1301,7 +1408,7 @@
                 return;
             }
 
-            if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0) {
+            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
                 collider._getResponse(position, velocity);
             }
 
@@ -1317,11 +1424,11 @@
         // Octrees
         public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
             if (!this._selectionOctree) {
-                this._selectionOctree = new BABYLON.Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
+                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
             }
 
-            var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
@@ -1356,7 +1463,7 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            return Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
             //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
         }
 
@@ -1391,7 +1498,7 @@
                 }
             }
 
-            return pickingInfo || new BABYLON.PickingInfo();
+            return pickingInfo || new PickingInfo();
         }
 
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
@@ -1407,10 +1514,10 @@
         public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean) {
             return this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
-                    this._pickWithRayInverseMatrix = BABYLON.Matrix.Identity();
+                    this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
                 world.invertToRef(this._pickWithRayInverseMatrix);
-                return BABYLON.Ray.Transform(ray, this._pickWithRayInverseMatrix);
+                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
         }
 
@@ -1443,7 +1550,7 @@
                 return true;
             }
 
-            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
+            this._physicsEngine = new PhysicsEngine(plugin);
 
             if (!this._physicsEngine.isSupported()) {
                 this._physicsEngine = null;
@@ -1502,7 +1609,7 @@
         public deleteCompoundImpostor(compound: any): void {
             for (var index = 0; index < compound.parts.length; index++) {
                 var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
+                mesh._physicImpostor = PhysicsEngine.NoImpostor;
                 this._physicsEngine._unregisterMesh(mesh);
             }
         }
@@ -1518,7 +1625,7 @@
 
             for (var i in list) {
                 var item = list[i];
-                if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {
+                if (Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
                 }
             }

@@ -1,9 +1,9 @@
 ﻿module BABYLON {
     export class BoundingBoxRenderer {
-        public frontColor = new BABYLON.Color3(1, 1, 1);
-        public backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        public frontColor = new Color3(1, 1, 1);
+        public backColor = new Color3(0.1, 0.1, 0.1);
         public showBackLines = true;
-        public renderList = new BABYLON.SmartArray<BoundingBox>(32);
+        public renderList = new SmartArray<BoundingBox>(32);
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;
@@ -21,8 +21,8 @@
 
 
             var engine = this._scene.getEngine();
-            var boxdata = BABYLON.VertexData.CreateBox(1.0);
-            this._vb = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
+            var boxdata = VertexData.CreateBox(1.0);
+            this._vb = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
             this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         }
 
@@ -31,7 +31,7 @@
         }
 
         public render(): void {
-            if (this.renderList.length == 0 || !this._colorShader.isReady()) {
+            if (this.renderList.length === 0 || !this._colorShader.isReady()) {
                 return;
             }
 
@@ -45,8 +45,8 @@
                 var diff = max.subtract(min);
                 var median = min.add(diff.scale(0.5));
 
-                var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
-                    .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
+                var worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
+                    .multiply(Matrix.Translation(median.x, median.y, median.z))
                     .multiply(boundingBox.getWorldMatrix());
 
                 // VBOs
@@ -55,6 +55,7 @@
                 if (this.showBackLines) {
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
+                    this._scene.resetCachedMaterial();
                     this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
 
@@ -64,6 +65,7 @@
 
                 // Front
                 engine.setDepthFunctionToLess();
+                this._scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
 
