@@ -8,9 +8,9 @@
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
             this._scene = scene;
         }
-        RenderingGroup.prototype.render = function (customRenderFunction, beforeTransparents) {
+        RenderingGroup.prototype.render = function (customRenderFunction) {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return true;
             }
 
@@ -37,10 +37,6 @@
                 submesh.render();
             }
             engine.setAlphaTesting(false);
-
-            if (beforeTransparents) {
-                beforeTransparents();
-            }
 
             // Transparent
             if (this._transparentSubMeshes.length) {

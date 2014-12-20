@@ -12642,9 +12642,9 @@ var BABYLON;
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
             this._scene = scene;
         }
-        RenderingGroup.prototype.render = function (customRenderFunction, beforeTransparents) {
+        RenderingGroup.prototype.render = function (customRenderFunction) {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return true;
             }
 
@@ -12671,10 +12671,6 @@ var BABYLON;
                 submesh.render();
             }
             engine.setAlphaTesting(false);
-
-            if (beforeTransparents) {
-                beforeTransparents();
-            }
 
            
             if (this._transparentSubMeshes.length) {
@@ -12798,23 +12794,17 @@ var BABYLON;
         };
 
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
-            var _this = this;
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
 
                 if (renderingGroup) {
                     this._clearDepthBuffer();
-                    if (!renderingGroup.render(customRenderFunction, function () {
-                        if (renderSprites) {
-                            _this._renderSprites(index);
-                        }
-                    })) {
+                    if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
-                    } else if (renderSprites) {
-                        this._renderSprites(index);
                     }
                 }
+                this._renderSprites(index);
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }
