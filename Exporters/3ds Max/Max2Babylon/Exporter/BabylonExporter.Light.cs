@@ -46,8 +46,6 @@ namespace Max2Babylon
             var lightState = Loader.Global.LightState.Create();
             maxLight.EvalLightState(0, Tools.Forever, lightState);
 
-            var directionScale = -1;
-
             switch (lightState.Type)
             {
                 case LightType.OmniLgt:
@@ -64,7 +62,6 @@ namespace Max2Babylon
                 case LightType.AmbientLgt:
                     babylonLight.type = 3;
                     babylonLight.groundColor = new float[] { 0, 0, 0 };
-                    directionScale = 1;
                     break;
             }
 
@@ -82,31 +79,30 @@ namespace Max2Babylon
                 }
             }
 
+            // Position
+            var wm = lightNode.GetObjectTM(0);
+            var position = wm.Translation;
+            babylonLight.position = new float[] { position.X, position.Y, position.Z };
+
+            // Direction
+            var target = gameLight.LightTarget;
+            if (target != null)
             {
-                // Position
-                var wm = lightNode.GetObjectTM(0);
-                var position = wm.Translation;
-                babylonLight.position = new float[] { position.X, position.Y, position.Z };
+                var targetWm = target.GetObjectTM(0);
+                var targetPosition = targetWm.Translation;
 
-                // Direction
-                var target = gameLight.LightTarget;
-                if (target != null)
-                {
-                    var targetWm = target.GetObjectTM(0);
-                    var targetPosition = targetWm.Translation;
-
-                    var direction = targetPosition.Subtract(position).Normalize;
-                    babylonLight.direction = new float[] { direction.X, direction.Y, direction.Z };
-                }
-                else
-                {
-                    var vDir = Loader.Global.Point3.Create(0, -1, 0);
-                    vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
-                    babylonLight.direction = new float[] { vDir.X, vDir.Y, vDir.Z };
-                }
+                var direction = targetPosition.Subtract(position).Normalize;
+                babylonLight.direction = new float[] { direction.X, direction.Y, direction.Z };
+            }
+            else
+            {
+                var vDir = Loader.Global.Point3.Create(0, -1, 0);
+                vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
+                babylonLight.direction = new float[] { vDir.X, vDir.Y, vDir.Z };
             }
 
             var maxScene = Loader.Core.RootNode;
+
             // Exclusion
             var inclusion = maxLight.ExclList.TestFlag(1); //NT_INCLUDE 
             var checkExclusionList = maxLight.ExclList.TestFlag(2); //NT_AFFECT_ILLUM
@@ -157,33 +153,30 @@ namespace Max2Babylon
             // Animations
             var animations = new List<BabylonAnimation>();
 
-            //if (!ExportVector3Controller(lightNode.TMController.PositionController, "position", animations))
-            //{
-                ExportVector3Animation("position", animations, key =>
-                {
-                    var mat = lightNode.GetObjectTM(key);
-                    var pos = mat.Translation;
-                    return new float[] { pos.X, pos.Y, pos.Z };
-                });
-            //}
+            ExportVector3Animation("position", animations, key =>
+            {
+                var mat = lightNode.GetObjectTM(key);
+                var pos = mat.Translation;
+                return new float[] { pos.X, pos.Y, pos.Z };
+            });
 
             ExportVector3Animation("direction", animations, key =>
             {
-                var wm = lightNode.GetObjectTM(key);
-                var position = wm.Translation;
-                var target = gameLight.LightTarget;
-                if (target != null)
+                var wmLight = lightNode.GetObjectTM(key);
+                var positionLight = wmLight.Translation;
+                var lightTarget = gameLight.LightTarget;
+                if (lightTarget != null)
                 {
-                    var targetWm = target.GetObjectTM(key);
+                    var targetWm = lightTarget.GetObjectTM(key);
                     var targetPosition = targetWm.Translation;
 
-                    var direction = targetPosition.Subtract(position).Normalize;
+                    var direction = targetPosition.Subtract(positionLight).Normalize;
                     return new float[] { direction.X, direction.Y, direction.Z };
                 }
                 else
                 {
                     var vDir = Loader.Global.Point3.Create(0, -1, 0);
-                    vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
+                    vDir = wmLight.ExtractMatrix3().VectorTransform(vDir).Normalize;
                     return new float[] { vDir.X, vDir.Y, vDir.Z };
                 }
             });

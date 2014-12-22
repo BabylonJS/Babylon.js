@@ -10600,7 +10600,7 @@ var BABYLON;
             this._physicsFriction = options.friction;
             this._physicRestitution = options.restitution;
 
-            physicsEngine._registerMesh(this, impostor, options);
+            return physicsEngine._registerMesh(this, impostor, options);
         };
 
         AbstractMesh.prototype.getPhysicsImpostor = function () {
@@ -12642,9 +12642,9 @@ var BABYLON;
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
             this._scene = scene;
         }
-        RenderingGroup.prototype.render = function (customRenderFunction, beforeTransparents) {
+        RenderingGroup.prototype.render = function (customRenderFunction) {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return true;
             }
 
@@ -12671,10 +12671,6 @@ var BABYLON;
                 submesh.render();
             }
             engine.setAlphaTesting(false);
-
-            if (beforeTransparents) {
-                beforeTransparents();
-            }
 
            
             if (this._transparentSubMeshes.length) {
@@ -12798,23 +12794,17 @@ var BABYLON;
         };
 
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
-            var _this = this;
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
 
                 if (renderingGroup) {
                     this._clearDepthBuffer();
-                    if (!renderingGroup.render(customRenderFunction, function () {
-                        if (renderSprites) {
-                            _this._renderSprites(index);
-                        }
-                    })) {
+                    if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
-                    } else if (renderSprites) {
-                        this._renderSprites(index);
                     }
                 }
+                this._renderSprites(index);
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }
@@ -16472,7 +16462,7 @@ var BABYLON;
                 this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
                 this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
             }
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, max * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
 
            
             var effect = this._effectBase;
@@ -17027,7 +17017,7 @@ var BABYLON;
                 this._appendParticleVertex(offset++, particle, 0, 1);
             }
             var engine = this._scene.getEngine();
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, this.particles.length * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
         };
 
         ParticleSystem.prototype.render = function () {

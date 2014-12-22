@@ -361,7 +361,7 @@
                 var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
                 BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                                                this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                    this.position.z + cameraGlobalPosition.z, this._localTranslation);
             } else {
                 BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
             }
@@ -518,7 +518,7 @@
         }
 
         // Physics
-        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): void {
+        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any {
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
@@ -548,7 +548,7 @@
             this._physicRestitution = options.restitution;
 
 
-            physicsEngine._registerMesh(this, impostor, options);
+            return physicsEngine._registerMesh(this, impostor, options);
         }
 
         public getPhysicsImpostor(): number {
