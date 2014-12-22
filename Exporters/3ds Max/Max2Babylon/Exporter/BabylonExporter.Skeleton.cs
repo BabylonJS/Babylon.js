@@ -129,80 +129,101 @@ namespace Max2Babylon
             for (var index = 0; index < skin.TotalSkinBoneCount; index++)
             {
                 var gameBone = skin.GetIGameBone(index, false);
+               
+                if (gameBone == null)
+                {
+                    gameBones.Add(null);
+                    boneIds.Add(-2);
+                    bones.Add(new BabylonBone { index = index, name = "null-bone" });
 
-                gameBones.Add(gameBone);
-                boneIds.Add(gameBone.NodeID);
-                bones.Add(new BabylonBone { index = index, name = gameBone.Name });
-                //IGMatrix boneInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+                    bindPoseInfos.Add(new BonePoseInfo {  });
+                }
+                else
+                {
+                    gameBones.Add(gameBone);
+                    boneIds.Add(gameBone.NodeID);
+                    bones.Add(new BabylonBone { index = index, name = gameBone.Name });
+                    //IGMatrix boneInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
 
-                //skin.GetInitBoneTM(gameBone, boneInitMatrix);
-                var boneInitMatrix = gameBone.GetObjectTM(0);
-                bindPoseInfos.Add(new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
+                    //skin.GetInitBoneTM(gameBone, boneInitMatrix);
+                    var boneInitMatrix = gameBone.GetObjectTM(0);
+                    bindPoseInfos.Add(new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
+                }
             }
             // fix hierarchy an generate animation keys
             for (var index = 0; index < skin.TotalSkinBoneCount; index++)
             {
                 var gameBone = gameBones[index];
-                var parent = gameBone.NodeParent;
-                var babBone = bones[index];
-                if (parent != null)
+                if (gameBone == null)
                 {
-                    babBone.parentBoneIndex = boneIds.IndexOf(parent.NodeID);
-                }
-                if (babBone.parentBoneIndex == -1)
-                {
-                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(skinInitMatrix.Inverse);
+
+                    var babBone = bones[index];
+                    bindPoseInfos[index].LocalTransform = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+                    babBone.matrix = bindPoseInfos[index].LocalTransform.ToArray();
                 }
                 else
                 {
-                    var parentBindPoseInfos = bindPoseInfos[babBone.parentBoneIndex];
-                    bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(parentBindPoseInfos.AbsoluteTransform.Inverse);
-                }
-                babBone.matrix = bindPoseInfos[index].LocalTransform.ToArray();
-
-                var babylonAnimation = new BabylonAnimation
-                {
-                    name = gameBone.Name + "Animation",
-                    property = "_matrix",
-                    dataType = BabylonAnimation.DataType.Matrix,
-                    loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
-                    framePerSecond = Loader.Global.FrameRate
-                };
-
-                var start = Loader.Core.AnimRange.Start;
-                var end = Loader.Core.AnimRange.End;
-
-                float[] previous = null;
-                var keys = new List<BabylonAnimationKey>();
-                for (var key = start; key <= end; key += Ticks)
-                {
-                    var objectTM = gameBone.GetObjectTM(key);
-                    var parentNode = gameBone.NodeParent;
-                    IGMatrix mat;
-                    if (parentNode == null || babBone.parentBoneIndex == -1)
+                    var parent = gameBone.NodeParent;
+                    var babBone = bones[index];
+                    if (parent != null)
                     {
-                        mat = objectTM.Multiply(meshNode.GetObjectTM(key).Inverse);
+                        babBone.parentBoneIndex = boneIds.IndexOf(parent.NodeID);
+                    }
+                    if (babBone.parentBoneIndex == -1)
+                    {
+                        bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(skinInitMatrix.Inverse);
                     }
                     else
                     {
-                        mat = objectTM.Multiply(parentNode.GetObjectTM(key).Inverse);
+                        var parentBindPoseInfos = bindPoseInfos[babBone.parentBoneIndex];
+                        bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(parentBindPoseInfos.AbsoluteTransform.Inverse);
                     }
+                    babBone.matrix = bindPoseInfos[index].LocalTransform.ToArray();
 
-                    var current = mat.ToArray();
-                    if (key == start || key == end || !(previous.IsEqualTo(current)))
+                    var babylonAnimation = new BabylonAnimation
                     {
-                        keys.Add(new BabylonAnimationKey
+                        name = gameBone.Name + "Animation",
+                        property = "_matrix",
+                        dataType = BabylonAnimation.DataType.Matrix,
+                        loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
+                        framePerSecond = Loader.Global.FrameRate
+                    };
+
+                    var start = Loader.Core.AnimRange.Start;
+                    var end = Loader.Core.AnimRange.End;
+
+                    float[] previous = null;
+                    var keys = new List<BabylonAnimationKey>();
+                    for (var key = start; key <= end; key += Ticks)
+                    {
+                        var objectTM = gameBone.GetObjectTM(key);
+                        var parentNode = gameBone.NodeParent;
+                        IGMatrix mat;
+                        if (parentNode == null || babBone.parentBoneIndex == -1)
                         {
-                            frame = key / Ticks,
-                            values = current
-                        });
+                            mat = objectTM.Multiply(meshNode.GetObjectTM(key).Inverse);
+                        }
+                        else
+                        {
+                            mat = objectTM.Multiply(parentNode.GetObjectTM(key).Inverse);
+                        }
+
+                        var current = mat.ToArray();
+                        if (key == start || key == end || !(previous.IsEqualTo(current)))
+                        {
+                            keys.Add(new BabylonAnimationKey
+                            {
+                                frame = key / Ticks,
+                                values = current
+                            });
+                        }
+
+                        previous = current;
                     }
 
-                    previous = current;
+                    babylonAnimation.keys = keys.ToArray();
+                    babBone.animation = babylonAnimation;
                 }
-
-                babylonAnimation.keys = keys.ToArray();
-                babBone.animation = babylonAnimation;
 
             }
 
