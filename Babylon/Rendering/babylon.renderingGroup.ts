@@ -10,10 +10,9 @@
             this._scene = scene;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void,
-            beforeTransparents): boolean {
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return true;
             }
 
@@ -39,10 +38,6 @@
                 submesh.render();
             }
             engine.setAlphaTesting(false);
-
-            if (beforeTransparents) {
-                beforeTransparents();
-            }
 
             // Transparent
             if (this._transparentSubMeshes.length) {

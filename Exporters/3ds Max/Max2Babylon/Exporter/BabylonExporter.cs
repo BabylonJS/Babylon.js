@@ -135,7 +135,7 @@ namespace Max2Babylon
 
             RaiseMessage("Exporting cameras");
             var camerasTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
-            for(int ix = 0; ix < camerasTab.Count; ++ix)
+            for (int ix = 0; ix < camerasTab.Count; ++ix)
             {
                 var indexer = new IntPtr(ix);
                 var cameraNode = camerasTab[indexer];
@@ -150,7 +150,6 @@ namespace Max2Babylon
                     RaiseMessage("Active camera set to " + mainCamera.name, Color.Green, 1, true);
                 }
             }
-
 
             if (mainCamera == null)
             {
@@ -170,7 +169,7 @@ namespace Max2Babylon
                 {
                     var fog = atmospheric as IStdFog;
 
-                        RaiseMessage("Exporting fog");
+                    RaiseMessage("Exporting fog");
 
                     if (fog != null)
                     {
@@ -186,8 +185,8 @@ namespace Max2Babylon
                         babylonScene.fogMode = 3;
                     }
 #endif
-                        if (mainCamera != null)
-                        {
+                    if (mainCamera != null)
+                    {
                         babylonScene.fogStart = mainCameraNode.GetEnvRange(0, 0, Tools.Forever);
                         babylonScene.fogEnd = mainCameraNode.GetEnvRange(0, 1, Tools.Forever);
                     }
@@ -201,7 +200,7 @@ namespace Max2Babylon
             var progressionStep = 80.0f / meshes.Count;
             var progression = 10.0f;
             for (int ix = 0; ix < meshes.Count; ++ix)
-                {
+            {
                 var indexer = new IntPtr(ix);
                 var meshNode = meshes[indexer];
                 Marshal.FreeHGlobal(indexer);
@@ -227,8 +226,8 @@ namespace Max2Babylon
             // Lights
             RaiseMessage("Exporting lights");
             var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
-            for(var i=0;i< lightNodes.Count; ++i)
-                {
+            for (var i = 0; i < lightNodes.Count; ++i)
+            {
                 ExportLight(lightNodes[new IntPtr(i)], babylonScene);
                 CheckCancelled();
             }
@@ -283,6 +282,6 @@ namespace Max2Babylon
             RaiseMessage(string.Format("Exportation done in {0:0.00}s", watch.ElapsedMilliseconds / 1000.0), Color.Blue);
         }
 
-        
+
     }
 }

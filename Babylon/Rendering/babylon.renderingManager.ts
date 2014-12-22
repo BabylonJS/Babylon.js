@@ -60,7 +60,7 @@
             this._depthBufferAlreadyCleaned = true;
         }
 
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void,
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void,
             activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {
             for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
@@ -68,16 +68,11 @@
 
                 if (renderingGroup) {
                     this._clearDepthBuffer();
-                    if (!renderingGroup.render(customRenderFunction, () => {
-                        if (renderSprites) {
-                            this._renderSprites(index);
-                        }
-                    })) {
+                    if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
-                    } else if (renderSprites) {
-                        this._renderSprites(index);
                     }
                 }
+                this._renderSprites(index);
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }
