@@ -110,44 +110,43 @@ namespace Max2Babylon
             mat3.NoScale();
             return Loader.Global.GMatrix.Create(mat3);
         }
-        private void ExportSkin(IIGameSkin skin, BabylonScene babylonScene)
+        private void ExportSkin( IIGameSkin skin, BabylonScene babylonScene)
         {
             var babylonSkeleton = new BabylonSkeleton { id = skins.IndexOf(skin) };
             babylonSkeleton.name = "skeleton #" + babylonSkeleton.id;
 
             RaiseMessage(babylonSkeleton.name, 1);
-            //IGMatrix skinInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
-            //skin.GetInitSkinTM(skinInitMatrix);
+            IGMatrix skinInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+            skin.GetInitSkinTM(skinInitMatrix);
             var skinIndex = skins.IndexOf(skin);
             var meshNode = skinnedNodes[skinIndex];
-            var skinInitMatrix = meshNode.GetObjectTM(0);
+            var meshInitMatrix = meshNode.GetObjectTM(0);
+            var boneIds = skinSortedBones[skin];
 
-            var bones = new List<BabylonBone>();
-            var gameBones = new List<IIGameNode>();
-            var boneIds = new List<int>();
-            var bindPoseInfos = new List<BonePoseInfo>();
-            for (var index = 0; index < skin.TotalSkinBoneCount; index++)
+            var bones = new BabylonBone[boneIds.Count];
+            var gameBones = new IIGameNode[boneIds.Count];
+            var bindPoseInfos = new BonePoseInfo[boneIds.Count];
+            for (var unsortedIndex = 0; unsortedIndex < skin.TotalSkinBoneCount; unsortedIndex++)
             {
-                var gameBone = skin.GetIGameBone(index, false);
-               
+                var gameBone = skin.GetIGameBone(unsortedIndex, false);
+                int index = gameBone == null ? boneIds.IndexOf(-2) : boneIds.IndexOf(gameBone.NodeID);
                 if (gameBone == null)
                 {
-                    gameBones.Add(null);
-                    boneIds.Add(-2);
-                    bones.Add(new BabylonBone { index = index, name = "null-bone" });
 
-                    bindPoseInfos.Add(new BonePoseInfo {  });
+                    gameBones[index]=null;
+                    bones[index] = new BabylonBone { index = index, name = "null-bone" };
+
+                    bindPoseInfos[index] = new BonePoseInfo {  };
                 }
                 else
                 {
-                    gameBones.Add(gameBone);
-                    boneIds.Add(gameBone.NodeID);
-                    bones.Add(new BabylonBone { index = index, name = gameBone.Name });
+                    gameBones[index] = gameBone;
+                    bones[index] = new BabylonBone { index = index, name = gameBone.Name };
                     //IGMatrix boneInitMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
 
                     //skin.GetInitBoneTM(gameBone, boneInitMatrix);
                     var boneInitMatrix = gameBone.GetObjectTM(0);
-                    bindPoseInfos.Add(new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
+                    bindPoseInfos[index] = new BonePoseInfo { AbsoluteTransform = boneInitMatrix };
                 }
             }
             // fix hierarchy an generate animation keys
@@ -171,7 +170,7 @@ namespace Max2Babylon
                     }
                     if (babBone.parentBoneIndex == -1)
                     {
-                        bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(skinInitMatrix.Inverse);
+                        bindPoseInfos[index].LocalTransform = bindPoseInfos[index].AbsoluteTransform.Multiply(meshInitMatrix.Inverse);
                     }
                     else
                     {
@@ -229,7 +228,7 @@ namespace Max2Babylon
 
             //FixupHierarchy(Loader.Core.RootNode, skin.GetBone(0), bones);
 
-            babylonSkeleton.bones = bones.ToArray();
+            babylonSkeleton.bones = bones;
 
             babylonScene.SkeletonsList.Add(babylonSkeleton);
         }
