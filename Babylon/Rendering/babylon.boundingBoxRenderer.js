@@ -22,7 +22,7 @@
         };
 
         BoundingBoxRenderer.prototype.render = function () {
-            if (this.renderList.length === 0 || !this._colorShader.isReady()) {
+            if (this.renderList.length == 0 || !this._colorShader.isReady()) {
                 return;
             }
 
@@ -44,7 +44,6 @@
                 if (this.showBackLines) {
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
-                    this._scene.resetCachedMaterial();
                     this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
 
@@ -54,7 +53,6 @@
 
                 // Front
                 engine.setDepthFunctionToLess();
-                this._scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
 

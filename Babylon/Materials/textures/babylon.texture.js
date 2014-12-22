@@ -133,8 +133,6 @@ var BABYLON;
                 this._projectionModeMatrix = BABYLON.Matrix.Zero();
             }
 
-            this._cachedCoordinatesMode = this.coordinatesMode;
-
             switch (this.coordinatesMode) {
                 case BABYLON.Texture.SPHERICAL_MODE:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
