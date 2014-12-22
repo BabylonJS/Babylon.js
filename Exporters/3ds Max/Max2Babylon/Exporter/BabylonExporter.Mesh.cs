@@ -56,14 +56,31 @@ namespace Max2Babylon
             var skin = gameMesh.IGameSkin;
             var unskinnedMesh = gameMesh;
             IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+            List<int> boneIds = null;
             if (isSkinned)
             {
                 //unskinnedMesh = skin.InitialPose;
                 bonesCount = skin.TotalSkinBoneCount;
                 skins.Add(skin);
+                
                 skinnedNodes.Add(meshNode);
                 babylonMesh.skeletonId = skins.IndexOf(skin);
                 skin.GetInitSkinTM(skinInitPoseMatrix);
+                boneIds = new List<int>();
+                for (var index = 0; index < skin.TotalSkinBoneCount; index++)
+                {
+                    var bone = skin.GetIGameBone(index, false);
+                    if(bone == null)
+                    {
+                        // non bone in skeletton
+                        boneIds.Add(-2);
+
+                    }
+                    else
+                    {
+                        boneIds.Add(bone.NodeID);
+                    }
+                }
             }
 
             // Position / rotation / scaling
@@ -188,7 +205,7 @@ namespace Max2Babylon
                         for(int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
                         {
                             var face = unskinnedMesh.GetFace(j);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
                     else
@@ -200,7 +217,7 @@ namespace Max2Babylon
                             var face = materialFaces[faceIndexer];
 
                             Marshal.FreeHGlobal(faceIndexer);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
                     
@@ -347,11 +364,11 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face)
+        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
         {
-            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
+            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
             indices.Add(a);
             indices.Add(b);
             indices.Add(c);
@@ -431,7 +448,7 @@ namespace Max2Babylon
         }
 
 
-        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin)
+        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin, List<int> boneIds)
         {
             var vertexIndex = (int)face.Vert[facePart];
 
@@ -498,25 +515,25 @@ namespace Max2Babylon
 
                 if (nbBones > 0)
                 {
-                    bone0 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 0), false);
+                    bone0 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 0).NodeID);
                     weight0 = skin.GetWeight(vertexIndex, 0);
                 }
 
                 if (nbBones > 1)
                 {
-                    bone1 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 1), false);
+                    bone1 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 1).NodeID);
                     weight1 = skin.GetWeight(vertexIndex, 1);
                 }
 
                 if (nbBones > 2)
                 {
-                    bone2 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 2), false);
+                    bone2 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 2).NodeID);
                     weight2 = skin.GetWeight(vertexIndex, 2);
                 }
 
                 if (nbBones > 3)
                 {
-                    bone3 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 3), false);
+                    bone3 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 3).NodeID);
                 }
 
                 if (nbBones == 0)
