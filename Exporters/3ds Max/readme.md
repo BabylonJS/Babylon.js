@@ -55,6 +55,7 @@ To export you can use the [Babylon] menu in the main menu bar.
  - Emissive color and texture
  - Opacity texture
  - Reflection texture
+ - Fresnel for diffuse, emissive, opacity and reflection
 - *Textures*
  - UV offset / scaling / angle
  - Level

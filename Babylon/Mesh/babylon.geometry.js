@@ -74,14 +74,14 @@ var BABYLON;
             }
         };
 
-        Geometry.prototype.updateVerticesDataDirectly = function (kind, data, offset) {
+        Geometry.prototype.updateVerticesDataDirectly = function (kind, data) {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
                 return;
             }
 
-            vertexBuffer.updateDirectly(data, offset);
+            vertexBuffer.updateDirectly(data);
         };
 
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
@@ -96,10 +96,9 @@ var BABYLON;
             if (kind === BABYLON.VertexBuffer.PositionKind) {
                 var extend;
 
-                var stride = vertexBuffer.getStrideSize();
-                this._totalVertices = data.length / stride;
-
                 if (updateExtends) {
+                    var stride = vertexBuffer.getStrideSize();
+                    this._totalVertices = data.length / stride;
                     extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
                 }
 
@@ -171,7 +170,7 @@ var BABYLON;
             return result;
         };
 
-        Geometry.prototype.setIndices = function (indices, totalVertices) {
+        Geometry.prototype.setIndices = function (indices) {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -179,10 +178,6 @@ var BABYLON;
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);
-            }
-
-            if (totalVertices !== undefined) {
-                this._totalVertices = totalVertices;
             }
 
             var meshes = this._meshes;

@@ -185,6 +185,56 @@ namespace Max2Babylon
             ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float);
         }
 
+        static void RemoveLinearAnimationKeys(List<BabylonAnimationKey> keys)
+        {
+            for(int ixFirst = keys.Count-3; ixFirst >=0; --ixFirst)
+            {
+                while (keys.Count - ixFirst >= 3)
+                {
+                    if(!RemoveAnimationKey(keys, ixFirst))
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        static float[] weightedLerp(int frame0, int frame1, int frame2, float[] value0, float[] value2)
+        {
+            double weight2 = (double)(frame1 - frame0) / (double)(frame2 - frame0);
+            double weight0 = 1 - weight2;
+            float[] result = new float[value0.Length];
+            for(int i = 0; i < result.Length; ++i)
+            {
+                result[i] = (float)(value0[i] * weight0 + value2[i] * weight2);
+            }
+            return result;
+        }
+
+        private static bool RemoveAnimationKey(List<BabylonAnimationKey> keys, int ixFirst)
+        {
+            var first = keys[ixFirst];
+            var middle = keys[ixFirst + 1];
+            var last = keys[ixFirst + 2];
+
+            // first pass, frame equality
+            if(first.values.IsEqualTo(last.values) && first.values.IsEqualTo(middle.values))
+            {
+                keys.RemoveAt(ixFirst + 1);
+                return true;
+            }
+
+            // second pass : linear interpolation detection
+            var computedMiddleValue = weightedLerp(first.frame, middle.frame, last.frame, first.values, last.values);
+            if (computedMiddleValue.IsEqualTo(middle.values))
+            {
+                keys.RemoveAt(ixFirst + 1);
+                return true;
+            }
+            return false;
+            
+        }
+
         private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
         {
             var start = Loader.Core.AnimRange.Start;
@@ -196,18 +246,17 @@ namespace Max2Babylon
             {
                 var current = extractValueFunc(key);
 
-                if (key == start || key == end || !(previous.IsEqualTo(current)))
-                {
+                
                     keys.Add(new BabylonAnimationKey()
                     {
                         frame = key / Ticks,
                         values = current
                     });
-                }
+                
 
                 previous = current;
             }
-
+            RemoveLinearAnimationKeys(keys);
             if (keys.Count > 0)
             {
                 var animationPresent = true;

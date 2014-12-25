@@ -14,9 +14,8 @@ var BABYLON;
             this.position = new BABYLON.Vector3(0, 0, 0);
             this.rotation = new BABYLON.Vector3(0, 0, 0);
             this.scaling = new BABYLON.Vector3(1, 1, 1);
-            this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
+            this.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_NONE;
             this.visibility = 1.0;
-            this.alphaIndex = Number.MAX_VALUE;
             this.infiniteDistance = false;
             this.isVisible = true;
             this.isPickable = true;
@@ -30,12 +29,7 @@ var BABYLON;
             this.renderOutline = false;
             this.outlineColor = BABYLON.Color3.Red();
             this.outlineWidth = 0.02;
-            this.renderOverlay = false;
-            this.overlayColor = BABYLON.Color3.Red();
-            this.overlayAlpha = 0.5;
             this.hasVertexAlpha = false;
-            this.useVertexColors = true;
-            this.applyFog = true;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -67,7 +61,6 @@ var BABYLON;
             this._isDisposed = false;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
-            this._onAfterWorldMatrixUpdate = new Array();
 
             scene.meshes.push(this);
         }
@@ -141,10 +134,6 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getBoundingInfo = function () {
-            if (this._masterMesh) {
-                return this._masterMesh.getBoundingInfo();
-            }
-
             if (!this._boundingInfo) {
                 this._updateBoundingInfo();
             }
@@ -159,10 +148,6 @@ var BABYLON;
         };
 
         AbstractMesh.prototype.getWorldMatrix = function () {
-            if (this._masterMesh) {
-                return this._masterMesh.getWorldMatrix();
-            }
-
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -323,10 +308,6 @@ var BABYLON;
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
-            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
-        };
-
-        AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
             }
@@ -334,7 +315,7 @@ var BABYLON;
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(matrix);
+                subMesh.updateBoundingInfo(this.worldMatrixFromCache);
             }
         };
 
@@ -423,27 +404,7 @@ var BABYLON;
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
-            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
-                this._onAfterWorldMatrixUpdate[callbackIndex](this);
-            }
-
             return this._worldMatrix;
-        };
-
-        /**
-        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
-        * @param func: callback function to add
-        */
-        AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
-            this._onAfterWorldMatrixUpdate.push(func);
-        };
-
-        AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
-            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterWorldMatrixUpdate.splice(index, 1);
-            }
         };
 
         AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
@@ -600,7 +561,7 @@ var BABYLON;
                 camera = this.getScene().activeCamera;
             }
 
-            return this.absolutePosition.subtract(camera.position).length();
+            return this.absolutePosition.subtract(camera.position);
         };
 
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
@@ -863,8 +824,6 @@ var BABYLON;
                     }
                 }
             }
-
-            this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
 
