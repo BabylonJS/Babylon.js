@@ -333,7 +333,7 @@
                 this._appendParticleVertex(offset++, particle, 0, 1);
             }
             var engine = this._scene.getEngine();
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices, this.particles.length * this._vertexStrideSize);
+            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
         }
 
         public render(): number {

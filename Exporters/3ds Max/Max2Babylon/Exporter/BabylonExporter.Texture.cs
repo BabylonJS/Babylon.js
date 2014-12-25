@@ -190,7 +190,7 @@ namespace Max2Babylon
             {
                 babylonTexture.wrapV = 2;
             }
-
+            
             babylonTexture.name = Path.GetFileName(texture.MapName);
 
             // Animations
@@ -204,34 +204,25 @@ namespace Max2Babylon
             ExportFloatAnimation("wAng", animations, key => new[] { uvGen.GetWAng(key) });
 
             babylonTexture.animations = animations.ToArray();
-
+            var absolutePath = texture.Map.FullFilePath;
             // Copy texture to output
             try
             {
-                if (File.Exists(texture.MapName))
-                {
-                    babylonTexture.isCube = IsTextureCube(texture.MapName);
-                    if (CopyTexturesToOutput)
+               
+                   
+                    if (File.Exists(absolutePath))
                     {
-                        File.Copy(texture.MapName, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                    }
-                }
-                else
-                {
-                    var texturepath = Path.Combine(Path.GetDirectoryName(Loader.Core.CurFilePath), babylonTexture.name);
-                    if (File.Exists(texturepath))
-                    {
-                        babylonTexture.isCube = IsTextureCube(texturepath);
+                        babylonTexture.isCube = IsTextureCube(absolutePath);
                         if (CopyTexturesToOutput)
                         {
-                            File.Copy(texturepath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
+                            File.Copy(absolutePath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                         }
                     }
                     else
                     {
                         RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
                     }
-                }
+                
             }
             catch
             {
