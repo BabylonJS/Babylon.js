@@ -1611,6 +1611,7 @@ declare module BABYLON {
         public _transformedPosition: Vector3;
         private _worldMatrix;
         constructor(name: string, direction: Vector3, scene: Scene);
+        public getAbsolutePosition(): Vector3;
         public setDirectionToTarget(target: Vector3): Vector3;
         public _computeTransformedPosition(): boolean;
         public transferToEffect(effect: Effect, directionUniformName: string): void;
@@ -1643,6 +1644,7 @@ declare module BABYLON {
         public _includedOnlyMeshesIds: string[];
         constructor(name: string, scene: Scene);
         public getShadowGenerator(): ShadowGenerator;
+        public getAbsolutePosition(): Vector3;
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
         public _getWorldMatrix(): Matrix;
         public canAffectMesh(mesh: AbstractMesh): boolean;
@@ -1656,6 +1658,7 @@ declare module BABYLON {
         private _worldMatrix;
         private _transformedPosition;
         constructor(name: string, position: Vector3, scene: Scene);
+        public getAbsolutePosition(): Vector3;
         public transferToEffect(effect: Effect, positionUniformName: string): void;
         public getShadowGenerator(): ShadowGenerator;
         public _getWorldMatrix(): Matrix;
@@ -1671,6 +1674,7 @@ declare module BABYLON {
         private _transformedPosition;
         private _worldMatrix;
         constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        public getAbsolutePosition(): Vector3;
         public setDirectionToTarget(target: Vector3): Vector3;
         public transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
         public _getWorldMatrix(): Matrix;
@@ -2737,7 +2741,7 @@ declare module BABYLON {
         public isCompletelyInFrustum(camera?: Camera): boolean;
         public intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean;
         public intersectsPoint(point: Vector3): boolean;
-        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): void;
+        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any;
         public getPhysicsImpostor(): number;
         public getPhysicsMass(): number;
         public getPhysicsFriction(): number;
@@ -3636,7 +3640,7 @@ declare module BABYLON {
         private _alphaTestSubMeshes;
         private _activeVertices;
         constructor(index: number, scene: Scene);
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void, beforeTransparents: any): boolean;
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean;
         public prepare(): void;
         public dispatch(subMesh: SubMesh): void;
     }
@@ -3651,7 +3655,7 @@ declare module BABYLON {
         private _renderParticles(index, activeMeshes);
         private _renderSprites(index);
         private _clearDepthBuffer();
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents: () => void) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
         public reset(): void;
         public dispatch(subMesh: SubMesh): void;
     }
