@@ -407,6 +407,8 @@
                 camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "OculusCamera") {
                 camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "OculusGamepadCamera") {
+                camera = new BABYLON.OculusGamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "TouchCamera") {
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "VirtualJoysticksCamera") {
