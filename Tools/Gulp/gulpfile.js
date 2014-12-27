@@ -161,7 +161,11 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Cameras/babylon.vrDeviceOrientationCamera.js',
       '../../Babylon/Cameras/babylon.webVRCamera.js',
       '../../Babylon/Tools/babylon.sceneOptimizer.js',
-      '../../Babylon/Mesh/babylon.meshLODLevel.js'
+      '../../Babylon/Mesh/babylon.meshLODLevel.js',
+      '../../Babylon/Audio/babylon.audioengine.js',
+      '../../Babylon/Audio/babylon.sound.js',
+      '../../Babylon/Audio/babylon.soundtrack.js',
+      '../../Babylon/Debug/babylon.debugLayer.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))

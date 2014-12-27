@@ -132,7 +132,7 @@
                             continue;
                         }
 
-                        projectedPosition = BABYLON.Vector3.Project(camera.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(BABYLON.Vector3.Zero(), camera.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
 
                         if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(camera)) {
                             _this._renderLabel(camera.name, projectedPosition, 12, function () {
@@ -151,7 +151,7 @@
                         var light = lights[index];
 
                         if (light.position) {
-                            projectedPosition = BABYLON.Vector3.Project(light.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = BABYLON.Vector3.Project(light.getAbsolutePosition(), _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
 
                             if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(light)) {
                                 _this._renderLabel(light.name, projectedPosition, -20, function () {
@@ -329,8 +329,6 @@
 
             var engine = this._scene.getEngine();
 
-            this._scene.registerAfterRender(this._syncData);
-
             this._globalDiv = document.createElement("div");
 
             document.body.appendChild(this._globalDiv);
@@ -341,6 +339,7 @@
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
+            this._scene.registerAfterRender(this._syncData);
         };
 
         DebugLayer.prototype._clearLabels = function () {
@@ -444,6 +443,11 @@
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
             this._globalDiv.id = "DebugLayer";
+            this._globalDiv.style.position = "absolute";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
 
             // Drawing canvas
             this._drawingCanvas = document.createElement("canvas");
@@ -639,16 +643,10 @@
                     _this._scene.texturesEnabled = element.checked;
                 });
 
-                // Global
-                this._globalDiv.style.position = "absolute";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
                 this._globalDiv.appendChild(this._treeDiv);
-
-                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-                this._globalDiv.style.fontSize = "14px";
-                this._globalDiv.style.color = "white";
             }
         };
 

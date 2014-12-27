@@ -202,7 +202,7 @@
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    if (trigger == ActionManager.OnKeyUpTrigger || trigger == ActionManager.OnKeyDownTrigger) {
+                    if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
 
                         if (parameter) {

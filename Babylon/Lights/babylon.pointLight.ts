@@ -7,6 +7,10 @@
             super(name, scene);
         }
 
+        public getAbsolutePosition(): Vector3 {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        }
+
         public transferToEffect(effect: Effect, positionUniformName: string): void {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {

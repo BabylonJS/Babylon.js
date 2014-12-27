@@ -22,6 +22,10 @@
             return this._shadowGenerator;
         }
 
+        public getAbsolutePosition(): Vector3 {
+            return Vector3.Zero();
+        }
+
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
         }
 

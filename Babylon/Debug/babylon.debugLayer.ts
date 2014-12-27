@@ -161,7 +161,7 @@
                             continue;
                         }
 
-                        projectedPosition = Vector3.Project(camera.position, this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = Vector3.Project(Vector3.Zero(), camera.getWorldMatrix(), this._scene.getTransformMatrix(), globalViewport);
 
                         if (!this.shouldDisplayLabel || this.shouldDisplayLabel(camera)) {
                             this._renderLabel(camera.name, projectedPosition, 12,
@@ -181,7 +181,7 @@
 
                         if (light.position) {
 
-                            projectedPosition = Vector3.Project(light.position, this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = Vector3.Project(light.getAbsolutePosition(), this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
 
                             if (!this.shouldDisplayLabel || this.shouldDisplayLabel(light)) {
                                 this._renderLabel(light.name, projectedPosition, -20,
@@ -360,8 +360,6 @@
 
             var engine = this._scene.getEngine();
 
-            this._scene.registerAfterRender(this._syncData);
-
             this._globalDiv = document.createElement("div");
 
             document.body.appendChild(this._globalDiv);
@@ -372,6 +370,7 @@
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
+            this._scene.registerAfterRender(this._syncData);
         }
 
         private _clearLabels(): void {
@@ -471,6 +470,11 @@
 
         private _generateDOMelements(): void {
             this._globalDiv.id = "DebugLayer";
+            this._globalDiv.style.position = "absolute";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
 
             // Drawing canvas
             this._drawingCanvas = document.createElement("canvas");
@@ -621,17 +625,10 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
 
-                // Global
-
-                this._globalDiv.style.position = "absolute";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
                 this._globalDiv.appendChild(this._treeDiv);
-
-                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-                this._globalDiv.style.fontSize = "14px";
-                this._globalDiv.style.color = "white";
             }
         }
 

@@ -5859,6 +5859,10 @@ var BABYLON;
             return this._shadowGenerator;
         };
 
+        Light.prototype.getAbsolutePosition = function () {
+            return BABYLON.Vector3.Zero();
+        };
+
         Light.prototype.transferToEffect = function (effect, uniformName0, uniformName1) {
         };
 
@@ -5928,6 +5932,10 @@ var BABYLON;
             _super.call(this, name, scene);
             this.position = position;
         }
+        PointLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
@@ -5977,6 +5985,10 @@ var BABYLON;
             this.angle = angle;
             this.exponent = exponent;
         }
+        SpotLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -5988,9 +6000,6 @@ var BABYLON;
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
                     this._transformedDirection = BABYLON.Vector3.Zero();
-                }
-                if (!this._transformedPosition) {
-                    this._transformedPosition = BABYLON.Vector3.Zero();
                 }
 
                 var parentWorldMatrix = this.parent.getWorldMatrix();
@@ -6037,6 +6046,10 @@ var BABYLON;
 
             this.position = direction.scale(-1);
         }
+        DirectionalLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         DirectionalLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -29435,7 +29448,7 @@ var BABYLON;
                             continue;
                         }
 
-                        projectedPosition = BABYLON.Vector3.Project(camera.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(BABYLON.Vector3.Zero(), camera.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
 
                         if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(camera)) {
                             _this._renderLabel(camera.name, projectedPosition, 12, function () {
@@ -29454,7 +29467,7 @@ var BABYLON;
                         var light = lights[index];
 
                         if (light.position) {
-                            projectedPosition = BABYLON.Vector3.Project(light.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = BABYLON.Vector3.Project(light.getAbsolutePosition(), _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
 
                             if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(light)) {
                                 _this._renderLabel(light.name, projectedPosition, -20, function () {
@@ -29632,8 +29645,6 @@ var BABYLON;
 
             var engine = this._scene.getEngine();
 
-            this._scene.registerAfterRender(this._syncData);
-
             this._globalDiv = document.createElement("div");
 
             document.body.appendChild(this._globalDiv);
@@ -29644,6 +29655,7 @@ var BABYLON;
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
+            this._scene.registerAfterRender(this._syncData);
         };
 
         DebugLayer.prototype._clearLabels = function () {
@@ -29747,6 +29759,11 @@ var BABYLON;
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
             this._globalDiv.id = "DebugLayer";
+            this._globalDiv.style.position = "absolute";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
 
            
             this._drawingCanvas = document.createElement("canvas");
@@ -29942,16 +29959,10 @@ var BABYLON;
                     _this._scene.texturesEnabled = element.checked;
                 });
 
-               
-                this._globalDiv.style.position = "absolute";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
                 this._globalDiv.appendChild(this._treeDiv);
-
-                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-                this._globalDiv.style.fontSize = "14px";
-                this._globalDiv.style.color = "white";
             }
         };
 

@@ -114,6 +114,11 @@
         };
 
         Material.prototype.bind = function (world, mesh) {
+            this._scene._cachedMaterial = this;
+
+            if (this.onBind) {
+                this.onBind(this);
+            }
         };
 
         Material.prototype.bindOnlyWorldMatrix = function (world) {
