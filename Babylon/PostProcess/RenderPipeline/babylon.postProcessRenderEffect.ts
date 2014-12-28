@@ -2,7 +2,7 @@ module BABYLON {
     export class PostProcessRenderEffect {
         private _engine: Engine;
 
-        private _postProcesses: PostProcess[];
+        private _postProcesses: any;
         private _getPostProcess: () => PostProcess;
 
         private _singleInstance: boolean;
@@ -10,8 +10,8 @@ module BABYLON {
         private _cameras: Camera[];
         private _indicesForCamera: number[][];
 
-        private _renderPasses: PostProcessRenderPass[];
-        private _renderEffectAsPasses: PostProcessRenderEffect[];
+        private _renderPasses: any;
+        private _renderEffectAsPasses: any;
 
         // private
         public _name: string;
@@ -26,12 +26,12 @@ module BABYLON {
             this._getPostProcess = getPostProcess;
 
             this._cameras = [];
-
-            this._postProcesses = [];
             this._indicesForCamera = [];
 
-            this._renderPasses = [];
-            this._renderEffectAsPasses = [];
+            this._postProcesses = {};
+
+            this._renderPasses = {};
+            this._renderEffectAsPasses = {};
         }
 
         public _update(): void {
@@ -67,7 +67,7 @@ module BABYLON {
         }
 
         public emptyPasses(): void {
-            this._renderPasses.length = 0;
+            this._renderPasses = {};
 
             this._linkParameters();
         }

@@ -6002,6 +6002,10 @@ var BABYLON;
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
 
+                if (!this._transformedPosition) {
+                    this._transformedPosition = BABYLON.Vector3.Zero();
+                }
+
                 var parentWorldMatrix = this.parent.getWorldMatrix();
 
                 BABYLON.Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._transformedPosition);
@@ -8570,16 +8574,16 @@ var BABYLON;
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
 
@@ -12085,6 +12089,53 @@ var BABYLON;
         Mesh.Center = function (meshesOrMinMaxVector) {
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
+        };
+
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+            if (typeof disposeSource === "undefined") { disposeSource = true; }
+            var source = meshes[0];
+            var material = source.material;
+            var scene = source.getScene();
+
+            if (!allow32BitsIndices) {
+                var totalVertices = 0;
+
+                for (var index = 0; index < meshes.length; index++) {
+                    totalVertices += meshes[index].getTotalVertices();
+
+                    if (totalVertices > 65536) {
+                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                        return null;
+                    }
+                }
+            }
+
+           
+            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
+            vertexData.transform(source.getWorldMatrix());
+
+            for (index = 1; index < meshes.length; index++) {
+                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
+                otherVertexData.transform(meshes[index].getWorldMatrix());
+
+                vertexData.merge(otherVertexData);
+            }
+
+            var newMesh = new Mesh(source.name + "_merged", scene);
+
+            vertexData.applyToMesh(newMesh);
+
+           
+            newMesh.material = material;
+
+           
+            if (disposeSource) {
+                for (index = 0; index < meshes.length; index++) {
+                    meshes[index].dispose();
+                }
+            }
+
+            return newMesh;
         };
         return Mesh;
     })(BABYLON.AbstractMesh);
@@ -20941,6 +20992,8 @@ var BABYLON;
                 camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "OculusCamera") {
                 camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "OculusGamepadCamera") {
+                camera = new BABYLON.OculusGamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "TouchCamera") {
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "VirtualJoysticksCamera") {
@@ -24689,12 +24742,12 @@ var BABYLON;
             this._getPostProcess = getPostProcess;
 
             this._cameras = [];
-
-            this._postProcesses = [];
             this._indicesForCamera = [];
 
-            this._renderPasses = [];
-            this._renderEffectAsPasses = [];
+            this._postProcesses = {};
+
+            this._renderPasses = {};
+            this._renderEffectAsPasses = {};
         }
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
@@ -24729,7 +24782,7 @@ var BABYLON;
         };
 
         PostProcessRenderEffect.prototype.emptyPasses = function () {
-            this._renderPasses.length = 0;
+            this._renderPasses = {};
 
             this._linkParameters();
         };
@@ -24866,8 +24919,8 @@ var BABYLON;
             this._engine = engine;
             this._name = name;
 
-            this._renderEffects = [];
-            this._renderEffectsForIsolatedPass = [];
+            this._renderEffects = {};
+            this._renderEffectsForIsolatedPass = {};
 
             this._cameras = [];
         }
@@ -25010,7 +25063,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
-            this._renderPipelines = new Array();
+            this._renderPipelines = {};
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
             this._renderPipelines[renderPipeline._name] = renderPipeline;
@@ -26322,9 +26375,9 @@ var BABYLON;
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
         }
-        ActionEvent.CreateNew = function (source) {
+        ActionEvent.CreateNew = function (source, evt) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, event);
         };
 
         ActionEvent.CreateNewFromScene = function (scene, evt) {
@@ -28835,6 +28888,77 @@ var BABYLON;
     })(SceneOptimization);
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
 
+    var MergeMeshesOptimization = (function (_super) {
+        __extends(MergeMeshesOptimization, _super);
+        function MergeMeshesOptimization() {
+            _super.apply(this, arguments);
+            var _this = this;
+            this._canBeMerged = function (abstractMesh) {
+                if (!(abstractMesh instanceof BABYLON.Mesh)) {
+                    return false;
+                }
+
+                var mesh = abstractMesh;
+
+                if (mesh.instances.length > 0) {
+                    return false;
+                }
+
+                if (mesh.skeleton || mesh.hasLODLevels) {
+                    return false;
+                }
+
+                return true;
+            };
+            this.apply = function (scene) {
+                var globalPool = scene.meshes.slice(0);
+                var globalLength = globalPool.length;
+
+                for (var index = 0; index < globalLength; index++) {
+                    var currentPool = new Array();
+                    var current = globalPool[index];
+
+                   
+                    if (!_this._canBeMerged(current)) {
+                        continue;
+                    }
+
+                    currentPool.push(current);
+
+                    for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                        var otherMesh = globalPool[subIndex];
+
+                        if (!_this._canBeMerged(otherMesh)) {
+                            continue;
+                        }
+
+                        if (otherMesh.material !== current.material) {
+                            continue;
+                        }
+
+                        currentPool.push(otherMesh);
+                        globalLength--;
+
+                        globalPool.splice(subIndex, 1);
+
+                        subIndex--;
+                    }
+
+                    if (currentPool.length < 2) {
+                        continue;
+                    }
+
+                   
+                    BABYLON.Mesh.MergeMeshes(currentPool);
+                }
+
+                return true;
+            };
+        }
+        return MergeMeshesOptimization;
+    })(SceneOptimization);
+    BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
+
    
     var SceneOptimizerOptions = (function () {
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
@@ -28848,6 +28972,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -28867,6 +28992,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -28894,6 +29020,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -29354,7 +29481,7 @@ var BABYLON;
                     _this._treeDiv.style.top = "10px";
                     _this._treeDiv.style.width = "300px";
                     _this._treeDiv.style.height = "auto";
-                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 420) + "px";
+                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 490) + "px";
                 }
 
                 _this._globalDiv.style.left = canvasRect.left + "px";
@@ -29710,6 +29837,7 @@ var BABYLON;
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
             container.appendChild(rightPart);

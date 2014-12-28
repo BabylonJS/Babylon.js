@@ -88,6 +88,82 @@
         };
     }
 
+    export class MergeMeshesOptimization extends SceneOptimization {
+
+        private _canBeMerged = (abstractMesh: AbstractMesh): boolean => {
+            if (!(abstractMesh instanceof Mesh)) {
+                return false;
+            }
+
+            var mesh = <Mesh>abstractMesh;
+
+            if (!mesh.isVisible || !mesh.isEnabled()) {
+                return false;
+            }
+
+            if (mesh.instances.length > 0) {
+                return false;
+            }
+
+            if (mesh.skeleton || mesh.hasLODLevels) {
+                return false;
+            }
+
+            return true;
+        }
+
+        public apply = (scene: Scene): boolean => {
+
+            var globalPool = scene.meshes.slice(0);
+            var globalLength = globalPool.length;
+
+            for (var index = 0; index < globalLength; index++) {
+                var currentPool = new Array<Mesh>();
+                var current = globalPool[index];
+
+                // Checks
+                if (!this._canBeMerged(current)) {
+                    continue;
+                }
+
+                currentPool.push(<Mesh>current);
+
+                // Find compatible meshes
+                for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                    var otherMesh = globalPool[subIndex];
+
+                    if (!this._canBeMerged(otherMesh)) {
+                        continue;
+                    }
+
+                    if (otherMesh.material !== current.material) {
+                        continue;
+                    }
+
+                    if (otherMesh.checkCollisions !== current.checkCollisions) {
+                        continue;
+                    }
+
+                    currentPool.push(<Mesh>otherMesh);
+                    globalLength--;
+
+                    globalPool.splice(subIndex, 1);
+
+                    subIndex--;
+                }
+
+                if (currentPool.length < 2) {
+                    continue;
+                }
+
+                // Merge meshes
+                Mesh.MergeMeshes(currentPool);
+            }
+
+            return true;
+        };
+    }
+
     // Options
     export class SceneOptimizerOptions {
         public optimizations = new Array<SceneOptimization>();
@@ -99,6 +175,7 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -118,6 +195,7 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -145,6 +223,7 @@
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 

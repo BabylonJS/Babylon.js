@@ -140,6 +140,85 @@ var BABYLON;
     })(SceneOptimization);
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
 
+    var MergeMeshesOptimization = (function (_super) {
+        __extends(MergeMeshesOptimization, _super);
+        function MergeMeshesOptimization() {
+            _super.apply(this, arguments);
+            var _this = this;
+            this._canBeMerged = function (abstractMesh) {
+                if (!(abstractMesh instanceof BABYLON.Mesh)) {
+                    return false;
+                }
+
+                var mesh = abstractMesh;
+
+                if (!mesh.isVisible || !mesh.isEnabled()) {
+                    return false;
+                }
+
+                if (mesh.instances.length > 0) {
+                    return false;
+                }
+
+                if (mesh.skeleton || mesh.hasLODLevels) {
+                    return false;
+                }
+
+                return true;
+            };
+            this.apply = function (scene) {
+                var globalPool = scene.meshes.slice(0);
+                var globalLength = globalPool.length;
+
+                for (var index = 0; index < globalLength; index++) {
+                    var currentPool = new Array();
+                    var current = globalPool[index];
+
+                    // Checks
+                    if (!_this._canBeMerged(current)) {
+                        continue;
+                    }
+
+                    currentPool.push(current);
+
+                    for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                        var otherMesh = globalPool[subIndex];
+
+                        if (!_this._canBeMerged(otherMesh)) {
+                            continue;
+                        }
+
+                        if (otherMesh.material !== current.material) {
+                            continue;
+                        }
+
+                        if (otherMesh.checkCollisions !== current.checkCollisions) {
+                            continue;
+                        }
+
+                        currentPool.push(otherMesh);
+                        globalLength--;
+
+                        globalPool.splice(subIndex, 1);
+
+                        subIndex--;
+                    }
+
+                    if (currentPool.length < 2) {
+                        continue;
+                    }
+
+                    // Merge meshes
+                    BABYLON.Mesh.MergeMeshes(currentPool);
+                }
+
+                return true;
+            };
+        }
+        return MergeMeshesOptimization;
+    })(SceneOptimization);
+    BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
+
     // Options
     var SceneOptimizerOptions = (function () {
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
@@ -153,6 +232,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -172,6 +252,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -199,6 +280,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 

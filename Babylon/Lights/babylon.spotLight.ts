@@ -26,6 +26,10 @@
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
 
+                if (!this._transformedPosition) {
+                    this._transformedPosition = BABYLON.Vector3.Zero();
+                }
+
                 var parentWorldMatrix = this.parent.getWorldMatrix();
 
                 BABYLON.Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._transformedPosition);

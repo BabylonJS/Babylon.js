@@ -1141,6 +1141,54 @@ var BABYLON;
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
+
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+            if (typeof disposeSource === "undefined") { disposeSource = true; }
+            var source = meshes[0];
+            var material = source.material;
+            var scene = source.getScene();
+
+            if (!allow32BitsIndices) {
+                var totalVertices = 0;
+
+                for (var index = 0; index < meshes.length; index++) {
+                    totalVertices += meshes[index].getTotalVertices();
+
+                    if (totalVertices > 65536) {
+                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                        return null;
+                    }
+                }
+            }
+
+            // Merge
+            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
+            vertexData.transform(source.getWorldMatrix());
+
+            for (index = 1; index < meshes.length; index++) {
+                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
+                otherVertexData.transform(meshes[index].getWorldMatrix());
+
+                vertexData.merge(otherVertexData);
+            }
+
+            var newMesh = new Mesh(source.name + "_merged", scene);
+
+            vertexData.applyToMesh(newMesh);
+
+            // Setting properties
+            newMesh.material = material;
+            newMesh.checkCollisions = source.checkCollisions;
+
+            // Cleaning
+            if (disposeSource) {
+                for (index = 0; index < meshes.length; index++) {
+                    meshes[index].dispose();
+                }
+            }
+
+            return newMesh;
+        };
         return Mesh;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;

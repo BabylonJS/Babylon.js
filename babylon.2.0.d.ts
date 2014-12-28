@@ -561,7 +561,7 @@ declare module BABYLON {
         public meshUnderPointer: AbstractMesh;
         public sourceEvent: any;
         constructor(source: AbstractMesh, pointerX: number, pointerY: number, meshUnderPointer: AbstractMesh, sourceEvent?: any);
-        static CreateNew(source: AbstractMesh): ActionEvent;
+        static CreateNew(source: AbstractMesh, evt?: Event): ActionEvent;
         static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
     }
     class ActionManager {
@@ -3080,6 +3080,7 @@ declare module BABYLON {
             max: Vector3;
         };
         static Center(meshesOrMinMaxVector: any): Vector3;
+        static MergeMeshes(meshes: Mesh[], disposeSource?: boolean, allow32BitsIndices?: boolean): Mesh;
     }
 }
 declare module BABYLON {
@@ -4015,6 +4016,10 @@ declare module BABYLON {
         public apply: (scene: Scene) => boolean;
     }
     class RenderTargetsOptimization extends SceneOptimization {
+        public apply: (scene: Scene) => boolean;
+    }
+    class MergeMeshesOptimization extends SceneOptimization {
+        private _canBeMerged;
         public apply: (scene: Scene) => boolean;
     }
     class SceneOptimizerOptions {
