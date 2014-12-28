@@ -5,8 +5,8 @@ var BABYLON;
             this._engine = engine;
             this._name = name;
 
-            this._renderEffects = [];
-            this._renderEffectsForIsolatedPass = [];
+            this._renderEffects = {};
+            this._renderEffectsForIsolatedPass = {};
 
             this._cameras = [];
         }

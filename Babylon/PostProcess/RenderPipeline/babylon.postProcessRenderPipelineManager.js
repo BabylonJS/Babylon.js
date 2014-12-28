@@ -2,7 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
-            this._renderPipelines = new Array();
+            this._renderPipelines = {};
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
             this._renderPipelines[renderPipeline._name] = renderPipeline;

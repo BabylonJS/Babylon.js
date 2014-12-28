@@ -64,7 +64,7 @@
                     this._treeDiv.style.top = "10px";
                     this._treeDiv.style.width = "300px";
                     this._treeDiv.style.height = "auto";
-                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 420) + "px";
+                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 490) + "px";
                 }
 
                 this._globalDiv.style.left = canvasRect.left + "px";
@@ -424,6 +424,7 @@
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
             container.appendChild(rightPart);
