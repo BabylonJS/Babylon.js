@@ -12127,6 +12127,7 @@ var BABYLON;
 
            
             newMesh.material = material;
+            newMesh.checkCollisions = source.checkCollisions;
 
            
             if (disposeSource) {
@@ -26377,7 +26378,7 @@ var BABYLON;
         }
         ActionEvent.CreateNew = function (source, evt) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, event);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
 
         ActionEvent.CreateNewFromScene = function (scene, evt) {
@@ -28900,6 +28901,10 @@ var BABYLON;
 
                 var mesh = abstractMesh;
 
+                if (!mesh.isVisible || !mesh.isEnabled()) {
+                    return false;
+                }
+
                 if (mesh.instances.length > 0) {
                     return false;
                 }
@@ -28933,6 +28938,10 @@ var BABYLON;
                         }
 
                         if (otherMesh.material !== current.material) {
+                            continue;
+                        }
+
+                        if (otherMesh.checkCollisions !== current.checkCollisions) {
                             continue;
                         }
 

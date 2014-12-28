@@ -10,7 +10,7 @@
         }
         ActionEvent.CreateNew = function (source, evt) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, event);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
 
         ActionEvent.CreateNewFromScene = function (scene, evt) {

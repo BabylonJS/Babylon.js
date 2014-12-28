@@ -7,7 +7,7 @@
 
         public static CreateNew(source: AbstractMesh, evt?: Event): ActionEvent {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, event);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
 
         public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
