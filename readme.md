@@ -23,6 +23,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
 - [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
 - [Samples](https://github.com/BabylonJS/Samples)
 - [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
+- [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
 
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
