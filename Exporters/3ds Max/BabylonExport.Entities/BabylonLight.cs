@@ -62,6 +62,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
 
+        [DataMember]
+        public string parentId { get; set; }
+
         public BabylonLight()
         {
             diffuse = new[] {1.0f, 1.0f, 1.0f};

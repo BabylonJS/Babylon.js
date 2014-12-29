@@ -9,12 +9,12 @@ var BABYLON;
             this._getPostProcess = getPostProcess;
 
             this._cameras = [];
+
+            this._postProcesses = [];
             this._indicesForCamera = [];
 
-            this._postProcesses = {};
-
-            this._renderPasses = {};
-            this._renderEffectAsPasses = {};
+            this._renderPasses = [];
+            this._renderEffectAsPasses = [];
         }
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
@@ -49,7 +49,7 @@ var BABYLON;
         };
 
         PostProcessRenderEffect.prototype.emptyPasses = function () {
-            this._renderPasses = {};
+            this._renderPasses.length = 0;
 
             this._linkParameters();
         };

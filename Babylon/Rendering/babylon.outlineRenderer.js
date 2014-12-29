@@ -4,12 +4,11 @@
         function OutlineRenderer(scene) {
             this._scene = scene;
         }
-        OutlineRenderer.prototype.render = function (subMesh, batch, useOverlay) {
-            if (typeof useOverlay === "undefined") { useOverlay = false; }
+        OutlineRenderer.prototype.render = function (subMesh, batch) {
             var scene = this._scene;
             var engine = this._scene.getEngine();
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances !== null);
 
             if (!this.isReady(subMesh, hardwareInstancedRendering)) {
                 return;
@@ -19,12 +18,12 @@
             var material = subMesh.getMaterial();
 
             engine.enableEffect(this._effect);
-            this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
-            this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
+            this._effect.setFloat("offset", mesh.outlineWidth);
+            this._effect.setColor3("color", mesh.outlineColor);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+            var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
             if (useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }

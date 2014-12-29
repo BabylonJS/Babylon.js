@@ -25,10 +25,6 @@ var BABYLON;
             return this._shadowGenerator;
         };
 
-        Light.prototype.getAbsolutePosition = function () {
-            return BABYLON.Vector3.Zero();
-        };
-
         Light.prototype.transferToEffect = function (effect, uniformName0, uniformName1) {
         };
 
