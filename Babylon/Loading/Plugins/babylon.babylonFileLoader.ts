@@ -412,6 +412,9 @@
         } else if (parsedCamera.type === "OculusCamera") {
             camera = new OculusCamera(parsedCamera.name, position, scene);
 
+        } else if (parsedCamera.type === "OculusGamepadCamera") {
+            camera = new OculusGamepadCamera(parsedCamera.name, position, scene);
+
         } else if (parsedCamera.type === "TouchCamera") {
             camera = new TouchCamera(parsedCamera.name, position, scene);
 

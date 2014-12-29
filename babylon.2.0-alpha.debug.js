@@ -5859,6 +5859,10 @@ var BABYLON;
             return this._shadowGenerator;
         };
 
+        Light.prototype.getAbsolutePosition = function () {
+            return BABYLON.Vector3.Zero();
+        };
+
         Light.prototype.transferToEffect = function (effect, uniformName0, uniformName1) {
         };
 
@@ -5928,6 +5932,10 @@ var BABYLON;
             _super.call(this, name, scene);
             this.position = position;
         }
+        PointLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
@@ -5977,6 +5985,10 @@ var BABYLON;
             this.angle = angle;
             this.exponent = exponent;
         }
+        SpotLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -5989,6 +6001,7 @@ var BABYLON;
                 if (!this._transformedDirection) {
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
+
                 if (!this._transformedPosition) {
                     this._transformedPosition = BABYLON.Vector3.Zero();
                 }
@@ -6037,6 +6050,10 @@ var BABYLON;
 
             this.position = direction.scale(-1);
         }
+        DirectionalLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         DirectionalLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -8557,16 +8574,16 @@ var BABYLON;
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
 
@@ -12072,6 +12089,54 @@ var BABYLON;
         Mesh.Center = function (meshesOrMinMaxVector) {
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
+        };
+
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+            if (typeof disposeSource === "undefined") { disposeSource = true; }
+            var source = meshes[0];
+            var material = source.material;
+            var scene = source.getScene();
+
+            if (!allow32BitsIndices) {
+                var totalVertices = 0;
+
+                for (var index = 0; index < meshes.length; index++) {
+                    totalVertices += meshes[index].getTotalVertices();
+
+                    if (totalVertices > 65536) {
+                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                        return null;
+                    }
+                }
+            }
+
+           
+            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
+            vertexData.transform(source.getWorldMatrix());
+
+            for (index = 1; index < meshes.length; index++) {
+                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
+                otherVertexData.transform(meshes[index].getWorldMatrix());
+
+                vertexData.merge(otherVertexData);
+            }
+
+            var newMesh = new Mesh(source.name + "_merged", scene);
+
+            vertexData.applyToMesh(newMesh);
+
+           
+            newMesh.material = material;
+            newMesh.checkCollisions = source.checkCollisions;
+
+           
+            if (disposeSource) {
+                for (index = 0; index < meshes.length; index++) {
+                    meshes[index].dispose();
+                }
+            }
+
+            return newMesh;
         };
         return Mesh;
     })(BABYLON.AbstractMesh);
@@ -20928,6 +20993,8 @@ var BABYLON;
                 camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "OculusCamera") {
                 camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
+            } else if (parsedCamera.type === "OculusGamepadCamera") {
+                camera = new BABYLON.OculusGamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "TouchCamera") {
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "VirtualJoysticksCamera") {
@@ -24676,12 +24743,12 @@ var BABYLON;
             this._getPostProcess = getPostProcess;
 
             this._cameras = [];
-
-            this._postProcesses = [];
             this._indicesForCamera = [];
 
-            this._renderPasses = [];
-            this._renderEffectAsPasses = [];
+            this._postProcesses = {};
+
+            this._renderPasses = {};
+            this._renderEffectAsPasses = {};
         }
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
@@ -24716,7 +24783,7 @@ var BABYLON;
         };
 
         PostProcessRenderEffect.prototype.emptyPasses = function () {
-            this._renderPasses.length = 0;
+            this._renderPasses = {};
 
             this._linkParameters();
         };
@@ -24853,8 +24920,8 @@ var BABYLON;
             this._engine = engine;
             this._name = name;
 
-            this._renderEffects = [];
-            this._renderEffectsForIsolatedPass = [];
+            this._renderEffects = {};
+            this._renderEffectsForIsolatedPass = {};
 
             this._cameras = [];
         }
@@ -24997,7 +25064,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
-            this._renderPipelines = new Array();
+            this._renderPipelines = {};
         }
         PostProcessRenderPipelineManager.prototype.addPipeline = function (renderPipeline) {
             this._renderPipelines[renderPipeline._name] = renderPipeline;
@@ -26309,9 +26376,9 @@ var BABYLON;
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
         }
-        ActionEvent.CreateNew = function (source) {
+        ActionEvent.CreateNew = function (source, evt) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
 
         ActionEvent.CreateNewFromScene = function (scene, evt) {
@@ -28822,6 +28889,85 @@ var BABYLON;
     })(SceneOptimization);
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
 
+    var MergeMeshesOptimization = (function (_super) {
+        __extends(MergeMeshesOptimization, _super);
+        function MergeMeshesOptimization() {
+            _super.apply(this, arguments);
+            var _this = this;
+            this._canBeMerged = function (abstractMesh) {
+                if (!(abstractMesh instanceof BABYLON.Mesh)) {
+                    return false;
+                }
+
+                var mesh = abstractMesh;
+
+                if (!mesh.isVisible || !mesh.isEnabled()) {
+                    return false;
+                }
+
+                if (mesh.instances.length > 0) {
+                    return false;
+                }
+
+                if (mesh.skeleton || mesh.hasLODLevels) {
+                    return false;
+                }
+
+                return true;
+            };
+            this.apply = function (scene) {
+                var globalPool = scene.meshes.slice(0);
+                var globalLength = globalPool.length;
+
+                for (var index = 0; index < globalLength; index++) {
+                    var currentPool = new Array();
+                    var current = globalPool[index];
+
+                   
+                    if (!_this._canBeMerged(current)) {
+                        continue;
+                    }
+
+                    currentPool.push(current);
+
+                    for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                        var otherMesh = globalPool[subIndex];
+
+                        if (!_this._canBeMerged(otherMesh)) {
+                            continue;
+                        }
+
+                        if (otherMesh.material !== current.material) {
+                            continue;
+                        }
+
+                        if (otherMesh.checkCollisions !== current.checkCollisions) {
+                            continue;
+                        }
+
+                        currentPool.push(otherMesh);
+                        globalLength--;
+
+                        globalPool.splice(subIndex, 1);
+
+                        subIndex--;
+                    }
+
+                    if (currentPool.length < 2) {
+                        continue;
+                    }
+
+                   
+                    BABYLON.Mesh.MergeMeshes(currentPool);
+                }
+
+                return true;
+            };
+        }
+        return MergeMeshesOptimization;
+    })(SceneOptimization);
+    BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
+
    
     var SceneOptimizerOptions = (function () {
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
@@ -28835,6 +28981,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -28854,6 +29001,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -28881,6 +29029,7 @@ var BABYLON;
             var result = new SceneOptimizerOptions(targetFrameRate);
 
             var priority = 0;
+            result.optimizations.push(new MergeMeshesOptimization(priority));
             result.optimizations.push(new ShadowsOptimization(priority));
             result.optimizations.push(new LensFlaresOptimization(priority));
 
@@ -29341,7 +29490,7 @@ var BABYLON;
                     _this._treeDiv.style.top = "10px";
                     _this._treeDiv.style.width = "300px";
                     _this._treeDiv.style.height = "auto";
-                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 420) + "px";
+                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 490) + "px";
                 }
 
                 _this._globalDiv.style.left = canvasRect.left + "px";
@@ -29435,7 +29584,7 @@ var BABYLON;
                             continue;
                         }
 
-                        projectedPosition = BABYLON.Vector3.Project(camera.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(BABYLON.Vector3.Zero(), camera.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
 
                         if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(camera)) {
                             _this._renderLabel(camera.name, projectedPosition, 12, function () {
@@ -29454,7 +29603,7 @@ var BABYLON;
                         var light = lights[index];
 
                         if (light.position) {
-                            projectedPosition = BABYLON.Vector3.Project(light.position, _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = BABYLON.Vector3.Project(light.getAbsolutePosition(), _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
 
                             if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(light)) {
                                 _this._renderLabel(light.name, projectedPosition, -20, function () {
@@ -29632,8 +29781,6 @@ var BABYLON;
 
             var engine = this._scene.getEngine();
 
-            this._scene.registerAfterRender(this._syncData);
-
             this._globalDiv = document.createElement("div");
 
             document.body.appendChild(this._globalDiv);
@@ -29644,6 +29791,7 @@ var BABYLON;
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
+            this._scene.registerAfterRender(this._syncData);
         };
 
         DebugLayer.prototype._clearLabels = function () {
@@ -29698,6 +29846,7 @@ var BABYLON;
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
             container.appendChild(rightPart);
@@ -29747,6 +29896,11 @@ var BABYLON;
         DebugLayer.prototype._generateDOMelements = function () {
             var _this = this;
             this._globalDiv.id = "DebugLayer";
+            this._globalDiv.style.position = "absolute";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
 
            
             this._drawingCanvas = document.createElement("canvas");
@@ -29942,16 +30096,10 @@ var BABYLON;
                     _this._scene.texturesEnabled = element.checked;
                 });
 
-               
-                this._globalDiv.style.position = "absolute";
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
                 this._globalDiv.appendChild(this._treeDiv);
-
-                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-                this._globalDiv.style.fontSize = "14px";
-                this._globalDiv.style.color = "white";
             }
         };
 
