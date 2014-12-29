@@ -407,8 +407,6 @@
                 camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "OculusCamera") {
                 camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
-            } else if (parsedCamera.type === "OculusGamepadCamera") {
-                camera = new BABYLON.OculusGamepadCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "TouchCamera") {
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             } else if (parsedCamera.type === "VirtualJoysticksCamera") {
@@ -649,16 +647,8 @@
             mesh.showBoundingBox = parsedMesh.showBoundingBox;
             mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
 
-            if (parsedMesh.applyFog !== undefined) {
-                mesh.applyFog = parsedMesh.applyFog;
-            }
-
             if (parsedMesh.pickable !== undefined) {
                 mesh.isPickable = parsedMesh.pickable;
-            }
-
-            if (parsedMesh.alphaIndex !== undefined) {
-                mesh.alphaIndex = parsedMesh.alphaIndex;
             }
 
             mesh.receiveShadows = parsedMesh.receiveShadows;

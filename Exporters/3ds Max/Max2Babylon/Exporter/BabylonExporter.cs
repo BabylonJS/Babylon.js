@@ -140,7 +140,7 @@ namespace Max2Babylon
                 var indexer = new IntPtr(ix);
                 var cameraNode = camerasTab[indexer];
                 Marshal.FreeHGlobal(indexer);
-                ExportCamera(cameraNode, babylonScene);
+                ExportCamera(gameScene, cameraNode, babylonScene);
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
                 {
@@ -228,7 +228,7 @@ namespace Max2Babylon
             var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
             for (var i = 0; i < lightNodes.Count; ++i)
             {
-                ExportLight(lightNodes[new IntPtr(i)], babylonScene);
+                ExportLight(gameScene, lightNodes[new IntPtr(i)], babylonScene);
                 CheckCancelled();
             }
 

@@ -850,21 +850,6 @@
             return Vector3.TransformCoordinates(vector, finalMatrix);
         };
 
-        Vector3.UnprojectFromTransform = function (source, viewportWidth, viewportHeight, world, transform) {
-            var matrix = world.multiply(transform);
-            matrix.invert();
-            source.x = source.x / viewportWidth * 2 - 1;
-            source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
-            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
-
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
-                vector = vector.scale(1.0 / num);
-            }
-
-            return vector;
-        };
-
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
@@ -2324,10 +2309,6 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-                if (max == -Infinity) {
-                    max = Infinity;
-                }
-
                 if (min > max) {
                     var temp = min;
                     min = max;
@@ -2351,10 +2332,6 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-                if (max == -Infinity) {
-                    max = Infinity;
-                }
-
                 if (min > max) {
                     temp = min;
                     min = max;
@@ -2377,10 +2354,6 @@
                 inv = 1.0 / this.direction.z;
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
-
-                if (max == -Infinity) {
-                    max = Infinity;
-                }
 
                 if (min > max) {
                     temp = min;
@@ -2521,32 +2494,5 @@
     })();
     BABYLON.Axis = Axis;
     ;
-
-    var BezierCurve = (function () {
-        function BezierCurve() {
-        }
-        BezierCurve.interpolate = function (t, x1, y1, x2, y2) {
-            // Extract X (which is equal to time here)
-            var f0 = 1 - 3 * x2 + 3 * x1;
-            var f1 = 3 * x2 - 6 * x1;
-            var f2 = 3 * x1;
-
-            var refinedT = t;
-            for (var i = 0; i < 5; i++) {
-                var refinedT2 = refinedT * refinedT;
-                var refinedT3 = refinedT2 * refinedT;
-
-                var x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
-                var slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
-                refinedT -= (x - t) * slope;
-                refinedT = Math.min(1, Math.max(0, refinedT));
-            }
-
-            // Resolve cubic bezier for the given x
-            return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
-        };
-        return BezierCurve;
-    })();
-    BABYLON.BezierCurve = BezierCurve;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map
