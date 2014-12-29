@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Max;
 using BabylonExport.Entities;
+using System.Linq;
 
 namespace Max2Babylon
 {
@@ -24,7 +25,7 @@ namespace Max2Babylon
             babylonScene.LightsList.Add(babylonLight);
         }
 
-        private void ExportLight(IIGameNode lightNode, BabylonScene babylonScene)
+        private void ExportLight(IIGameScene scene, IIGameNode lightNode, BabylonScene babylonScene)
         {
             if (lightNode.MaxNode.GetBoolProperty("babylonjs_noexport"))
             {
@@ -38,7 +39,27 @@ namespace Max2Babylon
             RaiseMessage(lightNode.Name, 1);
             babylonLight.name = lightNode.Name;
             babylonLight.id = lightNode.MaxNode.GetGuid().ToString();
+            if (lightNode.NodeParent != null)
+            {
+                var parentType = lightNode.NodeParent.IGameObject.IGameType;
+                var parentId = lightNode.NodeParent.MaxNode.GetGuid().ToString();
+                switch (parentType)
+                {
+                    case Autodesk.Max.IGameObject.ObjectTypes.Light:
+                    case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
+                    case Autodesk.Max.IGameObject.ObjectTypes.Camera:
+                        break;
 
+
+                    default:
+                        if (!babylonScene.MeshesList.Where(m => m.id == parentId).Any())
+                        {
+                            ExportMesh(scene, lightNode.NodeParent, babylonScene);
+                        }
+                        break;
+                }
+                babylonLight.parentId = parentId;
+            }
 
             // Type
 
@@ -81,6 +102,11 @@ namespace Max2Babylon
 
             // Position
             var wm = lightNode.GetObjectTM(0);
+            if (lightNode.NodeParent != null)
+            {
+                var parentWorld = lightNode.NodeParent.GetObjectTM(0);
+                wm.MultiplyBy(parentWorld.Inverse);
+            }
             var position = wm.Translation;
             babylonLight.position = new float[] { position.X, position.Y, position.Z };
 
@@ -156,6 +182,11 @@ namespace Max2Babylon
             ExportVector3Animation("position", animations, key =>
             {
                 var mat = lightNode.GetObjectTM(key);
+                if (lightNode.NodeParent != null)
+                {
+                    var parentWorld = lightNode.NodeParent.GetObjectTM(key);
+                    mat.MultiplyBy(parentWorld.Inverse);
+                }
                 var pos = mat.Translation;
                 return new float[] { pos.X, pos.Y, pos.Z };
             });
@@ -163,6 +194,11 @@ namespace Max2Babylon
             ExportVector3Animation("direction", animations, key =>
             {
                 var wmLight = lightNode.GetObjectTM(key);
+                if (lightNode.NodeParent != null)
+                {
+                    var parentWorld = lightNode.NodeParent.GetObjectTM(key);
+                    wmLight.MultiplyBy(parentWorld.Inverse);
+                }
                 var positionLight = wmLight.Translation;
                 var lightTarget = gameLight.LightTarget;
                 if (lightTarget != null)
