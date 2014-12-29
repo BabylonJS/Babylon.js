@@ -762,7 +762,9 @@
             var result = new BABYLON.Mesh(name, this.getScene());
 
             // Geometry
-            this._geometry.applyToMesh(result);
+            if (this._geometry) {
+                this._geometry.applyToMesh(result);
+            }
 
             // Deep copy
             BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], []);
