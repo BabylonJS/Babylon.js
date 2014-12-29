@@ -23,24 +23,7 @@ namespace Max2Babylon
             babylonCamera.id = cameraNode.MaxNode.GetGuid().ToString();
             if (cameraNode.NodeParent != null)
             {
-                var parentType = cameraNode.NodeParent.IGameObject.IGameType;
-                var parentId = cameraNode.NodeParent.MaxNode.GetGuid().ToString();
-                switch (parentType)
-                {
-                    case Autodesk.Max.IGameObject.ObjectTypes.Light:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Camera:
-                        break;
-
-
-                    default:
-                        if (!babylonScene.MeshesList.Where(m => m.id == parentId).Any())
-                        {
-                            ExportMesh(scene, cameraNode.NodeParent, babylonScene);
-                        }
-                        break;
-                }
-                babylonCamera.parentId = parentId;
+                babylonCamera.parentId = GetParentID(cameraNode.NodeParent, babylonScene, scene);
             }
 
             babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));

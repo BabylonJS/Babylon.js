@@ -15,6 +15,10 @@ var BABYLON;
             this.angle = angle;
             this.exponent = exponent;
         }
+        SpotLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -27,6 +31,7 @@ var BABYLON;
                 if (!this._transformedDirection) {
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
+
                 if (!this._transformedPosition) {
                     this._transformedPosition = BABYLON.Vector3.Zero();
                 }

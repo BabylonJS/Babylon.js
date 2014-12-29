@@ -12,6 +12,9 @@ namespace BabylonExport.Entities
         public string id { get; set; }
 
         [DataMember]
+        public string parentId { get; set; }
+
+        [DataMember]
         public float[] position { get; set; }
 
         [DataMember]
@@ -61,9 +64,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
-
-        [DataMember]
-        public string parentId { get; set; }
 
         public BabylonLight()
         {

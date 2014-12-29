@@ -12,6 +12,10 @@ var BABYLON;
             _super.call(this, name, scene);
             this.position = position;
         }
+        PointLight.prototype.getAbsolutePosition = function () {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        };
+
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {

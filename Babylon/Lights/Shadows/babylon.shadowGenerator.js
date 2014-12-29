@@ -55,7 +55,7 @@
                     }
 
                     // Bones
-                    var useBones = mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
 
                     if (useBones) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
@@ -163,6 +163,7 @@
             var attribs = [BABYLON.VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
+            var scene = mesh.getScene();
             var material = subMesh.getMaterial();
 
             // Alpha test
@@ -179,7 +180,7 @@
             }
 
             // Bones
-            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
