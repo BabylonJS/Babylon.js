@@ -8,9 +8,9 @@
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
             this._scene = scene;
         }
-        RenderingGroup.prototype.render = function (customRenderFunction, beforeTransparents) {
+        RenderingGroup.prototype.render = function (customRenderFunction) {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, beforeTransparents);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return true;
             }
 
@@ -25,7 +25,6 @@
 
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
-                this._activeVertices += submesh.verticesCount;
 
                 submesh.render();
             }
@@ -34,26 +33,31 @@
             engine.setAlphaTesting(true);
             for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
                 submesh = this._alphaTestSubMeshes.data[subIndex];
-                this._activeVertices += submesh.verticesCount;
 
                 submesh.render();
             }
             engine.setAlphaTesting(false);
 
-            if (beforeTransparents) {
-                beforeTransparents();
-            }
-
             // Transparent
             if (this._transparentSubMeshes.length) {
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
+                    submesh._alphaIndex = submesh.getMesh().alphaIndex;
                     submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
                 }
 
                 var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
 
                 sortedArray.sort(function (a, b) {
+                    // Alpha index first
+                    if (a._alphaIndex > b._alphaIndex) {
+                        return 1;
+                    }
+                    if (a._alphaIndex < b._alphaIndex) {
+                        return -1;
+                    }
+
+                    // Then distance to camera
                     if (a._distanceToCamera < b._distanceToCamera) {
                         return 1;
                     }
@@ -68,7 +72,6 @@
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
-                    this._activeVertices += submesh.verticesCount;
 
                     submesh.render();
                 }
@@ -88,9 +91,7 @@
             var mesh = subMesh.getMesh();
 
             if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) {
-                if (material.alpha > 0 || mesh.visibility < 1.0) {
-                    this._transparentSubMeshes.push(subMesh);
-                }
+                this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) {
                 this._alphaTestSubMeshes.push(subMesh);
             } else {

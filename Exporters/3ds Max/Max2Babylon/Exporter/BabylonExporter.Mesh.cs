@@ -62,6 +62,28 @@ namespace Max2Babylon
 
         }
 
+        private string GetParentID(IIGameNode parentNode, BabylonScene babylonScene, IIGameScene scene)
+        {
+            var parentType = parentNode.IGameObject.IGameType;
+            var parentId = parentNode.MaxNode.GetGuid().ToString();
+            switch (parentType)
+            {
+                case Autodesk.Max.IGameObject.ObjectTypes.Light:
+                case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
+                case Autodesk.Max.IGameObject.ObjectTypes.Camera:
+                    break;
+
+
+                default:
+                    if (!babylonScene.MeshesList.Where(m => m.id == parentId).Any())
+                    {
+                        ExportMesh(scene, parentNode, babylonScene);
+                    }
+                    break;
+            }
+            return parentId;
+        }
+
         private int bonesCount;
         private void ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
@@ -90,26 +112,7 @@ namespace Max2Babylon
             babylonMesh.id = meshNode.MaxNode.GetGuid().ToString();
             if (meshNode.NodeParent != null)
             {
-
-                // parent node type (if a known object type, export it as an empty mesh, so it can be in the scene hierarchy)
-                var parentType = meshNode.NodeParent.IGameObject.IGameType;
-                var parentId = meshNode.NodeParent.MaxNode.GetGuid().ToString();
-                switch (parentType)
-                {
-                    case Autodesk.Max.IGameObject.ObjectTypes.Light:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Camera:
-                        break;
-
-
-                    default:
-                        if (!babylonScene.MeshesList.Where(m => m.id == parentId).Any())
-                        {
-                            ExportMesh(scene, meshNode.NodeParent, babylonScene);
-                        }
-                        break;
-                }
-                babylonMesh.parentId = parentId;
+                babylonMesh.parentId = GetParentID(meshNode.NodeParent, babylonScene, scene);
             }
 
             // Misc.

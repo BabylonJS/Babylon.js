@@ -41,24 +41,7 @@ namespace Max2Babylon
             babylonLight.id = lightNode.MaxNode.GetGuid().ToString();
             if (lightNode.NodeParent != null)
             {
-                var parentType = lightNode.NodeParent.IGameObject.IGameType;
-                var parentId = lightNode.NodeParent.MaxNode.GetGuid().ToString();
-                switch (parentType)
-                {
-                    case Autodesk.Max.IGameObject.ObjectTypes.Light:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
-                    case Autodesk.Max.IGameObject.ObjectTypes.Camera:
-                        break;
-
-
-                    default:
-                        if (!babylonScene.MeshesList.Where(m => m.id == parentId).Any())
-                        {
-                            ExportMesh(scene, lightNode.NodeParent, babylonScene);
-                        }
-                        break;
-                }
-                babylonLight.parentId = parentId;
+                babylonLight.parentId = GetParentID(lightNode.NodeParent, babylonScene, scene);
             }
 
             // Type
