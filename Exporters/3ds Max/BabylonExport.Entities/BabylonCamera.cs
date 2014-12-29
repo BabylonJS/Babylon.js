@@ -18,6 +18,9 @@ namespace BabylonExport.Entities
         public string lockedTargetId { get; set; }
 
         [DataMember]
+        public string type { get; set; }
+
+        [DataMember]
         public float[] position { get; set; }
 
         [DataMember]

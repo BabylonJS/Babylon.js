@@ -571,6 +571,18 @@ namespace Max2Babylon
             return state == 1;
         }
 
+        public static string GetStringProperty(this IINode node, string propertyName, string defaultState)
+        {
+            string state = defaultState;
+#if MAX2015
+            node.GetUserPropString(propertyName, ref state);
+#else
+            node.GetUserPropString(ref propertyName, ref state);
+#endif
+
+            return state;
+        }
+
         public static float GetFloatProperty(this IINode node, string propertyName, float defaultState = 0)
         {
             float state = defaultState;
@@ -654,6 +666,11 @@ namespace Max2Babylon
             }
         }
 
+        public static void PrepareComboBox(ComboBox comboBox, IINode node, string propertyName, string defaultValue)
+        {
+            comboBox.SelectedItem = node.GetStringProperty(propertyName, defaultValue);
+        }
+
         public static void UpdateCheckBox(CheckBox checkBox, IINode node, string propertyName)
         {
             if (checkBox.CheckState != CheckState.Indeterminate)
@@ -727,6 +744,24 @@ namespace Max2Babylon
             foreach (var node in nodes)
             {
                 UpdateVector3Control(vector3Control, node, propertyName);
+            }
+        }
+
+        public static void UpdateComboBox(ComboBox comboBox, IINode node, string propertyName)
+        {
+            var value = comboBox.SelectedItem.ToString();
+#if MAX2015
+            node.SetUserPropString(propertyName, value);
+#else
+            node.SetUserPropString(ref propertyName, ref value);
+#endif
+        }
+
+        public static void UpdateComboBox(ComboBox comboBox, List<IINode> nodes, string propertyName)
+        {
+            foreach (var node in nodes)
+            {
+                UpdateComboBox(comboBox, node, propertyName);
             }
         }
 

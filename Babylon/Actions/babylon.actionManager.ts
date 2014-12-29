@@ -2,15 +2,15 @@
 
     export class ActionEvent {
         constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any) {
-            
+
         }
 
-        public static CreateNew(source: AbstractMesh): ActionEvent {
+        public static CreateNew(source: AbstractMesh, evt?: Event): ActionEvent {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
 
-        public static CreateNewFromScene(scene: Scene, evt:Event): ActionEvent {
+        public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
     }

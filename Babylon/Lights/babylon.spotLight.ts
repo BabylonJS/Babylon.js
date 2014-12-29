@@ -9,6 +9,10 @@
             super(name, scene);
         }
 
+        public getAbsolutePosition(): Vector3 {
+            return this._transformedPosition ? this._transformedPosition : this.position;
+        }
+
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -21,6 +25,7 @@
                 if (!this._transformedDirection) {
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
+
                 if (!this._transformedPosition) {
                     this._transformedPosition = BABYLON.Vector3.Zero();
                 }
