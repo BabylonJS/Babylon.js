@@ -39,6 +39,7 @@
 
         public onDispose: () => void;
 
+        public customParticleUpdate: (part: Particle) => void;
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
         public forceDepthWrite = false;
@@ -173,6 +174,10 @@
                 var particle = this.particles[index];
                 particle.age += this._scaledUpdateSpeed;
 
+                if (this.customParticleUpdate) {
+                    this.customParticleUpdate(particle);
+                }
+                
                 if (particle.age >= particle.lifeTime) {
                     this._stockParticles.push(this.particles.splice(index, 1)[0]);
                     index--;
