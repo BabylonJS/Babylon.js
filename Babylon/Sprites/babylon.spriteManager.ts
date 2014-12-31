@@ -102,7 +102,7 @@
             var baseSize = this._spriteTexture.getBaseSize();
 
             // Sprites
-            var deltaTime = BABYLON.Tools.GetDeltaTime();
+            var deltaTime = engine.getDeltaTime();
             var max = Math.min(this._capacity, this.sprites.length);
             var rowSize = baseSize.width / this.cellSize;
 

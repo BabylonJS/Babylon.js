@@ -637,7 +637,7 @@
             var scene = this._scene;
             var engine = scene.getEngine();
 
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(Tools.GetFps(), 0) + " fps</b><br><br>"
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(engine.getFps(), 0) + " fps</b><br><br>"
             + "Total meshes: " + scene.meshes.length + "<br>"
             + "Total vertices: " + scene.getTotalVertices() + "<br>"
             + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
