@@ -163,6 +163,10 @@
                 }
             }
 
+            if (this.customUpdateFunction) {
+                this.customUpdateFunction(this.particles);
+            }
+
             // Add new ones
             var worldMatrix;
 

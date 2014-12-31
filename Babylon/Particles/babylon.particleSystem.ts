@@ -38,8 +38,8 @@
         public particleTexture: Texture;
 
         public onDispose: () => void;
+        public customUpdateFunction: (particles: Particle[]) => void;
 
-        public customParticleUpdate: (part: Particle) => void;
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
         public forceDepthWrite = false;
@@ -174,10 +174,6 @@
                 var particle = this.particles[index];
                 particle.age += this._scaledUpdateSpeed;
 
-                if (this.customParticleUpdate) {
-                    this.customParticleUpdate(particle);
-                }
-                
                 if (particle.age >= particle.lifeTime) {
                     this._stockParticles.push(this.particles.splice(index, 1)[0]);
                     index--;
@@ -198,6 +194,10 @@
                     this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                     particle.direction.addInPlace(this._scaledGravity);
                 }
+            }
+
+            if (this.customUpdateFunction) {
+                this.customUpdateFunction(this.particles);
             }
 
             // Add new ones
