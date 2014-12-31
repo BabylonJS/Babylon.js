@@ -38,7 +38,7 @@
         public particleTexture: Texture;
 
         public onDispose: () => void;
-        public customUpdateFunction: (particles: Particle[]) => void;
+        public updateFunction: (particles: Particle[]) => void;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
 
@@ -128,6 +128,35 @@
 
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
             }
+
+            this.updateFunction = (particles: Particle[]): void => {
+                for (var index = 0; index < particles.length; index++) {
+                    var particle = particles[index];
+                    particle.age += this._scaledUpdateSpeed;
+
+                    if (particle.age >= particle.lifeTime) { // Recycle
+                        particles.splice(index, 1);
+                        this._stockParticles.push(particle);
+                        index--;
+                        continue;
+                    }
+                    else {
+                        particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                        particle.color.addInPlace(this._scaledColorStep);
+
+                        if (particle.color.a < 0)
+                            particle.color.a = 0;
+
+                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                        particle.position.addInPlace(this._scaledDirection);
+
+                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                        particle.direction.addInPlace(this._scaledGravity);
+                    }
+                }
+            }
         }
 
         public getCapacity(): number {
@@ -170,35 +199,8 @@
         private _update(newParticles: number): void {
             // Update current
             this._alive = this.particles.length > 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-                particle.age += this._scaledUpdateSpeed;
 
-                if (particle.age >= particle.lifeTime) {
-                    this._stockParticles.push(this.particles.splice(index, 1)[0]);
-                    index--;
-                    continue;
-                }
-                else {
-                    particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
-                    particle.color.addInPlace(this._scaledColorStep);
-
-                    if (particle.color.a < 0)
-                        particle.color.a = 0;
-
-                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
-
-                    particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
-                    particle.position.addInPlace(this._scaledDirection);
-
-                    this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
-                    particle.direction.addInPlace(this._scaledGravity);
-                }
-            }
-
-            if (this.customUpdateFunction) {
-                this.customUpdateFunction(this.particles);
-            }
+            this.updateFunction(this.particles);
 
             // Add new ones
             var worldMatrix;
@@ -209,13 +211,13 @@
                 worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
 
-            for (index = 0; index < newParticles; index++) {
+            for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
+                    var particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
                     particle = new Particle();

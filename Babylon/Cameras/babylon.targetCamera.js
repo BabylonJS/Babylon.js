@@ -73,7 +73,8 @@ var BABYLON;
 
         // Methods
         TargetCamera.prototype._computeLocalCameraSpeed = function () {
-            return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
+            var engine = this.getEngine();
+            return this.speed * ((engine.getDeltaTime() / (engine.getFps() * 10.0)));
         };
 
         // Target

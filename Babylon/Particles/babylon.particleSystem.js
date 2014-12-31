@@ -97,6 +97,34 @@
 
                 BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
             };
+
+            this.updateFunction = function (particles) {
+                for (var index = 0; index < particles.length; index++) {
+                    var particle = particles[index];
+                    particle.age += _this._scaledUpdateSpeed;
+
+                    if (particle.age >= particle.lifeTime) {
+                        particles.splice(index, 1);
+                        _this._stockParticles.push(particle);
+                        index--;
+                        continue;
+                    } else {
+                        particle.colorStep.scaleToRef(_this._scaledUpdateSpeed, _this._scaledColorStep);
+                        particle.color.addInPlace(_this._scaledColorStep);
+
+                        if (particle.color.a < 0)
+                            particle.color.a = 0;
+
+                        particle.angle += particle.angularSpeed * _this._scaledUpdateSpeed;
+
+                        particle.direction.scaleToRef(_this._scaledUpdateSpeed, _this._scaledDirection);
+                        particle.position.addInPlace(_this._scaledDirection);
+
+                        _this.gravity.scaleToRef(_this._scaledUpdateSpeed, _this._scaledGravity);
+                        particle.direction.addInPlace(_this._scaledGravity);
+                    }
+                }
+            };
         }
         ParticleSystem.prototype.getCapacity = function () {
             return this._capacity;
@@ -138,34 +166,8 @@
         ParticleSystem.prototype._update = function (newParticles) {
             // Update current
             this._alive = this.particles.length > 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-                particle.age += this._scaledUpdateSpeed;
 
-                if (particle.age >= particle.lifeTime) {
-                    this._stockParticles.push(this.particles.splice(index, 1)[0]);
-                    index--;
-                    continue;
-                } else {
-                    particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
-                    particle.color.addInPlace(this._scaledColorStep);
-
-                    if (particle.color.a < 0)
-                        particle.color.a = 0;
-
-                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
-
-                    particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
-                    particle.position.addInPlace(this._scaledDirection);
-
-                    this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
-                    particle.direction.addInPlace(this._scaledGravity);
-                }
-            }
-
-            if (this.customUpdateFunction) {
-                this.customUpdateFunction(this.particles);
-            }
+            this.updateFunction(this.particles);
 
             // Add new ones
             var worldMatrix;
@@ -176,13 +178,13 @@
                 worldMatrix = BABYLON.Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
 
-            for (index = 0; index < newParticles; index++) {
+            for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
+                    var particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
                     particle = new BABYLON.Particle();
