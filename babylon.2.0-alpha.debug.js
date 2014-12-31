@@ -11710,7 +11710,9 @@ var BABYLON;
             var result = new BABYLON.Mesh(name, this.getScene());
 
            
-            this._geometry.applyToMesh(result);
+            if (this._geometry) {
+                this._geometry.applyToMesh(result);
+            }
 
            
             BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], []);
@@ -16945,6 +16947,10 @@ var BABYLON;
                     this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                     particle.direction.addInPlace(this._scaledGravity);
                 }
+            }
+
+            if (this.customUpdateFunction) {
+                this.customUpdateFunction(this.particles);
             }
 
            
