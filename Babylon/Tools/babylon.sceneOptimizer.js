@@ -313,7 +313,7 @@ var BABYLON;
         }
         SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
             // TODO: add an epsilon
-            if (BABYLON.Tools.GetFps() >= options.targetFrameRate) {
+            if (scene.getEngine().getFps() >= options.targetFrameRate) {
                 if (onSuccess) {
                     onSuccess();
                 }

@@ -254,7 +254,7 @@
 
         static _CheckCurrentState(scene: Scene, options: SceneOptimizerOptions, currentPriorityLevel: number, onSuccess?: () => void, onFailure?: () => void) {
             // TODO: add an epsilon
-            if (Tools.GetFps() >= options.targetFrameRate) {
+            if (scene.getEngine().getFps() >= options.targetFrameRate) {
                 if (onSuccess) {
                     onSuccess();
                 }

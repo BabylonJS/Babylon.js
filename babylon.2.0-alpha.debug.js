@@ -2554,12 +2554,6 @@ var BABYLON;
    
     var screenshotCanvas;
 
-   
-    var fpsRange = 60;
-    var previousFramesDuration = [];
-    var fps = 60;
-    var deltaTime = 0;
-
     var cloneValue = function (source, destinationObject) {
         if (!source)
             return null;
@@ -2942,37 +2936,6 @@ var BABYLON;
             }
         };
 
-        Tools.GetFps = function () {
-            return fps;
-        };
-
-        Tools.GetDeltaTime = function () {
-            return deltaTime;
-        };
-
-        Tools._MeasureFps = function () {
-            previousFramesDuration.push(Tools.Now);
-            var length = previousFramesDuration.length;
-
-            if (length >= 2) {
-                deltaTime = previousFramesDuration[length - 1] - previousFramesDuration[length - 2];
-            }
-
-            if (length >= fpsRange) {
-                if (length > fpsRange) {
-                    previousFramesDuration.splice(0, 1);
-                    length = previousFramesDuration.length;
-                }
-
-                var sum = 0;
-                for (var id = 0; id < length - 1; id++) {
-                    sum += previousFramesDuration[id + 1] - previousFramesDuration[id];
-                }
-
-                fps = 1000.0 / (sum / (length - 1));
-            }
-        };
-
         Tools.CreateScreenshot = function (engine, camera, size) {
             var width;
             var height;
@@ -3346,6 +3309,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+       
+        Tools.GetFps = function () {
+            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
+            return 0;
+        };
         Tools.BaseUrl = "";
 
         Tools.GetExponantOfTwo = function (value, max) {
@@ -3759,6 +3728,11 @@ var BABYLON;
             this._loadingDivBackgroundColor = "black";
             this._drawCalls = 0;
            
+            this.fpsRange = 60;
+            this.previousFramesDuration = [];
+            this.fps = 60;
+            this.deltaTime = 0;
+           
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
             this._alphaMode = Engine.ALPHA_DISABLE;
@@ -4095,7 +4069,7 @@ var BABYLON;
         };
 
         Engine.prototype.beginFrame = function () {
-            BABYLON.Tools._MeasureFps();
+            this._measureFps();
         };
 
         Engine.prototype.endFrame = function () {
@@ -5288,6 +5262,38 @@ var BABYLON;
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
+        };
+
+       
+        Engine.prototype.getFps = function () {
+            return this.fps;
+        };
+
+        Engine.prototype.getDeltaTime = function () {
+            return this.deltaTime;
+        };
+
+        Engine.prototype._measureFps = function () {
+            this.previousFramesDuration.push(BABYLON.Tools.Now);
+            var length = this.previousFramesDuration.length;
+
+            if (length >= 2) {
+                this.deltaTime = this.previousFramesDuration[length - 1] - this.previousFramesDuration[length - 2];
+            }
+
+            if (length >= this.fpsRange) {
+                if (length > this.fpsRange) {
+                    this.previousFramesDuration.splice(0, 1);
+                    length = this.previousFramesDuration.length;
+                }
+
+                var sum = 0;
+                for (var id = 0; id < length - 1; id++) {
+                    sum += this.previousFramesDuration[id + 1] - this.previousFramesDuration[id];
+                }
+
+                this.fps = 1000.0 / (sum / (length - 1));
+            }
         };
 
        
@@ -7123,7 +7129,8 @@ var BABYLON;
 
        
         TargetCamera.prototype._computeLocalCameraSpeed = function () {
-            return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
+            var engine = this.getEngine();
+            return this.speed * ((engine.getDeltaTime() / (engine.getFps() * 10.0)));
         };
 
        
@@ -9364,7 +9371,7 @@ var BABYLON;
             }
 
            
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(BABYLON.Tools.GetDeltaTime(), Scene.MaxDeltaTime));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
@@ -11710,7 +11717,9 @@ var BABYLON;
             var result = new BABYLON.Mesh(name, this.getScene());
 
            
-            this._geometry.applyToMesh(result);
+            if (this._geometry) {
+                this._geometry.applyToMesh(result);
+            }
 
            
             BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], []);
@@ -16509,7 +16518,7 @@ var BABYLON;
             var baseSize = this._spriteTexture.getBaseSize();
 
            
-            var deltaTime = BABYLON.Tools.GetDeltaTime();
+            var deltaTime = engine.getDeltaTime();
             var max = Math.min(this._capacity, this.sprites.length);
             var rowSize = baseSize.width / this.cellSize;
 
@@ -16881,6 +16890,34 @@ var BABYLON;
 
                 BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
             };
+
+            this.updateFunction = function (particles) {
+                for (var index = 0; index < particles.length; index++) {
+                    var particle = particles[index];
+                    particle.age += _this._scaledUpdateSpeed;
+
+                    if (particle.age >= particle.lifeTime) {
+                        particles.splice(index, 1);
+                        _this._stockParticles.push(particle);
+                        index--;
+                        continue;
+                    } else {
+                        particle.colorStep.scaleToRef(_this._scaledUpdateSpeed, _this._scaledColorStep);
+                        particle.color.addInPlace(_this._scaledColorStep);
+
+                        if (particle.color.a < 0)
+                            particle.color.a = 0;
+
+                        particle.angle += particle.angularSpeed * _this._scaledUpdateSpeed;
+
+                        particle.direction.scaleToRef(_this._scaledUpdateSpeed, _this._scaledDirection);
+                        particle.position.addInPlace(_this._scaledDirection);
+
+                        _this.gravity.scaleToRef(_this._scaledUpdateSpeed, _this._scaledGravity);
+                        particle.direction.addInPlace(_this._scaledGravity);
+                    }
+                }
+            };
         }
         ParticleSystem.prototype.getCapacity = function () {
             return this._capacity;
@@ -16922,30 +16959,8 @@ var BABYLON;
         ParticleSystem.prototype._update = function (newParticles) {
            
             this._alive = this.particles.length > 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-                particle.age += this._scaledUpdateSpeed;
 
-                if (particle.age >= particle.lifeTime) {
-                    this._stockParticles.push(this.particles.splice(index, 1)[0]);
-                    index--;
-                    continue;
-                } else {
-                    particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
-                    particle.color.addInPlace(this._scaledColorStep);
-
-                    if (particle.color.a < 0)
-                        particle.color.a = 0;
-
-                    particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
-
-                    particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
-                    particle.position.addInPlace(this._scaledDirection);
-
-                    this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
-                    particle.direction.addInPlace(this._scaledGravity);
-                }
-            }
+            this.updateFunction(this.particles);
 
            
             var worldMatrix;
@@ -16956,13 +16971,13 @@ var BABYLON;
                 worldMatrix = BABYLON.Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
 
-            for (index = 0; index < newParticles; index++) {
+            for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
+                    var particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
                     particle = new BABYLON.Particle();
@@ -29062,7 +29077,7 @@ var BABYLON;
         }
         SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
            
-            if (BABYLON.Tools.GetFps() >= options.targetFrameRate) {
+            if (scene.getEngine().getFps() >= options.targetFrameRate) {
                 if (onSuccess) {
                     onSuccess();
                 }
@@ -30107,7 +30122,7 @@ var BABYLON;
             var scene = this._scene;
             var engine = scene.getEngine();
 
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(BABYLON.Tools.GetFps(), 0) + " fps</b><br><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b>";
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(engine.getFps(), 0) + " fps</b><br><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b>";
         };
         return DebugLayer;
     })();
