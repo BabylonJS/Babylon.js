@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 3, 1),
+    'version': (1, 5, 0),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -175,7 +175,10 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             else:
                 BabylonExporter.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('/')[2])
 
-            BabylonExporter.nWarnings = 0 # explicitly reset, in case there was an earlier export this session
+            # explicitly reset globals, in case there was an earlier export this session
+            BabylonExporter.nWarnings = 0
+            BabylonExporter.materials = []
+            
             BabylonExporter.log_handler = open(self.filepathMinusExtension + '.log', 'w')
             BabylonExporter_version = bl_info['version']
             BabylonExporter.log('Babylon.js Exporter version: ' + str(BabylonExporter_version[0]) + '.' + str(BabylonExporter_version[1]) +  '.' + str(BabylonExporter_version[2]) + 
@@ -210,24 +213,14 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             skeletonId = 0
             self.meshesAndNodes = []
             self.multiMaterials = []
+            
+            # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
                 if object.type == 'CAMERA':
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         self.cameras.append(Camera(object))
                     else:
                         BabylonExporter.warn('WARNING: The following camera not visible in scene thus ignored: ' + object.name)
-
-                elif object.type == 'LAMP':
-                    if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
-                        bulb = Light(object)
-                        self.lights.append(bulb)
-                        if object.data.shadowMap != 'NONE':
-                            if bulb.light_type == DIRECTIONAL_LIGHT:
-                                self.shadowGenerators.append(ShadowGenerator(object, scene))
-                            else:
-                                BabylonExporter.warn('WARNING: Only directional (sun) type of lamp is invalid for shadows thus ignored: ' + object.name)                                
-                    else:
-                        BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
 
                 elif object.type == 'ARMATURE':  #skeleton.pose.bones
                     if object.is_visible(scene):
@@ -257,9 +250,23 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                 elif object.type == 'EMPTY':
                     self.meshesAndNodes.append(Node(object))
                     
-                else:
+                elif object.type != 'LAMP':
                     BabylonExporter.warn('WARNING: The following object is not currently exportable thus ignored: ' + object.name)
-
+            
+            # Lamp / shadow Generator pass; meshesAnNodes complete & forceParents included
+            for object in [object for object in scene.objects]:
+                if object.type == 'LAMP':
+                    if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
+                        bulb = Light(object)
+                        self.lights.append(bulb)
+                        if object.data.shadowMap != 'NONE':
+                            if bulb.light_type == DIRECTIONAL_LIGHT:
+                                self.shadowGenerators.append(ShadowGenerator(object, self.meshesAndNodes, scene))
+                            else:
+                                BabylonExporter.warn('WARNING: Only directional (sun) type of lamp is invalid for shadows thus ignored: ' + object.name)                                
+                    else:
+                        BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
+                        
             bpy.context.scene.frame_set(currentFrame)
 
             # output file
@@ -488,14 +495,14 @@ class Mesh(FCurveAnimatable):
         self.useFlatShading = object.data.useFlatShading
         self.checkCollisions = object.data.checkCollisions
         self.receiveShadows = object.data.receiveShadows
-        
-        # used to support shared vertex instances in later passed
-        self.dataName = object.data.name
-
+        self.castShadows = object.data.castShadows
+      
         if forcedParent is None:     
+            self.dataName = object.data.name # used to support shared vertex instances in later passed
             if object.parent and object.parent.type != 'ARMATURE':
                 self.parentId = object.parent.name
         else:
+            self.dataName = self.name
             self.parentId = forcedParent.name
 
         # Physics
@@ -1181,16 +1188,16 @@ class Light(FCurveAnimatable):
         return (matrix.to_3x3() * mathutils.Vector((0.0, 0.0, -1.0))).normalized()
 #===============================================================================
 class ShadowGenerator:
-    def __init__(self, lamp, scene):       
+    def __init__(self, lamp, meshesAndNodes, scene):       
         BabylonExporter.log('processing begun of shadows for light:  ' + lamp.name)
         self.useVarianceShadowMap = lamp.data.shadowMap == 'VAR' if True else False
         self.mapSize = lamp.data.shadowMapSize  
         self.lightId = lamp.name     
         
         self.shadowCasters = []
-        for object in [object for object in scene.objects]:
-            if (object.type == 'MESH' and object.data.castShadows):
-                self.shadowCasters.append(object.name)
+        for mesh in meshesAndNodes:
+            if (mesh.castShadows):
+                self.shadowCasters.append(mesh.name)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):
         file_handler.write('{')
