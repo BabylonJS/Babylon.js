@@ -76,8 +76,9 @@
         }
 
         // Methods
-        public _computeLocalCameraSpeed():number {
-            return this.speed * ((BABYLON.Tools.GetDeltaTime() / (BABYLON.Tools.GetFps() * 10.0)));
+        public _computeLocalCameraSpeed(): number {
+            var engine = this.getEngine();
+            return this.speed * ((engine.getDeltaTime() / (engine.getFps() * 10.0)));
         }
 
         // Target

@@ -371,6 +371,11 @@
             this._runningLoop = false;
             this._loadingDivBackgroundColor = "black";
             this._drawCalls = 0;
+            // FPS
+            this.fpsRange = 60;
+            this.previousFramesDuration = [];
+            this.fps = 60;
+            this.deltaTime = 0;
             // States
             this._depthCullingState = new _DepthCullingState();
             this._alphaState = new _AlphaState();
@@ -708,7 +713,7 @@
         };
 
         Engine.prototype.beginFrame = function () {
-            BABYLON.Tools._MeasureFps();
+            this._measureFps();
         };
 
         Engine.prototype.endFrame = function () {
@@ -1901,6 +1906,38 @@
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
+        };
+
+        // FPS
+        Engine.prototype.getFps = function () {
+            return this.fps;
+        };
+
+        Engine.prototype.getDeltaTime = function () {
+            return this.deltaTime;
+        };
+
+        Engine.prototype._measureFps = function () {
+            this.previousFramesDuration.push(BABYLON.Tools.Now);
+            var length = this.previousFramesDuration.length;
+
+            if (length >= 2) {
+                this.deltaTime = this.previousFramesDuration[length - 1] - this.previousFramesDuration[length - 2];
+            }
+
+            if (length >= this.fpsRange) {
+                if (length > this.fpsRange) {
+                    this.previousFramesDuration.splice(0, 1);
+                    length = this.previousFramesDuration.length;
+                }
+
+                var sum = 0;
+                for (var id = 0; id < length - 1; id++) {
+                    sum += this.previousFramesDuration[id + 1] - this.previousFramesDuration[id];
+                }
+
+                this.fps = 1000.0 / (sum / (length - 1));
+            }
         };
 
         // Statics

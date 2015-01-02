@@ -11,12 +11,6 @@
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
-    // FPS
-    var fpsRange = 60;
-    var previousFramesDuration = [];
-    var fps = 60;
-    var deltaTime = 0;
-
     var cloneValue = (source, destinationObject) => {
         if (!source)
             return null;
@@ -313,9 +307,9 @@
         }
 
         // Misc.   
-        public static Clamp(value:number, min = 0, max = 1): number {
+        public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
-        }     
+        }
 
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
@@ -419,38 +413,6 @@
                 } catch (e) {
                     // Silently fails...
                 }
-            }
-        }
-
-        public static GetFps(): number {
-            return fps;
-        }
-
-        public static GetDeltaTime(): number {
-            return deltaTime;
-        }
-
-        public static _MeasureFps(): void {
-            previousFramesDuration.push(Tools.Now);
-            var length = previousFramesDuration.length;
-
-            if (length >= 2) {
-                deltaTime = previousFramesDuration[length - 1] - previousFramesDuration[length - 2];
-            }
-
-            if (length >= fpsRange) {
-
-                if (length > fpsRange) {
-                    previousFramesDuration.splice(0, 1);
-                    length = previousFramesDuration.length;
-                }
-
-                var sum = 0;
-                for (var id = 0; id < length - 1; id++) {
-                    sum += previousFramesDuration[id + 1] - previousFramesDuration[id];
-                }
-
-                fps = 1000.0 / (sum / (length - 1));
             }
         }
 
@@ -815,5 +777,13 @@
 
             return new Date().getTime();
         }
+
+        // Deprecated
+
+        public static GetFps(): number {
+            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
+            return 0;
+        }
+
     }
 } 

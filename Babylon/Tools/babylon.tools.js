@@ -3,12 +3,6 @@
     // Screenshots
     var screenshotCanvas;
 
-    // FPS
-    var fpsRange = 60;
-    var previousFramesDuration = [];
-    var fps = 60;
-    var deltaTime = 0;
-
     var cloneValue = function (source, destinationObject) {
         if (!source)
             return null;
@@ -391,37 +385,6 @@
             }
         };
 
-        Tools.GetFps = function () {
-            return fps;
-        };
-
-        Tools.GetDeltaTime = function () {
-            return deltaTime;
-        };
-
-        Tools._MeasureFps = function () {
-            previousFramesDuration.push(Tools.Now);
-            var length = previousFramesDuration.length;
-
-            if (length >= 2) {
-                deltaTime = previousFramesDuration[length - 1] - previousFramesDuration[length - 2];
-            }
-
-            if (length >= fpsRange) {
-                if (length > fpsRange) {
-                    previousFramesDuration.splice(0, 1);
-                    length = previousFramesDuration.length;
-                }
-
-                var sum = 0;
-                for (var id = 0; id < length - 1; id++) {
-                    sum += previousFramesDuration[id + 1] - previousFramesDuration[id];
-                }
-
-                fps = 1000.0 / (sum / (length - 1));
-            }
-        };
-
         Tools.CreateScreenshot = function (engine, camera, size) {
             var width;
             var height;
@@ -795,6 +758,12 @@
             enumerable: true,
             configurable: true
         });
+
+        // Deprecated
+        Tools.GetFps = function () {
+            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
+            return 0;
+        };
         Tools.BaseUrl = "";
 
         Tools.GetExponantOfTwo = function (value, max) {
