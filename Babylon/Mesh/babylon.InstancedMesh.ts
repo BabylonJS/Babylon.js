@@ -93,7 +93,7 @@
         public getLOD(camera: Camera): AbstractMesh {
             this._currentLOD = <Mesh>this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
 
-            return this._currentLOD
+            return this._currentLOD;
         }
 
         public _syncSubMeshes(): void {

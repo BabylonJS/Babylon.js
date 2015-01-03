@@ -124,6 +124,12 @@ void main(void) {
 	vPositionUVW = position;
 #endif 
 
+#ifdef INSTANCES
+	finalWorld = mat4(world0, world1, world2, world3);
+#else
+	finalWorld = world;
+#endif
+
 #ifdef BONES
 	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
 	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
@@ -131,17 +137,11 @@ void main(void) {
 
 #ifdef BONES4
 	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = world * (m0 + m1 + m2 + m3);
+	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
 #else
-	finalWorld = world * (m0 + m1 + m2);
+	finalWorld = finalWorld * (m0 + m1 + m2);
 #endif 
 
-#else
-#ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
-#else
-	finalWorld = world;
-#endif
 #endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
