@@ -79,13 +79,17 @@ declare module BABYLON {
         private _caps;
         private _pointerLockRequested;
         private _alphaTest;
-        private _runningLoop;
-        private _renderFunction;
         private _resizeLoadingUI;
         private _loadingDiv;
         private _loadingTextDiv;
         private _loadingDivBackgroundColor;
         private _drawCalls;
+        private _renderingQueueLaunched;
+        private _activeRenderLoops;
+        private fpsRange;
+        private previousFramesDuration;
+        private fps;
+        private deltaTime;
         private _depthCullingState;
         private _alphaState;
         private _alphaMode;
@@ -120,7 +124,7 @@ declare module BABYLON {
         public setDepthFunctionToGreaterOrEqual(): void;
         public setDepthFunctionToLess(): void;
         public setDepthFunctionToLessOrEqual(): void;
-        public stopRenderLoop(): void;
+        public stopRenderLoop(renderFunction?: () => void): void;
         public _renderLoop(): void;
         public runRenderLoop(renderFunction: () => void): void;
         public switchFullscreen(requestPointerLock: boolean): void;
@@ -197,6 +201,9 @@ declare module BABYLON {
         public loadingUIText : string;
         public loadingUIBackgroundColor : string;
         public hideLoadingUI(): void;
+        public getFps(): number;
+        public getDeltaTime(): number;
+        private _measureFps();
         static isSupported(): boolean;
     }
 }
@@ -2024,6 +2031,11 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class RawTexture extends Texture {
+        constructor(scene: Scene, samplingMode?: number);
+    }
+}
+declare module BABYLON {
     class RenderTargetTexture extends Texture {
         public renderList: AbstractMesh[];
         public renderParticles: boolean;
@@ -3246,6 +3258,7 @@ declare module BABYLON {
         public maxAngularSpeed: number;
         public particleTexture: Texture;
         public onDispose: () => void;
+        public updateFunction: (particles: Particle[]) => void;
         public blendMode: number;
         public forceDepthWrite: boolean;
         public gravity: Vector3;
@@ -4118,9 +4131,6 @@ declare module BABYLON {
             name: string;
             handler: EventListener;
         }[]): void;
-        static GetFps(): number;
-        static GetDeltaTime(): number;
-        static _MeasureFps(): void;
         static CreateScreenshot(engine: Engine, camera: Camera, size: any): void;
         static ValidateXHRData(xhr: XMLHttpRequest, dataType?: number): boolean;
         private static _NoneLogLevel;
@@ -4164,6 +4174,7 @@ declare module BABYLON {
         static StartPerformanceCounter: (counterName: string, condition?: boolean) => void;
         static EndPerformanceCounter: (counterName: string, condition?: boolean) => void;
         static Now : number;
+        static GetFps(): number;
     }
 }
 declare module BABYLON.Internals {

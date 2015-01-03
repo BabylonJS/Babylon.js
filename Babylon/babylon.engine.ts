@@ -415,15 +415,15 @@
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
 
-        private _runningLoop = false;
-        private _renderFunction: () => void;
-
         private _resizeLoadingUI: () => void;
         private _loadingDiv: HTMLDivElement;
         private _loadingTextDiv: HTMLDivElement;
         private _loadingDivBackgroundColor = "black";
 
         private _drawCalls = 0;
+
+        private _renderingQueueLaunched = false;
+        private _activeRenderLoops = [];
 
         // FPS
         private fpsRange = 60;
@@ -636,9 +636,17 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
 
-        public stopRenderLoop(): void {
-            this._renderFunction = null;
-            this._runningLoop = false;
+        public stopRenderLoop(renderFunction?: () => void): void {
+            if (!renderFunction) {
+                this._activeRenderLoops = [];
+                return;
+            }
+
+            var index = this._activeRenderLoops.indexOf(renderFunction);
+
+            if (index >= 0) {
+                this._activeRenderLoops.splice(index, 1);
+            }
         }
 
         public _renderLoop(): void {
@@ -651,30 +659,39 @@
                 // Start new frame
                 this.beginFrame();
 
-                if (this._renderFunction) {
-                    this._renderFunction();
+                for (var index = 0; index < this._activeRenderLoops.length; index++) {
+                    var renderFunction = this._activeRenderLoops[index];
+
+                    renderFunction();
                 }
 
                 // Present
                 this.endFrame();
             }
 
-            if (this._runningLoop) {
+            if (this._activeRenderLoops.length > 0) {
                 // Register new frame
                 BABYLON.Tools.QueueNewFrame(() => {
                     this._renderLoop();
                 });
+            } else {
+                this._renderingQueueLaunched = false;
             }
         }
 
         public runRenderLoop(renderFunction: () => void): void {
-            this._runningLoop = true;
+            if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
+                return;
+            }
 
-            this._renderFunction = renderFunction;
+            this._activeRenderLoops.push(renderFunction);
 
-            BABYLON.Tools.QueueNewFrame(() => {
-                this._renderLoop();
-            });
+            if (!this._renderingQueueLaunched) {
+                this._renderingQueueLaunched = true;
+                BABYLON.Tools.QueueNewFrame(() => {
+                    this._renderLoop();
+                });
+            }
         }
 
         public switchFullscreen(requestPointerLock: boolean): void {
