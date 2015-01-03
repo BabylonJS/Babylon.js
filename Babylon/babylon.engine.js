@@ -539,6 +539,46 @@
             configurable: true
         });
 
+        Object.defineProperty(Engine, "TEXTUREFORMAT_ALPHA", {
+            get: function () {
+                return Engine._TEXTUREFORMAT_ALPHA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTUREFORMAT_LUMINANCE", {
+            get: function () {
+                return Engine._TEXTUREFORMAT_LUMINANCE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTUREFORMAT_LUMINANCE_ALPHA", {
+            get: function () {
+                return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTUREFORMAT_RGB", {
+            get: function () {
+                return Engine._TEXTUREFORMAT_RGB;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTUREFORMAT_RGBA", {
+            get: function () {
+                return Engine._TEXTUREFORMAT_RGBA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "2.0.0";
@@ -1390,6 +1430,63 @@
             return texture;
         };
 
+        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
+            if (width !== BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize) || height !== BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize)) {
+                BABYLON.Tools.Error("Unable to create a BABYLON.RawTexture with specified resolution. You must define power of 2 size.");
+                return null;
+            }
+
+            var texture = this._gl.createTexture();
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+
+            // Format
+            var internalFormat = this._gl.RGBA;
+
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = this._gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = this._gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = this._gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                    internalFormat = this._gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                    internalFormat = this._gl.RGBA;
+                    break;
+            }
+
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+
+            // Filters
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+
+            this._activeTexturesCache = [];
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = width;
+            texture._height = height;
+            texture.isReady = true;
+            texture.references = 1;
+
+            this._loadedTexturesCache.push(texture);
+
+            return texture;
+        };
+
         Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
 
@@ -1981,6 +2078,12 @@
         Engine._DELAYLOADSTATE_LOADED = 1;
         Engine._DELAYLOADSTATE_LOADING = 2;
         Engine._DELAYLOADSTATE_NOTLOADED = 4;
+
+        Engine._TEXTUREFORMAT_ALPHA = 0;
+        Engine._TEXTUREFORMAT_LUMINANCE = 1;
+        Engine._TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
+        Engine._TEXTUREFORMAT_RGB = 4;
+        Engine._TEXTUREFORMAT_RGBA = 4;
 
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
