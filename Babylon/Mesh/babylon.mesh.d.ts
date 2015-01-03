@@ -1,0 +1,102 @@
+﻿declare module BABYLON {
+    class _InstancesBatch {
+        public mustReturn: boolean;
+        public visibleInstances: InstancedMesh[][];
+        public renderSelf: boolean[];
+    }
+    class Mesh extends AbstractMesh implements IGetSetVerticesData {
+        public delayLoadState: number;
+        public instances: InstancedMesh[];
+        public delayLoadingFile: string;
+        public _binaryInfo: any;
+        private _LODLevels;
+        public _geometry: Geometry;
+        private _onBeforeRenderCallbacks;
+        private _onAfterRenderCallbacks;
+        public _delayInfo: any;
+        public _delayLoadingFunction: (any: any, Mesh: any) => void;
+        public _visibleInstances: any;
+        private _renderIdForInstances;
+        private _batchCache;
+        private _worldMatricesInstancesBuffer;
+        private _worldMatricesInstancesArray;
+        private _instancesBufferSize;
+        public _shouldGenerateFlatShading: boolean;
+        private _preActivateId;
+        constructor(name: string, scene: Scene);
+        public hasLODLevels : boolean;
+        private _sortLODLevels();
+        public addLODLevel(distance: number, mesh: Mesh): Mesh;
+        public removeLODLevel(mesh: Mesh): Mesh;
+        public getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh;
+        public geometry : Geometry;
+        public getTotalVertices(): number;
+        public getVerticesData(kind: string): number[];
+        public getVertexBuffer(kind: any): VertexBuffer;
+        public isVerticesDataPresent(kind: string): boolean;
+        public getVerticesDataKinds(): string[];
+        public getTotalIndices(): number;
+        public getIndices(): number[];
+        public isBlocked : boolean;
+        public isReady(): boolean;
+        public isDisposed(): boolean;
+        public _preActivate(): void;
+        public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): void;
+        public refreshBoundingInfo(): void;
+        public _createGlobalSubMesh(): SubMesh;
+        public subdivide(count: number): void;
+        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void;
+        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
+        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void;
+        public makeGeometryUnique(): void;
+        public setIndices(indices: number[], totalVertices?: number): void;
+        public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
+        public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
+        public registerBeforeRender(func: () => void): void;
+        public unregisterBeforeRender(func: () => void): void;
+        public registerAfterRender(func: () => void): void;
+        public unregisterAfterRender(func: () => void): void;
+        public _getInstancesRenderList(subMeshId: number): _InstancesBatch;
+        public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
+        public render(subMesh: SubMesh): void;
+        public getEmittedParticleSystems(): ParticleSystem[];
+        public getHierarchyEmittedParticleSystems(): ParticleSystem[];
+        public getChildren(): Node[];
+        public _checkDelayState(): void;
+        public isInFrustum(frustumPlanes: Plane[]): boolean;
+        public setMaterialByID(id: string): void;
+        public getAnimatables(): IAnimatable[];
+        public bakeTransformIntoVertices(transform: Matrix): void;
+        public _resetPointsArrayCache(): void;
+        public _generatePointsArray(): boolean;
+        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh;
+        public dispose(doNotRecurse?: boolean): void;
+        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number): void;
+        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void;
+        public convertToFlatShadedMesh(): void;
+        public createInstance(name: string): InstancedMesh;
+        public synchronizeInstances(): void;
+        static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any): Mesh;
+        static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean): LinesMesh;
+        static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
+            w: number;
+            h: number;
+        }, precision: {
+            w: number;
+            h: number;
+        }, scene: Scene, updatable?: boolean): Mesh;
+        static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh;
+        static MinMax(meshes: AbstractMesh[]): {
+            min: Vector3;
+            max: Vector3;
+        };
+        static Center(meshesOrMinMaxVector: any): Vector3;
+        static MergeMeshes(meshes: Mesh[], disposeSource?: boolean, allow32BitsIndices?: boolean): Mesh;
+    }
+}
