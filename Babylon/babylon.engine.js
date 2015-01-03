@@ -1006,6 +1006,8 @@
             // Apply states
             this.applyStates();
 
+            this._drawCalls++;
+
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             if (instancesCount) {
@@ -1014,13 +1016,12 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
-
-            this._drawCalls++;
         };
 
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
+            this._drawCalls++;
 
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
@@ -1028,7 +1029,6 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
-            this._drawCalls++;
         };
 
         // Shaders

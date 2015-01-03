@@ -422,8 +422,8 @@ var BABYLON;
 
                 if (!this._batchCache.visibleInstances[subMeshId] && this._visibleInstances.defaultRenderId) {
                     this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[this._visibleInstances.defaultRenderId];
-                    currentRenderId = this._visibleInstances.defaultRenderId;
-                    selfRenderId = this._visibleInstances.selfDefaultRenderId;
+                    currentRenderId = Math.max(this._visibleInstances.defaultRenderId, currentRenderId);
+                    selfRenderId = Math.max(this._visibleInstances.selfDefaultRenderId, currentRenderId);
                 }
 
                 if (this._batchCache.visibleInstances[subMeshId] && this._batchCache.visibleInstances[subMeshId].length) {
