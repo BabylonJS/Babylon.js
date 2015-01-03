@@ -26,6 +26,7 @@ namespace Max2Babylon
         {
             return Assembly.Load("Autodesk.Max.Wrappers, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
         }
+
         public static IIGameCamera AsGameCamera(this IIGameObject obj)
         {
             var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameCamera");

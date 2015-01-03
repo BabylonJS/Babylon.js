@@ -22,8 +22,6 @@ namespace Max2Babylon
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, int> OnError;
 
-        string maxSceneFileName;
-
         readonly List<string> alreadyExportedTextures = new List<string>();
 
         public bool AutoSave3dsMaxFile { get; set; }
@@ -32,7 +30,9 @@ namespace Max2Babylon
 
         public bool CopyTexturesToOutput { get; set; }
 
-        private bool exportQuaternionsInsteadOfEulers;
+        public string MaxSceneFileName { get; set; }
+
+        public bool ExportQuaternionsInsteadOfEulers { get; set; }
 
         void ReportProgressChanged(int progress)
         {
@@ -80,7 +80,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, Form callerForm)
         {
             var gameConversionManger = Loader.Global.ConversionManager;
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
@@ -89,7 +89,7 @@ namespace Max2Babylon
             gameScene.InitialiseIGame(onlySelected);
             gameScene.SetStaticFrame(0);
 
-            maxSceneFileName = gameScene.SceneFileName;
+            MaxSceneFileName = gameScene.SceneFileName;
 
             IsCancelled = false;
             RaiseMessage("Exportation started", Color.Blue);
@@ -127,7 +127,7 @@ namespace Max2Babylon
             babylonScene.ambientColor = Loader.Core.GetAmbient(0, Tools.Forever).ToArray();
 
             babylonScene.gravity = rawScene.GetVector3Property("babylonjs_gravity");
-            exportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
+            ExportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
 
             // Cameras
             BabylonCamera mainCamera = null;
@@ -276,6 +276,15 @@ namespace Max2Babylon
                         "{\r\n\"version\" : 1,\r\n\"enableSceneOffline\" : true,\r\n\"enableTexturesOffline\" : true\r\n}");
                 }
             });
+
+            // Binary
+            if (generateBinary)
+            {
+                RaiseMessage("Generating binary files");
+                BabylonFileConverter.BinaryConverter.Convert(outputFile, Path.GetDirectoryName(outputFile) + "\\Binary",
+                    message => RaiseMessage(message, 1),
+                    error => RaiseError(error, 1));
+            }
 
             ReportProgressChanged(100);
             watch.Stop();
