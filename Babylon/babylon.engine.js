@@ -368,9 +368,10 @@
             this.renderEvenInBackground = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
-            this._runningLoop = false;
             this._loadingDivBackgroundColor = "black";
             this._drawCalls = 0;
+            this._renderingQueueLaunched = false;
+            this._activeRenderLoops = [];
             // FPS
             this.fpsRange = 60;
             this.previousFramesDuration = [];
@@ -625,9 +626,17 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         };
 
-        Engine.prototype.stopRenderLoop = function () {
-            this._renderFunction = null;
-            this._runningLoop = false;
+        Engine.prototype.stopRenderLoop = function (renderFunction) {
+            if (!renderFunction) {
+                this._activeRenderLoops = [];
+                return;
+            }
+
+            var index = this._activeRenderLoops.indexOf(renderFunction);
+
+            if (index >= 0) {
+                this._activeRenderLoops.splice(index, 1);
+            }
         };
 
         Engine.prototype._renderLoop = function () {
@@ -641,31 +650,40 @@
                 // Start new frame
                 this.beginFrame();
 
-                if (this._renderFunction) {
-                    this._renderFunction();
+                for (var index = 0; index < this._activeRenderLoops.length; index++) {
+                    var renderFunction = this._activeRenderLoops[index];
+
+                    renderFunction();
                 }
 
                 // Present
                 this.endFrame();
             }
 
-            if (this._runningLoop) {
+            if (this._activeRenderLoops.length > 0) {
                 // Register new frame
                 BABYLON.Tools.QueueNewFrame(function () {
                     _this._renderLoop();
                 });
+            } else {
+                this._renderingQueueLaunched = false;
             }
         };
 
         Engine.prototype.runRenderLoop = function (renderFunction) {
             var _this = this;
-            this._runningLoop = true;
+            if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
+                return;
+            }
 
-            this._renderFunction = renderFunction;
+            this._activeRenderLoops.push(renderFunction);
 
-            BABYLON.Tools.QueueNewFrame(function () {
-                _this._renderLoop();
-            });
+            if (!this._renderingQueueLaunched) {
+                this._renderingQueueLaunched = true;
+                BABYLON.Tools.QueueNewFrame(function () {
+                    _this._renderLoop();
+                });
+            }
         };
 
         Engine.prototype.switchFullscreen = function (requestPointerLock) {
