@@ -354,6 +354,12 @@
         private static _DELAYLOADSTATE_LOADING = 2;
         private static _DELAYLOADSTATE_NOTLOADED = 4;
 
+        private static _TEXTUREFORMAT_ALPHA = 0;
+        private static _TEXTUREFORMAT_LUMINANCE = 1;
+        private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
+        private static _TEXTUREFORMAT_RGB = 4;
+        private static _TEXTUREFORMAT_RGBA = 4;
+
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
         }
@@ -380,6 +386,26 @@
 
         public static get DELAYLOADSTATE_NOTLOADED(): number {
             return Engine._DELAYLOADSTATE_NOTLOADED;
+        }
+
+        public static get TEXTUREFORMAT_ALPHA(): number {
+            return Engine._TEXTUREFORMAT_ALPHA;
+        }
+
+        public static get TEXTUREFORMAT_LUMINANCE(): number {
+            return Engine._TEXTUREFORMAT_LUMINANCE;
+        }
+
+        public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
+            return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
+        }
+
+        public static get TEXTUREFORMAT_RGB(): number {
+            return Engine._TEXTUREFORMAT_RGB;
+        }
+
+        public static get TEXTUREFORMAT_RGBA(): number {
+            return Engine._TEXTUREFORMAT_RGBA;
         }
 
         public static get Version(): string {
@@ -1401,6 +1427,64 @@
                 else
                     BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
             }
+
+            return texture;
+        }
+
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY:boolean, samplingMode: number): WebGLTexture {
+
+            if (width !== Tools.GetExponantOfTwo(width, this._caps.maxTextureSize) || height !== Tools.GetExponantOfTwo(height, this._caps.maxTextureSize)) {
+                Tools.Error("Unable to create a BABYLON.RawTexture with specified resolution. You must define power of 2 size.");
+                return null;
+            }
+
+            var texture = this._gl.createTexture();
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+
+            // Format
+            var internalFormat = this._gl.RGBA;
+
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = this._gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = this._gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = this._gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                    internalFormat = this._gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                    internalFormat = this._gl.RGBA;
+                    break;
+            }
+
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+
+            // Filters
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+
+            this._activeTexturesCache = [];
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = width;
+            texture._height = height;
+            texture.isReady = true;
+            texture.references = 1;
+
+            this._loadedTexturesCache.push(texture);
 
             return texture;
         }
