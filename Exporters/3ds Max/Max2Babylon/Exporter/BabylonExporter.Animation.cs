@@ -17,7 +17,7 @@ namespace Max2Babylon
             return new BabylonAnimationKey
             {
                 frame = key.Time / Ticks,
-                values = new []{key.Val}
+                values = new[] { key.Val }
             };
         }
 
@@ -78,7 +78,7 @@ namespace Max2Babylon
 
                     return new BabylonAnimationKey
                     {
-                        frame = key.Time/Ticks,
+                        frame = key.Time / Ticks,
                         values = key.Val.ToArraySwitched()
                     };
                 }))
@@ -94,7 +94,7 @@ namespace Max2Babylon
 
                     return new BabylonAnimationKey
                     {
-                        frame = key.Time/Ticks,
+                        frame = key.Time / Ticks,
                         values = key.Val.S.ToArraySwitched()
                     };
                 });
@@ -187,11 +187,11 @@ namespace Max2Babylon
 
         static void RemoveLinearAnimationKeys(List<BabylonAnimationKey> keys)
         {
-            for(int ixFirst = keys.Count-3; ixFirst >=0; --ixFirst)
+            for (int ixFirst = keys.Count - 3; ixFirst >= 0; --ixFirst)
             {
                 while (keys.Count - ixFirst >= 3)
                 {
-                    if(!RemoveAnimationKey(keys, ixFirst))
+                    if (!RemoveAnimationKey(keys, ixFirst))
                     {
                         break;
                     }
@@ -204,7 +204,7 @@ namespace Max2Babylon
             double weight2 = (double)(frame1 - frame0) / (double)(frame2 - frame0);
             double weight0 = 1 - weight2;
             float[] result = new float[value0.Length];
-            for(int i = 0; i < result.Length; ++i)
+            for (int i = 0; i < result.Length; ++i)
             {
                 result[i] = (float)(value0[i] * weight0 + value2[i] * weight2);
             }
@@ -218,7 +218,7 @@ namespace Max2Babylon
             var last = keys[ixFirst + 2];
 
             // first pass, frame equality
-            if(first.values.IsEqualTo(last.values) && first.values.IsEqualTo(middle.values))
+            if (first.values.IsEqualTo(last.values) && first.values.IsEqualTo(middle.values))
             {
                 keys.RemoveAt(ixFirst + 1);
                 return true;
@@ -232,7 +232,7 @@ namespace Max2Babylon
                 return true;
             }
             return false;
-            
+
         }
 
         private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
@@ -246,13 +246,13 @@ namespace Max2Babylon
             {
                 var current = extractValueFunc(key);
 
-                
-                    keys.Add(new BabylonAnimationKey()
-                    {
-                        frame = key / Ticks,
-                        values = current
-                    });
-                
+
+                keys.Add(new BabylonAnimationKey()
+                {
+                    frame = key / Ticks,
+                    values = current
+                });
+
 
                 previous = current;
             }
@@ -294,6 +294,6 @@ namespace Max2Babylon
                     animations.Add(babylonAnimation);
                 }
             }
-        }        
+        }
     }
 }

@@ -37,12 +37,10 @@ namespace Max2Babylon
             {
                 var node = Loader.Core.GetSelNode(index);
 
-                //if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
-                //{
-
-                // handle "virtual objects" // todo : differentiate them and remove mesh specific settings (keep only animation settings)
-                objects.Add(node);
-                //}
+                if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
+                {
+                    objects.Add(node);
+                }
             }
 
             Tools.PrepareCheckBox(chkNoExport, objects, "babylonjs_noexport");
