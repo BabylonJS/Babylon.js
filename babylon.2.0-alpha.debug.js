@@ -4794,11 +4794,6 @@ var BABYLON;
         };
 
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
-            if (width !== BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize) || height !== BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize)) {
-                BABYLON.Tools.Error("Unable to create a BABYLON.RawTexture with specified resolution. You must define power of 2 size.");
-                return null;
-            }
-
             var texture = this._gl.createTexture();
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -12566,6 +12561,10 @@ var BABYLON;
                 var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
                 if (currentIntersectInfo) {
+                    if (currentIntersectInfo.distance < 0) {
+                        continue;
+                    }
+
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                         intersectInfo = currentIntersectInfo;
                         intersectInfo.faceId = index / 3;
@@ -29614,6 +29613,10 @@ var BABYLON;
             };
         }
         DebugLayer.prototype._refreshMeshesTreeContent = function () {
+            while (this._treeSubsetDiv.hasChildNodes()) {
+                this._treeSubsetDiv.removeChild(this._treeSubsetDiv.lastChild);
+            }
+
             // Add meshes
             var sortedArray = this._scene.meshes.slice(0, this._scene.meshes.length);
 
@@ -30120,6 +30123,9 @@ var BABYLON;
             _super.call(this, null, scene, !generateMipMaps, invertY);
 
             this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
+
+            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
         }
         // Statics
         RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {

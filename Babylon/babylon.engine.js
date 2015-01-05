@@ -1431,11 +1431,6 @@
         };
 
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
-            if (width !== BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize) || height !== BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize)) {
-                BABYLON.Tools.Error("Unable to create a BABYLON.RawTexture with specified resolution. You must define power of 2 size.");
-                return null;
-            }
-
             var texture = this._gl.createTexture();
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
