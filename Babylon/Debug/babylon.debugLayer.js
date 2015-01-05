@@ -168,6 +168,10 @@
             };
         }
         DebugLayer.prototype._refreshMeshesTreeContent = function () {
+            while (this._treeSubsetDiv.hasChildNodes()) {
+                this._treeSubsetDiv.removeChild(this._treeSubsetDiv.lastChild);
+            }
+
             // Add meshes
             var sortedArray = this._scene.meshes.slice(0, this._scene.meshes.length);
 

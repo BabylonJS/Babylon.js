@@ -4,6 +4,9 @@
             super(null, scene, !generateMipMaps, invertY);
 
             this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
+
+            this.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = Texture.CLAMP_ADDRESSMODE;
         }
 
         // Statics

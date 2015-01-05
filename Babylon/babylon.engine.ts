@@ -321,7 +321,7 @@
     var cascadeLoad = (rootUrl: string, scene,
         onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
 
-        var loadedImages:any = [];
+        var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
@@ -806,7 +806,7 @@
         }
 
         public flushFramebuffer(): void {
-         //   this._gl.flush();
+            //   this._gl.flush();
         }
 
         public restoreDefaultFramebuffer(): void {
@@ -872,7 +872,7 @@
             var need32Bits = false;
 
             if (this._caps.uintIndices) {
-                
+
                 for (var index = 0; index < indices.length; index++) {
                     if (indices[index] > 65535) {
                         need32Bits = true;
@@ -939,7 +939,7 @@
                 }
             }
 
-            if (indexBuffer!= null && this._cachedIndexBuffer !== indexBuffer) {
+            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
@@ -1380,7 +1380,7 @@
                     callback(buffer);
 
             } else if (isDDS) {
-                 callback = (data) => {
+                callback = (data) => {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
@@ -1430,12 +1430,7 @@
             return texture;
         }
 
-        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY:boolean, samplingMode: number): WebGLTexture {
-
-            if (width !== Tools.GetExponantOfTwo(width, this._caps.maxTextureSize) || height !== Tools.GetExponantOfTwo(height, this._caps.maxTextureSize)) {
-                Tools.Error("Unable to create a BABYLON.RawTexture with specified resolution. You must define power of 2 size.");
-                return null;
-            }
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
 
             var texture = this._gl.createTexture();
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
