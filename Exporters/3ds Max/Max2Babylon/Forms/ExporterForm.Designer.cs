@@ -42,12 +42,12 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkCopyTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkBinary = new System.Windows.Forms.CheckBox();
             this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
             this.butExportAndRun = new System.Windows.Forms.Button();
             this.butClose = new System.Windows.Forms.Button();
-            this.chkBinary = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -196,6 +196,17 @@
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             // 
+            // chkBinary
+            // 
+            this.chkBinary.AutoSize = true;
+            this.chkBinary.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkBinary.Location = new System.Drawing.Point(320, 104);
+            this.chkBinary.Name = "chkBinary";
+            this.chkBinary.Size = new System.Drawing.Size(135, 17);
+            this.chkBinary.TabIndex = 16;
+            this.chkBinary.Text = "Generate binary version";
+            this.chkBinary.UseVisualStyleBackColor = true;
+            // 
             // chkOnlySelected
             // 
             this.chkOnlySelected.AutoSize = true;
@@ -253,17 +264,6 @@
             this.butClose.Text = "Close";
             this.butClose.UseVisualStyleBackColor = true;
             this.butClose.Click += new System.EventHandler(this.butClose_Click);
-            // 
-            // chkBinary
-            // 
-            this.chkBinary.AutoSize = true;
-            this.chkBinary.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkBinary.Location = new System.Drawing.Point(320, 104);
-            this.chkBinary.Name = "chkBinary";
-            this.chkBinary.Size = new System.Drawing.Size(156, 17);
-            this.chkBinary.TabIndex = 16;
-            this.chkBinary.Text = "Also generate binary version";
-            this.chkBinary.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 

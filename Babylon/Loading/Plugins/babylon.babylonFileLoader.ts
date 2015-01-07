@@ -13,9 +13,9 @@
             }
 
             return colors4;
-        } 
+        }
 
-        return colors
+        return colors;
     }
 
     var loadCubeTexture = (rootUrl, parsedTexture, scene) => {

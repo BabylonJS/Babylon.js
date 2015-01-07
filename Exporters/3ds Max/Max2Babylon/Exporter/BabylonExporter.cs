@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -113,8 +112,6 @@ namespace Max2Babylon
 
             if (AutoSave3dsMaxFile)
             {
-                var forceSave = Loader.Core.FileSave;
-
                 if (callerForm != null)
                 {
                     callerForm.BringToFront();
@@ -208,6 +205,8 @@ namespace Max2Babylon
 
 
                 ReportProgressChanged((int)progression);
+
+                progression += progressionStep;
 
                 CheckCancelled();
             }
