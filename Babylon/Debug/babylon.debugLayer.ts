@@ -35,6 +35,8 @@
 
         public axisRatio = 0.02;
 
+        public accentColor = "orange";
+
         constructor(scene: Scene) {
             this._scene = scene;
 
@@ -64,7 +66,7 @@
                     this._treeDiv.style.top = "10px";
                     this._treeDiv.style.width = "300px";
                     this._treeDiv.style.height = "auto";
-                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 490) + "px";
+                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 430) + "px";
                 }
 
                 this._globalDiv.style.left = canvasRect.left + "px";
@@ -222,8 +224,8 @@
                     continue;
                 }
 
-                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, (element, mesh) => {
-                    mesh.isVisible = element.checked;
+                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, (element, m) => {
+                    m.isVisible = element.checked;
                 }, mesh);
             } 
         }
@@ -396,13 +398,15 @@
             header.style.backgroundColor = "Black";
             header.style.padding = "5px 5px 4px 0px";
             header.style.marginLeft = "-5px";
+            header.style.fontWeight = "bold";
 
             root.appendChild(header);
         }
 
-        private _generateTexBox(root: HTMLDivElement, title: string): void {
+        private _generateTexBox(root: HTMLDivElement, title: string, color: string): void {
             var label = document.createElement("label");
             label.innerHTML = title;
+            label.style.color = color;
 
             root.appendChild(label);
             root.appendChild(document.createElement("br"));
@@ -428,6 +432,7 @@
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.fontSize = "12px";
             rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
@@ -502,7 +507,7 @@
                 this._statsDiv.style.padding = "0px 0px 0px 5px";
                 this._statsDiv.style.pointerEvents = "none";
                 this._statsDiv.style.overflowY = "auto";
-                this._generateheader(this._statsDiv, "Statistics");
+                this._generateheader(this._statsDiv, "STATISTICS");
                 this._statsSubsetDiv = document.createElement("div");
                 this._statsSubsetDiv.style.paddingTop = "5px";
                 this._statsSubsetDiv.style.paddingBottom = "5px";
@@ -516,7 +521,7 @@
                 this._treeDiv.style.background = background;
                 this._treeDiv.style.padding = "0px 0px 0px 5px";
                 this._treeDiv.style.display = "none";
-                this._generateheader(this._treeDiv, "Meshes tree");
+                this._generateheader(this._treeDiv, "MESHES TREE");
                 this._treeSubsetDiv = document.createElement("div");
                 this._treeSubsetDiv.style.paddingTop = "5px";
                 this._treeSubsetDiv.style.paddingRight = "5px";
@@ -533,7 +538,7 @@
                 this._logDiv.style.background = background;
                 this._logDiv.style.padding = "0px 0px 0px 5px";
                 this._logDiv.style.display = "none";
-                this._generateheader(this._logDiv, "Logs");
+                this._generateheader(this._logDiv, "LOGS");
                 this._logSubsetDiv = document.createElement("div");
                 this._logSubsetDiv.style.height = "127px";
                 this._logSubsetDiv.style.paddingTop = "5px";
@@ -554,7 +559,7 @@
                 this._optionsDiv.style.background = background;
                 this._optionsDiv.style.padding = "0px 0px 0px 5px";
                 this._optionsDiv.style.overflowY = "auto";
-                this._generateheader(this._optionsDiv, "Options");
+                this._generateheader(this._optionsDiv, "OPTIONS");
                 this._optionsSubsetDiv = document.createElement("div");
                 this._optionsSubsetDiv.style.paddingTop = "5px";
                 this._optionsSubsetDiv.style.paddingBottom = "5px";
@@ -562,7 +567,7 @@
                 this._optionsSubsetDiv.style.maxHeight = "200px";
                 this._optionsDiv.appendChild(this._optionsSubsetDiv);
 
-                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Statistics", this._displayStatistics, (element) => { this._displayStatistics = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Logs", this._displayLogs, (element) => { this._displayLogs = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Meshes tree", this._displayTree, (element) => {
@@ -586,7 +591,7 @@
                     });
                 ;
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>", this.accentColor);
                 this._generateRadio(this._optionsSubsetDiv, "Solid", "renderMode", !this._scene.forceWireframe && !this._scene.forcePointsCloud, (element) => {
                     if (element.checked) {
                         this._scene.forceWireframe = false;
@@ -606,7 +611,7 @@
                     }
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Diffuse", StandardMaterial.DiffuseTextureEnabled, (element) => { StandardMaterial.DiffuseTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Ambient", StandardMaterial.AmbientTextureEnabled, (element) => { StandardMaterial.AmbientTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Specular", StandardMaterial.SpecularTextureEnabled, (element) => { StandardMaterial.SpecularTextureEnabled = element.checked });
@@ -616,7 +621,7 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, (element) => { this._scene.animationsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Collisions", this._scene.collisionsEnabled, (element) => { this._scene.collisionsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fog", this._scene.fogEnabled, (element) => { this._scene.fogEnabled = element.checked });
