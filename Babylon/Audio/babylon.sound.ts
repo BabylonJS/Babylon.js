@@ -114,10 +114,9 @@
             if (this._connectedMesh) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
 
-                if (distance < 1) distance = 1;
                 if (this.useBabylonJSAttenuation) {
                     if (distance < this.maxDistance) {
-                        this._soundGain.gain.value = this._volume / distance;
+                        this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
                     }
                     else {
                         this._soundGain.gain.value = 0;

@@ -29286,11 +29286,9 @@ var BABYLON;
             if (this._connectedMesh) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
 
-                if (distance < 1)
-                    distance = 1;
                 if (this.useBabylonJSAttenuation) {
                     if (distance < this.maxDistance) {
-                        this._soundGain.gain.value = this._volume / distance;
+                        this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
                     } else {
                         this._soundGain.gain.value = 0;
                     }
@@ -29455,6 +29453,7 @@ var BABYLON;
             this._displayLogs = false;
             this._identityMatrix = BABYLON.Matrix.Identity();
             this.axisRatio = 0.02;
+            this.accentColor = "orange";
             this._scene = scene;
 
             this._syncPositions = function () {
@@ -29483,7 +29482,7 @@ var BABYLON;
                     _this._treeDiv.style.top = "10px";
                     _this._treeDiv.style.width = "300px";
                     _this._treeDiv.style.height = "auto";
-                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 490) + "px";
+                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 430) + "px";
                 }
 
                 _this._globalDiv.style.left = canvasRect.left + "px";
@@ -29635,8 +29634,8 @@ var BABYLON;
                     continue;
                 }
 
-                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, function (element, mesh) {
-                    mesh.isVisible = element.checked;
+                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, function (element, m) {
+                    m.isVisible = element.checked;
                 }, mesh);
             }
         };
@@ -29810,13 +29809,15 @@ var BABYLON;
             header.style.backgroundColor = "Black";
             header.style.padding = "5px 5px 4px 0px";
             header.style.marginLeft = "-5px";
+            header.style.fontWeight = "bold";
 
             root.appendChild(header);
         };
 
-        DebugLayer.prototype._generateTexBox = function (root, title) {
+        DebugLayer.prototype._generateTexBox = function (root, title, color) {
             var label = document.createElement("label");
             label.innerHTML = title;
+            label.style.color = color;
 
             root.appendChild(label);
             root.appendChild(document.createElement("br"));
@@ -29843,6 +29844,7 @@ var BABYLON;
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.fontSize = "12px";
             rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
@@ -29920,7 +29922,7 @@ var BABYLON;
                 this._statsDiv.style.padding = "0px 0px 0px 5px";
                 this._statsDiv.style.pointerEvents = "none";
                 this._statsDiv.style.overflowY = "auto";
-                this._generateheader(this._statsDiv, "Statistics");
+                this._generateheader(this._statsDiv, "STATISTICS");
                 this._statsSubsetDiv = document.createElement("div");
                 this._statsSubsetDiv.style.paddingTop = "5px";
                 this._statsSubsetDiv.style.paddingBottom = "5px";
@@ -29934,7 +29936,7 @@ var BABYLON;
                 this._treeDiv.style.background = background;
                 this._treeDiv.style.padding = "0px 0px 0px 5px";
                 this._treeDiv.style.display = "none";
-                this._generateheader(this._treeDiv, "Meshes tree");
+                this._generateheader(this._treeDiv, "MESHES TREE");
                 this._treeSubsetDiv = document.createElement("div");
                 this._treeSubsetDiv.style.paddingTop = "5px";
                 this._treeSubsetDiv.style.paddingRight = "5px";
@@ -29951,7 +29953,7 @@ var BABYLON;
                 this._logDiv.style.background = background;
                 this._logDiv.style.padding = "0px 0px 0px 5px";
                 this._logDiv.style.display = "none";
-                this._generateheader(this._logDiv, "Logs");
+                this._generateheader(this._logDiv, "LOGS");
                 this._logSubsetDiv = document.createElement("div");
                 this._logSubsetDiv.style.height = "127px";
                 this._logSubsetDiv.style.paddingTop = "5px";
@@ -29972,7 +29974,7 @@ var BABYLON;
                 this._optionsDiv.style.background = background;
                 this._optionsDiv.style.padding = "0px 0px 0px 5px";
                 this._optionsDiv.style.overflowY = "auto";
-                this._generateheader(this._optionsDiv, "Options");
+                this._generateheader(this._optionsDiv, "OPTIONS");
                 this._optionsSubsetDiv = document.createElement("div");
                 this._optionsSubsetDiv.style.paddingTop = "5px";
                 this._optionsSubsetDiv.style.paddingBottom = "5px";
@@ -29980,7 +29982,7 @@ var BABYLON;
                 this._optionsSubsetDiv.style.maxHeight = "200px";
                 this._optionsDiv.appendChild(this._optionsSubsetDiv);
 
-                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Statistics", this._displayStatistics, function (element) {
                     _this._displayStatistics = element.checked;
                 });
@@ -30009,7 +30011,7 @@ var BABYLON;
                 });
                 ;
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>", this.accentColor);
                 this._generateRadio(this._optionsSubsetDiv, "Solid", "renderMode", !this._scene.forceWireframe && !this._scene.forcePointsCloud, function (element) {
                     if (element.checked) {
                         _this._scene.forceWireframe = false;
@@ -30029,7 +30031,7 @@ var BABYLON;
                     }
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Diffuse", BABYLON.StandardMaterial.DiffuseTextureEnabled, function (element) {
                     BABYLON.StandardMaterial.DiffuseTextureEnabled = element.checked;
                 });
@@ -30055,7 +30057,7 @@ var BABYLON;
                     BABYLON.StandardMaterial.FresnelEnabled = element.checked;
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, function (element) {
                     _this._scene.animationsEnabled = element.checked;
                 });
