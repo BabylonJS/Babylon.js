@@ -233,12 +233,7 @@ namespace Max2Babylon
 
                 for (int i = 0; i < multiMatsCount; ++i)
                 {
-                    if (meshNode.NodeMaterial == null)
-                    {
-                        continue;
-                    }
-
-                    int materialId = meshNode.NodeMaterial.GetMaterialID(i);
+                    int materialId = meshNode.NodeMaterial == null ? 0 : meshNode.NodeMaterial.GetMaterialID(i);
                     var indexCount = 0;
                     var minVertexIndex = int.MaxValue;
                     var maxVertexIndex = int.MinValue;
