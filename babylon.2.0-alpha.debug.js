@@ -9592,7 +9592,7 @@ var BABYLON;
                     }
                 }
                 for (var i = 0; i < this.soundTracks.length; i++) {
-                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
+                    for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
                         var sound = this.soundTracks[i].soundCollection[j];
                         if (sound.useBabylonJSAttenuation) {
                             sound.updateDistanceFromListener();
@@ -29199,6 +29199,9 @@ var BABYLON;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
+            this._attenuationFunction = function (currentVolume, currentDistance, maxDistance) {
+                return currentVolume * (1 - currentDistance / maxDistance);
+            };
             if (options) {
                 if (options.maxDistance) {
                     this.maxDistance = options.maxDistance;
@@ -29220,8 +29223,6 @@ var BABYLON;
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
-
-                //this._soundGain.connect(this._audioEngine.masterGain);
                 this._soundPanner = this._audioEngine.audioContext.createPanner();
                 this._soundPanner.connect(this._soundGain);
                 this._scene.mainSoundTrack.AddSound(this);
@@ -29288,12 +29289,17 @@ var BABYLON;
 
                 if (this.useBabylonJSAttenuation) {
                     if (distance < this.maxDistance) {
-                        this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
+                        //this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
+                        this._soundGain.gain.value = this._attenuationFunction(this._volume, distance, this.maxDistance);
                     } else {
                         this._soundGain.gain.value = 0;
                     }
                 }
             }
+        };
+
+        Sound.prototype.setAttenuationFunction = function (callback) {
+            this._attenuationFunction = callback;
         };
 
         /**
@@ -30169,3 +30175,157 @@ var BABYLON;
     BABYLON.RawTexture = RawTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.rawTexture.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var IndexedVector2 = (function (_super) {
+        __extends(IndexedVector2, _super);
+        function IndexedVector2(original, index) {
+            _super.call(this, original.x, original.y);
+            this.index = index;
+        }
+        return IndexedVector2;
+    })(BABYLON.Vector2);
+
+    var PolygonPoints = (function () {
+        function PolygonPoints() {
+            this.elements = new Array();
+        }
+        PolygonPoints.prototype.add = function (originalPoints) {
+            var _this = this;
+            var result = new Array();
+
+            originalPoints.forEach(function (point) {
+                var newPoint = new IndexedVector2(point, _this.elements.length);
+                result.push(newPoint);
+                _this.elements.push(newPoint);
+            });
+
+            return result;
+        };
+
+        PolygonPoints.prototype.computeBounds = function () {
+            var lmin = new BABYLON.Vector2(this.elements[0].x, this.elements[0].y);
+            var lmax = new BABYLON.Vector2(this.elements[0].x, this.elements[0].y);
+
+            this.elements.forEach(function (point) {
+                // x
+                if (point.x < lmin.x) {
+                    lmin.x = point.x;
+                } else if (point.x > lmax.x) {
+                    lmax.x = point.x;
+                }
+
+                // y
+                if (point.y < lmin.y) {
+                    lmin.y = point.y;
+                } else if (point.y > lmax.y) {
+                    lmax.y = point.y;
+                }
+            });
+
+            return {
+                min: lmin,
+                max: lmax,
+                width: lmax.x - lmin.x,
+                height: lmax.y - lmin.y
+            };
+        };
+        return PolygonPoints;
+    })();
+
+    var Polygon = (function () {
+        function Polygon() {
+        }
+        Polygon.Rectangle = function (xmin, ymin, xmax, ymax) {
+            return [
+                new BABYLON.Vector2(xmin, ymin),
+                new BABYLON.Vector2(xmax, ymin),
+                new BABYLON.Vector2(xmax, ymax),
+                new BABYLON.Vector2(xmin, ymax)
+            ];
+        };
+
+        Polygon.Circle = function (radius, cx, cy, numberOfSides) {
+            if (typeof cx === "undefined") { cx = 0; }
+            if (typeof cy === "undefined") { cy = 0; }
+            if (typeof numberOfSides === "undefined") { numberOfSides = 32; }
+            var result = new Array();
+
+            var angle = 0;
+            var increment = (Math.PI * 2) / numberOfSides;
+
+            for (var i = 0; i < numberOfSides; i++) {
+                result.push(new BABYLON.Vector2(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius));
+                angle -= increment;
+            }
+
+            return result;
+        };
+
+        Polygon.Parse = function (input) {
+            var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter(function (val) {
+                return (!isNaN(val));
+            });
+            var i, result = [];
+            for (i = 0; i < (floats.length & 0x7FFFFFFE); i += 2) {
+                result.push(new poly2tri.Point(floats[i], floats[i + 1]));
+            }
+            return result;
+        };
+        return Polygon;
+    })();
+    BABYLON.Polygon = Polygon;
+
+    var PolygonMeshBuilder = (function () {
+        function PolygonMeshBuilder(name, contours, scene) {
+            this.name = name;
+            this.scene = scene;
+            this._points = new PolygonPoints();
+            if (!("poly2tri" in window)) {
+                throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
+            }
+
+            this._swctx = new poly2tri.SweepContext(this._points.add(contours));
+        }
+        PolygonMeshBuilder.prototype.addHole = function (hole) {
+            this._swctx.addHole(this._points.add(hole));
+            return this;
+        };
+
+        PolygonMeshBuilder.prototype.build = function (updatable) {
+            if (typeof updatable === "undefined") { updatable = false; }
+            var result = new BABYLON.Mesh(this.name, this.scene);
+
+            var normals = [];
+            var positions = [];
+            var uvs = [];
+
+            var bounds = this._points.computeBounds();
+            this._points.elements.forEach(function (p) {
+                normals.push(0, 1.0, 0);
+                positions.push(p.x, 0, p.y);
+                uvs.push((p.x - bounds.min.x) / bounds.width, (p.y - bounds.min.y) / bounds.height);
+            });
+
+            var indices = [];
+
+            this._swctx.triangulate();
+            this._swctx.getTriangles().forEach(function (triangle) {
+                triangle.getPoints().forEach(function (point) {
+                    indices.push(point.index);
+                });
+            });
+
+            result.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
+            result.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
+            result.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+            result.setIndices(indices);
+
+            return result;
+        };
+        return PolygonMeshBuilder;
+    })();
+    BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.polygonmesh.js.map

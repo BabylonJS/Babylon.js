@@ -1276,7 +1276,7 @@
                     }
                 }
                 for (var i = 0; i < this.soundTracks.length; i++) {
-                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
+                    for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
                         var sound = this.soundTracks[i].soundCollection[j];
                         if (sound.useBabylonJSAttenuation) {
                             sound.updateDistanceFromListener();

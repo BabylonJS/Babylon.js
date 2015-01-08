@@ -26,6 +26,7 @@
         private _scene: BABYLON.Scene;
         private _name: string;
         private _connectedMesh: BABYLON.AbstractMesh;
+        private _attenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number) => number;
 
         /**
         * Create a sound and attach it to a scene
@@ -39,6 +40,7 @@
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
+            this._attenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number) => { return currentVolume * (1 - currentDistance / maxDistance)  };
             if (options) {
                 if (options.maxDistance) { this.maxDistance = options.maxDistance; }
                 if (options.autoplay) { this.autoplay = options.autoplay; }
@@ -50,7 +52,6 @@
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
-                //this._soundGain.connect(this._audioEngine.masterGain);
                 this._soundPanner = this._audioEngine.audioContext.createPanner();
                 this._soundPanner.connect(this._soundGain);
                 this._scene.mainSoundTrack.AddSound(this);
@@ -116,13 +117,18 @@
 
                 if (this.useBabylonJSAttenuation) {
                     if (distance < this.maxDistance) {
-                        this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
+                        //this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
+                        this._soundGain.gain.value = this._attenuationFunction(this._volume, distance, this.maxDistance);
                     }
                     else {
                         this._soundGain.gain.value = 0;
                     }
                 }
             }
+        }
+
+        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number) => number) {
+            this._attenuationFunction = callback;
         }
 
         /**
