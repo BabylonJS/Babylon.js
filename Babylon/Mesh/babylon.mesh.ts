@@ -28,8 +28,61 @@
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
 
-        constructor(name: string, scene: Scene) {
+        /**
+         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
+         * @param {BABYLON.Scene} scene - The scene to add this mesh to.
+         * @param {BABYLON.Node} parent - The parent of this mesh, if it has one
+         * @param {BABYLON.Mesh} source - An optional Mesh from which geometry is shared, cloned.
+         * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
+         *                  When false, achieved by calling a clone(), also passing False.
+         *                  This will make creation of children, recursive.
+         */
+        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
             super(name, scene);
+            
+            if (source){
+                // Geometry
+                if (source._geometry) {
+                    source._geometry.applyToMesh(this);
+                }
+
+                // Deep copy
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+
+                // Material
+                this.material = source.material;
+
+                if (!doNotCloneChildren) {
+                    // Children
+                    for (var index = 0; index < scene.meshes.length; index++) {
+                        var mesh = scene.meshes[index];
+
+                        if (mesh.parent === source) {
+                            // doNotCloneChildren is always going to be False
+                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren); 
+                        }
+                    }
+                }
+
+                // Particles
+                for (index = 0; index < scene.particleSystems.length; index++) {
+                    var system = scene.particleSystems[index];
+
+                    if (system.emitter === source) {
+                        system.clone(system.name, this);
+                    }
+                }
+                this.computeWorldMatrix(true);
+            }
+
+            // Parent
+            if (parent !== null) {
+                this.parent = parent;
+            }
+
+        }
+
+        private _clone() {
         }
 
         // Methods
@@ -759,47 +812,7 @@
 
         // Clone
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh {
-            var result = new BABYLON.Mesh(name, this.getScene());
-
-            // Geometry
-            if (this._geometry) {
-                this._geometry.applyToMesh(result);
-            }
-
-            // Deep copy
-            BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], []);
-
-            // Material
-            result.material = this.material;
-
-            // Parent
-            if (newParent) {
-                result.parent = newParent;
-            }
-
-            if (!doNotCloneChildren) {
-                // Children
-                for (var index = 0; index < this.getScene().meshes.length; index++) {
-                    var mesh = this.getScene().meshes[index];
-
-                    if (mesh.parent == this) {
-                        mesh.clone(mesh.name, result);
-                    }
-                }
-            }
-
-            // Particles
-            for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                var system = this.getScene().particleSystems[index];
-
-                if (system.emitter == this) {
-                    system.clone(system.name, result);
-                }
-            }
-
-            result.computeWorldMatrix(true);
-
-            return result;
+            return new BABYLON.Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
 
         // Dispose
