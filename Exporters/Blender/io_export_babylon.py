@@ -895,6 +895,7 @@ class Node:
         self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
         self.scaling = scale
         self.isVisible = False
+        self.isEnabled = True
         self.checkCollisions = False
         self.billboardMode = BILLBOARDMODE_NONE
         self.receiveShadows = False
@@ -912,6 +913,7 @@ class Node:
         write_vector(file_handler, 'rotation', self.rotation)
         write_vector(file_handler, 'scaling', self.scaling)
         write_bool(file_handler, 'isVisible', self.isVisible)
+        write_bool(file_handler, 'isEnabled', self.isEnabled)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_int(file_handler, 'billboardMode', self.billboardMode)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)      
