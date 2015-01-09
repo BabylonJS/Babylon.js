@@ -11,6 +11,7 @@ bl_info = {
     
 import bpy
 import bpy_extras.io_utils
+import io
 import math
 import mathutils
 import os
@@ -179,7 +180,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             BabylonExporter.nWarnings = 0
             BabylonExporter.materials = []
             
-            BabylonExporter.log_handler = open(self.filepathMinusExtension + '.log', 'w')
+            BabylonExporter.log_handler = io.open(self.filepathMinusExtension + '.log', 'w', encoding='utf8')
             BabylonExporter_version = bl_info['version']
             BabylonExporter.log('Babylon.js Exporter version: ' + str(BabylonExporter_version[0]) + '.' + str(BabylonExporter_version[1]) +  '.' + str(BabylonExporter_version[2]) + 
                              ', Blender version: ' + bpy.app.version_string)
@@ -294,7 +295,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     def to_scene_file(self):
         BabylonExporter.log('========= Writing of scene file started =========', 0)
         # Open file
-        file_handler = open(self.filepathMinusExtension + '.babylon', 'w')  
+        file_handler = io.open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
         self.world.to_scene_file(file_handler)
         
