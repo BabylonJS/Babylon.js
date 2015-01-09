@@ -2548,5 +2548,121 @@
         return BezierCurve;
     })();
     BABYLON.BezierCurve = BezierCurve;
+
+    (function (Orientation) {
+        Orientation[Orientation["CW"] = 0] = "CW";
+        Orientation[Orientation["CCW"] = 1] = "CCW";
+    })(BABYLON.Orientation || (BABYLON.Orientation = {}));
+    var Orientation = BABYLON.Orientation;
+
+    var Angle = (function () {
+        function Angle(radians) {
+            var _this = this;
+            this.degrees = function () {
+                return _this._radians * 180 / Math.PI;
+            };
+            this.radians = function () {
+                return _this._radians;
+            };
+            this._radians = radians;
+            if (this._radians < 0)
+                this._radians += (2 * Math.PI);
+        }
+        Angle.BetweenTwoPoints = function (a, b) {
+            var delta = b.subtract(a);
+            var theta = Math.atan2(delta.y, delta.x);
+            return new Angle(theta);
+        };
+
+        Angle.FromRadians = function (radians) {
+            return new Angle(radians);
+        };
+
+        Angle.FromDegrees = function (degrees) {
+            return new Angle(degrees * Math.PI / 180);
+        };
+        return Angle;
+    })();
+    BABYLON.Angle = Angle;
+
+    var Arc = (function () {
+        function Arc(startPoint, midPoint, endPoint) {
+            this.startPoint = startPoint;
+            this.midPoint = midPoint;
+            this.endPoint = endPoint;
+            var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
+            var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2.;
+            var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2.;
+            var det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
+
+            this.centerPoint = new Vector2((startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det, ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det);
+
+            this.radius = this.centerPoint.subtract(this.startPoint).length();
+
+            this.startAngle = Angle.BetweenTwoPoints(this.centerPoint, this.startPoint);
+
+            var a1 = this.startAngle.degrees();
+            var a2 = Angle.BetweenTwoPoints(this.centerPoint, this.midPoint).degrees();
+            var a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
+
+            // angles correction
+            if (a2 - a1 > +180.0)
+                a2 -= 360.0;
+            if (a2 - a1 < -180.0)
+                a2 += 360.0;
+            if (a3 - a2 > +180.0)
+                a3 -= 360.0;
+            if (a3 - a2 < -180.0)
+                a3 += 360.0;
+
+            this.orientation = (a2 - a1) < 0 ? 0 /* CW */ : 1 /* CCW */;
+            this.angle = Angle.FromDegrees(this.orientation === 0 /* CW */ ? a1 - a3 : a3 - a1);
+        }
+        return Arc;
+    })();
+    BABYLON.Arc = Arc;
+
+    var Path = (function () {
+        function Path(x, y) {
+            this._points = [];
+            this._points.push(new Vector2(x, y));
+        }
+        Path.prototype.addLineTo = function (x, y) {
+            this._points.push(new Vector2(x, y));
+            return this;
+        };
+
+        Path.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
+            if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
+            var startPoint = this._points[this._points.length - 1];
+            var midPoint = new Vector2(midX, midY);
+            var endPoint = new Vector2(endX, endY);
+
+            var arc = new Arc(startPoint, midPoint, endPoint);
+
+            var increment = arc.angle.radians() / numberOfSegments;
+            if (arc.orientation === 0 /* CW */)
+                increment *= -1;
+            var currentAngle = arc.startAngle.radians() + increment;
+
+            for (var i = 0; i < numberOfSegments; i++) {
+                var x = Math.cos(currentAngle) * arc.radius + arc.centerPoint.x;
+                var y = Math.sin(currentAngle) * arc.radius + arc.centerPoint.y;
+                this.addLineTo(x, y);
+                currentAngle += increment;
+            }
+            return this;
+        };
+
+        Path.prototype.close = function () {
+            return this._points;
+        };
+
+        Path.StartingAt = function (x, y) {
+            return new Path(x, y);
+        };
+        return Path;
+    })();
+    BABYLON.Path = Path;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map

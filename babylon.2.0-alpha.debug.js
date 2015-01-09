@@ -2553,6 +2553,122 @@ var __extends = this.__extends || function (d, b) {
         return BezierCurve;
     })();
     BABYLON.BezierCurve = BezierCurve;
+
+    (function (Orientation) {
+        Orientation[Orientation["CW"] = 0] = "CW";
+        Orientation[Orientation["CCW"] = 1] = "CCW";
+    })(BABYLON.Orientation || (BABYLON.Orientation = {}));
+    var Orientation = BABYLON.Orientation;
+
+    var Angle = (function () {
+        function Angle(radians) {
+            var _this = this;
+            this.degrees = function () {
+                return _this._radians * 180 / Math.PI;
+            };
+            this.radians = function () {
+                return _this._radians;
+            };
+            this._radians = radians;
+            if (this._radians < 0)
+                this._radians += (2 * Math.PI);
+        }
+        Angle.BetweenTwoPoints = function (a, b) {
+            var delta = b.subtract(a);
+            var theta = Math.atan2(delta.y, delta.x);
+            return new Angle(theta);
+        };
+
+        Angle.FromRadians = function (radians) {
+            return new Angle(radians);
+        };
+
+        Angle.FromDegrees = function (degrees) {
+            return new Angle(degrees * Math.PI / 180);
+        };
+        return Angle;
+    })();
+    BABYLON.Angle = Angle;
+
+    var Arc = (function () {
+        function Arc(startPoint, midPoint, endPoint) {
+            this.startPoint = startPoint;
+            this.midPoint = midPoint;
+            this.endPoint = endPoint;
+            var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
+            var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2.;
+            var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2.;
+            var det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
+
+            this.centerPoint = new Vector2((startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det, ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det);
+
+            this.radius = this.centerPoint.subtract(this.startPoint).length();
+
+            this.startAngle = Angle.BetweenTwoPoints(this.centerPoint, this.startPoint);
+
+            var a1 = this.startAngle.degrees();
+            var a2 = Angle.BetweenTwoPoints(this.centerPoint, this.midPoint).degrees();
+            var a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
+
+            // angles correction
+            if (a2 - a1 > +180.0)
+                a2 -= 360.0;
+            if (a2 - a1 < -180.0)
+                a2 += 360.0;
+            if (a3 - a2 > +180.0)
+                a3 -= 360.0;
+            if (a3 - a2 < -180.0)
+                a3 += 360.0;
+
+            this.orientation = (a2 - a1) < 0 ? 0 /* CW */ : 1 /* CCW */;
+            this.angle = Angle.FromDegrees(this.orientation === 0 /* CW */ ? a1 - a3 : a3 - a1);
+        }
+        return Arc;
+    })();
+    BABYLON.Arc = Arc;
+
+    var Path = (function () {
+        function Path(x, y) {
+            this._points = [];
+            this._points.push(new Vector2(x, y));
+        }
+        Path.prototype.addLineTo = function (x, y) {
+            this._points.push(new Vector2(x, y));
+            return this;
+        };
+
+        Path.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
+            if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
+            var startPoint = this._points[this._points.length - 1];
+            var midPoint = new Vector2(midX, midY);
+            var endPoint = new Vector2(endX, endY);
+
+            var arc = new Arc(startPoint, midPoint, endPoint);
+
+            var increment = arc.angle.radians() / numberOfSegments;
+            if (arc.orientation === 0 /* CW */)
+                increment *= -1;
+            var currentAngle = arc.startAngle.radians() + increment;
+
+            for (var i = 0; i < numberOfSegments; i++) {
+                var x = Math.cos(currentAngle) * arc.radius + arc.centerPoint.x;
+                var y = Math.sin(currentAngle) * arc.radius + arc.centerPoint.y;
+                this.addLineTo(x, y);
+                currentAngle += increment;
+            }
+            return this;
+        };
+
+        Path.prototype.close = function () {
+            return this._points;
+        };
+
+        Path.StartingAt = function (x, y) {
+            return new Path(x, y);
+        };
+        return Path;
+    })();
+    BABYLON.Path = Path;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map
 var BABYLON;
@@ -11049,7 +11165,17 @@ var BABYLON;
 
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
-        function Mesh(name, scene) {
+        /**
+        * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
+        * @param {BABYLON.Scene} scene - The scene to add this mesh to.
+        * @param {BABYLON.Node} parent - The parent of this mesh, if it has one
+        * @param {BABYLON.Mesh} source - An optional Mesh from which geometry is shared, cloned.
+        * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
+        *                  When false, achieved by calling a clone(), also passing False.
+        *                  This will make creation of children, recursive.
+        */
+        function Mesh(name, scene, parent, source, doNotCloneChildren) {
+            if (typeof parent === "undefined") { parent = null; }
             _super.call(this, name, scene);
             // Members
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
@@ -11061,7 +11187,48 @@ var BABYLON;
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4;
+
+            if (source) {
+                // Geometry
+                if (source._geometry) {
+                    source._geometry.applyToMesh(this);
+                }
+
+                // Deep copy
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+
+                // Material
+                this.material = source.material;
+
+                if (!doNotCloneChildren) {
+                    for (var index = 0; index < scene.meshes.length; index++) {
+                        var mesh = scene.meshes[index];
+
+                        if (mesh.parent === source) {
+                            // doNotCloneChildren is always going to be False
+                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
+                        }
+                    }
+                }
+
+                for (index = 0; index < scene.particleSystems.length; index++) {
+                    var system = scene.particleSystems[index];
+
+                    if (system.emitter === source) {
+                        system.clone(system.name, this);
+                    }
+                }
+                this.computeWorldMatrix(true);
+            }
+
+            // Parent
+            if (parent !== null) {
+                this.parent = parent;
+            }
         }
+        Mesh.prototype._clone = function () {
+        };
+
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {
@@ -11789,45 +11956,7 @@ var BABYLON;
 
         // Clone
         Mesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
-            var result = new BABYLON.Mesh(name, this.getScene());
-
-            // Geometry
-            if (this._geometry) {
-                this._geometry.applyToMesh(result);
-            }
-
-            // Deep copy
-            BABYLON.Tools.DeepCopy(this, result, ["name", "material", "skeleton"], []);
-
-            // Material
-            result.material = this.material;
-
-            // Parent
-            if (newParent) {
-                result.parent = newParent;
-            }
-
-            if (!doNotCloneChildren) {
-                for (var index = 0; index < this.getScene().meshes.length; index++) {
-                    var mesh = this.getScene().meshes[index];
-
-                    if (mesh.parent == this) {
-                        mesh.clone(mesh.name, result);
-                    }
-                }
-            }
-
-            for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                var system = this.getScene().particleSystems[index];
-
-                if (system.emitter == this) {
-                    system.clone(system.name, result);
-                }
-            }
-
-            result.computeWorldMatrix(true);
-
-            return result;
+            return new BABYLON.Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         };
 
         // Dispose
@@ -30194,11 +30323,12 @@ var BABYLON;
         PolygonPoints.prototype.add = function (originalPoints) {
             var _this = this;
             var result = new Array();
-
             originalPoints.forEach(function (point) {
-                var newPoint = new IndexedVector2(point, _this.elements.length);
-                result.push(newPoint);
-                _this.elements.push(newPoint);
+                if (result.length == 0 || !(BABYLON.Tools.WithinEpsilon(point.x, result[0].x) && BABYLON.Tools.WithinEpsilon(point.y, result[0].y))) {
+                    var newPoint = new IndexedVector2(point, _this.elements.length);
+                    result.push(newPoint);
+                    _this.elements.push(newPoint);
+                }
             });
 
             return result;
@@ -30273,6 +30403,10 @@ var BABYLON;
             }
             return result;
         };
+
+        Polygon.StartingAt = function (x, y) {
+            return BABYLON.Path.StartingAt(x, y);
+        };
         return Polygon;
     })();
     BABYLON.Polygon = Polygon;
@@ -30328,4 +30462,4 @@ var BABYLON;
     })();
     BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.polygonmesh.js.map
+//# sourceMappingURL=babylon.polygonMesh.js.map
