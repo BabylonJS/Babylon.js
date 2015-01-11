@@ -91,14 +91,16 @@
             }
         };
 
-        BaseTexture.prototype._getFromCache = function (url, noMipmap) {
+        BaseTexture.prototype._getFromCache = function (url, noMipmap, sampling) {
             var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
             for (var index = 0; index < texturesCache.length; index++) {
                 var texturesCacheEntry = texturesCache[index];
 
                 if (texturesCacheEntry.url === url && texturesCacheEntry.noMipmap === noMipmap) {
-                    texturesCacheEntry.references++;
-                    return texturesCacheEntry;
+                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                        texturesCacheEntry.references++;
+                        return texturesCacheEntry;
+                    }
                 }
             }
 

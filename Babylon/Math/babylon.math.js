@@ -220,7 +220,7 @@
         Color4.Lerp = function (left, right, amount) {
             var result = new Color4(0, 0, 0, 0);
 
-            BABYLON.Color4.LerpToRef(left, right, amount, result);
+            Color4.LerpToRef(left, right, amount, result);
 
             return result;
         };
@@ -843,7 +843,7 @@
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = BABYLON.Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
+            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
 
             var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
 
@@ -855,7 +855,7 @@
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
             if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
@@ -870,7 +870,7 @@
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
             if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
@@ -1310,12 +1310,12 @@
 
             var determinant = sqx + sqy;
 
-            if (determinant != 0.000 && determinant != 1.000) {
+            if (determinant !== 0.000 && determinant !== 1.000) {
                 result.x = Math.atan2(qxz + qwy, qwx - qyz);
                 result.y = Math.acos(1 - 2 * determinant);
                 result.z = Math.atan2(qxz - qwy, qwx + qyz);
             } else {
-                if (determinant == 0.000) {
+                if (determinant === 0.0) {
                     result.x = 0.0;
                     result.y = 0.0;
                     result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
@@ -1490,10 +1490,10 @@
         }
         // Properties
         Matrix.prototype.isIdentity = function () {
-            if (this.m[0] != 1.0 || this.m[5] != 1.0 || this.m[10] != 1.0 || this.m[15] != 1.0)
+            if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
                 return false;
 
-            if (this.m[1] != 0.0 || this.m[2] != 0.0 || this.m[3] != 0.0 || this.m[4] != 0.0 || this.m[6] != 0.0 || this.m[7] != 0.0 || this.m[8] != 0.0 || this.m[9] != 0.0 || this.m[11] != 0.0 || this.m[12] != 0.0 || this.m[13] != 0.0 || this.m[14] != 0.0)
+            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 || this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 || this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 || this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
                 return false;
 
             return true;
@@ -2128,7 +2128,7 @@
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;
 
-            if (norm != 0) {
+            if (norm !== 0) {
                 magnitude = 1.0 / norm;
             }
 
@@ -2171,7 +2171,7 @@
             var pyth = (Math.sqrt((yz * yz) + (xz * xz) + (xy * xy)));
             var invPyth;
 
-            if (pyth != 0) {
+            if (pyth !== 0) {
                 invPyth = 1.0 / pyth;
             } else {
                 invPyth = 0;
@@ -2195,11 +2195,11 @@
 
         // Statics
         Plane.FromArray = function (array) {
-            return new BABYLON.Plane(array[0], array[1], array[2], array[3]);
+            return new Plane(array[0], array[1], array[2], array[3]);
         };
 
         Plane.FromPoints = function (point1, point2, point3) {
-            var result = new BABYLON.Plane(0, 0, 0, 0);
+            var result = new Plane(0, 0, 0, 0);
 
             result.copyFromPoints(point1, point2, point3);
 
@@ -2207,7 +2207,7 @@
         };
 
         Plane.FromPositionAndNormal = function (origin, normal) {
-            var result = new BABYLON.Plane(0, 0, 0, 0);
+            var result = new Plane(0, 0, 0, 0);
             normal.normalize();
 
             result.normal = normal;
@@ -2324,7 +2324,7 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2351,7 +2351,7 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2378,7 +2378,7 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2425,16 +2425,16 @@
 
         Ray.prototype.intersectsTriangle = function (vertex0, vertex1, vertex2) {
             if (!this._edge1) {
-                this._edge1 = BABYLON.Vector3.Zero();
-                this._edge2 = BABYLON.Vector3.Zero();
-                this._pvec = BABYLON.Vector3.Zero();
-                this._tvec = BABYLON.Vector3.Zero();
-                this._qvec = BABYLON.Vector3.Zero();
+                this._edge1 = Vector3.Zero();
+                this._edge2 = Vector3.Zero();
+                this._pvec = Vector3.Zero();
+                this._tvec = Vector3.Zero();
+                this._qvec = Vector3.Zero();
             }
 
             vertex1.subtractToRef(vertex0, this._edge1);
             vertex2.subtractToRef(vertex0, this._edge2);
-            BABYLON.Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
+            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
             var det = Vector3.Dot(this._edge1, this._pvec);
 
             if (det === 0) {
@@ -2470,8 +2470,8 @@
 
         // Statics
         Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
-            var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
+            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
+            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
 
             var direction = end.subtract(start);
             direction.normalize();
@@ -2487,7 +2487,7 @@
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         */
         Ray.CreateNewFromTo = function (origin, end, world) {
-            if (typeof world === "undefined") { world = BABYLON.Matrix.Identity(); }
+            if (typeof world === "undefined") { world = Matrix.Identity(); }
             var direction = end.subtract(origin);
             var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
@@ -2496,8 +2496,8 @@
         };
 
         Ray.Transform = function (ray, matrix) {
-            var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
+            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
+            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
 
             return new Ray(newOrigin, newDirection, ray.length);
         };
@@ -2514,9 +2514,9 @@
     var Axis = (function () {
         function Axis() {
         }
-        Axis.X = new BABYLON.Vector3(1, 0, 0);
-        Axis.Y = new BABYLON.Vector3(0, 1, 0);
-        Axis.Z = new BABYLON.Vector3(0, 0, 1);
+        Axis.X = new Vector3(1, 0, 0);
+        Axis.Y = new Vector3(0, 1, 0);
+        Axis.Z = new Vector3(0, 0, 1);
         return Axis;
     })();
     BABYLON.Axis = Axis;
@@ -2585,8 +2585,8 @@
     })();
     BABYLON.Angle = Angle;
 
-    var Arc = (function () {
-        function Arc(startPoint, midPoint, endPoint) {
+    var Arc2 = (function () {
+        function Arc2(startPoint, midPoint, endPoint) {
             this.startPoint = startPoint;
             this.midPoint = midPoint;
             this.endPoint = endPoint;
@@ -2618,27 +2618,27 @@
             this.orientation = (a2 - a1) < 0 ? 0 /* CW */ : 1 /* CCW */;
             this.angle = Angle.FromDegrees(this.orientation === 0 /* CW */ ? a1 - a3 : a3 - a1);
         }
-        return Arc;
+        return Arc2;
     })();
-    BABYLON.Arc = Arc;
+    BABYLON.Arc2 = Arc2;
 
-    var Path = (function () {
-        function Path(x, y) {
+    var Path2 = (function () {
+        function Path2(x, y) {
             this._points = [];
             this._points.push(new Vector2(x, y));
         }
-        Path.prototype.addLineTo = function (x, y) {
+        Path2.prototype.addLineTo = function (x, y) {
             this._points.push(new Vector2(x, y));
             return this;
         };
 
-        Path.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
+        Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
             var endPoint = new Vector2(endX, endY);
 
-            var arc = new Arc(startPoint, midPoint, endPoint);
+            var arc = new Arc2(startPoint, midPoint, endPoint);
 
             var increment = arc.angle.radians() / numberOfSegments;
             if (arc.orientation === 0 /* CW */)
@@ -2654,15 +2654,15 @@
             return this;
         };
 
-        Path.prototype.close = function () {
+        Path2.prototype.close = function () {
             return this._points;
         };
 
-        Path.StartingAt = function (x, y) {
-            return new Path(x, y);
+        Path2.StartingAt = function (x, y) {
+            return new Path2(x, y);
         };
-        return Path;
+        return Path2;
     })();
-    BABYLON.Path = Path;
+    BABYLON.Path2 = Path2;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map
