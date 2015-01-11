@@ -291,6 +291,7 @@
         texture._width = potWidth;
         texture._height = potHeight;
         texture.isReady = true;
+        texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
 
@@ -1319,6 +1320,8 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
 
             gl.bindTexture(gl.TEXTURE_2D, null);
+
+            texture.samplingMode = samplingMode;
         }
 
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
@@ -1477,6 +1480,7 @@
             texture._height = height;
             texture.isReady = true;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
 
             this._loadedTexturesCache.push(texture);
 
@@ -1505,6 +1509,7 @@
             texture.isReady = false;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
 
             this._loadedTexturesCache.push(texture);
 
@@ -1611,6 +1616,7 @@
             texture.isReady = true;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
             this._activeTexturesCache = [];
 
             this._loadedTexturesCache.push(texture);

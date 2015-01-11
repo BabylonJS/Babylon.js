@@ -62,7 +62,7 @@
                 return;
             }
 
-            this._texture = this._getFromCache(url, noMipmap);
+            this._texture = this._getFromCache(url, noMipmap, samplingMode);
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
@@ -82,7 +82,7 @@
             }
 
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
-            this._texture = this._getFromCache(this.url, this._noMipmap);
+            this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
                 this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);

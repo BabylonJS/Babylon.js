@@ -23,7 +23,7 @@ var BABYLON;
             var _this = this;
             var result = new Array();
             originalPoints.forEach(function (point) {
-                if (result.length == 0 || !(BABYLON.Tools.WithinEpsilon(point.x, result[0].x) && BABYLON.Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(BABYLON.Tools.WithinEpsilon(point.x, result[0].x) && BABYLON.Tools.WithinEpsilon(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, _this.elements.length);
                     result.push(newPoint);
                     _this.elements.push(newPoint);
@@ -104,7 +104,7 @@ var BABYLON;
         };
 
         Polygon.StartingAt = function (x, y) {
-            return BABYLON.Path.StartingAt(x, y);
+            return BABYLON.Path2.StartingAt(x, y);
         };
         return Polygon;
     })();

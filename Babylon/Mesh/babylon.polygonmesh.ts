@@ -12,7 +12,7 @@
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length == 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
@@ -91,8 +91,8 @@
             return result;
         }
 
-        static StartingAt(x: number, y: number): Path {
-            return Path.StartingAt(x, y);
+        static StartingAt(x: number, y: number): Path2 {
+            return Path2.StartingAt(x, y);
         }
     }     
 
