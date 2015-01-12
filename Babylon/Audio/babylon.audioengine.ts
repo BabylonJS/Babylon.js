@@ -5,7 +5,7 @@
         public masterGain: GainNode;
 
         constructor() {
-             // creating the audio context 
+            // creating the audio context 
             try {
                 if (typeof AudioContext !== 'undefined') {
                     this.audioContext = new AudioContext();

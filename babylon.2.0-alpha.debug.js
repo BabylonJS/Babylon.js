@@ -2145,7 +2145,7 @@ var __extends = this.__extends || function (d, b) {
         };
 
         Plane.prototype.transform = function (transformation) {
-            var transposedMatrix = BABYLON.Matrix.Transpose(transformation);
+            var transposedMatrix = Matrix.Transpose(transformation);
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
@@ -2156,7 +2156,7 @@ var __extends = this.__extends || function (d, b) {
             var normalZ = (((x * transposedMatrix.m[8]) + (y * transposedMatrix.m[9])) + (z * transposedMatrix.m[10])) + (d * transposedMatrix.m[11]);
             var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
 
-            return new BABYLON.Plane(normalX, normalY, normalZ, finalD);
+            return new Plane(normalX, normalY, normalZ, finalD);
         };
 
         Plane.prototype.dotCoordinate = function (point) {
@@ -2627,18 +2627,92 @@ var __extends = this.__extends || function (d, b) {
     })();
     BABYLON.Arc2 = Arc2;
 
+    var PathCursor = (function () {
+        function PathCursor(path) {
+            this.path = path;
+            this._onchange = new Array();
+            this.value = 0;
+            this.animations = new Array();
+        }
+        PathCursor.prototype.getPoint = function () {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        };
+
+        PathCursor.prototype.moveAhead = function (step) {
+            if (typeof step === "undefined") { step = 0.002; }
+            this.move(step);
+        };
+
+        PathCursor.prototype.moveBack = function (step) {
+            if (typeof step === "undefined") { step = 0.002; }
+            this.move(-step);
+        };
+
+        PathCursor.prototype.move = function (step) {
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+        };
+
+        PathCursor.prototype.ensureLimits = function () {
+            while (this.value > 1) {
+                this.value -= 1;
+            }
+            while (this.value < 0) {
+                this.value += 1;
+            }
+        };
+
+        // used by animation engine
+        PathCursor.prototype.markAsDirty = function (propertyName) {
+            this.ensureLimits();
+            this.raiseOnChange();
+        };
+
+        PathCursor.prototype.raiseOnChange = function () {
+            var _this = this;
+            this._onchange.forEach(function (f) {
+                return f(_this);
+            });
+        };
+
+        PathCursor.prototype.onchange = function (f) {
+            this._onchange.push(f);
+        };
+        return PathCursor;
+    })();
+    BABYLON.PathCursor = PathCursor;
+
     var Path2 = (function () {
         function Path2(x, y) {
             this._points = [];
+            this._length = 0;
+            this.closed = false;
             this._points.push(new Vector2(x, y));
         }
         Path2.prototype.addLineTo = function (x, y) {
-            this._points.push(new Vector2(x, y));
+            if (closed) {
+                BABYLON.Tools.Error("cannot add lines to closed paths");
+                return this;
+            }
+            var newPoint = new Vector2(x, y);
+            var previousPoint = this._points[this._points.length - 1];
+            this._points.push(newPoint);
+            this._length += newPoint.subtract(previousPoint).length();
             return this;
         };
 
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
+            if (closed) {
+                BABYLON.Tools.Error("cannot add arcs to closed paths");
+                return this;
+            }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
             var endPoint = new Vector2(endX, endY);
@@ -2660,7 +2734,53 @@ var __extends = this.__extends || function (d, b) {
         };
 
         Path2.prototype.close = function () {
+            this.closed = true;
+            return this;
+        };
+
+        Path2.prototype.length = function () {
+            var result = this._length;
+
+            if (!this.closed) {
+                var lastPoint = this._points[this._points.length - 1];
+                var firstPoint = this._points[0];
+                result += (firstPoint.subtract(lastPoint).length());
+            }
+
+            return result;
+        };
+
+        Path2.prototype.getPoints = function () {
             return this._points;
+        };
+
+        Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
+            if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
+                BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
+                return;
+            }
+
+            var lengthPosition = normalizedLengthPosition * this.length();
+
+            var previousOffset = 0;
+            for (var i = 0; i < this._points.length; i++) {
+                var j = (i + 1) % this._points.length;
+
+                var a = this._points[i];
+                var b = this._points[j];
+                var bToA = b.subtract(a);
+
+                var nextOffset = (bToA.length() + previousOffset);
+                if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
+                    var dir = bToA.normalize();
+                    var localOffset = lengthPosition - previousOffset;
+
+                    return new Vector2(a.x + (dir.x * localOffset), a.y + (dir.y * localOffset));
+                }
+                previousOffset = nextOffset;
+            }
+
+            BABYLON.Tools.Error("internal error");
         };
 
         Path2.StartingAt = function (x, y) {
@@ -9709,14 +9829,14 @@ var BABYLON;
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
                 for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
-                    if (sound.useBabylonJSAttenuation) {
+                    if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
                     }
                 }
                 for (var i = 0; i < this.soundTracks.length; i++) {
                     for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
                         var sound = this.soundTracks[i].soundCollection[j];
-                        if (sound.useBabylonJSAttenuation) {
+                        if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }
@@ -29316,10 +29436,13 @@ var BABYLON;
         */
         function Sound(name, url, scene, readyToPlayCallback, options) {
             var _this = this;
-            this.maxDistance = 20;
             this.autoplay = false;
             this.loop = false;
-            this.useBabylonJSAttenuation = true;
+            this.useCustomAttenuation = false;
+            this.spatialSound = false;
+            this.refDistance = 1;
+            this.rolloffFactor = 1;
+            this.maxDistance = 100;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._volume = 1;
@@ -29336,8 +29459,14 @@ var BABYLON;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
-            this._attenuationFunction = function (currentVolume, currentDistance, maxDistance) {
-                return currentVolume * (1 - currentDistance / maxDistance);
+
+            // Default custom attenuation function is a linear attenuation
+            this._customAttenuationFunction = function (currentVolume, currentDistance, maxDistance) {
+                if (currentDistance < maxDistance) {
+                    return currentVolume * (1 - currentDistance / maxDistance);
+                } else {
+                    return 0;
+                }
             };
             if (options) {
                 if (options.maxDistance) {
@@ -29352,26 +29481,41 @@ var BABYLON;
                 if (options.volume) {
                     this._volume = options.volume;
                 }
-                if (options.useBabylonJSAttenuation) {
-                    this.useBabylonJSAttenuation = options.useBabylonJSAttenuation;
+                if (options.useCustomAttenuation) {
+                    this.maxDistance = Number.MAX_VALUE;
+                    this.useCustomAttenuation = options.useCustomAttenuation;
+                }
+                if (options.spatialSound) {
+                    this.spatialSound = options.spatialSound;
                 }
             }
 
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
-                this._soundPanner = this._audioEngine.audioContext.createPanner();
-                this._soundPanner.connect(this._soundGain);
+                if (this.spatialSound) {
+                    this._createSpatialParameters();
+                } else {
+                    this._audioNode = this._soundGain;
+                }
                 this._scene.mainSoundTrack.AddSound(this);
                 BABYLON.Tools.LoadFile(url, function (data) {
                     _this._soundLoaded(data);
                 }, null, null, true);
             }
         }
+        Sound.prototype._createSpatialParameters = function () {
+            this._soundPanner = this._audioEngine.audioContext.createPanner();
+            this._soundPanner.distanceModel = "linear";
+            this._soundPanner.maxDistance = this.maxDistance;
+            this._soundGain.connect(this._soundPanner);
+            this._audioNode = this._soundPanner;
+        };
+
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
             if (this._audioEngine.canUseWebAudio) {
-                this._soundGain.disconnect();
-                this._soundGain.connect(soundTrackAudioNode);
+                this._audioNode.disconnect();
+                this._audioNode.connect(soundTrackAudioNode);
             }
         };
 
@@ -29400,7 +29544,7 @@ var BABYLON;
         Sound.prototype.setPosition = function (newPosition) {
             this._position = newPosition;
 
-            if (this._isPlaying) {
+            if (this._isPlaying && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         };
@@ -29421,22 +29565,14 @@ var BABYLON;
         };
 
         Sound.prototype.updateDistanceFromListener = function () {
-            if (this._connectedMesh) {
+            if (this._connectedMesh && this.useCustomAttenuation) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
-
-                if (this.useBabylonJSAttenuation) {
-                    if (distance < this.maxDistance) {
-                        //this._soundGain.gain.value = this._volume * (1 - distance / this.maxDistance);
-                        this._soundGain.gain.value = this._attenuationFunction(this._volume, distance, this.maxDistance);
-                    } else {
-                        this._soundGain.gain.value = 0;
-                    }
-                }
+                this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance);
             }
         };
 
         Sound.prototype.setAttenuationFunction = function (callback) {
-            this._attenuationFunction = callback;
+            this._customAttenuationFunction = callback;
         };
 
         /**
@@ -29449,14 +29585,20 @@ var BABYLON;
                     var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
                     this._soundSource = this._audioEngine.audioContext.createBufferSource();
                     this._soundSource.buffer = this._audioBuffer;
-                    this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
-                    if (this._isDirectional) {
-                        this._soundPanner.coneInnerAngle = this._coneInnerAngle;
-                        this._soundPanner.coneOuterAngle = this._coneOuterAngle;
-                        this._soundPanner.coneOuterGain = this._coneOuterGain;
-                        this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
+                    if (this.spatialSound) {
+                        this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                        if (this._isDirectional) {
+                            this._soundPanner.coneInnerAngle = this._coneInnerAngle;
+                            this._soundPanner.coneOuterAngle = this._coneOuterAngle;
+                            this._soundPanner.coneOuterGain = this._coneOuterGain;
+                            if (this._connectedMesh) {
+                                this._updateDirection();
+                            } else {
+                                this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
+                            }
+                        }
                     }
-                    this._soundSource.connect(this._soundPanner);
+                    this._soundSource.connect(this._audioNode);
                     this._soundSource.loop = this.loop;
                     this._soundSource.start(startTime);
                     this._isPlaying = true;
@@ -29477,11 +29619,12 @@ var BABYLON;
         };
 
         Sound.prototype.pause = function () {
-            //this._soundSource.p
+            // TODO
         };
 
         Sound.prototype.setVolume = function (newVolume) {
             this._volume = newVolume;
+            this._soundGain.gain.value = newVolume;
         };
 
         Sound.prototype.getVolume = function () {
@@ -29491,6 +29634,10 @@ var BABYLON;
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
             this._connectedMesh = meshToConnectTo;
+            if (!this.spatialSound) {
+                this._createSpatialParameters();
+                this.spatialSound = true;
+            }
             meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             });
@@ -30421,14 +30568,22 @@ var BABYLON;
 
     var PolygonMeshBuilder = (function () {
         function PolygonMeshBuilder(name, contours, scene) {
-            this.name = name;
-            this.scene = scene;
             this._points = new PolygonPoints();
             if (!("poly2tri" in window)) {
                 throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
             }
 
-            this._swctx = new poly2tri.SweepContext(this._points.add(contours));
+            this._name = name;
+            this._scene = scene;
+
+            var points;
+            if (contours instanceof BABYLON.Path2) {
+                points = contours.getPoints();
+            } else {
+                points = contours;
+            }
+
+            this._swctx = new poly2tri.SweepContext(this._points.add(points));
         }
         PolygonMeshBuilder.prototype.addHole = function (hole) {
             this._swctx.addHole(this._points.add(hole));
@@ -30437,7 +30592,7 @@ var BABYLON;
 
         PolygonMeshBuilder.prototype.build = function (updatable) {
             if (typeof updatable === "undefined") { updatable = false; }
-            var result = new BABYLON.Mesh(this.name, this.scene);
+            var result = new BABYLON.Mesh(this._name, this._scene);
 
             var normals = [];
             var positions = [];
