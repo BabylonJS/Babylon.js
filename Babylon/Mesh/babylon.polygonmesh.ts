@@ -5,6 +5,14 @@
         }
     }
 
+    function nearlyEqual(a: number, b: number, epsilon: number = 0.0001): boolean {
+        if (a === b) {
+            return true;
+        }
+        return Math.abs(a - b) < epsilon;
+    }
+
+
     class PolygonPoints {
         elements = new Array<IndexedVector2>();
 
@@ -12,7 +20,7 @@
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
