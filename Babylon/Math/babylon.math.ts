@@ -2611,19 +2611,88 @@
         }
     }
 
+    export class PathCursor {
+        private _onchange = new Array <(cursor: PathCursor) => void>();
+
+        value: number = 0;
+        animations = new Array<BABYLON.Animation>();
+
+        constructor(private path: Path2) {
+        }
+
+        getPoint() : Vector3 {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        }
+
+        moveAhead(step: number = 0.002) {
+            this.move(step);
+            
+        }
+
+        moveBack(step: number = 0.002) {
+            this.move(-step);
+        }
+
+        move(step: number) {
+            
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+        }
+
+        private ensureLimits() {
+            while (this.value > 1) {
+                this.value -= 1;
+            } 
+            while (this.value < 0) {
+                this.value += 1;
+            }
+        }
+
+        // used by animation engine
+        private markAsDirty(propertyName: string) {
+            this.ensureLimits();
+            this.raiseOnChange();
+        }
+
+        private raiseOnChange() {
+            this._onchange.forEach(f => f(this));
+        }
+
+        onchange(f: (cursor: PathCursor) => void) {
+            this._onchange.push(f);
+        }
+    }
+
     export class Path2 {
         private _points: Vector2[] = [];
+        private _length: number = 0;
+        closed: boolean = false;
 
         constructor(x: number, y: number) {
             this._points.push(new Vector2(x, y));
         }
 
         addLineTo(x: number, y: number): Path2 {
-            this._points.push(new Vector2(x, y));
+            if (closed) {
+                throw "cannot add lines to closed paths";
+            }
+            var newPoint = new Vector2(x, y);
+            var previousPoint = this._points[this._points.length - 1];
+            this._points.push(newPoint);
+            this._length += newPoint.subtract(previousPoint).length();
             return this;
         }
 
         addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+            if (closed) {
+                throw "cannot add arcs to closed paths";
+            }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
             var endPoint = new Vector2(endX, endY);
@@ -2643,8 +2712,56 @@
             return this;
         }
 
-        close(): Vector2[] {
+        close(): Path2 {
+            this.closed = true;
+            return this;
+        }
+
+        length(): number {
+            var result = this._length;
+
+            if (!this.closed) {
+                var lastPoint = this._points[this._points.length - 1];
+                var firstPoint = this._points[0];
+                result += (firstPoint.subtract(lastPoint).length());
+            }
+
+            return result;
+        }
+
+        getPoints(): Vector2[] {
             return this._points;
+        }
+
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
+            if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
+                throw "normalized length position should be between 0 and 1.";
+            }
+
+            var lengthPosition = normalizedLengthPosition * this.length();
+
+            var previousOffset = 0;
+            for (var i = 0; i < this._points.length; i++) {
+                var j = (i + 1) % this._points.length;
+
+                var a = this._points[i];
+                var b = this._points[j];
+                var bToA = b.subtract(a);
+
+                var nextOffset = (bToA.length() + previousOffset);
+                if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
+                    var dir = bToA.normalize();
+                    var localOffset = lengthPosition - previousOffset;
+
+                    return new Vector2(
+                        a.x + (dir.x * localOffset),
+                        a.y + (dir.y * localOffset)
+                        );
+                }
+                previousOffset = nextOffset;
+            }
+
+            throw "internal error";
         }
 
         static StartingAt(x: number, y: number): Path2 {

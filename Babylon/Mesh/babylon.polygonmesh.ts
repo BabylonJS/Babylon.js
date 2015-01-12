@@ -5,6 +5,14 @@
         }
     }
 
+    function nearlyEqual(a: number, b: number, epsilon: number = 0.0001): boolean {
+        if (a === b) {
+            return true;
+        }
+        return Math.abs(a - b) < epsilon;
+    }
+
+
     class PolygonPoints {
         elements = new Array<IndexedVector2>();
 
@@ -12,7 +20,7 @@
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
@@ -101,12 +109,27 @@
         private _swctx: poly2tri.SweepContext;
         private _points = new PolygonPoints();
 
-        constructor(private name: string, contours: Vector2[], private scene: Scene) {
+        private _name: string;
+        private _scene: Scene;
+
+        constructor(name: string, contours: Path2, scene: Scene) 
+        constructor(name: string, contours: Vector2[], scene: Scene)
+        constructor(name: string, contours: any, scene: Scene) {
             if (!("poly2tri" in window)) {
                 throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
             }
 
-            this._swctx = new poly2tri.SweepContext(this._points.add(contours));
+            this._name = name;
+            this._scene = scene;
+
+            var points: Vector2[];
+            if (contours instanceof Path2) {
+                points = (<Path2>contours).getPoints();
+            } else {
+                points = (<Vector2[]>contours);
+            }
+
+            this._swctx = new poly2tri.SweepContext(this._points.add(points));
         }
 
         addHole(hole: Vector2[]): PolygonMeshBuilder {
@@ -115,7 +138,7 @@
         }
 
         build(updatable: boolean = false): Mesh {
-            var result = new Mesh(this.name, this.scene);
+            var result = new Mesh(this._name, this._scene);
 
             var normals = [];
             var positions = [];
