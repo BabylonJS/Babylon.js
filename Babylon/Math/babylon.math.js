@@ -575,7 +575,7 @@
         };
 
         Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon;
         };
 
         Vector3.prototype.equalsToFloats = function (x, y, z) {
@@ -858,7 +858,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -873,7 +873,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1020,7 +1020,7 @@
         };
 
         Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon && Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon && Math.abs(this.w - otherVector.w) < Engine.Epsilon;
         };
 
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
@@ -2465,7 +2465,7 @@
                 return null;
             }
 
-            return new BABYLON.IntersectionInfo(bu, bv, distance);
+            return new IntersectionInfo(bu, bv, distance);
         };
 
         // Statics
@@ -2625,15 +2625,26 @@
     var Path2 = (function () {
         function Path2(x, y) {
             this._points = [];
+            this._length = 0;
+            this.closed = false;
             this._points.push(new Vector2(x, y));
         }
         Path2.prototype.addLineTo = function (x, y) {
-            this._points.push(new Vector2(x, y));
+            if (closed) {
+                throw "cannot add lines to closed paths";
+            }
+            var newPoint = new Vector2(x, y);
+            var previousPoint = this._points[this._points.length - 1];
+            this._points.push(newPoint);
+            this._length += newPoint.subtract(previousPoint).length();
             return this;
         };
 
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
+            if (closed) {
+                throw "cannot add arcs to closed paths";
+            }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
             var endPoint = new Vector2(endX, endY);
@@ -2655,7 +2666,52 @@
         };
 
         Path2.prototype.close = function () {
+            this.closed = true;
+            return this;
+        };
+
+        Path2.prototype.length = function () {
+            var result = this._length;
+
+            if (!this.closed) {
+                var lastPoint = this._points[this._points.length - 1];
+                var firstPoint = this._points[0];
+                result += (firstPoint.subtract(lastPoint).length());
+            }
+
+            return result;
+        };
+
+        Path2.prototype.getPoints = function () {
             return this._points;
+        };
+
+        Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
+            if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
+                throw "normalized length position should be between 0 and 1.";
+            }
+
+            var lengthPosition = normalizedLengthPosition * this.length();
+
+            var previousOffset = 0;
+            for (var i = 0; i < this._points.length; i++) {
+                var j = (i + 1) % this._points.length;
+
+                var a = this._points[i];
+                var b = this._points[j];
+                var bToA = b.subtract(a);
+
+                var nextOffset = (bToA.length() + previousOffset);
+                if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
+                    var dir = bToA.normalize();
+                    var localOffset = lengthPosition - previousOffset;
+
+                    return new Vector2(a.x + (dir.x * localOffset), a.y + (dir.y * localOffset));
+                }
+                previousOffset = nextOffset;
+            }
+
+            throw "internal error";
         };
 
         Path2.StartingAt = function (x, y) {
@@ -2665,4 +2721,3 @@
     })();
     BABYLON.Path2 = Path2;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map
