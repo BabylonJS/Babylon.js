@@ -13,7 +13,15 @@ var BABYLON;
             this.index = index;
         }
         return IndexedVector2;
-    })(BABYLON.Vector2);
+    })(Vector2);
+
+    function nearlyEqual(a, b, epsilon) {
+        if (typeof epsilon === "undefined") { epsilon = 0.0001; }
+        if (a === b) {
+            return true;
+        }
+        return Math.abs(a - b) < epsilon;
+    }
 
     var PolygonPoints = (function () {
         function PolygonPoints() {
@@ -23,7 +31,7 @@ var BABYLON;
             var _this = this;
             var result = new Array();
             originalPoints.forEach(function (point) {
-                if (result.length === 0 || !(BABYLON.Tools.WithinEpsilon(point.x, result[0].x) && BABYLON.Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, _this.elements.length);
                     result.push(newPoint);
                     _this.elements.push(newPoint);
@@ -34,8 +42,8 @@ var BABYLON;
         };
 
         PolygonPoints.prototype.computeBounds = function () {
-            var lmin = new BABYLON.Vector2(this.elements[0].x, this.elements[0].y);
-            var lmax = new BABYLON.Vector2(this.elements[0].x, this.elements[0].y);
+            var lmin = new Vector2(this.elements[0].x, this.elements[0].y);
+            var lmax = new Vector2(this.elements[0].x, this.elements[0].y);
 
             this.elements.forEach(function (point) {
                 // x
@@ -68,10 +76,10 @@ var BABYLON;
         }
         Polygon.Rectangle = function (xmin, ymin, xmax, ymax) {
             return [
-                new BABYLON.Vector2(xmin, ymin),
-                new BABYLON.Vector2(xmax, ymin),
-                new BABYLON.Vector2(xmax, ymax),
-                new BABYLON.Vector2(xmin, ymax)
+                new Vector2(xmin, ymin),
+                new Vector2(xmax, ymin),
+                new Vector2(xmax, ymax),
+                new Vector2(xmin, ymax)
             ];
         };
 
@@ -85,7 +93,7 @@ var BABYLON;
             var increment = (Math.PI * 2) / numberOfSides;
 
             for (var i = 0; i < numberOfSides; i++) {
-                result.push(new BABYLON.Vector2(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius));
+                result.push(new Vector2(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius));
                 angle -= increment;
             }
 
@@ -104,7 +112,7 @@ var BABYLON;
         };
 
         Polygon.StartingAt = function (x, y) {
-            return BABYLON.Path2.StartingAt(x, y);
+            return Path2.StartingAt(x, y);
         };
         return Polygon;
     })();
@@ -112,14 +120,22 @@ var BABYLON;
 
     var PolygonMeshBuilder = (function () {
         function PolygonMeshBuilder(name, contours, scene) {
-            this.name = name;
-            this.scene = scene;
             this._points = new PolygonPoints();
             if (!("poly2tri" in window)) {
                 throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
             }
 
-            this._swctx = new poly2tri.SweepContext(this._points.add(contours));
+            this._name = name;
+            this._scene = scene;
+
+            var points;
+            if (contours instanceof Path2) {
+                points = contours.getPoints();
+            } else {
+                points = contours;
+            }
+
+            this._swctx = new poly2tri.SweepContext(this._points.add(points));
         }
         PolygonMeshBuilder.prototype.addHole = function (hole) {
             this._swctx.addHole(this._points.add(hole));
@@ -128,7 +144,7 @@ var BABYLON;
 
         PolygonMeshBuilder.prototype.build = function (updatable) {
             if (typeof updatable === "undefined") { updatable = false; }
-            var result = new BABYLON.Mesh(this.name, this.scene);
+            var result = new Mesh(this._name, this._scene);
 
             var normals = [];
             var positions = [];
@@ -150,9 +166,9 @@ var BABYLON;
                 });
             });
 
-            result.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
-            result.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
-            result.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+            result.setVerticesData(positions, VertexBuffer.PositionKind, updatable);
+            result.setVerticesData(normals, VertexBuffer.NormalKind, updatable);
+            result.setVerticesData(uvs, VertexBuffer.UVKind, updatable);
             result.setIndices(indices);
 
             return result;
@@ -161,4 +177,3 @@ var BABYLON;
     })();
     BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.polygonMesh.js.map
