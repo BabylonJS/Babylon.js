@@ -42,7 +42,7 @@
 
             mesh.animations.push(animation);
 
-            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode == 1));
+            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
         };
 
         // Methods
@@ -96,6 +96,14 @@
             this._highLimitsCache = {};
         };
 
+        Animation.prototype._getKeyValue = function (value) {
+            if (typeof value === "function") {
+                return value();
+            }
+
+            return value;
+        };
+
         Animation.prototype._interpolate = function (currentFrame, repeatCount, loopMode, offsetValue, highLimitValue) {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
@@ -106,8 +114,8 @@
             for (var key = 0; key < this._keys.length; key++) {
                 // for each frame, we need the key just before the frame superior
                 if (this._keys[key + 1].frame >= currentFrame) {
-                    var startValue = this._keys[key].value;
-                    var endValue = this._keys[key + 1].value;
+                    var startValue = this._getKeyValue(this._keys[key].value);
+                    var endValue = this._getKeyValue(this._keys[key + 1].value);
 
                     // gradient : percent of currentFrame between the frame inf and the frame sup
                     var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
@@ -182,7 +190,7 @@
                     break;
                 }
             }
-            return this._keys[this._keys.length - 1].value;
+            return this._getKeyValue(this._keys[this._keys.length - 1].value);
         };
 
         Animation.prototype.animate = function (delay, from, to, loop, speedRatio) {
@@ -193,7 +201,7 @@
             var returnValue = true;
 
             // Adding a start key at frame 0 if missing
-            if (this._keys[0].frame != 0) {
+            if (this._keys[0].frame !== 0) {
                 var newKey = { frame: 0, value: this._keys[0].value };
                 this._keys.splice(0, 0, newKey);
             }
@@ -212,15 +220,14 @@
 
             // ratio represents the frame delta between from and to
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
+            var highLimitValue = 0;
 
             if (ratio > range && !loop) {
                 returnValue = false;
-                highLimitValue = this._keys[this._keys.length - 1].value;
+                highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
             } else {
                 // Get max value if required
-                var highLimitValue = 0;
-
-                if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
+                if (this.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {
                         var fromValue = this._interpolate(from, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
