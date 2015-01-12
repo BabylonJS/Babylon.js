@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 5, 3),
+    'version': (1, 6, 0),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -89,6 +89,9 @@ GAMEPAD_CAM = 'GamepadCamera'
 OCULUS_CAM = 'OculusCamera'
 TOUCH_CAM = 'TouchCamera'
 V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
+OCULUS_GAMEPAD_CAM = 'OculusGamepadCamera'
+VR_DEV_ORIENT_CAM ='VRDeviceOrientationCamera'
+WEB_VR_CAM = 'WebVRCamera'
 
 # used in Light constructor, never formally defined in Babylon, but used in babylonFileLoader
 POINT_LIGHT = 0
@@ -1161,6 +1164,7 @@ class Light(FCurveAnimatable):
             matrix_world = light.matrix_world.copy()
             matrix_world.translation = mathutils.Vector((0, 0, 0))
             self.direction = (mathutils.Vector((0, 0, -1)) * matrix_world)
+            self.direction = scale_vector(self.direction, -1)
             self.groundColor = mathutils.Color((0, 0, 0))
             
         self.intensity = light.data.energy        
@@ -1638,17 +1642,21 @@ bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
 bpy.types.Camera.CameraType = bpy.props.EnumProperty(
     name='Camera Type', 
     description='',
+    # ONLY Append, or existing .blends will have their camera changed
     items = ( 
-             (V_JOYSTICKS_CAM  , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
-             (TOUCH_CAM        , 'Touch'              , 'Use Touch Camera'),
-             (OCULUS_CAM       , 'Oculus'             , 'Use Oculus Camera'),
-             (GAMEPAD_CAM      , 'Gamepad'            , 'Use Gamepad Camera'),
-             (FREE_CAM         , 'Free'               , 'Use Free Camera'),
-             (FOLLOW_CAM       , 'Follow'             , 'Use Follow Camera'),
-             (DEV_ORIENT_CAM   , 'Device Orientation' , 'Use Device Orientation Camera'),
-             (ARC_ROTATE_CAM   , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
-             (ANAGLYPH_FREE_CAM, 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
-             (ANAGLYPH_ARC_CAM , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera') 
+             (V_JOYSTICKS_CAM   , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
+             (TOUCH_CAM         , 'Touch'              , 'Use Touch Camera'),
+             (OCULUS_CAM        , 'Oculus'             , 'Use Oculus Camera'),
+             (GAMEPAD_CAM       , 'Gamepad'            , 'Use Gamepad Camera'),
+             (FREE_CAM          , 'Free'               , 'Use Free Camera'),
+             (FOLLOW_CAM        , 'Follow'             , 'Use Follow Camera'),
+             (DEV_ORIENT_CAM    , 'Device Orientation' , 'Use Device Orientation Camera'),
+             (ARC_ROTATE_CAM    , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
+             (ANAGLYPH_FREE_CAM , 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
+             (ANAGLYPH_ARC_CAM  , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera'),
+             (OCULUS_GAMEPAD_CAM, 'Oculus Gampad'      , 'Use Oculus Gamepad Camera'),
+             (VR_DEV_ORIENT_CAM , 'VR Dev Orientation' , 'Use VR Dev Orientation Camera'),
+             (WEB_VR_CAM        , 'Web VR'             , 'Use Web VR Camera')
             ),
     default = FREE_CAM
 )
