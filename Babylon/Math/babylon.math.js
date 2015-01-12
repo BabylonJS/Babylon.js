@@ -2622,6 +2622,67 @@
     })();
     BABYLON.Arc2 = Arc2;
 
+    var PathCursor = (function () {
+        function PathCursor(path) {
+            this.path = path;
+            this._onchange = new Array();
+            this.value = 0;
+            this.animations = new Array();
+        }
+        PathCursor.prototype.getPoint = function () {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        };
+
+        PathCursor.prototype.moveAhead = function (step) {
+            if (typeof step === "undefined") { step = 0.002; }
+            this.move(step);
+        };
+
+        PathCursor.prototype.moveBack = function (step) {
+            if (typeof step === "undefined") { step = 0.002; }
+            this.move(-step);
+        };
+
+        PathCursor.prototype.move = function (step) {
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+        };
+
+        PathCursor.prototype.ensureLimits = function () {
+            while (this.value > 1) {
+                this.value -= 1;
+            }
+            while (this.value < 0) {
+                this.value += 1;
+            }
+        };
+
+        // used by animation engine
+        PathCursor.prototype.markAsDirty = function (propertyName) {
+            this.ensureLimits();
+            this.raiseOnChange();
+        };
+
+        PathCursor.prototype.raiseOnChange = function () {
+            var _this = this;
+            this._onchange.forEach(function (f) {
+                return f(_this);
+            });
+        };
+
+        PathCursor.prototype.onchange = function (f) {
+            this._onchange.push(f);
+        };
+        return PathCursor;
+    })();
+    BABYLON.PathCursor = PathCursor;
+
     var Path2 = (function () {
         function Path2(x, y) {
             this._points = [];

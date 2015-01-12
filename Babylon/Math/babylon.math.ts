@@ -2611,6 +2611,64 @@
         }
     }
 
+    export class PathCursor {
+        private _onchange = new Array <(cursor: PathCursor) => void>();
+
+        value: number = 0;
+        animations = new Array<BABYLON.Animation>();
+
+        constructor(private path: Path2) {
+        }
+
+        getPoint() : Vector3 {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        }
+
+        moveAhead(step: number = 0.002) {
+            this.move(step);
+            
+        }
+
+        moveBack(step: number = 0.002) {
+            this.move(-step);
+        }
+
+        move(step: number) {
+            
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+        }
+
+        private ensureLimits() {
+            while (this.value > 1) {
+                this.value -= 1;
+            } 
+            while (this.value < 0) {
+                this.value += 1;
+            }
+        }
+
+        // used by animation engine
+        private markAsDirty(propertyName: string) {
+            this.ensureLimits();
+            this.raiseOnChange();
+        }
+
+        private raiseOnChange() {
+            this._onchange.forEach(f => f(this));
+        }
+
+        onchange(f: (cursor: PathCursor) => void) {
+            this._onchange.push(f);
+        }
+    }
+
     export class Path2 {
         private _points: Vector2[] = [];
         private _length: number = 0;
