@@ -101,12 +101,27 @@
         private _swctx: poly2tri.SweepContext;
         private _points = new PolygonPoints();
 
-        constructor(private name: string, contours: Vector2[], private scene: Scene) {
+        private _name: string;
+        private _scene: Scene;
+
+        constructor(name: string, contours: Path2, scene: Scene) 
+        constructor(name: string, contours: Vector2[], scene: Scene)
+        constructor(name: string, contours: any, scene: Scene) {
             if (!("poly2tri" in window)) {
                 throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
             }
 
-            this._swctx = new poly2tri.SweepContext(this._points.add(contours));
+            this._name = name;
+            this._scene = scene;
+
+            var points: Vector2[];
+            if (contours instanceof Path2) {
+                points = (<Path2>contours).getPoints();
+            } else {
+                points = (<Vector2[]>contours);
+            }
+
+            this._swctx = new poly2tri.SweepContext(this._points.add(points));
         }
 
         addHole(hole: Vector2[]): PolygonMeshBuilder {
@@ -115,7 +130,7 @@
         }
 
         build(updatable: boolean = false): Mesh {
-            var result = new Mesh(this.name, this.scene);
+            var result = new Mesh(this._name, this._scene);
 
             var normals = [];
             var positions = [];
