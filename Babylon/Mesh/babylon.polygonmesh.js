@@ -15,6 +15,14 @@ var BABYLON;
         return IndexedVector2;
     })(Vector2);
 
+    function nearlyEqual(a, b, epsilon) {
+        if (typeof epsilon === "undefined") { epsilon = 0.0001; }
+        if (a === b) {
+            return true;
+        }
+        return Math.abs(a - b) < epsilon;
+    }
+
     var PolygonPoints = (function () {
         function PolygonPoints() {
             this.elements = new Array();
@@ -23,7 +31,7 @@ var BABYLON;
             var _this = this;
             var result = new Array();
             originalPoints.forEach(function (point) {
-                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, _this.elements.length);
                     result.push(newPoint);
                     _this.elements.push(newPoint);
