@@ -1271,14 +1271,14 @@
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
                 for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
-                    if (sound.useBabylonJSAttenuation) {
+                    if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
                     }
                 }
                 for (var i = 0; i < this.soundTracks.length; i++) {
                     for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
                         var sound = this.soundTracks[i].soundCollection[j];
-                        if (sound.useBabylonJSAttenuation) {
+                        if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }

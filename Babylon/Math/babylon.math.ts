@@ -2144,7 +2144,7 @@
         }
 
         public transform(transformation: Matrix): Plane {
-            var transposedMatrix = BABYLON.Matrix.Transpose(transformation);
+            var transposedMatrix = Matrix.Transpose(transformation);
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
@@ -2155,7 +2155,7 @@
             var normalZ = (((x * transposedMatrix.m[8]) + (y * transposedMatrix.m[9])) + (z * transposedMatrix.m[10])) + (d * transposedMatrix.m[11]);
             var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
 
-            return new BABYLON.Plane(normalX, normalY, normalZ, finalD);
+            return new Plane(normalX, normalY, normalZ, finalD);
         }
 
 
@@ -2615,7 +2615,7 @@
         private _onchange = new Array <(cursor: PathCursor) => void>();
 
         value: number = 0;
-        animations = new Array<BABYLON.Animation>();
+        animations = new Array<Animation>();
 
         constructor(private path: Path2) {
         }
@@ -2680,7 +2680,8 @@
 
         addLineTo(x: number, y: number): Path2 {
             if (closed) {
-                throw "cannot add lines to closed paths";
+                Tools.Error("cannot add lines to closed paths");
+                return this;
             }
             var newPoint = new Vector2(x, y);
             var previousPoint = this._points[this._points.length - 1];
@@ -2691,7 +2692,8 @@
 
         addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (closed) {
-                throw "cannot add arcs to closed paths";
+                Tools.Error("cannot add arcs to closed paths");
+                return this;
             }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
@@ -2735,7 +2737,8 @@
 
         getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                throw "normalized length position should be between 0 and 1.";
+                Tools.Error("normalized length position should be between 0 and 1.");
+                return;
             }
 
             var lengthPosition = normalizedLengthPosition * this.length();
@@ -2761,7 +2764,7 @@
                 previousOffset = nextOffset;
             }
 
-            throw "internal error";
+            Tools.Error("internal error");
         }
 
         static StartingAt(x: number, y: number): Path2 {

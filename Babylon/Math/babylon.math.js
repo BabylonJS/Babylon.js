@@ -575,7 +575,7 @@
         };
 
         Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
         };
 
         Vector3.prototype.equalsToFloats = function (x, y, z) {
@@ -858,7 +858,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -873,7 +873,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1020,7 +1020,7 @@
         };
 
         Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon && Math.abs(this.y - otherVector.y) < Engine.Epsilon && Math.abs(this.z - otherVector.z) < Engine.Epsilon && Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon && Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
         };
 
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
@@ -2140,7 +2140,7 @@
         };
 
         Plane.prototype.transform = function (transformation) {
-            var transposedMatrix = BABYLON.Matrix.Transpose(transformation);
+            var transposedMatrix = Matrix.Transpose(transformation);
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
@@ -2151,7 +2151,7 @@
             var normalZ = (((x * transposedMatrix.m[8]) + (y * transposedMatrix.m[9])) + (z * transposedMatrix.m[10])) + (d * transposedMatrix.m[11]);
             var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
 
-            return new BABYLON.Plane(normalX, normalY, normalZ, finalD);
+            return new Plane(normalX, normalY, normalZ, finalD);
         };
 
         Plane.prototype.dotCoordinate = function (point) {
@@ -2465,7 +2465,7 @@
                 return null;
             }
 
-            return new IntersectionInfo(bu, bv, distance);
+            return new BABYLON.IntersectionInfo(bu, bv, distance);
         };
 
         // Statics
@@ -2692,7 +2692,8 @@
         }
         Path2.prototype.addLineTo = function (x, y) {
             if (closed) {
-                throw "cannot add lines to closed paths";
+                BABYLON.Tools.Error("cannot add lines to closed paths");
+                return this;
             }
             var newPoint = new Vector2(x, y);
             var previousPoint = this._points[this._points.length - 1];
@@ -2704,7 +2705,8 @@
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (typeof numberOfSegments === "undefined") { numberOfSegments = 36; }
             if (closed) {
-                throw "cannot add arcs to closed paths";
+                BABYLON.Tools.Error("cannot add arcs to closed paths");
+                return this;
             }
             var startPoint = this._points[this._points.length - 1];
             var midPoint = new Vector2(midX, midY);
@@ -2749,7 +2751,8 @@
 
         Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                throw "normalized length position should be between 0 and 1.";
+                BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
+                return;
             }
 
             var lengthPosition = normalizedLengthPosition * this.length();
@@ -2772,7 +2775,7 @@
                 previousOffset = nextOffset;
             }
 
-            throw "internal error";
+            BABYLON.Tools.Error("internal error");
         };
 
         Path2.StartingAt = function (x, y) {
@@ -2782,3 +2785,4 @@
     })();
     BABYLON.Path2 = Path2;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.math.js.map
