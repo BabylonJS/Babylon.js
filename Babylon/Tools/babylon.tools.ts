@@ -331,9 +331,9 @@
                 max.z = v.z;
         }
 
-        public static WithinEpsilon(a: number, b: number): boolean {
+        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
             var num = a - b;
-            return -1.401298E-45 <= num && num <= 1.401298E-45;
+            return -epsilon <= num && num <= epsilon;
         }
 
         public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
