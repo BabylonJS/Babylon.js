@@ -7,11 +7,11 @@
         if (!source)
             return null;
 
-        if (source instanceof BABYLON.Mesh) {
+        if (source instanceof Mesh) {
             return null;
         }
 
-        if (source instanceof BABYLON.SubMesh) {
+        if (source instanceof SubMesh) {
             return source.clone(destinationObject);
         } else if (source.clone) {
             return source.clone();
@@ -53,11 +53,11 @@
         };
 
         Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
-            var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
             for (var index = indexStart; index < indexStart + indexCount; index++) {
-                var current = new BABYLON.Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
+                var current = new Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
 
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
@@ -70,11 +70,11 @@
         };
 
         Tools.ExtractMinAndMax = function (positions, start, count) {
-            var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
             for (var index = start; index < start + count; index++) {
-                var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+                var current = new Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
 
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
@@ -301,9 +301,10 @@
                 max.z = v.z;
         };
 
-        Tools.WithinEpsilon = function (a, b) {
+        Tools.WithinEpsilon = function (a, b, epsilon) {
+            if (typeof epsilon === "undefined") { epsilon = 1.401298E-45; }
             var num = a - b;
-            return -1.401298E-45 <= num && num <= 1.401298E-45;
+            return -epsilon <= num && num <= epsilon;
         };
 
         Tools.DeepCopy = function (source, destination, doNotCopyList, mustCopyList) {
@@ -422,7 +423,7 @@
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new BABYLON.RenderTargetTexture("screenShot", size, engine.scenes[0], false, false);
+            var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0], false, false);
             texture.renderList = engine.scenes[0].meshes;
 
             texture.onAfterRender = function () {
@@ -803,4 +804,3 @@
     })();
     BABYLON.Tools = Tools;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tools.js.map
