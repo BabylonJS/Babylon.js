@@ -12,7 +12,7 @@
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x) && Tools.WithinEpsilon(point.y, result[0].y))) {
+                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x, 0.00001) && Tools.WithinEpsilon(point.y, result[0].y, 0.00001))) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
