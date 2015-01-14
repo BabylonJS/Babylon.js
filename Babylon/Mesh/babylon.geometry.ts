@@ -293,6 +293,8 @@
                     mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
 
                     mesh._createGlobalSubMesh();
+                    //bounding info was just created again, world matrix should be applied again.
+                    mesh._updateBoundingInfo();
                 }
             }
 
