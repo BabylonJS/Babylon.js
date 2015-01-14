@@ -37,16 +37,25 @@ namespace Max2Babylon
             var gameBones = new List<IIGameNode>();
             var boneIds = new List<int>();
             var bindPoseInfos = new List<BonePoseInfo>();
+            for(int i = 0; i < skin.TotalSkinBoneCount; ++i)
+            {
+                bones.Add(null);
+                gameBones.Add(null);
+                boneIds.Add(-1);
+                bindPoseInfos.Add(null);
+            }
             for (var index = 0; index < skin.TotalSkinBoneCount; index++)
             {
                 var gameBone = skin.GetIGameBone(index, false);
 
-                gameBones.Add(gameBone);
-                boneIds.Add(gameBone.NodeID);
-                bones.Add(new BabylonBone { index = index, name = gameBone.Name });
+                var sortedIndex = skinSortedBones[skin].IndexOf(gameBone.NodeID);
+
+                gameBones[sortedIndex] = (gameBone);
+                boneIds[sortedIndex] =(gameBone.NodeID);
+                bones[sortedIndex]=(new BabylonBone { index = sortedIndex, name = gameBone.Name });
 
                 var boneInitMatrix = gameBone.GetObjectTM(0);
-                bindPoseInfos.Add(new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
+                bindPoseInfos[sortedIndex] = (new BonePoseInfo { AbsoluteTransform = boneInitMatrix });
             }
 
             // fix hierarchy an generate animation keys
