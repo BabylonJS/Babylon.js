@@ -51,6 +51,11 @@ declare module BABYLON {
         private static _DELAYLOADSTATE_LOADED;
         private static _DELAYLOADSTATE_LOADING;
         private static _DELAYLOADSTATE_NOTLOADED;
+        private static _TEXTUREFORMAT_ALPHA;
+        private static _TEXTUREFORMAT_LUMINANCE;
+        private static _TEXTUREFORMAT_LUMINANCE_ALPHA;
+        private static _TEXTUREFORMAT_RGB;
+        private static _TEXTUREFORMAT_RGBA;
         static ALPHA_DISABLE : number;
         static ALPHA_ADD : number;
         static ALPHA_COMBINE : number;
@@ -58,6 +63,11 @@ declare module BABYLON {
         static DELAYLOADSTATE_LOADED : number;
         static DELAYLOADSTATE_LOADING : number;
         static DELAYLOADSTATE_NOTLOADED : number;
+        static TEXTUREFORMAT_ALPHA : number;
+        static TEXTUREFORMAT_LUMINANCE : number;
+        static TEXTUREFORMAT_LUMINANCE_ALPHA : number;
+        static TEXTUREFORMAT_RGB : number;
+        static TEXTUREFORMAT_RGBA : number;
         static Version : string;
         static Epsilon: number;
         static CollisionsEpsilon: number;
@@ -184,6 +194,7 @@ declare module BABYLON {
         public wipeCaches(): void;
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void;
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: () => void, onError?: () => void, buffer?: any): WebGLTexture;
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture;
         public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture;
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void;
         public updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
@@ -252,6 +263,7 @@ interface WebGLTexture {
     isCube: boolean;
     url: string;
     noMipmap: boolean;
+    samplingMode: number;
     references: number;
     generateMipMaps: boolean;
     _size: number;
@@ -787,6 +799,7 @@ declare module BABYLON {
         public color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         public clone(): Animation;
         public setKeys(values: any[]): void;
+        private _getKeyValue(value);
         private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean;
         private static _ANIMATIONTYPE_FLOAT;
@@ -892,11 +905,14 @@ declare module BABYLON {
 }
 declare module BABYLON {
     class Sound {
-        public maxDistance: number;
         public autoplay: boolean;
         public loop: boolean;
-        public useBabylonJSAttenuation: boolean;
+        public useCustomAttenuation: boolean;
         public soundTrackId: number;
+        public spatialSound: boolean;
+        public refDistance: number;
+        public rolloffFactor: number;
+        public maxDistance: number;
         private _position;
         private _localDirection;
         private _volume;
@@ -910,12 +926,14 @@ declare module BABYLON {
         private _soundSource;
         private _soundPanner;
         private _soundGain;
+        private _audioNode;
         private _coneInnerAngle;
         private _coneOuterAngle;
         private _coneOuterGain;
         private _scene;
         private _name;
         private _connectedMesh;
+        private _customAttenuationFunction;
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
@@ -924,6 +942,7 @@ declare module BABYLON {
         * @param options Objects to provide with the current available options: autoplay, loop, distanceMax
         */
         constructor(name: string, url: string, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        private _createSpatialParameters();
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
         /**
         * Transform this sound into a directional source
@@ -936,6 +955,7 @@ declare module BABYLON {
         public setLocalDirectionToMesh(newLocalDirection: Vector3): void;
         private _updateDirection();
         public updateDistanceFromListener(): void;
+        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number) => number): void;
         /**
         * Play the sound
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
@@ -1348,6 +1368,67 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class OculusCamera extends FreeCamera {
+        private _leftCamera;
+        private _rightCamera;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        constructor(name: string, position: Vector3, scene: Scene);
+        public _update(): void;
+        public _updateCamera(camera: FreeCamera): void;
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        public detachControl(element: HTMLElement): void;
+    }
+}
+declare module BABYLON {
+    class OculusGamepadCamera extends FreeCamera {
+        private _leftCamera;
+        private _rightCamera;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        private _gamepad;
+        private _gamepads;
+        public angularSensibility: number;
+        public moveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private _onNewGameConnected(gamepad);
+        public _update(): void;
+        public _checkInputs(): void;
+        public _updateCamera(camera: FreeCamera): void;
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        public detachControl(element: HTMLElement): void;
+        public dispose(): void;
+    }
+}
+declare module BABYLON {
+    class VRDeviceOrientationCamera extends OculusCamera {
+        public _alpha: number;
+        public _beta: number;
+        public _gamma: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
+    }
+}
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRCamera extends OculusCamera {
+        public _hmdDevice: any;
+        public _sensorDevice: any;
+        public _cacheState: any;
+        public _cacheQuaternion: Quaternion;
+        public _cacheRotation: Vector3;
+        public _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private _getWebVRDevices(devices);
+        public _update(): void;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        public detachControl(element: HTMLElement): void;
+    }
+}
+declare module BABYLON {
     class Collider {
         public radius: Vector3;
         public retry: number;
@@ -1535,6 +1616,7 @@ declare module BABYLON {
         public shouldDisplayLabel: (node: Node) => boolean;
         public shouldDisplayAxis: (mesh: Mesh) => boolean;
         public axisRatio: number;
+        public accentColor: string;
         constructor(scene: Scene);
         private _refreshMeshesTreeContent();
         private _renderSingleAxis(zero, unit, unitText, label, color);
@@ -1546,7 +1628,7 @@ declare module BABYLON {
         public show(showUI?: boolean): void;
         private _clearLabels();
         private _generateheader(root, text);
-        private _generateTexBox(root, title);
+        private _generateTexBox(root, title, color);
         private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
         private _generateCheckBox(root, title, initialState, task, tag?);
         private _generateRadio(root, title, name, initialState, task, tag?);
@@ -1986,7 +2068,7 @@ declare module BABYLON {
         public scale(ratio: number): void;
         public canRescale : boolean;
         public _removeFromCache(url: string, noMipmap: boolean): void;
-        public _getFromCache(url: string, noMipmap: boolean): WebGLTexture;
+        public _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
         public delayLoad(): void;
         public releaseInternalTexture(): void;
         public clone(): BaseTexture;
@@ -2032,7 +2114,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     class RawTexture extends Texture {
-        constructor(scene: Scene, samplingMode?: number);
+        constructor(data: ArrayBufferView, width: number, height: number, format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
+        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
     }
 }
 declare module BABYLON {
@@ -2635,6 +2722,58 @@ declare module BABYLON {
     class BezierCurve {
         static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
     }
+    enum Orientation {
+        CW = 0,
+        CCW = 1,
+    }
+    class Angle {
+        private _radians;
+        constructor(radians: number);
+        public degrees: () => number;
+        public radians: () => number;
+        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
+        static FromRadians(radians: number): Angle;
+        static FromDegrees(degrees: number): Angle;
+    }
+    class Arc2 {
+        public startPoint: Vector2;
+        public midPoint: Vector2;
+        public endPoint: Vector2;
+        public centerPoint: Vector2;
+        public radius: number;
+        public angle: Angle;
+        public startAngle: Angle;
+        public orientation: Orientation;
+        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
+    }
+    class PathCursor {
+        private path;
+        private _onchange;
+        public value: number;
+        public animations: Animation[];
+        constructor(path: Path2);
+        public getPoint(): Vector3;
+        public moveAhead(step?: number): void;
+        public moveBack(step?: number): void;
+        public move(step: number): void;
+        private ensureLimits();
+        private markAsDirty(propertyName);
+        private raiseOnChange();
+        public onchange(f: (cursor: PathCursor) => void): void;
+    }
+    class Path2 {
+        private _points;
+        private _length;
+        public closed: boolean;
+        constructor(x: number, y: number);
+        public addLineTo(x: number, y: number): Path2;
+        public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        public close(): Path2;
+        public length(): number;
+        public getPoints(): Vector2[];
+        public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        static StartingAt(x: number, y: number): Path2;
+    }
 }
 declare module BABYLON {
     class AbstractMesh extends Node implements IDisposable {
@@ -3018,7 +3157,17 @@ declare module BABYLON {
         private _instancesBufferSize;
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId;
-        constructor(name: string, scene: Scene);
+        /**
+        * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
+        * @param {BABYLON.Scene} scene - The scene to add this mesh to.
+        * @param {BABYLON.Node} parent - The parent of this mesh, if it has one
+        * @param {BABYLON.Mesh} source - An optional Mesh from which geometry is shared, cloned.
+        * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
+        *                  When false, achieved by calling a clone(), also passing False.
+        *                  This will make creation of children, recursive.
+        */
+        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
+        private _clone();
         public hasLODLevels : boolean;
         private _sortLODLevels();
         public addLODLevel(distance: number, mesh: Mesh): Mesh;
@@ -3149,6 +3298,24 @@ declare module BABYLON.Internals {
         public distance: number;
         public mesh: Mesh;
         constructor(distance: number, mesh: Mesh);
+    }
+}
+declare module BABYLON {
+    class Polygon {
+        static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[];
+        static Circle(radius: number, cx?: number, cy?: number, numberOfSides?: number): Vector2[];
+        static Parse(input: string): Vector2[];
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class PolygonMeshBuilder {
+        private _swctx;
+        private _points;
+        private _name;
+        private _scene;
+        constructor(name: string, contours: Path2, scene: Scene);
+        constructor(name: string, contours: Vector2[], scene: Scene);
+        public addHole(hole: Vector2[]): PolygonMeshBuilder;
+        public build(updatable?: boolean): Mesh;
     }
 }
 declare module BABYLON {
@@ -4120,7 +4287,7 @@ declare module BABYLON {
         static Clamp(value: number, min?: number, max?: number): number;
         static Format(value: number, decimals?: number): string;
         static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void;
-        static WithinEpsilon(a: number, b: number): boolean;
+        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
         static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void;
         static IsEmpty(obj: any): boolean;
         static RegisterTopRootEvents(events: {
