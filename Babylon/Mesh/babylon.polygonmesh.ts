@@ -94,7 +94,7 @@
         static StartingAt(x: number, y: number): Path2 {
             return Path2.StartingAt(x, y);
         }
-    }     
+    }
 
     export class PolygonMeshBuilder {
 

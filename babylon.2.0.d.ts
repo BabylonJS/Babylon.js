@@ -913,6 +913,10 @@ declare module BABYLON {
         public refDistance: number;
         public rolloffFactor: number;
         public maxDistance: number;
+        public distanceModel: string;
+        public panningModel: string;
+        private startTime;
+        private startOffset;
         private _position;
         private _localDirection;
         private _volume;
@@ -937,11 +941,12 @@ declare module BABYLON {
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
-        * @param url Url to the sound to load async
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, distanceMax
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
         */
-        constructor(name: string, url: string, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        public updateOptions(options: any): void;
         private _createSpatialParameters();
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
         /**
@@ -955,7 +960,7 @@ declare module BABYLON {
         public setLocalDirectionToMesh(newLocalDirection: Vector3): void;
         private _updateDirection();
         public updateDistanceFromListener(): void;
-        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number) => number): void;
+        public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
         /**
         * Play the sound
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.

@@ -1240,7 +1240,7 @@
                 scene.setActiveCameraByID(parsedData.activeCameraID);
             }
 
-            // Connecting parents
+            // Browsing all the graph to connect the dots
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
                 if (camera._waitingParentId) {
