@@ -234,7 +234,7 @@ var BABYLON;
 
             mesh._geometry = null;
 
-            if (meshes.length == 0 && shouldDispose) {
+            if (meshes.length === 0 && shouldDispose) {
                 this.dispose();
             }
         };
@@ -281,6 +281,9 @@ var BABYLON;
                     mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
 
                     mesh._createGlobalSubMesh();
+
+                    //bounding info was just created again, world matrix should be applied again.
+                    mesh._updateBoundingInfo();
                 }
             }
 
@@ -333,8 +336,8 @@ var BABYLON;
         Geometry.prototype.dispose = function () {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
-
-            for (var index = 0; index < numOfMeshes; index++) {
+            var index;
+            for (index = 0; index < numOfMeshes; index++) {
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
@@ -388,7 +391,7 @@ var BABYLON;
                 }
             }
 
-            var geometry = new BABYLON.Geometry(id, this._scene, vertexData, updatable, null);
+            var geometry = new Geometry(id, this._scene, vertexData, updatable, null);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -421,7 +424,7 @@ var BABYLON;
         // be aware Math.random() could cause collisions
         Geometry.RandomId = function () {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         };
