@@ -4,11 +4,11 @@
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
-        * @param url Url to the sound to load async
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, distanceMax
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
         */
-        function Sound(name, url, scene, readyToPlayCallback, options) {
+        function Sound(name, urlOrArrayBuffer, scene, readyToPlayCallback, options) {
             var _this = this;
             this.autoplay = false;
             this.loop = false;
@@ -17,6 +17,10 @@
             this.refDistance = 1;
             this.rolloffFactor = 1;
             this.maxDistance = 100;
+            this.distanceModel = "linear";
+            this.panningModel = "HRTF";
+            this.startTime = 0;
+            this.startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._volume = 1;
@@ -26,16 +30,16 @@
             this._isDirectional = false;
             // Used if you'd like to create a directional sound.
             // If not set, the sound will be omnidirectional
-            this._coneInnerAngle = null;
-            this._coneOuterAngle = null;
-            this._coneOuterGain = null;
+            this._coneInnerAngle = 360;
+            this._coneOuterAngle = 360;
+            this._coneOuterGain = 0;
             this._name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
 
             // Default custom attenuation function is a linear attenuation
-            this._customAttenuationFunction = function (currentVolume, currentDistance, maxDistance) {
+            this._customAttenuationFunction = function (currentVolume, currentDistance, maxDistance, refDistance, rolloffFactor) {
                 if (currentDistance < maxDistance) {
                     return currentVolume * (1 - currentDistance / maxDistance);
                 } else {
@@ -43,25 +47,16 @@
                 }
             };
             if (options) {
-                if (options.maxDistance) {
-                    this.maxDistance = options.maxDistance;
-                }
-                if (options.autoplay) {
-                    this.autoplay = options.autoplay;
-                }
-                if (options.loop) {
-                    this.loop = options.loop;
-                }
-                if (options.volume) {
-                    this._volume = options.volume;
-                }
-                if (options.useCustomAttenuation) {
-                    this.maxDistance = Number.MAX_VALUE;
-                    this.useCustomAttenuation = options.useCustomAttenuation;
-                }
-                if (options.spatialSound) {
-                    this.spatialSound = options.spatialSound;
-                }
+                this.autoplay = options.autoplay || false;
+                this.loop = options.loop || false;
+                this._volume = options.volume || 1;
+                this.spatialSound = options.spatialSound || false;
+                this.maxDistance = options.maxDistance || 100;
+                this.useCustomAttenuation = options.useCustomAttenation || false;
+                this.rolloffFactor = options.rolloffFactor || 1;
+                this.refDistance = options.refDistance || 1;
+                this.distanceModel = options.distanceModel || "linear";
+                this.panningModel = options.panningModel || "HRTF";
             }
 
             if (this._audioEngine.canUseWebAudio) {
@@ -73,16 +68,49 @@
                     this._audioNode = this._soundGain;
                 }
                 this._scene.mainSoundTrack.AddSound(this);
-                BABYLON.Tools.LoadFile(url, function (data) {
-                    _this._soundLoaded(data);
-                }, null, null, true);
+                if (typeof (urlOrArrayBuffer) === "string") {
+                    BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) {
+                        _this._soundLoaded(data);
+                    }, null, null, true);
+                } else {
+                    if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                        this._soundLoaded(urlOrArrayBuffer);
+                    } else {
+                        BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                    }
+                }
             }
         }
+        Sound.prototype.updateOptions = function (options) {
+            if (options) {
+                this.loop = options.loop || this.loop;
+                this.maxDistance = options.maxDistance || this.maxDistance;
+                this.useCustomAttenuation = options.useCustomAttenation || this.useCustomAttenuation;
+                this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
+                this.refDistance = options.refDistance || this.refDistance;
+                this.distanceModel = options.distanceModel || this.distanceModel;
+                this.panningModel = options.panningModel || this.panningModel;
+            }
+        };
+
         Sound.prototype._createSpatialParameters = function () {
             this._soundPanner = this._audioEngine.audioContext.createPanner();
-            this._soundPanner.distanceModel = "linear";
-            this._soundPanner.maxDistance = this.maxDistance;
-            this._soundGain.connect(this._soundPanner);
+
+            if (this.useCustomAttenuation) {
+                // Tricks to disable in a way embedded Web Audio attenuation
+                this._soundPanner.distanceModel = "linear";
+                this._soundPanner.maxDistance = Number.MAX_VALUE;
+                this._soundPanner.refDistance = 1;
+                this._soundPanner.rolloffFactor = 1;
+                this._soundPanner.panningModel = "HRTF";
+            } else {
+                this._soundPanner.distanceModel = this.distanceModel;
+                this._soundPanner.maxDistance = this.maxDistance;
+                this._soundPanner.refDistance = this.refDistance;
+                this._soundPanner.rolloffFactor = this.rolloffFactor;
+                this._soundPanner.panningModel = this.panningModel;
+            }
+            this._soundPanner.connect(this._soundGain);
             this._audioNode = this._soundPanner;
         };
 
@@ -141,7 +169,7 @@
         Sound.prototype.updateDistanceFromListener = function () {
             if (this._connectedMesh && this.useCustomAttenuation) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
-                this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance);
+                this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
         };
 
@@ -174,7 +202,8 @@
                     }
                     this._soundSource.connect(this._audioNode);
                     this._soundSource.loop = this.loop;
-                    this._soundSource.start(startTime);
+                    this.startTime = startTime;
+                    this._soundSource.start(startTime, this.startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 } catch (ex) {
                     BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
@@ -193,7 +222,8 @@
         };
 
         Sound.prototype.pause = function () {
-            // TODO
+            this._soundSource.stop(0);
+            this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
         };
 
         Sound.prototype.setVolume = function (newVolume) {
@@ -211,6 +241,10 @@
             if (!this.spatialSound) {
                 this._createSpatialParameters();
                 this.spatialSound = true;
+                if (this._isPlaying && this.loop) {
+                    this.stop();
+                    this.play();
+                }
             }
             meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);

@@ -2,7 +2,7 @@
     export class Geometry implements IGetSetVerticesData {
         // Members
         public id: string;
-        public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public delayLoadingFile: string;
 
         // Private
@@ -47,7 +47,7 @@
         }
 
         public isReady(): boolean {
-            return this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE;
+            return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
         }
 
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
@@ -63,12 +63,12 @@
 
             this._vertexBuffers[kind] = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
-            if (kind === BABYLON.VertexBuffer.PositionKind) {
+            if (kind === VertexBuffer.PositionKind) {
                 stride = this._vertexBuffers[kind].getStrideSize();
 
                 this._totalVertices = data.length / stride;
 
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                var extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -76,7 +76,7 @@
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
                 }
@@ -244,7 +244,7 @@
 
             mesh._geometry = null;
 
-            if (meshes.length == 0 && shouldDispose) {
+            if (meshes.length === 0 && shouldDispose) {
                 this.dispose();
             }
         }
@@ -286,13 +286,14 @@
                 }
                 this._vertexBuffers[kind]._buffer.references = numOfMeshes;
 
-                if (kind === BABYLON.VertexBuffer.PositionKind) {
+                if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
 
-                    var extend = BABYLON.Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    var extend = Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
+                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
 
                     mesh._createGlobalSubMesh();
+
                     //bounding info was just created again, world matrix should be applied again.
                     mesh._updateBoundingInfo();
                 }
@@ -308,7 +309,7 @@
         }
 
         public load(scene: Scene, onLoaded?: () => void): void {
-            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return;
             }
 
@@ -319,13 +320,13 @@
                 return;
             }
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
+            this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
             scene._addPendingData(this);
-            BABYLON.Tools.LoadFile(this.delayLoadingFile, data => {
+            Tools.LoadFile(this.delayLoadingFile, data => {
                 this._delayLoadingFunction(JSON.parse(data), this);
 
-                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
                 scene._removePendingData(this);
@@ -345,8 +346,8 @@
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
-
-            for (var index = 0; index < numOfMeshes; index++) {
+            var index: number;
+            for (index = 0; index < numOfMeshes; index++) {
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
@@ -363,7 +364,7 @@
             this._indexBuffer = null;
             this._indices = [];
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+            this.delayLoadState = Engine.DELAYLOADSTATE_NONE;
             this.delayLoadingFile = null;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
@@ -379,7 +380,7 @@
         }
 
         public copy(id: string): Geometry {
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = [];
 
@@ -400,7 +401,7 @@
                 }
             }
 
-            var geometry = new BABYLON.Geometry(id, this._scene, vertexData, updatable, null);
+            var geometry = new Geometry(id, this._scene, vertexData, updatable, null);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -412,8 +413,8 @@
             }
 
             // Bounding info
-            var extend = BABYLON.Tools.ExtractMinAndMax(this.getVerticesData(BABYLON.VertexBuffer.PositionKind), 0, this.getTotalVertices());
-            geometry._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+            var extend = Tools.ExtractMinAndMax(this.getVerticesData(VertexBuffer.PositionKind), 0, this.getTotalVertices());
+            geometry._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
 
             return geometry;
         }
@@ -433,7 +434,7 @@
         // be aware Math.random() could cause collisions
         public static RandomId(): string {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }

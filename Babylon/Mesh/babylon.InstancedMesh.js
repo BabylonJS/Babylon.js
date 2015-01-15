@@ -121,6 +121,10 @@ var BABYLON;
         InstancedMesh.prototype.getLOD = function (camera) {
             this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
 
+            if (this._currentLOD === this.sourceMesh) {
+                return this;
+            }
+
             return this._currentLOD;
         };
 
