@@ -64,11 +64,17 @@ var BABYLON;
             return this._context;
         };
 
+        DynamicTexture.prototype.clear = function () {
+            var size = this.getSize();
+            this._context.fillRect(0, 0, size.width, size.height);
+        };
+
         DynamicTexture.prototype.update = function (invertY) {
             this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
         };
 
-        DynamicTexture.prototype.drawText = function (text, x, y, font, color, clearColor, invertY) {
+        DynamicTexture.prototype.drawText = function (text, x, y, font, color, clearColor, invertY, update) {
+            if (typeof update === "undefined") { update = true; }
             var size = this.getSize();
             if (clearColor) {
                 this._context.fillStyle = clearColor;
@@ -84,12 +90,14 @@ var BABYLON;
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
 
-            this.update(invertY);
+            if (update) {
+                this.update(invertY);
+            }
         };
 
         DynamicTexture.prototype.clone = function () {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

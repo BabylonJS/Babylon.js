@@ -2102,8 +2102,9 @@ declare module BABYLON {
         public canRescale : boolean;
         public scale(ratio: number): void;
         public getContext(): CanvasRenderingContext2D;
+        public clear(): void;
         public update(invertY?: boolean): void;
-        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean): void;
+        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
         public clone(): DynamicTexture;
     }
 }

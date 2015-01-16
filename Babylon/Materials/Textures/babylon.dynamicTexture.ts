@@ -9,8 +9,8 @@
 
             this.name = name;
 
-            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
             this._generateMipMaps = generateMipMaps;
 
@@ -56,11 +56,16 @@
             return this._context;
         }
 
+        public clear(): void {
+            var size = this.getSize();
+            this._context.fillRect(0, 0, size.width, size.height);
+        }
+
         public update(invertY?: boolean): void {
             this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
         }
 
-        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean) {
+        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
             var size = this.getSize();
             if (clearColor) {
                 this._context.fillStyle = clearColor;
@@ -76,12 +81,14 @@
             this._context.fillStyle = color;
             this._context.fillText(text, x, y);
 
-            this.update(invertY);
+            if (update) {
+                this.update(invertY);
+            }
         }
 
         public clone(): DynamicTexture {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
