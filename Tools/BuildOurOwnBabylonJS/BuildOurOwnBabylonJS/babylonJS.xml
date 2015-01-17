@@ -119,4 +119,5 @@
   <script src="Babylon/Tools/babylon.tools.tga.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>
   <script src="Babylon/Math/babylon.math.js"></script>
+  <script src="Babylon/Mesh/babylon.meshSimplification.js"></script>
 </files>
