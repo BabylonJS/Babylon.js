@@ -216,6 +216,13 @@
             return new Color4(this.r, this.g, this.b, this.a);
         };
 
+        Color4.prototype.copyFrom = function (source) {
+            this.r = source.r;
+            this.g = source.g;
+            this.b = source.b;
+            this.a = source.a;
+        };
+
         // Statics
         Color4.Lerp = function (left, right, amount) {
             var result = new Color4(0, 0, 0, 0);

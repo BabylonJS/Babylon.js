@@ -134,9 +134,8 @@
                     var particle = particles[index];
                     particle.age += this._scaledUpdateSpeed;
 
-                    if (particle.age >= particle.lifeTime) { // Recycle
-                        particles.splice(index, 1);
-                        this._stockParticles.push(particle);
+                    if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                        this.recycleParticle(particle);
                         index--;
                         continue;
                     }
@@ -156,6 +155,15 @@
                         particle.direction.addInPlace(this._scaledGravity);
                     }
                 }
+            }
+        }
+
+        public recycleParticle(particle: Particle): void {
+            var lastParticle = this.particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+                this._stockParticles.push(lastParticle);
             }
         }
 
