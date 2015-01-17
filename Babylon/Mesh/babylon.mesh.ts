@@ -1047,7 +1047,7 @@
                     });
                 }
 
-                var asyncLoop = new AsyncLoop(settings.length, (loop : AsyncLoop) => {
+                AsyncLoop.Run(settings.length, (loop : AsyncLoop) => {
                     runDecimation(settings[loop.index], () => {
                             loop.executeNext();
                         });
