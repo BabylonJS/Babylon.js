@@ -103,9 +103,9 @@
 
             // Cull
             if (this._isCullDirty) {
-                if (this.cull === true) {
+                if (this.cull) {
                     gl.enable(gl.CULL_FACE);
-                } else if (this.cull === false) {
+                } else {
                     gl.disable(gl.CULL_FACE);
                 }
 
@@ -126,9 +126,9 @@
 
             // Depth test
             if (this._isDepthTestDirty) {
-                if (this.depthTest === true) {
+                if (this.depthTest) {
                     gl.enable(gl.DEPTH_TEST);
-                } else if (this.depthTest === false) {
+                } else {
                     gl.disable(gl.DEPTH_TEST);
                 }
                 this._isDepthTestDirty = false;
@@ -202,9 +202,9 @@
 
             // Alpha blend
             if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend === true) {
+                if (this._alphaBlend) {
                     gl.enable(gl.BLEND);
-                } else if (this._alphaBlend === false) {
+                } else {
                     gl.disable(gl.BLEND);
                 }
 
@@ -234,21 +234,21 @@
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
-        if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+        if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_NEAREST;
             } else {
                 minFilter = gl.LINEAR;
             }
-        } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+        } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
             } else {
                 minFilter = gl.LINEAR;
             }
-        } else if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+        } else if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -298,15 +298,13 @@
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
         onfinish: (images: HTMLImageElement[]) => void) => {
 
-        var img: HTMLImageElement;
-
         var onload = () => {
             loadedImages[index] = img;
             loadedImages._internalCount++;
 
             scene._removePendingData(img);
 
-            if (loadedImages._internalCount == 6) {
+            if (loadedImages._internalCount === 6) {
                 onfinish(loadedImages);
             }
         };
@@ -315,7 +313,7 @@
             scene._removePendingData(img);
         };
 
-        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+        var img = Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     }
 
@@ -426,11 +424,11 @@
         public scenes = new Array<Scene>();
 
         // Private Members
-        private _gl: WebGLRenderingContext;
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
 
-        private _audioEngine: BABYLON.AudioEngine;
+        private _audioEngine: AudioEngine;
 
         private _onBlur: () => void;
         private _onFocus: () => void;
@@ -448,6 +446,10 @@
         private _loadingDivBackgroundColor = "black";
 
         private _drawCalls = 0;
+
+        private _glVersion: string;
+        private _glRenderer: string;
+        private _glVendor: string;
 
         private _renderingQueueLaunched = false;
         private _activeRenderLoops = [];
@@ -525,6 +527,23 @@
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
 
+            // Infos
+            this._glVersion = this._gl.getParameter(this._gl.VERSION);
+
+            var rendererInfo: any = this._gl.getExtension("WEBGL_debug_renderer_info");
+            if (rendererInfo != null) {
+                this._glRenderer = this._gl.getParameter(rendererInfo.UNMASKED_RENDERER_WEBGL);
+                this._glVendor = this._gl.getParameter(rendererInfo.UNMASKED_VENDOR_WEBGL);
+            }
+
+            if (!this._glVendor) {
+                this._glVendor = "Unknown vendor";
+            }
+
+            if (!this._glRenderer) {
+                this._glRenderer = "Unknown renderer";
+            }
+
             // Extensions
             this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
             this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
@@ -583,9 +602,17 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            this._audioEngine = new BABYLON.AudioEngine();
+            this._audioEngine = new AudioEngine();
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+        }
+
+        public getGlInfo() {
+            return {
+                vendor: this._glVendor,
+                renderer: this._glRenderer,
+                version: this._glVersion
+            }
         }
 
         public getAudioEngine(): AudioEngine {
@@ -698,7 +725,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(() => {
+                Tools.QueueNewFrame(() => {
                     this._renderLoop();
                 });
             } else {
@@ -715,7 +742,7 @@
 
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
-                BABYLON.Tools.QueueNewFrame(() => {
+                Tools.QueueNewFrame(() => {
                     this._renderLoop();
                 });
             }
@@ -723,10 +750,10 @@
 
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
-                BABYLON.Tools.ExitFullscreen();
+                Tools.ExitFullscreen();
             } else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                Tools.RequestFullscreen(this._renderingCanvas);
             }
         }
 
@@ -1047,7 +1074,7 @@
                 return this._compiledEffects[name];
             }
 
-            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1256,16 +1283,16 @@
 
         public setAlphaMode(mode: number): void {
             switch (mode) {
-                case BABYLON.Engine.ALPHA_DISABLE:
+                case Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
-                case BABYLON.Engine.ALPHA_COMBINE:
+                case Engine.ALPHA_COMBINE:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
-                case BABYLON.Engine.ALPHA_ADD:
+                case Engine.ALPHA_ADD:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
@@ -1308,10 +1335,10 @@
             var magFilter = gl.NEAREST;
             var minFilter = gl.NEAREST;
 
-            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+            if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
                 magFilter = gl.LINEAR;
                 minFilter = gl.LINEAR;
-            } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+            } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
                 magFilter = gl.LINEAR;
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
             }
@@ -1364,7 +1391,7 @@
                 var callback = (arrayBuffer) => {
                     var data = new Uint8Array(arrayBuffer);
 
-                    var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
+                    var header = Internals.TGATools.GetTGAHeader(data);
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
@@ -1376,7 +1403,7 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, arrayBuffer => {
+                    Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
                     }, onerror, scene.database, true);
                 else
@@ -1384,9 +1411,9 @@
 
             } else if (isDDS) {
                 callback = (data) => {
-                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
+                    var info = Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
+                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
@@ -1398,7 +1425,7 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, data => {
+                    Tools.LoadFile(url, data => {
                         callback(data);
                     }, onerror, scene.database, true);
                 else
@@ -1407,7 +1434,7 @@
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
-                        var isPot = (img.width == potWidth && img.height == potHeight);
+                        var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
@@ -1425,9 +1452,9 @@
 
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                    Tools.LoadImage(url, onload, onerror, scene.database);
                 else
-                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
+                    Tools.LoadImage(buffer, onload, onerror, scene.database);
             }
 
             return texture;
@@ -1563,7 +1590,7 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
-            var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
@@ -1637,8 +1664,8 @@
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
             if (isDDS) {
-                BABYLON.Tools.LoadFile(rootUrl, data => {
-                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
+                Tools.LoadFile(rootUrl, data => {
+                    var info = Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
@@ -1647,7 +1674,7 @@
 
                     Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 6);
 
-                    if (!noMipmap && !info.isFourCC && info.mipmapCount == 1) {
+                    if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
@@ -1772,16 +1799,16 @@
             }
 
             // Video
-            if (texture instanceof BABYLON.VideoTexture) {
+            if (texture instanceof VideoTexture) {
                 if ((<VideoTexture>texture).update()) {
                     this._activeTexturesCache[channel] = null;
                 }
-            } else if (texture.delayLoadState == BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+            } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
                 return;
             }
 
-            if (this._activeTexturesCache[channel] == texture) {
+            if (this._activeTexturesCache[channel] === texture) {
                 return;
             }
             this._activeTexturesCache[channel] = texture;
@@ -1795,7 +1822,7 @@
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
-                    var textureWrapMode = (texture.coordinatesMode !== BABYLON.Texture.CUBIC_MODE && texture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
                     this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode);
                     this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
@@ -1808,13 +1835,13 @@
                     internalTexture._cachedWrapU = texture.wrapU;
 
                     switch (texture.wrapU) {
-                        case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
                             break;
-                        case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        case Texture.CLAMP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
                             break;
-                        case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        case Texture.MIRROR_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
                             break;
                     }
@@ -1823,13 +1850,13 @@
                 if (internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
                     switch (texture.wrapV) {
-                        case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
                             break;
-                        case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        case Texture.CLAMP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
                             break;
-                        case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        case Texture.MIRROR_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
                             break;
                     }

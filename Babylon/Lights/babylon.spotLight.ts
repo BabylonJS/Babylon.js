@@ -1,8 +1,9 @@
 ﻿module BABYLON {
-    export class SpotLight extends Light {
+    export class SpotLight extends Light implements IShadowLight {
+
+        public transformedPosition: Vector3;
 
         private _transformedDirection: Vector3;
-        private _transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
         constructor(name: string, public position: Vector3, public direction: Vector3, public angle: number, public exponent: number, scene: Scene) {
@@ -10,12 +11,25 @@
         }
 
         public getAbsolutePosition(): Vector3 {
-            return this._transformedPosition ? this._transformedPosition : this.position;
+            return this.transformedPosition ? this.transformedPosition : this.position;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {
-            this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
+            this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;
+        }
+
+        public computeTransformedPosition(): boolean {
+            if (this.parent && this.parent.getWorldMatrix) {
+                if (!this.transformedPosition) {
+                    this.transformedPosition = Vector3.Zero();
+                }
+
+                Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
+                return true;
+            }
+
+            return false;
         }
 
         public transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void {
@@ -23,23 +37,18 @@
 
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedDirection) {
-                    this._transformedDirection = BABYLON.Vector3.Zero();
+                    this._transformedDirection = Vector3.Zero();
                 }
 
-                if (!this._transformedPosition) {
-                    this._transformedPosition = BABYLON.Vector3.Zero();
-                }
+                this.computeTransformedPosition();
+                
+                Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                var parentWorldMatrix = this.parent.getWorldMatrix();
-
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._transformedPosition);
-                BABYLON.Vector3.TransformNormalToRef(this.direction, parentWorldMatrix, this._transformedDirection);
-
-                effect.setFloat4(positionUniformName, this._transformedPosition.x, this._transformedPosition.y, this._transformedPosition.z, this.exponent);
-                normalizeDirection = BABYLON.Vector3.Normalize(this._transformedDirection);
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
+                normalizeDirection = Vector3.Normalize(this._transformedDirection);
             } else {
                 effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
-                normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
+                normalizeDirection = Vector3.Normalize(this.direction);
             }
 
             effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
@@ -47,10 +56,10 @@
 
         public _getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
+                this._worldMatrix = Matrix.Identity();
             }
 
-            BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
+            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
 
             return this._worldMatrix;
         }
