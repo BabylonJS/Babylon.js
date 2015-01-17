@@ -803,5 +803,83 @@
         return Tools;
     })();
     BABYLON.Tools = Tools;
+
+    /**
+    * An implementation of a loop for asynchronous functions.
+    */
+    var AsyncLoop = (function () {
+        /**
+        * Constroctor.
+        * @param iterations the number of iterations.
+        * @param _fn the function to run each iteration
+        * @param _successCallback the callback that will be called upon succesful execution
+        * @param offset starting offset.
+        */
+        function AsyncLoop(iterations, _fn, _successCallback, offset) {
+            if (typeof offset === "undefined") { offset = 0; }
+            this.iterations = iterations;
+            this._fn = _fn;
+            this._successCallback = _successCallback;
+            this.index = offset - 1;
+            this._done = false;
+            this.executeNext();
+        }
+        /**
+        * Execute the next iteration. Must be called after the last iteration was finished.
+        */
+        AsyncLoop.prototype.executeNext = function () {
+            if (!this._done) {
+                if (this.index < this.iterations) {
+                    ++this.index;
+                    this._fn(this);
+                } else {
+                    this.breakLoop();
+                }
+            }
+        };
+
+        /**
+        * Break the loop and run the success callback.
+        */
+        AsyncLoop.prototype.breakLoop = function () {
+            this._done = true;
+            this._successCallback();
+        };
+
+        /**
+        * A for-loop that will run a given number of iterations synchronous and the rest async.
+        * @param iterations total number of iterations
+        * @param syncedIterations number of synchronous iterations in each async iteration.
+        * @param fn the function to call each iteration.
+        * @param callback a success call back that will be called when iterating stops.
+        * @param breakFunction a break condition (optional)
+        * @param timeout timeout settings for the setTimeout function. default - 0.
+        * @constructor
+        */
+        AsyncLoop.SyncAsyncForLoop = function (iterations, syncedIterations, fn, callback, breakFunction, timeout) {
+            if (typeof timeout === "undefined") { timeout = 0; }
+            var asyncLoop = new AsyncLoop(Math.ceil(iterations / syncedIterations), function (loop) {
+                if (breakFunction && breakFunction())
+                    loop.breakLoop();
+                else {
+                    setTimeout(function () {
+                        for (var i = 0; i < syncedIterations; ++i) {
+                            var iteration = (loop.index * syncedIterations) + i;
+                            if (iteration >= iterations)
+                                break;
+                            fn(iteration);
+                            if (breakFunction && breakFunction()) {
+                                loop.breakLoop();
+                                break;
+                            }
+                        }
+                        loop.executeNext();
+                    }, timeout);
+                }
+            }, callback);
+        };
+        return AsyncLoop;
+    })();
+    BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.tools.js.map
