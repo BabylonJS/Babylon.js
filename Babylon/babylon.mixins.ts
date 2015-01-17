@@ -43,6 +43,13 @@ interface HTMLCanvasElement {
     webkitRequestPointerLock(): void;
 }
 
+interface CanvasRenderingContext2D {
+    imageSmoothingEnabled: boolean;
+    mozImageSmoothingEnabled: boolean;
+    oImageSmoothingEnabled: boolean;
+    webkitImageSmoothingEnabled: boolean;
+}
+
 interface WebGLTexture {
     isReady: boolean;
     isCube:boolean;

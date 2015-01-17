@@ -5036,7 +5036,23 @@ var BABYLON;
                             _this._workingCanvas.width = potWidth;
                             _this._workingCanvas.height = potHeight;
 
+                            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                                _this._workingContext.imageSmoothingEnabled = false;
+                                _this._workingContext.mozImageSmoothingEnabled = false;
+                                _this._workingContext.oImageSmoothingEnabled = false;
+                                _this._workingContext.webkitImageSmoothingEnabled = false;
+                                _this._workingContext.msImageSmoothingEnabled = false;
+                            }
+
                             _this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+
+                            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                                _this._workingContext.imageSmoothingEnabled = true;
+                                _this._workingContext.mozImageSmoothingEnabled = true;
+                                _this._workingContext.oImageSmoothingEnabled = true;
+                                _this._workingContext.webkitImageSmoothingEnabled = true;
+                                _this._workingContext.msImageSmoothingEnabled = true;
+                            }
                         }
 
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, _this._gl.RGBA, _this._gl.RGBA, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);

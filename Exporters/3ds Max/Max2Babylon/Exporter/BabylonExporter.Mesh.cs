@@ -124,7 +124,7 @@ namespace Max2Babylon
             // Collisions
             babylonMesh.checkCollisions = meshNode.MaxNode.GetBoolProperty("babylonjs_checkcollisions");
 
-            bool isSkinned = gameMesh.IsObjectSkinned;
+            var isSkinned = gameMesh.IsObjectSkinned;
             var skin = gameMesh.IGameSkin;
             var unskinnedMesh = gameMesh;
             IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
@@ -142,21 +142,19 @@ namespace Max2Babylon
             }
 
             // Position / rotation / scaling
+            var localTM = meshNode.GetObjectTM(0);
+            if (meshNode.NodeParent != null)
             {
-                var localTM = meshNode.GetObjectTM(0);
-                if (meshNode.NodeParent != null)
-                {
-                    var parentWorld = meshNode.NodeParent.GetObjectTM(0);
-                    localTM.MultiplyBy(parentWorld.Inverse);
-                }
-
-                var meshTrans = localTM.Translation;
-                var meshRotation = localTM.Rotation;
-                var meshScale = localTM.Scaling;
-                babylonMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
-                babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
-                babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
+                var parentWorld = meshNode.NodeParent.GetObjectTM(0);
+                localTM.MultiplyBy(parentWorld.Inverse);
             }
+
+            var meshTrans = localTM.Translation;
+            var meshRotation = localTM.Rotation;
+            var meshScale = localTM.Scaling;
+            babylonMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
+            babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+            babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
 
             // Mesh
             RaiseMessage(meshNode.Name, 1);
@@ -176,6 +174,32 @@ namespace Max2Babylon
                 if (unskinnedMesh.NumberOfVerts >= 65536)
                 {
                     RaiseWarning(string.Format("Mesh {0} has tmore than 65536 vertices which means that it will require specific WebGL extension to be rendered. This may impact portability of your scene on low end devices.", babylonMesh.name), 2);
+                }
+
+                // Physics
+                var impostorText = meshNode.MaxNode.GetStringProperty("babylonjs_impostor", "None");
+
+                if (impostorText != "None")
+                {
+                    switch (impostorText)
+                    {
+                        case "Sphere":
+                            babylonMesh.physicsImpostor = 1;
+                            break;
+                        case "Box":
+                            babylonMesh.physicsImpostor = 2;
+                            break;
+                        case "Plane":
+                            babylonMesh.physicsImpostor = 3;
+                            break;
+                        default:
+                            babylonMesh.physicsImpostor = 0;
+                            break;
+                    }
+
+                    babylonMesh.physicsMass = meshNode.MaxNode.GetFloatProperty("babylonjs_mass");
+                    babylonMesh.physicsFriction = meshNode.MaxNode.GetFloatProperty("babylonjs_friction", 0.2f);
+                    babylonMesh.physicsRestitution = meshNode.MaxNode.GetFloatProperty("babylonjs_restitution", 0.2f);
                 }
 
                 // Material
@@ -342,20 +366,19 @@ namespace Max2Babylon
 
                 var instance = new BabylonAbstractMesh { name = tab.Name };
                 {
+                    var instanceLocalTM = meshNode.GetObjectTM(0);
 
-                    var localTM = meshNode.GetObjectTM(0);
-
-                    var meshTrans = localTM.Translation;
-                    var meshRotation = localTM.Rotation;
-                    var meshScale = localTM.Scaling;
-                    instance.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
+                    var instanceTrans = instanceLocalTM.Translation;
+                    var instanceRotation = instanceLocalTM.Rotation;
+                    var instanceScale = instanceLocalTM.Scaling;
+                    instance.position = new[] { instanceTrans.X, instanceTrans.Y, instanceTrans.Z };
                     float rotx = 0, roty = 0, rotz = 0;
                     unsafe
                     {
-                        meshRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
+                        instanceRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
                     }
                     instance.rotation = new[] { rotx, roty, rotz };
-                    instance.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
+                    instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
                 }
                 var instanceAnimations = new List<BabylonAnimation>();
                 GenerateCoordinatesAnimations(meshNode, instanceAnimations);
@@ -449,7 +472,7 @@ namespace Max2Babylon
                         worldMatrix.MultiplyBy(parentWorld.Inverse);
                     }
                     var trans = worldMatrix.Translation;
-                    return new[] {trans.X, trans.Y, trans.Z};
+                    return new[] { trans.X, trans.Y, trans.Z };
                 });
             }
 
@@ -469,7 +492,7 @@ namespace Max2Babylon
 
 
                     var rot = worldMatrix.Rotation;
-                    return new[] {rot.X, rot.Y, rot.Z, -rot.W};
+                    return new[] { rot.X, rot.Y, rot.Z, -rot.W };
                 });
             }
 
@@ -485,7 +508,7 @@ namespace Max2Babylon
                     }
                     var scale = worldMatrix.Scaling;
 
-                    return new[] {scale.X, scale.Y, scale.Z};
+                    return new[] { scale.X, scale.Y, scale.Z };
                 });
             }
         }
