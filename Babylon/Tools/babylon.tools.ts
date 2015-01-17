@@ -852,7 +852,7 @@
          * @constructor
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
-            var asyncLoop = new AsyncLoop(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
                 if (breakFunction && breakFunction()) loop.breakLoop();
                 else {
                     setTimeout(() => {
