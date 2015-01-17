@@ -186,6 +186,13 @@
             return new Color4(this.r, this.g, this.b, this.a);
         }
 
+        public copyFrom(source: Color4): void {
+            this.r = source.r;
+            this.g = source.g;
+            this.b = source.b;
+            this.a = source.a;
+        }
+
         // Statics
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0, 0, 0, 0);
