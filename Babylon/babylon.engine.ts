@@ -1352,7 +1352,6 @@
         }
 
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
-
             var texture = this._gl.createTexture();
 
             var extension: string;
@@ -1439,7 +1438,23 @@
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
 
+                            if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                                this._workingContext.imageSmoothingEnabled = false;
+                                this._workingContext.mozImageSmoothingEnabled = false;
+                                this._workingContext.oImageSmoothingEnabled = false;
+                                this._workingContext.webkitImageSmoothingEnabled = false;
+                                this._workingContext.msImageSmoothingEnabled = false;
+                            }
+
                             this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+
+                            if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                                this._workingContext.imageSmoothingEnabled = true;
+                                this._workingContext.mozImageSmoothingEnabled = true;
+                                this._workingContext.oImageSmoothingEnabled = true;
+                                this._workingContext.webkitImageSmoothingEnabled = true;
+                                this._workingContext.msImageSmoothingEnabled = true;
+                            }
                         }
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);

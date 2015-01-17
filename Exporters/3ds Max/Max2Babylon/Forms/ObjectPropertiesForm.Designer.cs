@@ -33,6 +33,8 @@
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.nupAlphaIndex = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.chkShowSubMeshesBoundingBox = new System.Windows.Forms.CheckBox();
             this.chkShowBoundingBox = new System.Windows.Forms.CheckBox();
@@ -46,15 +48,26 @@
             this.nupFrom = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
-            this.nupAlphaIndex = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cbImpostor = new System.Windows.Forms.ComboBox();
+            this.nupMass = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
+            this.nupFriction = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.nupRestitution = new System.Windows.Forms.NumericUpDown();
+            this.label7 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).BeginInit();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).BeginInit();
+            this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nupMass)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupFriction)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupRestitution)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -85,7 +98,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 430);
+            this.butCancel.Location = new System.Drawing.Point(174, 599);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 6;
@@ -97,7 +110,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 430);
+            this.butOK.Location = new System.Drawing.Point(93, 599);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 5;
@@ -121,6 +134,27 @@
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Misc.";
+            // 
+            // nupAlphaIndex
+            // 
+            this.nupAlphaIndex.Location = new System.Drawing.Point(89, 143);
+            this.nupAlphaIndex.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.nupAlphaIndex.Name = "nupAlphaIndex";
+            this.nupAlphaIndex.Size = new System.Drawing.Size(120, 20);
+            this.nupAlphaIndex.TabIndex = 5;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(18, 145);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(65, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "Alpha index:";
             // 
             // chkNoExport
             // 
@@ -275,26 +309,113 @@
             this.chkAutoAnimate.UseVisualStyleBackColor = true;
             this.chkAutoAnimate.CheckedChanged += new System.EventHandler(this.chkAutoAnimate_CheckedChanged);
             // 
-            // nupAlphaIndex
+            // groupBox4
             // 
-            this.nupAlphaIndex.Location = new System.Drawing.Point(89, 143);
-            this.nupAlphaIndex.Maximum = new decimal(new int[] {
+            this.groupBox4.Controls.Add(this.nupRestitution);
+            this.groupBox4.Controls.Add(this.label7);
+            this.groupBox4.Controls.Add(this.nupFriction);
+            this.groupBox4.Controls.Add(this.label5);
+            this.groupBox4.Controls.Add(this.label6);
+            this.groupBox4.Controls.Add(this.cbImpostor);
+            this.groupBox4.Controls.Add(this.nupMass);
+            this.groupBox4.Controls.Add(this.label4);
+            this.groupBox4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox4.Location = new System.Drawing.Point(12, 424);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(319, 155);
+            this.groupBox4.TabIndex = 7;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Physics";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 27);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(50, 13);
+            this.label6.TabIndex = 8;
+            this.label6.Text = "Impostor:";
+            // 
+            // cbImpostor
+            // 
+            this.cbImpostor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbImpostor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cbImpostor.FormattingEnabled = true;
+            this.cbImpostor.Items.AddRange(new object[] {
+            "None",
+            "Sphere",
+            "Box",
+            "Plane"});
+            this.cbImpostor.Location = new System.Drawing.Point(25, 43);
+            this.cbImpostor.Name = "cbImpostor";
+            this.cbImpostor.Size = new System.Drawing.Size(290, 21);
+            this.cbImpostor.TabIndex = 7;
+            // 
+            // nupMass
+            // 
+            this.nupMass.DecimalPlaces = 2;
+            this.nupMass.Location = new System.Drawing.Point(89, 70);
+            this.nupMass.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.nupAlphaIndex.Name = "nupAlphaIndex";
-            this.nupAlphaIndex.Size = new System.Drawing.Size(120, 20);
-            this.nupAlphaIndex.TabIndex = 5;
+            this.nupMass.Name = "nupMass";
+            this.nupMass.Size = new System.Drawing.Size(120, 20);
+            this.nupMass.TabIndex = 5;
             // 
-            // label3
+            // label4
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(18, 145);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(65, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Alpha index:";
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(18, 70);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "Mass:";
+            // 
+            // nupFriction
+            // 
+            this.nupFriction.DecimalPlaces = 2;
+            this.nupFriction.Location = new System.Drawing.Point(89, 96);
+            this.nupFriction.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nupFriction.Name = "nupFriction";
+            this.nupFriction.Size = new System.Drawing.Size(120, 20);
+            this.nupFriction.TabIndex = 9;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(18, 96);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(44, 13);
+            this.label5.TabIndex = 10;
+            this.label5.Text = "Friction:";
+            // 
+            // nupRestitution
+            // 
+            this.nupRestitution.DecimalPlaces = 2;
+            this.nupRestitution.Location = new System.Drawing.Point(89, 122);
+            this.nupRestitution.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nupRestitution.Name = "nupRestitution";
+            this.nupRestitution.Size = new System.Drawing.Size(120, 20);
+            this.nupRestitution.TabIndex = 11;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(18, 122);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(60, 13);
+            this.label7.TabIndex = 12;
+            this.label7.Text = "Restitution:";
             // 
             // ObjectPropertiesForm
             // 
@@ -302,7 +423,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 465);
+            this.ClientSize = new System.Drawing.Size(343, 634);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butCancel);
@@ -317,13 +439,18 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.grpAutoAnimate.ResumeLayout(false);
             this.grpAutoAnimate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupFrom)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nupAlphaIndex)).EndInit();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nupMass)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupFriction)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nupRestitution)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -350,5 +477,14 @@
         private System.Windows.Forms.CheckBox chkNoExport;
         private System.Windows.Forms.NumericUpDown nupAlphaIndex;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.NumericUpDown nupMass;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox cbImpostor;
+        private System.Windows.Forms.NumericUpDown nupRestitution;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown nupFriction;
+        private System.Windows.Forms.Label label5;
     }
 }
