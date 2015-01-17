@@ -1365,6 +1365,13 @@ class Material:
                         # Bump
                         BabylonExporter.log('Bump texture found');
                         self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))  
+                    elif mtex.use_map_color_spec:
+                        # Specular
+                        BabylonExporter.log('Specular texture found');
+                        self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, filepath))
+                    else:
+                        BabylonExporter.warn('WARNING image texture type not recognized:  ' + str(mtex) + ', ignored.')
+
                         
             else:
                  BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')
