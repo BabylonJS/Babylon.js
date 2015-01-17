@@ -299,7 +299,7 @@
                 };
 
                 this._touchStart = event => {
-                    if (event.touches.length == 2) {
+                    if (event.touches.length === 2) {
                         //-- start pinch if two fingers on the screen
                         pinchStarted = true;
                         this._pinchStart(event);
@@ -333,7 +333,7 @@
                     var direction = 1;
                     var distanceXOrigine, distanceXNow;
 
-                    if (event.touches.length != 2)
+                    if (event.touches.length !== 2)
                         return;
                     // calculate absolute distances of the two fingers
                     distanceXOrigine = Math.abs(pinchPointX1 - pinchPointX2);
@@ -346,7 +346,7 @@
                     // calculate new radius
                     delta = (this.pinchPrecision / (this.wheelPrecision * 40)) * direction;
                     // set new radius
-                    this.inertialRadiusOffset += delta;
+                    this.inertialRadiusOffset -= delta;
                     // save origin touch point
                     pinchPointX1 = event.touches[0].clientX;
                     pinchPointX2 = event.touches[1].clientX;

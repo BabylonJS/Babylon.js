@@ -1,4 +1,17 @@
 ﻿module BABYLON {
+
+    export interface IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+
+        _shadowGenerator: ShadowGenerator;
+    }
+
     export class Light extends Node {
         public diffuse = new Color3(1.0, 1.0, 1.0);
         public specular = new Color3(1.0, 1.0, 1.0);

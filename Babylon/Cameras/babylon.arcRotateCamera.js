@@ -268,7 +268,7 @@ var BABYLON;
                 };
 
                 this._touchStart = function (event) {
-                    if (event.touches.length == 2) {
+                    if (event.touches.length === 2) {
                         //-- start pinch if two fingers on the screen
                         pinchStarted = true;
                         _this._pinchStart(event);
@@ -304,7 +304,7 @@ var BABYLON;
                     var direction = 1;
                     var distanceXOrigine, distanceXNow;
 
-                    if (event.touches.length != 2)
+                    if (event.touches.length !== 2)
                         return;
 
                     // calculate absolute distances of the two fingers
@@ -320,7 +320,7 @@ var BABYLON;
                     delta = (_this.pinchPrecision / (_this.wheelPrecision * 40)) * direction;
 
                     // set new radius
-                    _this.inertialRadiusOffset += delta;
+                    _this.inertialRadiusOffset -= delta;
 
                     // save origin touch point
                     pinchPointX1 = event.touches[0].clientX;

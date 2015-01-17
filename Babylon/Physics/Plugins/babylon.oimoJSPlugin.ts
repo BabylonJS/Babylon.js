@@ -26,6 +26,14 @@ module BABYLON {
             // register mesh
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
+
+                    var initialRotation = null;
+                    if (mesh.rotationQuaternion) {
+                        initialRotation = mesh.rotationQuaternion.clone();
+                        mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                        mesh.computeWorldMatrix(true);
+                    }
+
                     var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
@@ -39,6 +47,13 @@ module BABYLON {
                     // The delta between the mesh position and the mesh bounding box center
                     var deltaPosition = mesh.position.subtract(bbox.center);
 
+                    // Transform delta position with the rotation
+                    if (initialRotation) {
+                        var m = new BABYLON.Matrix();
+                        initialRotation.toRotationMatrix(m);
+                        deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
+                    }
+
                     body = new OIMO.Body({
                         type: 'sphere',
                         size: [size],
@@ -48,6 +63,12 @@ module BABYLON {
                         config: [options.mass, options.friction, options.restitution],
                         world: this._world
                     });
+
+                    // Restore rotation
+                    if (initialRotation) {
+                        body.setQuaternion(initialRotation);
+                    }
+
                     this._registeredMeshes.push({
                         mesh: mesh,
                         body: body,
@@ -57,6 +78,14 @@ module BABYLON {
 
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
+
+                    initialRotation = null;
+                    if (mesh.rotationQuaternion) {
+                        initialRotation = mesh.rotationQuaternion.clone();
+                        mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                        mesh.computeWorldMatrix(true);
+                    }
+
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
@@ -66,7 +95,14 @@ module BABYLON {
                     var sizeZ = this._checkWithEpsilon(box.z);
 
                     // The delta between the mesh position and the mesh boudning box center
-                    var deltaPosition = mesh.position.subtract(bbox.center);
+                    deltaPosition = mesh.position.subtract(bbox.center);
+
+                    // Transform delta position with the rotation
+                    if (initialRotation) {
+                        m = new BABYLON.Matrix();
+                        initialRotation.toRotationMatrix(m);
+                        deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
+                    }
 
                     body = new OIMO.Body({
                         type: 'box',
@@ -77,6 +113,10 @@ module BABYLON {
                         config: [options.mass, options.friction, options.restitution],
                         world: this._world
                     });
+
+                    if (initialRotation) {
+                        body.setQuaternion(initialRotation);
+                    }
 
                     this._registeredMeshes.push({
                         mesh: mesh,
