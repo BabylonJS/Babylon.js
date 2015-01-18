@@ -1043,7 +1043,7 @@ var BABYLON;
                     });
                 };
 
-                var asyncLoop = new BABYLON.AsyncLoop(settings.length, function (loop) {
+                BABYLON.AsyncLoop.Run(settings.length, function (loop) {
                     runDecimation(settings[loop.index], function () {
                         loop.executeNext();
                     });
