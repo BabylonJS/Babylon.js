@@ -869,7 +869,7 @@
         */
         AsyncLoop.SyncAsyncForLoop = function (iterations, syncedIterations, fn, callback, breakFunction, timeout) {
             if (typeof timeout === "undefined") { timeout = 0; }
-            var asyncLoop = new AsyncLoop(Math.ceil(iterations / syncedIterations), function (loop) {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), function (loop) {
                 if (breakFunction && breakFunction())
                     loop.breakLoop();
                 else {
