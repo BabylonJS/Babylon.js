@@ -117,7 +117,7 @@
             this._mesh = _mesh;
             this.initialised = false;
             this.syncIterations = 5000;
-            this.agressiveness = 7;
+            this.aggressiveness = 7;
             this.decimationIterations = 100;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
@@ -144,7 +144,7 @@
                         _this.triangles[i].isDirty = false;
                     }
 
-                    var threshold = 0.000000001 * Math.pow((iteration + 3), _this.agressiveness);
+                    var threshold = 0.000000001 * Math.pow((iteration + 3), _this.aggressiveness);
 
                     var trianglesIterator = function (i) {
                         var t = _this.triangles[i];
