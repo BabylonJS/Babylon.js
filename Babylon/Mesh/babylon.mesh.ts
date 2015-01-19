@@ -1053,7 +1053,8 @@
                         });
                 }, () => {
                     //execution ended, run the success callback.
-                    successCallback();
+                    if(successCallback)
+                        successCallback();
                 });
             }
         }

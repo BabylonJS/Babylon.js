@@ -95,7 +95,7 @@
         }
 
         // Statics
-        public static FromArray(array: number[]): Color3 {
+        public static FromArray(array: number[], offset:number = 0): Color3 {
             return new Color3(array[0], array[1], array[2]);
         }
 
@@ -349,11 +349,7 @@
             return new Vector2(0, 0);
         }
 
-        public static FromArray(array: number[], offset?: number): Vector2 {
-            if (!offset) {
-                offset = 0;
-            }
-
+        public static FromArray(array: number[], offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
 
