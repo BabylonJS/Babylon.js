@@ -1049,7 +1049,8 @@ var BABYLON;
                     });
                 }, function () {
                     //execution ended, run the success callback.
-                    successCallback();
+                    if (successCallback)
+                        successCallback();
                 });
             }
         };

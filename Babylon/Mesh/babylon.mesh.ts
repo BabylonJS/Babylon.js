@@ -1052,9 +1052,10 @@
                         loop.executeNext();
                     });
                 }, () => {
-                        //execution ended, run the success callback.
+                    //execution ended, run the success callback.
+                    if(successCallback)
                         successCallback();
-                    });
+                });
             }
         }
 
