@@ -82,6 +82,32 @@
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
 
+        Animation.prototype.matrixInterpolateFunction = function (startValue, endValue, gradient) {
+            var startScale = new BABYLON.Vector3(0, 0, 0);
+            var startRotation = new BABYLON.Quaternion();
+            var startTranslation = new BABYLON.Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new BABYLON.Vector3(0, 0, 0);
+            var endRotation = new BABYLON.Quaternion();
+            var endTranslation = new BABYLON.Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
+            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
+            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
+
+            var m = BABYLON.Matrix.FromValues(resultScale.x, 0, 0, 0, 0, resultScale.y, 0, 0, 0, 0, resultScale.z, 0, 0, 0, 0, 1);
+
+            var rotationMatrix = BABYLON.Matrix.Identity();
+            resultRotation.toRotationMatrix(rotationMatrix);
+            m = m.multiply(rotationMatrix);
+
+            m.setTranslation(resultTranslation);
+
+            return m;
+        };
+
         Animation.prototype.clone = function () {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
@@ -181,6 +207,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }

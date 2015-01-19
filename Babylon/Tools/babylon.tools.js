@@ -280,6 +280,17 @@
             return Math.min(max, Math.max(min, value));
         };
 
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number.
+        Tools.Sign = function (value) {
+            value = +value; // convert to a number
+
+            if (value === 0 || isNaN(value))
+                return value;
+
+            return value > 0 ? 1 : -1;
+        };
+
         Tools.Format = function (value, decimals) {
             if (typeof decimals === "undefined") { decimals = 2; }
             return value.toFixed(decimals);

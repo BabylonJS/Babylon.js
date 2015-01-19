@@ -311,6 +311,17 @@
             return Math.min(max, Math.max(min, value));
         }
 
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        public static Sign(value: number): number {
+            value = +value; // convert to a number
+
+            if (value === 0 || isNaN(value))
+                return value;
+
+            return value > 0 ? 1 : -1
+        }
+
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
