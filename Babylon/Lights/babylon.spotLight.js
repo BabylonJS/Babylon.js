@@ -16,12 +16,25 @@ var BABYLON;
             this.exponent = exponent;
         }
         SpotLight.prototype.getAbsolutePosition = function () {
-            return this._transformedPosition ? this._transformedPosition : this.position;
+            return this.transformedPosition ? this.transformedPosition : this.position;
         };
 
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
+        };
+
+        SpotLight.prototype.computeTransformedPosition = function () {
+            if (this.parent && this.parent.getWorldMatrix) {
+                if (!this.transformedPosition) {
+                    this.transformedPosition = BABYLON.Vector3.Zero();
+                }
+
+                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
+                return true;
+            }
+
+            return false;
         };
 
         SpotLight.prototype.transferToEffect = function (effect, positionUniformName, directionUniformName) {
@@ -32,16 +45,11 @@ var BABYLON;
                     this._transformedDirection = BABYLON.Vector3.Zero();
                 }
 
-                if (!this._transformedPosition) {
-                    this._transformedPosition = BABYLON.Vector3.Zero();
-                }
+                this.computeTransformedPosition();
 
-                var parentWorldMatrix = this.parent.getWorldMatrix();
+                BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._transformedPosition);
-                BABYLON.Vector3.TransformNormalToRef(this.direction, parentWorldMatrix, this._transformedDirection);
-
-                effect.setFloat4(positionUniformName, this._transformedPosition.x, this._transformedPosition.y, this._transformedPosition.z, this.exponent);
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
                 normalizeDirection = BABYLON.Vector3.Normalize(this._transformedDirection);
             } else {
                 effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);

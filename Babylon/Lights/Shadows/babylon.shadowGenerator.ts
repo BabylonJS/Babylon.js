@@ -34,31 +34,31 @@
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
         }
 
-        private _light: DirectionalLight;
+        private _light: IShadowLight;
         private _scene: Scene;
         private _shadowMap: RenderTargetTexture;
         private _darkness = 0;
         private _transparencyShadow = false;
         private _effect: Effect;
 
-        private _viewMatrix = BABYLON.Matrix.Zero();
-        private _projectionMatrix = BABYLON.Matrix.Zero();
-        private _transformMatrix = BABYLON.Matrix.Zero();
-        private _worldViewProjection = BABYLON.Matrix.Zero();
+        private _viewMatrix = Matrix.Zero();
+        private _projectionMatrix = Matrix.Zero();
+        private _transformMatrix = Matrix.Zero();
+        private _worldViewProjection = Matrix.Zero();
         private _cachedPosition: Vector3;
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
 
-        constructor(mapSize: number, light: DirectionalLight) {
+        constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
             this._scene = light.getScene();
 
             light._shadowGenerator = this;
 
             // Render target
-            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
-            this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+            this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
 
             // Custom render function
@@ -94,7 +94,7 @@
                     }
 
                     // Bones
-                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
 
                     if (useBones) {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
@@ -154,7 +154,7 @@
                 defines.push("#define VSM");
             }
 
-            var attribs = [BABYLON.VertexBuffer.PositionKind];
+            var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
@@ -163,20 +163,20 @@
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    attribs.push(VertexBuffer.UVKind);
                     defines.push("#define UV1");
                 }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    attribs.push(VertexBuffer.UV2Kind);
                     defines.push("#define UV2");
                 }
             }
 
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
             }
@@ -192,7 +192,7 @@
 
             // Get correct effect      
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
@@ -207,7 +207,7 @@
             return this._shadowMap;
         }
 
-        public getLight(): DirectionalLight {
+        public getLight(): IShadowLight {
             return this._light;
         }
 
@@ -216,8 +216,8 @@
             var lightPosition = this._light.position;
             var lightDirection = this._light.direction;
 
-            if (this._light._computeTransformedPosition()) {
-                lightPosition = this._light._transformedPosition;
+            if (this._light.computeTransformedPosition()) {
+                lightPosition = this._light.transformedPosition;
             }
 
             if (!this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
@@ -227,8 +227,8 @@
 
                 var activeCamera = this._scene.activeCamera;
 
-                BABYLON.Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), BABYLON.Vector3.Up(), this._viewMatrix);
-                BABYLON.Matrix.PerspectiveFovLHToRef(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ, this._projectionMatrix);
+                Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), Vector3.Up(), this._viewMatrix);
+                Matrix.PerspectiveFovLHToRef(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ, this._projectionMatrix);
 
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }

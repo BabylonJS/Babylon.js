@@ -15,7 +15,7 @@ var BABYLON;
             this.position = direction.scale(-1);
         }
         DirectionalLight.prototype.getAbsolutePosition = function () {
-            return this._transformedPosition ? this._transformedPosition : this.position;
+            return this.transformedPosition ? this.transformedPosition : this.position;
         };
 
         DirectionalLight.prototype.setDirectionToTarget = function (target) {
@@ -23,13 +23,13 @@ var BABYLON;
             return this.direction;
         };
 
-        DirectionalLight.prototype._computeTransformedPosition = function () {
+        DirectionalLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
-                if (!this._transformedPosition) {
-                    this._transformedPosition = BABYLON.Vector3.Zero();
+                if (!this.transformedPosition) {
+                    this.transformedPosition = BABYLON.Vector3.Zero();
                 }
 
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._transformedPosition);
+                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
                 return true;
             }
 
