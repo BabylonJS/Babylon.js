@@ -138,11 +138,11 @@
         
         public syncIterations = 5000;
 
-        public agressiveness: number;
+        public aggressiveness : number;
         public decimationIterations: number;
         
         constructor(private _mesh: Mesh) {
-            this.agressiveness = 7;
+            this.aggressiveness  = 7;
             this.decimationIterations = 100;
         }
 
@@ -168,7 +168,7 @@
                         this.triangles[i].isDirty = false;
                     }
 
-                    var threshold = 0.000000001 * Math.pow((iteration + 3), this.agressiveness);
+                    var threshold = 0.000000001 * Math.pow((iteration + 3), this.aggressiveness);
 
                     var trianglesIterator = (i) => {
                         var t = this.triangles[i];
