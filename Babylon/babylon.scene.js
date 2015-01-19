@@ -664,6 +664,22 @@
             return null;
         };
 
+        Scene.prototype.getNodeByName = function (name) {
+            var mesh = this.getMeshByName(name);
+
+            if (mesh) {
+                return mesh;
+            }
+
+            var light = this.getLightByName(name);
+
+            if (light) {
+                return light;
+            }
+
+            return this.getCameraByName(name);
+        };
+
         Scene.prototype.getMeshByName = function (name) {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].name === name) {

@@ -392,7 +392,7 @@
                     camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
                 }
             } else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                var eye_space = parsedCamera.eye_space;
+                eye_space = parsedCamera.eye_space;
                 camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
             } else if (parsedCamera.type === "DeviceOrientationCamera") {
                 camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
@@ -677,6 +677,11 @@
                 mesh._waitingParentId = parsedMesh.parentId;
             }
 
+            // Actions
+            if (parsedMesh.actions !== undefined) {
+                mesh._waitingActions = parsedMesh.actions;
+            }
+
             // Geometry
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
@@ -791,6 +796,92 @@
             }
 
             return mesh;
+        };
+
+        var parseActions = function (parsedActions, object, scene) {
+            var Types = { TRIGGER: 0, ACTION: 1, FLOW_CONTROL: 2, OBJECT: 3, SCENE: 4 };
+            object.actionManager = new BABYLON.ActionManager(scene);
+
+            var instanciate = function (name, params) {
+                var newInstance = Object.create(BABYLON[name].prototype);
+                newInstance.constructor.apply(newInstance, params);
+                return newInstance;
+            };
+
+            var getObjectByName = function (name) {
+                var object = scene.getMeshByName(name);
+
+                if (!object)
+                    object = scene.getLightByName(name);
+
+                if (!object)
+                    object = scene.getCameraByName(name);
+
+                return object;
+            };
+
+            // traverse graph per trigger
+            var traverse = function (parsedAction, trigger, condition, action, actionManager) {
+                var parameters = new Array();
+
+                // Parameters
+                if (parsedAction.type == Types.FLOW_CONTROL)
+                    parameters.push(actionManager);
+                else
+                    parameters.push(trigger);
+
+                for (var i = 0; i < parsedAction.properties.length; i++) {
+                    var value = parsedAction.properties[i].value;
+                    if (parsedAction.properties[i].name == "target") {
+                        value = getObjectByName(value);
+                    } else if (parsedAction.properties[i].name != "propertyPath") {
+                        if (value == "false" || value == "true")
+                            value = value == "true";
+                        else if (parsedAction.type == Types.FLOW_CONTROL && parsedAction.properties[i].name == "operator")
+                            value = BABYLON.ValueCondition[value];
+                        else
+                            value = parseFloat(value);
+                    }
+                    parameters.push(value);
+                }
+                parameters.push(condition);
+
+                // If interpolate value action
+                if (parsedAction.name == "InterpolateValueAction") {
+                    var param = parameters[parameters.length - 2];
+                    parameters[parameters.length - 1] = param;
+                    parameters[parameters.length - 2] = condition;
+                }
+
+                // Action or condition
+                var newAction = instanciate(parsedAction.name, parameters);
+                if (newAction instanceof BABYLON.Condition) {
+                    condition = newAction;
+                    newAction = action;
+                } else {
+                    condition = null;
+                    if (action)
+                        action.then(newAction);
+                    else
+                        actionManager.registerAction(newAction);
+                }
+
+                for (var i = 0; i < parsedAction.children.length; i++)
+                    traverse(parsedAction.children[i], trigger, condition, newAction, actionManager);
+            };
+
+            for (var i = 0; i < parsedActions.children.length; i++) {
+                var triggerParams;
+                var trigger = parsedActions.children[i];
+
+                if (trigger.properties.length > 0) {
+                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: scene.getMeshByName(trigger.properties[0].value) };
+                } else
+                    triggerParams = BABYLON.ActionManager[trigger.name];
+
+                for (var j = 0; j < trigger.children.length; j++)
+                    traverse(trigger.children[j], triggerParams, null, null, object.actionManager);
+            }
         };
 
         var isDescendantOf = function (mesh, names, hierarchyIds) {
@@ -1245,6 +1336,10 @@
                         mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                         mesh._waitingParentId = undefined;
                     }
+                    if (mesh._waitingActions) {
+                        parseActions(mesh._waitingActions, mesh, scene);
+                        mesh._waitingActions = undefined;
+                    }
                 }
 
                 // Particles Systems
@@ -1270,6 +1365,11 @@
 
                         parseShadowGenerator(parsedShadowGenerator, scene);
                     }
+                }
+
+                // Actions (scene)
+                if (parsedData.actions) {
+                    parseActions(parsedData.actions, scene, scene);
                 }
 
                 // Finish

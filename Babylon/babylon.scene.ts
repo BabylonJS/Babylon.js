@@ -350,10 +350,10 @@
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh,evt));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh,evt));
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
 
@@ -742,6 +742,22 @@
             return null;
         }
 
+        public getNodeByName(name: string): Node {
+            var mesh = this.getMeshByName(name);
+
+            if (mesh) {
+                return mesh;
+            }
+
+            var light = this.getLightByName(name);
+
+            if (light) {
+                return light;
+            }
+
+            return this.getCameraByName(name);
+        }
+
         public getMeshByName(name: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].name === name) {
@@ -903,7 +919,7 @@
 
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
-            }            
+            }
 
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees

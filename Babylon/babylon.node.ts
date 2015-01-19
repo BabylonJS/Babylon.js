@@ -15,6 +15,7 @@
         public _currentRenderId = -1;
 
         public _waitingParentId: string;
+        public _waitingActions: any;
 
         private _scene: Scene;
         public _cache;

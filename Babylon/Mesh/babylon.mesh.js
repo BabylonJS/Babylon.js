@@ -998,7 +998,7 @@ var BABYLON;
 
         /**
         * Simplify the mesh according to the given array of settings.
-        * Function will return immediately and will simplify asnyc.
+        * Function will return immediately and will simplify async.
         * @param settings a collection of simplification settings.
         * @param parallelProcessing should all levels calculate parallel or one after the other.
         * @param type the type of simplification to run.
