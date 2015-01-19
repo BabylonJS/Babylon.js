@@ -97,15 +97,9 @@
             var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
             var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
 
-            var m = BABYLON.Matrix.FromValues(resultScale.x, 0, 0, 0, 0, resultScale.y, 0, 0, 0, 0, resultScale.z, 0, 0, 0, 0, 1);
+            var result = BABYLON.Matrix.Compose(resultScale, resultRotation, resultTranslation);
 
-            var rotationMatrix = BABYLON.Matrix.Identity();
-            resultRotation.toRotationMatrix(rotationMatrix);
-            m = m.multiply(rotationMatrix);
-
-            m.setTranslation(resultTranslation);
-
-            return m;
+            return result;
         };
 
         Animation.prototype.clone = function () {

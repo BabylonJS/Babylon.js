@@ -1666,8 +1666,6 @@
             var ys = Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
             var zs = Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
 
-            debugger;
-
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
@@ -1680,7 +1678,8 @@
                 return false;
             }
 
-            var rotationMatrix = BABYLON.Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
+            var rotationMatrix = BABYLON.Matrix.FromValues(
+                this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
                 this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
                 this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
                 0, 0, 0, 1);
@@ -1756,6 +1755,21 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+
+            return result;
+        }
+
+        public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
+            var result = Matrix.FromValues(scale.x, 0, 0, 0,
+                0, scale.y, 0, 0,
+                0, 0, scale.z, 0,
+                0, 0, 0, 1);
+
+            var rotationMatrix = Matrix.Identity();
+            rotation.toRotationMatrix(rotationMatrix);
+            result = result.multiply(rotationMatrix);
+
+            result.setTranslation(translation);
 
             return result;
         }
