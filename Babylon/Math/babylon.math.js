@@ -1410,6 +1410,10 @@
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         };
 
+        Quaternion.Identity = function () {
+            return new Quaternion(0, 0, 0, 1);
+        };
+
         Quaternion.RotationAxis = function (axis, angle) {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
@@ -1675,6 +1679,36 @@
 
         Matrix.prototype.clone = function () {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5], this.m[6], this.m[7], this.m[8], this.m[9], this.m[10], this.m[11], this.m[12], this.m[13], this.m[14], this.m[15]);
+        };
+
+        Matrix.prototype.decompose = function (scale, rotation, translation) {
+            translation.x = this.m[12];
+            translation.y = this.m[13];
+            translation.z = this.m[14];
+
+            var xs = BABYLON.Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = BABYLON.Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = BABYLON.Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+
+            debugger;
+
+            scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
+            scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
+            scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
+
+            if (scale.x == 0 || scale.y == 0 || scale.z == 0) {
+                rotation.x = 0;
+                rotation.y = 0;
+                rotation.z = 0;
+                rotation.w = 1;
+                return false;
+            }
+
+            var rotationMatrix = BABYLON.Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
+
+            rotation.fromRotationMatrix(rotationMatrix);
+
+            return true;
         };
 
         // Statics

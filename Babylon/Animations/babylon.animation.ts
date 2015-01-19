@@ -88,6 +88,35 @@
             return Color3.Lerp(startValue, endValue, gradient);
         }
 
+        public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
+            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
+            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
+
+            var m = Matrix.FromValues(resultScale.x, 0, 0, 0,
+                0, resultScale.y, 0, 0,
+                0, 0, resultScale.z, 0,
+                0, 0, 0, 1);
+
+            var rotationMatrix = Matrix.Identity();
+            resultRotation.toRotationMatrix(rotationMatrix);
+            m = m.multiply(rotationMatrix);
+
+            m.setTranslation(resultTranslation);
+
+            return m;
+        }
+
         public clone(): Animation {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
@@ -189,6 +218,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
