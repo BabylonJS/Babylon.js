@@ -16,7 +16,7 @@ var BABYLON;
 
                         var center = mesh.getBoundingInfo().boundingBox.center;
                         body.setPosition(center.x, center.y, center.z);
-                        body.setOrientation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+                        body.setRotation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
                         return;
                     }
 
@@ -30,7 +30,7 @@ var BABYLON;
 
                         body = registeredMesh.body.body;
                         body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
-                        body.setOrientation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
+                        body.setRotation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
                         return;
                     }
                 }

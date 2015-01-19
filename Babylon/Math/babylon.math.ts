@@ -186,6 +186,13 @@
             return new Color4(this.r, this.g, this.b, this.a);
         }
 
+        public copyFrom(source: Color4): void {
+            this.r = source.r;
+            this.g = source.g;
+            this.b = source.b;
+            this.a = source.a;
+        }
+
         // Statics
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0, 0, 0, 0);
@@ -1371,6 +1378,10 @@
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         }
 
+        public static Identity(): Quaternion {
+            return new Quaternion(0, 0, 0, 1);
+        }
+
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
@@ -1440,7 +1451,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -1641,9 +1652,9 @@
         public equals(value: Matrix): boolean {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
 
         public clone(): Matrix {
@@ -1651,6 +1662,38 @@
                 this.m[4], this.m[5], this.m[6], this.m[7],
                 this.m[8], this.m[9], this.m[10], this.m[11],
                 this.m[12], this.m[13], this.m[14], this.m[15]);
+        }
+
+        public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3) {
+            translation.x = this.m[12];
+            translation.y = this.m[13];
+            translation.z = this.m[14];
+
+            var xs = Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+
+            scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
+            scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
+            scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
+
+            if (scale.x == 0 || scale.y == 0 || scale.z == 0) {
+                rotation.x = 0;
+                rotation.y = 0;
+                rotation.z = 0;
+                rotation.w = 1;
+                return false;
+            }
+
+            var rotationMatrix = BABYLON.Matrix.FromValues(
+                this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
+                this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
+                this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
+                0, 0, 0, 1);
+
+            rotation.fromRotationMatrix(rotationMatrix);
+
+            return true;
         }
 
         // Statics
@@ -1719,6 +1762,21 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+
+            return result;
+        }
+
+        public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
+            var result = Matrix.FromValues(scale.x, 0, 0, 0,
+                0, scale.y, 0, 0,
+                0, 0, scale.z, 0,
+                0, 0, 0, 1);
+
+            var rotationMatrix = Matrix.Identity();
+            rotation.toRotationMatrix(rotationMatrix);
+            result = result.multiply(rotationMatrix);
+
+            result.setTranslation(translation);
 
             return result;
         }
@@ -2612,7 +2670,7 @@
     }
 
     export class PathCursor {
-        private _onchange = new Array <(cursor: PathCursor) => void>();
+        private _onchange = new Array<(cursor: PathCursor) => void>();
 
         value: number = 0;
         animations = new Array<Animation>();
@@ -2620,14 +2678,14 @@
         constructor(private path: Path2) {
         }
 
-        getPoint() : Vector3 {
+        getPoint(): Vector3 {
             var point = this.path.getPointAtLengthPosition(this.value);
             return new Vector3(point.x, 0, point.y);
         }
 
         moveAhead(step: number = 0.002) {
             this.move(step);
-            
+
         }
 
         moveBack(step: number = 0.002) {
@@ -2635,7 +2693,7 @@
         }
 
         move(step: number) {
-            
+
             if (Math.abs(step) > 1) {
                 throw "step size should be less than 1.";
             }
@@ -2648,7 +2706,7 @@
         private ensureLimits() {
             while (this.value > 1) {
                 this.value -= 1;
-            } 
+            }
             while (this.value < 0) {
                 this.value += 1;
             }

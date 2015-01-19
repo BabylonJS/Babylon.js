@@ -18,11 +18,11 @@
                 var canvasRect = engine.getRenderingCanvasClientRect();
 
                 if (_this._showUI) {
-                    _this._statsDiv.style.left = (canvasRect.width - 310) + "px";
-                    _this._statsDiv.style.top = (canvasRect.height - 370) + "px";
-                    _this._statsDiv.style.width = "300px";
-                    _this._statsDiv.style.height = "360px";
-                    _this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
+                    _this._statsDiv.style.left = (canvasRect.width - 410) + "px";
+                    _this._statsDiv.style.top = (canvasRect.height - 290) + "px";
+                    _this._statsDiv.style.width = "400px";
+                    _this._statsDiv.style.height = "auto";
+                    _this._statsSubsetDiv.style.maxHeight = "240px";
 
                     _this._optionsDiv.style.left = "0px";
                     _this._optionsDiv.style.top = "10px";
@@ -39,7 +39,7 @@
                     _this._treeDiv.style.top = "10px";
                     _this._treeDiv.style.width = "300px";
                     _this._treeDiv.style.height = "auto";
-                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 430) + "px";
+                    _this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 340) + "px";
                 }
 
                 _this._globalDiv.style.left = canvasRect.left + "px";
@@ -477,12 +477,11 @@
                 this._statsDiv.style.position = "absolute";
                 this._statsDiv.style.background = background;
                 this._statsDiv.style.padding = "0px 0px 0px 5px";
-                this._statsDiv.style.pointerEvents = "none";
-                this._statsDiv.style.overflowY = "auto";
                 this._generateheader(this._statsDiv, "STATISTICS");
                 this._statsSubsetDiv = document.createElement("div");
                 this._statsSubsetDiv.style.paddingTop = "5px";
                 this._statsSubsetDiv.style.paddingBottom = "5px";
+                this._statsSubsetDiv.style.overflowY = "auto";
                 this._statsDiv.appendChild(this._statsSubsetDiv);
 
                 // Tree
@@ -539,7 +538,7 @@
                 this._optionsSubsetDiv.style.maxHeight = "200px";
                 this._optionsDiv.appendChild(this._optionsSubsetDiv);
 
-                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>", this.accentColor);
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Windows:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Statistics", this._displayStatistics, function (element) {
                     _this._displayStatistics = element.checked;
                 });
@@ -550,6 +549,8 @@
                     _this._displayTree = element.checked;
                     _this._needToRefreshMeshesTree = true;
                 });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, function (element) {
                     _this._scene.forceShowBoundingBoxes = element.checked;
                 });
@@ -559,7 +560,7 @@
                         _this._clearLabels();
                     }
                 });
-                this._generateCheckBox(this._optionsSubsetDiv, "Generate user marks", BABYLON.Tools.PerformanceLogLevel === BABYLON.Tools.PerformanceUserMarkLogLevel, function (element) {
+                this._generateCheckBox(this._optionsSubsetDiv, "Generate user marks (F12)", BABYLON.Tools.PerformanceLogLevel === BABYLON.Tools.PerformanceUserMarkLogLevel, function (element) {
                     if (element.checked) {
                         BABYLON.Tools.PerformanceLogLevel = BABYLON.Tools.PerformanceUserMarkLogLevel;
                     } else {
@@ -662,8 +663,13 @@
         DebugLayer.prototype._displayStats = function () {
             var scene = this._scene;
             var engine = scene.getEngine();
+            var glInfo = engine.getGlInfo();
 
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(engine.getFps(), 0) + " fps</b><br><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br><br>" + "Frame duration: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<i>Evaluate Active Meshes duration:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "<i>Render Targets duration:</i> " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "<i>Particles duration:</i> " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "<i>Sprites duration:</i> " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br>" + "<i>Render duration:</i> <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b>";
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(engine.getFps(), 0) + " fps</b><br><br>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Count</b><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Total materials: " + scene.materials.length + "<br>" + "Total textures: " + scene.textures.length + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<b>Duration</b><br>" + "Meshes selection:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "Render Targets: " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "Particles: " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "Sprites: " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br><br>" + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>" + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>" + "</div>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Extensions</b><br>" + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>" + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>" + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>" + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>" + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>" + "<b>Caps.</b><br>" + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>" + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>" + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>" + "</div><br>" + "<b>Info</b><br>" + glInfo.version + "<br>" + glInfo.renderer + "<br>";
+
+            if (this.customStatsFunction) {
+                this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
+            }
         };
         return DebugLayer;
     })();

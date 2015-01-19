@@ -198,7 +198,7 @@
 
             // Get correct effect
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix"], ["diffuseSampler"], join);
             }
@@ -219,8 +219,8 @@
             var lightPosition = this._light.position;
             var lightDirection = this._light.direction;
 
-            if (this._light._computeTransformedPosition()) {
-                lightPosition = this._light._transformedPosition;
+            if (this._light.computeTransformedPosition()) {
+                lightPosition = this._light.transformedPosition;
             }
 
             if (!this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {

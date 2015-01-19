@@ -104,8 +104,7 @@
                     particle.age += _this._scaledUpdateSpeed;
 
                     if (particle.age >= particle.lifeTime) {
-                        particles.splice(index, 1);
-                        _this._stockParticles.push(particle);
+                        _this.recycleParticle(particle);
                         index--;
                         continue;
                     } else {
@@ -126,6 +125,15 @@
                 }
             };
         }
+        ParticleSystem.prototype.recycleParticle = function (particle) {
+            var lastParticle = this.particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+                this._stockParticles.push(lastParticle);
+            }
+        };
+
         ParticleSystem.prototype.getCapacity = function () {
             return this._capacity;
         };

@@ -41,7 +41,7 @@
 
             mesh.animations.push(animation);
 
-            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
+            mesh.getScene().beginAnimation(mesh, 0, totalFrame,(animation.loopMode === 1));
 
         }
 
@@ -86,6 +86,26 @@
 
         public color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3 {
             return Color3.Lerp(startValue, endValue, gradient);
+        }
+
+        public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
+            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
+            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
+
+            var result = Matrix.Compose(resultScale, resultRotation, resultTranslation);
+
+            return result;
         }
 
         public clone(): Animation {
@@ -189,6 +209,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }

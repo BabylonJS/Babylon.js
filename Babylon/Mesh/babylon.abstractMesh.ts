@@ -106,6 +106,9 @@
 
         private _onAfterWorldMatrixUpdate = new Array<(mesh: BABYLON.AbstractMesh) => void>();
 
+        // Loading properties
+        public _waitingActions: any;
+
         constructor(name: string, scene: Scene) {
             super(name, scene);
 

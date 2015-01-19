@@ -311,6 +311,17 @@
             return Math.min(max, Math.max(min, value));
         }
 
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        public static Sign(value: number): number {
+            value = +value; // convert to a number
+
+            if (value === 0 || isNaN(value))
+                return value;
+
+            return value > 0 ? 1 : -1
+        }
+
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
@@ -461,8 +472,8 @@
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new RenderTargetTexture("screenShot", size, engine.scenes[0], false, false);
-            texture.renderList = engine.scenes[0].meshes;
+            var texture = new RenderTargetTexture("screenShot", size, scene, false, false);
+            texture.renderList = scene.meshes;
 
             texture.onAfterRender = () => {
                 // Read the contents of the framebuffer
@@ -511,7 +522,7 @@
 
                     window.document.body.appendChild(a);
 
-                    a.addEventListener("click", () => {
+                    a.addEventListener("click",() => {
                         a.parentElement.removeChild(a);
                     });
                     a.click();
@@ -785,5 +796,90 @@
             return 0;
         }
 
+
+    }
+
+    /**
+     * An implementation of a loop for asynchronous functions.
+     */
+    export class AsyncLoop {
+        public index: number;
+        private _done: boolean;
+
+        /**
+         * Constroctor.
+         * @param iterations the number of iterations.
+         * @param _fn the function to run each iteration
+         * @param _successCallback the callback that will be called upon succesful execution
+         * @param offset starting offset.
+         */
+        constructor(public iterations: number, private _fn: (asyncLoop: AsyncLoop) => void, private _successCallback: () => void, offset: number = 0) {
+            this.index = offset - 1;
+            this._done = false;
+        }
+
+        /**
+         * Execute the next iteration. Must be called after the last iteration was finished.
+         */
+        public executeNext(): void {
+            if (!this._done) {
+                if (this.index < this.iterations) {
+                    ++this.index;
+                    this._fn(this);
+                } else {
+                    this.breakLoop();
+                }
+            }
+        }
+
+        /**
+         * Break the loop and run the success callback.
+         */
+        public breakLoop(): void {
+            this._done = true;
+            this._successCallback();
+        }
+
+        /**
+         * Helper function
+         */
+        public static Run(iterations: number, _fn: (asyncLoop: AsyncLoop) => void, _successCallback: () => void, offset: number = 0): AsyncLoop {
+            var loop = new AsyncLoop(iterations, _fn, _successCallback, offset);
+
+            loop.executeNext();
+
+            return loop;
+        }
+
+
+        /**
+         * A for-loop that will run a given number of iterations synchronous and the rest async.
+         * @param iterations total number of iterations
+         * @param syncedIterations number of synchronous iterations in each async iteration.
+         * @param fn the function to call each iteration.
+         * @param callback a success call back that will be called when iterating stops.
+         * @param breakFunction a break condition (optional)
+         * @param timeout timeout settings for the setTimeout function. default - 0.
+         * @constructor
+         */
+        public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations),(loop: AsyncLoop) => {
+                if (breakFunction && breakFunction()) loop.breakLoop();
+                else {
+                    setTimeout(() => {
+                        for (var i = 0; i < syncedIterations; ++i) {
+                            var iteration = (loop.index * syncedIterations) + i;
+                            if (iteration >= iterations) break;
+                            fn(iteration);
+                            if (breakFunction && breakFunction()) {
+                                loop.breakLoop();
+                                break;
+                            }
+                        }
+                        loop.executeNext();
+                    }, timeout);
+                }
+            }, callback);
+        }
     }
 } 

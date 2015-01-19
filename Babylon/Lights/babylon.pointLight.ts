@@ -14,10 +14,10 @@
         public transferToEffect(effect: Effect, positionUniformName: string): void {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._transformedPosition) {
-                    this._transformedPosition = BABYLON.Vector3.Zero();
+                    this._transformedPosition = Vector3.Zero();
                 }
 
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._transformedPosition);
+                Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._transformedPosition);
                 effect.setFloat4(positionUniformName, this._transformedPosition.x, this._transformedPosition.y, this._transformedPosition.z, 0);
 
                 return;
@@ -32,7 +32,7 @@
 
         public _getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
+                this._worldMatrix = Matrix.Identity();
             }
 
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);

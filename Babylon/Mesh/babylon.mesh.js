@@ -996,6 +996,64 @@ var BABYLON;
             }
         };
 
+        /**
+        * Simplify the mesh according to the given array of settings.
+        * Function will return immediately and will simplify async.
+        * @param settings a collection of simplification settings.
+        * @param parallelProcessing should all levels calculate parallel or one after the other.
+        * @param type the type of simplification to run.
+        * successCallback optional success callback to be called after the simplification finished processing all settings.
+        */
+        Mesh.prototype.simplify = function (settings, parallelProcessing, type, successCallback) {
+            var _this = this;
+            if (typeof parallelProcessing === "undefined") { parallelProcessing = true; }
+            if (typeof type === "undefined") { type = 0 /* QUADRATIC */; }
+            var getSimplifier = function () {
+                switch (type) {
+                    case 0 /* QUADRATIC */:
+                    default:
+                        return new BABYLON.QuadraticErrorSimplification(_this);
+                }
+            };
+
+            if (parallelProcessing) {
+                //parallel simplifier
+                settings.forEach(function (setting) {
+                    var simplifier = getSimplifier();
+                    simplifier.simplify(setting, function (newMesh) {
+                        _this.addLODLevel(setting.distance, newMesh);
+
+                        //check if it is the last
+                        if (setting.quality == settings[settings.length - 1].quality && successCallback) {
+                            //all done, run the success callback.
+                            successCallback();
+                        }
+                    });
+                });
+            } else {
+                //single simplifier.
+                var simplifier = getSimplifier();
+
+                var runDecimation = function (setting, callback) {
+                    simplifier.simplify(setting, function (newMesh) {
+                        _this.addLODLevel(setting.distance, newMesh);
+
+                        //run the next quality level
+                        callback();
+                    });
+                };
+
+                BABYLON.AsyncLoop.Run(settings.length, function (loop) {
+                    runDecimation(settings[loop.index], function () {
+                        loop.executeNext();
+                    });
+                }, function () {
+                    //execution ended, run the success callback.
+                    successCallback();
+                });
+            }
+        };
+
         // Statics
         Mesh.CreateBox = function (name, size, scene, updatable) {
             var box = new BABYLON.Mesh(name, scene);
