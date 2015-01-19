@@ -823,7 +823,7 @@
          */
         public executeNext(): void {
             if (!this._done) {
-                if (this.index < this.iterations) {
+                if (this.index + 1 < this.iterations) {
                     ++this.index;
                     this._fn(this);
                 } else {

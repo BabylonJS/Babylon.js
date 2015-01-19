@@ -59,6 +59,9 @@
         public triangleStart: number;
         public triangleCount: number;
 
+        //if color is present instead of uvs.
+        public color: Color3;
+
         constructor(public position: Vector3, public normal: Vector3, public uv: Vector2, public id) {
             this.isBorder = true;
             this.q = new QuadraticMatrix();
@@ -171,11 +174,10 @@
                     var threshold = 0.000000001 * Math.pow((iteration + 3), this.aggressiveness);
 
                     var trianglesIterator = (i) => {
-                        var t = this.triangles[i];
+                        var tIdx = ((this.triangles.length / 2) + i) % this.triangles.length;
+                        var t = this.triangles[tIdx];
                         if (!t) return;
-                        if (t.error[3] > threshold) { return }
-                        if (t.deleted) { return }
-                        if (t.isDirty) {  return }
+                        if (t.error[3] > threshold || t.deleted || t.isDirty ) { return }
                         for (var j = 0; j < 3; ++j) {
                             if (t.error[j] < threshold) {
                                 var deleted0: Array<boolean> = [];
@@ -248,13 +250,22 @@
             this.triangles = [];
 
             this._mesh = mesh;
+            //It is assumed that a mesh has positions, normals and either uvs or colors.
             var positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
             var normalData = this._mesh.getVerticesData(VertexBuffer.NormalKind);
             var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
+            var colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
             var indices = mesh.getIndices();
 
             var vertexInit = (i) => {
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), Vector2.FromArray(uvs, i * 2), i);
+                var uv;
+                if (uvs[i*2]) {
+                    uv = Vector2.FromArray(uvs, i * 2)
+                }
+                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), uv, i);
+                if (!uv && colorsData[i*3]) {
+                    vertex.color = Color3.FromArray(colorsData, i * 3);
+                }
                 this.vertices.push(vertex);
             };
             var totalVertices = mesh.getTotalVertices();
@@ -343,6 +354,7 @@
             var newPositionData = [];
             var newNormalData = [];
             var newUVsData = [];
+            var newColorsData = [];
 
             for (i = 0; i < newVerticesOrder.length; ++i) {
                 newPositionData.push(this.vertices[i].position.x);
@@ -351,8 +363,14 @@
                 newNormalData.push(this.vertices[i].normal.x);
                 newNormalData.push(this.vertices[i].normal.y);
                 newNormalData.push(this.vertices[i].normal.z);
-                newUVsData.push(this.vertices[i].uv.x);
-                newUVsData.push(this.vertices[i].uv.y);
+                if (this.vertices[i].uv) {
+                    newUVsData.push(this.vertices[i].uv.x);
+                    newUVsData.push(this.vertices[i].uv.y);
+                } else if (this.vertices[i].color) {
+                    newColorsData.push(this.vertices[i].color.r);
+                    newColorsData.push(this.vertices[i].color.g);
+                    newColorsData.push(this.vertices[i].color.b);
+                }
             }
 
             var newIndicesArray: Array<number> = [];
@@ -362,13 +380,17 @@
                 newIndicesArray.push(newTriangles[i].vertices[2]);
             }
 
+            //not cloning, to avoid geometry problems. Creating a whole new mesh.
             var newMesh = new Mesh(this._mesh + "Decimated", this._mesh.getScene());
             newMesh.material = this._mesh.material;
             newMesh.parent = this._mesh.parent;
             newMesh.setIndices(newIndicesArray);
             newMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
             newMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
-            newMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
+            if(newUVsData.length > 0)
+                newMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
+            if (newColorsData.length > 0) 
+                newMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
             //preparing the skeleton support
             if (this._mesh.skeleton) {
                 //newMesh.skeleton = this._mesh.skeleton.clone("", "");
