@@ -102,7 +102,8 @@
         };
 
         // Statics
-        Color3.FromArray = function (array) {
+        Color3.FromArray = function (array, offset) {
+            if (typeof offset === "undefined") { offset = 0; }
             return new Color3(array[0], array[1], array[2]);
         };
 
@@ -384,10 +385,7 @@
         };
 
         Vector2.FromArray = function (array, offset) {
-            if (!offset) {
-                offset = 0;
-            }
-
+            if (typeof offset === "undefined") { offset = 0; }
             return new Vector2(array[offset], array[offset + 1]);
         };
 
