@@ -29,6 +29,10 @@ namespace Max2Babylon
             Tools.UpdateNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to");
 
             Tools.UpdateNumericUpDown(nupAlphaIndex, objects, "babylonjs_alphaindex");
+            Tools.UpdateNumericUpDown(nupMass, objects, "babylonjs_mass");
+            Tools.UpdateNumericUpDown(nupFriction, objects, "babylonjs_friction");
+            Tools.UpdateNumericUpDown(nupRestitution, objects, "babylonjs_restitution");
+            Tools.UpdateComboBox(cbImpostor, objects, "babylonjs_impostor");
         }
 
         private void ObjectPropertiesForm_Load(object sender, EventArgs e)
@@ -55,6 +59,12 @@ namespace Max2Babylon
             Tools.PrepareNumericUpDown(nupFrom, objects, "babylonjs_autoanimate_from");
             Tools.PrepareNumericUpDown(nupTo, objects, "babylonjs_autoanimate_to", 100.0f);
             Tools.PrepareNumericUpDown(nupAlphaIndex, objects, "babylonjs_alphaindex", 1000);
+
+            Tools.PrepareNumericUpDown(nupMass, objects, "babylonjs_mass");
+            Tools.PrepareNumericUpDown(nupFriction, objects, "babylonjs_friction", 0.2f);
+            Tools.PrepareNumericUpDown(nupRestitution, objects, "babylonjs_restitution", 0.2f);
+
+            Tools.PrepareComboBox(cbImpostor, objects[0], "babylonjs_impostor", "None");
         }
 
         private void chkAutoAnimate_CheckedChanged(object sender, EventArgs e)

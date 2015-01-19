@@ -77,7 +77,7 @@ declare module BABYLON {
         public cullBackFaces: boolean;
         public renderEvenInBackground: boolean;
         public scenes: Scene[];
-        private _gl;
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas;
         private _windowIsBackground;
         private _audioEngine;
@@ -94,6 +94,9 @@ declare module BABYLON {
         private _loadingTextDiv;
         private _loadingDivBackgroundColor;
         private _drawCalls;
+        private _glVersion;
+        private _glRenderer;
+        private _glVendor;
         private _renderingQueueLaunched;
         private _activeRenderLoops;
         private fpsRange;
@@ -118,6 +121,11 @@ declare module BABYLON {
         private _workingCanvas;
         private _workingContext;
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: any);
+        public getGlInfo(): {
+            vendor: string;
+            renderer: string;
+            version: string;
+        };
         public getAudioEngine(): AudioEngine;
         public getAspectRatio(camera: Camera): number;
         public getRenderWidth(): number;
@@ -257,6 +265,12 @@ interface HTMLCanvasElement {
     msRequestPointerLock(): void;
     mozRequestPointerLock(): void;
     webkitRequestPointerLock(): void;
+}
+interface CanvasRenderingContext2D {
+    imageSmoothingEnabled: boolean;
+    mozImageSmoothingEnabled: boolean;
+    oImageSmoothingEnabled: boolean;
+    webkitImageSmoothingEnabled: boolean;
 }
 interface WebGLTexture {
     isReady: boolean;
@@ -1252,41 +1266,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class OculusCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene);
-        public _update(): void;
-        public _updateCamera(camera: FreeCamera): void;
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
-    }
-}
-declare module BABYLON {
-    class OculusGamepadCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        private _gamepad;
-        private _gamepads;
-        public angularSensibility: number;
-        public moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _onNewGameConnected(gamepad);
-        public _update(): void;
-        public _checkInputs(): void;
-        public _updateCamera(camera: FreeCamera): void;
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
-        public dispose(): void;
-    }
-}
-declare module BABYLON {
     class TargetCamera extends Camera {
         public cameraDirection: Vector3;
         public cameraRotation: Vector2;
@@ -1344,32 +1323,6 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         public _checkInputs(): void;
         public dispose(): void;
-    }
-}
-declare module BABYLON {
-    class VRDeviceOrientationCamera extends OculusCamera {
-        public _alpha: number;
-        public _beta: number;
-        public _gamma: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-    }
-}
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRCamera extends OculusCamera {
-        public _hmdDevice: any;
-        public _sensorDevice: any;
-        public _cacheState: any;
-        public _cacheQuaternion: Quaternion;
-        public _cacheRotation: Vector3;
-        public _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _getWebVRDevices(devices);
-        public _update(): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
     }
 }
 declare module BABYLON {
@@ -1622,6 +1575,7 @@ declare module BABYLON {
         public shouldDisplayAxis: (mesh: Mesh) => boolean;
         public axisRatio: number;
         public accentColor: string;
+        public customStatsFunction: () => string;
         constructor(scene: Scene);
         private _refreshMeshesTreeContent();
         private _renderSingleAxis(zero, unit, unitText, label, color);
@@ -1698,16 +1652,16 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class DirectionalLight extends Light {
+    class DirectionalLight extends Light implements IShadowLight {
         public direction: Vector3;
         public position: Vector3;
         private _transformedDirection;
-        public _transformedPosition: Vector3;
+        public transformedPosition: Vector3;
         private _worldMatrix;
         constructor(name: string, direction: Vector3, scene: Scene);
         public getAbsolutePosition(): Vector3;
         public setDirectionToTarget(target: Vector3): Vector3;
-        public _computeTransformedPosition(): boolean;
+        public computeTransformedPosition(): boolean;
         public transferToEffect(effect: Effect, directionUniformName: string): void;
         public _getWorldMatrix(): Matrix;
     }
@@ -1725,6 +1679,15 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    interface IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+        _shadowGenerator: ShadowGenerator;
+    }
     class Light extends Node {
         public diffuse: Color3;
         public specular: Color3;
@@ -1759,17 +1722,18 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class SpotLight extends Light {
+    class SpotLight extends Light implements IShadowLight {
         public position: Vector3;
         public direction: Vector3;
         public angle: number;
         public exponent: number;
+        public transformedPosition: Vector3;
         private _transformedDirection;
-        private _transformedPosition;
         private _worldMatrix;
         constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
         public getAbsolutePosition(): Vector3;
         public setDirectionToTarget(target: Vector3): Vector3;
+        public computeTransformedPosition(): boolean;
         public transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
         public _getWorldMatrix(): Matrix;
     }
@@ -1798,10 +1762,10 @@ declare module BABYLON {
         private _cachedPosition;
         private _cachedDirection;
         private _cachedDefines;
-        constructor(mapSize: number, light: DirectionalLight);
+        constructor(mapSize: number, light: IShadowLight);
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean;
         public getShadowMap(): RenderTargetTexture;
-        public getLight(): DirectionalLight;
+        public getLight(): IShadowLight;
         public getTransformMatrix(): Matrix;
         public getDarkness(): number;
         public setDarkness(darkness: number): void;
@@ -2413,6 +2377,7 @@ declare module BABYLON {
         public scaleToRef(scale: number, result: Color4): void;
         public toString(): string;
         public clone(): Color4;
+        public copyFrom(source: Color4): void;
         static Lerp(left: Color4, right: Color4, amount: number): Color4;
         static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
         static FromArray(array: number[], offset?: number): Color4;
@@ -3226,6 +3191,15 @@ declare module BABYLON {
         public convertToFlatShadedMesh(): void;
         public createInstance(name: string): InstancedMesh;
         public synchronizeInstances(): void;
+        /**
+        * Simplify the mesh according to the given array of settings.
+        * Function will return immediately and will simplify asnyc.
+        * @param settings a collection of simplification settings.
+        * @param parallelProcessing should all levels calculate parallel or one after the other.
+        * @param type the type of simplification to run.
+        * successCallback optional success callback to be called after the simplification finished processing all settings.
+        */
+        public simplify(settings: ISimplificationSettings[], parallelProcessing?: boolean, type?: SimplificationType, successCallback?: () => void): void;
         static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh;
         static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh;
         static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any): Mesh;
@@ -3304,6 +3278,104 @@ declare module BABYLON.Internals {
         public distance: number;
         public mesh: Mesh;
         constructor(distance: number, mesh: Mesh);
+    }
+}
+declare module BABYLON {
+    /**
+    * A simplifier interface for future simplification implementations.
+    */
+    interface ISimplifier {
+        /**
+        * Simplification of a given mesh according to the given settings.
+        * Since this requires computation, it is assumed that the function runs async.
+        * @param settings The settings of the simplification, including quality and distance
+        * @param successCallback A callback that will be called after the mesh was simplified.
+        * @param errorCallback in case of an error, this callback will be called. optional.
+        */
+        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void, errorCallback?: () => void): void;
+    }
+    /**
+    * Expected simplification settings.
+    * Quality should be between 0 and 1 (1 being 100%, 0 being 0%);
+    */
+    interface ISimplificationSettings {
+        quality: number;
+        distance: number;
+    }
+    class SimplificationSettings implements ISimplificationSettings {
+        public quality: number;
+        public distance: number;
+        constructor(quality: number, distance: number);
+    }
+    /**
+    * The implemented types of simplification.
+    * At the moment only Quadratic Error Decimation is implemented.
+    */
+    enum SimplificationType {
+        QUADRATIC = 0,
+    }
+    class DecimationTriangle {
+        public vertices: number[];
+        public normal: Vector3;
+        public error: number[];
+        public deleted: boolean;
+        public isDirty: boolean;
+        public borderFactor: number;
+        constructor(vertices: number[]);
+    }
+    class DecimationVertex {
+        public position: Vector3;
+        public normal: Vector3;
+        public uv: Vector2;
+        public id: any;
+        public q: QuadraticMatrix;
+        public isBorder: boolean;
+        public triangleStart: number;
+        public triangleCount: number;
+        constructor(position: Vector3, normal: Vector3, uv: Vector2, id: any);
+    }
+    class QuadraticMatrix {
+        public data: number[];
+        constructor(data?: number[]);
+        public det(a11: any, a12: any, a13: any, a21: any, a22: any, a23: any, a31: any, a32: any, a33: any): number;
+        public addInPlace(matrix: QuadraticMatrix): void;
+        public addArrayInPlace(data: number[]): void;
+        public add(matrix: QuadraticMatrix): QuadraticMatrix;
+        static FromData(a: number, b: number, c: number, d: number): QuadraticMatrix;
+        static DataFromNumbers(a: number, b: number, c: number, d: number): number[];
+    }
+    class Reference {
+        public vertexId: number;
+        public triangleId: number;
+        constructor(vertexId: number, triangleId: number);
+    }
+    /**
+    * An implementation of the Quadratic Error simplification algorithm.
+    * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
+    * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
+    * @author RaananW
+    */
+    class QuadraticErrorSimplification implements ISimplifier {
+        private _mesh;
+        private triangles;
+        private vertices;
+        private references;
+        private initialised;
+        public syncIterations: number;
+        public agressiveness: number;
+        public decimationIterations: number;
+        constructor(_mesh: Mesh);
+        public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void): void;
+        private runDecimation(settings, successCallback);
+        private initWithMesh(mesh, callback);
+        private init(callback);
+        private reconstructMesh();
+        private isFlipped(vertex1, index2, point, deletedArray, borderFactor);
+        private updateTriangles(vertexId, vertex, deletedArray, deletedTriangles);
+        private identifyBorder();
+        private updateMesh(identifyBorders?);
+        private vertexError(q, point);
+        private calculateError(vertex1, vertex2, pointResult?, normalResult?, uvResult?);
     }
 }
 declare module BABYLON {
@@ -3406,6 +3478,7 @@ declare module BABYLON {
         public size: number;
         public angle: number;
         public angularSpeed: number;
+        public copyTo(other: Particle): void;
     }
 }
 declare module BABYLON {
@@ -3469,6 +3542,7 @@ declare module BABYLON {
         private _actualFrame;
         private _scaledUpdateSpeed;
         constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        public recycleParticle(particle: Particle): void;
         public getCapacity(): number;
         public isAlive(): boolean;
         public isStarted(): boolean;
@@ -4348,6 +4422,47 @@ declare module BABYLON {
         static EndPerformanceCounter: (counterName: string, condition?: boolean) => void;
         static Now : number;
         static GetFps(): number;
+    }
+    /**
+    * An implementation of a loop for asynchronous functions.
+    */
+    class AsyncLoop {
+        public iterations: number;
+        private _fn;
+        private _successCallback;
+        public index: number;
+        private _done;
+        /**
+        * Constroctor.
+        * @param iterations the number of iterations.
+        * @param _fn the function to run each iteration
+        * @param _successCallback the callback that will be called upon succesful execution
+        * @param offset starting offset.
+        */
+        constructor(iterations: number, _fn: (asyncLoop: AsyncLoop) => void, _successCallback: () => void, offset?: number);
+        /**
+        * Execute the next iteration. Must be called after the last iteration was finished.
+        */
+        public executeNext(): void;
+        /**
+        * Break the loop and run the success callback.
+        */
+        public breakLoop(): void;
+        /**
+        * Helper function
+        */
+        static Run(iterations: number, _fn: (asyncLoop: AsyncLoop) => void, _successCallback: () => void, offset?: number): AsyncLoop;
+        /**
+        * A for-loop that will run a given number of iterations synchronous and the rest async.
+        * @param iterations total number of iterations
+        * @param syncedIterations number of synchronous iterations in each async iteration.
+        * @param fn the function to call each iteration.
+        * @param callback a success call back that will be called when iterating stops.
+        * @param breakFunction a break condition (optional)
+        * @param timeout timeout settings for the setTimeout function. default - 0.
+        * @constructor
+        */
+        static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout?: number): void;
     }
 }
 declare module BABYLON.Internals {
