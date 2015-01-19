@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 6, 0),
+    'version': (1, 6, 1),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -264,10 +264,10 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                         bulb = Light(object)
                         self.lights.append(bulb)
                         if object.data.shadowMap != 'NONE':
-                            if bulb.light_type == DIRECTIONAL_LIGHT:
+                            if bulb.light_type == DIRECTIONAL_LIGHT or bulb.light_type == SPOT_LIGHT:
                                 self.shadowGenerators.append(ShadowGenerator(object, self.meshesAndNodes, scene))
                             else:
-                                BabylonExporter.warn('WARNING: Only directional (sun) type of lamp is invalid for shadows thus ignored: ' + object.name)                                
+                                BabylonExporter.warn('WARNING: Only directional (sun) and spot types of lamp are valid for shadows thus ignored: ' + object.name)                                
                     else:
                         BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
                         
@@ -1365,6 +1365,13 @@ class Material:
                         # Bump
                         BabylonExporter.log('Bump texture found');
                         self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))  
+                    elif mtex.use_map_color_spec:
+                        # Specular
+                        BabylonExporter.log('Specular texture found');
+                        self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, filepath))
+                    else:
+                        BabylonExporter.warn('WARNING image texture type not recognized:  ' + str(mtex) + ', ignored.')
+
                         
             else:
                  BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')

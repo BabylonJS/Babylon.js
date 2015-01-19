@@ -73,13 +73,13 @@ namespace Max2Babylon
             // Shadows 
             if (maxLight.ShadowMethod == 1)
             {
-                if (lightState.Type == LightType.DirectLgt)
+                if (lightState.Type == LightType.DirectLgt || lightState.Type == LightType.SpotLgt)
                 {
                     ExportShadowGenerator(lightNode.MaxNode, babylonScene);
                 }
                 else
                 {
-                    RaiseWarning("Shadows maps are only supported for directional lights", 2);
+                    RaiseWarning("Shadows maps are only supported for directional and spot lights", 2);
                 }
             }
 
@@ -91,7 +91,7 @@ namespace Max2Babylon
                 wm.MultiplyBy(parentWorld.Inverse);
             }
             var position = wm.Translation;
-            babylonLight.position = new float[] { position.X, position.Y, position.Z };
+            babylonLight.position = new[] { position.X, position.Y, position.Z };
 
             // Direction
             var target = gameLight.LightTarget;
@@ -101,13 +101,13 @@ namespace Max2Babylon
                 var targetPosition = targetWm.Translation;
 
                 var direction = targetPosition.Subtract(position).Normalize;
-                babylonLight.direction = new float[] { direction.X, direction.Y, direction.Z };
+                babylonLight.direction = new[] { direction.X, direction.Y, direction.Z };
             }
             else
             {
                 var vDir = Loader.Global.Point3.Create(0, -1, 0);
                 vDir = wm.ExtractMatrix3().VectorTransform(vDir).Normalize;
-                babylonLight.direction = new float[] { vDir.X, vDir.Y, vDir.Z };
+                babylonLight.direction = new[] { vDir.X, vDir.Y, vDir.Z };
             }
 
             var maxScene = Loader.Core.RootNode;
@@ -171,7 +171,7 @@ namespace Max2Babylon
                     mat.MultiplyBy(parentWorld.Inverse);
                 }
                 var pos = mat.Translation;
-                return new float[] { pos.X, pos.Y, pos.Z };
+                return new[] { pos.X, pos.Y, pos.Z };
             });
 
             ExportVector3Animation("direction", animations, key =>
@@ -190,13 +190,13 @@ namespace Max2Babylon
                     var targetPosition = targetWm.Translation;
 
                     var direction = targetPosition.Subtract(positionLight).Normalize;
-                    return new float[] { direction.X, direction.Y, direction.Z };
+                    return new[] { direction.X, direction.Y, direction.Z };
                 }
                 else
                 {
                     var vDir = Loader.Global.Point3.Create(0, -1, 0);
                     vDir = wmLight.ExtractMatrix3().VectorTransform(vDir).Normalize;
-                    return new float[] { vDir.X, vDir.Y, vDir.Z };
+                    return new[] { vDir.X, vDir.Y, vDir.Z };
                 }
             });
 

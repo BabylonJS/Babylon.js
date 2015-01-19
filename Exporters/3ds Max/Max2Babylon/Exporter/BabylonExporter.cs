@@ -112,6 +112,8 @@ namespace Max2Babylon
 
             if (AutoSave3dsMaxFile)
             {
+                var forceSave = Loader.Core.FileSave;
+
                 if (callerForm != null)
                 {
                     callerForm.BringToFront();

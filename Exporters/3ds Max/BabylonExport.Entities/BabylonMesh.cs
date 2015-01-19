@@ -3,7 +3,7 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonMesh: BabylonAbstractMesh
+    public class BabylonMesh : BabylonAbstractMesh
     {
 
         [DataMember]
@@ -58,11 +58,11 @@ namespace BabylonExport.Entities
         public bool checkCollisions { get; set; }
 
         [DataMember]
-        public bool receiveShadows { get; set; }    
-    
+        public bool receiveShadows { get; set; }
+
         [DataMember]
         public bool infiniteDistance { get; set; }
-        
+
         [DataMember]
         public int billboardMode { get; set; }
 
@@ -101,6 +101,18 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public int alphaIndex { get; set; }
+
+        [DataMember]
+        public int physicsImpostor { get; set; }
+
+        [DataMember]
+        public float physicsMass { get; set; }
+
+        [DataMember]
+        public float physicsFriction { get; set; }
+
+        [DataMember]
+        public float physicsRestitution { get; set; }
 
         public BabylonMesh()
         {
