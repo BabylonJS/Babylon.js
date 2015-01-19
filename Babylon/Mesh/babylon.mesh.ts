@@ -39,8 +39,8 @@
          */
         constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
             super(name, scene);
-            
-            if (source){
+
+            if (source) {
                 // Geometry
                 if (source._geometry) {
                     source._geometry.applyToMesh(this);
@@ -59,7 +59,7 @@
 
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
-                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren); 
+                            var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
                     }
                 }
@@ -1006,7 +1006,7 @@
 
         /**
          * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify asnyc.
+         * Function will return immediately and will simplify async.
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
@@ -1014,14 +1014,14 @@
          */
         public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, type: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
 
-            var getSimplifier = () : ISimplifier =>  {
+            var getSimplifier = (): ISimplifier => {
                 switch (type) {
                     case SimplificationType.QUADRATIC:
                     default:
                         return new QuadraticErrorSimplification(this);
                 }
-            }     
-                        
+            }
+
             if (parallelProcessing) {
                 //parallel simplifier
                 settings.forEach((setting) => {
@@ -1029,7 +1029,7 @@
                     simplifier.simplify(setting, (newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //check if it is the last
-                        if (setting.quality == settings[settings.length-1].quality && successCallback) {
+                        if (setting.quality == settings[settings.length - 1].quality && successCallback) {
                             //all done, run the success callback.
                             successCallback();
                         }
@@ -1039,7 +1039,7 @@
                 //single simplifier.
                 var simplifier = getSimplifier();
 
-                var runDecimation = (setting:ISimplificationSettings, callback: () => void) => {
+                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                     simplifier.simplify(setting, (newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //run the next quality level
@@ -1047,14 +1047,14 @@
                     });
                 }
 
-                AsyncLoop.Run(settings.length, (loop : AsyncLoop) => {
+                AsyncLoop.Run(settings.length, (loop: AsyncLoop) => {
                     runDecimation(settings[loop.index], () => {
-                            loop.executeNext();
-                        });
+                        loop.executeNext();
+                    });
                 }, () => {
-                    //execution ended, run the success callback.
-                    successCallback();
-                });
+                        //execution ended, run the success callback.
+                        successCallback();
+                    });
             }
         }
 
