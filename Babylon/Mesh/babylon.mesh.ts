@@ -7,11 +7,11 @@
 
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Members
-        public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
-        private _LODLevels = new Array<BABYLON.Internals.MeshLODLevel>();
+        private _LODLevels = new Array<Internals.MeshLODLevel>();
 
         // Private
         public _geometry: Geometry;
@@ -30,9 +30,9 @@
 
         /**
          * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
-         * @param {BABYLON.Scene} scene - The scene to add this mesh to.
-         * @param {BABYLON.Node} parent - The parent of this mesh, if it has one
-         * @param {BABYLON.Mesh} source - An optional Mesh from which geometry is shared, cloned.
+         * @param {Scene} scene - The scene to add this mesh to.
+         * @param {Node} parent - The parent of this mesh, if it has one
+         * @param {Mesh} source - An optional Mesh from which geometry is shared, cloned.
          * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
@@ -47,7 +47,7 @@
                 }
 
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
 
                 // Material
                 this.material = source.material;
@@ -109,7 +109,7 @@
                 return this;
             }
 
-            var level = new BABYLON.Internals.MeshLODLevel(distance, mesh);
+            var level = new Internals.MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {
@@ -230,7 +230,7 @@
         }
 
         public isReady(): boolean {
-            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
@@ -313,7 +313,7 @@
                     break;
                 }
 
-                BABYLON.SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, totalIndices - offset), this);
+                SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, totalIndices - offset), this);
 
                 offset += subdivisionSize;
             }
@@ -331,12 +331,12 @@
             }
 
             if (!this._geometry) {
-                var vertexData = new BABYLON.VertexData();
+                var vertexData = new VertexData();
                 vertexData.set(data, kind);
 
                 var scene = this.getScene();
 
-                new BABYLON.Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
+                new Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
             }
             else {
                 this._geometry.setVerticesData(kind, data, updatable, stride);
@@ -629,7 +629,7 @@
             // Overlay
             if (this.renderOverlay) {
                 var currentMode = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
                 scene.getOutlineRenderer().render(subMesh, batch, true);
                 engine.setAlphaMode(currentMode);
             }
@@ -685,14 +685,14 @@
             if (this._geometry) {
                 this._geometry.load(scene);
             }
-            else if (that.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
+            else if (that.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
+                that.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
                 scene._addPendingData(that);
 
                 var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1) ? true : false;
 
-                BABYLON.Tools.LoadFile(this.delayLoadingFile, data => {
+                Tools.LoadFile(this.delayLoadingFile, data => {
 
                     if (data instanceof ArrayBuffer) {
                         this._delayLoadingFunction(data, this);
@@ -701,14 +701,14 @@
                         this._delayLoadingFunction(JSON.parse(data), this);
                     }
 
-                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                    this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                },() => { }, scene.database, getBinaryData);
             }
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
@@ -757,31 +757,31 @@
         // Geometry
         public bakeTransformIntoVertices(transform: Matrix): void {
             // Position
-            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+            if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 return;
             }
 
             this._resetPointsArrayCache();
 
-            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
             var temp = [];
             for (var index = 0; index < data.length; index += 3) {
-                BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+                Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
 
-            this.setVerticesData(BABYLON.VertexBuffer.PositionKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable());
+            this.setVerticesData(VertexBuffer.PositionKind, temp, this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable());
 
             // Normals
-            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return;
             }
 
-            data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            data = this.getVerticesData(VertexBuffer.NormalKind);
             for (index = 0; index < data.length; index += 3) {
-                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
 
-            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable());
+            this.setVerticesData(VertexBuffer.NormalKind, temp, this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable());
         }
 
 
@@ -797,14 +797,14 @@
 
             this._positions = [];
 
-            var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
                 return false;
             }
 
             for (var index = 0; index < data.length; index += 3) {
-                this._positions.push(BABYLON.Vector3.FromArray(data, index));
+                this._positions.push(Vector3.FromArray(data, index));
             }
 
             return true;
@@ -812,7 +812,7 @@
 
         // Clone
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh {
-            return new BABYLON.Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+            return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
 
         // Dispose
@@ -855,7 +855,7 @@
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -876,7 +876,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -916,7 +916,7 @@
                 var kind = kinds[kindIndex];
                 var vertexBuffer = this.getVertexBuffer(kind);
 
-                if (kind === BABYLON.VertexBuffer.NormalKind) {
+                if (kind === VertexBuffer.NormalKind) {
                     updatableNormals = vertexBuffer.isUpdatable();
                     kinds.splice(kindIndex, 1);
                     kindIndex--;
@@ -935,7 +935,7 @@
             var totalIndices = this.getTotalIndices();
 
             // Generating unique vertices per face
-            for (index = 0; index < totalIndices; index++) {
+            for (var index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
 
                 for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -950,20 +950,20 @@
 
             // Updating faces & normal
             var normals = [];
-            var positions = newdata[BABYLON.VertexBuffer.PositionKind];
-            for (var index = 0; index < totalIndices; index += 3) {
+            var positions = newdata[VertexBuffer.PositionKind];
+            for (index = 0; index < totalIndices; index += 3) {
                 indices[index] = index;
                 indices[index + 1] = index + 1;
                 indices[index + 2] = index + 2;
 
-                var p1 = BABYLON.Vector3.FromArray(positions, index * 3);
-                var p2 = BABYLON.Vector3.FromArray(positions, (index + 1) * 3);
-                var p3 = BABYLON.Vector3.FromArray(positions, (index + 2) * 3);
+                var p1 = Vector3.FromArray(positions, index * 3);
+                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
+                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
 
-                var normal = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+                var normal = Vector3.Normalize(Vector3.Cross(p1p2, p3p2));
 
                 // Store same normals for every vertex
                 for (var localIndex = 0; localIndex < 3; localIndex++) {
@@ -974,7 +974,7 @@
             }
 
             this.setIndices(indices);
-            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatableNormals);
+            this.setVerticesData(VertexBuffer.NormalKind, normals, updatableNormals);
 
             // Updating vertex buffers
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -986,7 +986,7 @@
             this.releaseSubMeshes();
             for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
                 var previousOne = previousSubmeshes[submeshIndex];
-                var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
 
             this.synchronizeInstances();
@@ -1026,7 +1026,7 @@
                 //parallel simplifier
                 settings.forEach((setting) => {
                     var simplifier = getSimplifier();
-                    simplifier.simplify(setting, (newMesh) => {
+                    simplifier.simplify(setting,(newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //check if it is the last
                         if (setting.quality == settings[settings.length - 1].quality && successCallback) {
@@ -1040,29 +1040,30 @@
                 var simplifier = getSimplifier();
 
                 var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting, (newMesh) => {
+                    simplifier.simplify(setting,(newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //run the next quality level
                         callback();
                     });
                 }
 
-                AsyncLoop.Run(settings.length, (loop: AsyncLoop) => {
-                    runDecimation(settings[loop.index], () => {
+                AsyncLoop.Run(settings.length,(loop: AsyncLoop) => {
+                    runDecimation(settings[loop.index],() => {
                         loop.executeNext();
                     });
-                }, () => {
-                    //execution ended, run the success callback.
-                    if(successCallback)
-                        successCallback();
-                });
+                },() => {
+                        //execution ended, run the success callback.
+                        if (successCallback) {
+                            successCallback();
+                        }
+                    });
             }
         }
 
         // Statics
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
-            var box = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateBox(size);
+            var box = new Mesh(name, scene);
+            var vertexData = VertexData.CreateBox(size);
 
             vertexData.applyToMesh(box, updatable);
 
@@ -1070,8 +1071,8 @@
         }
 
         public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh {
-            var sphere = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter);
+            var sphere = new Mesh(name, scene);
+            var vertexData = VertexData.CreateSphere(segments, diameter);
 
             vertexData.applyToMesh(sphere, updatable);
 
@@ -1089,8 +1090,8 @@
                 subdivisions = 1;
             }
 
-            var cylinder = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions);
+            var cylinder = new Mesh(name, scene);
+            var vertexData = VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions);
 
             vertexData.applyToMesh(cylinder, updatable);
 
@@ -1099,8 +1100,8 @@
 
         // Torus  (Code from SharpDX.org)
         public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
-            var torus = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
+            var torus = new Mesh(name, scene);
+            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation);
 
             vertexData.applyToMesh(torus, updatable);
 
@@ -1108,8 +1109,8 @@
         }
 
         public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean): Mesh {
-            var torusKnot = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+            var torusKnot = new Mesh(name, scene);
+            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
 
             vertexData.applyToMesh(torusKnot, updatable);
 
@@ -1120,7 +1121,7 @@
         public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean): LinesMesh {
             var lines = new LinesMesh(name, scene, updatable);
 
-            var vertexData = BABYLON.VertexData.CreateLines(points);
+            var vertexData = VertexData.CreateLines(points);
 
             vertexData.applyToMesh(lines, updatable);
 
@@ -1129,8 +1130,8 @@
 
         // Plane & ground
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
-            var plane = new BABYLON.Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreatePlane(size);
+            var plane = new Mesh(name, scene);
+            var vertexData = VertexData.CreatePlane(size);
 
             vertexData.applyToMesh(plane, updatable);
 
@@ -1138,11 +1139,11 @@
         }
 
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
-            var ground = new BABYLON.GroundMesh(name, scene);
+            var ground = new GroundMesh(name, scene);
             ground._setReady(false);
             ground._subdivisions = subdivisions;
 
-            var vertexData = BABYLON.VertexData.CreateGround(width, height, subdivisions);
+            var vertexData = VertexData.CreateGround(width, height, subdivisions);
 
             vertexData.applyToMesh(ground, updatable);
 
@@ -1152,9 +1153,9 @@
         }
 
         public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
-            var tiledGround = new BABYLON.Mesh(name, scene);
+            var tiledGround = new Mesh(name, scene);
 
-            var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+            var vertexData = VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
 
             vertexData.applyToMesh(tiledGround, updatable);
 
@@ -1162,7 +1163,7 @@
         }
 
         public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh {
-            var ground = new BABYLON.GroundMesh(name, scene);
+            var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
             ground._setReady(false);
@@ -1187,7 +1188,7 @@
                 ground._setReady(true);
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
 
             return ground;
         }
@@ -1215,8 +1216,8 @@
         }
 
         public static Center(meshesOrMinMaxVector): Vector3 {
-            var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
-            return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
+            var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
+            return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
         public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean): Mesh {
