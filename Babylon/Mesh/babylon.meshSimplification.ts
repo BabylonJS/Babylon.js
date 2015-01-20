@@ -60,7 +60,7 @@
         public triangleCount: number;
 
         //if color is present instead of uvs.
-        public color: Color3;
+        public color: Color4;
 
         constructor(public position: Vector3, public normal: Vector3, public uv: Vector2, public id) {
             this.isBorder = true;
@@ -259,12 +259,12 @@
 
             var vertexInit = (i) => {
                 var uv;
-                if (uvs[i*2]) {
+                if (this._mesh.isVerticesDataPresent([VertexBuffer.UVKind])) {
                     uv = Vector2.FromArray(uvs, i * 2)
                 }
                 var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), uv, i);
-                if (!uv && colorsData[i*3]) {
-                    vertex.color = Color3.FromArray(colorsData, i * 3);
+                if (!this._mesh.isVerticesDataPresent([VertexBuffer.UVKind]) && this._mesh.isVerticesDataPresent([VertexBuffer.ColorKind])) {
+                    vertex.color = Color4.FromArray(colorsData, i * 4);
                 }
                 this.vertices.push(vertex);
             };
@@ -370,6 +370,7 @@
                     newColorsData.push(this.vertices[i].color.r);
                     newColorsData.push(this.vertices[i].color.g);
                     newColorsData.push(this.vertices[i].color.b);
+                    newColorsData.push(this.vertices[i].color.a);
                 }
             }
 
