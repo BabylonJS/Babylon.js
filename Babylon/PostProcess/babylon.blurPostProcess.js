@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -9,8 +9,8 @@ var BABYLON;
     var BlurPostProcess = (function (_super) {
         __extends(BlurPostProcess, _super);
         function BlurPostProcess(name, direction, blurWidth, ratio, camera, samplingMode, engine, reusable) {
+            if (typeof samplingMode === "undefined") { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             var _this = this;
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             _super.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, ratio, camera, samplingMode, engine, reusable);
             this.direction = direction;
             this.blurWidth = blurWidth;

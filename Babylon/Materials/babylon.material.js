@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
@@ -12,7 +12,9 @@ var BABYLON;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
             this.id = name;
+
             this._scene = scene;
+
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
@@ -24,6 +26,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(Material, "WireFrameFillMode", {
             get: function () {
                 return Material._WireFrameFillMode;
@@ -31,6 +34,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(Material, "PointFillMode", {
             get: function () {
                 return Material._PointFillMode;
@@ -38,6 +42,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(Material.prototype, "wireframe", {
             get: function () {
                 return this._fillMode === Material.WireFrameFillMode;
@@ -48,6 +53,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+
         Object.defineProperty(Material.prototype, "pointsCloud", {
             get: function () {
                 return this._fillMode === Material.PointFillMode;
@@ -58,6 +65,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+
         Object.defineProperty(Material.prototype, "fillMode", {
             get: function () {
                 return this._fillMode;
@@ -68,50 +77,67 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
+
         Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };
+
         Material.prototype.getEffect = function () {
             return this._effect;
         };
+
         Material.prototype.getScene = function () {
             return this._scene;
         };
+
         Material.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
         };
+
         Material.prototype.needAlphaTesting = function () {
             return false;
         };
+
         Material.prototype.getAlphaTestTexture = function () {
             return null;
         };
+
         Material.prototype.trackCreation = function (onCompiled, onError) {
         };
+
         Material.prototype._preBind = function () {
             var engine = this._scene.getEngine();
+
             engine.enableEffect(this._effect);
             engine.setState(this.backFaceCulling);
         };
+
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
+
             if (this.onBind) {
                 this.onBind(this);
             }
         };
+
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
+
         Material.prototype.unbind = function () {
         };
+
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);
             this._scene.materials.splice(index, 1);
+
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
                 this._scene.getEngine()._releaseEffect(this._effect);
                 this._effect = null;
             }
+
             // Callback
             if (this.onDispose) {
                 this.onDispose();

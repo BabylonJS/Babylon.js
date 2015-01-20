@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -34,6 +34,7 @@ var BABYLON;
                 this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
             }
         };
+
         VirtualJoysticksCamera.prototype.dispose = function () {
             this._leftjoystick.releaseCanvas();
             _super.prototype.dispose.call(this);
