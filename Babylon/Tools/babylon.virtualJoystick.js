@@ -1,6 +1,6 @@
-// Mainly based on these 2 articles : 
+﻿// Mainly based on these 2 articles :
 // Creating an universal virtual touch joystick working for all Touch models thanks to Hand.JS : http://blogs.msdn.com/b/davrous/archive/2013/02/22/creating-an-universal-virtual-touch-joystick-working-for-all-touch-models-thanks-to-hand-js.aspx
-// & on Seb Lee-Delisle original work: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/ 
+// & on Seb Lee-Delisle original work: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/
 var BABYLON;
 (function (BABYLON) {
     (function (JoystickAxis) {
@@ -9,31 +9,37 @@ var BABYLON;
         JoystickAxis[JoystickAxis["Z"] = 2] = "Z";
     })(BABYLON.JoystickAxis || (BABYLON.JoystickAxis = {}));
     var JoystickAxis = BABYLON.JoystickAxis;
+
     var VirtualJoystick = (function () {
         function VirtualJoystick(leftJoystick) {
             var _this = this;
             if (leftJoystick) {
                 this._leftJoystick = true;
-            }
-            else {
+            } else {
                 this._leftJoystick = false;
             }
+
             this._joystickIndex = VirtualJoystick._globalJoystickIndex;
             VirtualJoystick._globalJoystickIndex++;
+
             // By default left & right arrow keys are moving the X
             // and up & down keys are moving the Y
             this._axisTargetedByLeftAndRight = 0 /* X */;
             this._axisTargetedByUpAndDown = 1 /* Y */;
+
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
+
             // collections of pointers
             this._touches = new BABYLON.VirtualJoystick.Collection();
             this.deltaPosition = BABYLON.Vector3.Zero();
+
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
             this._rotationSpeed = 25;
             this._inverseRotationSpeed = 1 / (this._rotationSpeed / 1000);
             this._rotateOnAxisRelativeToMesh = false;
+
             // injecting a canvas element on top of the canvas 3D game
             if (!VirtualJoystick.vjCanvas) {
                 window.addEventListener("resize", function () {
@@ -65,14 +71,19 @@ var BABYLON;
             VirtualJoystick.halfWidth = VirtualJoystick.vjCanvas.width / 2;
             VirtualJoystick.halfHeight = VirtualJoystick.vjCanvas.height / 2;
             this.pressed = false;
+
             // default joystick color
             this._joystickColor = "cyan";
+
             this._joystickPointerID = -1;
+
             // current joystick position
             this._joystickPointerPos = new BABYLON.Vector2(0, 0);
+
             // origin joystick position
             this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
             this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
+
             VirtualJoystick.vjCanvas.addEventListener('pointerdown', function (evt) {
                 _this._onPointerDown(evt);
             }, false);
@@ -96,15 +107,18 @@ var BABYLON;
             this._joystickSensibility = newJoystickSensibility;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
         };
+
         VirtualJoystick.prototype._onPointerDown = function (e) {
             var positionOnScreenCondition;
+
             e.preventDefault();
+
             if (this._leftJoystick === true) {
                 positionOnScreenCondition = (e.clientX < VirtualJoystick.halfWidth);
-            }
-            else {
+            } else {
                 positionOnScreenCondition = (e.clientX > VirtualJoystick.halfWidth);
             }
+
             if (positionOnScreenCondition && this._joystickPointerID < 0) {
                 // First contact will be dedicated to the virtual joystick
                 this._joystickPointerID = e.pointerId;
@@ -115,8 +129,7 @@ var BABYLON;
                 this._deltaJoystickVector.y = 0;
                 this.pressed = true;
                 this._touches.add(e.pointerId.toString(), e);
-            }
-            else {
+            } else {
                 // You can only trigger the action buttons with a joystick declared
                 if (VirtualJoystick._globalJoystickIndex < 2 && this._action) {
                     this._action();
@@ -124,6 +137,7 @@ var BABYLON;
                 }
             }
         };
+
         VirtualJoystick.prototype._onPointerMove = function (e) {
             // If the current pointer is the one associated to the joystick (first touch contact)
             if (this._joystickPointerID == e.pointerId) {
@@ -131,6 +145,7 @@ var BABYLON;
                 this._joystickPointerPos.y = e.clientY;
                 this._deltaJoystickVector = this._joystickPointerPos.clone();
                 this._deltaJoystickVector = this._deltaJoystickVector.subtract(this._joystickPointerStartPos);
+
                 var directionLeftRight = this.reverseLeftRight ? -1 : 1;
                 var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
                 switch (this._axisTargetedByLeftAndRight) {
@@ -157,14 +172,14 @@ var BABYLON;
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
                 }
-            }
-            else {
+            } else {
                 if (this._touches.item(e.pointerId.toString())) {
                     this._touches.item(e.pointerId.toString()).x = e.clientX;
                     this._touches.item(e.pointerId.toString()).y = e.clientY;
                 }
             }
         };
+
         VirtualJoystick.prototype._onPointerUp = function (e) {
             this._clearCanvas();
             if (this._joystickPointerID == e.pointerId) {
@@ -173,8 +188,10 @@ var BABYLON;
             }
             this._deltaJoystickVector.x = 0;
             this._deltaJoystickVector.y = 0;
+
             this._touches.remove(e.pointerId.toString());
         };
+
         /**
         * Change the color of the virtual joystick
         * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
@@ -182,10 +199,12 @@ var BABYLON;
         VirtualJoystick.prototype.setJoystickColor = function (newColor) {
             this._joystickColor = newColor;
         };
+
         VirtualJoystick.prototype.setActionOnTouch = function (action) {
             this._action = action;
         };
-        // Define which axis you'd like to control for left & right 
+
+        // Define which axis you'd like to control for left & right
         VirtualJoystick.prototype.setAxisForLeftRight = function (axis) {
             switch (axis) {
                 case 0 /* X */:
@@ -198,7 +217,8 @@ var BABYLON;
                     break;
             }
         };
-        // Define which axis you'd like to control for up & down 
+
+        // Define which axis you'd like to control for up & down
         VirtualJoystick.prototype.setAxisForUpDown = function (axis) {
             switch (axis) {
                 case 0 /* X */:
@@ -211,14 +231,15 @@ var BABYLON;
                     break;
             }
         };
+
         VirtualJoystick.prototype._clearCanvas = function () {
             if (this._leftJoystick) {
                 VirtualJoystick.vjCanvasContext.clearRect(0, 0, VirtualJoystick.vjCanvasWidth / 2, VirtualJoystick.vjCanvasHeight);
-            }
-            else {
+            } else {
                 VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
             }
         };
+
         VirtualJoystick.prototype._drawVirtualJoystick = function () {
             var _this = this;
             if (this.pressed) {
@@ -239,8 +260,7 @@ var BABYLON;
                         VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(_this._joystickPointerPos.x, _this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
-                    }
-                    else {
+                    } else {
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -256,21 +276,21 @@ var BABYLON;
                 _this._drawVirtualJoystick();
             });
         };
+
         VirtualJoystick.prototype.releaseCanvas = function () {
             if (VirtualJoystick.vjCanvas) {
                 document.body.removeChild(VirtualJoystick.vjCanvas);
                 VirtualJoystick.vjCanvas = null;
             }
         };
-        // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         VirtualJoystick._globalJoystickIndex = 0;
         return VirtualJoystick;
     })();
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
+
 var BABYLON;
 (function (BABYLON) {
-    var VirtualJoystick;
     (function (VirtualJoystick) {
         var Collection = (function () {
             function Collection() {
@@ -280,6 +300,7 @@ var BABYLON;
             Collection.prototype.Count = function () {
                 return this._count;
             };
+
             Collection.prototype.add = function (key, item) {
                 if (this._collection[key] != undefined) {
                     return undefined;
@@ -287,6 +308,7 @@ var BABYLON;
                 this._collection[key] = item;
                 return ++this._count;
             };
+
             Collection.prototype.remove = function (key) {
                 if (this._collection[key] == undefined) {
                     return undefined;
@@ -294,9 +316,11 @@ var BABYLON;
                 delete this._collection[key];
                 return --this._count;
             };
+
             Collection.prototype.item = function (key) {
                 return this._collection[key];
             };
+
             Collection.prototype.forEach = function (block) {
                 var key;
                 for (key in this._collection) {
@@ -308,6 +332,7 @@ var BABYLON;
             return Collection;
         })();
         VirtualJoystick.Collection = Collection;
-    })(VirtualJoystick = BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
+    })(BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
+    var VirtualJoystick = BABYLON.VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoystick.js.map

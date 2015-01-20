@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -25,15 +25,13 @@ var BABYLON;
                     window.addEventListener('gamepaddisconnected', function (evt) {
                         _this._onGamepadDisconnected(evt);
                     }, false);
-                }
-                else {
+                } else {
                     this._startMonitoringGamepads();
                 }
                 if (!this.oneGamepadConnected) {
                     this._insertGamepadDOMInstructions();
                 }
-            }
-            else {
+            } else {
                 this._insertGamepadDOMNotSupported();
             }
         }
@@ -43,8 +41,10 @@ var BABYLON;
             buttonAImage.src = this.buttonADataURL;
             var spanMessage = document.createElement("span");
             spanMessage.innerHTML = "<strong>to activate gamepad</strong>";
+
             Gamepads.gamepadDOMInfo.appendChild(buttonAImage);
             Gamepads.gamepadDOMInfo.appendChild(spanMessage);
+
             Gamepads.gamepadDOMInfo.style.position = "absolute";
             Gamepads.gamepadDOMInfo.style.width = "100%";
             Gamepads.gamepadDOMInfo.style.height = "48px";
@@ -52,19 +52,26 @@ var BABYLON;
             Gamepads.gamepadDOMInfo.style.backgroundColor = "rgba(1, 1, 1, 0.15)";
             Gamepads.gamepadDOMInfo.style.textAlign = "center";
             Gamepads.gamepadDOMInfo.style.zIndex = "10";
+
             buttonAImage.style.position = "relative";
             buttonAImage.style.bottom = "8px";
+
             spanMessage.style.position = "relative";
             spanMessage.style.fontSize = "32px";
             spanMessage.style.bottom = "32px";
             spanMessage.style.color = "green";
+
             document.body.appendChild(Gamepads.gamepadDOMInfo);
         };
+
         Gamepads.prototype._insertGamepadDOMNotSupported = function () {
             Gamepads.gamepadDOMInfo = document.createElement("div");
+
             var spanMessage = document.createElement("span");
             spanMessage.innerHTML = "<strong>gamepad not supported</strong>";
+
             Gamepads.gamepadDOMInfo.appendChild(spanMessage);
+
             Gamepads.gamepadDOMInfo.style.position = "absolute";
             Gamepads.gamepadDOMInfo.style.width = "100%";
             Gamepads.gamepadDOMInfo.style.height = "40px";
@@ -72,20 +79,25 @@ var BABYLON;
             Gamepads.gamepadDOMInfo.style.backgroundColor = "rgba(1, 1, 1, 0.15)";
             Gamepads.gamepadDOMInfo.style.textAlign = "center";
             Gamepads.gamepadDOMInfo.style.zIndex = "10";
+
             spanMessage.style.position = "relative";
             spanMessage.style.fontSize = "32px";
             spanMessage.style.color = "red";
+
             document.body.appendChild(Gamepads.gamepadDOMInfo);
         };
+
         Gamepads.prototype.dispose = function () {
             document.body.removeChild(Gamepads.gamepadDOMInfo);
         };
+
         Gamepads.prototype._onGamepadConnected = function (evt) {
             var newGamepad = this._addNewGamepad(evt.gamepad);
             if (this._callbackGamepadConnected)
                 this._callbackGamepadConnected(newGamepad);
             this._startMonitoringGamepads();
         };
+
         Gamepads.prototype._addNewGamepad = function (gamepad) {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
@@ -94,16 +106,18 @@ var BABYLON;
                     Gamepads.gamepadDOMInfo = null;
                 }
             }
+
             var newGamepad;
+
             if (gamepad.id.search("Xbox 360") !== -1 || gamepad.id.search("xinput") !== -1) {
                 newGamepad = new BABYLON.Xbox360Pad(gamepad.id, gamepad.index, gamepad);
-            }
-            else {
+            } else {
                 newGamepad = new BABYLON.GenericPad(gamepad.id, gamepad.index, gamepad);
             }
             this.babylonGamepads.push(newGamepad);
             return newGamepad;
         };
+
         Gamepads.prototype._onGamepadDisconnected = function (evt) {
             for (var i in this.babylonGamepads) {
                 if (this.babylonGamepads[i].index == evt.gamepad.index) {
@@ -111,45 +125,50 @@ var BABYLON;
                     break;
                 }
             }
+
             // If no gamepads are left, stop the polling loop.
             if (this.babylonGamepads.length == 0) {
                 this._stopMonitoringGamepads();
             }
         };
+
         Gamepads.prototype._startMonitoringGamepads = function () {
             if (!this.isMonitoring) {
                 this.isMonitoring = true;
                 this._checkGamepadsStatus();
             }
         };
+
         Gamepads.prototype._stopMonitoringGamepads = function () {
             this.isMonitoring = false;
         };
+
         Gamepads.prototype._checkGamepadsStatus = function () {
             var _this = this;
             // updating gamepad objects
             this._updateGamepadObjects();
+
             for (var i in this.babylonGamepads) {
                 this.babylonGamepads[i].update();
             }
+
             if (this.isMonitoring) {
                 if (window.requestAnimationFrame) {
                     window.requestAnimationFrame(function () {
                         _this._checkGamepadsStatus();
                     });
-                }
-                else if (window.mozRequestAnimationFrame) {
+                } else if (window.mozRequestAnimationFrame) {
                     window.mozRequestAnimationFrame(function () {
                         _this._checkGamepadsStatus();
                     });
-                }
-                else if (window.webkitRequestAnimationFrame) {
+                } else if (window.webkitRequestAnimationFrame) {
                     window.webkitRequestAnimationFrame(function () {
                         _this._checkGamepadsStatus();
                     });
                 }
             }
         };
+
         // This function is called only on Chrome, which does not yet support
         // connection/disconnection events, but requires you to monitor
         // an array for changes.
@@ -162,8 +181,7 @@ var BABYLON;
                         if (this._callbackGamepadConnected) {
                             this._callbackGamepadConnected(newGamepad);
                         }
-                    }
-                    else {
+                    } else {
                         this.babylonGamepads[i].browserGamepad = gamepads[i];
                     }
                 }
@@ -195,9 +213,11 @@ var BABYLON;
         Gamepad.prototype.onleftstickchanged = function (callback) {
             this._onleftstickchanged = callback;
         };
+
         Gamepad.prototype.onrightstickchanged = function (callback) {
             this._onrightstickchanged = callback;
         };
+
         Object.defineProperty(Gamepad.prototype, "leftStick", {
             get: function () {
                 return this._leftStick;
@@ -224,6 +244,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Gamepad.prototype.update = function () {
             if (this._leftStick) {
                 this.leftStick = { x: this.browserGamepad.axes[0], y: this.browserGamepad.axes[1] };
@@ -235,6 +256,7 @@ var BABYLON;
         return Gamepad;
     })();
     BABYLON.Gamepad = Gamepad;
+
     var GenericPad = (function (_super) {
         __extends(GenericPad, _super);
         function GenericPad(id, index, gamepad) {
@@ -250,6 +272,7 @@ var BABYLON;
         GenericPad.prototype.onbuttonup = function (callback) {
             this._onbuttonup = callback;
         };
+
         GenericPad.prototype._setButtonValue = function (newValue, currentValue, buttonIndex) {
             if (newValue !== currentValue) {
                 if (this._onbuttondown && newValue === 1) {
@@ -261,6 +284,7 @@ var BABYLON;
             }
             return newValue;
         };
+
         GenericPad.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var index = 0; index < this._buttons.length; index++) {
@@ -270,6 +294,7 @@ var BABYLON;
         return GenericPad;
     })(Gamepad);
     BABYLON.GenericPad = GenericPad;
+
     (function (Xbox360Button) {
         Xbox360Button[Xbox360Button["A"] = 0] = "A";
         Xbox360Button[Xbox360Button["B"] = 1] = "B";
@@ -283,6 +308,7 @@ var BABYLON;
         Xbox360Button[Xbox360Button["RightStick"] = 9] = "RightStick";
     })(BABYLON.Xbox360Button || (BABYLON.Xbox360Button = {}));
     var Xbox360Button = BABYLON.Xbox360Button;
+
     (function (Xbox360Dpad) {
         Xbox360Dpad[Xbox360Dpad["Up"] = 0] = "Up";
         Xbox360Dpad[Xbox360Dpad["Down"] = 1] = "Down";
@@ -290,6 +316,7 @@ var BABYLON;
         Xbox360Dpad[Xbox360Dpad["Right"] = 3] = "Right";
     })(BABYLON.Xbox360Dpad || (BABYLON.Xbox360Dpad = {}));
     var Xbox360Dpad = BABYLON.Xbox360Dpad;
+
     var Xbox360Pad = (function (_super) {
         __extends(Xbox360Pad, _super);
         function Xbox360Pad() {
@@ -314,9 +341,11 @@ var BABYLON;
         Xbox360Pad.prototype.onlefttriggerchanged = function (callback) {
             this._onlefttriggerchanged = callback;
         };
+
         Xbox360Pad.prototype.onrighttriggerchanged = function (callback) {
             this._onrighttriggerchanged = callback;
         };
+
         Object.defineProperty(Xbox360Pad.prototype, "leftTrigger", {
             get: function () {
                 return this._leftTrigger;
@@ -330,6 +359,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(Xbox360Pad.prototype, "rightTrigger", {
             get: function () {
                 return this._rightTrigger;
@@ -343,6 +373,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Xbox360Pad.prototype.onbuttondown = function (callback) {
             this._onbuttondown = callback;
         };
@@ -355,6 +386,7 @@ var BABYLON;
         Xbox360Pad.prototype.ondpadup = function (callback) {
             this._ondpadup = callback;
         };
+
         Xbox360Pad.prototype._setButtonValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
                 if (this._onbuttondown && newValue === 1) {
@@ -366,6 +398,7 @@ var BABYLON;
             }
             return newValue;
         };
+
         Xbox360Pad.prototype._setDPadValue = function (newValue, currentValue, buttonType) {
             if (newValue !== currentValue) {
                 if (this._ondpaddown && newValue === 1) {
@@ -377,6 +410,7 @@ var BABYLON;
             }
             return newValue;
         };
+
         Object.defineProperty(Xbox360Pad.prototype, "buttonA", {
             get: function () {
                 return this._buttonA;
@@ -540,4 +574,5 @@ var BABYLON;
     })(Gamepad);
     BABYLON.Xbox360Pad = Xbox360Pad;
 })(BABYLON || (BABYLON = {}));
+
 //# sourceMappingURL=babylon.gamepads.js.map

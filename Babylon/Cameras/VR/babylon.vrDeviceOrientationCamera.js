@@ -18,13 +18,14 @@ var BABYLON;
             this._alpha = +evt.alpha | 0;
             this._beta = +evt.beta | 0;
             this._gamma = +evt.gamma | 0;
+
             if (this._gamma < 0) {
                 this._gamma = 90 + this._gamma;
-            }
-            else {
+            } else {
                 // Incline it in the correct angle.
                 this._gamma = 270 - this._gamma;
             }
+
             this.rotation.x = this._gamma / 180.0 * Math.PI;
             this.rotation.y = -this._alpha / 180.0 * Math.PI;
             this.rotation.z = this._beta / 180.0 * Math.PI;

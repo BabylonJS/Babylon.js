@@ -3,6 +3,16 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
+## Documentation
+- [Documentation](https://doc.babylonjs.com)
+- [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
+- [Roadmap](http://doc.babylonjs.com/page.php?p=22681)
+- [Samples](https://github.com/BabylonJS/Samples)
+- [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
+- [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
+
+## Useful links
+
 Official web site: [www.babylonjs.com](http://www.babylonjs.com/) 
 
 Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
@@ -17,14 +27,6 @@ Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters
 
 Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
 
-## Documentation
-- [Wiki](https://github.com/babylonjs/babylon.js/wiki)
-- [Creating the minified version](https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version)
-- [Roadmap](https://github.com/BabylonJS/Babylon.js/wiki/Roadmap)
-- [Samples](https://github.com/BabylonJS/Samples)
-- [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
-- [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
-
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
@@ -32,6 +34,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
 - Scene picking
 - Antialiasing
 - Animations engine
+- Audio engine
 - Particles Systems
 - Sprites and 2D layers
 -  Optimizations engines: 
@@ -43,6 +46,9 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Incremental loading 
  - Binary compressed format
  - Hardware accelerated instances
+ - Level of details (LOD)
+ - Automatic scene optimizer
+ - Debug layer to help you optimize and debug scenes
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture
@@ -60,7 +66,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Skybox
  - Vertex color
  - Bones (Animations and shadows are supported)
- - Fresnel term for diffuse, opacity, emissive and reflection
+ - Procedural textures
 -  Special FX
  - Fog
  - Alpha blending
@@ -94,6 +100,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Dynamic meshes
  - Height maps
  - Constructive solid geometries
+ - Hardware instances
 -  Import: 
  - Babylon scene file can be converted from .OBJ, .FBX
  - Exporter for Blender

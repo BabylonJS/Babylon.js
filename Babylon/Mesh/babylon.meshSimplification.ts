@@ -552,7 +552,7 @@
                 + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
         }
 
-        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3, normalResult?: Vector3, uvResult?: Vector2, colorResult?:Color4): number {
+        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3, normalResult?: Vector3, uvResult?: Vector2, colorResult?: Color4): number {
             var q = vertex1.q.add(vertex2.q);
             var border = vertex1.isBorder && vertex2.isBorder;
             var error: number = 0;

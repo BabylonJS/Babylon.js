@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -19,30 +19,38 @@ var BABYLON;
         FollowCamera.prototype.getRadians = function (degrees) {
             return degrees * Math.PI / 180;
         };
+
         FollowCamera.prototype.follow = function (cameraTarget) {
             if (!cameraTarget)
                 return;
+
             var radians = this.getRadians(this.rotationOffset) + cameraTarget.rotation.y;
             var targetX = cameraTarget.position.x + Math.sin(radians) * this.radius;
+
             var targetZ = cameraTarget.position.z + Math.cos(radians) * this.radius;
             var dx = targetX - this.position.x;
             var dy = (cameraTarget.position.y + this.heightOffset) - this.position.y;
             var dz = (targetZ) - this.position.z;
-            var vx = dx * this.cameraAcceleration * 2; //this is set to .05
+            var vx = dx * this.cameraAcceleration * 2;
             var vy = dy * this.cameraAcceleration;
             var vz = dz * this.cameraAcceleration * 2;
+
             if (vx > this.maxCameraSpeed || vx < -this.maxCameraSpeed) {
                 vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
+
             if (vy > this.maxCameraSpeed || vy < -this.maxCameraSpeed) {
                 vy = vy < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
+
             if (vz > this.maxCameraSpeed || vz < -this.maxCameraSpeed) {
                 vz = vz < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
+
             this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
             this.setTarget(cameraTarget.position);
         };
+
         FollowCamera.prototype._update = function () {
             _super.prototype._update.call(this);
             this.follow(this.target);

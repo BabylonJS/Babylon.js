@@ -94,6 +94,18 @@
             }
         }
 
+        private _soundLoaded(audioData: ArrayBuffer) {
+            this._isLoaded = true;
+            this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
+                this._audioBuffer = buffer;
+                this._isReadyToPlay = true;
+                if (this.autoplay) { this.play(); }
+                if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
+            }, function (error) {
+                    BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
+                });
+        }
+
         public updateOptions(options) {
             if (options) {
                 this.loop = options.loop || this.loop;
@@ -107,25 +119,27 @@
         }
 
         private _createSpatialParameters() {
-            this._soundPanner = this._audioEngine.audioContext.createPanner();
+            if (this._audioEngine.canUseWebAudio) {
+                this._soundPanner = this._audioEngine.audioContext.createPanner();
 
-            if (this.useCustomAttenuation) {
-                // Tricks to disable in a way embedded Web Audio attenuation 
-                this._soundPanner.distanceModel = "linear";
-                this._soundPanner.maxDistance = Number.MAX_VALUE;
-                this._soundPanner.refDistance = 1;
-                this._soundPanner.rolloffFactor = 1;
-                this._soundPanner.panningModel = "HRTF";
+                if (this.useCustomAttenuation) {
+                    // Tricks to disable in a way embedded Web Audio attenuation 
+                    this._soundPanner.distanceModel = "linear";
+                    this._soundPanner.maxDistance = Number.MAX_VALUE;
+                    this._soundPanner.refDistance = 1;
+                    this._soundPanner.rolloffFactor = 1;
+                    this._soundPanner.panningModel = "HRTF";
+                }
+                else {
+                    this._soundPanner.distanceModel = this.distanceModel;
+                    this._soundPanner.maxDistance = this.maxDistance;
+                    this._soundPanner.refDistance = this.refDistance;
+                    this._soundPanner.rolloffFactor = this.rolloffFactor;
+                    this._soundPanner.panningModel = this.panningModel;
+                }
+                this._soundPanner.connect(this._soundGain);
+                this._audioNode = this._soundPanner;
             }
-            else {
-                this._soundPanner.distanceModel = this.distanceModel;
-                this._soundPanner.maxDistance = this.maxDistance;
-                this._soundPanner.refDistance = this.refDistance;
-                this._soundPanner.rolloffFactor = this.rolloffFactor;
-                this._soundPanner.panningModel = this.panningModel;
-            }
-            this._soundPanner.connect(this._soundGain);
-            this._audioNode = this._soundPanner;
         }
 
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
@@ -232,19 +246,25 @@
         * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
         */
         public stop(time?: number) {
-            var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
-            this._soundSource.stop(stopTime);
-            this._isPlaying = false;
+            if (this._isPlaying) {
+                var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+                this._soundSource.stop(stopTime);
+                this._isPlaying = false;
+            }
         }
 
         public pause() {
-            this._soundSource.stop(0);
-            this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
+            if (this._isPlaying) {
+                this._soundSource.stop(0);
+                this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
+            }
         }
 
         public setVolume(newVolume: number) {
             this._volume = newVolume;
-            this._soundGain.gain.value = newVolume;
+            if (this._audioEngine.canUseWebAudio) {
+                this._soundGain.gain.value = newVolume;
+            }
         }
 
         public getVolume(): number {
@@ -269,18 +289,6 @@
             if (this._isDirectional && this._isPlaying) {
                 this._updateDirection();
             }
-        }
-
-        private _soundLoaded(audioData: ArrayBuffer) {
-            this._isLoaded = true;
-            this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
-                this._audioBuffer = buffer;
-                this._isReadyToPlay = true;
-                if (this.autoplay) { this.play(); }
-                if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-            }, function (error) {
-                    BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
-                });
         }
     }
 }
