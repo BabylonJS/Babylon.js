@@ -258,12 +258,10 @@
             var indices = mesh.getIndices();
 
             var vertexInit = (i) => {
-                var uv;
-                if (this._mesh.isVerticesDataPresent([VertexBuffer.UVKind])) {
-                    uv = Vector2.FromArray(uvs, i * 2)
-                }
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), uv, i);
-                if (!this._mesh.isVerticesDataPresent([VertexBuffer.UVKind]) && this._mesh.isVerticesDataPresent([VertexBuffer.ColorKind])) {
+                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), null, i);
+                if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    vertex.uv = Vector2.FromArray(uvs, i * 2);
+                } else if (this._mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                     vertex.color = Color4.FromArray(colorsData, i * 4);
                 }
                 this.vertices.push(vertex);
