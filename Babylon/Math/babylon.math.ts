@@ -95,8 +95,8 @@
         }
 
         // Statics
-        public static FromArray(array: number[], offset:number = 0): Color3 {
-            return new Color3(array[0], array[1], array[2]);
+        public static FromArray(array: number[], offset: number = 0): Color3 {
+            return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
         public static FromInts(r: number, g: number, b: number): Color3 {
