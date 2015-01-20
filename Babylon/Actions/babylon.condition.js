@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -13,23 +13,27 @@ var BABYLON;
         Condition.prototype.isValid = function () {
             return true;
         };
+
         Condition.prototype._getProperty = function (propertyPath) {
             return this._actionManager._getProperty(propertyPath);
         };
+
         Condition.prototype._getEffectiveTarget = function (target, propertyPath) {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         };
         return Condition;
     })();
     BABYLON.Condition = Condition;
+
     var ValueCondition = (function (_super) {
         __extends(ValueCondition, _super);
         function ValueCondition(actionManager, target, propertyPath, value, operator) {
-            if (operator === void 0) { operator = ValueCondition.IsEqual; }
+            if (typeof operator === "undefined") { operator = ValueCondition.IsEqual; }
             _super.call(this, actionManager);
             this.propertyPath = propertyPath;
             this.value = value;
             this.operator = operator;
+
             this._target = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
@@ -40,6 +44,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(ValueCondition, "IsDifferent", {
             get: function () {
                 return ValueCondition._IsDifferent;
@@ -47,6 +52,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(ValueCondition, "IsGreater", {
             get: function () {
                 return ValueCondition._IsGreater;
@@ -54,6 +60,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(ValueCondition, "IsLesser", {
             get: function () {
                 return ValueCondition._IsLesser;
@@ -61,6 +68,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+
         // Methods
         ValueCondition.prototype.isValid = function () {
             switch (this.operator) {
@@ -71,17 +79,17 @@ var BABYLON;
                 case ValueCondition.IsEqual:
                 case ValueCondition.IsDifferent:
                     var check;
+
                     if (this.value.equals) {
                         check = this.value.equals(this._target[this._property]);
-                    }
-                    else {
+                    } else {
                         check = this.value === this._target[this._property];
                     }
                     return this.operator === ValueCondition.IsEqual ? check : !check;
             }
+
             return false;
         };
-        // Statics
         ValueCondition._IsEqual = 0;
         ValueCondition._IsDifferent = 1;
         ValueCondition._IsGreater = 2;
@@ -89,6 +97,7 @@ var BABYLON;
         return ValueCondition;
     })(Condition);
     BABYLON.ValueCondition = ValueCondition;
+
     var PredicateCondition = (function (_super) {
         __extends(PredicateCondition, _super);
         function PredicateCondition(actionManager, predicate) {
@@ -101,11 +110,13 @@ var BABYLON;
         return PredicateCondition;
     })(Condition);
     BABYLON.PredicateCondition = PredicateCondition;
+
     var StateCondition = (function (_super) {
         __extends(StateCondition, _super);
         function StateCondition(actionManager, target, value) {
             _super.call(this, actionManager);
             this.value = value;
+
             this._target = target;
         }
         // Methods

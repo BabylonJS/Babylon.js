@@ -1,6 +1,5 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
-    var Internals;
     (function (Internals) {
         var MeshLODLevel = (function () {
             function MeshLODLevel(distance, mesh) {
@@ -10,6 +9,7 @@ var BABYLON;
             return MeshLODLevel;
         })();
         Internals.MeshLODLevel = MeshLODLevel;
-    })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
+    })(BABYLON.Internals || (BABYLON.Internals = {}));
+    var Internals = BABYLON.Internals;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.meshLODLevel.js.map

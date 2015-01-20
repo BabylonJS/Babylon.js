@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var BoundingBoxRenderer = (function () {
         function BoundingBoxRenderer(scene) {
@@ -11,6 +11,7 @@ var BABYLON;
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"]
             });
+
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
             this._vb = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
@@ -19,10 +20,12 @@ var BABYLON;
         BoundingBoxRenderer.prototype.reset = function () {
             this.renderList.reset();
         };
+
         BoundingBoxRenderer.prototype.render = function () {
             if (this.renderList.length === 0 || !this._colorShader.isReady()) {
                 return;
             }
+
             var engine = this._scene.getEngine();
             engine.setDepthWrite(false);
             this._colorShader._preBind();
@@ -32,23 +35,29 @@ var BABYLON;
                 var max = boundingBox.maximum;
                 var diff = max.subtract(min);
                 var median = min.add(diff.scale(0.5));
+
                 var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z).multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
+
                 // VBOs
                 engine.bindBuffers(this._vb.getBuffer(), this._ib, [3], 3 * 4, this._colorShader.getEffect());
+
                 if (this.showBackLines) {
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
                     this._scene.resetCachedMaterial();
                     this._colorShader.setColor4("color", this.backColor.toColor4());
                     this._colorShader.bind(worldMatrix);
+
                     // Draw order
                     engine.draw(false, 0, 24);
                 }
+
                 // Front
                 engine.setDepthFunctionToLess();
                 this._scene.resetCachedMaterial();
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
+
                 // Draw order
                 engine.draw(false, 0, 24);
             }
@@ -56,6 +65,7 @@ var BABYLON;
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
         };
+
         BoundingBoxRenderer.prototype.dispose = function () {
             this._colorShader.dispose();
             this._vb.dispose();

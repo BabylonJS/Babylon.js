@@ -1,4 +1,4 @@
-var BABYLON;
+﻿var BABYLON;
 (function (BABYLON) {
     var FilesInput = (function () {
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
@@ -28,13 +28,16 @@ var BABYLON;
                 }, false);
             }
         };
+
         FilesInput.prototype.renderFunction = function () {
             if (this.additionnalRenderLoopLogicCallback) {
                 this.additionnalRenderLoopLogicCallback();
             }
+
             if (this.currentScene) {
                 if (this.textureLoadingCallback) {
                     var remaining = this.currentScene.getWaitingItemsCount();
+
                     if (remaining > 0) {
                         this.textureLoadingCallback(remaining);
                     }
@@ -42,30 +45,38 @@ var BABYLON;
                 this.currentScene.render();
             }
         };
+
         FilesInput.prototype.drag = function (e) {
             e.stopPropagation();
             e.preventDefault();
         };
+
         FilesInput.prototype.drop = function (eventDrop) {
             eventDrop.stopPropagation();
             eventDrop.preventDefault();
+
             this.loadFiles(eventDrop);
         };
+
         FilesInput.prototype.loadFiles = function (event) {
             var _this = this;
             var that = this;
             if (this.startingProcessingFilesCallback)
                 this.startingProcessingFilesCallback();
+
             var sceneFileToLoad;
             var filesToLoad;
+
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
                 filesToLoad = event.dataTransfer.files;
             }
+
             // Handling files from input files
             if (event && event.target && event.target.files) {
                 filesToLoad = event.target.files;
             }
+
             if (filesToLoad && filesToLoad.length > 0) {
                 for (var i = 0; i < filesToLoad.length; i++) {
                     switch (filesToLoad[i].type) {
@@ -84,14 +95,17 @@ var BABYLON;
                             break;
                     }
                 }
+
                 // If a ".babylon" file has been provided
                 if (sceneFileToLoad) {
                     if (this.currentScene) {
                         this.engine.stopRenderLoop();
                         this.currentScene.dispose();
                     }
+
                     BABYLON.SceneLoader.Load("file:", sceneFileToLoad, this.engine, function (newScene) {
                         that.currentScene = newScene;
+
                         // Wait for textures and shaders to be ready
                         that.currentScene.executeWhenReady(function () {
                             // Attach camera to canvas inputs
@@ -110,8 +124,7 @@ var BABYLON;
                             _this.progressCallback(progress);
                         }
                     });
-                }
-                else {
+                } else {
                     BABYLON.Tools.Error("Please provide a valid .babylon file.");
                 }
             }

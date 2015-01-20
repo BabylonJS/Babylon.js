@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -11,6 +11,7 @@ var BABYLON;
         function MultiMaterial(name, scene) {
             _super.call(this, name, scene, true);
             this.subMaterials = new Array();
+
             scene.multiMaterials.push(this);
         }
         // Properties
@@ -18,8 +19,10 @@ var BABYLON;
             if (index < 0 || index >= this.subMaterials.length) {
                 return this.getScene().defaultMaterial;
             }
+
             return this.subMaterials[index];
         };
+
         // Methods
         MultiMaterial.prototype.isReady = function (mesh) {
             for (var index = 0; index < this.subMaterials.length; index++) {
@@ -30,6 +33,7 @@ var BABYLON;
                     }
                 }
             }
+
             return true;
         };
         return MultiMaterial;

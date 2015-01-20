@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -14,13 +14,16 @@ var BABYLON;
             this.color = color;
             this.depth = depth;
             this.colorLevel = colorLevel;
+
             this.onActivate = function (cam) {
                 _this._refRexture = _this._refRexture || new BABYLON.Texture(refractionTextureUrl, cam.getScene());
             };
+
             this.onApply = function (effect) {
                 effect.setColor3("baseColor", _this.color);
                 effect.setFloat("depth", _this.depth);
                 effect.setFloat("colorLevel", _this.colorLevel);
+
                 effect.setTexture("refractionSampler", _this._refRexture);
             };
         }
@@ -29,6 +32,7 @@ var BABYLON;
             if (this._refRexture) {
                 this._refRexture.dispose();
             }
+
             _super.prototype.dispose.call(this, camera);
         };
         return RefractionPostProcess;

@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -17,12 +17,14 @@ var BABYLON;
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
+
         SwitchBooleanAction.prototype.execute = function () {
             this._target[this._property] = !this._target[this._property];
         };
         return SwitchBooleanAction;
     })(BABYLON.Action);
     BABYLON.SwitchBooleanAction = SwitchBooleanAction;
+
     var SetStateAction = (function (_super) {
         __extends(SetStateAction, _super);
         function SetStateAction(triggerOptions, target, value, condition) {
@@ -36,6 +38,7 @@ var BABYLON;
         return SetStateAction;
     })(BABYLON.Action);
     BABYLON.SetStateAction = SetStateAction;
+
     var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
         function SetValueAction(triggerOptions, target, propertyPath, value, condition) {
@@ -48,12 +51,14 @@ var BABYLON;
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
+
         SetValueAction.prototype.execute = function () {
             this._target[this._property] = this.value;
         };
         return SetValueAction;
     })(BABYLON.Action);
     BABYLON.SetValueAction = SetValueAction;
+
     var IncrementValueAction = (function (_super) {
         __extends(IncrementValueAction, _super);
         function IncrementValueAction(triggerOptions, target, propertyPath, value, condition) {
@@ -65,16 +70,19 @@ var BABYLON;
         IncrementValueAction.prototype._prepare = function () {
             this._target = this._getEffectiveTarget(this._target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
+
             if (typeof this._target[this._property] !== "number") {
                 BABYLON.Tools.Warn("Warning: IncrementValueAction can only be used with number values");
             }
         };
+
         IncrementValueAction.prototype.execute = function () {
             this._target[this._property] += this.value;
         };
         return IncrementValueAction;
     })(BABYLON.Action);
     BABYLON.IncrementValueAction = IncrementValueAction;
+
     var PlayAnimationAction = (function (_super) {
         __extends(PlayAnimationAction, _super);
         function PlayAnimationAction(triggerOptions, target, from, to, loop, condition) {
@@ -86,6 +94,7 @@ var BABYLON;
         }
         PlayAnimationAction.prototype._prepare = function () {
         };
+
         PlayAnimationAction.prototype.execute = function () {
             var scene = this._actionManager.getScene();
             scene.beginAnimation(this._target, this.from, this.to, this.loop);
@@ -93,6 +102,7 @@ var BABYLON;
         return PlayAnimationAction;
     })(BABYLON.Action);
     BABYLON.PlayAnimationAction = PlayAnimationAction;
+
     var StopAnimationAction = (function (_super) {
         __extends(StopAnimationAction, _super);
         function StopAnimationAction(triggerOptions, target, condition) {
@@ -101,6 +111,7 @@ var BABYLON;
         }
         StopAnimationAction.prototype._prepare = function () {
         };
+
         StopAnimationAction.prototype.execute = function () {
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
@@ -108,10 +119,11 @@ var BABYLON;
         return StopAnimationAction;
     })(BABYLON.Action);
     BABYLON.StopAnimationAction = StopAnimationAction;
+
     var DoNothingAction = (function (_super) {
         __extends(DoNothingAction, _super);
         function DoNothingAction(triggerOptions, condition) {
-            if (triggerOptions === void 0) { triggerOptions = BABYLON.ActionManager.NothingTrigger; }
+            if (typeof triggerOptions === "undefined") { triggerOptions = BABYLON.ActionManager.NothingTrigger; }
             _super.call(this, triggerOptions, condition);
         }
         DoNothingAction.prototype.execute = function () {
@@ -119,6 +131,7 @@ var BABYLON;
         return DoNothingAction;
     })(BABYLON.Action);
     BABYLON.DoNothingAction = DoNothingAction;
+
     var CombineAction = (function (_super) {
         __extends(CombineAction, _super);
         function CombineAction(triggerOptions, children, condition) {
@@ -131,6 +144,7 @@ var BABYLON;
                 this.children[index]._prepare();
             }
         };
+
         CombineAction.prototype.execute = function (evt) {
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index].execute(evt);
@@ -139,6 +153,7 @@ var BABYLON;
         return CombineAction;
     })(BABYLON.Action);
     BABYLON.CombineAction = CombineAction;
+
     var ExecuteCodeAction = (function (_super) {
         __extends(ExecuteCodeAction, _super);
         function ExecuteCodeAction(triggerOptions, func, condition) {
@@ -151,6 +166,7 @@ var BABYLON;
         return ExecuteCodeAction;
     })(BABYLON.Action);
     BABYLON.ExecuteCodeAction = ExecuteCodeAction;
+
     var SetParentAction = (function (_super) {
         __extends(SetParentAction, _super);
         function SetParentAction(triggerOptions, target, parent, condition) {
@@ -160,13 +176,17 @@ var BABYLON;
         }
         SetParentAction.prototype._prepare = function () {
         };
+
         SetParentAction.prototype.execute = function () {
             if (this._target.parent === this._parent) {
                 return;
             }
+
             var invertParentWorldMatrix = this._parent.getWorldMatrix().clone();
             invertParentWorldMatrix.invert();
+
             this._target.position = BABYLON.Vector3.TransformCoordinates(this._target.position, invertParentWorldMatrix);
+
             this._target.parent = this._parent;
         };
         return SetParentAction;

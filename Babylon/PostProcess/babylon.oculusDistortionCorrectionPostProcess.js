@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+﻿var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -17,10 +17,12 @@ var BABYLON;
                 'ScaleIn',
                 'HmdWarpParam'
             ], null, cameraSettings.PostProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, null, null);
+
             this._isRightEye = isRightEye;
             this._distortionFactors = cameraSettings.DistortionK;
             this._postProcessScaleFactor = cameraSettings.PostProcessScaleFactor;
             this._lensCenterOffset = cameraSettings.LensCenterOffset;
+
             this.onSizeChanged = function () {
                 _this.aspectRatio = _this.width * .5 / _this.height;
                 _this._scaleIn = new BABYLON.Vector2(2, 2 / _this.aspectRatio);
