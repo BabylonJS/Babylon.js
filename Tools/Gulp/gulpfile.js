@@ -169,7 +169,8 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Debug/babylon.debugLayer.js',
       '../../Babylon/Materials/Textures/babylon.rawTexture.js',
       '../../Babylon/Mesh/babylon.polygonMesh.js',
-	  '../../Babylon/Mesh/babylon.meshSimplification.js'
+	  '../../Babylon/Mesh/babylon.meshSimplification.js',
+	  '../../Babylon/Audio/babylon.analyser.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))
