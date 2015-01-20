@@ -174,7 +174,7 @@
                     var threshold = 0.000000001 * Math.pow((iteration + 3), this.aggressiveness);
 
                     var trianglesIterator = (i) => {
-                        var tIdx = ((this.triangles.length / 2) + i) % this.triangles.length;
+                        var tIdx = ~~(((this.triangles.length / 2) + i) % this.triangles.length);
                         var t = this.triangles[tIdx];
                         if (!t) return;
                         if (t.error[3] > threshold || t.deleted || t.isDirty) { return }
@@ -193,15 +193,19 @@
                                 var p = Vector3.Zero();
                                 var n = Vector3.Zero();
                                 var uv = Vector2.Zero();
+                                var color = new Color4(0, 0, 0, 1);
 
-                                this.calculateError(v0, v1, p, n, uv);
+                                this.calculateError(v0, v1, p, n, uv, color);
 
                                 if (this.isFlipped(v0, i1, p, deleted0, t.borderFactor)) continue;
                                 if (this.isFlipped(v1, i0, p, deleted1, t.borderFactor)) continue;
 
                                 v0.position = p;
                                 v0.normal = n;
-                                v0.uv = uv;
+                                if (v0.uv)
+                                    v0.uv = uv;
+                                else if (v0.color)
+                                    v0.color = color;
                                 v0.q = v1.q.add(v0.q);
                                 var tStart = this.references.length;
 
@@ -336,6 +340,7 @@
                     this.vertices[dst].position = this.vertices[i].position;
                     this.vertices[dst].normal = this.vertices[i].normal;
                     this.vertices[dst].uv = this.vertices[i].uv;
+                    this.vertices[dst].color = this.vertices[i].color;
                     newVerticesOrder.push(i);
                     dst++;
                 }
@@ -380,7 +385,7 @@
             }
 
             //not cloning, to avoid geometry problems. Creating a whole new mesh.
-            var newMesh = new Mesh(this._mesh + "Decimated", this._mesh.getScene());
+            var newMesh = new Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
             newMesh.material = this._mesh.material;
             newMesh.parent = this._mesh.parent;
             newMesh.setIndices(newIndicesArray);
@@ -390,6 +395,7 @@
                 newMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
                 newMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
+
             //preparing the skeleton support
             if (this._mesh.skeleton) {
                 //newMesh.skeleton = this._mesh.skeleton.clone("", "");
@@ -546,7 +552,7 @@
                 + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
         }
 
-        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3, normalResult?: Vector3, uvResult?: Vector2): number {
+        private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3, normalResult?: Vector3, uvResult?: Vector2, colorResult?:Color4): number {
             var q = vertex1.q.add(vertex2.q);
             var border = vertex1.isBorder && vertex2.isBorder;
             var error: number = 0;
@@ -563,11 +569,14 @@
                 //TODO this should be correctly calculated
                 if (normalResult) {
                     normalResult.copyFrom(vertex1.normal);
-                    uvResult.copyFrom(vertex1.uv);
+                    if (vertex1.uv)
+                        uvResult.copyFrom(vertex1.uv);
+                    else if (vertex1.color)
+                        colorResult.copyFrom(vertex1.color);
                 }
             } else {
                 var p3 = (vertex1.position.add(vertex2.position)).divide(new Vector3(2, 2, 2));
-                var norm3 = (vertex1.normal.add(vertex2.normal)).divide(new Vector3(2, 2, 2)).normalize();
+                //var norm3 = (vertex1.normal.add(vertex2.normal)).divide(new Vector3(2, 2, 2)).normalize();
                 var error1 = this.vertexError(q, vertex1.position);
                 var error2 = this.vertexError(q, vertex2.position);
                 var error3 = this.vertexError(q, p3);
@@ -576,19 +585,28 @@
                     if (pointResult) {
                         pointResult.copyFrom(vertex1.position);
                         normalResult.copyFrom(vertex1.normal);
-                        uvResult.copyFrom(vertex1.uv);
+                        if (vertex1.uv)
+                            uvResult.copyFrom(vertex1.uv);
+                        else if (vertex1.color)
+                            colorResult.copyFrom(vertex1.color);
                     }
                 } else if (error === error2) {
                     if (pointResult) {
                         pointResult.copyFrom(vertex2.position);
                         normalResult.copyFrom(vertex2.normal);
-                        uvResult.copyFrom(vertex2.uv);
+                        if (vertex2.uv)
+                            uvResult.copyFrom(vertex2.uv);
+                        else if (vertex2.color)
+                            colorResult.copyFrom(vertex2.color);
                     }
                 } else {
                     if (pointResult) {
                         pointResult.copyFrom(p3);
-                        normalResult.copyFrom(norm3);
-                        uvResult.copyFrom(vertex1.uv);
+                        normalResult.copyFrom(vertex1.normal);
+                        if (vertex1.uv)
+                            uvResult.copyFrom(vertex1.uv);
+                        else if (vertex1.color)
+                            colorResult.copyFrom(vertex1.color);
                     }
                 }
             }
