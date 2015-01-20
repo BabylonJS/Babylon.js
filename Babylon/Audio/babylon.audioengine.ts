@@ -16,6 +16,7 @@
                 } 
             } catch (e) {
                 this.canUseWebAudio = false;
+                BABYLON.Tools.Error("Your browser doesn't support Web Audio.");
             }
 
             // create a global volume gain node 
@@ -38,6 +39,13 @@
         public setGlobalVolume(newVolume: number) {
             if (this.canUseWebAudio) {
                 this.masterGain.gain.value = newVolume;
+            }
+        }
+
+        public connectToAnalyser(analyser: Analyser) {
+            if (this.canUseWebAudio) {
+                this.masterGain.disconnect();
+                analyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
             }
         }
     }
