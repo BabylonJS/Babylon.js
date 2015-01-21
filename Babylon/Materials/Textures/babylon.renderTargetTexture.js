@@ -10,7 +10,7 @@ var BABYLON;
         __extends(RenderTargetTexture, _super);
         function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type) {
             if (typeof doNotChangeAspectRatio === "undefined") { doNotChangeAspectRatio = true; }
-            if (typeof type === "undefined") { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_BYTE; }
+            if (typeof type === "undefined") { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;

@@ -368,7 +368,7 @@
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 4;
 
-        private static _TEXTURETYPE_UNSIGNED_BYTE = 0;
+        private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
         
         public static get ALPHA_DISABLE(): number {
@@ -419,8 +419,8 @@
             return Engine._TEXTUREFORMAT_RGBA;
         }
 
-        public static get TEXTURETYPE_UNSIGNED_BYTE(): number {
-            return Engine._TEXTURETYPE_UNSIGNED_BYTE;
+        public static get TEXTURETYPE_UNSIGNED_INT(): number {
+            return Engine._TEXTURETYPE_UNSIGNED_INT;
         }
 
         public static get TEXTURETYPE_FLOAT(): number {
@@ -1625,7 +1625,7 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
-            var type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
@@ -1650,7 +1650,7 @@
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
             if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 Tools.Warn("Floating point not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 

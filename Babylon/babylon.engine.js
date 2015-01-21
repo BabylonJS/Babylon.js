@@ -604,9 +604,9 @@
             configurable: true
         });
 
-        Object.defineProperty(Engine, "TEXTURETYPE_UNSIGNED_BYTE", {
+        Object.defineProperty(Engine, "TEXTURETYPE_UNSIGNED_INT", {
             get: function () {
-                return Engine._TEXTURETYPE_UNSIGNED_BYTE;
+                return Engine._TEXTURETYPE_UNSIGNED_INT;
             },
             enumerable: true,
             configurable: true
@@ -1626,7 +1626,7 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
-            var type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
@@ -1651,7 +1651,7 @@
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
             if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-                type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Floating point not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
@@ -2161,7 +2161,7 @@
         Engine._TEXTUREFORMAT_RGB = 4;
         Engine._TEXTUREFORMAT_RGBA = 4;
 
-        Engine._TEXTURETYPE_UNSIGNED_BYTE = 0;
+        Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
 
         Engine.Epsilon = 0.001;
