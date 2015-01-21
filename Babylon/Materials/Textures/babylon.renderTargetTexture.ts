@@ -17,7 +17,7 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_BYTE) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
