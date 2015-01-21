@@ -174,18 +174,31 @@
 
                                 _this.calculateError(v0, v1, p, n, uv, color);
 
-                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor))
+                                var delTr = [];
+
+                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr))
                                     continue;
-                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor))
+                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
                                     continue;
 
-                                v0.position = p;
+                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                    continue;
+                                }
+
                                 v0.normal = n;
                                 if (v0.uv)
                                     v0.uv = uv;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
+
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                    continue;
+
+                                if (p.equals(v0.position))
+                                    continue;
+                                v0.position = p;
+
                                 var tStart = _this.references.length;
 
                                 deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
@@ -388,7 +401,7 @@
             return newMesh;
         };
 
-        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor) {
+        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
                 if (t.deleted)
@@ -401,6 +414,7 @@
 
                 if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
                     deletedArray[i] = true;
+                    delTr.push(t);
                     continue;
                 }
 
