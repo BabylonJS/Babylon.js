@@ -255,6 +255,9 @@ namespace Max2Babylon
                 }
             }
 
+            // Actions
+            babylonScene.actions = ExportNodeAction(gameScene.GetIGameNode(rawScene));
+
             // Output
             RaiseMessage("Saving to output file");
             babylonScene.Prepare(false);

@@ -1,0 +1,68 @@
+﻿
+html, body {
+    height: 100%;
+    width: 100%;
+
+    max-width: 99%;
+    max-height: 99%;
+
+    overflow: hidden;
+}
+
+/*Context Menu*/
+.hide {
+    display: none;
+}
+.show {
+    z-index:1;
+    position: relative;
+    background-color:#C0C0C0;
+    border: 1px solid black;
+    padding: 2px;
+    display: block;
+    margin: 0;
+    list-style-type: none;
+    list-style: none;
+}
+.show li{ list-style: none; }
+.show a { border: 0 !important; text-decoration: none; }
+.show a:hover { text-decoration: underline !important; }
+
+/*Elements*/
+#List {
+    height: 100%;
+    width: 25%;
+
+    max-height: 100%;
+    max-width: 25%;
+
+    overflow-y: scroll;
+
+    float: left;
+}
+
+#Graph {
+    width: 50%;
+    height: 100%;
+
+    max-height: 100%;
+    max-width: 50%;
+    
+    overflow-x: scroll;
+    overflow-y: scroll;
+
+    float: right;
+}
+
+#Parameters {
+    width: 25%;
+    height: 100%;
+
+    max-height: 100%;
+    max-width: 25%;
+
+    overflow-y: scroll;
+    overflow-x: scroll;
+
+    float: right;
+}
