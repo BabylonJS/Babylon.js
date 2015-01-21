@@ -22,7 +22,7 @@ gulp.task('shaders', function() {
  */
 gulp.task('typescript-to-js', function() {
   //Compile all ts file into their respective js file.
-  return gulp.src(['../../Babylon/**/*.ts'])
+  return gulp.src(['../../References/**/*.ts', '../../Babylon/**/*.ts'])
     .pipe(typescript({ target: 'ES5', sourcemap: true }))
     .pipe(gulp.dest('../../Babylon/'));
 });
@@ -33,7 +33,7 @@ gulp.task('typescript-to-js', function() {
 gulp.task('typescript-declaration', function() {
   var declarationFilter = gulpFilter('**/*.d.ts');
 
-  return gulp.src(['../../Babylon/**/*.ts'])
+  return gulp.src(['../../References/**/*.ts', '../../Babylon/**/*.ts'])
     .pipe(typescript({ target: 'ES5', declaration: true, out: 'tmp.js' }))
     .pipe(declarationFilter)
     .pipe(rename('babylon.d.ts'))
