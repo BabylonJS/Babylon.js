@@ -197,16 +197,27 @@
 
                                 this.calculateError(v0, v1, p, n, uv, color);
 
-                                if (this.isFlipped(v0, i1, p, deleted0, t.borderFactor)) continue;
-                                if (this.isFlipped(v1, i0, p, deleted1, t.borderFactor)) continue;
+                                var delTr = [];
 
-                                v0.position = p;
+                                if (this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr)) continue;
+                                if (this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr)) continue;
+
+                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                    continue;
+                                }
+
                                 v0.normal = n;
                                 if (v0.uv)
                                     v0.uv = uv;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
+
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0) continue;
+
+                                if (p.equals(v0.position)) continue;
+                                v0.position = p;
+
                                 var tStart = this.references.length;
 
                                 deletedTriangles = this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
@@ -405,7 +416,7 @@
             return newMesh;
         }
 
-        private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number): boolean {
+        private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr:Array<DecimationTriangle>): boolean {
 
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
@@ -418,6 +429,7 @@
 
                 if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
                     deletedArray[i] = true;
+                    delTr.push(t);
                     continue;
                 }
 
