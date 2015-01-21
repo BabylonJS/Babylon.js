@@ -121,6 +121,9 @@ namespace Max2Babylon
             babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics == 1;
             babylonMesh.alphaIndex = (int)meshNode.MaxNode.GetFloatProperty("babylonjs_alphaindex", 1000);
 
+            // Actions
+            babylonMesh.actions = ExportNodeAction(meshNode);
+
             // Collisions
             babylonMesh.checkCollisions = meshNode.MaxNode.GetBoolProperty("babylonjs_checkcollisions");
 
@@ -560,9 +563,17 @@ namespace Max2Babylon
                 float alpha = 1;
                 if (hasAlpha)
                 {
-                    IPoint3 p = Loader.Global.Point3.Create();
-                    mesh.GetMapFaceIndex(-2, face.MeshFaceIndex, p.GetNativeHandle());
-                    alpha = p.X;
+                    var indices = new int[3];
+                    unsafe
+                    {
+                        fixed (int* indicesPtr = indices)
+                        {
+                            mesh.GetMapFaceIndex(-2, face.MeshFaceIndex, new IntPtr(indicesPtr));
+                        }
+                    }
+                    var color = mesh.GetMapVertex(-2, indices[facePart]);
+
+                    alpha = color.X;
                 }
 
                 vertex.Color = new[] { vertexColor.X, vertexColor.Y, vertexColor.Z, alpha };

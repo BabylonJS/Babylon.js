@@ -1,0 +1,80 @@
+﻿<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Actions Manager</title>
+
+    <link href="./index.css" rel="stylesheet" />
+
+    <script src="raphael.js" type="text/javascript"></script>
+    <script src="actionKinds.js" type="text/javascript"></script>
+    <script src="action.js" type="text/javascript"></script>
+    <script src="viewer.js" type="text/javascript"></script>
+    <script src="list.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+    <div id="Parameters"></div>
+    <div id="Graph"></div>
+    <div id="List"></div>
+
+    <input id="ActionsBuilderObjectName" type="hidden" />
+    <input id="ActionsBuilderJSON" type="hidden" />
+
+    <script type="text/javascript">
+
+        var graph = new AB.Graph();
+
+        var list = new AB.List(graph);
+        list.createListElements();
+
+        graph.update();
+
+        function resetList(type) {
+            list.objectType = type;
+            list.clearList();
+            list.createListElements();
+        }
+
+        function updateObjectName() {
+            var name = document.getElementById('ActionsBuilderObjectName').value;
+            graph.root.text.attr('text', name);
+            graph.objectName = name;
+        }
+
+        function setIsScene() {
+            resetList(AB.ActionsBuilder.Type.SCENE);
+        }
+
+        function setIsObject() {
+            resetList(AB.ActionsBuilder.Type.OBJECT);
+        }
+
+        function updateJSONFromGraph() {
+            var json = graph.createJSON();
+            json.name = graph.objectName;
+
+            document.getElementById('ActionsBuilderJSON').value = JSON.stringify(json);
+        }
+
+        function updateGraphFromJSON() {
+            var value = document.getElementById('ActionsBuilderJSON').value;
+
+            if (value == null || value == "")
+                return;
+
+            graph.loadFromJSON(value);
+        }
+
+        // Manage color theme
+        graph.graph.canvas.style.backgroundColor = '#444444';
+        list.list.canvas.style.backgroundColor = '#565656';
+        graph.parametersElement.style.backgroundColor = '#565656';
+
+    </script>
+
+</body>
+</html>

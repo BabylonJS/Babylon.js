@@ -558,7 +558,15 @@ namespace Max2Babylon
             return true;
         }
 
-     
+        public static void SetStringProperty(this IINode node, string propertyName, string defaultState)
+        {
+            string state = defaultState;
+#if MAX2015
+            node.SetUserPropString(propertyName, state);
+#else
+            node.SetUserPropString(ref propertyName, ref state);
+#endif
+        }
 
         public static bool GetBoolProperty(this IINode node, string propertyName, int defaultState = 0)
         {
