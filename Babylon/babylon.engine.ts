@@ -231,6 +231,15 @@
         return shader;
     };
 
+    var getWebGLTextureType = (gl: WebGLRenderingContext, type: number): number => {
+        var textureType = gl.UNSIGNED_BYTE;
+
+        if (type === Engine.TEXTURETYPE_FLOAT)
+            textureType = gl.FLOAT;
+
+        return textureType;
+    };
+
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
@@ -359,6 +368,9 @@
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 4;
 
+        private static _TEXTURETYPE_UNSIGNED_BYTE = 0;
+        private static _TEXTURETYPE_FLOAT = 1;
+        
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
         }
@@ -405,6 +417,14 @@
 
         public static get TEXTUREFORMAT_RGBA(): number {
             return Engine._TEXTUREFORMAT_RGBA;
+        }
+
+        public static get TEXTURETYPE_UNSIGNED_BYTE(): number {
+            return Engine._TEXTURETYPE_UNSIGNED_BYTE;
+        }
+
+        public static get TEXTURETYPE_FLOAT(): number {
+            return Engine._TEXTURETYPE_FLOAT;
         }
 
         public static get Version(): string {
@@ -1605,12 +1625,18 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
+                }
+                if (type === Engine.TEXTURETYPE_FLOAT) {
+                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -1623,11 +1649,16 @@
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
+            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Engine.TEXTURETYPE_UNSIGNED_BYTE;
+                Tools.Warn("Floating point not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer: WebGLRenderbuffer;
             // Create the depth buffer
