@@ -8,8 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type) {
             if (typeof doNotChangeAspectRatio === "undefined") { doNotChangeAspectRatio = true; }
+            if (typeof type === "undefined") { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_BYTE; }
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;
@@ -24,7 +25,7 @@ var BABYLON;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
