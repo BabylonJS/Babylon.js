@@ -257,6 +257,15 @@
         return shader;
     };
 
+    var getWebGLTextureType = function (gl, type) {
+        var textureType = gl.UNSIGNED_BYTE;
+
+        if (type === Engine.TEXTURETYPE_FLOAT)
+            textureType = gl.FLOAT;
+
+        return textureType;
+    };
+
     var getSamplingParameters = function (samplingMode, generateMipMaps, gl) {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
@@ -590,6 +599,22 @@
         Object.defineProperty(Engine, "TEXTUREFORMAT_RGBA", {
             get: function () {
                 return Engine._TEXTUREFORMAT_RGBA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTURETYPE_UNSIGNED_INT", {
+            get: function () {
+                return Engine._TEXTURETYPE_UNSIGNED_INT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTURETYPE_FLOAT", {
+            get: function () {
+                return Engine._TEXTURETYPE_FLOAT;
             },
             enumerable: true,
             configurable: true
@@ -1601,12 +1626,18 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
+                }
+                if (type === Engine.TEXTURETYPE_FLOAT) {
+                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -1619,11 +1650,16 @@
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
+            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                BABYLON.Tools.Warn("Floating point not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer;
 
@@ -2124,6 +2160,9 @@
         Engine._TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         Engine._TEXTUREFORMAT_RGB = 4;
         Engine._TEXTUREFORMAT_RGBA = 4;
+
+        Engine._TEXTURETYPE_UNSIGNED_INT = 0;
+        Engine._TEXTURETYPE_FLOAT = 1;
 
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
