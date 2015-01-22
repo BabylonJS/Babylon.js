@@ -1113,6 +1113,9 @@
                             if (indexOfOther > -1) {
                                 sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
                             }
+                        } else if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
+
+                            sourceMesh._intersectionsInProgress.push(otherMesh);
                         }
                     }
                 }
