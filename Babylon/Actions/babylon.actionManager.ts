@@ -1,20 +1,45 @@
 ﻿module BABYLON {
 
+    /**
+     * ActionEvent is the event beint sent when an action is triggered.
+     */
     export class ActionEvent {
+        /**
+         * @constructor
+         * @param source The mesh that triggered the action.
+         * @param pointerX the X mouse cursor position at the time of the event
+         * @param pointerY the Y mouse cursor position at the time of the event
+         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
+         * @param sourceEvent the original (browser) event that triggered the ActionEvent
+         */
         constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any) {
 
         }
 
+        /**
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source the source mesh that triggered the event
+         * @param evt {Event} The original (browser) event
+         */
         public static CreateNew(source: AbstractMesh, evt?: Event): ActionEvent {
             var scene = source.getScene();
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
 
+        /**
+         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
+         * @param scene the scene where the event occurred
+         * @param evt {Event} The original (browser) event
+         */
         public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
     }
 
+    /**
+     * Action Manager manages all events to be triggered on a given mesh or the global scene.
+     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+     */
     export class ActionManager {
         // Statics
         private static _NothingTrigger = 0;
@@ -101,6 +126,11 @@
             return this._scene;
         }
 
+        /**
+         * Does this action manager handles actions of any of the given triggers
+         * @param triggers {number[]} the triggers to be tested
+         * @return {boolean} whether one (or more) of the triggers is handeled 
+         */
         public hasSpecificTriggers(triggers: number[]): boolean {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -113,6 +143,10 @@
             return false;
         }
 
+        /**
+         * Does this action manager has pointer triggers
+         * @return {boolean} whether or not it has pointer triggers
+         */
         public get hasPointerTriggers(): boolean {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -125,6 +159,10 @@
             return false;
         }
 
+        /**
+         * Does this action manager has pick triggers
+         * @return {boolean} whether or not it has pick triggers
+         */
         public get hasPickTriggers(): boolean {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -137,6 +175,11 @@
             return false;
         }
 
+        /**
+         * Registers an action to this action manager
+         * @param action {BABYLON.Action} the action to be registered
+         * @return {BABYLON.Action} the action amended (prepared) after registration
+         */
         public registerAction(action: Action): Action {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
@@ -154,6 +197,11 @@
             return action;
         }
 
+        /**
+         * Process a specific trigger
+         * @param trigger {number} the trigger to process
+         * @param evt {BABYLON.ActionEvent} the event details to be processed
+         */
         public processTrigger(trigger: number, evt: ActionEvent): void {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -173,7 +221,7 @@
                     action._executeCurrent(evt);
                 }
             }
-        }
+        } 
 
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             var properties = propertyPath.split(".");
