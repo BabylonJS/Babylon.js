@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 6, 1),
+    'version': (1, 6, 2),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -901,6 +901,7 @@ class Node:
         self.isEnabled = True
         self.checkCollisions = False
         self.billboardMode = BILLBOARDMODE_NONE
+        self.castShadows = False
         self.receiveShadows = False
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def get_proper_name(self):
