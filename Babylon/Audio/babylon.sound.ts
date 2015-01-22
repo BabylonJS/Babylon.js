@@ -8,12 +8,12 @@
         public refDistance: number = 1;
         public rolloffFactor: number = 1;
         public maxDistance: number = 100;
-        public distanceModel: DistanceModelType = DistanceModelType.linear; 
-        public panningModel: PanningModelType = PanningModelType.HRTF;
+        public distanceModel: string = "linear";
+        public panningModel: string = "HRTF";
         private startTime: number = 0;
         private startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
-        private _localDirection: Vector3 = new Vector3(1,0,0);
+        private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
         private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
@@ -81,7 +81,7 @@
                 }
                 this._scene.mainSoundTrack.AddSound(this);
                 if (typeof (urlOrArrayBuffer) === "string") {
-                    BABYLON.Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
+                    BABYLON.Tools.LoadFile(urlOrArrayBuffer,(data) => { this._soundLoaded(data); }, null, null, true);
                 }
                 else {
                     if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -96,7 +96,7 @@
 
         private _soundLoaded(audioData: ArrayBuffer) {
             this._isLoaded = true;
-            this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
+            this._audioEngine.audioContext.decodeAudioData(audioData,(buffer) => {
                 this._audioBuffer = buffer;
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
@@ -124,11 +124,11 @@
 
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
-                    this._soundPanner.distanceModel = DistanceModelType.linear;
+                    this._soundPanner.distanceModel = "linear";
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = PanningModelType.HRTF;
+                    this._soundPanner.panningModel = "HRTF";
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
@@ -200,7 +200,7 @@
                 this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
         }
-        
+
         public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number) {
             this._customAttenuationFunction = callback;
         }

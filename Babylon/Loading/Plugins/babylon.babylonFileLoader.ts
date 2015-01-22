@@ -361,11 +361,6 @@
             light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
         }
 
-        // Actions
-        if (parsedLight.actions !== undefined) {
-            light._waitingActions = parsedLight.actions;
-        }
-
         // Animations
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
@@ -449,11 +444,6 @@
         // Parent
         if (parsedCamera.parentId) {
             camera._waitingParentId = parsedCamera.parentId;
-        }
-
-        // Actions
-        if (parsedCamera.actions !== undefined) {
-            camera._waitingActions = parsedCamera.actions;
         }
 
         // Target
@@ -819,8 +809,12 @@
         return mesh;
     };
 
-    var parseActions = (parsedActions: any, object: any, scene: Scene) => {
-        object.actionManager = new BABYLON.ActionManager(scene);
+    var parseActions = (parsedActions: any, object: AbstractMesh, scene: Scene) => {
+        var actionManager = new BABYLON.ActionManager(scene);
+        if (object === null)
+            scene.actionManager = actionManager;
+        else
+            object.actionManager = actionManager;
 
         // instanciate a new object
         var instanciate = (name: any, params: Array<any>): any => {
@@ -829,67 +823,81 @@
             return newInstance;
         };
 
-        var parseParameter = (name: String, value: String, target: any, propertyPath: String): any => {
-            var split = value.split(",");
+        var parseParameter = (name: string, value: string, target: any, propertyPath: string): any => {
+            if (propertyPath === null) {
+                // String, boolean or float
+                var floatValue = parseFloat(value);
 
-            if (split.length == 1) {
-                var num = parseFloat(split[0]);
-                if (isNaN(num))
-                    return split[0];
+                if (value === "true" || value === "false")
+                    return value === "true";
                 else
-                    return num;
+                    return isNaN(floatValue) ? value : floatValue;
             }
 
             var effectiveTarget = propertyPath.split(".");
+            var values = value.split(",");
+
+            // Get effective Target
             for (var i = 0; i < effectiveTarget.length; i++) {
                 target = target[effectiveTarget[i]];
             }
 
-            if (split.length == 3) {
-                var values = [parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2])];
-                if (target instanceof BABYLON.Vector3)
-                    return BABYLON.Vector3.FromArray(values);
-                else
-                    return BABYLON.Color3.FromArray(values);
-            }
+            // Return appropriate value with its type
+            if (target instanceof Boolean)
+                return values[0] === "true";
 
-            if (split.length == 4) {
-                var values = [parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]), parseFloat(split[3])];
-                if (target instanceof Vector4)
-                    return BABYLON.Vector4.FromArray(values);
-                else
-                    return BABYLON.Color4.FromArray(values);
-            }
+            if (target instanceof String)
+                return values[0];
+
+            // Parameters with multiple values such as Vector3 etc.
+            var split = new Array<number>();
+            for (var i = 0; i < values.length; i++)
+                split.push(parseFloat(values[i]));
+
+            if (target instanceof Vector3)
+                return BABYLON.Vector3.FromArray(split);
+
+            if (target instanceof Vector4)
+                return BABYLON.Vector4.FromArray(split);
+
+            if (target instanceof Color3)
+                return BABYLON.Color3.FromArray(split);
+
+            if (target instanceof Color4)
+                return BABYLON.Color4.FromArray(split);
+
+            return parseFloat(values[0]);
         };
 
         // traverse graph per trigger
-        var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action, actionManager: ActionManager) => {
-            var parameters = new Array();
+        var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action) => {
+            var parameters = new Array<any>();
             var target: any = null;
-            var propertyPath = null;
+            var propertyPath: string = null;
 
             // Parameters
-            if (parsedAction.type == 2)
+            if (parsedAction.type === 2)
                 parameters.push(actionManager);
             else
                 parameters.push(trigger);
 
             for (var i = 0; i < parsedAction.properties.length; i++) {
                 var value = parsedAction.properties[i].value;
-                if (parsedAction.properties[i].name === "target") {
+                var name = parsedAction.properties[i].name;
+
+                if (name === "target")
                     value = target = scene.getNodeByName(value);
-                }
-                else if (parsedAction.properties[i].name != "propertyPath") {
-                    if (value === "false" || value === "true")
-                        value = value === "true";
-                    else if (parsedAction.type === 2 && parsedAction.properties[i].name === "operator")
+                else if (name === "parent")
+                    value = scene.getNodeByName(value);
+                else if (name !== "propertyPath") {
+                    if (parsedAction.type === 2 && name === "operator")
                         value = BABYLON.ValueCondition[value];
                     else
-                        value = parseParameter(parsedAction.properties[i].name, value, target, propertyPath);
-                }
-                else {
+                        value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                } else {
                     propertyPath = value;
                 }
+
                 parameters.push(value);
             }
             parameters.push(condition);
@@ -901,7 +909,7 @@
                 parameters[parameters.length - 2] = condition;
             }
 
-            // Action or condition
+            // Action or condition(s)
             var newAction = instanciate(parsedAction.name, parameters);
             if (newAction instanceof BABYLON.Condition) {
                 condition = newAction;
@@ -915,7 +923,7 @@
             }
 
             for (var i = 0; i < parsedAction.children.length; i++)
-                traverse(parsedAction.children[i], trigger, condition, newAction, actionManager);
+                traverse(parsedAction.children[i], trigger, condition, newAction);
         };
 
         // triggers
@@ -930,7 +938,7 @@
                 triggerParams = BABYLON.ActionManager[trigger.name];
 
             for (var j = 0; j < trigger.children.length; j++)
-                traverse(trigger.children[j], triggerParams, null, null, object.actionManager);
+                traverse(trigger.children[j], triggerParams, null, null);
         }
 
     };
@@ -1426,7 +1434,7 @@
 
             // Actions (scene)
             if (parsedData.actions) {
-                parseActions(parsedData.actions, scene, scene);
+                parseActions(parsedData.actions, null, scene);
             }
 
             // Finish

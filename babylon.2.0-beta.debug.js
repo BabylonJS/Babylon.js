@@ -4006,6 +4006,15 @@ var BABYLON;
         return shader;
     };
 
+    var getWebGLTextureType = function (gl, type) {
+        var textureType = gl.UNSIGNED_BYTE;
+
+        if (type === Engine.TEXTURETYPE_FLOAT)
+            textureType = gl.FLOAT;
+
+        return textureType;
+    };
+
     var getSamplingParameters = function (samplingMode, generateMipMaps, gl) {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
@@ -4339,6 +4348,22 @@ var BABYLON;
         Object.defineProperty(Engine, "TEXTUREFORMAT_RGBA", {
             get: function () {
                 return Engine._TEXTUREFORMAT_RGBA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTURETYPE_UNSIGNED_INT", {
+            get: function () {
+                return Engine._TEXTURETYPE_UNSIGNED_INT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Engine, "TEXTURETYPE_FLOAT", {
+            get: function () {
+                return Engine._TEXTURETYPE_FLOAT;
             },
             enumerable: true,
             configurable: true
@@ -5350,12 +5375,18 @@ var BABYLON;
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
+                }
+                if (type === Engine.TEXTURETYPE_FLOAT) {
+                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -5368,11 +5399,16 @@ var BABYLON;
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
+            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer;
 
@@ -5874,6 +5910,9 @@ var BABYLON;
         Engine._TEXTUREFORMAT_RGB = 4;
         Engine._TEXTUREFORMAT_RGBA = 4;
 
+        Engine._TEXTURETYPE_UNSIGNED_INT = 0;
+        Engine._TEXTURETYPE_FLOAT = 1;
+
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
         Engine.ShadersRepository = "Babylon/Shaders/";
@@ -5884,7 +5923,15 @@ var BABYLON;
 //# sourceMappingURL=babylon.engine.js.map
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * Node is the basic class for all scene objects (Mesh, Light Camera).
+    */
     var Node = (function () {
+        /**
+        * @constructor
+        * @param {string} name - the name and id to be given to this node
+        * @param {BABYLON.Scene} the scene this node will be added to
+        */
         function Node(name, scene) {
             this.state = "";
             this.animations = new Array();
@@ -5963,10 +6010,20 @@ var BABYLON;
             return true;
         };
 
+        /**
+        * Is this node ready to be used/rendered
+        * @return {boolean} is it ready
+        */
         Node.prototype.isReady = function () {
             return this._isReady;
         };
 
+        /**
+        * Is this node enabled.
+        * If the node has a parent and is enabled, the parent will be inspected as well.
+        * @return {boolean} whether this node (and its parent) is enabled.
+        * @see setEnabled
+        */
         Node.prototype.isEnabled = function () {
             if (!this._isEnabled) {
                 return false;
@@ -5979,10 +6036,21 @@ var BABYLON;
             return true;
         };
 
+        /**
+        * Set the enabled state of this node.
+        * @param {boolean} value - the new enabled state
+        * @see isEnabled
+        */
         Node.prototype.setEnabled = function (value) {
             this._isEnabled = value;
         };
 
+        /**
+        * Is this node a descendant of the given node.
+        * The function will iterate up the hierarchy until the ancestor was found or no more parents defined.
+        * @param {BABYLON.Node} ancestor - The parent node to inspect
+        * @see parent
+        */
         Node.prototype.isDescendantOf = function (ancestor) {
             if (this.parent) {
                 if (this.parent === ancestor) {
@@ -6003,6 +6071,10 @@ var BABYLON;
             }
         };
 
+        /**
+        * Will return all nodes that have this node as parent.
+        * @return {BABYLON.Node[]} all children nodes of all types.
+        */
         Node.prototype.getDescendants = function () {
             var results = [];
             this._getDescendants(this._scene.meshes, results);
@@ -8837,8 +8909,15 @@ var BABYLON;
 //# sourceMappingURL=babylon.arcRotateCamera.js.map
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * Represents a scene to be rendered by the engine.
+    * @see http://doc.babylonjs.com/page.php?p=21911
+    */
     var Scene = (function () {
-        // Constructor
+        /**
+        * @constructor
+        * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
+        */
         function Scene(engine) {
             // Members
             this.autoClear = true;
@@ -8850,6 +8929,10 @@ var BABYLON;
             this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
             // Fog
+            /**
+            * is fog enabled on this scene.
+            * @type {boolean}
+            */
             this.fogEnabled = true;
             this.fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -8857,13 +8940,36 @@ var BABYLON;
             this.fogStart = 0;
             this.fogEnd = 1000.0;
             // Lights
+            /**
+            * is shadow enabled on this scene.
+            * @type {boolean}
+            */
             this.shadowsEnabled = true;
+            /**
+            * is light enabled on this scene.
+            * @type {boolean}
+            */
             this.lightsEnabled = true;
+            /**
+            * All of the lights added to this scene.
+            * @see BABYLON.Light
+            * @type {BABYLON.Light[]}
+            */
             this.lights = new Array();
             // Cameras
+            /**
+            * All of the cameras added to this scene.
+            * @see BABYLON.Camera
+            * @type {BABYLON.Camera[]}
+            */
             this.cameras = new Array();
             this.activeCameras = new Array();
             // Meshes
+            /**
+            * All of the (abstract) meshes added to this scene.
+            * @see BABYLON.AbstractMesh
+            * @type {BABYLON.AbstractMesh[]}
+            */
             this.meshes = new Array();
             // Geometries
             this._geometries = new Array();
@@ -8957,6 +9063,10 @@ var BABYLON;
         });
 
         Object.defineProperty(Scene.prototype, "meshUnderPointer", {
+            /**
+            * The mesh that is currently under the pointer.
+            * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
+            */
             get: function () {
                 return this._meshUnderPointer;
             },
@@ -8965,6 +9075,10 @@ var BABYLON;
         });
 
         Object.defineProperty(Scene.prototype, "pointerX", {
+            /**
+            * Current on-screen X position of the pointer
+            * @return {number} X position of the pointer
+            */
             get: function () {
                 return this._pointerX;
             },
@@ -8973,6 +9087,10 @@ var BABYLON;
         });
 
         Object.defineProperty(Scene.prototype, "pointerY", {
+            /**
+            * Current on-screen Y position of the pointer
+            * @return {number} Y position of the pointer
+            */
             get: function () {
                 return this._pointerY;
             },
@@ -9225,6 +9343,10 @@ var BABYLON;
             return this._pendingData.length;
         };
 
+        /**
+        * Registers a function to be executed when the scene is ready.
+        * @param {Function} func - the function to be executed.
+        */
         Scene.prototype.executeWhenReady = function (func) {
             var _this = this;
             this._onReadyCallbacks.push(func);
@@ -9256,6 +9378,19 @@ var BABYLON;
         };
 
         // Animations
+        /**
+        * Will start the animation sequence of a given target
+        * @param target - the target
+        * @param {number} from - from which frame should animation start
+        * @param {number} to - till which frame should animation run.
+        * @param {boolean} [loop] - should the animation loop
+        * @param {number} [speedRatio] - the speed in which to run the animation
+        * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
+        * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
+        * @return {BABYLON.Animatable} the animatable object created for this animation
+        * @see BABYLON.Animatable
+        * @see http://doc.babylonjs.com/page.php?p=22081
+        */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
@@ -9303,6 +9438,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * Will stop the animation of the given target
+        * @param target - the target
+        * @see beginAnimation
+        */
         Scene.prototype.stopAnimation = function (target) {
             var animatable = this.getAnimatableByTarget(target);
 
@@ -9353,6 +9493,12 @@ var BABYLON;
         };
 
         // Methods
+        /**
+        * sets the active camera of the scene using its ID
+        * @param {string} id - the camera's ID
+        * @return {BABYLON.Camera|null} the new active camera or null if none found.
+        * @see activeCamera
+        */
         Scene.prototype.setActiveCameraByID = function (id) {
             var camera = this.getCameraByID(id);
 
@@ -9364,6 +9510,12 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * sets the active camera of the scene using its name
+        * @param {string} name - the camera's name
+        * @return {BABYLON.Camera|null} the new active camera or null if none found.
+        * @see activeCamera
+        */
         Scene.prototype.setActiveCameraByName = function (name) {
             var camera = this.getCameraByName(name);
 
@@ -9375,6 +9527,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a material using its id
+        * @param {string} the material's ID
+        * @return {BABYLON.Material|null} the material or null if none found.
+        */
         Scene.prototype.getMaterialByID = function (id) {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].id === id) {
@@ -9385,6 +9542,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a material using its name
+        * @param {string} the material's name
+        * @return {BABYLON.Material|null} the material or null if none found.
+        */
         Scene.prototype.getMaterialByName = function (name) {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].name === name) {
@@ -9405,6 +9567,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a camera using its name
+        * @param {string} the camera's name
+        * @return {BABYLON.Camera|null} the camera or null if none found.
+        */
         Scene.prototype.getCameraByName = function (name) {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].name === name) {
@@ -9415,6 +9582,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a light node using its name
+        * @param {string} the light's name
+        * @return {BABYLON.Light|null} the light or null if none found.
+        */
         Scene.prototype.getLightByName = function (name) {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].name === name) {
@@ -9425,6 +9597,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a light node using its ID
+        * @param {string} the light's id
+        * @return {BABYLON.Light|null} the light or null if none found.
+        */
         Scene.prototype.getLightByID = function (id) {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].id === id) {
@@ -9435,6 +9612,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * get a geometry using its ID
+        * @param {string} the geometry's id
+        * @return {BABYLON.Geometry|null} the geometry or null if none found.
+        */
         Scene.prototype.getGeometryByID = function (id) {
             for (var index = 0; index < this._geometries.length; index++) {
                 if (this._geometries[index].id === id) {
@@ -9445,6 +9627,12 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * add a new geometry to this scene.
+        * @param {BABYLON.Geometry} geometry - the geometry to be added to the scene.
+        * @param {boolean} [force] - force addition, even if a geometry with this ID already exists
+        * @return {boolean} was the geometry added or not
+        */
         Scene.prototype.pushGeometry = function (geometry, force) {
             if (!force && this.getGeometryByID(geometry.id)) {
                 return false;
@@ -9459,6 +9647,11 @@ var BABYLON;
             return this._geometries;
         };
 
+        /**
+        * Get a the first added mesh found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+        */
         Scene.prototype.getMeshByID = function (id) {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
@@ -9469,6 +9662,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * Get a the last added mesh found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+        */
         Scene.prototype.getLastMeshByID = function (id) {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
@@ -9479,6 +9677,11 @@ var BABYLON;
             return null;
         };
 
+        /**
+        * Get a the last added node (Mesh, Camera, Light) found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.Node|null} the node found or null if not found at all.
+        */
         Scene.prototype.getLastEntryByID = function (id) {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
@@ -9859,9 +10062,13 @@ var BABYLON;
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
-                            sourceMesh._intersectionsInProgress.push(otherMesh);
+                        if (areIntersecting && currentIntersectionInProgress === -1) {
+                            if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            } else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            }
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
                             action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
 
@@ -12925,8 +13132,10 @@ var BABYLON;
 
         InstancedMesh.prototype._syncSubMeshes = function () {
             this.releaseSubMeshes();
-            for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
-                this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
+            if (this._sourceMesh.subMeshes) {
+                for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
+                    this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
+                }
             }
         };
 
@@ -13685,7 +13894,7 @@ var BABYLON;
         };
 
         Texture.prototype.clone = function () {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY);
+            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
@@ -13807,8 +14016,9 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type) {
             if (typeof doNotChangeAspectRatio === "undefined") { doNotChangeAspectRatio = true; }
+            if (typeof type === "undefined") { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             _super.call(this, null, scene, !generateMipMaps);
             this.renderList = new Array();
             this.renderParticles = true;
@@ -13823,7 +14033,7 @@ var BABYLON;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
@@ -21614,11 +21824,6 @@ var BABYLON;
                 light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
             }
 
-            // Actions
-            if (parsedLight.actions !== undefined) {
-                light._waitingActions = parsedLight.actions;
-            }
-
             // Animations
             if (parsedLight.animations) {
                 for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
@@ -21691,11 +21896,6 @@ var BABYLON;
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
-            }
-
-            // Actions
-            if (parsedCamera.actions !== undefined) {
-                camera._waitingActions = parsedCamera.actions;
             }
 
             // Target
@@ -22061,7 +22261,11 @@ var BABYLON;
         };
 
         var parseActions = function (parsedActions, object, scene) {
-            object.actionManager = new BABYLON.ActionManager(scene);
+            var actionManager = new BABYLON.ActionManager(scene);
+            if (object === null)
+                scene.actionManager = actionManager;
+            else
+                object.actionManager = actionManager;
 
             // instanciate a new object
             var instanciate = function (name, params) {
@@ -22071,64 +22275,79 @@ var BABYLON;
             };
 
             var parseParameter = function (name, value, target, propertyPath) {
-                var split = value.split(",");
+                if (propertyPath === null) {
+                    // String, boolean or float
+                    var floatValue = parseFloat(value);
 
-                if (split.length == 1) {
-                    var num = parseFloat(split[0]);
-                    if (isNaN(num))
-                        return split[0];
+                    if (value === "true" || value === "false")
+                        return value === "true";
                     else
-                        return num;
+                        return isNaN(floatValue) ? value : floatValue;
                 }
 
                 var effectiveTarget = propertyPath.split(".");
+                var values = value.split(",");
+
                 for (var i = 0; i < effectiveTarget.length; i++) {
                     target = target[effectiveTarget[i]];
                 }
 
-                if (split.length == 3) {
-                    var values = [parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2])];
-                    if (target instanceof BABYLON.Vector3)
-                        return BABYLON.Vector3.FromArray(values);
-                    else
-                        return BABYLON.Color3.FromArray(values);
-                }
+                // Return appropriate value with its type
+                if (target instanceof Boolean)
+                    return values[0] === "true";
 
-                if (split.length == 4) {
-                    var values = [parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]), parseFloat(split[3])];
-                    if (target instanceof BABYLON.Vector4)
-                        return BABYLON.Vector4.FromArray(values);
-                    else
-                        return BABYLON.Color4.FromArray(values);
-                }
+                if (target instanceof String)
+                    return values[0];
+
+                // Parameters with multiple values such as Vector3 etc.
+                var split = new Array();
+                for (var i = 0; i < values.length; i++)
+                    split.push(parseFloat(values[i]));
+
+                if (target instanceof BABYLON.Vector3)
+                    return BABYLON.Vector3.FromArray(split);
+
+                if (target instanceof BABYLON.Vector4)
+                    return BABYLON.Vector4.FromArray(split);
+
+                if (target instanceof BABYLON.Color3)
+                    return BABYLON.Color3.FromArray(split);
+
+                if (target instanceof BABYLON.Color4)
+                    return BABYLON.Color4.FromArray(split);
+
+                return parseFloat(values[0]);
             };
 
             // traverse graph per trigger
-            var traverse = function (parsedAction, trigger, condition, action, actionManager) {
+            var traverse = function (parsedAction, trigger, condition, action) {
                 var parameters = new Array();
                 var target = null;
                 var propertyPath = null;
 
                 // Parameters
-                if (parsedAction.type == 2)
+                if (parsedAction.type === 2)
                     parameters.push(actionManager);
                 else
                     parameters.push(trigger);
 
                 for (var i = 0; i < parsedAction.properties.length; i++) {
                     var value = parsedAction.properties[i].value;
-                    if (parsedAction.properties[i].name === "target") {
+                    var name = parsedAction.properties[i].name;
+
+                    if (name === "target")
                         value = target = scene.getNodeByName(value);
-                    } else if (parsedAction.properties[i].name != "propertyPath") {
-                        if (value === "false" || value === "true")
-                            value = value === "true";
-                        else if (parsedAction.type === 2 && parsedAction.properties[i].name === "operator")
+                    else if (name === "parent")
+                        value = scene.getNodeByName(value);
+                    else if (name !== "propertyPath") {
+                        if (parsedAction.type === 2 && name === "operator")
                             value = BABYLON.ValueCondition[value];
                         else
-                            value = parseParameter(parsedAction.properties[i].name, value, target, propertyPath);
+                            value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
                     } else {
                         propertyPath = value;
                     }
+
                     parameters.push(value);
                 }
                 parameters.push(condition);
@@ -22140,7 +22359,7 @@ var BABYLON;
                     parameters[parameters.length - 2] = condition;
                 }
 
-                // Action or condition
+                // Action or condition(s)
                 var newAction = instanciate(parsedAction.name, parameters);
                 if (newAction instanceof BABYLON.Condition) {
                     condition = newAction;
@@ -22154,7 +22373,7 @@ var BABYLON;
                 }
 
                 for (var i = 0; i < parsedAction.children.length; i++)
-                    traverse(parsedAction.children[i], trigger, condition, newAction, actionManager);
+                    traverse(parsedAction.children[i], trigger, condition, newAction);
             };
 
             for (var i = 0; i < parsedActions.children.length; i++) {
@@ -22167,7 +22386,7 @@ var BABYLON;
                     triggerParams = BABYLON.ActionManager[trigger.name];
 
                 for (var j = 0; j < trigger.children.length; j++)
-                    traverse(trigger.children[j], triggerParams, null, null, object.actionManager);
+                    traverse(trigger.children[j], triggerParams, null, null);
             }
         };
 
@@ -22656,7 +22875,7 @@ var BABYLON;
 
                 // Actions (scene)
                 if (parsedData.actions) {
-                    parseActions(parsedData.actions, scene, scene);
+                    parseActions(parsedData.actions, null, scene);
                 }
 
                 // Finish
@@ -27152,7 +27371,18 @@ var BABYLON;
 //# sourceMappingURL=babylon.action.js.map
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * ActionEvent is the event beint sent when an action is triggered.
+    */
     var ActionEvent = (function () {
+        /**
+        * @constructor
+        * @param source The mesh that triggered the action.
+        * @param pointerX the X mouse cursor position at the time of the event
+        * @param pointerY the Y mouse cursor position at the time of the event
+        * @param meshUnderPointer The mesh that is currently pointed at (can be null)
+        * @param sourceEvent the original (browser) event that triggered the ActionEvent
+        */
         function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent) {
             this.source = source;
             this.pointerX = pointerX;
@@ -27160,11 +27390,21 @@ var BABYLON;
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
         }
+        /**
+        * Helper function to auto-create an ActionEvent from a source mesh.
+        * @param source the source mesh that triggered the event
+        * @param evt {Event} The original (browser) event
+        */
         ActionEvent.CreateNew = function (source, evt) {
             var scene = source.getScene();
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
 
+        /**
+        * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
+        * @param scene the scene where the event occurred
+        * @param evt {Event} The original (browser) event
+        */
         ActionEvent.CreateNewFromScene = function (scene, evt) {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
@@ -27172,6 +27412,10 @@ var BABYLON;
     })();
     BABYLON.ActionEvent = ActionEvent;
 
+    /**
+    * Action Manager manages all events to be triggered on a given mesh or the global scene.
+    * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+    */
     var ActionManager = (function () {
         function ActionManager(scene) {
             // Members
@@ -27289,6 +27533,11 @@ var BABYLON;
             return this._scene;
         };
 
+        /**
+        * Does this action manager handles actions of any of the given triggers
+        * @param {number[]} triggers - the triggers to be tested
+        * @return {boolean} whether one (or more) of the triggers is handeled
+        */
         ActionManager.prototype.hasSpecificTriggers = function (triggers) {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -27302,6 +27551,10 @@ var BABYLON;
         };
 
         Object.defineProperty(ActionManager.prototype, "hasPointerTriggers", {
+            /**
+            * Does this action manager has pointer triggers
+            * @return {boolean} whether or not it has pointer triggers
+            */
             get: function () {
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
@@ -27318,6 +27571,10 @@ var BABYLON;
         });
 
         Object.defineProperty(ActionManager.prototype, "hasPickTriggers", {
+            /**
+            * Does this action manager has pick triggers
+            * @return {boolean} whether or not it has pick triggers
+            */
             get: function () {
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
@@ -27333,6 +27590,11 @@ var BABYLON;
             configurable: true
         });
 
+        /**
+        * Registers an action to this action manager
+        * @param {BABYLON.Action} action - the action to be registered
+        * @return {BABYLON.Action} the action amended (prepared) after registration
+        */
         ActionManager.prototype.registerAction = function (action) {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
@@ -27349,6 +27611,11 @@ var BABYLON;
             return action;
         };
 
+        /**
+        * Process a specific trigger
+        * @param {number} trigger - the trigger to process
+        * @param evt {BABYLON.ActionEvent} the event details to be processed
+        */
         ActionManager.prototype.processTrigger = function (trigger, evt) {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
@@ -31366,18 +31633,31 @@ var BABYLON;
 
                                 _this.calculateError(v0, v1, p, n, uv, color);
 
-                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor))
+                                var delTr = [];
+
+                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr))
                                     continue;
-                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor))
+                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
                                     continue;
 
-                                v0.position = p;
+                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                    continue;
+                                }
+
                                 v0.normal = n;
                                 if (v0.uv)
                                     v0.uv = uv;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
+
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                    continue;
+
+                                if (p.equals(v0.position))
+                                    continue;
+                                v0.position = p;
+
                                 var tStart = _this.references.length;
 
                                 deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
@@ -31580,7 +31860,7 @@ var BABYLON;
             return newMesh;
         };
 
-        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor) {
+        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
                 if (t.deleted)
@@ -31593,6 +31873,7 @@ var BABYLON;
 
                 if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
                     deletedArray[i] = true;
+                    delTr.push(t);
                     continue;
                 }
 

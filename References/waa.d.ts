@@ -666,7 +666,7 @@ interface PannerNode extends AudioNode {
     /**
      * Determines which spatialization algorithm will be used to position the audio in 3D space. The default is "HRTF".
      */
-    panningModel: PanningModelType;
+    panningModel: string;
 
     /**
      * Sets the position of the audio source relative to the listener attribute. A 3D cartesian coordinate system is used.
@@ -704,7 +704,7 @@ interface PannerNode extends AudioNode {
     /**
      * Determines which algorithm will be used to reduce the volume of an audio source as it moves away from the listener. The default is "inverse".
      */
-    distanceModel: DistanceModelType;
+    distanceModel: string;
 
     /**
      * A reference distance for reducing volume as source move further from the listener. The default value is 1.
