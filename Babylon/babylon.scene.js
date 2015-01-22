@@ -1,7 +1,14 @@
 ﻿var BABYLON;
 (function (BABYLON) {
+    /**
+    * Represents a scene to be rendered by the engine.
+    * @see http://doc.babylonjs.com/page.php?p=21911
+    */
     var Scene = (function () {
-        // Constructor
+        /**
+        * @constructor
+        * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
+        */
         function Scene(engine) {
             // Members
             this.autoClear = true;
@@ -13,6 +20,10 @@
             this.animationsEnabled = true;
             this.cameraToUseForPointers = null;
             // Fog
+            /**
+            * is fog enabled on this scene.
+            * @type {boolean}
+            */
             this.fogEnabled = true;
             this.fogMode = Scene.FOGMODE_NONE;
             this.fogColor = new BABYLON.Color3(0.2, 0.2, 0.3);
@@ -20,13 +31,36 @@
             this.fogStart = 0;
             this.fogEnd = 1000.0;
             // Lights
+            /**
+            * is shadow enabled on this scene.
+            * @type {boolean}
+            */
             this.shadowsEnabled = true;
+            /**
+            * is light enabled on this scene.
+            * @type {boolean}
+            */
             this.lightsEnabled = true;
+            /**
+            * All of the lights added to this scene.
+            * @see BABYLON.Light
+            * @type {BABYLON.Light[]}
+            */
             this.lights = new Array();
             // Cameras
+            /**
+            * All of the cameras added to this scene.
+            * @see BABYLON.Camera
+            * @type {BABYLON.Camera[]}
+            */
             this.cameras = new Array();
             this.activeCameras = new Array();
             // Meshes
+            /**
+            * All of the (abstract) meshes added to this scene.
+            * @see BABYLON.AbstractMesh
+            * @type {BABYLON.AbstractMesh[]}
+            */
             this.meshes = new Array();
             // Geometries
             this._geometries = new Array();
@@ -120,6 +154,10 @@
         });
 
         Object.defineProperty(Scene.prototype, "meshUnderPointer", {
+            /**
+            * The mesh that is currently under the pointer.
+            * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
+            */
             get: function () {
                 return this._meshUnderPointer;
             },
@@ -128,6 +166,10 @@
         });
 
         Object.defineProperty(Scene.prototype, "pointerX", {
+            /**
+            * Current on-screen X position of the pointer
+            * @return {number} X position of the pointer
+            */
             get: function () {
                 return this._pointerX;
             },
@@ -136,6 +178,10 @@
         });
 
         Object.defineProperty(Scene.prototype, "pointerY", {
+            /**
+            * Current on-screen Y position of the pointer
+            * @return {number} Y position of the pointer
+            */
             get: function () {
                 return this._pointerY;
             },
@@ -388,6 +434,10 @@
             return this._pendingData.length;
         };
 
+        /**
+        * Registers a function to be executed when the scene is ready.
+        * @param {Function} func - the function to be executed.
+        */
         Scene.prototype.executeWhenReady = function (func) {
             var _this = this;
             this._onReadyCallbacks.push(func);
@@ -419,6 +469,19 @@
         };
 
         // Animations
+        /**
+        * Will start the animation sequence of a given target
+        * @param target - the target
+        * @param {number} from - from which frame should animation start
+        * @param {number} to - till which frame should animation run.
+        * @param {boolean} [loop] - should the animation loop
+        * @param {number} [speedRatio] - the speed in which to run the animation
+        * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
+        * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
+        * @return {BABYLON.Animatable} the animatable object created for this animation
+        * @see BABYLON.Animatable
+        * @see http://doc.babylonjs.com/page.php?p=22081
+        */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
@@ -466,6 +529,11 @@
             return null;
         };
 
+        /**
+        * Will stop the animation of the given target
+        * @param target - the target
+        * @see beginAnimation
+        */
         Scene.prototype.stopAnimation = function (target) {
             var animatable = this.getAnimatableByTarget(target);
 
@@ -516,6 +584,12 @@
         };
 
         // Methods
+        /**
+        * sets the active camera of the scene using its ID
+        * @param {string} id - the camera's ID
+        * @return {BABYLON.Camera|null} the new active camera or null if none found.
+        * @see activeCamera
+        */
         Scene.prototype.setActiveCameraByID = function (id) {
             var camera = this.getCameraByID(id);
 
@@ -527,6 +601,12 @@
             return null;
         };
 
+        /**
+        * sets the active camera of the scene using its name
+        * @param {string} name - the camera's name
+        * @return {BABYLON.Camera|null} the new active camera or null if none found.
+        * @see activeCamera
+        */
         Scene.prototype.setActiveCameraByName = function (name) {
             var camera = this.getCameraByName(name);
 
@@ -538,6 +618,11 @@
             return null;
         };
 
+        /**
+        * get a material using its id
+        * @param {string} the material's ID
+        * @return {BABYLON.Material|null} the material or null if none found.
+        */
         Scene.prototype.getMaterialByID = function (id) {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].id === id) {
@@ -548,6 +633,11 @@
             return null;
         };
 
+        /**
+        * get a material using its name
+        * @param {string} the material's name
+        * @return {BABYLON.Material|null} the material or null if none found.
+        */
         Scene.prototype.getMaterialByName = function (name) {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].name === name) {
@@ -568,6 +658,11 @@
             return null;
         };
 
+        /**
+        * get a camera using its name
+        * @param {string} the camera's name
+        * @return {BABYLON.Camera|null} the camera or null if none found.
+        */
         Scene.prototype.getCameraByName = function (name) {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].name === name) {
@@ -578,6 +673,11 @@
             return null;
         };
 
+        /**
+        * get a light node using its name
+        * @param {string} the light's name
+        * @return {BABYLON.Light|null} the light or null if none found.
+        */
         Scene.prototype.getLightByName = function (name) {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].name === name) {
@@ -588,6 +688,11 @@
             return null;
         };
 
+        /**
+        * get a light node using its ID
+        * @param {string} the light's id
+        * @return {BABYLON.Light|null} the light or null if none found.
+        */
         Scene.prototype.getLightByID = function (id) {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].id === id) {
@@ -598,6 +703,11 @@
             return null;
         };
 
+        /**
+        * get a geometry using its ID
+        * @param {string} the geometry's id
+        * @return {BABYLON.Geometry|null} the geometry or null if none found.
+        */
         Scene.prototype.getGeometryByID = function (id) {
             for (var index = 0; index < this._geometries.length; index++) {
                 if (this._geometries[index].id === id) {
@@ -608,6 +718,12 @@
             return null;
         };
 
+        /**
+        * add a new geometry to this scene.
+        * @param {BABYLON.Geometry} geometry - the geometry to be added to the scene.
+        * @param {boolean} [force] - force addition, even if a geometry with this ID already exists
+        * @return {boolean} was the geometry added or not
+        */
         Scene.prototype.pushGeometry = function (geometry, force) {
             if (!force && this.getGeometryByID(geometry.id)) {
                 return false;
@@ -622,6 +738,11 @@
             return this._geometries;
         };
 
+        /**
+        * Get a the first added mesh found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+        */
         Scene.prototype.getMeshByID = function (id) {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
@@ -632,6 +753,11 @@
             return null;
         };
 
+        /**
+        * Get a the last added mesh found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+        */
         Scene.prototype.getLastMeshByID = function (id) {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
@@ -642,6 +768,11 @@
             return null;
         };
 
+        /**
+        * Get a the last added node (Mesh, Camera, Light) found of a given ID
+        * @param {string} id - the id to search for
+        * @return {BABYLON.Node|null} the node found or null if not found at all.
+        */
         Scene.prototype.getLastEntryByID = function (id) {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {

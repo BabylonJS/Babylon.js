@@ -128,7 +128,7 @@
 
         /**
          * Does this action manager handles actions of any of the given triggers
-         * @param triggers {number[]} the triggers to be tested
+         * @param {number[]} triggers - the triggers to be tested
          * @return {boolean} whether one (or more) of the triggers is handeled 
          */
         public hasSpecificTriggers(triggers: number[]): boolean {
@@ -177,7 +177,7 @@
 
         /**
          * Registers an action to this action manager
-         * @param action {BABYLON.Action} the action to be registered
+         * @param {BABYLON.Action} action - the action to be registered
          * @return {BABYLON.Action} the action amended (prepared) after registration
          */
         public registerAction(action: Action): Action {
@@ -199,7 +199,7 @@
 
         /**
          * Process a specific trigger
-         * @param trigger {number} the trigger to process
+         * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
          */
         public processTrigger(trigger: number, evt: ActionEvent): void {
