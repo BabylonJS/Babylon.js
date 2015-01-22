@@ -102,8 +102,10 @@
 
         public _syncSubMeshes(): void {
             this.releaseSubMeshes();
-            for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
-                this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
+            if (this._sourceMesh.subMeshes) {
+                for (var index = 0; index < this._sourceMesh.subMeshes.length; index++) {
+                    this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
+                }
             }
         }
 
