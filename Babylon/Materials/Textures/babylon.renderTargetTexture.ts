@@ -17,7 +17,7 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -26,7 +26,7 @@
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
 
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
