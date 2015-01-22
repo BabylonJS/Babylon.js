@@ -1249,10 +1249,13 @@
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === ActionManager.OnIntersectionEnterTrigger) {
-                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
-                            sourceMesh._intersectionsInProgress.push(otherMesh);
-
+                        if (areIntersecting && currentIntersectionInProgress === -1) {
+                            if (action.trigger === ActionManager.OnIntersectionEnterTrigger) {
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            }
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
 
@@ -1261,10 +1264,7 @@
                             if (indexOfOther > -1) {
                                 sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
                             }
-                        } else if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
-
-                            sourceMesh._intersectionsInProgress.push(otherMesh);
-                        }
+                        } 
                     }
                 }
             }

@@ -171,7 +171,7 @@ var BABYLON;
         };
 
         Texture.prototype.clone = function () {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY);
+            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

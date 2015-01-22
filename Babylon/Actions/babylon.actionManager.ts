@@ -221,7 +221,7 @@
                     action._executeCurrent(evt);
                 }
             }
-        } 
+        }
 
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             var properties = propertyPath.split(".");

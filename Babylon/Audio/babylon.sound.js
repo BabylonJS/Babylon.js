@@ -17,8 +17,8 @@
             this.refDistance = 1;
             this.rolloffFactor = 1;
             this.maxDistance = 100;
-            this.distanceModel = DistanceModelType.linear;
-            this.panningModel = PanningModelType.HRTF;
+            this.distanceModel = "linear";
+            this.panningModel = "HRTF";
             this.startTime = 0;
             this.startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
@@ -116,11 +116,11 @@
 
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation
-                    this._soundPanner.distanceModel = DistanceModelType.linear;
+                    this._soundPanner.distanceModel = "linear";
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = PanningModelType.HRTF;
+                    this._soundPanner.panningModel = "HRTF";
                 } else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;

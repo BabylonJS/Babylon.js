@@ -1652,7 +1652,7 @@
 
             if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                BABYLON.Tools.Warn("Floating point not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+                BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);

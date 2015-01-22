@@ -1153,9 +1153,13 @@
                         var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
-                            sourceMesh._intersectionsInProgress.push(otherMesh);
+                        if (areIntersecting && currentIntersectionInProgress === -1) {
+                            if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            } else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            }
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
                             action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
 

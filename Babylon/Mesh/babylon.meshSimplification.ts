@@ -416,7 +416,7 @@
             return newMesh;
         }
 
-        private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr:Array<DecimationTriangle>): boolean {
+        private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
 
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
