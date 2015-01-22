@@ -8,8 +8,8 @@
         public refDistance: number = 1;
         public rolloffFactor: number = 1;
         public maxDistance: number = 100;
-        public distanceModel: string = "linear"; 
-        public panningModel: string = "HRTF";
+        public distanceModel: DistanceModelType = DistanceModelType.linear; 
+        public panningModel: PanningModelType = PanningModelType.HRTF;
         private startTime: number = 0;
         private startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
@@ -124,11 +124,11 @@
 
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
-                    this._soundPanner.distanceModel = "linear";
+                    this._soundPanner.distanceModel = DistanceModelType.linear;
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = "HRTF";
+                    this._soundPanner.panningModel = PanningModelType.HRTF;
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
