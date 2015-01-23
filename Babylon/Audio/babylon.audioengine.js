@@ -24,6 +24,13 @@
                 this.masterGain.connect(this.audioContext.destination);
             }
         }
+        AudioEngine.prototype.dispose = function () {
+            this.canUseWebAudio = false;
+            this.masterGain.disconnect();
+            this.masterGain = null;
+            this.audioContext = null;
+        };
+
         AudioEngine.prototype.getGlobalVolume = function () {
             if (this.canUseWebAudio) {
                 return this.masterGain.gain.value;

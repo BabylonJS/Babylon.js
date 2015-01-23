@@ -10,8 +10,8 @@
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
         public panningModel: string = "HRTF";
-        private startTime: number = 0;
-        private startOffset: number = 0;
+        private _startTime: number = 0;
+        private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
@@ -35,6 +35,7 @@
         private _name: string;
         private _connectedMesh: BABYLON.AbstractMesh;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
+        private _registerFunc;
 
         /**
         * Create a sound and attach it to a scene
@@ -90,6 +91,35 @@
                     else {
                         BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
                     }
+                }
+            }
+        }
+
+        public dispose() {
+            if (this._isReadyToPlay) {
+                if (this._isPlaying) {
+                    this.stop();
+                }
+                this._isReadyToPlay = false;
+                if (this.soundTrackId === -1) {
+                    this._scene.mainSoundTrack.RemoveSound(this);
+                }
+                else {
+                    this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
+                }
+                this._soundGain.disconnect();
+                this._soundSource.disconnect();
+                this._audioBuffer = null;
+                this._soundGain = null;
+                this._soundSource = null;
+                if (this._soundPanner) {
+                    this._soundPanner.disconnect();
+                    this._soundPanner = null;
+                }
+                this._audioNode.disconnect();
+                if (this._connectedMesh) {
+                    this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                    this._connectedMesh = null;
                 }
             }
         }
@@ -231,8 +261,8 @@
                     }
                     this._soundSource.connect(this._audioNode);
                     this._soundSource.loop = this.loop;
-                    this.startTime = startTime;
-                    this._soundSource.start(startTime, this.startOffset % this._soundSource.buffer.duration);
+                    this._startTime = startTime;
+                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 }
                 catch (ex) {
@@ -256,7 +286,7 @@
         public pause() {
             if (this._isPlaying) {
                 this._soundSource.stop(0);
-                this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
+                this._startOffset += this._audioEngine.audioContext.currentTime - this._startTime;
             }
         }
 
@@ -281,7 +311,8 @@
                     this.play();
                 }
             }
-            meshToConnectTo.registerAfterWorldMatrixUpdate((connectedMesh: BABYLON.AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh));
+            this._registerFunc = (connectedMesh: BABYLON.AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: BABYLON.AbstractMesh) {

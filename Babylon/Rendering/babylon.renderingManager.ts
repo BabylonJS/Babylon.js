@@ -62,7 +62,7 @@
 
         public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void,
             activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {
-            for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
 
@@ -91,7 +91,7 @@
             var renderingGroupId = mesh.renderingGroupId || 0;
 
             if (!this._renderingGroups[renderingGroupId]) {
-                this._renderingGroups[renderingGroupId] = new BABYLON.RenderingGroup(renderingGroupId, this._scene);
+                this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene);
             }
 
             this._renderingGroups[renderingGroupId].dispatch(subMesh);

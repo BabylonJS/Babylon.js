@@ -83,9 +83,6 @@
 
         }
 
-        private _clone() {
-        }
-
         // Methods
         public get hasLODLevels(): boolean {
             return this._LODLevels.length > 0;

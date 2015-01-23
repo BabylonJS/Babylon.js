@@ -14,8 +14,6 @@
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();
-                //this._trackConvolver = this._audioEngine.audioContext.createConvolver();
-                //this._trackConvolver.connect(this._trackGain);
                 this._trackGain.connect(this._audioEngine.masterGain);
 
                 if (options) {
@@ -27,6 +25,14 @@
                 this._scene.soundTracks.push(this);
                 this.id = this._scene.soundTracks.length - 1;
             }
+        }
+
+        public dispose() {
+            while (this.soundCollection.length) {
+                this.soundCollection[0].dispose();
+            }
+            this._trackGain.disconnect();
+            this._trackGain = null;
         }
 
         public AddSound(sound: BABYLON.Sound) {

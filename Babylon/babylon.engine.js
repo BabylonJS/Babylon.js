@@ -1984,6 +1984,9 @@
                 this.scenes[0].dispose();
             }
 
+            // Release audio engine
+            this._audioEngine.dispose();
+
             for (var name in this._compiledEffects) {
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
             }

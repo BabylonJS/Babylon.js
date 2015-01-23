@@ -80,9 +80,6 @@ var BABYLON;
                 this.parent = parent;
             }
         }
-        Mesh.prototype._clone = function () {
-        };
-
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {

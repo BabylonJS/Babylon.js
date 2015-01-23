@@ -11,6 +11,7 @@ var BABYLON;
         function AbstractMesh(name, scene) {
             _super.call(this, name, scene);
             // Properties
+            this.definedFacingForward = true;
             this.position = new BABYLON.Vector3(0, 0, 0);
             this.rotation = new BABYLON.Vector3(0, 0, 0);
             this.scaling = new BABYLON.Vector3(1, 1, 1);
@@ -256,6 +257,62 @@ var BABYLON;
                 this.position.y = absolutePositionY;
                 this.position.z = absolutePositionZ;
             }
+        };
+
+        // ================================== Point of View Movement =================================
+        /**
+        * Perform relative position change from the point of view of behind the front of the mesh.
+        * This is performed taking into account the meshes current rotation, so you do not have to care.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} amountRight
+        * @param {number} amountUp
+        * @param {number} amountForward
+        */
+        AbstractMesh.prototype.movePOV = function (amountRight, amountUp, amountForward) {
+            this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
+        };
+
+        /**
+        * Calculate relative position change from the point of view of behind the front of the mesh.
+        * This is performed taking into account the meshes current rotation, so you do not have to care.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} amountRight
+        * @param {number} amountUp
+        * @param {number} amountForward
+        */
+        AbstractMesh.prototype.calcMovePOV = function (amountRight, amountUp, amountForward) {
+            var rotMatrix = new BABYLON.Matrix();
+            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+            rotQuaternion.toRotationMatrix(rotMatrix);
+
+            var translationDelta = BABYLON.Vector3.Zero();
+            var defForwardMult = this.definedFacingForward ? -1 : 1;
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
+            return translationDelta;
+        };
+
+        // ================================== Point of View Rotation =================================
+        /**
+        * Perform relative rotation change from the point of view of behind the front of the mesh.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} flipBack
+        * @param {number} twirlClockwise
+        * @param {number} tiltRight
+        */
+        AbstractMesh.prototype.rotatePOV = function (flipBack, twirlClockwise, tiltRight) {
+            this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
+        };
+
+        /**
+        * Calculate relative rotation change from the point of view of behind the front of the mesh.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} flipBack
+        * @param {number} twirlClockwise
+        * @param {number} tiltRight
+        */
+        AbstractMesh.prototype.calcRotatePOV = function (flipBack, twirlClockwise, tiltRight) {
+            var defForwardMult = this.definedFacingForward ? 1 : -1;
+            return new BABYLON.Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         };
 
         AbstractMesh.prototype.setPivotMatrix = function (matrix) {

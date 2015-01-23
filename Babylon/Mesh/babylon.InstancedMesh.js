@@ -163,7 +163,7 @@ var BABYLON;
                 for (var index = 0; index < this.getScene().meshes.length; index++) {
                     var mesh = this.getScene().meshes[index];
 
-                    if (mesh.parent == this) {
+                    if (mesh.parent === this) {
                         mesh.clone(mesh.name, result);
                     }
                 }
@@ -186,4 +186,4 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.InstancedMesh.js.map
+//# sourceMappingURL=babylon.instancedMesh.js.map

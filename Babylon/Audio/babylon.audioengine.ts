@@ -27,6 +27,13 @@
             }
         }
 
+        public dispose() {
+            this.canUseWebAudio = false;
+            this.masterGain.disconnect();
+            this.masterGain = null;
+            this.audioContext = null;
+        }
+
         public getGlobalVolume(): number {
             if (this.canUseWebAudio) {
                 return this.masterGain.gain.value;

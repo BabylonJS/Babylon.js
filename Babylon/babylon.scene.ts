@@ -230,6 +230,8 @@
 
         private _debugLayer: DebugLayer;
 
+        private _depthRenderer: DepthRenderer;
+
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
@@ -1374,6 +1376,11 @@
                 }
             }
 
+            // Depth renderer
+            if (this._depthRenderer) {
+                this._renderTargets.push(this._depthRenderer.getDepthMap());
+            }
+
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();
 
@@ -1442,15 +1449,34 @@
                         sound.updateDistanceFromListener();
                     }
                 }
-                for (var i = 0; i < this.soundTracks.length; i++) {
+                for (i = 0; i < this.soundTracks.length; i++) {
                     for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                        var sound = this.soundTracks[i].soundCollection[j];
+                        sound = this.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }
                 }
             }
+        }
+
+        public enableDepthRenderer(): DepthRenderer {
+            if (this._depthRenderer) {
+                return this._depthRenderer;
+            }
+
+            this._depthRenderer = new DepthRenderer(this);
+
+            return this._depthRenderer;
+        }
+
+        public disableDepthRenderer(): void {
+            if (!this._depthRenderer) {
+                return;
+            }
+
+            this._depthRenderer.dispose();
+            this._depthRenderer = null;
         }
 
         public dispose(): void {
@@ -1460,6 +1486,10 @@
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
+
+            if (this._depthRenderer) {
+                this._depthRenderer.dispose();
+            }
 
             // Debug layer
             this.debugLayer.hide();
@@ -1473,6 +1503,13 @@
             this._onAfterRenderCallbacks = [];
 
             this.detachControl();
+
+            // Release sounds & sounds tracks
+            this.mainSoundTrack.dispose();
+
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
