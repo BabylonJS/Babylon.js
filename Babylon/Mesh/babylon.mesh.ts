@@ -29,6 +29,7 @@
         private _preActivateId: number;
 
         /**
+         * @constructor
          * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
          * @param {Scene} scene - The scene to add this mesh to.
          * @param {Node} parent - The parent of this mesh, if it has one
@@ -103,6 +104,12 @@
             });
         }
 
+        /**
+         * Add a mesh as LOD level triggered at the given distance.
+         * @param {number} distance - the distance from the center of the object to show this level
+         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
+         * @return {BABYLON.Mesh} this mesh (for chaining)
+         */
         public addLODLevel(distance: number, mesh: Mesh): Mesh {
             if (mesh && mesh._masterMesh) {
                 Tools.Warn("You cannot use a mesh as LOD level twice");
@@ -121,6 +128,11 @@
             return this;
         }
 
+        /**
+         * Remove a mesh from the LOD array
+         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
+         * @return {BABYLON.Mesh} this mesh (for chaining)
+         */
         public removeLODLevel(mesh: Mesh): Mesh {
 
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -810,8 +822,8 @@
             return true;
         }
 
-        // Clone
-        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Mesh {
+        // Clone 
+        public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): Mesh {
             return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
 

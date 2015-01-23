@@ -19,6 +19,7 @@ var BABYLON;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
+        * @constructor
         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
         * @param {Scene} scene - The scene to add this mesh to.
         * @param {Node} parent - The parent of this mesh, if it has one
@@ -104,6 +105,12 @@ var BABYLON;
             });
         };
 
+        /**
+        * Add a mesh as LOD level triggered at the given distance.
+        * @param {number} distance - the distance from the center of the object to show this level
+        * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
+        * @return {BABYLON.Mesh} this mesh (for chaining)
+        */
         Mesh.prototype.addLODLevel = function (distance, mesh) {
             if (mesh && mesh._masterMesh) {
                 BABYLON.Tools.Warn("You cannot use a mesh as LOD level twice");
@@ -122,6 +129,11 @@ var BABYLON;
             return this;
         };
 
+        /**
+        * Remove a mesh from the LOD array
+        * @param {BABYLON.Mesh} mesh - the mesh to be removed.
+        * @return {BABYLON.Mesh} this mesh (for chaining)
+        */
         Mesh.prototype.removeLODLevel = function (mesh) {
             for (var index = 0; index < this._LODLevels.length; index++) {
                 if (this._LODLevels[index].mesh === mesh) {

@@ -351,6 +351,9 @@
         public uintIndices: boolean;
     }
 
+    /**
+     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
+     */
     export class Engine {
         // Const statics
         private static _ALPHA_DISABLE = 0;
@@ -502,6 +505,12 @@
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        /**
+         * @constructor
+         * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
+         * @param {boolean} [antialias] - enable antialias
+         * @param options - further options to be sent to the getContext function
+         */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?) {
             this._renderingCanvas = canvas;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
@@ -710,6 +719,10 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
 
+        /**
+         * stop executing a render loop function and remove it from the execution array
+         * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
+         */
         public stopRenderLoop(renderFunction?: () => void): void {
             if (!renderFunction) {
                 this._activeRenderLoops = [];
@@ -753,6 +766,14 @@
             }
         }
 
+        /**
+         * Register and execute a render loop. The engine can have more than one render function.
+         * @param {Function} renderFunction - the function to continuesly execute starting the next render loop.
+         * @example
+         * engine.runRenderLoop(function () {
+         *      scene.render()
+         * })
+         */
         public runRenderLoop(renderFunction: () => void): void {
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
                 return;
@@ -768,6 +789,10 @@
             }
         }
 
+        /**
+         * Toggle full screen mode.
+         * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
                 Tools.ExitFullscreen();
@@ -795,6 +820,12 @@
             this._gl.clear(mode);
         }
 
+        /**
+         * Set the WebGL's viewport
+         * @param {BABYLON.Viewport} viewport - the viewport element to be used.
+         * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
+         * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
+         */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
             var width = requiredWidth || this._renderingCanvas.width;
             var height = requiredHeight || this._renderingCanvas.height;
@@ -820,10 +851,22 @@
             this.flushFramebuffer();
         }
 
+        /**
+         * resize the view according to the canvas' size.
+         * @example
+         *   window.addEventListener("resize", function () {
+         *      engine.resize();
+         *   });
+         */
         public resize(): void {
             this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
         }
 
+        /**
+         * force a specific size of the canvas
+         * @param {number} width - the new canvas' width
+         * @param {number} height - the new canvas' height
+         */
         public setSize(width: number, height: number): void {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
