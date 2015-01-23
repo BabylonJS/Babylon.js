@@ -4115,7 +4115,16 @@ var BABYLON;
     })();
     BABYLON.EngineCapabilities = EngineCapabilities;
 
+    /**
+    * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
+    */
     var Engine = (function () {
+        /**
+        * @constructor
+        * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
+        * @param {boolean} [antialias] - enable antialias
+        * @param options - further options to be sent to the getContext function
+        */
         function Engine(canvas, antialias, options) {
             var _this = this;
             // Public members
@@ -4464,6 +4473,10 @@ var BABYLON;
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         };
 
+        /**
+        * stop executing a render loop function and remove it from the execution array
+        * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
+        */
         Engine.prototype.stopRenderLoop = function (renderFunction) {
             if (!renderFunction) {
                 this._activeRenderLoops = [];
@@ -4508,6 +4521,14 @@ var BABYLON;
             }
         };
 
+        /**
+        * Register and execute a render loop. The engine can have more than one render function.
+        * @param {Function} renderFunction - the function to continuesly execute starting the next render loop.
+        * @example
+        * engine.runRenderLoop(function () {
+        *      scene.render()
+        * })
+        */
         Engine.prototype.runRenderLoop = function (renderFunction) {
             var _this = this;
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
@@ -4524,6 +4545,10 @@ var BABYLON;
             }
         };
 
+        /**
+        * Toggle full screen mode.
+        * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+        */
         Engine.prototype.switchFullscreen = function (requestPointerLock) {
             if (this.isFullscreen) {
                 BABYLON.Tools.ExitFullscreen();
@@ -4551,6 +4576,12 @@ var BABYLON;
             this._gl.clear(mode);
         };
 
+        /**
+        * Set the WebGL's viewport
+        * @param {BABYLON.Viewport} viewport - the viewport element to be used.
+        * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
+        * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
+        */
         Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
             var width = requiredWidth || this._renderingCanvas.width;
             var height = requiredHeight || this._renderingCanvas.height;
@@ -4576,10 +4607,22 @@ var BABYLON;
             this.flushFramebuffer();
         };
 
+        /**
+        * resize the view according to the canvas' size.
+        * @example
+        *   window.addEventListener("resize", function () {
+        *      engine.resize();
+        *   });
+        */
         Engine.prototype.resize = function () {
             this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
         };
 
+        /**
+        * force a specific size of the canvas
+        * @param {number} width - the new canvas' width
+        * @param {number} height - the new canvas' height
+        */
         Engine.prototype.setSize = function (width, height) {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
@@ -5689,6 +5732,9 @@ var BABYLON;
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }
+
+            // Release audio engine
+            this._audioEngine.dispose();
 
             for (var name in this._compiledEffects) {
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
@@ -10187,6 +10233,11 @@ var BABYLON;
                 }
             }
 
+            // Depth renderer
+            if (this._depthRenderer) {
+                this._renderTargets.push(this._depthRenderer.getDepthMap());
+            }
+
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();
 
@@ -10253,15 +10304,34 @@ var BABYLON;
                         sound.updateDistanceFromListener();
                     }
                 }
-                for (var i = 0; i < this.soundTracks.length; i++) {
+                for (i = 0; i < this.soundTracks.length; i++) {
                     for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                        var sound = this.soundTracks[i].soundCollection[j];
+                        sound = this.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }
                 }
             }
+        };
+
+        Scene.prototype.enableDepthRenderer = function () {
+            if (this._depthRenderer) {
+                return this._depthRenderer;
+            }
+
+            this._depthRenderer = new BABYLON.DepthRenderer(this);
+
+            return this._depthRenderer;
+        };
+
+        Scene.prototype.disableDepthRenderer = function () {
+            if (!this._depthRenderer) {
+                return;
+            }
+
+            this._depthRenderer.dispose();
+            this._depthRenderer = null;
         };
 
         Scene.prototype.dispose = function () {
@@ -10271,6 +10341,10 @@ var BABYLON;
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
+
+            if (this._depthRenderer) {
+                this._depthRenderer.dispose();
+            }
 
             // Debug layer
             this.debugLayer.hide();
@@ -10284,6 +10358,13 @@ var BABYLON;
             this._onAfterRenderCallbacks = [];
 
             this.detachControl();
+
+            // Release sounds & sounds tracks
+            this.mainSoundTrack.dispose();
+
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -10824,6 +10905,7 @@ var BABYLON;
         function AbstractMesh(name, scene) {
             _super.call(this, name, scene);
             // Properties
+            this.definedFacingForward = true;
             this.position = new BABYLON.Vector3(0, 0, 0);
             this.rotation = new BABYLON.Vector3(0, 0, 0);
             this.scaling = new BABYLON.Vector3(1, 1, 1);
@@ -11069,6 +11151,62 @@ var BABYLON;
                 this.position.y = absolutePositionY;
                 this.position.z = absolutePositionZ;
             }
+        };
+
+        // ================================== Point of View Movement =================================
+        /**
+        * Perform relative position change from the point of view of behind the front of the mesh.
+        * This is performed taking into account the meshes current rotation, so you do not have to care.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} amountRight
+        * @param {number} amountUp
+        * @param {number} amountForward
+        */
+        AbstractMesh.prototype.movePOV = function (amountRight, amountUp, amountForward) {
+            this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
+        };
+
+        /**
+        * Calculate relative position change from the point of view of behind the front of the mesh.
+        * This is performed taking into account the meshes current rotation, so you do not have to care.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} amountRight
+        * @param {number} amountUp
+        * @param {number} amountForward
+        */
+        AbstractMesh.prototype.calcMovePOV = function (amountRight, amountUp, amountForward) {
+            var rotMatrix = new BABYLON.Matrix();
+            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+            rotQuaternion.toRotationMatrix(rotMatrix);
+
+            var translationDelta = BABYLON.Vector3.Zero();
+            var defForwardMult = this.definedFacingForward ? -1 : 1;
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
+            return translationDelta;
+        };
+
+        // ================================== Point of View Rotation =================================
+        /**
+        * Perform relative rotation change from the point of view of behind the front of the mesh.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} flipBack
+        * @param {number} twirlClockwise
+        * @param {number} tiltRight
+        */
+        AbstractMesh.prototype.rotatePOV = function (flipBack, twirlClockwise, tiltRight) {
+            this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
+        };
+
+        /**
+        * Calculate relative rotation change from the point of view of behind the front of the mesh.
+        * Supports definition of mesh facing forward or backward.
+        * @param {number} flipBack
+        * @param {number} twirlClockwise
+        * @param {number} tiltRight
+        */
+        AbstractMesh.prototype.calcRotatePOV = function (flipBack, twirlClockwise, tiltRight) {
+            var defForwardMult = this.definedFacingForward ? 1 : -1;
+            return new BABYLON.Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         };
 
         AbstractMesh.prototype.setPivotMatrix = function (matrix) {
@@ -11712,6 +11850,7 @@ var BABYLON;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
+        * @constructor
         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
         * @param {Scene} scene - The scene to add this mesh to.
         * @param {Node} parent - The parent of this mesh, if it has one
@@ -11772,9 +11911,6 @@ var BABYLON;
                 this.parent = parent;
             }
         }
-        Mesh.prototype._clone = function () {
-        };
-
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {
@@ -11797,6 +11933,12 @@ var BABYLON;
             });
         };
 
+        /**
+        * Add a mesh as LOD level triggered at the given distance.
+        * @param {number} distance - the distance from the center of the object to show this level
+        * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
+        * @return {BABYLON.Mesh} this mesh (for chaining)
+        */
         Mesh.prototype.addLODLevel = function (distance, mesh) {
             if (mesh && mesh._masterMesh) {
                 BABYLON.Tools.Warn("You cannot use a mesh as LOD level twice");
@@ -11815,6 +11957,11 @@ var BABYLON;
             return this;
         };
 
+        /**
+        * Remove a mesh from the LOD array
+        * @param {BABYLON.Mesh} mesh - the mesh to be removed.
+        * @return {BABYLON.Mesh} this mesh (for chaining)
+        */
         Mesh.prototype.removeLODLevel = function (mesh) {
             for (var index = 0; index < this._LODLevels.length; index++) {
                 if (this._LODLevels[index].mesh === mesh) {
@@ -13008,6 +13155,9 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * Creates an instance based on a source mesh.
+    */
     var InstancedMesh = (function (_super) {
         __extends(InstancedMesh, _super);
         function InstancedMesh(name, source) {
@@ -13162,7 +13312,7 @@ var BABYLON;
                 for (var index = 0; index < this.getScene().meshes.length; index++) {
                     var mesh = this.getScene().meshes[index];
 
-                    if (mesh.parent == this) {
+                    if (mesh.parent === this) {
                         mesh.clone(mesh.name, result);
                     }
                 }
@@ -13686,7 +13836,7 @@ var BABYLON;
         };
 
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
-            for (var index = 0; index < BABYLON.RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
 
@@ -14062,7 +14212,7 @@ var BABYLON;
                 return true;
             }
 
-            if (this.refreshRate == this._currentRefreshId) {
+            if (this.refreshRate === this._currentRefreshId) {
                 this._currentRefreshId = 1;
                 return true;
             }
@@ -14115,7 +14265,7 @@ var BABYLON;
                 delete this._waitingRenderList;
             }
 
-            if (!this.renderList) {
+            if (this.renderList && this.renderList.length === 0) {
                 return;
             }
 
@@ -14129,8 +14279,10 @@ var BABYLON;
 
             this._renderingManager.reset();
 
-            for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
-                var mesh = this.renderList[meshIndex];
+            var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+
+            for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
+                var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
                     if (!mesh.isReady() || (mesh.material && !mesh.material.isReady())) {
@@ -14139,7 +14291,7 @@ var BABYLON;
                         continue;
                     }
 
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
                         mesh._activate(scene.getRenderId());
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
@@ -14160,7 +14312,7 @@ var BABYLON;
             }
 
             // Render
-            this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
+            this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture);
@@ -14180,7 +14332,7 @@ var BABYLON;
 
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.RenderTargetTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new RenderTargetTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
@@ -15770,6 +15922,8 @@ colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 posit
 convolutionPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec2 screenSize;\nuniform float kernel[9];\n\nvoid main(void)\n{\n	vec2 onePixel = vec2(1.0, 1.0) / screenSize;\n	vec4 colorSum =\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, -1)) * kernel[0] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, -1)) * kernel[1] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, -1)) * kernel[2] +\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, 0)) * kernel[3] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, 0)) * kernel[4] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, 0)) * kernel[5] +\n		texture2D(textureSampler, vUV + onePixel * vec2(-1, 1)) * kernel[6] +\n		texture2D(textureSampler, vUV + onePixel * vec2(0, 1)) * kernel[7] +\n		texture2D(textureSampler, vUV + onePixel * vec2(1, 1)) * kernel[8];\n\n	float kernelWeight =\n		kernel[0] +\n		kernel[1] +\n		kernel[2] +\n		kernel[3] +\n		kernel[4] +\n		kernel[5] +\n		kernel[6] +\n		kernel[7] +\n		kernel[8];\n\n	if (kernelWeight <= 0.0) {\n		kernelWeight = 1.0;\n	}\n\n	gl_FragColor = vec4((colorSum / kernelWeight).rgb, 1);\n}",
 defaultPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_EXPLICIT	0.\n#define MAP_SPHERICAL	1.\n#define MAP_PLANAR		2.\n#define MAP_CUBIC		3.\n#define MAP_PROJECTION	4.\n#define MAP_SKYBOX		5.\n\n// Constants\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\nuniform vec4 vSpecularColor;\nuniform vec3 vEmissiveColor;\n\n// Input\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n// Lights\n#ifdef LIGHT0\nuniform vec4 vLightData0;\nuniform vec4 vLightDiffuse0;\nuniform vec3 vLightSpecular0;\n#ifdef SHADOW0\nvarying vec4 vPositionFromLight0;\nuniform sampler2D shadowSampler0;\nuniform float darkness0;\n#endif\n#ifdef SPOTLIGHT0\nuniform vec4 vLightDirection0;\n#endif\n#ifdef HEMILIGHT0\nuniform vec3 vLightGround0;\n#endif\n#endif\n\n#ifdef LIGHT1\nuniform vec4 vLightData1;\nuniform vec4 vLightDiffuse1;\nuniform vec3 vLightSpecular1;\n#ifdef SHADOW1\nvarying vec4 vPositionFromLight1;\nuniform sampler2D shadowSampler1;\nuniform float darkness1;\n#endif\n#ifdef SPOTLIGHT1\nuniform vec4 vLightDirection1;\n#endif\n#ifdef HEMILIGHT1\nuniform vec3 vLightGround1;\n#endif\n#endif\n\n#ifdef LIGHT2\nuniform vec4 vLightData2;\nuniform vec4 vLightDiffuse2;\nuniform vec3 vLightSpecular2;\n#ifdef SHADOW2\nvarying vec4 vPositionFromLight2;\nuniform sampler2D shadowSampler2;\nuniform float darkness2;\n#endif\n#ifdef SPOTLIGHT2\nuniform vec4 vLightDirection2;\n#endif\n#ifdef HEMILIGHT2\nuniform vec3 vLightGround2;\n#endif\n#endif\n\n#ifdef LIGHT3\nuniform vec4 vLightData3;\nuniform vec4 vLightDiffuse3;\nuniform vec3 vLightSpecular3;\n#ifdef SHADOW3\nvarying vec4 vPositionFromLight3;\nuniform sampler2D shadowSampler3;\nuniform float darkness3;\n#endif\n#ifdef SPOTLIGHT3\nuniform vec4 vLightDirection3;\n#endif\n#ifdef HEMILIGHT3\nuniform vec3 vLightGround3;\n#endif\n#endif\n\n// Samplers\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY	\nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n// Fresnel\n#ifdef FRESNEL\nfloat computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)\n{\n	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);\n	return clamp(fresnelTerm, 0., 1.);\n}\n#endif\n\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n\n// Reflection\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\nuniform samplerCube reflectionCubeSampler;\nuniform sampler2D reflection2DSampler;\nuniform vec3 vReflectionInfos;\nuniform mat4 reflectionMatrix;\nuniform mat4 view;\n\nvec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)\n{\n	if (mode == MAP_SPHERICAL)\n	{\n		vec3 coords = vec3(view * vec4(worldNormal, 0.0));\n\n		return vec3(reflectionMatrix * vec4(coords, 1.0));\n	}\n	else if (mode == MAP_PLANAR)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = normalize(reflect(viewDir, worldNormal));\n\n		return vec3(reflectionMatrix * vec4(coords, 1));\n	}\n	else if (mode == MAP_CUBIC)\n	{\n		vec3 viewDir = worldPos.xyz - vEyePosition;\n		vec3 coords = reflect(viewDir, worldNormal);\n\n		return vec3(reflectionMatrix * vec4(coords, 0));\n	}\n	else if (mode == MAP_PROJECTION)\n	{\n		return vec3(reflectionMatrix * (view * worldPos));\n	}\n	else if (mode == MAP_SKYBOX)\n	{\n		return vPositionUVW;\n	}\n\n	return vec3(0, 0, 0);\n}\n#endif\n\n// Shadows\n#ifdef SHADOWS\n\nfloat unpack(vec4 color)\n{\n	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);\n	return dot(color, bitShift);\n}\n\nfloat unpackHalf(vec2 color)\n{\n	return color.x + (color.y / 255.0);\n}\n\nfloat computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float shadow = unpack(texture2D(shadowSampler, uv));\n\n	if (depth.z > shadow)\n	{\n		return darkness;\n	}\n	return 1.;\n}\n\nfloat computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	float visibility = 1.;\n\n	vec2 poissonDisk[4];\n	poissonDisk[0] = vec2(-0.94201624, -0.39906216);\n	poissonDisk[1] = vec2(0.94558609, -0.76890725);\n	poissonDisk[2] = vec2(-0.094184101, -0.92938870);\n	poissonDisk[3] = vec2(0.34495938, 0.29387760);\n\n	// Poisson Sampling\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / 1500.0))  <  depth.z) visibility -= 0.2;\n	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / 1500.0))  <  depth.z) visibility -= 0.2;\n\n	return visibility;\n}\n\n// Thanks to http://devmaster.net/\nfloat ChebychevInequality(vec2 moments, float t)\n{\n	if (t <= moments.x)\n	{\n		return 1.0;\n	}\n\n	float variance = moments.y - (moments.x * moments.x);\n	variance = max(variance, 0.);\n\n	float d = t - moments.x;\n	return variance / (variance + d * d);\n}\n\nfloat computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)\n{\n	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;\n	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);\n\n	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)\n	{\n		return 1.0;\n	}\n\n	vec4 texel = texture2D(shadowSampler, uv);\n\n	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));\n	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);\n}\n#endif\n\n// Bump\n#ifdef BUMP\n#extension GL_OES_standard_derivatives : enable\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform sampler2D bumpSampler;\n\n// Thanks to http://www.thetenthplanet.de/archives/1180\nmat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)\n{\n	// get edge vectors of the pixel triangle\n	vec3 dp1 = dFdx(p);\n	vec3 dp2 = dFdy(p);\n	vec2 duv1 = dFdx(uv);\n	vec2 duv2 = dFdy(uv);\n\n	// solve the linear system\n	vec3 dp2perp = cross(dp2, normal);\n	vec3 dp1perp = cross(normal, dp1);\n	vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;\n	vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;\n\n	// construct a scale-invariant frame \n	float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));\n	return mat3(tangent * invmax, binormal * invmax, normal);\n}\n\nvec3 perturbNormal(vec3 viewDir)\n{\n	vec3 map = texture2D(bumpSampler, vBumpUV).xyz;\n	map = map * 255. / 127. - 128. / 127.;\n	mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDir, vBumpUV);\n	return normalize(TBN * map);\n}\n#endif\n\n#ifdef CLIPPLANE\nvarying float fClipDistance;\n#endif\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return clamp(fogCoeff, 0.0, 1.0);\n}\n#endif\n\n// Light Computing\nstruct lightingInfo\n{\n	vec3 diffuse;\n	vec3 specular;\n};\n\nlightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 lightVectorW;\n	float attenuation = 1.0;\n	if (lightData.w == 0.)\n	{\n		vec3 direction = lightData.xyz - vPositionW;\n\n		attenuation = max(0., 1.0 - length(direction) / range);\n		lightVectorW = normalize(direction);\n	}\n	else\n	{\n		lightVectorW = normalize(-lightData.xyz);\n	}\n\n	// diffuse\n	float ndl = max(0., dot(vNormal, lightVectorW));\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightVectorW);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, max(1., vSpecularColor.a));\n\n	result.diffuse = ndl * diffuseColor * attenuation;\n	result.specular = specComp * specularColor * attenuation;\n\n	return result;\n}\n\nlightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range) {\n	lightingInfo result;\n\n	vec3 direction = lightData.xyz - vPositionW;\n	vec3 lightVectorW = normalize(direction);\n	float attenuation = max(0., 1.0 - length(direction) / range);\n\n	// diffuse\n	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));\n	float spotAtten = 0.0;\n\n	if (cosAngle >= lightDirection.w)\n	{\n		cosAngle = max(0., pow(cosAngle, lightData.w));\n		spotAtten = max(0., (cosAngle - lightDirection.w) / (1. - cosAngle));\n\n		// Diffuse\n		float ndl = max(0., dot(vNormal, -lightDirection.xyz));\n\n		// Specular\n		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);\n		float specComp = max(0., dot(vNormal, angleW));\n		specComp = pow(specComp, vSpecularColor.a);\n\n		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;\n		result.specular = specComp * specularColor * spotAtten * attenuation;\n\n		return result;\n	}\n\n	result.diffuse = vec3(0.);\n	result.specular = vec3(0.);\n\n	return result;\n}\n\nlightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor) {\n	lightingInfo result;\n\n	// Diffuse\n	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;\n\n	// Specular\n	vec3 angleW = normalize(viewDirectionW + lightData.xyz);\n	float specComp = max(0., dot(vNormal, angleW));\n	specComp = pow(specComp, vSpecularColor.a);\n\n	result.diffuse = mix(groundColor, diffuseColor, ndl);\n	result.specular = specComp * specularColor;\n\n	return result;\n}\n\nvoid main(void) {\n	// Clip plane\n#ifdef CLIPPLANE\n	if (fClipDistance > 0.0)\n		discard;\n#endif\n\n	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);\n\n	// Base color\n	vec4 baseColor = vec4(1., 1., 1., 1.);\n	vec3 diffuseColor = vDiffuseColor.rgb;\n\n	// Alpha\n	float alpha = vDiffuseColor.a;\n\n#ifdef VERTEXCOLOR\n	baseColor.rgb *= vColor.rgb;\n#endif\n\n#ifdef DIFFUSE\n	baseColor = texture2D(diffuseSampler, vDiffuseUV);\n\n#ifdef ALPHATEST\n	if (baseColor.a < 0.4)\n		discard;\n#endif\n\n#ifdef ALPHAFROMDIFFUSE\n	alpha *= baseColor.a;\n#endif\n\n	baseColor.rgb *= vDiffuseInfos.y;\n#endif\n\n	// Bump\n	vec3 normalW = normalize(vNormalW);\n\n#ifdef BUMP\n	normalW = perturbNormal(viewDirectionW);\n#endif\n\n	// Ambient color\n	vec3 baseAmbientColor = vec3(1., 1., 1.);\n\n#ifdef AMBIENT\n	baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;\n#endif\n\n	// Lighting\n	vec3 diffuseBase = vec3(0., 0., 0.);\n	vec3 specularBase = vec3(0., 0., 0.);\n	float shadow = 1.;\n\n#ifdef LIGHT0\n#ifdef SPOTLIGHT0\n	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef HEMILIGHT0\n	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0);\n#endif\n#ifdef POINTDIRLIGHT0\n	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);\n#endif\n#ifdef SHADOW0\n#ifdef SHADOWVSM0\n	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);\n#else\n	#ifdef SHADOWPCF0\n		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0);\n	#else\n		shadow = computeShadow(vPositionFromLight0, shadowSampler0, darkness0);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT1\n#ifdef SPOTLIGHT1\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef HEMILIGHT1\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1);\n#endif\n#ifdef POINTDIRLIGHT1\n	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);\n#endif\n#ifdef SHADOW1\n#ifdef SHADOWVSM1\n	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);\n#else\n	#ifdef SHADOWPCF1\n		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1);\n	#else\n		shadow = computeShadow(vPositionFromLight1, shadowSampler1, darkness1);\n	#endif\n#endif\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT2\n#ifdef SPOTLIGHT2\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef HEMILIGHT2\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2);\n#endif\n#ifdef POINTDIRLIGHT2\n	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);\n#endif\n#ifdef SHADOW2\n#ifdef SHADOWVSM2\n	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);\n#else\n	#ifdef SHADOWPCF2\n		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2);\n	#else\n		shadow = computeShadow(vPositionFromLight2, shadowSampler2, darkness2);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n#ifdef LIGHT3\n#ifdef SPOTLIGHT3\n	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef HEMILIGHT3\n	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3);\n#endif\n#ifdef POINTDIRLIGHT3\n	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);\n#endif\n#ifdef SHADOW3\n#ifdef SHADOWVSM3\n	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);\n#else\n	#ifdef SHADOWPCF3\n		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3);\n	#else\n		shadow = computeShadow(vPositionFromLight3, shadowSampler3, darkness3);\n	#endif	\n#endif	\n#else\n	shadow = 1.;\n#endif\n	diffuseBase += info.diffuse * shadow;\n	specularBase += info.specular * shadow;\n#endif\n\n	// Reflection\n	vec3 reflectionColor = vec3(0., 0., 0.);\n\n#ifdef REFLECTION\n	vec3 vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), normalW);\n\n	if (vReflectionInfos.z != 0.0)\n	{\n		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y * shadow;\n	}\n	else\n	{\n		vec2 coords = vReflectionUVW.xy;\n\n		if (vReflectionInfos.x == MAP_PROJECTION)\n		{\n			coords /= vReflectionUVW.z;\n		}\n\n		coords.y = 1.0 - coords.y;\n\n		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;\n	}\n\n#ifdef REFLECTIONFRESNEL\n	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);\n\n	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;\n#endif\n#endif\n\n#ifdef OPACITY\n	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);\n\n#ifdef OPACITYRGB\n	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);\n	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;\n#else\n	alpha *= opacityMap.a * vOpacityInfos.y;\n#endif\n\n#endif\n\n#ifdef VERTEXALPHA\n	alpha *= vColor.a;\n#endif\n\n#ifdef OPACITYFRESNEL\n	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);\n\n	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;\n#endif\n\n	// Emissive\n	vec3 emissiveColor = vEmissiveColor;\n#ifdef EMISSIVE\n	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;\n#endif\n\n#ifdef EMISSIVEFRESNEL\n	float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);\n\n	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;\n#endif\n\n	// Specular map\n	vec3 specularColor = vSpecularColor.rgb;\n#ifdef SPECULAR\n	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;\n#endif\n\n	// Fresnel\n#ifdef DIFFUSEFRESNEL\n	float diffuseFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);\n\n	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;\n#endif\n\n	// Composition\n	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;\n	vec3 finalSpecular = specularBase * specularColor;\n\n#ifdef SPECULAROVERALPHA\n	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);\n#endif\n\n	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = color;\n}",
 defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef REFLECTION\n	vPositionUVW = position;\n#endif \n\n#ifdef INSTANCES\n	finalWorld = mat4(world0, world1, world2, world3);\n#else\n	finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = finalWorld * (m0 + m1 + m2);\n#endif \n\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n\n	// Point size\n#ifdef POINTSIZE\n	gl_PointSize = pointSize;\n#endif\n}",
+depthPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nuniform float far;\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n	float depth = gl_FragCoord.z / far;\n	gl_FragColor = vec4(depth, depth * depth, 0.0, 1.0);\n}",
+depthVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 displayPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(passSampler, vUV);\n}",
 filterPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform mat4 kernelMatrix;\n\nvoid main(void)\n{\n	vec3 baseColor = texture2D(textureSampler, vUV).rgb;\n	vec3 updatedColor = (kernelMatrix * vec4(baseColor, 1.0)).rgb;\n\n	gl_FragColor = vec4(updatedColor, 1.0);\n}",
 firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float time;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alphaThreshold;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - time * 0.1);\n	vec2 r = vec2(fbm(p + q + time * speed.x - p.x - p.y), fbm(p + q - time * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	vec3 color = c * cos(shift * vUV.y);\n	float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));\n\n	gl_FragColor = vec4(color, luminance * alphaThreshold + (1.0 - alphaThreshold));\n}",
@@ -30182,6 +30336,13 @@ var BABYLON;
                 this.masterGain.connect(this.audioContext.destination);
             }
         }
+        AudioEngine.prototype.dispose = function () {
+            this.canUseWebAudio = false;
+            this.masterGain.disconnect();
+            this.masterGain = null;
+            this.audioContext = null;
+        };
+
         AudioEngine.prototype.getGlobalVolume = function () {
             if (this.canUseWebAudio) {
                 return this.masterGain.gain.value;
@@ -30228,8 +30389,8 @@ var BABYLON;
             this.maxDistance = 100;
             this.distanceModel = "linear";
             this.panningModel = "HRTF";
-            this.startTime = 0;
-            this.startOffset = 0;
+            this._startTime = 0;
+            this._startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._volume = 1;
@@ -30290,6 +30451,34 @@ var BABYLON;
                 }
             }
         }
+        Sound.prototype.dispose = function () {
+            if (this._isReadyToPlay) {
+                if (this._isPlaying) {
+                    this.stop();
+                }
+                this._isReadyToPlay = false;
+                if (this.soundTrackId === -1) {
+                    this._scene.mainSoundTrack.RemoveSound(this);
+                } else {
+                    this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
+                }
+                this._soundGain.disconnect();
+                this._soundSource.disconnect();
+                this._audioBuffer = null;
+                this._soundGain = null;
+                this._soundSource = null;
+                if (this._soundPanner) {
+                    this._soundPanner.disconnect();
+                    this._soundPanner = null;
+                }
+                this._audioNode.disconnect();
+                if (this._connectedMesh) {
+                    this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                    this._connectedMesh = null;
+                }
+            }
+        };
+
         Sound.prototype._soundLoaded = function (audioData) {
             var _this = this;
             this._isLoaded = true;
@@ -30430,8 +30619,8 @@ var BABYLON;
                     }
                     this._soundSource.connect(this._audioNode);
                     this._soundSource.loop = this.loop;
-                    this.startTime = startTime;
-                    this._soundSource.start(startTime, this.startOffset % this._soundSource.buffer.duration);
+                    this._startTime = startTime;
+                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 } catch (ex) {
                     BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
@@ -30454,7 +30643,7 @@ var BABYLON;
         Sound.prototype.pause = function () {
             if (this._isPlaying) {
                 this._soundSource.stop(0);
-                this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
+                this._startOffset += this._audioEngine.audioContext.currentTime - this._startTime;
             }
         };
 
@@ -30480,9 +30669,10 @@ var BABYLON;
                     this.play();
                 }
             }
-            meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
+            this._registerFunc = function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
-            });
+            };
+            meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         };
 
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
@@ -30507,9 +30697,6 @@ var BABYLON;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();
-
-                //this._trackConvolver = this._audioEngine.audioContext.createConvolver();
-                //this._trackConvolver.connect(this._trackGain);
                 this._trackGain.connect(this._audioEngine.masterGain);
 
                 if (options) {
@@ -30526,6 +30713,14 @@ var BABYLON;
                 this.id = this._scene.soundTracks.length - 1;
             }
         }
+        SoundTrack.prototype.dispose = function () {
+            while (this.soundCollection.length) {
+                this.soundCollection[0].dispose();
+            }
+            this._trackGain.disconnect();
+            this._trackGain = null;
+        };
+
         SoundTrack.prototype.AddSound = function (sound) {
             sound.connectToSoundTrackAudioNode(this._trackGain);
             if (sound.soundTrackId) {
@@ -32179,3 +32374,163 @@ var BABYLON;
     BABYLON.Analyser = Analyser;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.analyser.js.map
+var BABYLON;
+(function (BABYLON) {
+    var DepthRenderer = (function () {
+        function DepthRenderer(scene, type) {
+            if (typeof type === "undefined") { type = BABYLON.Engine.TEXTURETYPE_FLOAT; }
+            var _this = this;
+            this._viewMatrix = BABYLON.Matrix.Zero();
+            this._projectionMatrix = BABYLON.Matrix.Zero();
+            this._transformMatrix = BABYLON.Matrix.Zero();
+            this._worldViewProjection = BABYLON.Matrix.Zero();
+            this._scene = scene;
+            var engine = scene.getEngine();
+
+            // Render target
+            this._depthMap = new BABYLON.RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type);
+            this._depthMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._depthMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._depthMap.refreshRate = 1;
+            this._depthMap.renderParticles = false;
+            this._depthMap.renderList = null;
+
+            // Custom render function
+            var renderSubMesh = function (subMesh) {
+                var mesh = subMesh.getRenderingMesh();
+                var scene = _this._scene;
+                var engine = scene.getEngine();
+
+                // Culling
+                engine.setState(subMesh.getMaterial().backFaceCulling);
+
+                // Managing instances
+                var batch = mesh._getInstancesRenderList(subMesh._id);
+
+                if (batch.mustReturn) {
+                    return;
+                }
+
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+
+                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                    engine.enableEffect(_this._effect);
+                    mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);
+                    var material = subMesh.getMaterial();
+
+                    _this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+
+                    _this._effect.setFloat("far", scene.activeCamera.maxZ);
+
+                    // Alpha test
+                    if (material && material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
+                        _this._effect.setTexture("diffuseSampler", alphaTexture);
+                        _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
+
+                    // Bones
+                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+
+                    if (useBones) {
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                    }
+
+                    if (hardwareInstancedRendering) {
+                        mesh._renderWithInstances(subMesh, BABYLON.Material.TriangleFillMode, batch, _this._effect, engine);
+                    } else {
+                        if (batch.renderSelf[subMesh._id]) {
+                            _this._effect.setMatrix("world", mesh.getWorldMatrix());
+
+                            // Draw
+                            mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
+                        }
+
+                        if (batch.visibleInstances[subMesh._id]) {
+                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                                var instance = batch.visibleInstances[subMesh._id][instanceIndex];
+
+                                _this._effect.setMatrix("world", instance.getWorldMatrix());
+
+                                // Draw
+                                mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
+                            }
+                        }
+                    }
+                }
+            };
+
+            this._depthMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
+                var index;
+
+                for (index = 0; index < opaqueSubMeshes.length; index++) {
+                    renderSubMesh(opaqueSubMeshes.data[index]);
+                }
+
+                for (index = 0; index < alphaTestSubMeshes.length; index++) {
+                    renderSubMesh(alphaTestSubMeshes.data[index]);
+                }
+            };
+        }
+        DepthRenderer.prototype.isReady = function (subMesh, useInstances) {
+            var defines = [];
+
+            var attribs = [BABYLON.VertexBuffer.PositionKind];
+
+            var mesh = subMesh.getMesh();
+            var scene = mesh.getScene();
+            var material = subMesh.getMaterial();
+
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
+            }
+
+            // Bones
+            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                defines.push("#define BONES");
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
+            }
+
+            // Get correct effect
+            var join = defines.join("\n");
+            if (this._cachedDefines !== join) {
+                this._cachedDefines = join;
+                this._effect = this._scene.getEngine().createEffect("depth", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "far"], ["diffuseSampler"], join);
+            }
+
+            return this._effect.isReady();
+        };
+
+        DepthRenderer.prototype.getDepthMap = function () {
+            return this._depthMap;
+        };
+
+        // Methods
+        DepthRenderer.prototype.dispose = function () {
+            this._depthMap.dispose();
+        };
+        return DepthRenderer;
+    })();
+    BABYLON.DepthRenderer = DepthRenderer;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.depthRenderer.js.map

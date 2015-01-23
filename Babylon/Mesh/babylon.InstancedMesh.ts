@@ -72,11 +72,11 @@
         }
 
         public refreshBoundingInfo(): void {
-            var data = this._sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var data = this._sourceMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                var extend = Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
+                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
             }
 
             this._updateBoundingInfo();
@@ -122,7 +122,7 @@
             var result = this._sourceMesh.createInstance(name);
 
             // Deep copy
-            BABYLON.Tools.DeepCopy(this, result, ["name"], []);
+            Tools.DeepCopy(this, result, ["name"], []);
 
             // Bounding info
             this.refreshBoundingInfo();
@@ -137,7 +137,7 @@
                 for (var index = 0; index < this.getScene().meshes.length; index++) {
                     var mesh = this.getScene().meshes[index];
 
-                    if (mesh.parent == this) {
+                    if (mesh.parent === this) {
                         mesh.clone(mesh.name, result);
                     }
                 }

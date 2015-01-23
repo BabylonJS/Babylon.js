@@ -637,19 +637,19 @@ declare enum DistanceModelType {
      * A linear distance model which calculates distanceGain according to:
      *     1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
      */
-    linear,
+    'linear',
 
     /**
      * An inverse distance model which calculates distanceGain according to:
      *     refDistance / (refDistance + rolloffFactor * (distance - refDistance))
      */
-    inverse,
+    'inverse',
 
     /**
      * An exponential distance model which calculates distanceGain according to:
      *     pow(distance / refDistance, -rolloffFactor)
      */
-    exponential
+    'exponential'
 }
 
 /**

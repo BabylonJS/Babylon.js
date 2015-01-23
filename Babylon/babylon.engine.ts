@@ -222,7 +222,7 @@
     var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
-        gl.shaderSource(shader,(defines ? defines + "\n" : "") + source);
+        gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -620,10 +620,10 @@
             // Pointer lock
             this._onPointerLockChange = () => {
                 this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                    document.webkitPointerLockElement === canvas ||
-                    document.msPointerLockElement === canvas ||
-                    document.pointerLockElement === canvas
-                    );
+                document.webkitPointerLockElement === canvas ||
+                document.msPointerLockElement === canvas ||
+                document.pointerLockElement === canvas
+                );
             };
 
             document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
@@ -1144,7 +1144,7 @@
             return effect;
         }
 
-        public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[]= [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
             return this.createEffect(
@@ -1455,7 +1455,7 @@
 
                     var header = Internals.TGATools.GetTGAHeader(data);
 
-                    prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false,() => {
+                    prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
 
                         if (onLoad) {
@@ -1476,7 +1476,7 @@
                     var info = Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC,() => {
+                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
 
@@ -1495,7 +1495,7 @@
 
             } else {
                 var onload = (img) => {
-                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false,(potWidth, potHeight) => {
+                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
                             this._workingCanvas.width = potWidth;
@@ -1980,6 +1980,9 @@
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }
+
+            // Release audio engine
+            this._audioEngine.dispose();
 
             // Release effects
             for (var name in this._compiledEffects) {

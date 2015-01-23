@@ -3,7 +3,7 @@
         public renderList = new Array<AbstractMesh>();
         public renderParticles = true;
         public renderSprites = false;
-        public coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
+        public coordinatesMode = Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
         public activeCamera: Camera;
@@ -29,7 +29,7 @@
             this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
 
             // Rendering groups
-            this._renderingManager = new BABYLON.RenderingManager(scene);
+            this._renderingManager = new RenderingManager(scene);
         }
 
         public resetRefreshCounter(): void {
@@ -52,7 +52,7 @@
                 return true;
             }
 
-            if (this.refreshRate == this._currentRefreshId) {
+            if (this.refreshRate === this._currentRefreshId) {
                 this._currentRefreshId = 1;
                 return true;
             }
@@ -101,7 +101,7 @@
                 delete this._waitingRenderList;
             }
 
-            if (!this.renderList) {
+            if (this.renderList && this.renderList.length === 0) {
                 return;
             }
 
@@ -115,8 +115,10 @@
 
             this._renderingManager.reset();
 
-            for (var meshIndex = 0; meshIndex < this.renderList.length; meshIndex++) {
-                var mesh = this.renderList[meshIndex];
+            var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+
+            for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
+                var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
                     if (!mesh.isReady() || (mesh.material && !mesh.material.isReady())) {
@@ -125,7 +127,7 @@
                         continue;
                     }
 
-                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) != 0)) {
+                    if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
                         mesh._activate(scene.getRenderId());
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
@@ -146,7 +148,7 @@
             }
 
             // Render
-            this._renderingManager.render(this.customRenderFunction, this.renderList, this.renderParticles, this.renderSprites);
+            this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture);
@@ -166,7 +168,7 @@
 
         public clone(): RenderTargetTexture {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.RenderTargetTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new RenderTargetTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
