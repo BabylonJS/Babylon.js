@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+
+    /**
+     * Creates an instance based on a source mesh.
+     */
     export class InstancedMesh extends AbstractMesh {
         private _sourceMesh: Mesh;
         private _currentLOD: Mesh;

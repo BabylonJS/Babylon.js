@@ -6,6 +6,9 @@
 };
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * Creates an instance based on a source mesh.
+    */
     var InstancedMesh = (function (_super) {
         __extends(InstancedMesh, _super);
         function InstancedMesh(name, source) {
@@ -183,4 +186,4 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.instancedMesh.js.map
+//# sourceMappingURL=babylon.InstancedMesh.js.map
