@@ -1718,7 +1718,7 @@
         };
 
         // Tags
-        Scene.prototype._getByTags = function (list, tagsQuery) {
+        Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
             if (tagsQuery === undefined) {
                 // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
@@ -1726,30 +1726,35 @@
 
             var listByTags = [];
 
+            forEach = forEach || (function (item) {
+                return;
+            });
+
             for (var i in list) {
                 var item = list[i];
                 if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
+                    forEach(item);
                 }
             }
 
             return listByTags;
         };
 
-        Scene.prototype.getMeshesByTags = function (tagsQuery) {
-            return this._getByTags(this.meshes, tagsQuery);
+        Scene.prototype.getMeshesByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.meshes, tagsQuery, forEach);
         };
 
-        Scene.prototype.getCamerasByTags = function (tagsQuery) {
-            return this._getByTags(this.cameras, tagsQuery);
+        Scene.prototype.getCamerasByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.cameras, tagsQuery, forEach);
         };
 
-        Scene.prototype.getLightsByTags = function (tagsQuery) {
-            return this._getByTags(this.lights, tagsQuery);
+        Scene.prototype.getLightsByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.lights, tagsQuery, forEach);
         };
 
-        Scene.prototype.getMaterialByTags = function (tagsQuery) {
-            return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
+        Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         };
         Scene.FOGMODE_NONE = 0;
         Scene.FOGMODE_EXP = 1;
