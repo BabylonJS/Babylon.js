@@ -844,7 +844,7 @@
         }
 
         // Geometric tools
-        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number): void {
+        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void): void {
             var scene = this.getScene();
 
             var onload = img => {
@@ -862,6 +862,10 @@
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
 
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+                //execute success callback, if set
+                if (onSuccess) {
+                    onSuccess(this);
+                }
             };
 
             Tools.LoadImage(url, onload,() => { }, scene.database);
@@ -1171,7 +1175,7 @@
             return tiledGround;
         }
 
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?:(mesh: GroundMesh) => void): GroundMesh {
             var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
@@ -1195,6 +1199,11 @@
                 vertexData.applyToMesh(ground, updatable);
 
                 ground._setReady(true);
+
+                //execute ready callback, if set
+                if (onReady) {
+                    onReady(ground);
+                }
             };
 
             Tools.LoadImage(url, onload,() => { }, scene.database);
