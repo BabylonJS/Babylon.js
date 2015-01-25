@@ -918,6 +918,24 @@
             return null;
         }
 
+        public getSoundByName(name: string): Sound {
+            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                if (this.mainSoundTrack.soundCollection[index].name === name) {
+                    return this.mainSoundTrack.soundCollection[index];
+                }
+            }
+
+            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                        return this.soundTracks[sdIndex].soundCollection[index];
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public getLastSkeletonByID(id: string): Skeleton {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
@@ -1819,7 +1837,7 @@
         }
 
         // Tags
-        private _getByTags(list: any[], tagsQuery: string): any[] {
+        private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
             if (tagsQuery === undefined) {
                 // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
@@ -1827,30 +1845,33 @@
 
             var listByTags = [];
 
+            forEach = forEach || ((item: any) => { return; });
+
             for (var i in list) {
                 var item = list[i];
                 if (Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
+                    forEach(item);
                 }
             }
 
             return listByTags;
         }
 
-        public getMeshesByTags(tagsQuery: string): Mesh[] {
-            return this._getByTags(this.meshes, tagsQuery);
+        public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[] {
+            return this._getByTags(this.meshes, tagsQuery, forEach);
         }
 
-        public getCamerasByTags(tagsQuery: string): Camera[] {
-            return this._getByTags(this.cameras, tagsQuery);
+        public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[] {
+            return this._getByTags(this.cameras, tagsQuery, forEach);
         }
 
-        public getLightsByTags(tagsQuery: string): Light[] {
-            return this._getByTags(this.lights, tagsQuery);
+        public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => void): Light[] {
+            return this._getByTags(this.lights, tagsQuery, forEach);
         }
 
-        public getMaterialByTags(tagsQuery: string): Material[] {
-            return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
+        public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
+            return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         }
     }
 } 

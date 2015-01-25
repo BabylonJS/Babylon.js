@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+  <script src="Babylon/Mesh/babylon.meshSimplification.js"></script>
+  <script src="Babylon/Rendering/babylon.depthRenderer.js"></script>
   <script src="Babylon/Mesh/babylon.polygonMesh.js"></script>
   <script src="Babylon/Materials/Textures/babylon.rawTexture.js"></script>
   <script src="Babylon/Audio/babylon.analyser.js"></script>
@@ -120,5 +122,4 @@
   <script src="Babylon/Tools/babylon.tools.tga.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>
   <script src="Babylon/Math/babylon.math.js"></script>
-  <script src="Babylon/Mesh/babylon.meshSimplification.js"></script>
 </files>
