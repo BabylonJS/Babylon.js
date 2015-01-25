@@ -7,6 +7,7 @@
         public id: number = -1;
         public soundCollection: Array<BABYLON.Sound>;
         private _isMainTrack: boolean = false;
+        private _connectedAnalyser: Analyser;
 
         constructor(scene: BABYLON.Scene, options?: any) {
             this._scene = scene;
@@ -28,11 +29,16 @@
         }
 
         public dispose() {
-            while (this.soundCollection.length) {
-                this.soundCollection[0].dispose();
+            if (this._audioEngine.canUseWebAudio) {
+                if (this._connectedAnalyser) {
+                    this._connectedAnalyser.stopDebugCanvas();
+                }
+                while (this.soundCollection.length) {
+                    this.soundCollection[0].dispose();
+                }
+                this._trackGain.disconnect();
+                this._trackGain = null;
             }
-            this._trackGain.disconnect();
-            this._trackGain = null;
         }
 
         public AddSound(sound: BABYLON.Sound) {
@@ -59,6 +65,17 @@
         public setVolume(newVolume: number) {
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain.gain.value = newVolume;
+            }
+        }
+
+        public connectToAnalyser(analyser: Analyser) {
+            if (this._connectedAnalyser) {
+                this._connectedAnalyser.stopDebugCanvas();
+            }
+            this._connectedAnalyser = analyser;
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain.disconnect();
+                this._connectedAnalyser.connectAudioNodes(this._trackGain, this._audioEngine.masterGain);
             }
         }
     }

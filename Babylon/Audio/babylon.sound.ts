@@ -1,5 +1,6 @@
 ﻿module BABYLON {
     export class Sound {
+        public name: string;
         public autoplay: boolean = false;
         public loop: boolean = false;
         public useCustomAttenuation: boolean = false;
@@ -32,7 +33,6 @@
         private _coneOuterAngle: number = 360;
         private _coneOuterGain: number = 0;
         private _scene: BABYLON.Scene;
-        private _name: string;
         private _connectedMesh: BABYLON.AbstractMesh;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
         private _registerFunc;
@@ -45,7 +45,7 @@
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
         */
         constructor(name: string, urlOrArrayBuffer: any, scene: BABYLON.Scene, readyToPlayCallback?: () => void, options?) {
-            this._name = name;
+            this.name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
@@ -96,7 +96,7 @@
         }
 
         public dispose() {
-            if (this._isReadyToPlay) {
+            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
                 if (this._isPlaying) {
                     this.stop();
                 }
@@ -266,7 +266,7 @@
                     this._isPlaying = true;
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
+                    BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
             }
         }
