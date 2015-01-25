@@ -26,11 +26,16 @@
             }
         }
         SoundTrack.prototype.dispose = function () {
-            while (this.soundCollection.length) {
-                this.soundCollection[0].dispose();
+            if (this._audioEngine.canUseWebAudio) {
+                if (this._connectedAnalyser) {
+                    this._connectedAnalyser.stopDebugCanvas();
+                }
+                while (this.soundCollection.length) {
+                    this.soundCollection[0].dispose();
+                }
+                this._trackGain.disconnect();
+                this._trackGain = null;
             }
-            this._trackGain.disconnect();
-            this._trackGain = null;
         };
 
         SoundTrack.prototype.AddSound = function (sound) {
@@ -56,6 +61,17 @@
         SoundTrack.prototype.setVolume = function (newVolume) {
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain.gain.value = newVolume;
+            }
+        };
+
+        SoundTrack.prototype.connectToAnalyser = function (analyser) {
+            if (this._connectedAnalyser) {
+                this._connectedAnalyser.stopDebugCanvas();
+            }
+            this._connectedAnalyser = analyser;
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain.disconnect();
+                this._connectedAnalyser.connectAudioNodes(this._trackGain, this._audioEngine.masterGain);
             }
         };
         return SoundTrack;

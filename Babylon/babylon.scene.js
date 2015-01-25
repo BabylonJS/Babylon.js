@@ -821,6 +821,24 @@
             return null;
         };
 
+        Scene.prototype.getSoundByName = function (name) {
+            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                if (this.mainSoundTrack.soundCollection[index].name === name) {
+                    return this.mainSoundTrack.soundCollection[index];
+                }
+            }
+
+            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                        return this.soundTracks[sdIndex].soundCollection[index];
+                    }
+                }
+            }
+
+            return null;
+        };
+
         Scene.prototype.getLastSkeletonByID = function (id) {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
