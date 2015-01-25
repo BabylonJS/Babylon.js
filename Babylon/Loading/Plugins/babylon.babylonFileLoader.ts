@@ -943,6 +943,43 @@
 
     };
 
+    var parseSound = (parsedSound, scene: Scene, rootUrl) => {
+        var soundName = parsedSound.name;
+        var soundUrl = rootUrl + soundName;
+        
+        var options = {
+            autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
+            spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
+            rolloffFactor: parsedSound.rolloffFactor,
+            refDistance: parsedSound.refDistance,
+            distanceModel: parsedSound.distanceModel,
+            panningModel: parsedSound.panningModel
+        };
+
+        var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
+            scene._removePendingData(newSound);
+        }, options);
+        scene._addPendingData(newSound);
+
+        if (parsedSound.position) {
+            var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
+            newSound.setPosition(soundPosition);
+        }
+        if (parsedSound.isDirectional) {
+            newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
+            if (parsedSound.localDirectionToMesh) {
+                var localDirectionToMesh = BABYLON.Vector3.FromArray(parsedSound.localDirectionToMesh);
+                newSound.setLocalDirectionToMesh(localDirectionToMesh);
+            }
+        }
+        if (parsedSound.connectedMeshId) {
+            var connectedMesh = scene.getMeshByID(parsedSound.connectedMeshId);
+            if (connectedMesh) {
+                newSound.attachToMesh(connectedMesh);
+            }
+        }
+    };
+
     var isDescendantOf = (mesh, names, hierarchyIds) => {
         names = (names instanceof Array) ? names : [names];
         for (var i in names) {
@@ -1429,6 +1466,14 @@
                     var parsedShadowGenerator = parsedData.shadowGenerators[index];
 
                     parseShadowGenerator(parsedShadowGenerator, scene);
+                }
+            }
+
+            // Sounds
+            if (parsedData.sounds && scene.getEngine().getAudioEngine().canUseWebAudio) {
+                for (index = 0; index < parsedData.sounds.length; index++) {
+                    var parsedSound = parsedData.sounds[index];
+                    parseSound(parsedSound, scene, rootUrl);
                 }
             }
 

@@ -9776,6 +9776,24 @@ var BABYLON;
             return null;
         };
 
+        Scene.prototype.getSoundByName = function (name) {
+            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                if (this.mainSoundTrack.soundCollection[index].name === name) {
+                    return this.mainSoundTrack.soundCollection[index];
+                }
+            }
+
+            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                        return this.soundTracks[sdIndex].soundCollection[index];
+                    }
+                }
+            }
+
+            return null;
+        };
+
         Scene.prototype.getLastSkeletonByID = function (id) {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
@@ -10673,7 +10691,7 @@ var BABYLON;
         };
 
         // Tags
-        Scene.prototype._getByTags = function (list, tagsQuery) {
+        Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
             if (tagsQuery === undefined) {
                 // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
@@ -10681,30 +10699,35 @@ var BABYLON;
 
             var listByTags = [];
 
+            forEach = forEach || (function (item) {
+                return;
+            });
+
             for (var i in list) {
                 var item = list[i];
                 if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
+                    forEach(item);
                 }
             }
 
             return listByTags;
         };
 
-        Scene.prototype.getMeshesByTags = function (tagsQuery) {
-            return this._getByTags(this.meshes, tagsQuery);
+        Scene.prototype.getMeshesByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.meshes, tagsQuery, forEach);
         };
 
-        Scene.prototype.getCamerasByTags = function (tagsQuery) {
-            return this._getByTags(this.cameras, tagsQuery);
+        Scene.prototype.getCamerasByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.cameras, tagsQuery, forEach);
         };
 
-        Scene.prototype.getLightsByTags = function (tagsQuery) {
-            return this._getByTags(this.lights, tagsQuery);
+        Scene.prototype.getLightsByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.lights, tagsQuery, forEach);
         };
 
-        Scene.prototype.getMaterialByTags = function (tagsQuery) {
-            return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
+        Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
+            return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         };
         Scene.FOGMODE_NONE = 0;
         Scene.FOGMODE_EXP = 1;
@@ -22544,6 +22567,43 @@ var BABYLON;
             }
         };
 
+        var parseSound = function (parsedSound, scene, rootUrl) {
+            var soundName = parsedSound.name;
+            var soundUrl = rootUrl + soundName;
+
+            var options = {
+                autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
+                spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
+                rolloffFactor: parsedSound.rolloffFactor,
+                refDistance: parsedSound.refDistance,
+                distanceModel: parsedSound.distanceModel,
+                panningModel: parsedSound.panningModel
+            };
+
+            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
+                scene._removePendingData(newSound);
+            }, options);
+            scene._addPendingData(newSound);
+
+            if (parsedSound.position) {
+                var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
+                newSound.setPosition(soundPosition);
+            }
+            if (parsedSound.isDirectional) {
+                newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
+                if (parsedSound.localDirectionToMesh) {
+                    var localDirectionToMesh = BABYLON.Vector3.FromArray(parsedSound.localDirectionToMesh);
+                    newSound.setLocalDirectionToMesh(localDirectionToMesh);
+                }
+            }
+            if (parsedSound.connectedMeshId) {
+                var connectedMesh = scene.getMeshByID(parsedSound.connectedMeshId);
+                if (connectedMesh) {
+                    newSound.attachToMesh(connectedMesh);
+                }
+            }
+        };
+
         var isDescendantOf = function (mesh, names, hierarchyIds) {
             names = (names instanceof Array) ? names : [names];
             for (var i in names) {
@@ -23024,6 +23084,14 @@ var BABYLON;
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
 
                         parseShadowGenerator(parsedShadowGenerator, scene);
+                    }
+                }
+
+                // Sounds
+                if (parsedData.sounds && scene.getEngine().getAudioEngine().canUseWebAudio) {
+                    for (index = 0; index < parsedData.sounds.length; index++) {
+                        var parsedSound = parsedData.sounds[index];
+                        parseSound(parsedSound, scene, rootUrl);
                     }
                 }
 
@@ -30337,10 +30405,15 @@ var BABYLON;
             }
         }
         AudioEngine.prototype.dispose = function () {
-            this.canUseWebAudio = false;
-            this.masterGain.disconnect();
-            this.masterGain = null;
-            this.audioContext = null;
+            if (this.canUseWebAudio) {
+                if (this._connectedAnalyser) {
+                    this._connectedAnalyser.stopDebugCanvas();
+                }
+                this.canUseWebAudio = false;
+                this.masterGain.disconnect();
+                this.masterGain = null;
+                this.audioContext = null;
+            }
         };
 
         AudioEngine.prototype.getGlobalVolume = function () {
@@ -30358,9 +30431,13 @@ var BABYLON;
         };
 
         AudioEngine.prototype.connectToAnalyser = function (analyser) {
+            if (this._connectedAnalyser) {
+                this._connectedAnalyser.stopDebugCanvas();
+            }
+            this._connectedAnalyser = analyser;
             if (this.canUseWebAudio) {
                 this.masterGain.disconnect();
-                analyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
             }
         };
         return AudioEngine;
@@ -30403,7 +30480,7 @@ var BABYLON;
             this._coneInnerAngle = 360;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
-            this._name = name;
+            this.name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
@@ -30452,7 +30529,7 @@ var BABYLON;
             }
         }
         Sound.prototype.dispose = function () {
-            if (this._isReadyToPlay) {
+            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
                 if (this._isPlaying) {
                     this.stop();
                 }
@@ -30623,7 +30700,7 @@ var BABYLON;
                     this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 } catch (ex) {
-                    BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
+                    BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
             }
         };
@@ -30714,11 +30791,16 @@ var BABYLON;
             }
         }
         SoundTrack.prototype.dispose = function () {
-            while (this.soundCollection.length) {
-                this.soundCollection[0].dispose();
+            if (this._audioEngine.canUseWebAudio) {
+                if (this._connectedAnalyser) {
+                    this._connectedAnalyser.stopDebugCanvas();
+                }
+                while (this.soundCollection.length) {
+                    this.soundCollection[0].dispose();
+                }
+                this._trackGain.disconnect();
+                this._trackGain = null;
             }
-            this._trackGain.disconnect();
-            this._trackGain = null;
         };
 
         SoundTrack.prototype.AddSound = function (sound) {
@@ -30744,6 +30826,17 @@ var BABYLON;
         SoundTrack.prototype.setVolume = function (newVolume) {
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain.gain.value = newVolume;
+            }
+        };
+
+        SoundTrack.prototype.connectToAnalyser = function (analyser) {
+            if (this._connectedAnalyser) {
+                this._connectedAnalyser.stopDebugCanvas();
+            }
+            this._connectedAnalyser = analyser;
+            if (this._audioEngine.canUseWebAudio) {
+                this._trackGain.disconnect();
+                this._connectedAnalyser.connectAudioNodes(this._trackGain, this._audioEngine.masterGain);
             }
         };
         return SoundTrack;
@@ -32278,8 +32371,8 @@ var BABYLON;
             this.SMOOTHING = 0.75;
             this.FFT_SIZE = 512;
             this.BARGRAPHAMPLITUDE = 256;
-            this._debugCanvasWidth = 320;
-            this._debugCanvasHeight = 200;
+            this.DEBUGCANVASPOS = { x: 20, y: 20 };
+            this.DEBUGCANVASSIZE = { width: 320, height: 200 };
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
             if (this._audioEngine.canUseWebAudio) {
@@ -32321,11 +32414,11 @@ var BABYLON;
             if (this._audioEngine.canUseWebAudio) {
                 if (!this._debugCanvas) {
                     this._debugCanvas = document.createElement("canvas");
-                    this._debugCanvas.width = this._debugCanvasWidth;
-                    this._debugCanvas.height = this._debugCanvasHeight;
+                    this._debugCanvas.width = this.DEBUGCANVASSIZE.width;
+                    this._debugCanvas.height = this.DEBUGCANVASSIZE.height;
                     this._debugCanvas.style.position = "absolute";
-                    this._debugCanvas.style.top = "30px";
-                    this._debugCanvas.style.left = "10px";
+                    this._debugCanvas.style.top = this.DEBUGCANVASPOS.y + "px";
+                    this._debugCanvas.style.left = this.DEBUGCANVASPOS.x + "px";
                     this._debugCanvasContext = this._debugCanvas.getContext("2d");
                     document.body.appendChild(this._debugCanvas);
                     this._registerFunc = function () {
@@ -32337,14 +32430,14 @@ var BABYLON;
                     var workingArray = this.getByteFrequencyData();
 
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
-                    this._debugCanvasContext.fillRect(0, 0, this._debugCanvasWidth, this._debugCanvasHeight);
+                    this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
 
                     for (var i = 0; i < this.getFrequencyBinCount(); i++) {
                         var value = workingArray[i];
                         var percent = value / this.BARGRAPHAMPLITUDE;
-                        var height = this._debugCanvasHeight * percent;
-                        var offset = this._debugCanvasHeight - height - 1;
-                        var barWidth = this._debugCanvasWidth / this.getFrequencyBinCount();
+                        var height = this.DEBUGCANVASSIZE.height * percent;
+                        var offset = this.DEBUGCANVASSIZE.height - height - 1;
+                        var barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
                         var hue = i / this.getFrequencyBinCount() * 360;
                         this._debugCanvasContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                         this._debugCanvasContext.fillRect(i * barWidth, offset, barWidth, height);

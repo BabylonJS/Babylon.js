@@ -33,7 +33,7 @@
             this._coneInnerAngle = 360;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
-            this._name = name;
+            this.name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
@@ -82,7 +82,7 @@
             }
         }
         Sound.prototype.dispose = function () {
-            if (this._isReadyToPlay) {
+            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
                 if (this._isPlaying) {
                     this.stop();
                 }
@@ -253,7 +253,7 @@
                     this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 } catch (ex) {
-                    BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
+                    BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
             }
         };

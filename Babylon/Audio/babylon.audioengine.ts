@@ -4,6 +4,8 @@
         public canUseWebAudio: boolean = false;
         public masterGain: GainNode;
 
+        private _connectedAnalyser: Analyser;
+
         constructor() {
             // creating the audio context 
             try {
@@ -28,10 +30,15 @@
         }
 
         public dispose() {
-            this.canUseWebAudio = false;
-            this.masterGain.disconnect();
-            this.masterGain = null;
-            this.audioContext = null;
+            if (this.canUseWebAudio) {
+                if (this._connectedAnalyser) {
+                    this._connectedAnalyser.stopDebugCanvas();
+                }
+                this.canUseWebAudio = false;
+                this.masterGain.disconnect();
+                this.masterGain = null;
+                this.audioContext = null;
+            }
         }
 
         public getGlobalVolume(): number {
@@ -50,9 +57,13 @@
         }
 
         public connectToAnalyser(analyser: Analyser) {
+            if (this._connectedAnalyser) {
+                this._connectedAnalyser.stopDebugCanvas();
+            }
+            this._connectedAnalyser = analyser;
             if (this.canUseWebAudio) {
                 this.masterGain.disconnect();
-                analyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
             }
         }
     }
