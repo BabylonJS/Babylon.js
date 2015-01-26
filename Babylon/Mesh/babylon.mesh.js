@@ -841,7 +841,7 @@ var BABYLON;
         };
 
         // Geometric tools
-        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight) {
+        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess) {
             var _this = this;
             var scene = this.getScene();
 
@@ -860,6 +860,11 @@ var BABYLON;
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
 
                 _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+
+                //execute success callback, if set
+                if (onSuccess) {
+                    onSuccess(_this);
+                }
             };
 
             BABYLON.Tools.LoadImage(url, onload, function () {
@@ -1167,7 +1172,7 @@ var BABYLON;
             return tiledGround;
         };
 
-        Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
+        Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable, onReady) {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
@@ -1191,6 +1196,11 @@ var BABYLON;
                 vertexData.applyToMesh(ground, updatable);
 
                 ground._setReady(true);
+
+                //execute ready callback, if set
+                if (onReady) {
+                    onReady(ground);
+                }
             };
 
             BABYLON.Tools.LoadImage(url, onload, function () {
