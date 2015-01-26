@@ -167,6 +167,8 @@ module BABYLON {
         private _createBodyAsCompound(part: PhysicsCompoundBodyPart, options: PhysicsBodyCreationOptions, initialMesh: AbstractMesh): any {
             var bodyParameters = null;
             var mesh = part.mesh;
+            // We need the bounding box/sphere info to compute the physics body
+            mesh.computeWorldMatrix();
 
             switch (part.impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
