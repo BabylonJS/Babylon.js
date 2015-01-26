@@ -366,16 +366,7 @@
     })();
     BABYLON.EngineCapabilities = EngineCapabilities;
 
-    /**
-    * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
-    */
     var Engine = (function () {
-        /**
-        * @constructor
-        * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
-        * @param {boolean} [antialias] - enable antialias
-        * @param options - further options to be sent to the getContext function
-        */
         function Engine(canvas, antialias, options) {
             var _this = this;
             // Public members
@@ -724,10 +715,6 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         };
 
-        /**
-        * stop executing a render loop function and remove it from the execution array
-        * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
-        */
         Engine.prototype.stopRenderLoop = function (renderFunction) {
             if (!renderFunction) {
                 this._activeRenderLoops = [];
@@ -772,14 +759,6 @@
             }
         };
 
-        /**
-        * Register and execute a render loop. The engine can have more than one render function.
-        * @param {Function} renderFunction - the function to continuesly execute starting the next render loop.
-        * @example
-        * engine.runRenderLoop(function () {
-        *      scene.render()
-        * })
-        */
         Engine.prototype.runRenderLoop = function (renderFunction) {
             var _this = this;
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
@@ -796,10 +775,6 @@
             }
         };
 
-        /**
-        * Toggle full screen mode.
-        * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
-        */
         Engine.prototype.switchFullscreen = function (requestPointerLock) {
             if (this.isFullscreen) {
                 BABYLON.Tools.ExitFullscreen();
@@ -827,12 +802,6 @@
             this._gl.clear(mode);
         };
 
-        /**
-        * Set the WebGL's viewport
-        * @param {BABYLON.Viewport} viewport - the viewport element to be used.
-        * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
-        * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
-        */
         Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
             var width = requiredWidth || this._renderingCanvas.width;
             var height = requiredHeight || this._renderingCanvas.height;
@@ -858,22 +827,10 @@
             this.flushFramebuffer();
         };
 
-        /**
-        * resize the view according to the canvas' size.
-        * @example
-        *   window.addEventListener("resize", function () {
-        *      engine.resize();
-        *   });
-        */
         Engine.prototype.resize = function () {
             this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
         };
 
-        /**
-        * force a specific size of the canvas
-        * @param {number} width - the new canvas' width
-        * @param {number} height - the new canvas' height
-        */
         Engine.prototype.setSize = function (width, height) {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
@@ -1983,9 +1940,6 @@
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }
-
-            // Release audio engine
-            this._audioEngine.dispose();
 
             for (var name in this._compiledEffects) {
                 this._gl.deleteProgram(this._compiledEffects[name]._program);

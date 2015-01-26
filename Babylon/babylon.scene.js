@@ -821,24 +821,6 @@
             return null;
         };
 
-        Scene.prototype.getSoundByName = function (name) {
-            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
-                if (this.mainSoundTrack.soundCollection[index].name === name) {
-                    return this.mainSoundTrack.soundCollection[index];
-                }
-            }
-
-            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                        return this.soundTracks[sdIndex].soundCollection[index];
-                    }
-                }
-            }
-
-            return null;
-        };
-
         Scene.prototype.getLastSkeletonByID = function (id) {
             for (var index = this.skeletons.length - 1; index >= 0; index--) {
                 if (this.skeletons[index].id === id) {
@@ -1296,11 +1278,6 @@
                 }
             }
 
-            // Depth renderer
-            if (this._depthRenderer) {
-                this._renderTargets.push(this._depthRenderer.getDepthMap());
-            }
-
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();
 
@@ -1367,34 +1344,15 @@
                         sound.updateDistanceFromListener();
                     }
                 }
-                for (i = 0; i < this.soundTracks.length; i++) {
+                for (var i = 0; i < this.soundTracks.length; i++) {
                     for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
-                        sound = this.soundTracks[i].soundCollection[j];
+                        var sound = this.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }
                 }
             }
-        };
-
-        Scene.prototype.enableDepthRenderer = function () {
-            if (this._depthRenderer) {
-                return this._depthRenderer;
-            }
-
-            this._depthRenderer = new BABYLON.DepthRenderer(this);
-
-            return this._depthRenderer;
-        };
-
-        Scene.prototype.disableDepthRenderer = function () {
-            if (!this._depthRenderer) {
-                return;
-            }
-
-            this._depthRenderer.dispose();
-            this._depthRenderer = null;
         };
 
         Scene.prototype.dispose = function () {
@@ -1404,10 +1362,6 @@
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
-
-            if (this._depthRenderer) {
-                this._depthRenderer.dispose();
-            }
 
             // Debug layer
             this.debugLayer.hide();
@@ -1421,13 +1375,6 @@
             this._onAfterRenderCallbacks = [];
 
             this.detachControl();
-
-            // Release sounds & sounds tracks
-            this.mainSoundTrack.dispose();
-
-            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
-                this.soundTracks[scIndex].dispose();
-            }
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -1736,7 +1683,7 @@
         };
 
         // Tags
-        Scene.prototype._getByTags = function (list, tagsQuery, forEach) {
+        Scene.prototype._getByTags = function (list, tagsQuery) {
             if (tagsQuery === undefined) {
                 // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
@@ -1744,35 +1691,30 @@
 
             var listByTags = [];
 
-            forEach = forEach || (function (item) {
-                return;
-            });
-
             for (var i in list) {
                 var item = list[i];
                 if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
-                    forEach(item);
                 }
             }
 
             return listByTags;
         };
 
-        Scene.prototype.getMeshesByTags = function (tagsQuery, forEach) {
-            return this._getByTags(this.meshes, tagsQuery, forEach);
+        Scene.prototype.getMeshesByTags = function (tagsQuery) {
+            return this._getByTags(this.meshes, tagsQuery);
         };
 
-        Scene.prototype.getCamerasByTags = function (tagsQuery, forEach) {
-            return this._getByTags(this.cameras, tagsQuery, forEach);
+        Scene.prototype.getCamerasByTags = function (tagsQuery) {
+            return this._getByTags(this.cameras, tagsQuery);
         };
 
-        Scene.prototype.getLightsByTags = function (tagsQuery, forEach) {
-            return this._getByTags(this.lights, tagsQuery, forEach);
+        Scene.prototype.getLightsByTags = function (tagsQuery) {
+            return this._getByTags(this.lights, tagsQuery);
         };
 
-        Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
-            return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        Scene.prototype.getMaterialByTags = function (tagsQuery) {
+            return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
         };
         Scene.FOGMODE_NONE = 0;
         Scene.FOGMODE_EXP = 1;

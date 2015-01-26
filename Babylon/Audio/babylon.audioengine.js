@@ -24,18 +24,6 @@
                 this.masterGain.connect(this.audioContext.destination);
             }
         }
-        AudioEngine.prototype.dispose = function () {
-            if (this.canUseWebAudio) {
-                if (this._connectedAnalyser) {
-                    this._connectedAnalyser.stopDebugCanvas();
-                }
-                this.canUseWebAudio = false;
-                this.masterGain.disconnect();
-                this.masterGain = null;
-                this.audioContext = null;
-            }
-        };
-
         AudioEngine.prototype.getGlobalVolume = function () {
             if (this.canUseWebAudio) {
                 return this.masterGain.gain.value;
@@ -51,13 +39,9 @@
         };
 
         AudioEngine.prototype.connectToAnalyser = function (analyser) {
-            if (this._connectedAnalyser) {
-                this._connectedAnalyser.stopDebugCanvas();
-            }
-            this._connectedAnalyser = analyser;
             if (this.canUseWebAudio) {
                 this.masterGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                analyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
             }
         };
         return AudioEngine;

@@ -20,7 +20,7 @@
         private _isReadyToPlay: boolean = false;
         private _isPlaying: boolean = false;
         private _isDirectional: boolean = false;
-        private _audioEngine: BABYLON.AudioEngine;
+        private _audioEngine: AudioEngine;
         private _readyToPlayCallback;
         private _audioBuffer;
         private _soundSource: AudioBufferSourceNode;
@@ -32,8 +32,8 @@
         private _coneInnerAngle: number = 360;
         private _coneOuterAngle: number = 360;
         private _coneOuterGain: number = 0;
-        private _scene: BABYLON.Scene;
-        private _connectedMesh: BABYLON.AbstractMesh;
+        private _scene: Scene;
+        private _connectedMesh: AbstractMesh;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
         private _registerFunc;
 
@@ -44,7 +44,7 @@
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
         */
-        constructor(name: string, urlOrArrayBuffer: any, scene: BABYLON.Scene, readyToPlayCallback?: () => void, options?) {
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?) {
             this.name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
@@ -82,14 +82,14 @@
                 }
                 this._scene.mainSoundTrack.AddSound(this);
                 if (typeof (urlOrArrayBuffer) === "string") {
-                    BABYLON.Tools.LoadFile(urlOrArrayBuffer,(data) => { this._soundLoaded(data); }, null, null, true);
+                    Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
                 }
                 else {
                     if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._soundLoaded(urlOrArrayBuffer);
                     }
                     else {
-                        BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                        Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
                     }
                 }
             }
@@ -126,14 +126,12 @@
 
         private _soundLoaded(audioData: ArrayBuffer) {
             this._isLoaded = true;
-            this._audioEngine.audioContext.decodeAudioData(audioData,(buffer) => {
+            this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
                 this._audioBuffer = buffer;
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
                 if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-            }, function (error) {
-                    BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
-                });
+            }, (error) => { Tools.Error("Error while decoding audio data: " + error.err); });
         }
 
         public updateOptions(options) {
@@ -187,7 +185,7 @@
         */
         public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number) {
             if (coneOuterAngle < coneInnerAngle) {
-                BABYLON.Tools.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
+                Tools.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
                 return;
             }
             this._coneInnerAngle = coneInnerAngle;
@@ -219,7 +217,7 @@
 
         private _updateDirection() {
             var mat = this._connectedMesh.getWorldMatrix();
-            var direction = BABYLON.Vector3.TransformNormal(this._localDirection, mat);
+            var direction = Vector3.TransformNormal(this._localDirection, mat);
             direction.normalize();
             this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
         }
@@ -266,7 +264,7 @@
                     this._isPlaying = true;
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
+                    Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
             }
         }
@@ -301,7 +299,7 @@
             return this._volume;
         }
 
-        public attachToMesh(meshToConnectTo: BABYLON.AbstractMesh) {
+        public attachToMesh(meshToConnectTo: AbstractMesh) {
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
                 this._createSpatialParameters();
@@ -311,11 +309,11 @@
                     this.play();
                 }
             }
-            this._registerFunc = (connectedMesh: BABYLON.AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: BABYLON.AbstractMesh) {
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
             this.setPosition(connectedMesh.position);
             if (this._isDirectional && this._isPlaying) {
                 this._updateDirection();

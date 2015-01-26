@@ -19,7 +19,6 @@ var BABYLON;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
-        * @constructor
         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
         * @param {Scene} scene - The scene to add this mesh to.
         * @param {Node} parent - The parent of this mesh, if it has one
@@ -80,6 +79,9 @@ var BABYLON;
                 this.parent = parent;
             }
         }
+        Mesh.prototype._clone = function () {
+        };
+
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {
@@ -102,12 +104,6 @@ var BABYLON;
             });
         };
 
-        /**
-        * Add a mesh as LOD level triggered at the given distance.
-        * @param {number} distance - the distance from the center of the object to show this level
-        * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
-        * @return {BABYLON.Mesh} this mesh (for chaining)
-        */
         Mesh.prototype.addLODLevel = function (distance, mesh) {
             if (mesh && mesh._masterMesh) {
                 BABYLON.Tools.Warn("You cannot use a mesh as LOD level twice");
@@ -126,11 +122,6 @@ var BABYLON;
             return this;
         };
 
-        /**
-        * Remove a mesh from the LOD array
-        * @param {BABYLON.Mesh} mesh - the mesh to be removed.
-        * @return {BABYLON.Mesh} this mesh (for chaining)
-        */
         Mesh.prototype.removeLODLevel = function (mesh) {
             for (var index = 0; index < this._LODLevels.length; index++) {
                 if (this._LODLevels[index].mesh === mesh) {
@@ -841,7 +832,7 @@ var BABYLON;
         };
 
         // Geometric tools
-        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess) {
+        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight) {
             var _this = this;
             var scene = this.getScene();
 
@@ -860,11 +851,6 @@ var BABYLON;
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
 
                 _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
-
-                //execute success callback, if set
-                if (onSuccess) {
-                    onSuccess(_this);
-                }
             };
 
             BABYLON.Tools.LoadImage(url, onload, function () {
@@ -1172,7 +1158,7 @@ var BABYLON;
             return tiledGround;
         };
 
-        Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable, onReady) {
+        Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable) {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
@@ -1196,11 +1182,6 @@ var BABYLON;
                 vertexData.applyToMesh(ground, updatable);
 
                 ground._setReady(true);
-
-                //execute ready callback, if set
-                if (onReady) {
-                    onReady(ground);
-                }
             };
 
             BABYLON.Tools.LoadImage(url, onload, function () {
