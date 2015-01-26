@@ -5,8 +5,8 @@ var BABYLON;
             this.SMOOTHING = 0.75;
             this.FFT_SIZE = 512;
             this.BARGRAPHAMPLITUDE = 256;
-            this.DEBUGCANVASPOS = { x: 20, y: 20 };
-            this.DEBUGCANVASSIZE = { width: 320, height: 200 };
+            this._debugCanvasWidth = 320;
+            this._debugCanvasHeight = 200;
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
             if (this._audioEngine.canUseWebAudio) {
@@ -48,11 +48,11 @@ var BABYLON;
             if (this._audioEngine.canUseWebAudio) {
                 if (!this._debugCanvas) {
                     this._debugCanvas = document.createElement("canvas");
-                    this._debugCanvas.width = this.DEBUGCANVASSIZE.width;
-                    this._debugCanvas.height = this.DEBUGCANVASSIZE.height;
+                    this._debugCanvas.width = this._debugCanvasWidth;
+                    this._debugCanvas.height = this._debugCanvasHeight;
                     this._debugCanvas.style.position = "absolute";
-                    this._debugCanvas.style.top = this.DEBUGCANVASPOS.y + "px";
-                    this._debugCanvas.style.left = this.DEBUGCANVASPOS.x + "px";
+                    this._debugCanvas.style.top = "30px";
+                    this._debugCanvas.style.left = "10px";
                     this._debugCanvasContext = this._debugCanvas.getContext("2d");
                     document.body.appendChild(this._debugCanvas);
                     this._registerFunc = function () {
@@ -64,14 +64,14 @@ var BABYLON;
                     var workingArray = this.getByteFrequencyData();
 
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
-                    this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
+                    this._debugCanvasContext.fillRect(0, 0, this._debugCanvasWidth, this._debugCanvasHeight);
 
                     for (var i = 0; i < this.getFrequencyBinCount(); i++) {
                         var value = workingArray[i];
                         var percent = value / this.BARGRAPHAMPLITUDE;
-                        var height = this.DEBUGCANVASSIZE.height * percent;
-                        var offset = this.DEBUGCANVASSIZE.height - height - 1;
-                        var barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
+                        var height = this._debugCanvasHeight * percent;
+                        var offset = this._debugCanvasHeight - height - 1;
+                        var barWidth = this._debugCanvasWidth / this.getFrequencyBinCount();
                         var hue = i / this.getFrequencyBinCount() * 360;
                         this._debugCanvasContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                         this._debugCanvasContext.fillRect(i * barWidth, offset, barWidth, height);

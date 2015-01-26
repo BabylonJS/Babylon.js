@@ -19,8 +19,8 @@
             this.maxDistance = 100;
             this.distanceModel = "linear";
             this.panningModel = "HRTF";
-            this._startTime = 0;
-            this._startOffset = 0;
+            this.startTime = 0;
+            this.startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
             this._localDirection = new BABYLON.Vector3(1, 0, 0);
             this._volume = 1;
@@ -33,7 +33,7 @@
             this._coneInnerAngle = 360;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
-            this.name = name;
+            this._name = name;
             this._scene = scene;
             this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
@@ -81,34 +81,6 @@
                 }
             }
         }
-        Sound.prototype.dispose = function () {
-            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
-                if (this._isPlaying) {
-                    this.stop();
-                }
-                this._isReadyToPlay = false;
-                if (this.soundTrackId === -1) {
-                    this._scene.mainSoundTrack.RemoveSound(this);
-                } else {
-                    this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
-                }
-                this._soundGain.disconnect();
-                this._soundSource.disconnect();
-                this._audioBuffer = null;
-                this._soundGain = null;
-                this._soundSource = null;
-                if (this._soundPanner) {
-                    this._soundPanner.disconnect();
-                    this._soundPanner = null;
-                }
-                this._audioNode.disconnect();
-                if (this._connectedMesh) {
-                    this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
-                    this._connectedMesh = null;
-                }
-            }
-        };
-
         Sound.prototype._soundLoaded = function (audioData) {
             var _this = this;
             this._isLoaded = true;
@@ -249,11 +221,11 @@
                     }
                     this._soundSource.connect(this._audioNode);
                     this._soundSource.loop = this.loop;
-                    this._startTime = startTime;
-                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
+                    this.startTime = startTime;
+                    this._soundSource.start(startTime, this.startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 } catch (ex) {
-                    BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
+                    BABYLON.Tools.Error("Error while trying to play audio: " + this._name + ", " + ex.message);
                 }
             }
         };
@@ -273,7 +245,7 @@
         Sound.prototype.pause = function () {
             if (this._isPlaying) {
                 this._soundSource.stop(0);
-                this._startOffset += this._audioEngine.audioContext.currentTime - this._startTime;
+                this.startOffset += this._audioEngine.audioContext.currentTime - this.startTime;
             }
         };
 
@@ -299,10 +271,9 @@
                     this.play();
                 }
             }
-            this._registerFunc = function (connectedMesh) {
+            meshToConnectTo.registerAfterWorldMatrixUpdate(function (connectedMesh) {
                 return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
-            };
-            meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
+            });
         };
 
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {

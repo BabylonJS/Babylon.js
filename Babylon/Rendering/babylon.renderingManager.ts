@@ -72,7 +72,11 @@
                         this._renderingGroups.splice(index, 1);
                     }
                 }
-                this._renderSprites(index);
+
+                if (renderSprites) {
+                    this._renderSprites(index);
+                }
+
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
                 }

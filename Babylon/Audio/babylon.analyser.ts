@@ -30,27 +30,38 @@ module BABYLON {
         }
 
         public getFrequencyBinCount(): number {
-            return this._webAudioAnalyser.frequencyBinCount;
+            if (this._audioEngine.canUseWebAudio) {
+                return this._webAudioAnalyser.frequencyBinCount;
+            }
+            else {
+                return 0;
+            }
         }
 
         public getByteFrequencyData(): Uint8Array {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getByteFrequencyData(this._byteFreqs);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getByteFrequencyData(this._byteFreqs);
+            }
             return this._byteFreqs;
         }
 
         public getByteTimeDomainData(): Uint8Array {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getByteTimeDomainData(this._byteTime);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getByteTimeDomainData(this._byteTime);
+            }
             return this._byteTime;
         }
 
         public getFloatFrequencyData(): Uint8Array {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getFloatFrequencyData(this._floatFreqs);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getFloatFrequencyData(this._floatFreqs);
+            }
             return this._floatFreqs;
         }
 

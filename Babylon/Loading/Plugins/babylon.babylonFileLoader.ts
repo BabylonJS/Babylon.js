@@ -956,9 +956,7 @@
             panningModel: parsedSound.panningModel
         };
 
-        var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
-            scene._removePendingData(newSound);
-        }, options);
+        var newSound = new BABYLON.Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
         scene._addPendingData(newSound);
 
         if (parsedSound.position) {

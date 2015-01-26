@@ -6,9 +6,6 @@
 };
 var BABYLON;
 (function (BABYLON) {
-    /**
-    * Creates an instance based on a source mesh.
-    */
     var InstancedMesh = (function (_super) {
         __extends(InstancedMesh, _super);
         function InstancedMesh(name, source) {
@@ -163,7 +160,7 @@ var BABYLON;
                 for (var index = 0; index < this.getScene().meshes.length; index++) {
                     var mesh = this.getScene().meshes[index];
 
-                    if (mesh.parent === this) {
+                    if (mesh.parent == this) {
                         mesh.clone(mesh.name, result);
                     }
                 }
