@@ -15,10 +15,13 @@
                 } else if (typeof webkitAudioContext !== 'undefined') {
                     this.audioContext = new webkitAudioContext();
                     this.canUseWebAudio = true;
-                } 
+                }
+                else {
+                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
+                }
             } catch (e) {
                 this.canUseWebAudio = false;
-                BABYLON.Tools.Error("Your browser doesn't support Web Audio.");
+                BABYLON.Tools.Error("Web Audio: " + e.message);
             }
 
             // create a global volume gain node 
@@ -33,11 +36,12 @@
             if (this.canUseWebAudio) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
+                    this._connectedAnalyser.dispose();
+                    this.masterGain.disconnect();
+                    this.masterGain.connect(this.audioContext.destination);
+                    this._connectedAnalyser = null;
                 }
-                this.canUseWebAudio = false;
-                this.masterGain.disconnect();
-                this.masterGain = null;
-                this.audioContext = null;
+                this.masterGain.gain.value = 1;
             }
         }
 

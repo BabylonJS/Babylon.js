@@ -11,6 +11,8 @@
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
         public panningModel: string = "HRTF";
+        public playbackRate: number = 1;
+        public onended: () => any;
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
@@ -26,7 +28,8 @@
         private _soundSource: AudioBufferSourceNode;
         private _soundPanner: PannerNode;
         private _soundGain: GainNode;
-        private _audioNode: AudioNode;
+        private _inputAudioNode: AudioNode;
+        private _ouputAudioNode: AudioNode;
         // Used if you'd like to create a directional sound.
         // If not set, the sound will be omnidirectional
         private _coneInnerAngle: number = 360;
@@ -61,24 +64,27 @@
             if (options) {
                 this.autoplay = options.autoplay || false;
                 this.loop = options.loop || false;
-                this._volume = options.volume || 1;
+                // if volume === 0, we need another way to check this option
+                if (options.volume !== undefined) {
+                    this._volume = options.volume;
+                }
                 this.spatialSound = options.spatialSound || false;
                 this.maxDistance = options.maxDistance || 100;
-                this.useCustomAttenuation = options.useCustomAttenation || false;
+                this.useCustomAttenuation = options.useCustomAttenuation || false;
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
                 this.panningModel = options.panningModel || "HRTF";
+                this.playbackRate = options.playbackRate || 1;
             }
 
             if (this._audioEngine.canUseWebAudio) {
                 this._soundGain = this._audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
+                this._inputAudioNode = this._soundGain;
+                this._ouputAudioNode = this._soundGain;
                 if (this.spatialSound) {
                     this._createSpatialParameters();
-                }
-                else {
-                    this._audioNode = this._soundGain;
                 }
                 this._scene.mainSoundTrack.AddSound(this);
                 if (typeof (urlOrArrayBuffer) === "string") {
@@ -109,14 +115,13 @@
                 }
                 this._soundGain.disconnect();
                 this._soundSource.disconnect();
-                this._audioBuffer = null;
-                this._soundGain = null;
-                this._soundSource = null;
                 if (this._soundPanner) {
                     this._soundPanner.disconnect();
                     this._soundPanner = null;
                 }
-                this._audioNode.disconnect();
+                this._audioBuffer = null;
+                this._soundGain = null;
+                this._soundSource = null;
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
@@ -138,11 +143,12 @@
             if (options) {
                 this.loop = options.loop || this.loop;
                 this.maxDistance = options.maxDistance || this.maxDistance;
-                this.useCustomAttenuation = options.useCustomAttenation || this.useCustomAttenuation;
+                this.useCustomAttenuation = options.useCustomAttenuation || this.useCustomAttenuation;
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
                 this.panningModel = options.panningModel || this.panningModel;
+                this.playbackRate = options.playbackRate || this.playbackRate;
             }
         }
 
@@ -165,15 +171,15 @@
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
                     this._soundPanner.panningModel = this.panningModel;
                 }
-                this._soundPanner.connect(this._soundGain);
-                this._audioNode = this._soundPanner;
+                this._soundPanner.connect(this._ouputAudioNode);
+                this._inputAudioNode = this._soundPanner;
             }
         }
 
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
             if (this._audioEngine.canUseWebAudio) {
-                this._audioNode.disconnect();
-                this._audioNode.connect(soundTrackAudioNode);
+                this._ouputAudioNode.disconnect();
+                this._ouputAudioNode.connect(soundTrackAudioNode);
             }
         }
 
@@ -241,25 +247,31 @@
             if (this._isReadyToPlay) {
                 try {
                     var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
-                    this._soundSource = this._audioEngine.audioContext.createBufferSource();
-                    this._soundSource.buffer = this._audioBuffer;
-                    if (this.spatialSound) {
-                        this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
-                        if (this._isDirectional) {
-                            this._soundPanner.coneInnerAngle = this._coneInnerAngle;
-                            this._soundPanner.coneOuterAngle = this._coneOuterAngle;
-                            this._soundPanner.coneOuterGain = this._coneOuterGain;
-                            if (this._connectedMesh) {
-                                this._updateDirection();
-                            }
-                            else {
-                                this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
+                    if (!this._soundSource) {
+                        if (this.spatialSound) {
+                            this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            if (this._isDirectional) {
+                                this._soundPanner.coneInnerAngle = this._coneInnerAngle;
+                                this._soundPanner.coneOuterAngle = this._coneOuterAngle;
+                                this._soundPanner.coneOuterGain = this._coneOuterGain;
+                                if (this._connectedMesh) {
+                                    this._updateDirection();
+                                }
+                                else {
+                                    this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
+                                }
                             }
                         }
                     }
-                    this._soundSource.connect(this._audioNode);
+                    this._soundSource = this._audioEngine.audioContext.createBufferSource();
+                    this._soundSource.buffer = this._audioBuffer;
+                    this._soundSource.connect(this._inputAudioNode);
                     this._soundSource.loop = this.loop;
+                    this._soundSource.playbackRate.value = this.playbackRate;
                     this._startTime = startTime;
+                    if (this.onended) {
+                        this._soundSource.onended = this.onended;
+                    }
                     this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
                     this._isPlaying = true;
                 }

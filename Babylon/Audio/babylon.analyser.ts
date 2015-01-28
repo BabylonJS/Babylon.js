@@ -118,5 +118,11 @@ module BABYLON {
                 this._webAudioAnalyser.connect(outputAudioNode);
             }
         }
+
+        public dispose() {
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.disconnect();
+            }
+        }
     }
 }

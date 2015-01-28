@@ -5,8 +5,8 @@ var BABYLON;
             this.SMOOTHING = 0.75;
             this.FFT_SIZE = 512;
             this.BARGRAPHAMPLITUDE = 256;
-            this._debugCanvasWidth = 320;
-            this._debugCanvasHeight = 200;
+            this.DEBUGCANVASPOS = { x: 20, y: 20 };
+            this.DEBUGCANVASSIZE = { width: 320, height: 200 };
             this._scene = scene;
             this._audioEngine = scene.getEngine().getAudioEngine();
             if (this._audioEngine.canUseWebAudio) {
@@ -19,40 +19,47 @@ var BABYLON;
             }
         }
         Analyser.prototype.getFrequencyBinCount = function () {
-            return this._webAudioAnalyser.frequencyBinCount;
+            if (this._audioEngine.canUseWebAudio) {
+                return this._webAudioAnalyser.frequencyBinCount;
+            }
+            else {
+                return 0;
+            }
         };
-
         Analyser.prototype.getByteFrequencyData = function () {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getByteFrequencyData(this._byteFreqs);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getByteFrequencyData(this._byteFreqs);
+            }
             return this._byteFreqs;
         };
-
         Analyser.prototype.getByteTimeDomainData = function () {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getByteTimeDomainData(this._byteTime);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getByteTimeDomainData(this._byteTime);
+            }
             return this._byteTime;
         };
-
         Analyser.prototype.getFloatFrequencyData = function () {
-            this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
-            this._webAudioAnalyser.fftSize = this.FFT_SIZE;
-            this._webAudioAnalyser.getFloatFrequencyData(this._floatFreqs);
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
+                this._webAudioAnalyser.fftSize = this.FFT_SIZE;
+                this._webAudioAnalyser.getFloatFrequencyData(this._floatFreqs);
+            }
             return this._floatFreqs;
         };
-
         Analyser.prototype.drawDebugCanvas = function () {
             var _this = this;
             if (this._audioEngine.canUseWebAudio) {
                 if (!this._debugCanvas) {
                     this._debugCanvas = document.createElement("canvas");
-                    this._debugCanvas.width = this._debugCanvasWidth;
-                    this._debugCanvas.height = this._debugCanvasHeight;
+                    this._debugCanvas.width = this.DEBUGCANVASSIZE.width;
+                    this._debugCanvas.height = this.DEBUGCANVASSIZE.height;
                     this._debugCanvas.style.position = "absolute";
-                    this._debugCanvas.style.top = "30px";
-                    this._debugCanvas.style.left = "10px";
+                    this._debugCanvas.style.top = this.DEBUGCANVASPOS.y + "px";
+                    this._debugCanvas.style.left = this.DEBUGCANVASPOS.x + "px";
                     this._debugCanvasContext = this._debugCanvas.getContext("2d");
                     document.body.appendChild(this._debugCanvas);
                     this._registerFunc = function () {
@@ -62,16 +69,14 @@ var BABYLON;
                 }
                 if (this._registerFunc) {
                     var workingArray = this.getByteFrequencyData();
-
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
-                    this._debugCanvasContext.fillRect(0, 0, this._debugCanvasWidth, this._debugCanvasHeight);
-
+                    this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
                     for (var i = 0; i < this.getFrequencyBinCount(); i++) {
                         var value = workingArray[i];
                         var percent = value / this.BARGRAPHAMPLITUDE;
-                        var height = this._debugCanvasHeight * percent;
-                        var offset = this._debugCanvasHeight - height - 1;
-                        var barWidth = this._debugCanvasWidth / this.getFrequencyBinCount();
+                        var height = this.DEBUGCANVASSIZE.height * percent;
+                        var offset = this.DEBUGCANVASSIZE.height - height - 1;
+                        var barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
                         var hue = i / this.getFrequencyBinCount() * 360;
                         this._debugCanvasContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                         this._debugCanvasContext.fillRect(i * barWidth, offset, barWidth, height);
@@ -79,7 +84,6 @@ var BABYLON;
                 }
             }
         };
-
         Analyser.prototype.stopDebugCanvas = function () {
             if (this._debugCanvas) {
                 this._scene.unregisterBeforeRender(this._registerFunc);
@@ -89,11 +93,15 @@ var BABYLON;
                 this._debugCanvasContext = null;
             }
         };
-
         Analyser.prototype.connectAudioNodes = function (inputAudioNode, outputAudioNode) {
             if (this._audioEngine.canUseWebAudio) {
                 inputAudioNode.connect(this._webAudioAnalyser);
                 this._webAudioAnalyser.connect(outputAudioNode);
+            }
+        };
+        Analyser.prototype.dispose = function () {
+            if (this._audioEngine.canUseWebAudio) {
+                this._webAudioAnalyser.disconnect();
             }
         };
         return Analyser;
