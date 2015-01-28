@@ -9677,7 +9677,7 @@ var BABYLON;
                 var world = this.getWorldMatrix();
                 var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
                 var direction = ray.direction.clone();
-                direction.normalize();
+                //  direction.normalize();
                 direction = direction.scale(intersectInfo.distance);
                 var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
                 var pickedPoint = worldOrigin.add(worldDirection);
@@ -15200,7 +15200,6 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }

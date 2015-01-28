@@ -209,7 +209,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                   // return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
