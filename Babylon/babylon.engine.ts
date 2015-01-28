@@ -451,7 +451,7 @@
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
 
-        private _audioEngine: AudioEngine;
+        public static audioEngine: AudioEngine;
 
         private _onBlur: () => void;
         private _onFocus: () => void;
@@ -631,7 +631,9 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            this._audioEngine = new AudioEngine();
+            if (!Engine.audioEngine) {
+                Engine.audioEngine = new AudioEngine();
+            }
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -645,7 +647,7 @@
         }
 
         public getAudioEngine(): AudioEngine {
-            return this._audioEngine;
+            return Engine.audioEngine;
         }
 
         public getAspectRatio(camera: Camera): number {
@@ -1982,7 +1984,7 @@
             }
 
             // Release audio engine
-            this._audioEngine.dispose();
+            Engine.audioEngine.dispose();
 
             // Release effects
             for (var name in this._compiledEffects) {
