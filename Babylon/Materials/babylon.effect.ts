@@ -312,6 +312,24 @@
             return this;
         }
 
+        public setArray2(uniformName: string, array: number[]): Effect {
+            this._engine.setArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setArray3(uniformName: string, array: number[]): Effect {
+            this._engine.setArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setArray4(uniformName: string, array: number[]): Effect {
+            this._engine.setArray4(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
 

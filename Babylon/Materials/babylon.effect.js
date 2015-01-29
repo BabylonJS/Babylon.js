@@ -248,6 +248,18 @@ var BABYLON;
             this._engine.setArray(this.getUniform(uniformName), array);
             return this;
         };
+        Effect.prototype.setArray2 = function (uniformName, array) {
+            this._engine.setArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setArray3 = function (uniformName, array) {
+            this._engine.setArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setArray4 = function (uniformName, array) {
+            this._engine.setArray4(this.getUniform(uniformName), array);
+            return this;
+        };
         Effect.prototype.setMatrices = function (uniformName, matrices) {
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
             return this;
