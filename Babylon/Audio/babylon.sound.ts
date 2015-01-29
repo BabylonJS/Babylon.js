@@ -22,9 +22,8 @@
         private _isReadyToPlay: boolean = false;
         private _isPlaying: boolean = false;
         private _isDirectional: boolean = false;
-        private _audioEngine: AudioEngine;
         private _readyToPlayCallback;
-        private _audioBuffer;
+        private _audioBuffer: AudioBuffer;
         private _soundSource: AudioBufferSourceNode;
         private _soundPanner: PannerNode;
         private _soundGain: GainNode;
@@ -50,7 +49,6 @@
         constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?) {
             this.name = name;
             this._scene = scene;
-            this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
             // Default custom attenuation function is a linear attenuation
             this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
@@ -78,8 +76,8 @@
                 this.playbackRate = options.playbackRate || 1;
             }
 
-            if (this._audioEngine.canUseWebAudio) {
-                this._soundGain = this._audioEngine.audioContext.createGain();
+            if (Engine.audioEngine.canUseWebAudio) {
+                this._soundGain = Engine.audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
                 this._inputAudioNode = this._soundGain;
                 this._ouputAudioNode = this._soundGain;
@@ -102,7 +100,7 @@
         }
 
         public dispose() {
-            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
+            if (Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
                 if (this._isPlaying) {
                     this.stop();
                 }
@@ -131,7 +129,7 @@
 
         private _soundLoaded(audioData: ArrayBuffer) {
             this._isLoaded = true;
-            this._audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
+            Engine.audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
                 this._audioBuffer = buffer;
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
@@ -139,6 +137,11 @@
             }, (error) => { Tools.Error("Error while decoding audio data: " + error.err); });
         }
 
+        public setAudioBuffer(audioBuffer : AudioBuffer) : void{
+            this._audioBuffer = audioBuffer;
+            this._isReadyToPlay = true;
+        }
+        
         public updateOptions(options) {
             if (options) {
                 this.loop = options.loop || this.loop;
@@ -153,8 +156,8 @@
         }
 
         private _createSpatialParameters() {
-            if (this._audioEngine.canUseWebAudio) {
-                this._soundPanner = this._audioEngine.audioContext.createPanner();
+            if (Engine.audioEngine.canUseWebAudio) {
+                this._soundPanner = Engine.audioEngine.audioContext.createPanner();
 
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
@@ -177,7 +180,7 @@
         }
 
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
-            if (this._audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio) {
                 this._ouputAudioNode.disconnect();
                 this._ouputAudioNode.connect(soundTrackAudioNode);
             }
@@ -246,7 +249,7 @@
         public play(time?: number) {
             if (this._isReadyToPlay) {
                 try {
-                    var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+                    var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
                     if (!this._soundSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
@@ -263,7 +266,7 @@
                             }
                         }
                     }
-                    this._soundSource = this._audioEngine.audioContext.createBufferSource();
+                    this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                     this._soundSource.buffer = this._audioBuffer;
                     this._soundSource.connect(this._inputAudioNode);
                     this._soundSource.loop = this.loop;
@@ -287,7 +290,7 @@
         */
         public stop(time?: number) {
             if (this._isPlaying) {
-                var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
                 this._soundSource.stop(stopTime);
                 this._isPlaying = false;
             }
@@ -296,13 +299,13 @@
         public pause() {
             if (this._isPlaying) {
                 this._soundSource.stop(0);
-                this._startOffset += this._audioEngine.audioContext.currentTime - this._startTime;
+                this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }
 
         public setVolume(newVolume: number) {
             this._volume = newVolume;
-            if (this._audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio) {
                 this._soundGain.gain.value = newVolume;
             }
         }
