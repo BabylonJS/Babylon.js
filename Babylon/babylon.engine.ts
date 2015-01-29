@@ -1254,6 +1254,27 @@
             this._gl.uniform1fv(uniform, array);
         }
 
+        public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2fv(uniform, array);
+        }
+
+        public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3fv(uniform, array);
+        }
+
+        public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4fv(uniform, array);
+        }
+
         public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
             if (!uniform)
                 return;

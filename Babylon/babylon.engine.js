@@ -1047,6 +1047,21 @@ var BABYLON;
                 return;
             this._gl.uniform1fv(uniform, array);
         };
+        Engine.prototype.setArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2fv(uniform, array);
+        };
+        Engine.prototype.setArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3fv(uniform, array);
+        };
+        Engine.prototype.setArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4fv(uniform, array);
+        };
         Engine.prototype.setMatrices = function (uniform, matrices) {
             if (!uniform)
                 return;
