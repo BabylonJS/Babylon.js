@@ -1111,7 +1111,7 @@ var BABYLON;
         };
         Scene.prototype._updateAudioParameters = function () {
             var listeningCamera;
-            var audioEngine = this._engine.getAudioEngine();
+            var audioEngine = BABYLON.Engine.audioEngine;
             if (this.activeCameras.length > 0) {
                 listeningCamera = this.activeCameras[0];
             }
@@ -1259,12 +1259,7 @@ var BABYLON;
             this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         };
         // Octrees
-        Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity, maxDepth) {
-            if (maxCapacity === void 0) { maxCapacity = 64; }
-            if (maxDepth === void 0) { maxDepth = 2; }
-            if (!this._selectionOctree) {
-                this._selectionOctree = new BABYLON.Octree(BABYLON.Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
+        Scene.prototype.getWorldExtends = function () {
             var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
@@ -1275,8 +1270,20 @@ var BABYLON;
                 BABYLON.Tools.CheckExtends(minBox, min, max);
                 BABYLON.Tools.CheckExtends(maxBox, min, max);
             }
+            return {
+                min: min,
+                max: max
+            };
+        };
+        Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity, maxDepth) {
+            if (maxCapacity === void 0) { maxCapacity = 64; }
+            if (maxDepth === void 0) { maxDepth = 2; }
+            if (!this._selectionOctree) {
+                this._selectionOctree = new BABYLON.Octree(BABYLON.Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
+            }
+            var worldExtends = this.getWorldExtends();
             // Update octree
-            this._selectionOctree.update(min, max, this.meshes);
+            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
             return this._selectionOctree;
         };
         // Picking
@@ -1405,12 +1412,28 @@ var BABYLON;
             }
             return this._physicsEngine._registerMeshesAsCompound(parts, options);
         };
-        //ANY
         Scene.prototype.deleteCompoundImpostor = function (compound) {
             for (var index = 0; index < compound.parts.length; index++) {
                 var mesh = compound.parts[index].mesh;
                 mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
                 this._physicsEngine._unregisterMesh(mesh);
+            }
+        };
+        // Misc.
+        Scene.prototype.createDefaultCameraOrLight = function () {
+            // Light
+            if (this.lights.length === 0) {
+                new BABYLON.HemisphericLight("default light", BABYLON.Vector3.Up(), this);
+            }
+            // Camera
+            if (!this.activeCamera) {
+                var camera = new BABYLON.FreeCamera("default camera", BABYLON.Vector3.Zero(), this);
+                // Compute position
+                var worldExtends = this.getWorldExtends();
+                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+                camera.position = new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
+                camera.setTarget(worldCenter);
+                this.activeCamera = camera;
             }
         };
         // Tags

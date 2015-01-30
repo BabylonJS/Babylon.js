@@ -75,6 +75,12 @@ var BABYLON;
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
+                        case "audio/wav":
+                        case "audio/x-wav":
+                        case "audio/mpeg":
+                        case "audio/mpeg3":
+                        case "audio/x-mpeg-3":
+                        case "audio/ogg":
                             BABYLON.FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         default:

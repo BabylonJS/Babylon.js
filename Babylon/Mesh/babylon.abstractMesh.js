@@ -693,7 +693,6 @@ var BABYLON;
                 var world = this.getWorldMatrix();
                 var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
                 var direction = ray.direction.clone();
-                //  direction.normalize();
                 direction = direction.scale(intersectInfo.distance);
                 var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
                 var pickedPoint = worldOrigin.add(worldDirection);
