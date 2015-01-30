@@ -1284,7 +1284,7 @@
                             if (indexOfOther > -1) {
                                 sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -1447,7 +1447,7 @@
 
         private _updateAudioParameters() {
             var listeningCamera: Camera;
-            var audioEngine = this._engine.getAudioEngine();
+            var audioEngine = Engine.audioEngine;
 
             if (this.activeCameras.length > 0) {
                 listeningCamera = this.activeCameras[0];
@@ -1644,11 +1644,7 @@
         }
 
         // Octrees
-        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
-            if (!this._selectionOctree) {
-                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
-
+        public getWorldExtends(): { min: Vector3; max: Vector3 } {
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
@@ -1662,8 +1658,21 @@
                 Tools.CheckExtends(maxBox, min, max);
             }
 
+            return {
+                min: min,
+                max: max
+            };
+        }
+
+        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
+            if (!this._selectionOctree) {
+                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
+            }
+
+            var worldExtends = this.getWorldExtends();
+
             // Update octree
-            this._selectionOctree.update(min, max, this.meshes);
+            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
 
             return this._selectionOctree;
         }
@@ -1827,12 +1836,33 @@
             return this._physicsEngine._registerMeshesAsCompound(parts, options);
         }
 
-        //ANY
         public deleteCompoundImpostor(compound: any): void {
             for (var index = 0; index < compound.parts.length; index++) {
                 var mesh = compound.parts[index].mesh;
                 mesh._physicImpostor = PhysicsEngine.NoImpostor;
                 this._physicsEngine._unregisterMesh(mesh);
+            }
+        }
+
+        // Misc.
+        public createDefaultCameraOrLight() {
+            // Light
+            if (this.lights.length === 0) {
+                new HemisphericLight("default light", Vector3.Up(), this);
+            }
+
+            // Camera
+            if (!this.activeCamera) {
+                var camera = new FreeCamera("default camera", Vector3.Zero(), this);
+
+                // Compute position
+                var worldExtends = this.getWorldExtends();
+                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+
+                camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
+                camera.setTarget(worldCenter);
+
+                this.activeCamera = camera;
             }
         }
 
