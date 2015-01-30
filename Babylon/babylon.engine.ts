@@ -646,10 +646,6 @@
             }
         }
 
-        public getAudioEngine(): AudioEngine {
-            return Engine.audioEngine;
-        }
-
         public getAspectRatio(camera: Camera): number {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);

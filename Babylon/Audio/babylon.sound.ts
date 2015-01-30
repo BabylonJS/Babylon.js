@@ -11,8 +11,8 @@
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
         public panningModel: string = "HRTF";
-        public playbackRate: number = 1;
         public onended: () => any;
+        private _playbackRate: number = 1;
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
@@ -22,7 +22,7 @@
         private _isReadyToPlay: boolean = false;
         private _isPlaying: boolean = false;
         private _isDirectional: boolean = false;
-        private _readyToPlayCallback;
+        private _readyToPlayCallback: () => any;
         private _audioBuffer: AudioBuffer;
         private _soundSource: AudioBufferSourceNode;
         private _soundPanner: PannerNode;
@@ -37,7 +37,7 @@
         private _scene: Scene;
         private _connectedMesh: AbstractMesh;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
-        private _registerFunc;
+        private _registerFunc: (connectedMesh: AbstractMesh) => any;
 
         /**
         * Create a sound and attach it to a scene
@@ -73,7 +73,7 @@
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
                 this.panningModel = options.panningModel || "HRTF";
-                this.playbackRate = options.playbackRate || 1;
+                this._playbackRate = options.playbackRate || 1;
             }
 
             if (Engine.audioEngine.canUseWebAudio) {
@@ -85,16 +85,26 @@
                     this._createSpatialParameters();
                 }
                 this._scene.mainSoundTrack.AddSound(this);
-                if (typeof (urlOrArrayBuffer) === "string") {
-                    Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
-                }
-                else {
-                    if (urlOrArrayBuffer instanceof ArrayBuffer) {
-                        this._soundLoaded(urlOrArrayBuffer);
+                // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
+                if (urlOrArrayBuffer) {
+                    // If it's an URL
+                    if (typeof (urlOrArrayBuffer) === "string") {
+                        Tools.LoadFile(urlOrArrayBuffer,(data) => { this._soundLoaded(data); }, null, null, true);
                     }
                     else {
-                        Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                        if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                            this._soundLoaded(urlOrArrayBuffer);
+                        }
+                        else {
+                            Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                        }
                     }
+                }
+            }
+            else {
+                if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
+                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
+                    Engine.audioEngine.WarnedWebAudioUnsupported = true;
                 }
             }
         }
@@ -137,11 +147,13 @@
             }, (error) => { Tools.Error("Error while decoding audio data: " + error.err); });
         }
 
-        public setAudioBuffer(audioBuffer : AudioBuffer) : void{
-            this._audioBuffer = audioBuffer;
-            this._isReadyToPlay = true;
+        public setAudioBuffer(audioBuffer: AudioBuffer): void {
+            if (Engine.audioEngine.canUseWebAudio) {
+                this._audioBuffer = audioBuffer;
+                this._isReadyToPlay = true;
+            }
         }
-        
+
         public updateOptions(options) {
             if (options) {
                 this.loop = options.loop || this.loop;
@@ -151,7 +163,7 @@
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
                 this.panningModel = options.panningModel || this.panningModel;
-                this.playbackRate = options.playbackRate || this.playbackRate;
+                this._playbackRate = options.playbackRate || this._playbackRate;
             }
         }
 
@@ -270,7 +282,7 @@
                     this._soundSource.buffer = this._audioBuffer;
                     this._soundSource.connect(this._inputAudioNode);
                     this._soundSource.loop = this.loop;
-                    this._soundSource.playbackRate.value = this.playbackRate;
+                    this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
                     if (this.onended) {
                         this._soundSource.onended = this.onended;
@@ -307,6 +319,13 @@
             this._volume = newVolume;
             if (Engine.audioEngine.canUseWebAudio) {
                 this._soundGain.gain.value = newVolume;
+            }
+        }
+
+        public setPlaybackRate(newPlaybackRate: number) {
+            this._playbackRate = newPlaybackRate;
+            if (this._isPlaying) {
+                this._soundSource.playbackRate.value = this._playbackRate;
             }
         }
 

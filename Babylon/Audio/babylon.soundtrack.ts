@@ -11,7 +11,7 @@
 
         constructor(scene: BABYLON.Scene, options?: any) {
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = Engine.audioEngine;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();

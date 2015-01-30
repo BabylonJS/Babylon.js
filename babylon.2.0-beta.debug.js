@@ -3645,9 +3645,6 @@ var __extends = this.__extends || function (d, b) {
                 version: this._glVersion
             };
         };
-        Engine.prototype.getAudioEngine = function () {
-            return Engine.audioEngine;
-        };
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
@@ -4133,6 +4130,21 @@ var __extends = this.__extends || function (d, b) {
             if (!uniform)
                 return;
             this._gl.uniform1fv(uniform, array);
+        };
+        Engine.prototype.setArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2fv(uniform, array);
+        };
+        Engine.prototype.setArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3fv(uniform, array);
+        };
+        Engine.prototype.setArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4fv(uniform, array);
         };
         Engine.prototype.setMatrices = function (uniform, matrices) {
             if (!uniform)
@@ -8486,7 +8498,7 @@ var BABYLON;
         };
         Scene.prototype._updateAudioParameters = function () {
             var listeningCamera;
-            var audioEngine = this._engine.getAudioEngine();
+            var audioEngine = BABYLON.Engine.audioEngine;
             if (this.activeCameras.length > 0) {
                 listeningCamera = this.activeCameras[0];
             }
@@ -9677,7 +9689,6 @@ var BABYLON;
                 var world = this.getWorldMatrix();
                 var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
                 var direction = ray.direction.clone();
-                //  direction.normalize();
                 direction = direction.scale(intersectInfo.distance);
                 var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
                 var pickedPoint = worldOrigin.add(worldDirection);
@@ -13034,6 +13045,18 @@ var BABYLON;
             this._engine.setArray(this.getUniform(uniformName), array);
             return this;
         };
+        Effect.prototype.setArray2 = function (uniformName, array) {
+            this._engine.setArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setArray3 = function (uniformName, array) {
+            this._engine.setArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setArray4 = function (uniformName, array) {
+            this._engine.setArray4(this.getUniform(uniformName), array);
+            return this;
+        };
         Effect.prototype.setMatrices = function (uniformName, matrices) {
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
             return this;
@@ -13147,6 +13170,8 @@ shadowMapPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvec4 pack(
 shadowMapVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n#ifndef VSM\n	vPosition = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool alphaTest;\n\nvarying vec4 vColor;\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return min(1., max(0., fogCoeff));\n}\n#endif\n\n\nvoid main(void) {\n	vec4 baseColor = texture2D(diffuseSampler, vUV);\n\n	if (alphaTest) \n	{\n		if (baseColor.a < 0.95)\n			discard;\n	}\n\n	baseColor *= vColor;\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	baseColor.rgb = fog * baseColor.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = baseColor;\n}",
 spritesVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\n// Uniforms\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Output\nvarying vec2 vUV;\nvarying vec4 vColor;\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\nvoid main(void) {	\n	vec3 viewPos = (view * vec4(position, 1.0)).xyz; \n	vec3 cornerPos;\n	\n	float angle = options.x;\n	float size = options.y;\n	vec2 offset = options.zw;\n	vec2 uvScale = textureInfos.xy;\n\n	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;\n\n	// Rotate\n	vec3 rotatedCorner;\n	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);\n	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);\n	rotatedCorner.z = 0.;\n\n	// Position\n	viewPos += rotatedCorner;\n	gl_Position = projection * vec4(viewPos, 1.0);   \n\n	// Color\n	vColor = color;\n	\n	// Texture\n	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));\n\n	vUV = (uvOffset + cellInfo.zw) * uvScale;\n\n	// Fog\n#ifdef FOG\n	fFogDistance = viewPos.z;\n#endif\n}",
+ssaoPixelShader:"#ifdef GL_ES\nprecision mediump float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform vec3 sampleSphere[16];\n\nvarying vec2 vUV;\n\nvec3 normalFromDepth(float depth, vec2 coords) {\n    const vec2 offset1 = vec2(0.0, 0.001);\n    const vec2 offset2 = vec2(0.001, 0.0);\n\n    float depth1 = texture2D(textureSampler, coords + offset1).r;\n    float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void) {\n\n	const float totalStrength = 1.0;\n	const float base = 0.2;\n	const float area = 0.0075;\n	const float fallOff = 0.000001;\n	const float radius = 0.002;\n\n	vec3 random = normalize(texture2D(randomSampler, vUV * 4.0).rgb);\n	float depth = texture2D(textureSampler, vUV).r;\n\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	const int samples = 16;\n	for (int i = 0; i < samples; i++) {\n		vec3 ray = radiusDepth * reflect(sampleSphere[i], random);\n		vec3 hemiRay = position + sign(dot(ray, normal)) * ray;\n\n		float occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		float difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * (1.0 / float(samples));\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = 1.0;\n\n}",
+ssaoCombinePixelShader:"#ifdef GL_ES\nprecision mediump float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D originalColor;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	gl_FragColor = texture2D(textureSampler, vUV) * texture2D(originalColor, vUV);\n}",
 woodPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float ampScale;\nuniform vec3 woodColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));\n	vec3 wood = woodColor * ratioy;\n	gl_FragColor = vec4(wood, 1.0);\n}",
 };
         return Effect;
@@ -18708,7 +18733,8 @@ var BABYLON;
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
-                panningModel: parsedSound.panningModel
+                panningModel: parsedSound.panningModel,
+                playbackRate: parsedSound.playbackRate
             };
             var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
                 scene._removePendingData(newSound);
@@ -19140,7 +19166,7 @@ var BABYLON;
                     }
                 }
                 // Sounds
-                if (parsedData.sounds && scene.getEngine().getAudioEngine().canUseWebAudio) {
+                if (parsedData.sounds && BABYLON.Engine.audioEngine.canUseWebAudio) {
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
                         parseSound(parsedSound, scene, rootUrl);
@@ -25275,6 +25301,7 @@ var BABYLON;
         function AudioEngine() {
             this.audioContext = null;
             this.canUseWebAudio = false;
+            this.WarnedWebAudioUnsupported = false;
             try {
                 if (typeof AudioContext !== 'undefined') {
                     this.audioContext = new AudioContext();
@@ -25283,9 +25310,6 @@ var BABYLON;
                 else if (typeof webkitAudioContext !== 'undefined') {
                     this.audioContext = new webkitAudioContext();
                     this.canUseWebAudio = true;
-                }
-                else {
-                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                 }
             }
             catch (e) {
@@ -25310,6 +25334,7 @@ var BABYLON;
                 }
                 this.masterGain.gain.value = 1;
             }
+            this.WarnedWebAudioUnsupported = false;
         };
         AudioEngine.prototype.getGlobalVolume = function () {
             if (this.canUseWebAudio) {
@@ -25359,7 +25384,7 @@ var BABYLON;
             this.maxDistance = 100;
             this.distanceModel = "linear";
             this.panningModel = "HRTF";
-            this.playbackRate = 1;
+            this._playbackRate = 1;
             this._startTime = 0;
             this._startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
@@ -25376,7 +25401,6 @@ var BABYLON;
             this._coneOuterGain = 0;
             this.name = name;
             this._scene = scene;
-            this._audioEngine = this._scene.getEngine().getAudioEngine();
             this._readyToPlayCallback = readyToPlayCallback;
             // Default custom attenuation function is a linear attenuation
             this._customAttenuationFunction = function (currentVolume, currentDistance, maxDistance, refDistance, rolloffFactor) {
@@ -25401,10 +25425,10 @@ var BABYLON;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
                 this.panningModel = options.panningModel || "HRTF";
-                this.playbackRate = options.playbackRate || 1;
+                this._playbackRate = options.playbackRate || 1;
             }
-            if (this._audioEngine.canUseWebAudio) {
-                this._soundGain = this._audioEngine.audioContext.createGain();
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                this._soundGain = BABYLON.Engine.audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
                 this._inputAudioNode = this._soundGain;
                 this._ouputAudioNode = this._soundGain;
@@ -25412,23 +25436,33 @@ var BABYLON;
                     this._createSpatialParameters();
                 }
                 this._scene.mainSoundTrack.AddSound(this);
-                if (typeof (urlOrArrayBuffer) === "string") {
-                    BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) {
-                        _this._soundLoaded(data);
-                    }, null, null, true);
-                }
-                else {
-                    if (urlOrArrayBuffer instanceof ArrayBuffer) {
-                        this._soundLoaded(urlOrArrayBuffer);
+                // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
+                if (urlOrArrayBuffer) {
+                    // If it's an URL
+                    if (typeof (urlOrArrayBuffer) === "string") {
+                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) {
+                            _this._soundLoaded(data);
+                        }, null, null, true);
                     }
                     else {
-                        BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                        if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                            this._soundLoaded(urlOrArrayBuffer);
+                        }
+                        else {
+                            BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                        }
                     }
+                }
+            }
+            else {
+                if (!BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported) {
+                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
+                    BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported = true;
                 }
             }
         }
         Sound.prototype.dispose = function () {
-            if (this._audioEngine.canUseWebAudio && this._isReadyToPlay) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
                 if (this._isPlaying) {
                     this.stop();
                 }
@@ -25457,7 +25491,7 @@ var BABYLON;
         Sound.prototype._soundLoaded = function (audioData) {
             var _this = this;
             this._isLoaded = true;
-            this._audioEngine.audioContext.decodeAudioData(audioData, function (buffer) {
+            BABYLON.Engine.audioEngine.audioContext.decodeAudioData(audioData, function (buffer) {
                 _this._audioBuffer = buffer;
                 _this._isReadyToPlay = true;
                 if (_this.autoplay) {
@@ -25470,6 +25504,12 @@ var BABYLON;
                 BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
             });
         };
+        Sound.prototype.setAudioBuffer = function (audioBuffer) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                this._audioBuffer = audioBuffer;
+                this._isReadyToPlay = true;
+            }
+        };
         Sound.prototype.updateOptions = function (options) {
             if (options) {
                 this.loop = options.loop || this.loop;
@@ -25479,12 +25519,12 @@ var BABYLON;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
                 this.panningModel = options.panningModel || this.panningModel;
-                this.playbackRate = options.playbackRate || this.playbackRate;
+                this._playbackRate = options.playbackRate || this._playbackRate;
             }
         };
         Sound.prototype._createSpatialParameters = function () {
-            if (this._audioEngine.canUseWebAudio) {
-                this._soundPanner = this._audioEngine.audioContext.createPanner();
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                this._soundPanner = BABYLON.Engine.audioEngine.audioContext.createPanner();
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
                     this._soundPanner.distanceModel = "linear";
@@ -25505,7 +25545,7 @@ var BABYLON;
             }
         };
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
-            if (this._audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 this._ouputAudioNode.disconnect();
                 this._ouputAudioNode.connect(soundTrackAudioNode);
             }
@@ -25564,7 +25604,7 @@ var BABYLON;
         Sound.prototype.play = function (time) {
             if (this._isReadyToPlay) {
                 try {
-                    var startTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+                    var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : 0;
                     if (!this._soundSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
@@ -25581,11 +25621,11 @@ var BABYLON;
                             }
                         }
                     }
-                    this._soundSource = this._audioEngine.audioContext.createBufferSource();
+                    this._soundSource = BABYLON.Engine.audioEngine.audioContext.createBufferSource();
                     this._soundSource.buffer = this._audioBuffer;
                     this._soundSource.connect(this._inputAudioNode);
                     this._soundSource.loop = this.loop;
-                    this._soundSource.playbackRate.value = this.playbackRate;
+                    this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
                     if (this.onended) {
                         this._soundSource.onended = this.onended;
@@ -25604,7 +25644,7 @@ var BABYLON;
         */
         Sound.prototype.stop = function (time) {
             if (this._isPlaying) {
-                var stopTime = time ? this._audioEngine.audioContext.currentTime + time : 0;
+                var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : 0;
                 this._soundSource.stop(stopTime);
                 this._isPlaying = false;
             }
@@ -25612,13 +25652,19 @@ var BABYLON;
         Sound.prototype.pause = function () {
             if (this._isPlaying) {
                 this._soundSource.stop(0);
-                this._startOffset += this._audioEngine.audioContext.currentTime - this._startTime;
+                this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         };
         Sound.prototype.setVolume = function (newVolume) {
             this._volume = newVolume;
-            if (this._audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 this._soundGain.gain.value = newVolume;
+            }
+        };
+        Sound.prototype.setPlaybackRate = function (newPlaybackRate) {
+            this._playbackRate = newPlaybackRate;
+            if (this._isPlaying) {
+                this._soundSource.playbackRate.value = this._playbackRate;
             }
         };
         Sound.prototype.getVolume = function () {
@@ -25655,7 +25701,7 @@ var BABYLON;
             this.id = -1;
             this._isMainTrack = false;
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = BABYLON.Engine.audioEngine;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();
@@ -27047,7 +27093,7 @@ var BABYLON;
             this.DEBUGCANVASPOS = { x: 20, y: 20 };
             this.DEBUGCANVASSIZE = { width: 320, height: 200 };
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = BABYLON.Engine.audioEngine;
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
                 this._webAudioAnalyser.minDecibels = -140;
@@ -27279,3 +27325,159 @@ var BABYLON;
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.depthRenderer.js.map
+var BABYLON;
+(function (BABYLON) {
+    var SSAORenderingPipeline = (function (_super) {
+        __extends(SSAORenderingPipeline, _super);
+        function SSAORenderingPipeline(name, scene, ratio) {
+            var _this = this;
+            if (ratio === void 0) { ratio = 1.0; }
+            _super.call(this, scene.getEngine(), name);
+            // Members
+            this.SSAOOriginalSceneColorEffect = "SSAOOriginalSceneColorEffect";
+            this.SSAORenderEffect = "SSAORenderEffect";
+            this.SSAOBlurHRenderEffect = "SSAOBlurHRenderEffect";
+            this.SSAOBlurVRenderEffect = "SSAOBlurVRenderEffect";
+            this.SSAOCombineRenderEffect = "SSAOCombineRenderEffect";
+            this._scene = null;
+            this._depthTexture = null;
+            this._randomTexture = null;
+            this._originalColorPostProcess = null;
+            this._ssaoPostProcess = null;
+            this._blurHPostProcess = null;
+            this._blurVPostProcess = null;
+            this._ssaoCombinePostProcess = null;
+            this._firstUpdate = true;
+            this._scene = scene;
+            // Set up assets
+            this._createRandomTexture();
+            this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
+            this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOPostProcess(ratio);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlur", new BABYLON.Vector2(1.0, 0.0), 1.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlur", new BABYLON.Vector2(0.0, 1.0), 1.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOCombinePostProcess();
+            // Set up pipeline
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
+                return _this._originalColorPostProcess;
+            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, function () {
+                return _this._ssaoPostProcess;
+            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, function () {
+                return _this._blurHPostProcess;
+            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, function () {
+                return _this._blurVPostProcess;
+            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, function () {
+                return _this._ssaoCombinePostProcess;
+            }, true));
+            // Finish
+            scene.postProcessRenderPipelineManager.addPipeline(this);
+        }
+        // Public Methods
+        SSAORenderingPipeline.prototype.getBlurHPostProcess = function () {
+            return this._blurHPostProcess;
+        };
+        SSAORenderingPipeline.prototype.getBlurVPostProcess = function () {
+            return this._blurVPostProcess;
+        };
+        // Private Methods
+        SSAORenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {
+            var _this = this;
+            var sampleSphere = [
+                0.5381,
+                0.1856,
+                -0.4319,
+                0.1379,
+                0.2486,
+                0.4430,
+                0.3371,
+                0.5679,
+                -0.0057,
+                -0.6999,
+                -0.0451,
+                -0.0019,
+                0.0689,
+                -0.1598,
+                -0.8547,
+                0.0560,
+                0.0069,
+                -0.1843,
+                -0.0146,
+                0.1402,
+                0.0762,
+                0.0100,
+                -0.1924,
+                -0.0344,
+                -0.3577,
+                -0.5301,
+                -0.4358,
+                -0.3169,
+                0.1063,
+                0.0158,
+                0.0103,
+                -0.5869,
+                0.0046,
+                -0.0897,
+                -0.4940,
+                0.3287,
+                0.7119,
+                -0.0154,
+                -0.0918,
+                -0.0533,
+                0.0596,
+                -0.5411,
+                0.0352,
+                -0.0631,
+                0.5460,
+                -0.4776,
+                0.2847,
+                -0.0271
+            ];
+            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoPostProcess.onApply = function (effect) {
+                if (_this._firstUpdate === true) {
+                    effect.setArray3("sampleSphere", sampleSphere);
+                    _this._firstUpdate = false;
+                }
+                effect.setTexture("textureSampler", _this._depthTexture);
+                effect.setTexture("randomSampler", _this._randomTexture);
+            };
+            return this._ssaoPostProcess;
+        };
+        SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function () {
+            var _this = this;
+            this._ssaoCombinePostProcess = new BABYLON.PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"], 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoCombinePostProcess.onApply = function (effect) {
+                effect.setTextureFromPostProcess("originalColor", _this._originalColorPostProcess);
+            };
+            return this._ssaoCombinePostProcess;
+        };
+        SSAORenderingPipeline.prototype._createRandomTexture = function () {
+            var size = 512;
+            this._randomTexture = new BABYLON.DynamicTexture("SSAORandomTexture", size, this._scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            this._randomTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+            this._randomTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            var context = this._randomTexture.getContext();
+            var rand = function (min, max) {
+                return Math.random() * (max - min) + min;
+            };
+            for (var x = 0; x < size; x++) {
+                for (var y = 0; y < size; y++) {
+                    var randVector = BABYLON.Vector3.Zero();
+                    randVector.x = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.y = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.z = Math.floor(rand(0.0, 1.0) * 255);
+                    context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
+                    context.fillRect(x, y, 1, 1);
+                }
+            }
+            this._randomTexture.update(false);
+        };
+        return SSAORenderingPipeline;
+    })(BABYLON.PostProcessRenderPipeline);
+    BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map

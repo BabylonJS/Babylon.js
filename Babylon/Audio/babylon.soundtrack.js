@@ -5,7 +5,7 @@ var BABYLON;
             this.id = -1;
             this._isMainTrack = false;
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = BABYLON.Engine.audioEngine;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
                 this._trackGain = this._audioEngine.audioContext.createGain();

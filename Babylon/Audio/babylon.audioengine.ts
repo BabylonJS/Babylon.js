@@ -5,6 +5,7 @@
         public masterGain: GainNode;
 
         private _connectedAnalyser: Analyser;
+        public WarnedWebAudioUnsupported: boolean = false;
 
         constructor() {
             // creating the audio context 
@@ -15,9 +16,6 @@
                 } else if (typeof webkitAudioContext !== 'undefined') {
                     this.audioContext = new webkitAudioContext();
                     this.canUseWebAudio = true;
-                }
-                else {
-                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                 }
             } catch (e) {
                 this.canUseWebAudio = false;
@@ -43,6 +41,7 @@
                 }
                 this.masterGain.gain.value = 1;
             }
+            this.WarnedWebAudioUnsupported = false;
         }
 
         public getGlobalVolume(): number {
