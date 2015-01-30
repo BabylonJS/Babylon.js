@@ -1264,9 +1264,10 @@
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
                     if (action.trigger === ActionManager.OnIntersectionEnterTrigger || action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                        var otherMesh = action.getTriggerParameter();
+                        var parameters = action.getTriggerParameter();
+                        var otherMesh = parameters instanceof AbstractMesh ? parameters : parameters.mesh;
 
-                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
+                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                         if (areIntersecting && currentIntersectionInProgress === -1) {
