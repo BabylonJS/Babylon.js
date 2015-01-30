@@ -962,8 +962,9 @@ var BABYLON;
                 for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                     var action = sourceMesh.actionManager.actions[actionIndex];
                     if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                        var otherMesh = action.getTriggerParameter();
-                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
+                        var parameters = action.getTriggerParameter();
+                        var otherMesh = parameters instanceof BABYLON.AbstractMesh ? parameters : parameters.mesh;
+                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
