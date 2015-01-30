@@ -4,6 +4,7 @@ var BABYLON;
         function AudioEngine() {
             this.audioContext = null;
             this.canUseWebAudio = false;
+            this.WarnedWebAudioUnsupported = false;
             try {
                 if (typeof AudioContext !== 'undefined') {
                     this.audioContext = new AudioContext();
@@ -12,9 +13,6 @@ var BABYLON;
                 else if (typeof webkitAudioContext !== 'undefined') {
                     this.audioContext = new webkitAudioContext();
                     this.canUseWebAudio = true;
-                }
-                else {
-                    BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                 }
             }
             catch (e) {
@@ -39,6 +37,7 @@ var BABYLON;
                 }
                 this.masterGain.gain.value = 1;
             }
+            this.WarnedWebAudioUnsupported = false;
         };
         AudioEngine.prototype.getGlobalVolume = function () {
             if (this.canUseWebAudio) {

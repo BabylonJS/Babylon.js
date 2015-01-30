@@ -762,7 +762,8 @@ var BABYLON;
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
-                panningModel: parsedSound.panningModel
+                panningModel: parsedSound.panningModel,
+                playbackRate: parsedSound.playbackRate
             };
             var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
                 scene._removePendingData(newSound);
@@ -1194,7 +1195,7 @@ var BABYLON;
                     }
                 }
                 // Sounds
-                if (parsedData.sounds && scene.getEngine().getAudioEngine().canUseWebAudio) {
+                if (parsedData.sounds && BABYLON.Engine.audioEngine.canUseWebAudio) {
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
                         parseSound(parsedSound, scene, rootUrl);

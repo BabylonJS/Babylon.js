@@ -18,7 +18,7 @@ module BABYLON {
 
         constructor(scene: BABYLON.Scene) {
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = Engine.audioEngine;
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
                 this._webAudioAnalyser.minDecibels = -140;

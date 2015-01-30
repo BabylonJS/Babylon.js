@@ -558,9 +558,6 @@ var BABYLON;
                 version: this._glVersion
             };
         };
-        Engine.prototype.getAudioEngine = function () {
-            return Engine.audioEngine;
-        };
         Engine.prototype.getAspectRatio = function (camera) {
             var viewport = camera.viewport;
             return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);

@@ -8,7 +8,7 @@ var BABYLON;
             this.DEBUGCANVASPOS = { x: 20, y: 20 };
             this.DEBUGCANVASSIZE = { width: 320, height: 200 };
             this._scene = scene;
-            this._audioEngine = scene.getEngine().getAudioEngine();
+            this._audioEngine = BABYLON.Engine.audioEngine;
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
                 this._webAudioAnalyser.minDecibels = -140;
