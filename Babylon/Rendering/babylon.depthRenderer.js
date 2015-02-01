@@ -43,28 +43,11 @@ var BABYLON;
                         _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
                     // Bones
-                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
-                    if (useBones) {
+                    if (mesh.useBones) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
-                    if (hardwareInstancedRendering) {
-                        mesh._renderWithInstances(subMesh, BABYLON.Material.TriangleFillMode, batch, _this._effect, engine);
-                    }
-                    else {
-                        if (batch.renderSelf[subMesh._id]) {
-                            _this._effect.setMatrix("world", mesh.getWorldMatrix());
-                            // Draw
-                            mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
-                        }
-                        if (batch.visibleInstances[subMesh._id]) {
-                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                                var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-                                _this._effect.setMatrix("world", instance.getWorldMatrix());
-                                // Draw
-                                mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
-                            }
-                        }
-                    }
+                    // Draw
+                    mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
                 }
             };
             this._depthMap.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
@@ -96,7 +79,7 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.useBones) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");

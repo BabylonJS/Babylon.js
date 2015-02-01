@@ -435,6 +435,7 @@ var BABYLON;
                     newWindow.document.body.appendChild(img);
                 }
             };
+            scene.incrementRenderId();
             texture.render(true);
             texture.dispose();
             if (previousCamera) {

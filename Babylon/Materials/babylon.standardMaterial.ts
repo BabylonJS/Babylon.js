@@ -337,7 +337,7 @@
                         defines.push("#define VERTEXALPHA");
                     }
                 }
-                if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                if (mesh.useBones) {
                     attribs.push(VertexBuffer.MatricesIndicesKind);
                     attribs.push(VertexBuffer.MatricesWeightsKind);
                     defines.push("#define BONES");
@@ -416,7 +416,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 

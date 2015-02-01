@@ -138,6 +138,13 @@ var BABYLON;
             }
             return this._boundingInfo;
         };
+        Object.defineProperty(AbstractMesh.prototype, "useBones", {
+            get: function () {
+                return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype._preActivate = function () {
         };
         AbstractMesh.prototype._activate = function (renderId) {

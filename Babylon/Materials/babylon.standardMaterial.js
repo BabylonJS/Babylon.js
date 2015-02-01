@@ -285,7 +285,7 @@ var BABYLON;
                         defines.push("#define VERTEXALPHA");
                     }
                 }
-                if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                if (mesh.useBones) {
                     attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                     defines.push("#define BONES");
@@ -335,7 +335,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
             if (scene.getCachedMaterial() !== this) {
