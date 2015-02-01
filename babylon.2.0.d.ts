@@ -638,6 +638,7 @@ declare module BABYLON {
         getSpritesDuration(): number;
         getAnimationRatio(): number;
         getRenderId(): number;
+        incrementRenderId(): void;
         private _updatePointerPosition(evt);
         attachControl(): void;
         detachControl(): void;
@@ -781,6 +782,10 @@ declare module BABYLON {
         dispose(): void;
         _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh?: AbstractMesh): void;
         private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+        getWorldExtends(): {
+            min: Vector3;
+            max: Vector3;
+        };
         createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
         createPickingRay(x: number, y: number, world: Matrix, camera: Camera): Ray;
         private _internalPick(rayFunction, predicate, fastCheck?);
@@ -795,6 +800,7 @@ declare module BABYLON {
         setGravity(gravity: Vector3): void;
         createCompoundImpostor(parts: any, options: PhysicsBodyCreationOptions): any;
         deleteCompoundImpostor(compound: any): void;
+        createDefaultCameraOrLight(): void;
         private _getByTags(list, tagsQuery, forEach?);
         getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[];
         getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[];
@@ -1596,41 +1602,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class OculusCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene);
-        public _update(): void;
-        public _updateCamera(camera: FreeCamera): void;
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
-    }
-}
-declare module BABYLON {
-    class OculusGamepadCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        private _gamepad;
-        private _gamepads;
-        public angularSensibility: number;
-        public moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _onNewGameConnected(gamepad);
-        public _update(): void;
-        public _checkInputs(): void;
-        public _updateCamera(camera: FreeCamera): void;
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
-        public dispose(): void;
-    }
-}
-declare module BABYLON {
     class TargetCamera extends Camera {
         cameraDirection: Vector3;
         cameraRotation: Vector2;
@@ -1688,32 +1659,6 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         _checkInputs(): void;
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    class VRDeviceOrientationCamera extends OculusCamera {
-        public _alpha: number;
-        public _beta: number;
-        public _gamma: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        public _onOrientationEvent(evt: DeviceOrientationEvent): void;
-    }
-}
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRCamera extends OculusCamera {
-        public _hmdDevice: any;
-        public _sensorDevice: any;
-        public _cacheState: any;
-        public _cacheQuaternion: Quaternion;
-        public _cacheRotation: Vector3;
-        public _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _getWebVRDevices(devices);
-        public _update(): void;
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        public detachControl(element: HTMLElement): void;
     }
 }
 declare module BABYLON {
@@ -3231,6 +3176,7 @@ declare module BABYLON {
         getVerticesData(kind: string): number[];
         isVerticesDataPresent(kind: string): boolean;
         getBoundingInfo(): BoundingInfo;
+        useBones: boolean;
         _preActivate(): void;
         _activate(renderId: number): void;
         getWorldMatrix(): Matrix;
@@ -3620,6 +3566,7 @@ declare module BABYLON {
         unregisterAfterRender(func: () => void): void;
         _getInstancesRenderList(subMeshId: number): _InstancesBatch;
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
+        _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix) => void): void;
         render(subMesh: SubMesh): void;
         getEmittedParticleSystems(): ParticleSystem[];
         getHierarchyEmittedParticleSystems(): ParticleSystem[];
@@ -4239,6 +4186,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene, ratio?: number);
         getBlurHPostProcess(): BlurPostProcess;
         getBlurVPostProcess(): BlurPostProcess;
+        dispose(cameras: any): void;
         private _createSSAOPostProcess(ratio);
         private _createSSAOCombinePostProcess();
         private _createRandomTexture();

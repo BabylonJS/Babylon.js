@@ -5,6 +5,7 @@ var BABYLON;
             this._scene = scene;
         }
         OutlineRenderer.prototype.render = function (subMesh, batch, useOverlay) {
+            var _this = this;
             if (useOverlay === void 0) { useOverlay = false; }
             var scene = this._scene;
             var engine = this._scene.getEngine();
@@ -19,8 +20,7 @@ var BABYLON;
             this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
-            if (useBones) {
+            if (mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
             mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
@@ -30,24 +30,9 @@ var BABYLON;
                 this._effect.setTexture("diffuseSampler", alphaTexture);
                 this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
-            if (hardwareInstancedRendering) {
-                mesh._renderWithInstances(subMesh, BABYLON.Material.TriangleFillMode, batch, this._effect, engine);
-            }
-            else {
-                if (batch.renderSelf[subMesh._id]) {
-                    this._effect.setMatrix("world", mesh.getWorldMatrix());
-                    // Draw
-                    mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
-                }
-                if (batch.visibleInstances[subMesh._id]) {
-                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-                        this._effect.setMatrix("world", instance.getWorldMatrix());
-                        // Draw
-                        mesh._draw(subMesh, BABYLON.Material.TriangleFillMode);
-                    }
-                }
-            }
+            mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
+                _this._effect.setMatrix("world", world);
+            });
         };
         OutlineRenderer.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
@@ -67,7 +52,7 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.useBones) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
@@ -83,7 +68,7 @@ var BABYLON;
             }
             // Get correct effect      
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("outline", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color"], ["diffuseSampler"], join);
             }

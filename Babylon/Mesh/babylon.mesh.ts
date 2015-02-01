@@ -554,6 +554,40 @@
             engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         }
 
+        public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
+            onBeforeDraw: (isInstance: boolean, world: Matrix) => void) {
+            var scene = this.getScene();
+            var engine = scene.getEngine();
+
+            if (hardwareInstancedRendering) {
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
+            } else {
+                if (batch.renderSelf[subMesh._id]) {
+                    // Draw
+                    if (onBeforeDraw) {
+                        onBeforeDraw(false, this.getWorldMatrix());
+                    }
+
+                    this._draw(subMesh, fillMode);
+                }
+
+                if (batch.visibleInstances[subMesh._id]) {
+                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
+
+                        // World
+                        var world = instance.getWorldMatrix();
+                        if (onBeforeDraw) {
+                            onBeforeDraw(true, world);
+                        }
+
+                        // Draw
+                        this._draw(subMesh, fillMode);
+                    }
+                }
+            }
+        }
+
         public render(subMesh: SubMesh): void {
             var scene = this.getScene();
 
@@ -602,28 +636,14 @@
 
             effectiveMaterial.bind(world, this);
 
-            // Instances rendering
-            if (hardwareInstancedRendering) {
-                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
-            } else {
-                if (batch.renderSelf[subMesh._id]) {
-                    // Draw
-                    this._draw(subMesh, fillMode);
-                }
-
-                if (batch.visibleInstances[subMesh._id]) {
-                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-
-                        // World
-                        world = instance.getWorldMatrix();
+            // Draw
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => {
+                    if (isInstance) {
                         effectiveMaterial.bindOnlyWorldMatrix(world);
-
-                        // Draw
-                        this._draw(subMesh, fillMode);
                     }
-                }
-            }
+                });
+
             // Unbind
             effectiveMaterial.unbind();
 
@@ -679,7 +699,7 @@
             var results = [];
             for (var index = 0; index < this.getScene().meshes.length; index++) {
                 var mesh = this.getScene().meshes[index];
-                if (mesh.parent == this) {
+                if (mesh.parent === this) {
                     results.push(mesh);
                 }
             }
@@ -733,7 +753,7 @@
         public setMaterialByID(id: string): void {
             var materials = this.getScene().materials;
             for (var index = 0; index < materials.length; index++) {
-                if (materials[index].id == id) {
+                if (materials[index].id === id) {
                     this.material = materials[index];
                     return;
                 }
@@ -742,7 +762,7 @@
             // Multi
             var multiMaterials = this.getScene().multiMaterials;
             for (index = 0; index < multiMaterials.length; index++) {
-                if (multiMaterials[index].id == id) {
+                if (multiMaterials[index].id === id) {
                     this.material = multiMaterials[index];
                     return;
                 }
@@ -1042,7 +1062,7 @@
                     simplifier.simplify(setting,(newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //check if it is the last
-                        if (setting.quality == settings[settings.length - 1].quality && successCallback) {
+                        if (setting.quality === settings[settings.length - 1].quality && successCallback) {
                             //all done, run the success callback.
                             successCallback();
                         }
@@ -1175,7 +1195,7 @@
             return tiledGround;
         }
 
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?:(mesh: GroundMesh) => void): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh {
             var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 

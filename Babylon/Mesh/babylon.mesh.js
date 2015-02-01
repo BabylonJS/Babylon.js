@@ -459,6 +459,34 @@ var BABYLON;
             this._draw(subMesh, fillMode, instancesCount);
             engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
         };
+        Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw) {
+            var scene = this.getScene();
+            var engine = scene.getEngine();
+            if (hardwareInstancedRendering) {
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
+            }
+            else {
+                if (batch.renderSelf[subMesh._id]) {
+                    // Draw
+                    if (onBeforeDraw) {
+                        onBeforeDraw(false, this.getWorldMatrix());
+                    }
+                    this._draw(subMesh, fillMode);
+                }
+                if (batch.visibleInstances[subMesh._id]) {
+                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
+                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
+                        // World
+                        var world = instance.getWorldMatrix();
+                        if (onBeforeDraw) {
+                            onBeforeDraw(true, world);
+                        }
+                        // Draw
+                        this._draw(subMesh, fillMode);
+                    }
+                }
+            }
+        };
         Mesh.prototype.render = function (subMesh) {
             var scene = this.getScene();
             // Managing instances
@@ -494,26 +522,12 @@ var BABYLON;
             this._bind(subMesh, effect, fillMode);
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
-            // Instances rendering
-            if (hardwareInstancedRendering) {
-                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
-            }
-            else {
-                if (batch.renderSelf[subMesh._id]) {
-                    // Draw
-                    this._draw(subMesh, fillMode);
+            // Draw
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
+                if (isInstance) {
+                    effectiveMaterial.bindOnlyWorldMatrix(world);
                 }
-                if (batch.visibleInstances[subMesh._id]) {
-                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-                        // World
-                        world = instance.getWorldMatrix();
-                        effectiveMaterial.bindOnlyWorldMatrix(world);
-                        // Draw
-                        this._draw(subMesh, fillMode);
-                    }
-                }
-            }
+            });
             // Unbind
             effectiveMaterial.unbind();
             // Outline - step 2
@@ -560,7 +574,7 @@ var BABYLON;
             var results = [];
             for (var index = 0; index < this.getScene().meshes.length; index++) {
                 var mesh = this.getScene().meshes[index];
-                if (mesh.parent == this) {
+                if (mesh.parent === this) {
                     results.push(mesh);
                 }
             }
@@ -603,7 +617,7 @@ var BABYLON;
         Mesh.prototype.setMaterialByID = function (id) {
             var materials = this.getScene().materials;
             for (var index = 0; index < materials.length; index++) {
-                if (materials[index].id == id) {
+                if (materials[index].id === id) {
                     this.material = materials[index];
                     return;
                 }
@@ -611,7 +625,7 @@ var BABYLON;
             // Multi
             var multiMaterials = this.getScene().multiMaterials;
             for (index = 0; index < multiMaterials.length; index++) {
-                if (multiMaterials[index].id == id) {
+                if (multiMaterials[index].id === id) {
                     this.material = multiMaterials[index];
                     return;
                 }
@@ -846,7 +860,7 @@ var BABYLON;
                     simplifier.simplify(setting, function (newMesh) {
                         _this.addLODLevel(setting.distance, newMesh);
                         //check if it is the last
-                        if (setting.quality == settings[settings.length - 1].quality && successCallback) {
+                        if (setting.quality === settings[settings.length - 1].quality && successCallback) {
                             //all done, run the success callback.
                             successCallback();
                         }

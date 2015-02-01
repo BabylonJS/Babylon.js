@@ -432,7 +432,7 @@
             var height: number;
 
             var scene = camera.getScene();
-            var previousCamera: BABYLON.Camera = null;
+            var previousCamera: Camera = null;
 
             if (scene.activeCamera !== camera) {
                 previousCamera = scene.activeCamera;
@@ -537,6 +537,7 @@
 
             };
 
+            scene.incrementRenderId();
             texture.render(true);
             texture.dispose();
 

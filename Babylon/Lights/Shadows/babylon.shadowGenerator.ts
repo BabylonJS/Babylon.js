@@ -94,33 +94,13 @@
                     }
 
                     // Bones
-                    var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
-
-                    if (useBones) {
+                    if (mesh.useBones) {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
-                    if (hardwareInstancedRendering) {
-                        mesh._renderWithInstances(subMesh, Material.TriangleFillMode, batch, this._effect, engine);
-                    } else {
-                        if (batch.renderSelf[subMesh._id]) {
-                            this._effect.setMatrix("world", mesh.getWorldMatrix());
-
-                            // Draw
-                            mesh._draw(subMesh, Material.TriangleFillMode);
-                        }
-
-                        if (batch.visibleInstances[subMesh._id]) {
-                            for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                                var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-
-                                this._effect.setMatrix("world", instance.getWorldMatrix());
-
-                                // Draw
-                                mesh._draw(subMesh, Material.TriangleFillMode);
-                            }
-                        }
-                    }
+                    // Draw
+                    mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                        (isInstance, world) => this._effect.setMatrix("world", world));
                 } else {
                     // Need to reset refresh rate of the shadowMap
                     this._shadowMap.resetRefreshCounter();
@@ -157,7 +137,6 @@
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
             var material = subMesh.getMaterial();
 
             // Alpha test
@@ -174,7 +153,7 @@
             }
 
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+            if (mesh.useBones) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");

@@ -152,6 +152,10 @@
             return this._boundingInfo;
         }
 
+        public get useBones(): boolean {
+            return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
+        }
+        
         public _preActivate(): void {
         }
 

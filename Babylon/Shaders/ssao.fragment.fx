@@ -1,18 +1,21 @@
 ﻿#ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
+
+#define SAMPLES 8
 
 uniform sampler2D textureSampler;
 uniform sampler2D randomSampler;
 
+uniform float samplesFactor;
 uniform vec3 sampleSphere[16];
 
 varying vec2 vUV;
 
-vec3 normalFromDepth(float depth, vec2 coords) {
-    const vec2 offset1 = vec2(0.0, 0.001);
-    const vec2 offset2 = vec2(0.001, 0.0);
+const vec2 offset1 = vec2(0.0, 0.001);
+const vec2 offset2 = vec2(0.001, 0.0);
 
+vec3 normalFromDepth(const float depth, const vec2 coords) {
     float depth1 = texture2D(textureSampler, coords + offset1).r;
     float depth2 = texture2D(textureSampler, coords + offset2).r;
 
@@ -25,35 +28,38 @@ vec3 normalFromDepth(float depth, vec2 coords) {
     return normalize(normal);
 }
 
-void main(void) {
-
+void main(void)
+{
 	const float totalStrength = 1.0;
-	const float base = 0.2;
+	const float base = 0.0;
 	const float area = 0.0075;
-	const float fallOff = 0.000001;
-	const float radius = 0.002;
+	const float fallOff = 0.00001;
+	const float radius = 0.0002;
 
-	vec3 random = normalize(texture2D(randomSampler, vUV * 4.0).rgb);
+	vec3 random = texture2D(randomSampler, vUV * 4.0).rgb;
 	float depth = texture2D(textureSampler, vUV).r;
-
 	vec3 position = vec3(vUV, depth);
 	vec3 normal = normalFromDepth(depth, vUV);
-
 	float radiusDepth = radius / depth;
 	float occlusion = 0.0;
 
-	const int samples = 16;
-	for (int i = 0; i < samples; i++) {
-		vec3 ray = radiusDepth * reflect(sampleSphere[i], random);
-		vec3 hemiRay = position + sign(dot(ray, normal)) * ray;
+	vec3 ray;
+	vec3 hemiRay;
+	float occlusionDepth;
+	float difference;
 
-		float occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;
-		float difference = depth - occlusionDepth;
+	for (int i = 0; i < SAMPLES; i++)
+	{
+		ray = radiusDepth * reflect(sampleSphere[i], random);
+		hemiRay = position + sign(dot(ray, normal)) * ray;
+
+		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;
+		difference = depth - occlusionDepth;
 
 		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));
 	}
 
-	float ao = 1.0 - totalStrength * occlusion * (1.0 / float(samples));
+	float ao = 1.0 - totalStrength * occlusion * samplesFactor;
 
 	float result = clamp(ao + base, 0.0, 1.0);
 	gl_FragColor.r = result;

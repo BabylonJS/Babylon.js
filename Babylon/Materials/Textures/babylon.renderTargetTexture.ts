@@ -91,6 +91,10 @@
             var scene = this.getScene();
             var engine = scene.getEngine();
 
+            if (!this.activeCamera) {
+                this.activeCamera = scene.activeCamera;
+            }
+
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -121,7 +125,7 @@
                 var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
-                    if (!mesh.isReady() || (mesh.material && !mesh.material.isReady())) {
+                    if (!mesh.isReady()) {
                         // Reset _currentRefreshId
                         this.resetRefreshCounter();
                         continue;
@@ -136,7 +140,7 @@
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
-                }
+                }                
             }
 
             if (!this._doNotChangeAspectRatio) {

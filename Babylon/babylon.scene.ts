@@ -354,6 +354,10 @@
             return this._renderId;
         }
 
+        public incrementRenderId(): void {
+            this._renderId++;
+        }
+
         private _updatePointerPosition(evt: PointerEvent): void {
             var canvasRect = this._engine.getRenderingCanvasClientRect();
 

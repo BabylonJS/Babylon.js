@@ -7,15 +7,15 @@
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
 
-        private _scene: Scene = null;
-        private _depthTexture: RenderTargetTexture = null;
-        private _randomTexture: DynamicTexture = null;
+        private _scene: Scene;
+        private _depthTexture: RenderTargetTexture;
+        private _randomTexture: DynamicTexture;
 
-        private _originalColorPostProcess: PassPostProcess = null;
-        private _ssaoPostProcess: PostProcess = null;
-        private _blurHPostProcess: BlurPostProcess = null;
-        private _blurVPostProcess: BlurPostProcess = null;
-        private _ssaoCombinePostProcess: PostProcess = null;
+        private _originalColorPostProcess: PassPostProcess;
+        private _ssaoPostProcess: PostProcess;
+        private _blurHPostProcess: BlurPostProcess;
+        private _blurVPostProcess: BlurPostProcess;
+        private _ssaoCombinePostProcess: PostProcess;
 
         private _firstUpdate: boolean = true;
 
@@ -30,8 +30,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlur", new Vector2(1.0, 0.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlur", new Vector2(0.0, 1.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(1.0, 0.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 1.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess();
 
             // Set up pipeline
@@ -54,6 +54,12 @@
             return this._blurVPostProcess;
         }
 
+        public dispose(cameras: any): void {
+            if (cameras !== undefined)
+                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
+            this._randomTexture.dispose();
+        }
+
         // Private Methods
         private _createSSAOPostProcess(ratio: number): PostProcess {
             var sampleSphere = [
@@ -74,14 +80,16 @@
                 0.0352, -0.0631, 0.5460,
                 -0.4776, 0.2847, -0.0271
             ];
+            var samplesFactor = 1.0 / 8.0;
 
-            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere"], ["randomSampler"],
+            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor"], ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate === true) {
                     effect.setArray3("sampleSphere", sampleSphere);
+                    effect.setFloat("samplesFactor", samplesFactor);
                     this._firstUpdate = false;
                 }
 
@@ -108,8 +116,8 @@
             var size = 512;
 
             this._randomTexture = new BABYLON.DynamicTexture("SSAORandomTexture", size, this._scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
-            this._randomTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-            this._randomTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
+            this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
             var context = this._randomTexture.getContext();
 

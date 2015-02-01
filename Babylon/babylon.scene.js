@@ -230,6 +230,9 @@ var BABYLON;
         Scene.prototype.getRenderId = function () {
             return this._renderId;
         };
+        Scene.prototype.incrementRenderId = function () {
+            this._renderId++;
+        };
         Scene.prototype._updatePointerPosition = function (evt) {
             var canvasRect = this._engine.getRenderingCanvasClientRect();
             this._pointerX = evt.clientX - canvasRect.left;
