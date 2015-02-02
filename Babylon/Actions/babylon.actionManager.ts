@@ -212,7 +212,9 @@
                         var parameter = action.getTriggerParameter();
 
                         if (parameter) {
-                            if (evt.sourceEvent.key !== parameter) {
+                            var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                            var actualkey = String.fromCharCode(unicode).toLowerCase();
+                            if (actualkey !== parameter.toLowerCase()) {
                                 continue;
                             }
                         }

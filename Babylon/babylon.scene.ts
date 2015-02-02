@@ -445,10 +445,12 @@
 
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);        
 
-            window.addEventListener("keydown", this._onKeyDown, false);
-            window.addEventListener("keyup", this._onKeyUp, false);
+            Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         }
 
         public detachControl() {
@@ -456,8 +458,10 @@
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
 
-            window.removeEventListener("keydown", this._onKeyDown);
-            window.removeEventListener("keyup", this._onKeyUp);
+            Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         }
 
         // Ready

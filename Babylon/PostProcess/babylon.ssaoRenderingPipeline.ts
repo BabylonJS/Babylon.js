@@ -19,7 +19,7 @@
 
         private _firstUpdate: boolean = true;
 
-        constructor(name: string, scene: Scene, ratio: number = 1.0) {
+        constructor(name: string, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
             super(scene.getEngine(), name);
 
             this._scene = scene;
@@ -57,6 +57,13 @@
         public dispose(cameras: any): void {
             if (cameras !== undefined)
                 this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
+
+            this._originalColorPostProcess = undefined;
+            this._ssaoPostProcess = undefined;
+            this._blurHPostProcess = undefined;
+            this._blurVPostProcess = undefined;
+            this._ssaoCombinePostProcess = undefined;
+
             this._randomTexture.dispose();
         }
 
@@ -80,14 +87,14 @@
                 0.0352, -0.0631, 0.5460,
                 -0.4776, 0.2847, -0.0271
             ];
-            var samplesFactor = 1.0 / 8.0;
+            var samplesFactor = 1.0 / 16.0;
 
             this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor"], ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
-                if (this._firstUpdate === true) {
+                if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
                     this._firstUpdate = false;
@@ -115,7 +122,7 @@
         private _createRandomTexture(): void {
             var size = 512;
 
-            this._randomTexture = new BABYLON.DynamicTexture("SSAORandomTexture", size, this._scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
@@ -127,7 +134,7 @@
 
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
-                    var randVector = BABYLON.Vector3.Zero();
+                    var randVector = Vector3.Zero();
 
                     randVector.x = Math.floor(rand(0.0, 1.0) * 255);
                     randVector.y = Math.floor(rand(0.0, 1.0) * 255);

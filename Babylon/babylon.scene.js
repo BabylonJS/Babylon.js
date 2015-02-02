@@ -302,15 +302,19 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            window.addEventListener("keydown", this._onKeyDown, false);
-            window.addEventListener("keyup", this._onKeyUp, false);
+            BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         };
         Scene.prototype.detachControl = function () {
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
-            window.removeEventListener("keydown", this._onKeyDown);
-            window.removeEventListener("keyup", this._onKeyUp);
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         };
         // Ready
         Scene.prototype.isReady = function () {
