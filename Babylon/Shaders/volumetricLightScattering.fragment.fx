@@ -12,6 +12,7 @@ uniform vec2 lightPositionOnScreen;
 varying vec2 vUV;
 
 void main(void) {
+	
     float decay = 0.96815;
     float exposure = 0.3;
     float density = 0.926;
@@ -38,4 +39,5 @@ void main(void) {
 
     vec4 realColor = texture2D(textureSampler, vUV);
     gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));
+
 }

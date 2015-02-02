@@ -8,7 +8,7 @@ var BABYLON;
 (function (BABYLON) {
     var SSAORenderingPipeline = (function (_super) {
         __extends(SSAORenderingPipeline, _super);
-        function SSAORenderingPipeline(name, scene, ratio) {
+        function SSAORenderingPipeline(name, scene, ratio, cameras) {
             var _this = this;
             if (ratio === void 0) { ratio = 1.0; }
             _super.call(this, scene.getEngine(), name);
@@ -57,6 +57,11 @@ var BABYLON;
         SSAORenderingPipeline.prototype.dispose = function (cameras) {
             if (cameras !== undefined)
                 this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
+            this._originalColorPostProcess = undefined;
+            this._ssaoPostProcess = undefined;
+            this._blurHPostProcess = undefined;
+            this._blurVPostProcess = undefined;
+            this._ssaoCombinePostProcess = undefined;
             this._randomTexture.dispose();
         };
         // Private Methods
@@ -112,10 +117,10 @@ var BABYLON;
                 0.2847,
                 -0.0271
             ];
-            var samplesFactor = 1.0 / 8.0;
+            var samplesFactor = 1.0 / 16.0;
             this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._ssaoPostProcess.onApply = function (effect) {
-                if (_this._firstUpdate === true) {
+                if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
                     _this._firstUpdate = false;

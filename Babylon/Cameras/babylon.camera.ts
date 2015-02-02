@@ -20,8 +20,8 @@
         public subCameras = [];
         public layerMask: number = 0xFFFFFFFF;
 
-        private _computedViewMatrix = BABYLON.Matrix.Identity();
-        public _projectionMatrix = new BABYLON.Matrix();
+        private _computedViewMatrix = Matrix.Identity();
+        public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];               
@@ -40,8 +40,8 @@
         public _initCache() {
             super._initCache();
 
-            this._cache.position = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            this._cache.upVector = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache.position = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache.upVector = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
             this._cache.mode = undefined;
             this._cache.minZ = undefined;
@@ -113,7 +113,7 @@
 
             var engine = this.getEngine();
 
-            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov
                 && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
@@ -231,7 +231,7 @@
 
         public getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
+                this._worldMatrix = Matrix.Identity();
             }
 
             var viewMatrix = this.getViewMatrix();
@@ -242,7 +242,7 @@
         }
 
         public _getViewMatrix(): Matrix {
-            return BABYLON.Matrix.Identity();
+            return Matrix.Identity();
         }
 
         public getViewMatrix(): Matrix {
@@ -255,7 +255,7 @@
             }
 
             if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
+                this._worldMatrix = Matrix.Identity();
             }
 
             this._computedViewMatrix.invertToRef(this._worldMatrix);
@@ -286,18 +286,18 @@
             }
 
             var engine = this.getEngine();
-            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
 
-                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
                 return this._projectionMatrix;
             }
 
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
-            BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
+            Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
         }
 

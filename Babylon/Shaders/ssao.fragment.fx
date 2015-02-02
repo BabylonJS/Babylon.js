@@ -2,7 +2,7 @@
 precision highp float;
 #endif
 
-#define SAMPLES 8
+#define SAMPLES 16
 
 uniform sampler2D textureSampler;
 uniform sampler2D randomSampler;
@@ -31,10 +31,10 @@ vec3 normalFromDepth(const float depth, const vec2 coords) {
 void main(void)
 {
 	const float totalStrength = 1.0;
-	const float base = 0.0;
+	const float base = 0.2;
 	const float area = 0.0075;
 	const float fallOff = 0.00001;
-	const float radius = 0.0002;
+	const float radius = 0.002;
 
 	vec3 random = texture2D(randomSampler, vUV * 4.0).rgb;
 	float depth = texture2D(textureSampler, vUV).r;

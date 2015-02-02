@@ -90,7 +90,7 @@ var BABYLON;
                 return false;
             }
             var engine = this.getEngine();
-            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
@@ -211,7 +211,7 @@ var BABYLON;
                 return this._projectionMatrix;
             }
             var engine = this.getEngine();
-            if (this.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+            if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
