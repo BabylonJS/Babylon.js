@@ -1658,11 +1658,23 @@ var BABYLON;
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
-        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result) {
+        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, fovMode) {
+            if (fovMode === void 0) { fovMode = BABYLON.Camera.FOVMODE_VERTICAL_FIXED; }
             var tan = 1.0 / (Math.tan(fov * 0.5));
-            result.m[0] = tan / aspect;
+            var v_fixed = (fovMode === BABYLON.Camera.FOVMODE_VERTICAL_FIXED);
+            if (v_fixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            result.m[5] = tan;
+            if (v_fixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
             result.m[10] = -zfar / (znear - zfar);

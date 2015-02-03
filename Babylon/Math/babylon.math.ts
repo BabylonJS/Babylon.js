@@ -2075,12 +2075,27 @@
             return matrix;
         }
 
-        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix): void {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode = Camera.FOVMODE_VERTICAL_FIXED): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
 
-            result.m[0] = tan / aspect;
+            var v_fixed = (fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+
+            if (v_fixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
+
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            result.m[5] = tan;
+
+            if (v_fixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
+
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
             result.m[10] = -zfar / (znear - zfar);

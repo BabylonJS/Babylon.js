@@ -315,11 +315,17 @@
             }
         }
 
-        public setVolume(newVolume: number) {
-            this._volume = newVolume;
+        public setVolume(newVolume: number, time?: number) {
             if (Engine.audioEngine.canUseWebAudio) {
-                this._soundGain.gain.value = newVolume;
+                if (time) {
+                    this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                }
+                else {
+                    this._soundGain.gain.value = newVolume;
+                }
             }
+            this._volume = newVolume;
         }
 
         public setPlaybackRate(newPlaybackRate: number) {

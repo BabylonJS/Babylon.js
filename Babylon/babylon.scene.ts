@@ -9,13 +9,29 @@
      */
     export class Scene {
         // Statics
-        public static FOGMODE_NONE = 0;
-        public static FOGMODE_EXP = 1;
-        public static FOGMODE_EXP2 = 2;
-        public static FOGMODE_LINEAR = 3;
+        private static _FOGMODE_NONE = 0;
+        private static _FOGMODE_EXP = 1;
+        private static _FOGMODE_EXP2 = 2;
+        private static _FOGMODE_LINEAR = 3;
 
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
+
+        public static get FOGMODE_NONE(): number {
+            return Scene._FOGMODE_NONE;
+        }
+
+        public static get FOGMODE_EXP(): number {
+            return Scene._FOGMODE_EXP;
+        }
+
+        public static get FOGMODE_EXP2(): number {
+            return Scene._FOGMODE_EXP2;
+        }
+
+        public static get FOGMODE_LINEAR(): number {
+            return Scene._FOGMODE_LINEAR;
+        }
 
         // Members
         public autoClear = true;
