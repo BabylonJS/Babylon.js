@@ -23,6 +23,9 @@
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
 
+        private static FOVMODE_VERTICAL_FIXED = 0;
+        private static FOVMODE_HORIZONTAL_FIXED = 1;
+
         // Members
         public upVector = Vector3.Up();
         public orthoLeft = null;
