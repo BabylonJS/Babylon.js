@@ -26,6 +26,7 @@ var BABYLON;
             this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
             this.subCameras = [];
             this.layerMask = 0xFFFFFFFF;
+            this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
@@ -35,6 +36,34 @@ var BABYLON;
                 scene.activeCamera = this;
             }
         }
+        Object.defineProperty(Camera, "PERSPECTIVE_CAMERA", {
+            get: function () {
+                return Camera._PERSPECTIVE_CAMERA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "ORTHOGRAPHIC_CAMERA", {
+            get: function () {
+                return Camera._ORTHOGRAPHIC_CAMERA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "FOVMODE_VERTICAL_FIXED", {
+            get: function () {
+                return Camera._FOVMODE_VERTICAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
+            get: function () {
+                return Camera._FOVMODE_HORIZONTAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
         //Cache
         Camera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -215,7 +244,7 @@ var BABYLON;
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
-                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
                 return this._projectionMatrix;
             }
             var halfWidth = engine.getRenderWidth() / 2.0;
@@ -232,8 +261,10 @@ var BABYLON;
             }
         };
         // Statics
-        Camera.PERSPECTIVE_CAMERA = 0;
-        Camera.ORTHOGRAPHIC_CAMERA = 1;
+        Camera._PERSPECTIVE_CAMERA = 0;
+        Camera._ORTHOGRAPHIC_CAMERA = 1;
+        Camera._FOVMODE_VERTICAL_FIXED = 0;
+        Camera._FOVMODE_HORIZONTAL_FIXED = 1;
         return Camera;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;

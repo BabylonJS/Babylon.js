@@ -137,6 +137,34 @@ var BABYLON;
             this._debugLayer = new BABYLON.DebugLayer(this);
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
         }
+        Object.defineProperty(Scene, "FOGMODE_NONE", {
+            get: function () {
+                return Scene._FOGMODE_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_EXP", {
+            get: function () {
+                return Scene._FOGMODE_EXP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_EXP2", {
+            get: function () {
+                return Scene._FOGMODE_EXP2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_LINEAR", {
+            get: function () {
+                return Scene._FOGMODE_LINEAR;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties 
             get: function () {
@@ -1476,10 +1504,10 @@ var BABYLON;
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         };
         // Statics
-        Scene.FOGMODE_NONE = 0;
-        Scene.FOGMODE_EXP = 1;
-        Scene.FOGMODE_EXP2 = 2;
-        Scene.FOGMODE_LINEAR = 3;
+        Scene._FOGMODE_NONE = 0;
+        Scene._FOGMODE_EXP = 1;
+        Scene._FOGMODE_EXP2 = 2;
+        Scene._FOGMODE_LINEAR = 3;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;

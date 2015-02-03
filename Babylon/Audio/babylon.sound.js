@@ -290,11 +290,17 @@ var BABYLON;
                 this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         };
-        Sound.prototype.setVolume = function (newVolume) {
-            this._volume = newVolume;
+        Sound.prototype.setVolume = function (newVolume, time) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                this._soundGain.gain.value = newVolume;
+                if (time) {
+                    this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                }
+                else {
+                    this._soundGain.gain.value = newVolume;
+                }
             }
+            this._volume = newVolume;
         };
         Sound.prototype.setPlaybackRate = function (newPlaybackRate) {
             this._playbackRate = newPlaybackRate;
@@ -316,11 +322,12 @@ var BABYLON;
                     this.play();
                 }
             }
+            this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
             this._registerFunc = function (connectedMesh) { return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh); };
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
-            this.setPosition(connectedMesh.position);
+            this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
             if (this._isDirectional && this._isPlaying) {
                 this._updateDirection();
             }

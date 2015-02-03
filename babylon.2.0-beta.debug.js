@@ -1663,11 +1663,23 @@ var __extends = this.__extends || function (d, b) {
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
-        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result) {
+        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, fovMode) {
+            if (fovMode === void 0) { fovMode = BABYLON.Camera.FOVMODE_VERTICAL_FIXED; }
             var tan = 1.0 / (Math.tan(fov * 0.5));
-            result.m[0] = tan / aspect;
+            var v_fixed = (fovMode === BABYLON.Camera.FOVMODE_VERTICAL_FIXED);
+            if (v_fixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            result.m[5] = tan;
+            if (v_fixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
             result.m[10] = -zfar / (znear - zfar);
@@ -6117,6 +6129,7 @@ var BABYLON;
             this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
             this.subCameras = [];
             this.layerMask = 0xFFFFFFFF;
+            this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
@@ -6126,6 +6139,34 @@ var BABYLON;
                 scene.activeCamera = this;
             }
         }
+        Object.defineProperty(Camera, "PERSPECTIVE_CAMERA", {
+            get: function () {
+                return Camera._PERSPECTIVE_CAMERA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "ORTHOGRAPHIC_CAMERA", {
+            get: function () {
+                return Camera._ORTHOGRAPHIC_CAMERA;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "FOVMODE_VERTICAL_FIXED", {
+            get: function () {
+                return Camera._FOVMODE_VERTICAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
+            get: function () {
+                return Camera._FOVMODE_HORIZONTAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
         //Cache
         Camera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -6306,7 +6347,7 @@ var BABYLON;
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
-                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
                 return this._projectionMatrix;
             }
             var halfWidth = engine.getRenderWidth() / 2.0;
@@ -6323,8 +6364,10 @@ var BABYLON;
             }
         };
         // Statics
-        Camera.PERSPECTIVE_CAMERA = 0;
-        Camera.ORTHOGRAPHIC_CAMERA = 1;
+        Camera._PERSPECTIVE_CAMERA = 0;
+        Camera._ORTHOGRAPHIC_CAMERA = 1;
+        Camera._FOVMODE_VERTICAL_FIXED = 0;
+        Camera._FOVMODE_HORIZONTAL_FIXED = 1;
         return Camera;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;
@@ -7507,6 +7550,34 @@ var BABYLON;
             this._debugLayer = new BABYLON.DebugLayer(this);
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
         }
+        Object.defineProperty(Scene, "FOGMODE_NONE", {
+            get: function () {
+                return Scene._FOGMODE_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_EXP", {
+            get: function () {
+                return Scene._FOGMODE_EXP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_EXP2", {
+            get: function () {
+                return Scene._FOGMODE_EXP2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene, "FOGMODE_LINEAR", {
+            get: function () {
+                return Scene._FOGMODE_LINEAR;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties 
             get: function () {
@@ -8846,10 +8917,10 @@ var BABYLON;
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         };
         // Statics
-        Scene.FOGMODE_NONE = 0;
-        Scene.FOGMODE_EXP = 1;
-        Scene.FOGMODE_EXP2 = 2;
-        Scene.FOGMODE_LINEAR = 3;
+        Scene._FOGMODE_NONE = 0;
+        Scene._FOGMODE_EXP = 1;
+        Scene._FOGMODE_EXP2 = 2;
+        Scene._FOGMODE_LINEAR = 3;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
@@ -25721,11 +25792,17 @@ var BABYLON;
                 this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         };
-        Sound.prototype.setVolume = function (newVolume) {
-            this._volume = newVolume;
+        Sound.prototype.setVolume = function (newVolume, time) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                this._soundGain.gain.value = newVolume;
+                if (time) {
+                    this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                }
+                else {
+                    this._soundGain.gain.value = newVolume;
+                }
             }
+            this._volume = newVolume;
         };
         Sound.prototype.setPlaybackRate = function (newPlaybackRate) {
             this._playbackRate = newPlaybackRate;
@@ -25747,11 +25824,12 @@ var BABYLON;
                     this.play();
                 }
             }
+            this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
             this._registerFunc = function (connectedMesh) { return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh); };
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
-            this.setPosition(connectedMesh.position);
+            this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
             if (this._isDirectional && this._isPlaying) {
                 this._updateDirection();
             }

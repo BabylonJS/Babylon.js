@@ -1,8 +1,27 @@
 ﻿module BABYLON {
     export class Camera extends Node {
         // Statics
-        public static PERSPECTIVE_CAMERA = 0;
-        public static ORTHOGRAPHIC_CAMERA = 1;
+        private static _PERSPECTIVE_CAMERA = 0;
+        private static _ORTHOGRAPHIC_CAMERA = 1;
+
+        private static _FOVMODE_VERTICAL_FIXED = 0;
+        private static _FOVMODE_HORIZONTAL_FIXED = 1;
+
+        public static get PERSPECTIVE_CAMERA(): number {
+            return Camera._PERSPECTIVE_CAMERA;
+        }
+        
+        public static get ORTHOGRAPHIC_CAMERA(): number {
+            return Camera._ORTHOGRAPHIC_CAMERA;
+        }
+
+        public static get FOVMODE_VERTICAL_FIXED(): number {
+            return Camera._FOVMODE_VERTICAL_FIXED;
+        }
+
+        public static get FOVMODE_HORIZONTAL_FIXED(): number {
+            return Camera._FOVMODE_HORIZONTAL_FIXED;
+        }
 
         // Members
         public upVector = Vector3.Up();
@@ -19,12 +38,13 @@
         public viewport = new Viewport(0, 0, 1.0, 1.0);
         public subCameras = [];
         public layerMask: number = 0xFFFFFFFF;
+        public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
-        public _postProcessesTakenIndices = [];               
+        public _postProcessesTakenIndices = [];
 
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
@@ -291,7 +311,7 @@
                     this.minZ = 0.1;
                 }
 
-                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
                 return this._projectionMatrix;
             }
 
