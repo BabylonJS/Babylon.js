@@ -2078,8 +2078,8 @@
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
 
-            var v_fixed = !fovMode || (fovMode == BABYLON.Camera.FOVMODE_VERTICAL_FIXED);
-            var h_fixed = (fovMode == BABYLON.Camera.FOVMODE_HORIZONTAL_FIXED);
+            var v_fixed = !fovMode || (fovMode == Camera.FOVMODE_VERTICAL_FIXED);
+            var h_fixed = (fovMode == Camera.FOVMODE_HORIZONTAL_FIXED);
 
             if(v_fixed) { result.m[0] = tan / aspect; }
             else if(h_fixed) { result.m[0] = tan; }  
