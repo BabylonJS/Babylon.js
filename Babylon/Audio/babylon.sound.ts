@@ -343,12 +343,13 @@
                     this.play();
                 }
             }
+            this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
             this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
-            this.setPosition(connectedMesh.position);
+            this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
             if (this._isDirectional && this._isPlaying) {
                 this._updateDirection();
             }

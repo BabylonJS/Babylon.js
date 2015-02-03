@@ -171,4 +171,38 @@
             this._target.parent = this._parent;
         }
     }
+
+    export class PlaySoundAction extends Action {
+        private _sound: Sound;
+
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition) {
+            super(triggerOptions, condition);
+            this._sound = sound;
+        }
+
+        public _prepare(): void {
+        }
+
+        public execute(): void {
+            if (this._sound !== undefined)
+                this._sound.play();
+        }
+    }
+
+    export class StopSoundAction extends Action {
+        private _sound: Sound;
+
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition) {
+            super(triggerOptions, condition);
+            this._sound = sound;
+        }
+
+        public _prepare(): void {
+        }
+
+        public execute(): void {
+            if (this._sound !== undefined)
+                this._sound.stop();
+        }
+    }
 } 

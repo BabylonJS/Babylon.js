@@ -35,6 +35,7 @@
             // applyToMesh
             if (mesh) {
                 this.applyToMesh(mesh);
+                mesh.computeWorldMatrix(true);
             }
         }
 

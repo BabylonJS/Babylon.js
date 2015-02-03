@@ -25,8 +25,8 @@ var BABYLON;
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(1.0, 0.0), 1.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 1.0), 1.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess();
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -46,6 +46,8 @@ var BABYLON;
             }, true));
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
+            if (cameras)
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
         // Public Methods
         SSAORenderingPipeline.prototype.getBlurHPostProcess = function () {
@@ -118,17 +120,17 @@ var BABYLON;
                 -0.0271
             ];
             var samplesFactor = 1.0 / 16.0;
-            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._ssaoPostProcess.onApply = function (effect) {
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
+                    effect.setFloat("randTextureTiles", 4.0 / ratio);
                     _this._firstUpdate = false;
                 }
                 effect.setTexture("textureSampler", _this._depthTexture);
                 effect.setTexture("randomSampler", _this._randomTexture);
             };
-            return this._ssaoPostProcess;
         };
         SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function () {
             var _this = this;
@@ -136,7 +138,6 @@ var BABYLON;
             this._ssaoCombinePostProcess.onApply = function (effect) {
                 effect.setTextureFromPostProcess("originalColor", _this._originalColorPostProcess);
             };
-            return this._ssaoCombinePostProcess;
         };
         SSAORenderingPipeline.prototype._createRandomTexture = function () {
             var size = 512;

@@ -39,5 +39,4 @@ void main(void) {
 
     vec4 realColor = texture2D(textureSampler, vUV);
     gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));
-
 }

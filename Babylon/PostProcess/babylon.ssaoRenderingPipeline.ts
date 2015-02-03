@@ -30,8 +30,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(1.0, 0.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 1.0), 1.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 2.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 2.0, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess();
 
             // Set up pipeline
@@ -40,9 +40,11 @@
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
-            
+
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
+            if (cameras)
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
 
         // Public Methods
@@ -68,7 +70,7 @@
         }
 
         // Private Methods
-        private _createSSAOPostProcess(ratio: number): PostProcess {
+        private _createSSAOPostProcess(ratio: number): void {
             var sampleSphere = [
                 0.5381, 0.1856, -0.4319,
                 0.1379, 0.2486, 0.4430,
@@ -89,7 +91,8 @@
             ];
             var samplesFactor = 1.0 / 16.0;
 
-            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor"], ["randomSampler"],
+            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles"],
+                                                    ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false);
 
@@ -97,17 +100,16 @@
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
+                    effect.setFloat("randTextureTiles", 4.0 / ratio);
                     this._firstUpdate = false;
                 }
 
                 effect.setTexture("textureSampler", this._depthTexture);
                 effect.setTexture("randomSampler", this._randomTexture);
             };
-
-            return this._ssaoPostProcess;
         }
 
-        private _createSSAOCombinePostProcess(): PostProcess {
+        private _createSSAOCombinePostProcess(): void {
             this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"],
                                                            1.0, null, Texture.BILINEAR_SAMPLINGMODE,
                                                            this._scene.getEngine(), false);
@@ -115,8 +117,6 @@
             this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
             };
-
-            return this._ssaoCombinePostProcess;
         }
 
         private _createRandomTexture(): void {

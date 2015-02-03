@@ -889,6 +889,8 @@
                     value = target = scene.getNodeByName(value);
                 else if (name === "parent")
                     value = scene.getNodeByName(value);
+                else if (name === "sound")
+                    value = scene.getSoundByName(value);
                 else if (name !== "propertyPath") {
                     if (parsedAction.type === 2 && name === "operator")
                         value = BABYLON.ValueCondition[value];
@@ -1431,6 +1433,15 @@
                 }
             }
 
+            // Sounds
+            if (parsedData.sounds && Engine.audioEngine.canUseWebAudio) {
+                for (index = 0; index < parsedData.sounds.length; index++) {
+                    var parsedSound = parsedData.sounds[index];
+                    parseSound(parsedSound, scene, rootUrl);
+                }
+            }
+
+            // Connect parents & children and parse actions
             for (index = 0; index < scene.meshes.length; index++) {
                 var mesh = scene.meshes[index];
                 if (mesh._waitingParentId) {
@@ -1465,14 +1476,6 @@
                     var parsedShadowGenerator = parsedData.shadowGenerators[index];
 
                     parseShadowGenerator(parsedShadowGenerator, scene);
-                }
-            }
-
-            // Sounds
-            if (parsedData.sounds && Engine.audioEngine.canUseWebAudio) {
-                for (index = 0; index < parsedData.sounds.length; index++) {
-                    var parsedSound = parsedData.sounds[index];
-                    parseSound(parsedSound, scene, rootUrl);
                 }
             }
 
