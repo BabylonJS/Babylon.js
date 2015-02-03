@@ -2089,9 +2089,6 @@
             if(v_fixed) { result.m[5] = tan; }
             else if(h_fixed) { result.m[5] = tan * aspect; }
 
-            result.m[0] = tan / aspect;
-            result.m[1] = result.m[2] = result.m[3] = 0.0;
-            result.m[5] = tan;
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
             result.m[10] = -zfar / (znear - zfar);
