@@ -419,6 +419,8 @@
 
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
+            boundingBoxesCheckbox.style.pointerEvents = "auto";
+            boundingBoxesCheckbox.style.setProperty ("width", "25px", "important");
             boundingBoxesCheckbox.checked = initialState;
 
             boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
