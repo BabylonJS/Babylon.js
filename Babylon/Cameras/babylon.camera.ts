@@ -4,6 +4,9 @@
         public static PERSPECTIVE_CAMERA = 0;
         public static ORTHOGRAPHIC_CAMERA = 1;
 
+        private static FOVMODE_VERTICAL_FIXED = 0;
+        private static FOVMODE_HORIZONTAL_FIXED = 1;
+
         // Members
         public upVector = Vector3.Up();
         public orthoLeft = null;
@@ -19,6 +22,7 @@
         public viewport = new Viewport(0, 0, 1.0, 1.0);
         public subCameras = [];
         public layerMask: number = 0xFFFFFFFF;
+        public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
@@ -291,7 +295,7 @@
                     this.minZ = 0.1;
                 }
 
-                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
                 return this._projectionMatrix;
             }
 
