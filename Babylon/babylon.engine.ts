@@ -365,6 +365,9 @@
         private static _DELAYLOADSTATE_LOADING = 2;
         private static _DELAYLOADSTATE_NOTLOADED = 4;
 
+        private static _FOVMODE_VERTICAL_FIXED = 0;
+        private static _FOVMODE_HORIZONTAL_FIXED = 1;
+
         private static _TEXTUREFORMAT_ALPHA = 0;
         private static _TEXTUREFORMAT_LUMINANCE = 1;
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
@@ -445,6 +448,7 @@
         public cullBackFaces = true;
         public renderEvenInBackground = true;
         public scenes = new Array<Scene>();
+        public fovMode = Engine.FOVMODE_VERTICAL_FIXED;
 
         // Private Members
         public _gl: WebGLRenderingContext;

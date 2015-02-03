@@ -291,7 +291,7 @@
                     this.minZ = 0.1;
                 }
 
-                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix);
+                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, engine.fovMode);
                 return this._projectionMatrix;
             }
 

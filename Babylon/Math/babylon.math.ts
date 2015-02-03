@@ -2075,8 +2075,19 @@
             return matrix;
         }
 
-        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix): void {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
+
+            var v_fixed = !fovMode || (fovMode == BABYLON.Engine.FOVMODE_VERTICAL_FIXED);
+            var h_fixed = (fovMode == BABYLON.Engine.FOVMODE_HORIZONTAL_FIXED);
+
+            if(v_fixed) { result.m[0] = tan / aspect; }
+            else if(h_fixed) { result.m[0] = tan; }  
+
+            result.m[1] = result.m[2] = result.m[3] = 0.0;
+
+            if(v_fixed) { result.m[5] = tan; }
+            else if(h_fixed) { result.m[5] = tan * aspect; }
 
             result.m[0] = tan / aspect;
             result.m[1] = result.m[2] = result.m[3] = 0.0;
