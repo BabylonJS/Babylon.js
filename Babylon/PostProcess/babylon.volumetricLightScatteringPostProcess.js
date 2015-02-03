@@ -87,6 +87,7 @@ var BABYLON;
             this._godRaysRTT.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._godRaysRTT.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._godRaysRTT.renderList = null;
+            this._godRaysRTT.renderParticles = false;
             scene.customRenderTargets.push(this._godRaysRTT);
             // Custom render function for submeshes
             var renderSubMesh = function (subMesh) {
@@ -121,8 +122,8 @@ var BABYLON;
                 }
             };
             // Render target texture callbacks
-            var savedSceneClearColor = null;
-            var sceneClearColor = new BABYLON.Color4(0.0, 0.0, 0.0, 1.0);
+            var savedSceneClearColor;
+            var sceneClearColor = new BABYLON.Color3(0.0, 0.0, 0.0);
             this._godRaysRTT.onBeforeRender = function () {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;

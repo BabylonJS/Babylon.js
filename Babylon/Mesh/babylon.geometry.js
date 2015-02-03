@@ -26,6 +26,7 @@ var BABYLON;
             // applyToMesh
             if (mesh) {
                 this.applyToMesh(mesh);
+                mesh.computeWorldMatrix(true);
             }
         }
         Geometry.prototype.getScene = function () {

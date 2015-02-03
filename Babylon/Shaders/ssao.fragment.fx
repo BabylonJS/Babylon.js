@@ -7,6 +7,7 @@ precision highp float;
 uniform sampler2D textureSampler;
 uniform sampler2D randomSampler;
 
+uniform float randTextureTiles;
 uniform float samplesFactor;
 uniform vec3 sampleSphere[16];
 
@@ -16,8 +17,8 @@ const vec2 offset1 = vec2(0.0, 0.001);
 const vec2 offset2 = vec2(0.001, 0.0);
 
 vec3 normalFromDepth(const float depth, const vec2 coords) {
-    float depth1 = texture2D(textureSampler, coords + offset1).r;
-    float depth2 = texture2D(textureSampler, coords + offset2).r;
+	float depth1 = texture2D(textureSampler, coords + offset1).r;
+	float depth2 = texture2D(textureSampler, coords + offset2).r;
 
     vec3 p1 = vec3(offset1, depth1 - depth);
     vec3 p2 = vec3(offset2, depth2 - depth);
@@ -33,10 +34,10 @@ void main(void)
 	const float totalStrength = 1.0;
 	const float base = 0.2;
 	const float area = 0.0075;
-	const float fallOff = 0.00001;
-	const float radius = 0.002;
+	const float fallOff = 0.000001;
+	const float radius = 0.0002;
 
-	vec3 random = texture2D(randomSampler, vUV * 4.0).rgb;
+	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
 	float depth = texture2D(textureSampler, vUV).r;
 	vec3 position = vec3(vUV, depth);
 	vec3 normal = normalFromDepth(depth, vUV);
@@ -65,6 +66,5 @@ void main(void)
 	gl_FragColor.r = result;
 	gl_FragColor.g = result;
 	gl_FragColor.b = result;
-	gl_FragColor.a = 1.0;
-
+	gl_FragColor.a = result;
 }

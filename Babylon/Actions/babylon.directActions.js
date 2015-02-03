@@ -172,5 +172,35 @@ var BABYLON;
         return SetParentAction;
     })(BABYLON.Action);
     BABYLON.SetParentAction = SetParentAction;
+    var PlaySoundAction = (function (_super) {
+        __extends(PlaySoundAction, _super);
+        function PlaySoundAction(triggerOptions, sound, condition) {
+            _super.call(this, triggerOptions, condition);
+            this._sound = sound;
+        }
+        PlaySoundAction.prototype._prepare = function () {
+        };
+        PlaySoundAction.prototype.execute = function () {
+            if (this._sound !== undefined)
+                this._sound.play();
+        };
+        return PlaySoundAction;
+    })(BABYLON.Action);
+    BABYLON.PlaySoundAction = PlaySoundAction;
+    var StopSoundAction = (function (_super) {
+        __extends(StopSoundAction, _super);
+        function StopSoundAction(triggerOptions, sound, condition) {
+            _super.call(this, triggerOptions, condition);
+            this._sound = sound;
+        }
+        StopSoundAction.prototype._prepare = function () {
+        };
+        StopSoundAction.prototype.execute = function () {
+            if (this._sound !== undefined)
+                this._sound.stop();
+        };
+        return StopSoundAction;
+    })(BABYLON.Action);
+    BABYLON.StopSoundAction = StopSoundAction;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.directActions.js.map

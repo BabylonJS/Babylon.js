@@ -107,6 +107,7 @@
             this._godRaysRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._godRaysRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._godRaysRTT.renderList = null;
+            this._godRaysRTT.renderParticles = false;
             scene.customRenderTargets.push(this._godRaysRTT);
 
             // Custom render function for submeshes
@@ -153,8 +154,8 @@
             };
 
             // Render target texture callbacks
-            var savedSceneClearColor: Color4 = null;
-            var sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
+            var savedSceneClearColor: Color3;
+            var sceneClearColor = new Color3(0.0, 0.0, 0.0);
 
             this._godRaysRTT.onBeforeRender = (): void => {
                 savedSceneClearColor = scene.clearColor;
