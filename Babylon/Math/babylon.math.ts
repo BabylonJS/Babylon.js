@@ -1428,7 +1428,15 @@
             return this;
         }
 
-        public fromRotationMatrix(matrix: Matrix): Quaternion {
+        // Statics
+
+        public static FromRotationMatrix(matrix: Matrix) : Quaternion {
+            var result = new Quaternion();
+            Quaternion.FromRotationMatrixToRef(matrix, result);
+            return result;
+        }
+
+        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion) : void {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1437,52 +1445,40 @@
             var s;
 
             if (trace > 0) {
+
                 s = 0.5 / Math.sqrt(trace + 1.0);
 
-                this.w = 0.25 / s;
-                this.x = (m32 - m23) * s;
-                this.y = (m13 - m31) * s;
-                this.z = (m21 - m12) * s;
-
-                return this;
-            }
-
-            if (m11 > m22 && m11 > m33) {
+                result.w = 0.25 / s;
+                result.x = (m32 - m23) * s;
+                result.y = (m13 - m31) * s;
+                result.z = (m21 - m12) * s;
+            } else if (m11 > m22 && m11 > m33) {
 
                 s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
-                this.w = (m32 - m23) / s;
-                this.x = 0.25 * s;
-                this.y = (m12 + m21) / s;
-                this.z = (m13 + m31) / s;
-
-                return this;
-            }
-
-            if (m22 > m33) {
+                result.w = (m32 - m23) / s;
+                result.x = 0.25 * s;
+                result.y = (m12 + m21) / s;
+                result.z = (m13 + m31) / s;
+            } else if (m22 > m33) {
 
                 s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
-                this.w = (m13 - m31) / s;
-                this.x = (m12 + m21) / s;
-                this.y = 0.25 * s;
-                this.z = (m23 + m32) / s;
+                result.w = (m13 - m31) / s;
+                result.x = (m12 + m21) / s;
+                result.y = 0.25 * s;
+                result.z = (m23 + m32) / s;
+            } else {
 
-                return this;
+                s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
+                result.w = (m21 - m12) / s;
+                result.x = (m13 + m31) / s;
+                result.y = (m23 + m32) / s;
+                result.z = 0.25 * s;
             }
-
-            s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
-
-            this.w = (m21 - m12) / s;
-            this.x = (m13 + m31) / s;
-            this.y = (m23 + m32) / s;
-            this.z = 0.25 * s;
-
-            return this;
         }
 
-        // Statics
         public static Inverse(q: Quaternion): Quaternion {
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         }
@@ -1814,7 +1810,7 @@
                 this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
                 0, 0, 0, 1);
 
-            rotation.fromRotationMatrix(rotationMatrix);
+            Quaternion.FromRotationMatrixToRef(rotationMatrix, rotation);
 
             return true;
         }
