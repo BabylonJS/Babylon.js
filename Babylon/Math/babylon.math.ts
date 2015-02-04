@@ -8,7 +8,7 @@
         }
 
         // Operators
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -16,6 +16,8 @@
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
+
+            return this;
         }
 
         public toColor4(alpha = 1): Color4 {
@@ -38,10 +40,12 @@
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
-        public multiplyToRef(otherColor: Color3, result: Color3): void {
+        public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
+
+            return this;
         }
 
         public equals(otherColor: Color3): boolean {
@@ -52,46 +56,56 @@
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }
 
-        public scaleToRef(scale: number, result: Color3): void {
+        public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
+
+            return this;
         }
 
         public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
-        public addToRef(otherColor: Color3, result: Color3): void {
+        public addToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
+
+            return this;
         }
 
         public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
-        public subtractToRef(otherColor: Color3, result: Color3): void {
+        public subtractToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
+
+            return this;
         }
 
         public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
         }
 
-        public copyFrom(source: Color3): void {
+        public copyFrom(source: Color3): Color3 {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
+
+            return this;
         }
 
-        public copyFromFloats(r: number, g: number, b: number): void {
+        public copyFromFloats(r: number, g: number, b: number): Color3 {
             this.r = r;
             this.g = g;
             this.b = b;
+
+            return this;
         }
 
         // Statics
@@ -127,11 +141,13 @@
         }
 
         // Operators
-        public addInPlace(right) {
+        public addInPlace(right): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
             this.a += right.a;
+
+            return this;
         }
 
         public asArray(): number[] {
@@ -142,7 +158,7 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Color4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -150,6 +166,8 @@
             array[index + 1] = this.g;
             array[index + 2] = this.b;
             array[index + 3] = this.a;
+
+            return this;
         }
 
         public add(right: Color4): Color4 {
@@ -160,22 +178,26 @@
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
-        public subtractToRef(right: Color4, result: Color4): void {
+        public subtractToRef(right: Color4, result: Color4): Color4 {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
             result.b = this.b - right.b;
             result.a = this.a - right.a;
+
+            return this;
         }
 
         public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         }
 
-        public scaleToRef(scale: number, result: Color4): void {
+        public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+
+            return this;
         }
 
         public toString(): string {
@@ -186,11 +208,13 @@
             return new Color4(this.r, this.g, this.b, this.a);
         }
 
-        public copyFrom(source: Color4): void {
+        public copyFrom(source: Color4): Color4 {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
             this.a = source.a;
+
+            return this;
         }
 
         // Statics
@@ -227,13 +251,11 @@
         }
 
         // Operators
-        public toArray(array: number[], index?: number): void {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: number[], index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
+
+            return this;
         }
 
         public asArray(): number[] {
@@ -244,14 +266,18 @@
             return result;
         }
 
-        public copyFrom(source: Vector2): void {
+        public copyFrom(source: Vector2): Vector2 {
             this.x = source.x;
             this.y = source.y;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number): void {
+        public copyFromFloats(x: number, y: number): Vector2 {
             this.x = x;
             this.y = y;
+
+            return this;
         }
 
         public add(otherVector: Vector2): Vector2 {
@@ -266,23 +292,29 @@
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
 
-        public subtractInPlace(otherVector: Vector2): void {
+        public subtractInPlace(otherVector: Vector2): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
+
+            return this;
         }
 
-        public multiplyInPlace(otherVector: Vector2): void {
+        public multiplyInPlace(otherVector: Vector2): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
+
+            return this;
         }
 
         public multiply(otherVector: Vector2): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
 
-        public multiplyToRef(otherVector: Vector2, result: Vector2): void {
+        public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number): Vector2 {
@@ -293,9 +325,11 @@
             return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
         }
 
-        public divideToRef(otherVector: Vector2, result: Vector2): void {
+        public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
+
+            return this;
         }
 
         public negate(): Vector2 {
@@ -448,7 +482,6 @@
 
             return (x * x) + (y * y);
         }
-
     }
 
     export class Vector3 {
@@ -469,56 +502,82 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: number[], index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
+
+            return this;
         }
 
-        public addInPlace(otherVector: Vector3): void {
+        public toQuaternion(): Quaternion {
+            var result = new Quaternion(0, 0, 0, 1);
+
+            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
+            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
+            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
+            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
+            var cosy = Math.cos(this.y * 0.5);
+            var siny = Math.sin(this.y * 0.5);
+
+            result.x = coszMinusx * siny;
+            result.y = -sinzMinusx * siny;
+            result.z = sinxPlusz * cosy;
+            result.w = cosxPlusz * cosy;
+
+            return result;
+        }
+
+        public addInPlace(otherVector: Vector3): Vector3 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
+
+            return this;
         }
 
         public add(otherVector: Vector3): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
-        public addToRef(otherVector: Vector3, result: Vector3): void {
+        public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
+
+            return this;
         }
 
-        public subtractInPlace(otherVector: Vector3): void {
+        public subtractInPlace(otherVector: Vector3): Vector3 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
+
+            return this;
         }
 
         public subtract(otherVector: Vector3): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
         }
 
-        public subtractToRef(otherVector: Vector3, result: Vector3): void {
+        public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
+
+            return this;
         }
 
         public subtractFromFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x - x, this.y - y, this.z - z);
         }
 
-        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
+
+            return this;
         }
 
         public negate(): Vector3 {
@@ -556,20 +615,24 @@
             return this.x === x && this.y === y && this.z === z;
         }
 
-        public multiplyInPlace(otherVector: Vector3): void {
+        public multiplyInPlace(otherVector: Vector3): Vector3 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
+
+            return this;
         }
 
         public multiply(otherVector: Vector3): Vector3 {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
-        public multiplyToRef(otherVector: Vector3, result: Vector3): void {
+        public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number, z: number): Vector3 {
@@ -580,22 +643,28 @@
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
-        public divideToRef(otherVector: Vector3, result: Vector3): void {
+        public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
+
+            return this;
         }
 
-        public MinimizeInPlace(other: Vector3): void {
+        public MinimizeInPlace(other: Vector3): Vector3 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
+
+            return this;
         }
 
-        public MaximizeInPlace(other: Vector3): void {
+        public MaximizeInPlace(other: Vector3): Vector3 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
+
+            return this;
         }
 
         // Properties
@@ -627,16 +696,20 @@
             return new Vector3(this.x, this.y, this.z);
         }
 
-        public copyFrom(source: Vector3): void {
+        public copyFrom(source: Vector3): Vector3 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number): void {
+        public copyFromFloats(x: number, y: number, z: number): Vector3 {
             this.x = x;
             this.y = y;
             this.z = z;
+
+            return this;
         }
 
         // Statics
@@ -907,7 +980,7 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -916,53 +989,65 @@
             array[index + 1] = this.y;
             array[index + 2] = this.z;
             array[index + 3] = this.w;
+
+            return this;
         }
 
-        public addInPlace(otherVector: Vector4): void {
+        public addInPlace(otherVector: Vector4): Vector4 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
             this.w += otherVector.w;
+
+            return this;
         }
 
         public add(otherVector: Vector4): Vector4 {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
         }
 
-        public addToRef(otherVector: Vector4, result: Vector4): void {
+        public addToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
             result.w = this.w + otherVector.w;
+
+            return this;
         }
 
-        public subtractInPlace(otherVector: Vector4): void {
+        public subtractInPlace(otherVector: Vector4): Vector4 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
             this.w -= otherVector.w;
+
+            return this;
         }
 
         public subtract(otherVector: Vector4): Vector4 {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
         }
 
-        public subtractToRef(otherVector: Vector4, result: Vector4): void {
+        public subtractToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
             result.w = this.w - otherVector.w;
+
+            return this;
         }
 
         public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
         }
 
-        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4 {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
             result.w = this.w - w;
+
+            return this;
         }
 
         public negate(): Vector4 {
@@ -1003,22 +1088,26 @@
             return this.x === x && this.y === y && this.z === z && this.w === w;
         }
 
-        public multiplyInPlace(otherVector: Vector4): void {
+        public multiplyInPlace(otherVector: Vector4): Vector4 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
             this.w *= otherVector.w;
+
+            return this;
         }
 
         public multiply(otherVector: Vector4): Vector4 {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
         }
 
-        public multiplyToRef(otherVector: Vector4, result: Vector4): void {
+        public multiplyToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
             result.w = this.w * otherVector.w;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
@@ -1029,25 +1118,31 @@
             return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
         }
 
-        public divideToRef(otherVector: Vector4, result: Vector4): void {
+        public divideToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
+
+            return this;
         }
 
-        public MinimizeInPlace(other: Vector4): void {
+        public MinimizeInPlace(other: Vector4): Vector4 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
             if (other.w < this.w) this.w = other.w;
+
+            return this;
         }
 
-        public MaximizeInPlace(other: Vector4): void {
+        public MaximizeInPlace(other: Vector4): Vector4 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
             if (other.w > this.w) this.w = other.w;
+
+            return this;
         }
 
         // Properties
@@ -1080,18 +1175,22 @@
             return new Vector4(this.x, this.y, this.z, this.w);
         }
 
-        public copyFrom(source: Vector4): void {
+        public copyFrom(source: Vector4): Vector4 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
             this.w = source.w;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number, w: number): void {
+        public copyFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+
+            return this;
         }
 
         // Statics
@@ -1192,18 +1291,22 @@
             return new Quaternion(this.x, this.y, this.z, this.w);
         }
 
-        public copyFrom(other: Quaternion): void {
+        public copyFrom(other: Quaternion): Quaternion {
             this.x = other.x;
             this.y = other.y;
             this.z = other.z;
             this.w = other.w;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number, w: number): void {
+        public copyFromFloats(x: number, y: number, z: number, w: number): Quaternion {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+
+            return this;
         }
 
         public add(other: Quaternion): Quaternion {
@@ -1226,23 +1329,27 @@
             return result;
         }
 
-        public multiplyToRef(q1: Quaternion, result: Quaternion): void {
+        public multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion {
             result.x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
             result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
             result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+
+            return this;
         }
 
         public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         }
 
-        public normalize(): void {
+        public normalize(): Quaternion {
             var length = 1.0 / this.length();
             this.x *= length;
             this.y *= length;
             this.z *= length;
             this.w *= length;
+
+            return this;
         }
 
         public toEulerAngles(): Vector3 {
@@ -1253,7 +1360,7 @@
             return result;
         }
 
-        public toEulerAnglesToRef(result: Vector3): void {
+        public toEulerAnglesToRef(result: Vector3): Quaternion {
             //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
@@ -1286,9 +1393,11 @@
                     result.z = 0.0;
                 }
             }
+
+            return this;
         }
 
-        public toRotationMatrix(result: Matrix): void {
+        public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
             var zz = this.z * this.z;
@@ -1315,9 +1424,11 @@
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
+
+            return this;
         }
 
-        public fromRotationMatrix(matrix: Matrix): void {
+        public fromRotationMatrix(matrix: Matrix): Quaternion {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1333,7 +1444,7 @@
                 this.y = (m13 - m31) * s;
                 this.z = (m21 - m12) * s;
 
-                return;
+                return this;
             }
 
             if (m11 > m22 && m11 > m33) {
@@ -1345,7 +1456,7 @@
                 this.y = (m12 + m21) / s;
                 this.z = (m13 + m31) / s;
 
-                return;
+                return this;
             }
 
             if (m22 > m33) {
@@ -1357,7 +1468,7 @@
                 this.y = 0.25 * s;
                 this.z = (m23 + m32) / s;
 
-                return;
+                return this;
 
             }
 
@@ -1367,6 +1478,8 @@
             this.x = (m13 + m31) / s;
             this.y = (m23 + m32) / s;
             this.z = 0.25 * s;
+
+            return this;
         }
 
         // Statics
@@ -1495,11 +1608,13 @@
             return this.toArray();
         }
 
-        public invert(): void {
+        public invert(): Matrix {
             this.invertToRef(this);
+
+            return this;
         }
 
-        public invertToRef(other: Matrix) {
+        public invertToRef(other: Matrix): Matrix {
             var l1 = this.m[0];
             var l2 = this.m[1];
             var l3 = this.m[2];
@@ -1556,12 +1671,16 @@
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
+
+            return this;
         }
 
-        public setTranslation(vector3: Vector3): void {
+        public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
+
+            return this;
         }
 
         public multiply(other: Matrix): Matrix {
@@ -1572,23 +1691,29 @@
             return result;
         }
 
-        public copyFrom(other: Matrix): void {
+        public copyFrom(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
+
+            return this;
         }
 
-        public copyToArray(array: Float32Array, offset: number = 0): void {
+        public copyToArray(array: Float32Array, offset: number = 0): Matrix {
             for (var index = 0; index < 16; index++) {
                 array[offset + index] = this.m[index];
             }
+
+            return this;
         }
 
-        public multiplyToRef(other: Matrix, result: Matrix): void {
+        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
+
+            return this;
         }
 
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): void {
+        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
 
             var tm0 = this.m[0];
             var tm1 = this.m[1];
@@ -1643,6 +1768,8 @@
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+
+            return this;
         }
 
         public equals(value: Matrix): boolean {
@@ -1660,7 +1787,7 @@
                 this.m[12], this.m[13], this.m[14], this.m[15]);
         }
 
-        public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3) {
+        public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
             translation.x = this.m[12];
             translation.y = this.m[13];
             translation.z = this.m[14];
@@ -1673,7 +1800,7 @@
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
 
-            if (scale.x == 0 || scale.y == 0 || scale.z == 0) {
+            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
                 rotation.x = 0;
                 rotation.y = 0;
                 rotation.z = 0;
@@ -1681,7 +1808,7 @@
                 return false;
             }
 
-            var rotationMatrix = BABYLON.Matrix.FromValues(
+            var rotationMatrix = Matrix.FromValues(
                 this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
                 this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
                 this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
@@ -2197,7 +2324,7 @@
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
         }
 
-        public normalize(): void {
+        public normalize(): Plane {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;
 
@@ -2210,6 +2337,8 @@
             this.normal.z *= magnitude;
 
             this.d *= magnitude;
+
+            return this;
         }
 
         public transform(transformation: Matrix): Plane {
@@ -2232,7 +2361,7 @@
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
-        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): void {
+        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var x1 = point2.x - point1.x;
             var y1 = point2.y - point1.y;
             var z1 = point2.z - point1.z;
@@ -2256,6 +2385,8 @@
             this.normal.y = xz * invPyth;
             this.normal.z = xy * invPyth;
             this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
+
+            return this;
         }
 
         public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
@@ -2302,7 +2433,7 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(engine) {
+        public toGlobal(engine): Viewport {
             var width = engine.getRenderWidth();
             var height = engine.getRenderHeight();
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
@@ -2624,20 +2755,20 @@
             if (this._radians < 0) this._radians += (2 * Math.PI);
         }
 
-        degrees = () => this._radians * 180 / Math.PI;
-        radians = () => this._radians;
+        public degrees = () => this._radians * 180 / Math.PI;
+        public radians = () => this._radians;
 
-        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
+        public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
             var delta = b.subtract(a);
             var theta = Math.atan2(delta.y, delta.x);
             return new Angle(theta);
         }
 
-        static FromRadians(radians: number): Angle {
+        public static FromRadians(radians: number): Angle {
             return new Angle(radians);
         }
 
-        static FromDegrees(degrees: number): Angle {
+        public static FromDegrees(degrees: number): Angle {
             return new Angle(degrees * Math.PI / 180);
         }
     }
@@ -2689,21 +2820,24 @@
         constructor(private path: Path2) {
         }
 
-        getPoint(): Vector3 {
+        public getPoint(): Vector3 {
             var point = this.path.getPointAtLengthPosition(this.value);
             return new Vector3(point.x, 0, point.y);
         }
 
-        moveAhead(step: number = 0.002) {
+        public moveAhead(step: number = 0.002): PathCursor  {
             this.move(step);
 
+            return this;
         }
 
-        moveBack(step: number = 0.002) {
+        public moveBack(step: number = 0.002): PathCursor {
             this.move(-step);
+
+            return this;
         }
 
-        move(step: number) {
+        public move(step: number): PathCursor {
 
             if (Math.abs(step) > 1) {
                 throw "step size should be less than 1.";
@@ -2712,29 +2846,39 @@
             this.value += step;
             this.ensureLimits();
             this.raiseOnChange();
+
+            return this;
         }
 
-        private ensureLimits() {
+        private ensureLimits(): PathCursor {
             while (this.value > 1) {
                 this.value -= 1;
             }
             while (this.value < 0) {
                 this.value += 1;
             }
+
+            return this;
         }
 
         // used by animation engine
-        private markAsDirty(propertyName: string) {
+        private markAsDirty(propertyName: string): PathCursor {
             this.ensureLimits();
             this.raiseOnChange();
+
+            return this;
         }
 
-        private raiseOnChange() {
+        private raiseOnChange(): PathCursor {
             this._onchange.forEach(f => f(this));
+
+            return this;
         }
 
-        onchange(f: (cursor: PathCursor) => void) {
+        public onchange(f: (cursor: PathCursor) => void): PathCursor {
             this._onchange.push(f);
+
+            return this;
         }
     }
 
@@ -2747,7 +2891,7 @@
             this._points.push(new Vector2(x, y));
         }
 
-        addLineTo(x: number, y: number): Path2 {
+        public addLineTo(x: number, y: number): Path2 {
             if (closed) {
                 Tools.Error("cannot add lines to closed paths");
                 return this;
@@ -2759,7 +2903,7 @@
             return this;
         }
 
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+        public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (closed) {
                 Tools.Error("cannot add arcs to closed paths");
                 return this;
@@ -2783,12 +2927,12 @@
             return this;
         }
 
-        close(): Path2 {
+        public close(): Path2 {
             this.closed = true;
             return this;
         }
 
-        length(): number {
+        public length(): number {
             var result = this._length;
 
             if (!this.closed) {
@@ -2800,14 +2944,14 @@
             return result;
         }
 
-        getPoints(): Vector2[] {
+        public getPoints(): Vector2[] {
             return this._points;
         }
 
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
+        public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
                 Tools.Error("normalized length position should be between 0 and 1.");
-                return;
+                return Vector2.Zero();
             }
 
             var lengthPosition = normalizedLengthPosition * this.length();
@@ -2834,9 +2978,10 @@
             }
 
             Tools.Error("internal error");
+            return Vector2.Zero();
         }
 
-        static StartingAt(x: number, y: number): Path2 {
+        public static StartingAt(x: number, y: number): Path2 {
             return new Path2(x, y);
         }
     }
