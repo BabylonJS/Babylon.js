@@ -25,6 +25,7 @@ var __extends = this.__extends || function (d, b) {
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
+            return this;
         };
         Color3.prototype.toColor4 = function (alpha) {
             if (alpha === void 0) { alpha = 1; }
@@ -45,6 +46,7 @@ var __extends = this.__extends || function (d, b) {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
+            return this;
         };
         Color3.prototype.equals = function (otherColor) {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
@@ -56,6 +58,7 @@ var __extends = this.__extends || function (d, b) {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
+            return this;
         };
         Color3.prototype.add = function (otherColor) {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
@@ -64,6 +67,7 @@ var __extends = this.__extends || function (d, b) {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
+            return this;
         };
         Color3.prototype.subtract = function (otherColor) {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
@@ -72,6 +76,7 @@ var __extends = this.__extends || function (d, b) {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
+            return this;
         };
         Color3.prototype.clone = function () {
             return new Color3(this.r, this.g, this.b);
@@ -80,11 +85,13 @@ var __extends = this.__extends || function (d, b) {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
+            return this;
         };
         Color3.prototype.copyFromFloats = function (r, g, b) {
             this.r = r;
             this.g = g;
             this.b = b;
+            return this;
         };
         // Statics
         Color3.FromArray = function (array, offset) {
@@ -143,6 +150,7 @@ var __extends = this.__extends || function (d, b) {
             this.g += right.g;
             this.b += right.b;
             this.a += right.a;
+            return this;
         };
         Color4.prototype.asArray = function () {
             var result = [];
@@ -157,6 +165,7 @@ var __extends = this.__extends || function (d, b) {
             array[index + 1] = this.g;
             array[index + 2] = this.b;
             array[index + 3] = this.a;
+            return this;
         };
         Color4.prototype.add = function (right) {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
@@ -169,6 +178,7 @@ var __extends = this.__extends || function (d, b) {
             result.g = this.g - right.g;
             result.b = this.b - right.b;
             result.a = this.a - right.a;
+            return this;
         };
         Color4.prototype.scale = function (scale) {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
@@ -178,6 +188,7 @@ var __extends = this.__extends || function (d, b) {
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+            return this;
         };
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
@@ -190,6 +201,7 @@ var __extends = this.__extends || function (d, b) {
             this.g = source.g;
             this.b = source.b;
             this.a = source.a;
+            return this;
         };
         // Statics
         Color4.Lerp = function (left, right, amount) {
@@ -223,11 +235,10 @@ var __extends = this.__extends || function (d, b) {
         };
         // Operators
         Vector2.prototype.toArray = function (array, index) {
-            if (index === undefined) {
-                index = 0;
-            }
+            if (index === void 0) { index = 0; }
             array[index] = this.x;
             array[index + 1] = this.y;
+            return this;
         };
         Vector2.prototype.asArray = function () {
             var result = [];
@@ -237,10 +248,12 @@ var __extends = this.__extends || function (d, b) {
         Vector2.prototype.copyFrom = function (source) {
             this.x = source.x;
             this.y = source.y;
+            return this;
         };
         Vector2.prototype.copyFromFloats = function (x, y) {
             this.x = x;
             this.y = y;
+            return this;
         };
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
@@ -254,10 +267,12 @@ var __extends = this.__extends || function (d, b) {
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
+            return this;
         };
         Vector2.prototype.multiplyInPlace = function (otherVector) {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
+            return this;
         };
         Vector2.prototype.multiply = function (otherVector) {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
@@ -265,6 +280,7 @@ var __extends = this.__extends || function (d, b) {
         Vector2.prototype.multiplyToRef = function (otherVector, result) {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
+            return this;
         };
         Vector2.prototype.multiplyByFloats = function (x, y) {
             return new Vector2(this.x * x, this.y * y);
@@ -275,6 +291,7 @@ var __extends = this.__extends || function (d, b) {
         Vector2.prototype.divideToRef = function (otherVector, result) {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
+            return this;
         };
         Vector2.prototype.negate = function () {
             return new Vector2(-this.x, -this.y);
@@ -404,17 +421,31 @@ var __extends = this.__extends || function (d, b) {
             return result;
         };
         Vector3.prototype.toArray = function (array, index) {
-            if (index === undefined) {
-                index = 0;
-            }
+            if (index === void 0) { index = 0; }
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
+            return this;
+        };
+        Vector3.prototype.toQuaternion = function () {
+            var result = new Quaternion(0, 0, 0, 1);
+            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
+            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
+            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
+            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
+            var cosy = Math.cos(this.y * 0.5);
+            var siny = Math.sin(this.y * 0.5);
+            result.x = coszMinusx * siny;
+            result.y = -sinzMinusx * siny;
+            result.z = sinxPlusz * cosy;
+            result.w = cosxPlusz * cosy;
+            return result;
         };
         Vector3.prototype.addInPlace = function (otherVector) {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
+            return this;
         };
         Vector3.prototype.add = function (otherVector) {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
@@ -423,11 +454,13 @@ var __extends = this.__extends || function (d, b) {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
+            return this;
         };
         Vector3.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
+            return this;
         };
         Vector3.prototype.subtract = function (otherVector) {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
@@ -436,6 +469,7 @@ var __extends = this.__extends || function (d, b) {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
+            return this;
         };
         Vector3.prototype.subtractFromFloats = function (x, y, z) {
             return new Vector3(this.x - x, this.y - y, this.z - z);
@@ -444,6 +478,7 @@ var __extends = this.__extends || function (d, b) {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
+            return this;
         };
         Vector3.prototype.negate = function () {
             return new Vector3(-this.x, -this.y, -this.z);
@@ -475,6 +510,7 @@ var __extends = this.__extends || function (d, b) {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
+            return this;
         };
         Vector3.prototype.multiply = function (otherVector) {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
@@ -483,6 +519,7 @@ var __extends = this.__extends || function (d, b) {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
+            return this;
         };
         Vector3.prototype.multiplyByFloats = function (x, y, z) {
             return new Vector3(this.x * x, this.y * y, this.z * z);
@@ -494,6 +531,7 @@ var __extends = this.__extends || function (d, b) {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
+            return this;
         };
         Vector3.prototype.MinimizeInPlace = function (other) {
             if (other.x < this.x)
@@ -502,6 +540,7 @@ var __extends = this.__extends || function (d, b) {
                 this.y = other.y;
             if (other.z < this.z)
                 this.z = other.z;
+            return this;
         };
         Vector3.prototype.MaximizeInPlace = function (other) {
             if (other.x > this.x)
@@ -510,6 +549,7 @@ var __extends = this.__extends || function (d, b) {
                 this.y = other.y;
             if (other.z > this.z)
                 this.z = other.z;
+            return this;
         };
         // Properties
         Vector3.prototype.length = function () {
@@ -536,11 +576,13 @@ var __extends = this.__extends || function (d, b) {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
+            return this;
         };
         Vector3.prototype.copyFromFloats = function (x, y, z) {
             this.x = x;
             this.y = y;
             this.z = z;
+            return this;
         };
         // Statics
         Vector3.FromArray = function (array, offset) {
@@ -753,12 +795,14 @@ var __extends = this.__extends || function (d, b) {
             array[index + 1] = this.y;
             array[index + 2] = this.z;
             array[index + 3] = this.w;
+            return this;
         };
         Vector4.prototype.addInPlace = function (otherVector) {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
             this.w += otherVector.w;
+            return this;
         };
         Vector4.prototype.add = function (otherVector) {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
@@ -768,12 +812,14 @@ var __extends = this.__extends || function (d, b) {
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
             result.w = this.w + otherVector.w;
+            return this;
         };
         Vector4.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
             this.w -= otherVector.w;
+            return this;
         };
         Vector4.prototype.subtract = function (otherVector) {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
@@ -783,6 +829,7 @@ var __extends = this.__extends || function (d, b) {
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
             result.w = this.w - otherVector.w;
+            return this;
         };
         Vector4.prototype.subtractFromFloats = function (x, y, z, w) {
             return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
@@ -792,6 +839,7 @@ var __extends = this.__extends || function (d, b) {
             result.y = this.y - y;
             result.z = this.z - z;
             result.w = this.w - w;
+            return this;
         };
         Vector4.prototype.negate = function () {
             return new Vector4(-this.x, -this.y, -this.z, -this.w);
@@ -826,6 +874,7 @@ var __extends = this.__extends || function (d, b) {
             this.y *= otherVector.y;
             this.z *= otherVector.z;
             this.w *= otherVector.w;
+            return this;
         };
         Vector4.prototype.multiply = function (otherVector) {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
@@ -835,6 +884,7 @@ var __extends = this.__extends || function (d, b) {
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
             result.w = this.w * otherVector.w;
+            return this;
         };
         Vector4.prototype.multiplyByFloats = function (x, y, z, w) {
             return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
@@ -847,6 +897,7 @@ var __extends = this.__extends || function (d, b) {
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
+            return this;
         };
         Vector4.prototype.MinimizeInPlace = function (other) {
             if (other.x < this.x)
@@ -857,6 +908,7 @@ var __extends = this.__extends || function (d, b) {
                 this.z = other.z;
             if (other.w < this.w)
                 this.w = other.w;
+            return this;
         };
         Vector4.prototype.MaximizeInPlace = function (other) {
             if (other.x > this.x)
@@ -867,6 +919,7 @@ var __extends = this.__extends || function (d, b) {
                 this.z = other.z;
             if (other.w > this.w)
                 this.w = other.w;
+            return this;
         };
         // Properties
         Vector4.prototype.length = function () {
@@ -895,12 +948,14 @@ var __extends = this.__extends || function (d, b) {
             this.y = source.y;
             this.z = source.z;
             this.w = source.w;
+            return this;
         };
         Vector4.prototype.copyFromFloats = function (x, y, z, w) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         // Statics
         Vector4.FromArray = function (array, offset) {
@@ -995,12 +1050,14 @@ var __extends = this.__extends || function (d, b) {
             this.y = other.y;
             this.z = other.z;
             this.w = other.w;
+            return this;
         };
         Quaternion.prototype.copyFromFloats = function (x, y, z, w) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         Quaternion.prototype.add = function (other) {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
@@ -1021,6 +1078,7 @@ var __extends = this.__extends || function (d, b) {
             result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
             result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+            return this;
         };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
@@ -1031,6 +1089,7 @@ var __extends = this.__extends || function (d, b) {
             this.y *= length;
             this.z *= length;
             this.w *= length;
+            return this;
         };
         Quaternion.prototype.toEulerAngles = function () {
             var result = Vector3.Zero();
@@ -1069,6 +1128,7 @@ var __extends = this.__extends || function (d, b) {
                     result.z = 0.0;
                 }
             }
+            return this;
         };
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
@@ -1096,6 +1156,7 @@ var __extends = this.__extends || function (d, b) {
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
+            return this;
         };
         Quaternion.prototype.fromRotationMatrix = function (matrix) {
             var data = matrix.m;
@@ -1110,7 +1171,7 @@ var __extends = this.__extends || function (d, b) {
                 this.x = (m32 - m23) * s;
                 this.y = (m13 - m31) * s;
                 this.z = (m21 - m12) * s;
-                return;
+                return this;
             }
             if (m11 > m22 && m11 > m33) {
                 s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
@@ -1118,7 +1179,7 @@ var __extends = this.__extends || function (d, b) {
                 this.x = 0.25 * s;
                 this.y = (m12 + m21) / s;
                 this.z = (m13 + m31) / s;
-                return;
+                return this;
             }
             if (m22 > m33) {
                 s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
@@ -1126,13 +1187,14 @@ var __extends = this.__extends || function (d, b) {
                 this.x = (m12 + m21) / s;
                 this.y = 0.25 * s;
                 this.z = (m23 + m32) / s;
-                return;
+                return this;
             }
             s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
             this.w = (m21 - m12) / s;
             this.x = (m13 + m31) / s;
             this.y = (m23 + m32) / s;
             this.z = 0.25 * s;
+            return this;
         };
         // Statics
         Quaternion.Inverse = function (q) {
@@ -1231,6 +1293,7 @@ var __extends = this.__extends || function (d, b) {
         };
         Matrix.prototype.invert = function () {
             this.invertToRef(this);
+            return this;
         };
         Matrix.prototype.invertToRef = function (other) {
             var l1 = this.m[0];
@@ -1288,11 +1351,13 @@ var __extends = this.__extends || function (d, b) {
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
+            return this;
         };
         Matrix.prototype.setTranslation = function (vector3) {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
+            return this;
         };
         Matrix.prototype.multiply = function (other) {
             var result = new Matrix();
@@ -1303,15 +1368,18 @@ var __extends = this.__extends || function (d, b) {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
+            return this;
         };
         Matrix.prototype.copyToArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             for (var index = 0; index < 16; index++) {
                 array[offset + index] = this.m[index];
             }
+            return this;
         };
         Matrix.prototype.multiplyToRef = function (other, result) {
             this.multiplyToArray(other, result.m, 0);
+            return this;
         };
         Matrix.prototype.multiplyToArray = function (other, result, offset) {
             var tm0 = this.m[0];
@@ -1362,6 +1430,7 @@ var __extends = this.__extends || function (d, b) {
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+            return this;
         };
         Matrix.prototype.equals = function (value) {
             return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] && this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] && this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] && this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
@@ -1379,14 +1448,14 @@ var __extends = this.__extends || function (d, b) {
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
-            if (scale.x == 0 || scale.y == 0 || scale.z == 0) {
+            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
                 rotation.x = 0;
                 rotation.y = 0;
                 rotation.z = 0;
                 rotation.w = 1;
                 return false;
             }
-            var rotationMatrix = BABYLON.Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
+            var rotationMatrix = Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
             rotation.fromRotationMatrix(rotationMatrix);
             return true;
         };
@@ -1774,6 +1843,7 @@ var __extends = this.__extends || function (d, b) {
             this.normal.y *= magnitude;
             this.normal.z *= magnitude;
             this.d *= magnitude;
+            return this;
         };
         Plane.prototype.transform = function (transformation) {
             var transposedMatrix = Matrix.Transpose(transformation);
@@ -1812,6 +1882,7 @@ var __extends = this.__extends || function (d, b) {
             this.normal.y = xz * invPyth;
             this.normal.z = xy * invPyth;
             this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
+            return this;
         };
         Plane.prototype.isFrontFacingTo = function (direction, epsilon) {
             var dot = Vector3.Dot(this.normal, direction);
@@ -2184,10 +2255,12 @@ var __extends = this.__extends || function (d, b) {
         PathCursor.prototype.moveAhead = function (step) {
             if (step === void 0) { step = 0.002; }
             this.move(step);
+            return this;
         };
         PathCursor.prototype.moveBack = function (step) {
             if (step === void 0) { step = 0.002; }
             this.move(-step);
+            return this;
         };
         PathCursor.prototype.move = function (step) {
             if (Math.abs(step) > 1) {
@@ -2196,6 +2269,7 @@ var __extends = this.__extends || function (d, b) {
             this.value += step;
             this.ensureLimits();
             this.raiseOnChange();
+            return this;
         };
         PathCursor.prototype.ensureLimits = function () {
             while (this.value > 1) {
@@ -2204,18 +2278,22 @@ var __extends = this.__extends || function (d, b) {
             while (this.value < 0) {
                 this.value += 1;
             }
+            return this;
         };
         // used by animation engine
         PathCursor.prototype.markAsDirty = function (propertyName) {
             this.ensureLimits();
             this.raiseOnChange();
+            return this;
         };
         PathCursor.prototype.raiseOnChange = function () {
             var _this = this;
             this._onchange.forEach(function (f) { return f(_this); });
+            return this;
         };
         PathCursor.prototype.onchange = function (f) {
             this._onchange.push(f);
+            return this;
         };
         return PathCursor;
     })();
@@ -2279,7 +2357,7 @@ var __extends = this.__extends || function (d, b) {
         Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
                 BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
-                return;
+                return Vector2.Zero();
             }
             var lengthPosition = normalizedLengthPosition * this.length();
             var previousOffset = 0;
@@ -2297,6 +2375,7 @@ var __extends = this.__extends || function (d, b) {
                 previousOffset = nextOffset;
             }
             BABYLON.Tools.Error("internal error");
+            return Vector2.Zero();
         };
         Path2.StartingAt = function (x, y) {
             return new Path2(x, y);
@@ -13279,7 +13358,7 @@ shadowMapPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvec4 pack(
 shadowMapVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifndef VSM\nvarying vec4 vPosition;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n#ifndef VSM\n	vPosition = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool alphaTest;\n\nvarying vec4 vColor;\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return min(1., max(0., fogCoeff));\n}\n#endif\n\n\nvoid main(void) {\n	vec4 baseColor = texture2D(diffuseSampler, vUV);\n\n	if (alphaTest) \n	{\n		if (baseColor.a < 0.95)\n			discard;\n	}\n\n	baseColor *= vColor;\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	baseColor.rgb = fog * baseColor.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = baseColor;\n}",
 spritesVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\n// Uniforms\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Output\nvarying vec2 vUV;\nvarying vec4 vColor;\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\nvoid main(void) {	\n	vec3 viewPos = (view * vec4(position, 1.0)).xyz; \n	vec3 cornerPos;\n	\n	float angle = options.x;\n	float size = options.y;\n	vec2 offset = options.zw;\n	vec2 uvScale = textureInfos.xy;\n\n	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;\n\n	// Rotate\n	vec3 rotatedCorner;\n	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);\n	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);\n	rotatedCorner.z = 0.;\n\n	// Position\n	viewPos += rotatedCorner;\n	gl_Position = projection * vec4(viewPos, 1.0);   \n\n	// Color\n	vColor = color;\n	\n	// Texture\n	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));\n\n	vUV = (uvOffset + cellInfo.zw) * uvScale;\n\n	// Fog\n#ifdef FOG\n	fFogDistance = viewPos.z;\n#endif\n}",
-ssaoPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define SAMPLES 16\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[16];\n\nvarying vec2 vUV;\n\nconst vec2 offset1 = vec2(0.0, 0.001);\nconst vec2 offset2 = vec2(0.001, 0.0);\n\nvec3 normalFromDepth(const float depth, const vec2 coords) {\n	float depth1 = texture2D(textureSampler, coords + offset1).r;\n	float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void)\n{\n	const float totalStrength = 1.0;\n	const float base = 0.2;\n	const float area = 0.0075;\n	const float fallOff = 0.000001;\n	const float radius = 0.0002;\n\n	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;\n	float depth = texture2D(textureSampler, vUV).r;\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	vec3 ray;\n	vec3 hemiRay;\n	float occlusionDepth;\n	float difference;\n\n	for (int i = 0; i < SAMPLES; i++)\n	{\n		ray = radiusDepth * reflect(sampleSphere[i], random);\n		hemiRay = position + sign(dot(ray, normal)) * ray;\n\n		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * samplesFactor;\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = result;\n}",
+ssaoPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define SAMPLES 16\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[16];\n\nvarying vec2 vUV;\n\nconst vec2 offset1 = vec2(0.0, 0.01);\nconst vec2 offset2 = vec2(0.01, 0.0);\n\nvec3 normalFromDepth(const float depth, const vec2 coords) {\n	float depth1 = texture2D(textureSampler, coords + offset1).r;\n	float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void)\n{\n	const float totalStrength = 1.0;\n	const float base = 0.2;\n	const float area = 0.0075;\n	const float fallOff = 0.000001;\n	const float radius = 0.0005;\n\n	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;\n	float depth = texture2D(textureSampler, vUV).r;\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	vec3 ray;\n	vec3 hemiRay;\n	float occlusionDepth;\n	float difference;\n\n	for (int i = 0; i < SAMPLES; i++)\n	{\n		ray = radiusDepth * reflect(sampleSphere[i], random);\n		hemiRay = position + dot(ray, normal) * ray;\n\n		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * samplesFactor;\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = 1.0;\n}",
 ssaoCombinePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D originalColor;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	gl_FragColor = texture2D(originalColor, vUV) * texture2D(textureSampler, vUV);\n}",
 volumetricLightScatteringPixelShader:"// Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html\n\n#ifdef GL_ES\nprecision mediump float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D lightScatteringSampler;\n\nuniform vec2 lightPositionOnScreen;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	\n    float decay = 0.96815;\n    float exposure = 0.3;\n    float density = 0.926;\n    float weight = 0.58767;\n\n    const int NUM_SAMPLES = 100;\n\n    vec2 tc = vUV;\n    vec2 deltaTexCoord = (tc - lightPositionOnScreen.xy);\n    deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;\n\n    float illuminationDecay = 1.0;\n\n	vec4 color = texture2D(lightScatteringSampler, tc) * 0.4;\n\n    for(int i=0; i < NUM_SAMPLES; i++)\n    {\n        tc -= deltaTexCoord;\n		vec4 sample = texture2D(lightScatteringSampler, tc) * 0.4;\n        sample *= illuminationDecay * weight;\n        color += sample;\n        illuminationDecay *= decay;\n    }\n\n    vec4 realColor = texture2D(textureSampler, vUV);\n    gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));\n}",
 volumetricLightScatteringPassPixelShader:"#ifdef GL_ES\nprecision mediump float;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n#ifdef BASIC_RENDER\n	gl_FragColor = texture2D(diffuseSampler, vUV);\n#else\n	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n#endif\n}",
@@ -27473,8 +27552,8 @@ var BABYLON;
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess();
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -27504,9 +27583,8 @@ var BABYLON;
         SSAORenderingPipeline.prototype.getBlurVPostProcess = function () {
             return this._blurVPostProcess;
         };
-        SSAORenderingPipeline.prototype.dispose = function (cameras) {
-            if (cameras !== undefined)
-                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
+        SSAORenderingPipeline.prototype.dispose = function () {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             this._originalColorPostProcess = undefined;
             this._ssaoPostProcess = undefined;
             this._blurHPostProcess = undefined;
