@@ -1,10 +1,31 @@
 ﻿module BABYLON {
     export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         // Members
+
+        /**
+        * The PassPostProcess id in the pipeline that contains the original scene color
+        * @type {string}
+        */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
+        /**
+        * The SSAO PostProcess id in the pipeline
+        * @type {string}
+        */
         public SSAORenderEffect: string = "SSAORenderEffect";
+        /**
+        * The horizontal blur PostProcess id in the pipeline
+        * @type {string}
+        */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
+        /**
+        * The vertical blur PostProcess id in the pipeline
+        * @type {string}
+        */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
+        /**
+        * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
+        * @type {string}
+        */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
 
         private _scene: Scene;
@@ -19,6 +40,13 @@
 
         private _firstUpdate: boolean = true;
 
+        /**
+         * @constructor
+         * @param {string} name - The rendering pipeline name
+         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
+         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         */
         constructor(name: string, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
             super(scene.getEngine(), name);
 
@@ -48,14 +76,25 @@
         }
 
         // Public Methods
+        /**
+         * Returns the horizontal blur PostProcess
+         * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
+         */
         public getBlurHPostProcess(): BlurPostProcess {
             return this._blurHPostProcess;
         }
 
+        /**
+         * Returns the vertical blur PostProcess
+         * @return {BABYLON.BlurPostProcess} The vertical blur post-process
+         */
         public getBlurVPostProcess(): BlurPostProcess {
             return this._blurVPostProcess;
         }
 
+        /**
+         * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
+         */
         public dispose(): void {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 

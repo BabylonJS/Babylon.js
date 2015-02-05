@@ -1428,15 +1428,20 @@
             return this;
         }
 
+        public fromRotationMatrix(matrix: Matrix): Quaternion {
+            Quaternion.FromRotationMatrixToRef(matrix, this);
+            return this;
+        }
+
         // Statics
 
-        public static FromRotationMatrix(matrix: Matrix) : Quaternion {
+        public static FromRotationMatrix(matrix: Matrix): Quaternion {
             var result = new Quaternion();
             Quaternion.FromRotationMatrixToRef(matrix, result);
             return result;
         }
 
-        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion) : void {
+        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1556,7 +1561,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -1771,9 +1776,9 @@
         public equals(value: Matrix): boolean {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
 
         public clone(): Matrix {
@@ -2821,7 +2826,7 @@
             return new Vector3(point.x, 0, point.y);
         }
 
-        public moveAhead(step: number = 0.002): PathCursor  {
+        public moveAhead(step: number = 0.002): PathCursor {
             this.move(step);
 
             return this;

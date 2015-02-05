@@ -99,8 +99,6 @@ var BABYLON;
             if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
                 engine.bindFramebuffer(this._texture);
             }
-            // Clear
-            engine.clear(scene.clearColor, true, true);
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
             for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
@@ -121,11 +119,13 @@ var BABYLON;
                     }
                 }
             }
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
             if (this.onBeforeRender) {
                 this.onBeforeRender();
+            }
+            // Clear
+            engine.clear(scene.clearColor, true, true);
+            if (!this._doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
             }
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);

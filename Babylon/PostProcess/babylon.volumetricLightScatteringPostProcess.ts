@@ -1,25 +1,47 @@
 ﻿module BABYLON {
-    export class GodRaysPostProcess extends PostProcess {
+    export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Members
         private _godRaysPass: Effect;
         private _godRaysRTT: RenderTargetTexture;
         private _viewPort: Viewport;
         private _screenCoordinates: Vector2 = Vector2.Zero();
         private _cachedDefines: string;
+        private _customLightPosition: Vector3;
 
+        /**
+        * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
+        * @type {boolean}
+        */
+        public useCustomLightPosition: boolean = false;
+        /**
+        * If the post-process should inverse the light scattering direction
+        * @type {boolean}
+        */
         public invert: boolean = true;
+        /**
+        * The internal mesh used by the post-process
+        * @type {boolean}
+        */
         public mesh: Mesh;
 
-        constructor(name: string, ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+        /**
+         * @constructor
+         * @param {string} name - The post-process name
+         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
+         * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
+         * @param {number} samplingMode - The post-process filtering mode
+         * @param {BABYLON.Engine} engine - The babylon engine
+         * @param {boolean} reusable - If the post-process is reusable
+         */
+        constructor(name: string, ratio: number, camera: Camera, mesh?: Mesh, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "volumetricLightScattering", ["lightPositionOnScreen"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable);
             var scene = camera.getScene();
 
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
 
-            // Create billboard
-            this.mesh = BABYLON.Mesh.CreatePlane("VolumetricLightScatteringMesh", 2, scene);
-            this.mesh.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-            this.mesh.material = new StandardMaterial('VolumetricLightScatteringMaterial', scene);
+            // Configure mesh
+            this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
 
             // Configure
             this._createPass(scene);
@@ -90,11 +112,34 @@
             return this._godRaysPass.isReady();
         }
 
+        /**
+         * Sets the new light position for light scattering effect
+         * @param {BABYLON.Vector3} The new custom light position
+         */
+        public setLightPosition(position: Vector3): void {
+            this._customLightPosition = position;
+        }
+
+        /**
+         * Returns the light position for light scattering effect
+         * @return {BABYLON.Vector3} The custom light position
+         */
+        public getLightPosition(): Vector3 {
+            return this._customLightPosition;
+        }
+
+        /**
+         * Disposes the internal assets and detaches the post-process from the camera
+         */
         public dispose(camera: Camera): void {
             this._godRaysRTT.dispose();
             super.dispose(camera);
         }
 
+        /**
+         * Returns the render target texture used by the post-process
+         * @return {BABYLON.RenderTargetTexture} The render target texture used by the post-process
+         */
         public getPass(): RenderTargetTexture {
             return this._godRaysRTT;
         }
@@ -181,13 +226,28 @@
 
         private _updateScreenCoordinates(scene: Scene): void {
             var transform = scene.getTransformMatrix();
-            var pos = Vector3.Project(this.mesh.position, Matrix.Identity(), transform, this._viewPort);
+            var pos = Vector3.Project(this.useCustomLightPosition ? this._customLightPosition : this.mesh.position, Matrix.Identity(), transform, this._viewPort);
 
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
 
             if (this.invert)
                 this._screenCoordinates.y = 1.0 - this._screenCoordinates.y;
+        }
+
+        // Static methods
+        /**
+        * Creates a default mesh for the Volumeric Light Scattering post-process
+        * @param {string} The mesh name
+        * @param {BABYLON.Scene} The scene where to create the mesh
+        * @return {BABYLON.Mesh} the default mesh
+        */
+        public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
+            var mesh = BABYLON.Mesh.CreatePlane(name, 1, scene);
+            mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
+            mesh.material = new StandardMaterial(name + "Material", scene);
+
+            return mesh;
         }
     }
 }  
