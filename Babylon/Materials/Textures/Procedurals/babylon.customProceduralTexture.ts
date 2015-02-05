@@ -18,12 +18,12 @@
             var that = this;
 
             function noConfigFile() {
-                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShaderStore or DOM element");
+                Tools.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
                 try {
                     that.setFragment(that._texturePath);
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
+                    Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
             }
 
@@ -32,7 +32,7 @@
 
             xhr.open("GET", configFileUrl, true);
             xhr.addEventListener("load", () => {
-                if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
+                if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         this._config = JSON.parse(xhr.response);
 
@@ -52,7 +52,7 @@
                 }
             }, false);
 
-            xhr.addEventListener("error", event => {
+            xhr.addEventListener("error", () => {
                 noConfigFile();
             }, false);
 
@@ -60,7 +60,7 @@
                 xhr.send();
             }
             catch (ex) {
-                BABYLON.Tools.Error("CustomProceduralTexture: Error on XHR send request.");
+                Tools.Error("CustomProceduralTexture: Error on XHR send request.");
             }
         }
 

@@ -18,7 +18,7 @@
         }
 
         // Members
-        public filter = ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+        public filter = ShadowGenerator.FILTER_NONE;
 
         public get useVarianceShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP;

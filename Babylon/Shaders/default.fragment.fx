@@ -284,7 +284,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
 	vec4 texel = texture2D(shadowSampler, uv);
 
 	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);
+	return clamp(1.0 - ChebychevInequality(moments, depth.z), 0., 1.0);
 }
 #endif
 

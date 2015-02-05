@@ -114,9 +114,6 @@
                 engine.bindFramebuffer(this._texture);
             }
 
-            // Clear
-            engine.clear(scene.clearColor, true, true);
-
             this._renderingManager.reset();
 
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -143,12 +140,16 @@
                 }                
             }
 
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
-
             if (this.onBeforeRender) {
                 this.onBeforeRender();
+            }
+
+            // Clear
+            engine.clear(scene.clearColor, true, true);
+
+
+            if (!this._doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
             }
 
             // Render
