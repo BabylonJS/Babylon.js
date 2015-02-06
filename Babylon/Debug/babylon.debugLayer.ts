@@ -419,6 +419,8 @@
 
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
+            boundingBoxesCheckbox.style.pointerEvents = "auto";
+            boundingBoxesCheckbox.style.setProperty ("width", "25px", "important");
             boundingBoxesCheckbox.checked = initialState;
 
             boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
@@ -450,6 +452,8 @@
 
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
+            boundingBoxesCheckbox.style.pointerEvents = "auto";
+            boundingBoxesCheckbox.style.setProperty ("width", "25px", "important");
             boundingBoxesCheckbox.checked = initialState;
 
             boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
@@ -467,6 +471,8 @@
 
             var boundingBoxesRadio = document.createElement("input");
             boundingBoxesRadio.type = "radio";
+            boundingBoxesRadio.style.pointerEvents = "auto";
+            boundingBoxesRadio.style.setProperty ("width", "25px", "important");  
             boundingBoxesRadio.name = name;
             boundingBoxesRadio.checked = initialState;
 
@@ -487,7 +493,8 @@
             this._globalDiv.style.fontFamily = "Segoe UI, Arial";
             this._globalDiv.style.fontSize = "14px";
             this._globalDiv.style.color = "white";
-
+            this._globalDiv.style.pointerEvents = "none"; 
+            
             // Drawing canvas
             this._drawingCanvas = document.createElement("canvas");
             this._drawingCanvas.id = "DebugLayerDrawingCanvas";
@@ -539,6 +546,7 @@
                 this._logDiv.style.background = background;
                 this._logDiv.style.padding = "0px 0px 0px 5px";
                 this._logDiv.style.display = "none";
+                this._logDiv.style.pointerEvents = "auto";
                 this._generateheader(this._logDiv, "LOGS");
                 this._logSubsetDiv = document.createElement("div");
                 this._logSubsetDiv.style.height = "127px";
