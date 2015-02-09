@@ -29,7 +29,7 @@ var BABYLON;
             var result = "";
             var child = element.firstChild;
             while (child) {
-                if (child.nodeType == 3) {
+                if (child.nodeType === 3) {
                     result += child.textContent;
                 }
                 child = child.nextSibling;
@@ -129,7 +129,7 @@ var BABYLON;
         Tools.LoadImage = function (url, onload, onerror, database) {
             url = Tools.CleanUrl(url);
             var img = new Image();
-            if (url.substr(0, 5) != "data:")
+            if (url.substr(0, 5) !== "data:")
                 img.crossOrigin = 'anonymous';
             img.onload = function () {
                 onload(img);
@@ -184,8 +184,8 @@ var BABYLON;
                 }
                 request.onprogress = progressCallBack;
                 request.onreadystatechange = function () {
-                    if (request.readyState == 4) {
-                        if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
+                    if (request.readyState === 4) {
+                        if (request.status === 200 || Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
                         else {
@@ -205,7 +205,7 @@ var BABYLON;
             };
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5);
-                BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
             }
             else {
                 // Caching all files
@@ -286,10 +286,10 @@ var BABYLON;
                 }
                 var sourceValue = source[prop];
                 var typeOfSourceValue = typeof sourceValue;
-                if (typeOfSourceValue == "function") {
+                if (typeOfSourceValue === "function") {
                     continue;
                 }
-                if (typeOfSourceValue == "object") {
+                if (typeOfSourceValue === "object") {
                     if (sourceValue instanceof Array) {
                         destination[prop] = [];
                         if (sourceValue.length > 0) {
@@ -468,7 +468,7 @@ var BABYLON;
                 if (dataType & 4) {
                     // Check for the "DDS" magic number
                     var ddsHeader = new Uint8Array(xhr.response, 0, 3);
-                    if (ddsHeader[0] == 68 && ddsHeader[1] == 68 && ddsHeader[2] == 83) {
+                    if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
                         return true;
                     }
                     else {

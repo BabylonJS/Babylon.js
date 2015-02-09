@@ -37,7 +37,9 @@ var BABYLON;
             }
         };
         SoundTrack.prototype.AddSound = function (sound) {
-            sound.connectToSoundTrackAudioNode(this._trackGain);
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                sound.connectToSoundTrackAudioNode(this._trackGain);
+            }
             if (sound.soundTrackId) {
                 if (sound.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(sound);

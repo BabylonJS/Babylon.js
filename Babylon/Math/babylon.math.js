@@ -20,6 +20,7 @@ var BABYLON;
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
+            return this;
         };
         Color3.prototype.toColor4 = function (alpha) {
             if (alpha === void 0) { alpha = 1; }
@@ -40,6 +41,7 @@ var BABYLON;
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
+            return this;
         };
         Color3.prototype.equals = function (otherColor) {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
@@ -51,6 +53,7 @@ var BABYLON;
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
+            return this;
         };
         Color3.prototype.add = function (otherColor) {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
@@ -59,6 +62,7 @@ var BABYLON;
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
+            return this;
         };
         Color3.prototype.subtract = function (otherColor) {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
@@ -67,6 +71,7 @@ var BABYLON;
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
+            return this;
         };
         Color3.prototype.clone = function () {
             return new Color3(this.r, this.g, this.b);
@@ -75,11 +80,13 @@ var BABYLON;
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
+            return this;
         };
         Color3.prototype.copyFromFloats = function (r, g, b) {
             this.r = r;
             this.g = g;
             this.b = b;
+            return this;
         };
         // Statics
         Color3.FromArray = function (array, offset) {
@@ -138,6 +145,7 @@ var BABYLON;
             this.g += right.g;
             this.b += right.b;
             this.a += right.a;
+            return this;
         };
         Color4.prototype.asArray = function () {
             var result = [];
@@ -152,6 +160,7 @@ var BABYLON;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
             array[index + 3] = this.a;
+            return this;
         };
         Color4.prototype.add = function (right) {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
@@ -164,6 +173,7 @@ var BABYLON;
             result.g = this.g - right.g;
             result.b = this.b - right.b;
             result.a = this.a - right.a;
+            return this;
         };
         Color4.prototype.scale = function (scale) {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
@@ -173,6 +183,7 @@ var BABYLON;
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+            return this;
         };
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
@@ -185,6 +196,7 @@ var BABYLON;
             this.g = source.g;
             this.b = source.b;
             this.a = source.a;
+            return this;
         };
         // Statics
         Color4.Lerp = function (left, right, amount) {
@@ -218,11 +230,10 @@ var BABYLON;
         };
         // Operators
         Vector2.prototype.toArray = function (array, index) {
-            if (index === undefined) {
-                index = 0;
-            }
+            if (index === void 0) { index = 0; }
             array[index] = this.x;
             array[index + 1] = this.y;
+            return this;
         };
         Vector2.prototype.asArray = function () {
             var result = [];
@@ -232,10 +243,12 @@ var BABYLON;
         Vector2.prototype.copyFrom = function (source) {
             this.x = source.x;
             this.y = source.y;
+            return this;
         };
         Vector2.prototype.copyFromFloats = function (x, y) {
             this.x = x;
             this.y = y;
+            return this;
         };
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
@@ -249,10 +262,12 @@ var BABYLON;
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
+            return this;
         };
         Vector2.prototype.multiplyInPlace = function (otherVector) {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
+            return this;
         };
         Vector2.prototype.multiply = function (otherVector) {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
@@ -260,6 +275,7 @@ var BABYLON;
         Vector2.prototype.multiplyToRef = function (otherVector, result) {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
+            return this;
         };
         Vector2.prototype.multiplyByFloats = function (x, y) {
             return new Vector2(this.x * x, this.y * y);
@@ -270,6 +286,7 @@ var BABYLON;
         Vector2.prototype.divideToRef = function (otherVector, result) {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
+            return this;
         };
         Vector2.prototype.negate = function () {
             return new Vector2(-this.x, -this.y);
@@ -399,17 +416,31 @@ var BABYLON;
             return result;
         };
         Vector3.prototype.toArray = function (array, index) {
-            if (index === undefined) {
-                index = 0;
-            }
+            if (index === void 0) { index = 0; }
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
+            return this;
+        };
+        Vector3.prototype.toQuaternion = function () {
+            var result = new Quaternion(0, 0, 0, 1);
+            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
+            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
+            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
+            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
+            var cosy = Math.cos(this.y * 0.5);
+            var siny = Math.sin(this.y * 0.5);
+            result.x = coszMinusx * siny;
+            result.y = -sinzMinusx * siny;
+            result.z = sinxPlusz * cosy;
+            result.w = cosxPlusz * cosy;
+            return result;
         };
         Vector3.prototype.addInPlace = function (otherVector) {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
+            return this;
         };
         Vector3.prototype.add = function (otherVector) {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
@@ -418,11 +449,13 @@ var BABYLON;
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
+            return this;
         };
         Vector3.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
+            return this;
         };
         Vector3.prototype.subtract = function (otherVector) {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
@@ -431,6 +464,7 @@ var BABYLON;
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
+            return this;
         };
         Vector3.prototype.subtractFromFloats = function (x, y, z) {
             return new Vector3(this.x - x, this.y - y, this.z - z);
@@ -439,6 +473,7 @@ var BABYLON;
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
+            return this;
         };
         Vector3.prototype.negate = function () {
             return new Vector3(-this.x, -this.y, -this.z);
@@ -470,6 +505,7 @@ var BABYLON;
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
+            return this;
         };
         Vector3.prototype.multiply = function (otherVector) {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
@@ -478,6 +514,7 @@ var BABYLON;
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
+            return this;
         };
         Vector3.prototype.multiplyByFloats = function (x, y, z) {
             return new Vector3(this.x * x, this.y * y, this.z * z);
@@ -489,6 +526,7 @@ var BABYLON;
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
+            return this;
         };
         Vector3.prototype.MinimizeInPlace = function (other) {
             if (other.x < this.x)
@@ -497,6 +535,7 @@ var BABYLON;
                 this.y = other.y;
             if (other.z < this.z)
                 this.z = other.z;
+            return this;
         };
         Vector3.prototype.MaximizeInPlace = function (other) {
             if (other.x > this.x)
@@ -505,6 +544,7 @@ var BABYLON;
                 this.y = other.y;
             if (other.z > this.z)
                 this.z = other.z;
+            return this;
         };
         // Properties
         Vector3.prototype.length = function () {
@@ -531,11 +571,13 @@ var BABYLON;
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
+            return this;
         };
         Vector3.prototype.copyFromFloats = function (x, y, z) {
             this.x = x;
             this.y = y;
             this.z = z;
+            return this;
         };
         // Statics
         Vector3.FromArray = function (array, offset) {
@@ -748,12 +790,14 @@ var BABYLON;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
             array[index + 3] = this.w;
+            return this;
         };
         Vector4.prototype.addInPlace = function (otherVector) {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
             this.w += otherVector.w;
+            return this;
         };
         Vector4.prototype.add = function (otherVector) {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
@@ -763,12 +807,14 @@ var BABYLON;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
             result.w = this.w + otherVector.w;
+            return this;
         };
         Vector4.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
             this.w -= otherVector.w;
+            return this;
         };
         Vector4.prototype.subtract = function (otherVector) {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
@@ -778,6 +824,7 @@ var BABYLON;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
             result.w = this.w - otherVector.w;
+            return this;
         };
         Vector4.prototype.subtractFromFloats = function (x, y, z, w) {
             return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
@@ -787,6 +834,7 @@ var BABYLON;
             result.y = this.y - y;
             result.z = this.z - z;
             result.w = this.w - w;
+            return this;
         };
         Vector4.prototype.negate = function () {
             return new Vector4(-this.x, -this.y, -this.z, -this.w);
@@ -821,6 +869,7 @@ var BABYLON;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
             this.w *= otherVector.w;
+            return this;
         };
         Vector4.prototype.multiply = function (otherVector) {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
@@ -830,6 +879,7 @@ var BABYLON;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
             result.w = this.w * otherVector.w;
+            return this;
         };
         Vector4.prototype.multiplyByFloats = function (x, y, z, w) {
             return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
@@ -842,6 +892,7 @@ var BABYLON;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
+            return this;
         };
         Vector4.prototype.MinimizeInPlace = function (other) {
             if (other.x < this.x)
@@ -852,6 +903,7 @@ var BABYLON;
                 this.z = other.z;
             if (other.w < this.w)
                 this.w = other.w;
+            return this;
         };
         Vector4.prototype.MaximizeInPlace = function (other) {
             if (other.x > this.x)
@@ -862,6 +914,7 @@ var BABYLON;
                 this.z = other.z;
             if (other.w > this.w)
                 this.w = other.w;
+            return this;
         };
         // Properties
         Vector4.prototype.length = function () {
@@ -890,12 +943,14 @@ var BABYLON;
             this.y = source.y;
             this.z = source.z;
             this.w = source.w;
+            return this;
         };
         Vector4.prototype.copyFromFloats = function (x, y, z, w) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         // Statics
         Vector4.FromArray = function (array, offset) {
@@ -990,12 +1045,14 @@ var BABYLON;
             this.y = other.y;
             this.z = other.z;
             this.w = other.w;
+            return this;
         };
         Quaternion.prototype.copyFromFloats = function (x, y, z, w) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         Quaternion.prototype.add = function (other) {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
@@ -1016,6 +1073,7 @@ var BABYLON;
             result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
             result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+            return this;
         };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
@@ -1026,6 +1084,7 @@ var BABYLON;
             this.y *= length;
             this.z *= length;
             this.w *= length;
+            return this;
         };
         Quaternion.prototype.toEulerAngles = function () {
             var result = Vector3.Zero();
@@ -1064,6 +1123,7 @@ var BABYLON;
                     result.z = 0.0;
                 }
             }
+            return this;
         };
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
@@ -1091,8 +1151,19 @@ var BABYLON;
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
+            return this;
         };
         Quaternion.prototype.fromRotationMatrix = function (matrix) {
+            Quaternion.FromRotationMatrixToRef(matrix, this);
+            return this;
+        };
+        // Statics
+        Quaternion.FromRotationMatrix = function (matrix) {
+            var result = new Quaternion();
+            Quaternion.FromRotationMatrixToRef(matrix, result);
+            return result;
+        };
+        Quaternion.FromRotationMatrixToRef = function (matrix, result) {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1101,35 +1172,33 @@ var BABYLON;
             var s;
             if (trace > 0) {
                 s = 0.5 / Math.sqrt(trace + 1.0);
-                this.w = 0.25 / s;
-                this.x = (m32 - m23) * s;
-                this.y = (m13 - m31) * s;
-                this.z = (m21 - m12) * s;
-                return;
+                result.w = 0.25 / s;
+                result.x = (m32 - m23) * s;
+                result.y = (m13 - m31) * s;
+                result.z = (m21 - m12) * s;
             }
-            if (m11 > m22 && m11 > m33) {
+            else if (m11 > m22 && m11 > m33) {
                 s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
-                this.w = (m32 - m23) / s;
-                this.x = 0.25 * s;
-                this.y = (m12 + m21) / s;
-                this.z = (m13 + m31) / s;
-                return;
+                result.w = (m32 - m23) / s;
+                result.x = 0.25 * s;
+                result.y = (m12 + m21) / s;
+                result.z = (m13 + m31) / s;
             }
-            if (m22 > m33) {
+            else if (m22 > m33) {
                 s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
-                this.w = (m13 - m31) / s;
-                this.x = (m12 + m21) / s;
-                this.y = 0.25 * s;
-                this.z = (m23 + m32) / s;
-                return;
+                result.w = (m13 - m31) / s;
+                result.x = (m12 + m21) / s;
+                result.y = 0.25 * s;
+                result.z = (m23 + m32) / s;
             }
-            s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
-            this.w = (m21 - m12) / s;
-            this.x = (m13 + m31) / s;
-            this.y = (m23 + m32) / s;
-            this.z = 0.25 * s;
+            else {
+                s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+                result.w = (m21 - m12) / s;
+                result.x = (m13 + m31) / s;
+                result.y = (m23 + m32) / s;
+                result.z = 0.25 * s;
+            }
         };
-        // Statics
         Quaternion.Inverse = function (q) {
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
         };
@@ -1226,6 +1295,7 @@ var BABYLON;
         };
         Matrix.prototype.invert = function () {
             this.invertToRef(this);
+            return this;
         };
         Matrix.prototype.invertToRef = function (other) {
             var l1 = this.m[0];
@@ -1283,11 +1353,13 @@ var BABYLON;
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
+            return this;
         };
         Matrix.prototype.setTranslation = function (vector3) {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
+            return this;
         };
         Matrix.prototype.multiply = function (other) {
             var result = new Matrix();
@@ -1298,15 +1370,18 @@ var BABYLON;
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
+            return this;
         };
         Matrix.prototype.copyToArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             for (var index = 0; index < 16; index++) {
                 array[offset + index] = this.m[index];
             }
+            return this;
         };
         Matrix.prototype.multiplyToRef = function (other, result) {
             this.multiplyToArray(other, result.m, 0);
+            return this;
         };
         Matrix.prototype.multiplyToArray = function (other, result, offset) {
             var tm0 = this.m[0];
@@ -1357,6 +1432,7 @@ var BABYLON;
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+            return this;
         };
         Matrix.prototype.equals = function (value) {
             return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] && this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] && this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] && this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
@@ -1374,15 +1450,15 @@ var BABYLON;
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
-            if (scale.x == 0 || scale.y == 0 || scale.z == 0) {
+            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
                 rotation.x = 0;
                 rotation.y = 0;
                 rotation.z = 0;
                 rotation.w = 1;
                 return false;
             }
-            var rotationMatrix = BABYLON.Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
-            rotation.fromRotationMatrix(rotationMatrix);
+            var rotationMatrix = Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
+            Quaternion.FromRotationMatrixToRef(rotationMatrix, rotation);
             return true;
         };
         // Statics
@@ -1769,6 +1845,7 @@ var BABYLON;
             this.normal.y *= magnitude;
             this.normal.z *= magnitude;
             this.d *= magnitude;
+            return this;
         };
         Plane.prototype.transform = function (transformation) {
             var transposedMatrix = Matrix.Transpose(transformation);
@@ -1807,6 +1884,7 @@ var BABYLON;
             this.normal.y = xz * invPyth;
             this.normal.z = xy * invPyth;
             this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
+            return this;
         };
         Plane.prototype.isFrontFacingTo = function (direction, epsilon) {
             var dot = Vector3.Dot(this.normal, direction);
@@ -2179,10 +2257,12 @@ var BABYLON;
         PathCursor.prototype.moveAhead = function (step) {
             if (step === void 0) { step = 0.002; }
             this.move(step);
+            return this;
         };
         PathCursor.prototype.moveBack = function (step) {
             if (step === void 0) { step = 0.002; }
             this.move(-step);
+            return this;
         };
         PathCursor.prototype.move = function (step) {
             if (Math.abs(step) > 1) {
@@ -2191,6 +2271,7 @@ var BABYLON;
             this.value += step;
             this.ensureLimits();
             this.raiseOnChange();
+            return this;
         };
         PathCursor.prototype.ensureLimits = function () {
             while (this.value > 1) {
@@ -2199,18 +2280,22 @@ var BABYLON;
             while (this.value < 0) {
                 this.value += 1;
             }
+            return this;
         };
         // used by animation engine
         PathCursor.prototype.markAsDirty = function (propertyName) {
             this.ensureLimits();
             this.raiseOnChange();
+            return this;
         };
         PathCursor.prototype.raiseOnChange = function () {
             var _this = this;
             this._onchange.forEach(function (f) { return f(_this); });
+            return this;
         };
         PathCursor.prototype.onchange = function (f) {
             this._onchange.push(f);
+            return this;
         };
         return PathCursor;
     })();
@@ -2274,7 +2359,7 @@ var BABYLON;
         Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
                 BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
-                return;
+                return Vector2.Zero();
             }
             var lengthPosition = normalizedLengthPosition * this.length();
             var previousOffset = 0;
@@ -2292,6 +2377,7 @@ var BABYLON;
                 previousOffset = nextOffset;
             }
             BABYLON.Tools.Error("internal error");
+            return Vector2.Zero();
         };
         Path2.StartingAt = function (x, y) {
             return new Path2(x, y);
