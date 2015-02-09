@@ -1165,10 +1165,15 @@ var BABYLON;
                     }
                 }
                 // Sounds
-                if (parsedData.sounds && BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (parsedData.sounds) {
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
-                        parseSound(parsedSound, scene, rootUrl);
+                        if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                            parseSound(parsedSound, scene, rootUrl);
+                        }
+                        else {
+                            var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                        }
                     }
                 }
                 for (index = 0; index < scene.meshes.length; index++) {

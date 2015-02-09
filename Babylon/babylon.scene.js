@@ -1060,6 +1060,7 @@ var BABYLON;
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
+            var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
@@ -1083,6 +1084,7 @@ var BABYLON;
                 engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
+            this.activeCamera = currentActiveCamera;
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);

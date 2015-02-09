@@ -17,7 +17,7 @@
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean, defines?: string) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -38,7 +38,7 @@
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl },
                 ["position"],
                 parameters || [],
-                samplers, "");
+                samplers, defines !== undefined ? defines : "");
         }
 
         public isReusable(): boolean {

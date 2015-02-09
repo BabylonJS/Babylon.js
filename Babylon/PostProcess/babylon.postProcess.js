@@ -1,7 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
-        function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable) {
+        function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable, defines) {
             this.name = name;
             this.width = -1;
             this.height = -1;
@@ -22,7 +22,7 @@ var BABYLON;
             this._reusable = reusable || false;
             samplers = samplers || [];
             samplers.push("textureSampler");
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, "");
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, defines !== undefined ? defines : "");
         }
         PostProcess.prototype.isReusable = function () {
             return this._reusable;

@@ -8559,6 +8559,7 @@ var BABYLON;
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
+            var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
@@ -8582,6 +8583,7 @@ var BABYLON;
                 engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
+            this.activeCamera = currentActiveCamera;
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
@@ -9671,19 +9673,24 @@ var BABYLON;
             if (!physicsEngine) {
                 return;
             }
+            impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
             if (impostor.impostor) {
                 // Old API
                 options = impostor;
                 impostor = impostor.impostor;
             }
-            impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
             if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
                 return;
             }
-            options.mass = options.mass || 0;
-            options.friction = options.friction || 0.2;
-            options.restitution = options.restitution || 0.2;
+            if (!options) {
+                options = { mass: 0, friction: 0.2, restitution: 0.2 };
+            }
+            else {
+                options.mass = options.mass || 0;
+                options.friction = options.friction || 0.2;
+                options.restitution = options.restitution || 0.2;
+            }
             this._physicImpostor = impostor;
             this._physicsMass = options.mass;
             this._physicsFriction = options.friction;
@@ -11947,9 +11954,6 @@ var BABYLON;
         RenderTargetTexture.prototype.render = function (useCameraPostProcess) {
             var scene = this.getScene();
             var engine = scene.getEngine();
-            if (!this.activeCamera) {
-                this.activeCamera = scene.activeCamera;
-            }
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -13367,8 +13371,8 @@ spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool
 spritesVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\n// Uniforms\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Output\nvarying vec2 vUV;\nvarying vec4 vColor;\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\nvoid main(void) {	\n	vec3 viewPos = (view * vec4(position, 1.0)).xyz; \n	vec3 cornerPos;\n	\n	float angle = options.x;\n	float size = options.y;\n	vec2 offset = options.zw;\n	vec2 uvScale = textureInfos.xy;\n\n	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;\n\n	// Rotate\n	vec3 rotatedCorner;\n	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);\n	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);\n	rotatedCorner.z = 0.;\n\n	// Position\n	viewPos += rotatedCorner;\n	gl_Position = projection * vec4(viewPos, 1.0);   \n\n	// Color\n	vColor = color;\n	\n	// Texture\n	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));\n\n	vUV = (uvOffset + cellInfo.zw) * uvScale;\n\n	// Fog\n#ifdef FOG\n	fFogDistance = viewPos.z;\n#endif\n}",
 ssaoPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define SAMPLES 16\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[16];\n\nvarying vec2 vUV;\n\nconst vec2 offset1 = vec2(0.0, 0.01);\nconst vec2 offset2 = vec2(0.01, 0.0);\n\nvec3 normalFromDepth(const float depth, const vec2 coords) {\n	float depth1 = texture2D(textureSampler, coords + offset1).r;\n	float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void)\n{\n	const float totalStrength = 1.0;\n	const float base = 0.2;\n	const float area = 0.0075;\n	const float fallOff = 0.000001;\n	const float radius = 0.0005;\n\n	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;\n	float depth = texture2D(textureSampler, vUV).r;\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	vec3 ray;\n	vec3 hemiRay;\n	float occlusionDepth;\n	float difference;\n\n	for (int i = 0; i < SAMPLES; i++)\n	{\n		ray = radiusDepth * reflect(sampleSphere[i], random);\n		hemiRay = position + dot(ray, normal) * ray;\n\n		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * samplesFactor;\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = 1.0;\n}",
 ssaoCombinePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D originalColor;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	gl_FragColor = texture2D(originalColor, vUV) * texture2D(textureSampler, vUV);\n}",
-volumetricLightScatteringPixelShader:"// Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html\n\n#ifdef GL_ES\nprecision mediump float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D lightScatteringSampler;\n\nuniform vec2 lightPositionOnScreen;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	\n    float decay = 0.96815;\n    float exposure = 0.3;\n    float density = 0.926;\n    float weight = 0.58767;\n\n    const int NUM_SAMPLES = 100;\n\n    vec2 tc = vUV;\n    vec2 deltaTexCoord = (tc - lightPositionOnScreen.xy);\n    deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;\n\n    float illuminationDecay = 1.0;\n\n	vec4 color = texture2D(lightScatteringSampler, tc) * 0.4;\n\n    for(int i=0; i < NUM_SAMPLES; i++)\n    {\n        tc -= deltaTexCoord;\n		vec4 sample = texture2D(lightScatteringSampler, tc) * 0.4;\n        sample *= illuminationDecay * weight;\n        color += sample;\n        illuminationDecay *= decay;\n    }\n\n    vec4 realColor = texture2D(textureSampler, vUV);\n    gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));\n}",
-volumetricLightScatteringPassPixelShader:"#ifdef GL_ES\nprecision mediump float;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n#ifdef BASIC_RENDER\n	gl_FragColor = texture2D(diffuseSampler, vUV);\n#else\n	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n#endif\n}",
+volumetricLightScatteringPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D lightScatteringSampler;\n\nuniform float decay;\nuniform float exposure;\nuniform float weight;\nuniform float density;\nuniform vec2 meshPositionOnScreen;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n    vec2 tc = vUV;\n	vec2 deltaTexCoord = (tc - meshPositionOnScreen.xy);\n    deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;\n\n    float illuminationDecay = 1.0;\n\n	vec4 color = texture2D(lightScatteringSampler, tc) * 0.4;\n\n    for(int i=0; i < NUM_SAMPLES; i++) {\n        tc -= deltaTexCoord;\n		vec4 sample = texture2D(lightScatteringSampler, tc) * 0.4;\n        sample *= illuminationDecay * weight;\n        color += sample;\n        illuminationDecay *= decay;\n    }\n\n    vec4 realColor = texture2D(textureSampler, vUV);\n    gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));\n}",
+volumetricLightScatteringPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER) || defined(OPACITY)\nvarying vec2 vUV;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nuniform sampler2D diffuseSampler;\n#endif\n\n#if defined(OPACITY)\nuniform sampler2D opacitySampler;\n#endif\n\nvoid main(void)\n{\n#if defined(ALPHATEST) || defined(OPACITY) || defined(BASIC_RENDER)\n	vec4 diffuseColor = texture2D(diffuseSampler, vUV);\n#endif\n\n#ifdef ALPHATEST\n	if (diffuseColor.a < 0.4)\n		discard;\n#endif\n\n#ifdef BASIC_RENDER\n#ifdef OPACITY\n	gl_FragColor = diffuseColor * texture2D(opacitySampler, vUV);\n#else\n	gl_FragColor = diffuseColor;\n#endif\n#else\n	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n#endif\n\n}",
 woodPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float ampScale;\nuniform vec3 woodColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main(void) {\n	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));\n	vec3 wood = woodColor * ratioy;\n	gl_FragColor = vec4(wood, 1.0);\n}",
 };
         return Effect;
@@ -16296,7 +16300,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.skeleton.js.mapvar BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
-        function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable) {
+        function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable, defines) {
             this.name = name;
             this.width = -1;
             this.height = -1;
@@ -16317,7 +16321,7 @@ var BABYLON;
             this._reusable = reusable || false;
             samplers = samplers || [];
             samplers.push("textureSampler");
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, "");
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, defines !== undefined ? defines : "");
         }
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
@@ -19340,10 +19344,15 @@ var BABYLON;
                     }
                 }
                 // Sounds
-                if (parsedData.sounds && BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (parsedData.sounds) {
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
-                        parseSound(parsedSound, scene, rootUrl);
+                        if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                            parseSound(parsedSound, scene, rootUrl);
+                        }
+                        else {
+                            var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                        }
                     }
                 }
                 for (index = 0; index < scene.meshes.length; index++) {
@@ -24727,7 +24736,8 @@ var BABYLON;
             RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
             ;
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x, 0, -LSValues.y), cameraTransform);
+            var speed = this._computeLocalCameraSpeed() * 50.0;
+            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
             this.cameraRotation = this.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
         };
@@ -25679,6 +25689,8 @@ var BABYLON;
                 }
             }
             else {
+                // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
+                this._scene.mainSoundTrack.AddSound(this);
                 if (!BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported) {
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported = true;
@@ -25964,7 +25976,9 @@ var BABYLON;
             }
         };
         SoundTrack.prototype.AddSound = function (sound) {
-            sound.connectToSoundTrackAudioNode(this._trackGain);
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                sound.connectToSoundTrackAudioNode(this._trackGain);
+            }
             if (sound.soundTrackId) {
                 if (sound.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(sound);
@@ -27629,7 +27643,8 @@ var BABYLON;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        SSAORenderingPipeline.prototype.dispose = function () {
+        SSAORenderingPipeline.prototype.dispose = function (disableDepthRender) {
+            if (disableDepthRender === void 0) { disableDepthRender = false; }
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             this._originalColorPostProcess = undefined;
             this._ssaoPostProcess = undefined;
@@ -27637,6 +27652,8 @@ var BABYLON;
             this._blurVPostProcess = undefined;
             this._ssaoCombinePostProcess = undefined;
             this._randomTexture.dispose();
+            if (disableDepthRender)
+                this._scene.disableDepthRenderer();
         };
         // Private Methods
         SSAORenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {
@@ -27739,6 +27756,7 @@ var BABYLON;
 //# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map
 var BABYLON;
 (function (BABYLON) {
+    // Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
     var VolumetricLightScatteringPostProcess = (function (_super) {
         __extends(VolumetricLightScatteringPostProcess, _super);
         /**
@@ -27751,30 +27769,44 @@ var BABYLON;
          * @param {BABYLON.Engine} engine - The babylon engine
          * @param {boolean} reusable - If the post-process is reusable
          */
-        function VolumetricLightScatteringPostProcess(name, ratio, camera, mesh, samplingMode, engine, reusable) {
+        function VolumetricLightScatteringPostProcess(name, ratio, camera, mesh, samples, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, "volumetricLightScattering", ["lightPositionOnScreen"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable);
+            if (samples === void 0) { samples = 100; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
+            _super.call(this, name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             this._screenCoordinates = BABYLON.Vector2.Zero();
             /**
             * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
             * @type {boolean}
             */
-            this.useCustomLightPosition = false;
+            this.useCustomMeshPosition = false;
             /**
             * If the post-process should inverse the light scattering direction
             * @type {boolean}
             */
             this.invert = true;
+            /**
+            * Array containing the excluded meshes not rendered in the internal pass
+            */
+            this.excludedMeshes = new Array();
+            this.exposure = 0.3;
+            this.decay = 0.96815;
+            this.weight = 0.58767;
+            this.density = 0.926;
             var scene = camera.getScene();
             this._viewPort = new BABYLON.Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
             // Configure mesh
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
             // Configure
-            this._createPass(scene);
+            this._createPass(scene, 0.5);
             this.onApply = function (effect) {
-                _this._updateScreenCoordinates(scene);
-                effect.setTexture("lightScatteringSampler", _this._godRaysRTT);
-                effect.setVector2("lightPositionOnScreen", _this._screenCoordinates);
+                _this._updateMeshScreenCoordinates(scene);
+                effect.setTexture("lightScatteringSampler", _this._volumetricLightScatteringRTT);
+                effect.setFloat("exposure", _this.exposure);
+                effect.setFloat("decay", _this.decay);
+                effect.setFloat("weight", _this.weight);
+                effect.setFloat("density", _this.density);
+                effect.setVector2("meshPositionOnScreen", _this._screenCoordinates);
             };
         }
         VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
@@ -27790,6 +27822,8 @@ var BABYLON;
             if (material) {
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
+                if (material.opacityTexture !== undefined)
+                    defines.push("#define OPACITY");
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                     defines.push("#define UV1");
@@ -27818,29 +27852,33 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._godRaysPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "far"], ["diffuseSampler"], join);
+                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "far"], ["diffuseSampler", "opacitySampler"], join);
             }
-            return this._godRaysPass.isReady();
+            return this._volumetricLightScatteringPass.isReady();
         };
         /**
          * Sets the new light position for light scattering effect
          * @param {BABYLON.Vector3} The new custom light position
          */
-        VolumetricLightScatteringPostProcess.prototype.setLightPosition = function (position) {
-            this._customLightPosition = position;
+        VolumetricLightScatteringPostProcess.prototype.setCustomMeshPosition = function (position) {
+            this._customMeshPosition = position;
         };
         /**
          * Returns the light position for light scattering effect
          * @return {BABYLON.Vector3} The custom light position
          */
-        VolumetricLightScatteringPostProcess.prototype.getLightPosition = function () {
-            return this._customLightPosition;
+        VolumetricLightScatteringPostProcess.prototype.getCustomMeshPosition = function () {
+            return this._customMeshPosition;
         };
         /**
          * Disposes the internal assets and detaches the post-process from the camera
          */
         VolumetricLightScatteringPostProcess.prototype.dispose = function (camera) {
-            this._godRaysRTT.dispose();
+            var rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
+            if (rttIndex !== -1) {
+                camera.getScene().customRenderTargets.splice(rttIndex, 1);
+            }
+            this._volumetricLightScatteringRTT.dispose();
             _super.prototype.dispose.call(this, camera);
         };
         /**
@@ -27848,21 +27886,30 @@ var BABYLON;
          * @return {BABYLON.RenderTargetTexture} The render target texture used by the post-process
          */
         VolumetricLightScatteringPostProcess.prototype.getPass = function () {
-            return this._godRaysRTT;
+            return this._volumetricLightScatteringRTT;
         };
         // Private methods
-        VolumetricLightScatteringPostProcess.prototype._createPass = function (scene) {
+        VolumetricLightScatteringPostProcess.prototype._meshExcluded = function (mesh) {
+            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return true;
+            }
+            return false;
+        };
+        VolumetricLightScatteringPostProcess.prototype._createPass = function (scene, ratio) {
             var _this = this;
             var engine = scene.getEngine();
-            this._godRaysRTT = new BABYLON.RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._godRaysRTT.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this._godRaysRTT.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this._godRaysRTT.renderList = null;
-            this._godRaysRTT.renderParticles = false;
-            scene.customRenderTargets.push(this._godRaysRTT);
+            this._volumetricLightScatteringRTT = new BABYLON.RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._volumetricLightScatteringRTT.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._volumetricLightScatteringRTT.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._volumetricLightScatteringRTT.renderList = null;
+            this._volumetricLightScatteringRTT.renderParticles = false;
+            scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
             // Custom render function for submeshes
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
+                if (_this._meshExcluded(mesh)) {
+                    return;
+                }
                 var scene = mesh.getScene();
                 var engine = scene.getEngine();
                 // Culling
@@ -27874,35 +27921,38 @@ var BABYLON;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
-                    engine.enableEffect(_this._godRaysPass);
-                    mesh._bind(subMesh, _this._godRaysPass, BABYLON.Material.TriangleFillMode);
+                    engine.enableEffect(_this._volumetricLightScatteringPass);
+                    mesh._bind(subMesh, _this._volumetricLightScatteringPass, BABYLON.Material.TriangleFillMode);
                     var material = subMesh.getMaterial();
-                    _this._godRaysPass.setMatrix("viewProjection", scene.getTransformMatrix());
+                    _this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
                     // Alpha test
-                    if (material && (mesh === _this.mesh || material.needAlphaTesting())) {
+                    if (material && (mesh === _this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._godRaysPass.setTexture("diffuseSampler", alphaTexture);
-                        _this._godRaysPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
+                        if (_this.mesh.material && alphaTexture)
+                            _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (material.opacityTexture !== undefined)
+                            _this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
                     }
                     // Bones
                     if (mesh.useBones) {
-                        _this._godRaysPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
                     // Draw
-                    mesh._processRendering(subMesh, _this._godRaysPass, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._godRaysPass.setMatrix("world", world); });
+                    mesh._processRendering(subMesh, _this._volumetricLightScatteringPass, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._volumetricLightScatteringPass.setMatrix("world", world); });
                 }
             };
             // Render target texture callbacks
             var savedSceneClearColor;
             var sceneClearColor = new BABYLON.Color3(0.0, 0.0, 0.0);
-            this._godRaysRTT.onBeforeRender = function () {
+            this._volumetricLightScatteringRTT.onBeforeRender = function () {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;
             };
-            this._godRaysRTT.onAfterRender = function () {
+            this._volumetricLightScatteringRTT.onAfterRender = function () {
                 scene.clearColor = savedSceneClearColor;
             };
-            this._godRaysRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes) {
+            this._volumetricLightScatteringRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
                 var index;
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
@@ -27910,11 +27960,14 @@ var BABYLON;
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
             };
         };
-        VolumetricLightScatteringPostProcess.prototype._updateScreenCoordinates = function (scene) {
+        VolumetricLightScatteringPostProcess.prototype._updateMeshScreenCoordinates = function (scene) {
             var transform = scene.getTransformMatrix();
-            var pos = BABYLON.Vector3.Project(this.useCustomLightPosition ? this._customLightPosition : this.mesh.position, BABYLON.Matrix.Identity(), transform, this._viewPort);
+            var pos = BABYLON.Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : this.mesh.position, BABYLON.Matrix.Identity(), transform, this._viewPort);
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
             if (this.invert)

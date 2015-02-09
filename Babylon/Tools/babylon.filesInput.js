@@ -77,6 +77,7 @@ var BABYLON;
                         case "image/vnd.ms-dds":
                         case "audio/wav":
                         case "audio/x-wav":
+                        case "audio/mp3":
                         case "audio/mpeg":
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":

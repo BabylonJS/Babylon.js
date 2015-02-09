@@ -91,10 +91,6 @@
             var scene = this.getScene();
             var engine = scene.getEngine();
 
-            if (!this.activeCamera) {
-                this.activeCamera = scene.activeCamera;
-            }
-
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
