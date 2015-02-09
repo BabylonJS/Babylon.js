@@ -8,42 +8,15 @@ var BABYLON;
 (function (BABYLON) {
     var SSAORenderingPipeline = (function (_super) {
         __extends(SSAORenderingPipeline, _super);
-        /**
-         * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
-         */
         function SSAORenderingPipeline(name, scene, ratio, cameras) {
             var _this = this;
             if (ratio === void 0) { ratio = 1.0; }
             _super.call(this, scene.getEngine(), name);
             // Members
-            /**
-            * The PassPostProcess id in the pipeline that contains the original scene color
-            * @type {string}
-            */
             this.SSAOOriginalSceneColorEffect = "SSAOOriginalSceneColorEffect";
-            /**
-            * The SSAO PostProcess id in the pipeline
-            * @type {string}
-            */
             this.SSAORenderEffect = "SSAORenderEffect";
-            /**
-            * The horizontal blur PostProcess id in the pipeline
-            * @type {string}
-            */
             this.SSAOBlurHRenderEffect = "SSAOBlurHRenderEffect";
-            /**
-            * The vertical blur PostProcess id in the pipeline
-            * @type {string}
-            */
             this.SSAOBlurVRenderEffect = "SSAOBlurVRenderEffect";
-            /**
-            * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
-            * @type {string}
-            */
             this.SSAOCombineRenderEffect = "SSAOCombineRenderEffect";
             this._firstUpdate = true;
             this._scene = scene;
@@ -52,8 +25,8 @@ var BABYLON;
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess();
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -77,25 +50,15 @@ var BABYLON;
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
         // Public Methods
-        /**
-         * Returns the horizontal blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
-         */
         SSAORenderingPipeline.prototype.getBlurHPostProcess = function () {
             return this._blurHPostProcess;
         };
-        /**
-         * Returns the vertical blur PostProcess
-         * @return {BABYLON.BlurPostProcess} The vertical blur post-process
-         */
         SSAORenderingPipeline.prototype.getBlurVPostProcess = function () {
             return this._blurVPostProcess;
         };
-        /**
-         * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
-         */
-        SSAORenderingPipeline.prototype.dispose = function () {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+        SSAORenderingPipeline.prototype.dispose = function (cameras) {
+            if (cameras !== undefined)
+                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
             this._originalColorPostProcess = undefined;
             this._ssaoPostProcess = undefined;
             this._blurHPostProcess = undefined;

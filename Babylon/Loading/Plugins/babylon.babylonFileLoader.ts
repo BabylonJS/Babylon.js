@@ -1434,10 +1434,15 @@
             }
 
             // Sounds
-            if (parsedData.sounds && Engine.audioEngine.canUseWebAudio) {
+            if (parsedData.sounds) {
                 for (index = 0; index < parsedData.sounds.length; index++) {
                     var parsedSound = parsedData.sounds[index];
-                    parseSound(parsedSound, scene, rootUrl);
+                    if (Engine.audioEngine.canUseWebAudio) {
+                        parseSound(parsedSound, scene, rootUrl);
+                    }
+                    else {
+                        var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                    }
                 }
             }
 
