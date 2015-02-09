@@ -94,7 +94,8 @@ var BABYLON;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        SSAORenderingPipeline.prototype.dispose = function () {
+        SSAORenderingPipeline.prototype.dispose = function (disableDepthRender) {
+            if (disableDepthRender === void 0) { disableDepthRender = false; }
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             this._originalColorPostProcess = undefined;
             this._ssaoPostProcess = undefined;
@@ -102,6 +103,8 @@ var BABYLON;
             this._blurVPostProcess = undefined;
             this._ssaoCombinePostProcess = undefined;
             this._randomTexture.dispose();
+            if (disableDepthRender)
+                this._scene.disableDepthRenderer();
         };
         // Private Methods
         SSAORenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {

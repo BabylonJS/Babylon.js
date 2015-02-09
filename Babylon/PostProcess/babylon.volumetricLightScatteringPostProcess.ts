@@ -1,18 +1,19 @@
 ﻿module BABYLON {
+    // Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
     export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Members
-        private _godRaysPass: Effect;
-        private _godRaysRTT: RenderTargetTexture;
+        private _volumetricLightScatteringPass: Effect;
+        private _volumetricLightScatteringRTT: RenderTargetTexture;
         private _viewPort: Viewport;
         private _screenCoordinates: Vector2 = Vector2.Zero();
         private _cachedDefines: string;
-        private _customLightPosition: Vector3;
+        private _customMeshPosition: Vector3;
 
         /**
         * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
         * @type {boolean}
         */
-        public useCustomLightPosition: boolean = false;
+        public useCustomMeshPosition: boolean = false;
         /**
         * If the post-process should inverse the light scattering direction
         * @type {boolean}
@@ -25,6 +26,16 @@
         public mesh: Mesh;
 
         /**
+        * Array containing the excluded meshes not rendered in the internal pass
+        */
+        public excludedMeshes = new Array<AbstractMesh>();
+
+        public exposure = 0.3;
+        public decay = 0.96815;
+        public weight = 0.58767;
+        public density = 0.926;
+
+        /**
          * @constructor
          * @param {string} name - The post-process name
          * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
@@ -34,8 +45,8 @@
          * @param {BABYLON.Engine} engine - The babylon engine
          * @param {boolean} reusable - If the post-process is reusable
          */
-        constructor(name: string, ratio: number, camera: Camera, mesh?: Mesh, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-            super(name, "volumetricLightScattering", ["lightPositionOnScreen"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable);
+        constructor(name: string, ratio: number, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
+            super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             var scene = camera.getScene();
 
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
@@ -44,32 +55,39 @@
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
 
             // Configure
-            this._createPass(scene);
+            this._createPass(scene, 0.5);
 
             this.onApply = (effect: Effect) => {
-                this._updateScreenCoordinates(scene);
+                this._updateMeshScreenCoordinates(scene);
 
-                effect.setTexture("lightScatteringSampler", this._godRaysRTT);
-                effect.setVector2("lightPositionOnScreen", this._screenCoordinates);
+                effect.setTexture("lightScatteringSampler", this._volumetricLightScatteringRTT);
+                effect.setFloat("exposure", this.exposure);
+                effect.setFloat("decay", this.decay);
+                effect.setFloat("weight", this.weight);
+                effect.setFloat("density", this.density);
+                effect.setVector2("meshPositionOnScreen", this._screenCoordinates);
             };
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
 
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
-            var material = subMesh.getMaterial();
+            var material: any = subMesh.getMaterial();
 
             // Render this.mesh as default
-            if (mesh === this.mesh)
+            if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+            }
 
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
+
+                if (material.opacityTexture !== undefined)
+                    defines.push("#define OPACITY");
 
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     attribs.push(VertexBuffer.UVKind);
@@ -102,37 +120,42 @@
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._godRaysPass = mesh.getScene().getEngine().createEffect(
+                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
-                    ["diffuseSampler"], join);
+                    ["diffuseSampler", "opacitySampler"], join);
             }
 
-            return this._godRaysPass.isReady();
+            return this._volumetricLightScatteringPass.isReady();
         }
 
         /**
          * Sets the new light position for light scattering effect
          * @param {BABYLON.Vector3} The new custom light position
          */
-        public setLightPosition(position: Vector3): void {
-            this._customLightPosition = position;
+        public setCustomMeshPosition(position: Vector3): void {
+            this._customMeshPosition = position;
         }
 
         /**
          * Returns the light position for light scattering effect
          * @return {BABYLON.Vector3} The custom light position
          */
-        public getLightPosition(): Vector3 {
-            return this._customLightPosition;
+        public getCustomMeshPosition(): Vector3 {
+            return this._customMeshPosition;
         }
 
         /**
          * Disposes the internal assets and detaches the post-process from the camera
          */
         public dispose(camera: Camera): void {
-            this._godRaysRTT.dispose();
+            var rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
+            if (rttIndex !== -1) {
+                camera.getScene().customRenderTargets.splice(rttIndex, 1);
+            }
+                
+            this._volumetricLightScatteringRTT.dispose();
             super.dispose(camera);
         }
 
@@ -141,23 +164,35 @@
          * @return {BABYLON.RenderTargetTexture} The render target texture used by the post-process
          */
         public getPass(): RenderTargetTexture {
-            return this._godRaysRTT;
+            return this._volumetricLightScatteringRTT;
         }
 
         // Private methods
-        private _createPass(scene: Scene): void {
+        private _meshExcluded(mesh: AbstractMesh) {
+            if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return true;
+            }
+
+            return false;
+        }
+
+        private _createPass(scene: Scene, ratio: number): void {
             var engine = scene.getEngine();
 
-            this._godRaysRTT = new RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._godRaysRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._godRaysRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this._godRaysRTT.renderList = null;
-            this._godRaysRTT.renderParticles = false;
-            scene.customRenderTargets.push(this._godRaysRTT);
+            this._volumetricLightScatteringRTT = new RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._volumetricLightScatteringRTT.renderList = null;
+            this._volumetricLightScatteringRTT.renderParticles = false;
+            scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
 
             // Custom render function for submeshes
             var renderSubMesh = (subMesh: SubMesh): void => {
                 var mesh = subMesh.getRenderingMesh();
+                if (this._meshExcluded(mesh)) {
+                    return;
+                }
+
                 var scene = mesh.getScene();
                 var engine = scene.getEngine();
 
@@ -174,27 +209,31 @@
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
-                    engine.enableEffect(this._godRaysPass);
-                    mesh._bind(subMesh, this._godRaysPass, Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
+                    engine.enableEffect(this._volumetricLightScatteringPass);
+                    mesh._bind(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode);
+                    var material: any = subMesh.getMaterial();
 
-                    this._godRaysPass.setMatrix("viewProjection", scene.getTransformMatrix());
+                    this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     // Alpha test
-                    if (material && (mesh === this.mesh || material.needAlphaTesting())) {
+                    if (material && (mesh === this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        this._godRaysPass.setTexture("diffuseSampler", alphaTexture);
-                        this._godRaysPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
+                        if (this.mesh.material && alphaTexture)
+                            this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+
+                        if (material.opacityTexture !== undefined)
+                            this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
                     }
 
                     // Bones
                     if (mesh.useBones) {
-                        this._godRaysPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
                     // Draw
-                    mesh._processRendering(subMesh, this._godRaysPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                        (isInstance, world) => this._godRaysPass.setMatrix("world", world));
+                    mesh._processRendering(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                        (isInstance, world) => this._volumetricLightScatteringPass.setMatrix("world", world));
                 }
             };
 
@@ -202,16 +241,16 @@
             var savedSceneClearColor: Color3;
             var sceneClearColor = new Color3(0.0, 0.0, 0.0);
 
-            this._godRaysRTT.onBeforeRender = (): void => {
+            this._volumetricLightScatteringRTT.onBeforeRender = (): void => {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;
             };
 
-            this._godRaysRTT.onAfterRender = (): void => {
+            this._volumetricLightScatteringRTT.onAfterRender = (): void => {
                 scene.clearColor = savedSceneClearColor;
             };
 
-            this._godRaysRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>): void => {
+            this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var index;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -221,12 +260,16 @@
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
+
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
             };
         }
 
-        private _updateScreenCoordinates(scene: Scene): void {
+        private _updateMeshScreenCoordinates(scene: Scene): void {
             var transform = scene.getTransformMatrix();
-            var pos = Vector3.Project(this.useCustomLightPosition ? this._customLightPosition : this.mesh.position, Matrix.Identity(), transform, this._viewPort);
+            var pos = Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : this.mesh.position, Matrix.Identity(), transform, this._viewPort);
 
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
@@ -243,10 +286,9 @@
         * @return {BABYLON.Mesh} the default mesh
         */
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-            var mesh = BABYLON.Mesh.CreatePlane(name, 1, scene);
+            var mesh = Mesh.CreatePlane(name, 1, scene);
             mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
             mesh.material = new StandardMaterial(name + "Material", scene);
-
             return mesh;
         }
     }

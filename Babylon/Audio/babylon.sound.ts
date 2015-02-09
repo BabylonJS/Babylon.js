@@ -102,6 +102,8 @@
                 }
             }
             else {
+                // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
+                this._scene.mainSoundTrack.AddSound(this);
                 if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     Engine.audioEngine.WarnedWebAudioUnsupported = true;

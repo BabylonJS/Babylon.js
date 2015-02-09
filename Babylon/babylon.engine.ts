@@ -846,7 +846,7 @@
         }
 
         public endFrame(): void {
-            this.flushFramebuffer();
+            //this.flushFramebuffer();
         }
 
         /**
@@ -895,7 +895,7 @@
         }
 
         public flushFramebuffer(): void {
-            //   this._gl.flush();
+            this._gl.flush();
         }
 
         public restoreDefaultFramebuffer(): void {

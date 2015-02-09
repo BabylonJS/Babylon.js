@@ -36,16 +36,16 @@
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
-            this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+            this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
 
             // World
             for (var index = 0; index < this.vectors.length; index++) {
-                this.vectorsWorld[index] = BABYLON.Vector3.Zero();
+                this.vectorsWorld[index] = Vector3.Zero();
             }
-            this.minimumWorld = BABYLON.Vector3.Zero();
-            this.maximumWorld = BABYLON.Vector3.Zero();
+            this.minimumWorld = Vector3.Zero();
+            this.maximumWorld = Vector3.Zero();
 
-            this._update(BABYLON.Matrix.Identity());
+            this._update(Matrix.Identity());
         }
 
         // Methods
@@ -59,7 +59,7 @@
 
             for (var index = 0; index < this.vectors.length; index++) {
                 var v = this.vectorsWorld[index];
-                BABYLON.Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
+                Vector3.TransformCoordinatesToRef(this.vectors[index], world, v);
 
                 if (v.x < this.minimumWorld.x)
                     this.minimumWorld.x = v.x;
@@ -142,8 +142,8 @@
         }
 
         public static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean {
-            var vector = BABYLON.Vector3.Clamp(sphereCenter, minPoint, maxPoint);
-            var num = BABYLON.Vector3.DistanceSquared(sphereCenter, vector);
+            var vector = Vector3.Clamp(sphereCenter, minPoint, maxPoint);
+            var num = Vector3.DistanceSquared(sphereCenter, vector);
             return (num <= (sphereRadius * sphereRadius));
         }
 
@@ -169,7 +169,7 @@
                         break;
                     }
                 }
-                if (inCount == 0)
+                if (inCount === 0)
                     return false;
             }
             return true;

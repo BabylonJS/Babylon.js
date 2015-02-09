@@ -587,22 +587,26 @@
                 return;
             }
 
+            impostor = impostor || PhysicsEngine.NoImpostor;
+
             if (impostor.impostor) {
                 // Old API
                 options = impostor;
                 impostor = impostor.impostor;
             }
 
-            impostor = impostor || PhysicsEngine.NoImpostor;
-
             if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
                 return;
             }
 
-            options.mass = options.mass || 0;
-            options.friction = options.friction || 0.2;
-            options.restitution = options.restitution || 0.2;
+            if (!options) {
+                options = { mass: 0, friction: 0.2, restitution: 0.2 };
+            } else {
+                options.mass = options.mass || 0;
+                options.friction = options.friction || 0.2;
+                options.restitution = options.restitution || 0.2;
+            }
 
             this._physicImpostor = impostor;
             this._physicsMass = options.mass;
