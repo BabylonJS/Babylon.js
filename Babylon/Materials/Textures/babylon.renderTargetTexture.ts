@@ -147,7 +147,6 @@
             // Clear
             engine.clear(scene.clearColor, true, true);
 
-
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
@@ -159,16 +158,16 @@
                 scene.postProcessManager._finalizeFrame(false, this._texture);
             }
 
+            if (!this._doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
+            }
+
             if (this.onAfterRender) {
                 this.onAfterRender();
             }
 
             // Unbind
             engine.unBindFramebuffer(this._texture);
-
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
         }
 
         public clone(): RenderTargetTexture {

@@ -4,7 +4,7 @@ var BABYLON;
         function ShadowGenerator(mapSize, light) {
             var _this = this;
             // Members
-            this.filter = ShadowGenerator.FILTER_NONE;
+            this.filter = ShadowGenerator.FILTER_VARIANCESHADOWMAP;
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();

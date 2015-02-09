@@ -2422,7 +2422,7 @@ var __extends = this.__extends || function (d, b) {
             var result = "";
             var child = element.firstChild;
             while (child) {
-                if (child.nodeType == 3) {
+                if (child.nodeType === 3) {
                     result += child.textContent;
                 }
                 child = child.nextSibling;
@@ -2522,7 +2522,7 @@ var __extends = this.__extends || function (d, b) {
         Tools.LoadImage = function (url, onload, onerror, database) {
             url = Tools.CleanUrl(url);
             var img = new Image();
-            if (url.substr(0, 5) != "data:")
+            if (url.substr(0, 5) !== "data:")
                 img.crossOrigin = 'anonymous';
             img.onload = function () {
                 onload(img);
@@ -2577,8 +2577,8 @@ var __extends = this.__extends || function (d, b) {
                 }
                 request.onprogress = progressCallBack;
                 request.onreadystatechange = function () {
-                    if (request.readyState == 4) {
-                        if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
+                    if (request.readyState === 4) {
+                        if (request.status === 200 || Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         }
                         else {
@@ -2598,7 +2598,7 @@ var __extends = this.__extends || function (d, b) {
             };
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5);
-                BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
             }
             else {
                 // Caching all files
@@ -2679,10 +2679,10 @@ var __extends = this.__extends || function (d, b) {
                 }
                 var sourceValue = source[prop];
                 var typeOfSourceValue = typeof sourceValue;
-                if (typeOfSourceValue == "function") {
+                if (typeOfSourceValue === "function") {
                     continue;
                 }
-                if (typeOfSourceValue == "object") {
+                if (typeOfSourceValue === "object") {
                     if (sourceValue instanceof Array) {
                         destination[prop] = [];
                         if (sourceValue.length > 0) {
@@ -2861,7 +2861,7 @@ var __extends = this.__extends || function (d, b) {
                 if (dataType & 4) {
                     // Check for the "DDS" magic number
                     var ddsHeader = new Uint8Array(xhr.response, 0, 3);
-                    if (ddsHeader[0] == 68 && ddsHeader[1] == 68 && ddsHeader[2] == 83) {
+                    if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
                         return true;
                     }
                     else {
@@ -3911,7 +3911,7 @@ var __extends = this.__extends || function (d, b) {
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
-            this.flushFramebuffer();
+            //this.flushFramebuffer();
         };
         /**
          * resize the view according to the canvas' size.
@@ -3951,7 +3951,7 @@ var __extends = this.__extends || function (d, b) {
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         };
         Engine.prototype.flushFramebuffer = function () {
-            //   this._gl.flush();
+            this._gl.flush();
         };
         Engine.prototype.restoreDefaultFramebuffer = function () {
             this._currentRenderTarget = null;
@@ -5362,7 +5362,7 @@ var __extends = this.__extends || function (d, b) {
                         break;
                     }
                 }
-                if (inCount == 0)
+                if (inCount === 0)
                     return false;
             }
             return true;
@@ -11998,14 +11998,14 @@ var BABYLON;
             if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._texture);
             }
+            if (!this._doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
+            }
             if (this.onAfterRender) {
                 this.onAfterRender();
             }
             // Unbind
             engine.unBindFramebuffer(this._texture);
-            if (!this._doNotChangeAspectRatio) {
-                scene.updateTransformMatrix(true);
-            }
         };
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();
@@ -16953,6 +16953,7 @@ var BABYLON;
                         case "image/vnd.ms-dds":
                         case "audio/wav":
                         case "audio/x-wav":
+                        case "audio/mp3":
                         case "audio/mpeg":
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
@@ -27778,13 +27779,13 @@ var BABYLON;
         }
         VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var material = subMesh.getMaterial();
             // Render this.mesh as default
-            if (mesh === this.mesh)
+            if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+            }
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting() || mesh === this.mesh)

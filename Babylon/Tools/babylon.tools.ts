@@ -56,7 +56,7 @@
             var child = element.firstChild;
 
             while (child) {
-                if (child.nodeType == 3) {
+                if (child.nodeType === 3) {
                     result += child.textContent;
                 }
                 child = child.nextSibling;
@@ -80,8 +80,8 @@
             for (var index = indexStart; index < indexStart + indexCount; index++) {
                 var current = new Vector3(positions[indices[index] * 3], positions[indices[index] * 3 + 1], positions[indices[index] * 3 + 2]);
 
-                minimum = BABYLON.Vector3.Minimize(current, minimum);
-                maximum = BABYLON.Vector3.Maximize(current, maximum);
+                minimum = Vector3.Minimize(current, minimum);
+                maximum = Vector3.Maximize(current, maximum);
             }
 
             return {
@@ -97,8 +97,8 @@
             for (var index = start; index < start + count; index++) {
                 var current = new Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
 
-                minimum = BABYLON.Vector3.Minimize(current, minimum);
-                maximum = BABYLON.Vector3.Maximize(current, maximum);
+                minimum = Vector3.Minimize(current, minimum);
+                maximum = Vector3.Maximize(current, maximum);
             }
 
             return {
@@ -179,7 +179,7 @@
 
             var img = new Image();
 
-            if (url.substr(0, 5) != "data:")
+            if (url.substr(0, 5) !== "data:")
                 img.crossOrigin = 'anonymous';
 
             img.onload = () => {
@@ -200,7 +200,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline && Database.isUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -212,11 +212,11 @@
                         var textureName = url.substring(5);
                         var blobURL;
                         try {
-                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
+                            blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
                         }
                         catch (ex) {
                             // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName]);
+                            blobURL = URL.createObjectURL(FilesInput.FilesTextures[textureName]);
                         }
                         img.src = blobURL;
                     }
@@ -246,8 +246,8 @@
                 request.onprogress = progressCallBack;
 
                 request.onreadystatechange = () => {
-                    if (request.readyState == 4) {
-                        if (request.status == 200 || BABYLON.Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
+                    if (request.readyState === 4) {
+                        if (request.status === 200 || Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             if (onError) {
@@ -269,7 +269,7 @@
 
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5);
-                BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
             }
             else {
                 // Caching all files
@@ -319,7 +319,7 @@
             if (value === 0 || isNaN(value))
                 return value;
 
-            return value > 0 ? 1 : -1
+            return value > 0 ? 1 : -1;
         }
 
         public static Format(value: number, decimals: number = 2): string {
@@ -360,11 +360,11 @@
                 var sourceValue = source[prop];
                 var typeOfSourceValue = typeof sourceValue;
 
-                if (typeOfSourceValue == "function") {
+                if (typeOfSourceValue === "function") {
                     continue;
                 }
 
-                if (typeOfSourceValue == "object") {
+                if (typeOfSourceValue === "object") {
                     if (sourceValue instanceof Array) {
                         destination[prop] = [];
 
@@ -483,7 +483,6 @@
                 //Reading datas from WebGL
                 var data = engine.readPixels(0, 0, width, height);
 
-
                 //To flip image on Y axis.
                 for (var i = 0; i < halfHeight; i++) {
                     for (var j = 0; j < numberOfChannelsByLine; j++) {
@@ -561,7 +560,7 @@
 
                 if (dataType & 2) {
                     // Check header width and height since there is no "TGA" magic number
-                    var tgaHeader = BABYLON.Internals.TGATools.GetTGAHeader(xhr.response);
+                    var tgaHeader = Internals.TGATools.GetTGAHeader(xhr.response);
 
                     if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                         return true;
@@ -574,7 +573,7 @@
                     // Check for the "DDS" magic number
                     var ddsHeader = new Uint8Array(xhr.response, 0, 3);
 
-                    if (ddsHeader[0] == 68 && ddsHeader[1] == 68 && ddsHeader[2] == 83) {
+                    if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
                         return true;
                     } else {
                         return false;

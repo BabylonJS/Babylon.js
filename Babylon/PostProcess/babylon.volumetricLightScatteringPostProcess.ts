@@ -56,15 +56,15 @@
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
 
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material = subMesh.getMaterial();
 
             // Render this.mesh as default
-            if (mesh === this.mesh)
+            if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+            }
 
             // Alpha test
             if (material) {
@@ -243,7 +243,7 @@
         * @return {BABYLON.Mesh} the default mesh
         */
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-            var mesh = BABYLON.Mesh.CreatePlane(name, 1, scene);
+            var mesh = Mesh.CreatePlane(name, 1, scene);
             mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
             mesh.material = new StandardMaterial(name + "Material", scene);
 

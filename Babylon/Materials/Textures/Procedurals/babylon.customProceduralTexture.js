@@ -21,7 +21,7 @@ var BABYLON;
             var _this = this;
             var that = this;
             function noConfigFile() {
-                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
+                BABYLON.Tools.Log("No config file found in " + jsonUrl + " trying to use ShaderStore or DOM element");
                 try {
                     that.setFragment(that._texturePath);
                 }
@@ -50,7 +50,7 @@ var BABYLON;
                     noConfigFile();
                 }
             }, false);
-            xhr.addEventListener("error", function () {
+            xhr.addEventListener("error", function (event) {
                 noConfigFile();
             }, false);
             try {
