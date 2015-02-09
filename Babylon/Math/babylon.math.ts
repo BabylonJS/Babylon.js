@@ -1512,30 +1512,25 @@
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
-        public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
+        public static RotationYawPitchRoll(alpha: number, beta: number, gamma: number): Quaternion {
             var result = new Quaternion();
 
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
+            Quaternion.RotationYawPitchRollToRef(alpha, beta, gamma, result);
 
             return result;
         }
 
-        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
-            var halfRoll = roll * 0.5;
-            var halfPitch = pitch * 0.5;
-            var halfYaw = yaw * 0.5;
+        public static RotationYawPitchRollToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void {
+            //produces a quaternion in the z-x-z convention from Euler Angles listed below
 
-            var sinRoll = Math.sin(halfRoll);
-            var cosRoll = Math.cos(halfRoll);
-            var sinPitch = Math.sin(halfPitch);
-            var cosPitch = Math.cos(halfPitch);
-            var sinYaw = Math.sin(halfYaw);
-            var cosYaw = Math.cos(halfYaw);
+            var halfBeta = beta / 2.0;
+            var halfGammaPlusAlpha = (gamma + alpha) / 2.0;
+            var halfGammaMinusAlpha = (gamma - alpha) / 2.0;
 
-            result.x = (cosYaw * sinPitch * cosRoll) + (sinYaw * cosPitch * sinRoll);
-            result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
-            result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
-            result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+            result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
+            result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
