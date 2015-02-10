@@ -564,7 +564,7 @@ class Mesh(FCurveAnimatable):
         
         world = object.matrix_world
         if object.parent and not hasSkeleton:
-            world *= object.parent.matrix_world.inverted()
+            world = object.matrix_local
             
         # use defaults when not None
         if forcedParent is None:
