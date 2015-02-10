@@ -1,4 +1,5 @@
-﻿module BABYLON {
+﻿/// <reference path="../../references/poly2tri.d.ts" />
+module BABYLON {
     class IndexedVector2 extends Vector2 {
         constructor(original: Vector2, public index: number) {
             super(original.x, original.y);

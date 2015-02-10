@@ -45,6 +45,9 @@
     <Resource Include="..\..\..\Babylon\**\*.js">
       <Link>Babylon\%(RecursiveDir)js\%(Filename)%(Extension)</Link>
     </Resource>
+    <Resource Include="..\..\..\References\**\*.ts">
+        <Link>References\%(RecursiveDir)\%(Filename)%(Extension)</Link>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
