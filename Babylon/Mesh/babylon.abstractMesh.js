@@ -611,9 +611,12 @@ var BABYLON;
             if (!options) {
                 options = { mass: 0, friction: 0.2, restitution: 0.2 };
             } else {
-                options.mass = options.mass || 0;
-                options.friction = options.friction || 0.2;
-                options.restitution = options.restitution || 0.2;
+                if (!options.mass && options.mass !== 0)
+                    options.mass = 0;
+                if (!options.friction && options.friction !== 0)
+                    options.friction = 0.2;
+                if (!options.restitution && options.restitution !== 0)
+                    options.restitution = 0.2;
             }
 
             this._physicImpostor = impostor;
