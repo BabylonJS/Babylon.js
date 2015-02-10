@@ -127,7 +127,7 @@ var BABYLON;
                         break;
                     }
                 }
-                if (inCount == 0)
+                if (inCount === 0)
                     return false;
             }
             return true;

@@ -95,7 +95,7 @@
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
-        public dispose(): void {
+        public dispose(disableDepthRender: boolean = false): void {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
             this._originalColorPostProcess = undefined;
@@ -105,6 +105,9 @@
             this._ssaoCombinePostProcess = undefined;
 
             this._randomTexture.dispose();
+
+            if (disableDepthRender)
+                this._scene.disableDepthRenderer();
         }
 
         // Private Methods
