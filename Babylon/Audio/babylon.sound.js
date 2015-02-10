@@ -90,6 +90,8 @@ var BABYLON;
                 }
             }
             else {
+                // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
+                this._scene.mainSoundTrack.AddSound(this);
                 if (!BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported) {
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported = true;

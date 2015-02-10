@@ -1361,6 +1361,7 @@
             // Customs render targets
             var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
+            var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
@@ -1391,6 +1392,7 @@
                 engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
+            this.activeCamera = currentActiveCamera;
 
             // Procedural textures
             if (this.proceduralTexturesEnabled) {

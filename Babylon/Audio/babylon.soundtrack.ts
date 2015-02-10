@@ -42,7 +42,9 @@
         }
 
         public AddSound(sound: BABYLON.Sound) {
-            sound.connectToSoundTrackAudioNode(this._trackGain);
+            if (Engine.audioEngine.canUseWebAudio) {
+                sound.connectToSoundTrackAudioNode(this._trackGain);
+            }
             if (sound.soundTrackId) {
                 if (sound.soundTrackId === -1) {
                     this._scene.mainSoundTrack.RemoveSound(sound);
@@ -51,6 +53,7 @@
                     this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
                 }
             }
+
             this.soundCollection.push(sound);
             sound.soundTrackId = this.id;
         }

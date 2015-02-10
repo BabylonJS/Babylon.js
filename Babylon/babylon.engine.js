@@ -725,7 +725,7 @@ var BABYLON;
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
-            this.flushFramebuffer();
+            //this.flushFramebuffer();
         };
         /**
          * resize the view according to the canvas' size.
@@ -765,7 +765,7 @@ var BABYLON;
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         };
         Engine.prototype.flushFramebuffer = function () {
-            //   this._gl.flush();
+            this._gl.flush();
         };
         Engine.prototype.restoreDefaultFramebuffer = function () {
             this._currentRenderTarget = null;
