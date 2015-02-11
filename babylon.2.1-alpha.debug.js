@@ -1231,6 +1231,7 @@ var __extends = this.__extends || function (d, b) {
             return result;
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
+            //produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -1244,6 +1245,21 @@ var __extends = this.__extends || function (d, b) {
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+        };
+        Quaternion.RotationAlphaBetaGamma = function (alpha, beta, gamma) {
+            var result = new Quaternion();
+            Quaternion.RotationAlphaBetaGammaToRef(alpha, beta, gamma, result);
+            return result;
+        };
+        Quaternion.RotationAlphaBetaGammaToRef = function (alpha, beta, gamma, result) {
+            //produces a quaternion from Euler angles in the z-x-z orientation
+            var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
+            var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
+            var halfBeta = beta * 0.5;
+            result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
+            result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
         };
         Quaternion.Slerp = function (left, right, amount) {
             var num2;
@@ -9687,9 +9703,12 @@ var BABYLON;
                 options = { mass: 0, friction: 0.2, restitution: 0.2 };
             }
             else {
-                options.mass = options.mass || 0;
-                options.friction = options.friction || 0.2;
-                options.restitution = options.restitution || 0.2;
+                if (!options.mass && options.mass !== 0)
+                    options.mass = 0;
+                if (!options.friction && options.friction !== 0)
+                    options.friction = 0.2;
+                if (!options.restitution && options.restitution !== 0)
+                    options.restitution = 0.2;
             }
             this._physicImpostor = impostor;
             this._physicsMass = options.mass;
@@ -15299,7 +15318,7 @@ var BABYLON;
             keys.push({ frame: totalFrame, value: to });
             animation.setKeys(keys);
             mesh.animations.push(animation);
-            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
+            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
         };
         // Methods   
         Animation.prototype.isStopped = function () {
@@ -24237,7 +24256,9 @@ var BABYLON;
             document.body.appendChild(Gamepads.gamepadDOMInfo);
         };
         Gamepads.prototype.dispose = function () {
-            document.body.removeChild(Gamepads.gamepadDOMInfo);
+            if (Gamepads.gamepadDOMInfo) {
+                document.body.removeChild(Gamepads.gamepadDOMInfo);
+            }
         };
         Gamepads.prototype._onGamepadConnected = function (evt) {
             var newGamepad = this._addNewGamepad(evt.gamepad);

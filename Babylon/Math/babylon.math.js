@@ -1226,6 +1226,7 @@ var BABYLON;
             return result;
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
+            //produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -1239,6 +1240,21 @@ var BABYLON;
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+        };
+        Quaternion.RotationAlphaBetaGamma = function (alpha, beta, gamma) {
+            var result = new Quaternion();
+            Quaternion.RotationAlphaBetaGammaToRef(alpha, beta, gamma, result);
+            return result;
+        };
+        Quaternion.RotationAlphaBetaGammaToRef = function (alpha, beta, gamma, result) {
+            //produces a quaternion from Euler angles in the z-x-z orientation
+            var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
+            var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
+            var halfBeta = beta * 0.5;
+            result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
+            result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
         };
         Quaternion.Slerp = function (left, right, amount) {
             var num2;
