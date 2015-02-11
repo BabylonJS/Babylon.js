@@ -443,12 +443,16 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
     class Scene {
+        private static _FOGMODE_NONE;
+        private static _FOGMODE_EXP;
+        private static _FOGMODE_EXP2;
+        private static _FOGMODE_LINEAR;
+        static MinDeltaTime: number;
+        static MaxDeltaTime: number;
         static FOGMODE_NONE: number;
         static FOGMODE_EXP: number;
         static FOGMODE_EXP2: number;
         static FOGMODE_LINEAR: number;
-        static MinDeltaTime: number;
-        static MaxDeltaTime: number;
         autoClear: boolean;
         clearColor: any;
         ambientColor: Color3;
@@ -1037,6 +1041,18 @@ declare module BABYLON {
         _prepare(): void;
         execute(): void;
     }
+    class PlaySoundAction extends Action {
+        private _sound;
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+    }
+    class StopSoundAction extends Action {
+        private _sound;
+        constructor(triggerOptions: any, sound: Sound, condition?: Condition);
+        _prepare(): void;
+        execute(): void;
+    }
 }
 declare module BABYLON {
     class InterpolateValueAction extends Action {
@@ -1319,7 +1335,7 @@ declare module BABYLON {
         */
         stop(time?: number): void;
         pause(): void;
-        setVolume(newVolume: number): void;
+        setVolume(newVolume: number, time?: number): void;
         setPlaybackRate(newPlaybackRate: number): void;
         getVolume(): number;
         attachToMesh(meshToConnectTo: AbstractMesh): void;
@@ -1478,8 +1494,14 @@ declare module BABYLON {
 declare module BABYLON {
     class Camera extends Node {
         position: Vector3;
+        private static _PERSPECTIVE_CAMERA;
+        private static _ORTHOGRAPHIC_CAMERA;
+        private static _FOVMODE_VERTICAL_FIXED;
+        private static _FOVMODE_HORIZONTAL_FIXED;
         static PERSPECTIVE_CAMERA: number;
         static ORTHOGRAPHIC_CAMERA: number;
+        static FOVMODE_VERTICAL_FIXED: number;
+        static FOVMODE_HORIZONTAL_FIXED: number;
         upVector: Vector3;
         orthoLeft: any;
         orthoRight: any;
@@ -1494,6 +1516,7 @@ declare module BABYLON {
         viewport: Viewport;
         subCameras: any[];
         layerMask: number;
+        fovMode: number;
         private _computedViewMatrix;
         _projectionMatrix: Matrix;
         private _worldMatrix;
@@ -2671,22 +2694,22 @@ declare module BABYLON {
         b: number;
         constructor(r?: number, g?: number, b?: number);
         toString(): string;
-        toArray(array: number[], index?: number): void;
+        toArray(array: number[], index?: number): Color3;
         toColor4(alpha?: number): Color4;
         asArray(): number[];
         toLuminance(): number;
         multiply(otherColor: Color3): Color3;
-        multiplyToRef(otherColor: Color3, result: Color3): void;
+        multiplyToRef(otherColor: Color3, result: Color3): Color3;
         equals(otherColor: Color3): boolean;
         scale(scale: number): Color3;
-        scaleToRef(scale: number, result: Color3): void;
+        scaleToRef(scale: number, result: Color3): Color3;
         add(otherColor: Color3): Color3;
-        addToRef(otherColor: Color3, result: Color3): void;
+        addToRef(otherColor: Color3, result: Color3): Color3;
         subtract(otherColor: Color3): Color3;
-        subtractToRef(otherColor: Color3, result: Color3): void;
+        subtractToRef(otherColor: Color3, result: Color3): Color3;
         clone(): Color3;
-        copyFrom(source: Color3): void;
-        copyFromFloats(r: number, g: number, b: number): void;
+        copyFrom(source: Color3): Color3;
+        copyFromFloats(r: number, g: number, b: number): Color3;
         static FromArray(array: number[], offset?: number): Color3;
         static FromInts(r: number, g: number, b: number): Color3;
         static Lerp(start: Color3, end: Color3, amount: number): Color3;
@@ -2706,17 +2729,17 @@ declare module BABYLON {
         b: number;
         a: number;
         constructor(r: number, g: number, b: number, a: number);
-        addInPlace(right: any): void;
+        addInPlace(right: any): Color4;
         asArray(): number[];
-        toArray(array: number[], index?: number): void;
+        toArray(array: number[], index?: number): Color4;
         add(right: Color4): Color4;
         subtract(right: Color4): Color4;
-        subtractToRef(right: Color4, result: Color4): void;
+        subtractToRef(right: Color4, result: Color4): Color4;
         scale(scale: number): Color4;
-        scaleToRef(scale: number, result: Color4): void;
+        scaleToRef(scale: number, result: Color4): Color4;
         toString(): string;
         clone(): Color4;
-        copyFrom(source: Color4): void;
+        copyFrom(source: Color4): Color4;
         static Lerp(left: Color4, right: Color4, amount: number): Color4;
         static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
         static FromArray(array: number[], offset?: number): Color4;
@@ -2727,20 +2750,20 @@ declare module BABYLON {
         y: number;
         constructor(x: number, y: number);
         toString(): string;
-        toArray(array: number[], index?: number): void;
+        toArray(array: number[], index?: number): Vector2;
         asArray(): number[];
-        copyFrom(source: Vector2): void;
-        copyFromFloats(x: number, y: number): void;
+        copyFrom(source: Vector2): Vector2;
+        copyFromFloats(x: number, y: number): Vector2;
         add(otherVector: Vector2): Vector2;
         addVector3(otherVector: Vector3): Vector2;
         subtract(otherVector: Vector2): Vector2;
-        subtractInPlace(otherVector: Vector2): void;
-        multiplyInPlace(otherVector: Vector2): void;
+        subtractInPlace(otherVector: Vector2): Vector2;
+        multiplyInPlace(otherVector: Vector2): Vector2;
         multiply(otherVector: Vector2): Vector2;
-        multiplyToRef(otherVector: Vector2, result: Vector2): void;
+        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
         multiplyByFloats(x: number, y: number): Vector2;
         divide(otherVector: Vector2): Vector2;
-        divideToRef(otherVector: Vector2, result: Vector2): void;
+        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
         negate(): Vector2;
         scaleInPlace(scale: number): Vector2;
         scale(scale: number): Vector2;
@@ -2771,15 +2794,16 @@ declare module BABYLON {
         constructor(x: number, y: number, z: number);
         toString(): string;
         asArray(): number[];
-        toArray(array: number[], index?: number): void;
-        addInPlace(otherVector: Vector3): void;
+        toArray(array: number[], index?: number): Vector3;
+        toQuaternion(): Quaternion;
+        addInPlace(otherVector: Vector3): Vector3;
         add(otherVector: Vector3): Vector3;
-        addToRef(otherVector: Vector3, result: Vector3): void;
-        subtractInPlace(otherVector: Vector3): void;
+        addToRef(otherVector: Vector3, result: Vector3): Vector3;
+        subtractInPlace(otherVector: Vector3): Vector3;
         subtract(otherVector: Vector3): Vector3;
-        subtractToRef(otherVector: Vector3, result: Vector3): void;
+        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
         subtractFromFloats(x: number, y: number, z: number): Vector3;
-        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
+        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
         negate(): Vector3;
         scaleInPlace(scale: number): Vector3;
         scale(scale: number): Vector3;
@@ -2787,20 +2811,20 @@ declare module BABYLON {
         equals(otherVector: Vector3): boolean;
         equalsWithEpsilon(otherVector: Vector3): boolean;
         equalsToFloats(x: number, y: number, z: number): boolean;
-        multiplyInPlace(otherVector: Vector3): void;
+        multiplyInPlace(otherVector: Vector3): Vector3;
         multiply(otherVector: Vector3): Vector3;
-        multiplyToRef(otherVector: Vector3, result: Vector3): void;
+        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
         multiplyByFloats(x: number, y: number, z: number): Vector3;
         divide(otherVector: Vector3): Vector3;
-        divideToRef(otherVector: Vector3, result: Vector3): void;
-        MinimizeInPlace(other: Vector3): void;
-        MaximizeInPlace(other: Vector3): void;
+        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
+        MinimizeInPlace(other: Vector3): Vector3;
+        MaximizeInPlace(other: Vector3): Vector3;
         length(): number;
         lengthSquared(): number;
         normalize(): Vector3;
         clone(): Vector3;
-        copyFrom(source: Vector3): void;
-        copyFromFloats(x: number, y: number, z: number): void;
+        copyFrom(source: Vector3): Vector3;
+        copyFromFloats(x: number, y: number, z: number): Vector3;
         static FromArray(array: number[], offset?: number): Vector3;
         static FromArrayToRef(array: number[], offset: number, result: Vector3): void;
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
@@ -2839,15 +2863,15 @@ declare module BABYLON {
         constructor(x: number, y: number, z: number, w: number);
         toString(): string;
         asArray(): number[];
-        toArray(array: number[], index?: number): void;
-        addInPlace(otherVector: Vector4): void;
+        toArray(array: number[], index?: number): Vector4;
+        addInPlace(otherVector: Vector4): Vector4;
         add(otherVector: Vector4): Vector4;
-        addToRef(otherVector: Vector4, result: Vector4): void;
-        subtractInPlace(otherVector: Vector4): void;
+        addToRef(otherVector: Vector4, result: Vector4): Vector4;
+        subtractInPlace(otherVector: Vector4): Vector4;
         subtract(otherVector: Vector4): Vector4;
-        subtractToRef(otherVector: Vector4, result: Vector4): void;
+        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
         subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
         negate(): Vector4;
         scaleInPlace(scale: number): Vector4;
         scale(scale: number): Vector4;
@@ -2855,20 +2879,20 @@ declare module BABYLON {
         equals(otherVector: Vector4): boolean;
         equalsWithEpsilon(otherVector: Vector4): boolean;
         equalsToFloats(x: number, y: number, z: number, w: number): boolean;
-        multiplyInPlace(otherVector: Vector4): void;
+        multiplyInPlace(otherVector: Vector4): Vector4;
         multiply(otherVector: Vector4): Vector4;
-        multiplyToRef(otherVector: Vector4, result: Vector4): void;
+        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
         multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
         divide(otherVector: Vector4): Vector4;
-        divideToRef(otherVector: Vector4, result: Vector4): void;
-        MinimizeInPlace(other: Vector4): void;
-        MaximizeInPlace(other: Vector4): void;
+        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
+        MinimizeInPlace(other: Vector4): Vector4;
+        MaximizeInPlace(other: Vector4): Vector4;
         length(): number;
         lengthSquared(): number;
         normalize(): Vector4;
         clone(): Vector4;
-        copyFrom(source: Vector4): void;
-        copyFromFloats(x: number, y: number, z: number, w: number): void;
+        copyFrom(source: Vector4): Vector4;
+        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
         static FromArray(array: number[], offset?: number): Vector4;
         static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
@@ -2892,19 +2916,21 @@ declare module BABYLON {
         asArray(): number[];
         equals(otherQuaternion: Quaternion): boolean;
         clone(): Quaternion;
-        copyFrom(other: Quaternion): void;
-        copyFromFloats(x: number, y: number, z: number, w: number): void;
+        copyFrom(other: Quaternion): Quaternion;
+        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
         add(other: Quaternion): Quaternion;
         subtract(other: Quaternion): Quaternion;
         scale(value: number): Quaternion;
         multiply(q1: Quaternion): Quaternion;
-        multiplyToRef(q1: Quaternion, result: Quaternion): void;
+        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
         length(): number;
-        normalize(): void;
+        normalize(): Quaternion;
         toEulerAngles(): Vector3;
-        toEulerAnglesToRef(result: Vector3): void;
-        toRotationMatrix(result: Matrix): void;
-        fromRotationMatrix(matrix: Matrix): void;
+        toEulerAnglesToRef(result: Vector3): Quaternion;
+        toRotationMatrix(result: Matrix): Quaternion;
+        fromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
         static Inverse(q: Quaternion): Quaternion;
         static Identity(): Quaternion;
         static RotationAxis(axis: Vector3, angle: number): Quaternion;
@@ -2923,14 +2949,14 @@ declare module BABYLON {
         determinant(): number;
         toArray(): Float32Array;
         asArray(): Float32Array;
-        invert(): void;
-        invertToRef(other: Matrix): void;
-        setTranslation(vector3: Vector3): void;
+        invert(): Matrix;
+        invertToRef(other: Matrix): Matrix;
+        setTranslation(vector3: Vector3): Matrix;
         multiply(other: Matrix): Matrix;
-        copyFrom(other: Matrix): void;
-        copyToArray(array: Float32Array, offset?: number): void;
-        multiplyToRef(other: Matrix, result: Matrix): void;
-        multiplyToArray(other: Matrix, result: Float32Array, offset: number): void;
+        copyFrom(other: Matrix): Matrix;
+        copyToArray(array: Float32Array, offset?: number): Matrix;
+        multiplyToRef(other: Matrix, result: Matrix): Matrix;
+        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
         equals(value: Matrix): boolean;
         clone(): Matrix;
         decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
@@ -2963,7 +2989,7 @@ declare module BABYLON {
         static OrthoOffCenterLHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
         static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
         static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix): void;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void;
         static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
         static Transpose(matrix: Matrix): Matrix;
         static Reflection(plane: Plane): Matrix;
@@ -2975,10 +3001,10 @@ declare module BABYLON {
         constructor(a: number, b: number, c: number, d: number);
         asArray(): number[];
         clone(): Plane;
-        normalize(): void;
+        normalize(): Plane;
         transform(transformation: Matrix): Plane;
         dotCoordinate(point: any): number;
-        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): void;
+        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
         isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
         signedDistanceTo(point: Vector3): number;
         static FromArray(array: number[]): Plane;
@@ -3066,13 +3092,13 @@ declare module BABYLON {
         animations: Animation[];
         constructor(path: Path2);
         getPoint(): Vector3;
-        moveAhead(step?: number): void;
-        moveBack(step?: number): void;
-        move(step: number): void;
+        moveAhead(step?: number): PathCursor;
+        moveBack(step?: number): PathCursor;
+        move(step: number): PathCursor;
         private ensureLimits();
         private markAsDirty(propertyName);
         private raiseOnChange();
-        onchange(f: (cursor: PathCursor) => void): void;
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
     }
     class Path2 {
         private _points;
@@ -4137,7 +4163,7 @@ declare module BABYLON {
         _textures: SmartArray<WebGLTexture>;
         _currentRenderTextureInd: number;
         private _effect;
-        constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean);
+        constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean, defines?: string);
         isReusable(): boolean;
         activate(camera: Camera, sourceTexture?: WebGLTexture): void;
         apply(): Effect;
@@ -4169,10 +4195,30 @@ declare module BABYLON {
 }
 declare module BABYLON {
     class SSAORenderingPipeline extends PostProcessRenderPipeline {
+        /**
+        * The PassPostProcess id in the pipeline that contains the original scene color
+        * @type {string}
+        */
         SSAOOriginalSceneColorEffect: string;
+        /**
+        * The SSAO PostProcess id in the pipeline
+        * @type {string}
+        */
         SSAORenderEffect: string;
+        /**
+        * The horizontal blur PostProcess id in the pipeline
+        * @type {string}
+        */
         SSAOBlurHRenderEffect: string;
+        /**
+        * The vertical blur PostProcess id in the pipeline
+        * @type {string}
+        */
         SSAOBlurVRenderEffect: string;
+        /**
+        * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
+        * @type {string}
+        */
         SSAOCombineRenderEffect: string;
         private _scene;
         private _depthTexture;
@@ -4183,13 +4229,105 @@ declare module BABYLON {
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
         private _firstUpdate;
-        constructor(name: string, scene: Scene, ratio?: number);
+        /**
+         * @constructor
+         * @param {string} name - The rendering pipeline name
+         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
+         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+         */
+        constructor(name: string, scene: Scene, ratio?: number, cameras?: Camera[]);
+        /**
+         * Returns the horizontal blur PostProcess
+         * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
+         */
         getBlurHPostProcess(): BlurPostProcess;
+        /**
+         * Returns the vertical blur PostProcess
+         * @return {BABYLON.BlurPostProcess} The vertical blur post-process
+         */
         getBlurVPostProcess(): BlurPostProcess;
-        dispose(cameras: any): void;
+        /**
+         * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
+         */
+        dispose(disableDepthRender?: boolean): void;
         private _createSSAOPostProcess(ratio);
         private _createSSAOCombinePostProcess();
         private _createRandomTexture();
+    }
+}
+declare module BABYLON {
+    class VolumetricLightScatteringPostProcess extends PostProcess {
+        private _volumetricLightScatteringPass;
+        private _volumetricLightScatteringRTT;
+        private _viewPort;
+        private _screenCoordinates;
+        private _cachedDefines;
+        private _customMeshPosition;
+        /**
+        * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
+        * @type {boolean}
+        */
+        useCustomMeshPosition: boolean;
+        /**
+        * If the post-process should inverse the light scattering direction
+        * @type {boolean}
+        */
+        invert: boolean;
+        /**
+        * The internal mesh used by the post-process
+        * @type {boolean}
+        */
+        mesh: Mesh;
+        /**
+        * Array containing the excluded meshes not rendered in the internal pass
+        */
+        excludedMeshes: AbstractMesh[];
+        exposure: number;
+        decay: number;
+        weight: number;
+        density: number;
+        /**
+         * @constructor
+         * @param {string} name - The post-process name
+         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
+         * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
+         * @param {number} samplingMode - The post-process filtering mode
+         * @param {BABYLON.Engine} engine - The babylon engine
+         * @param {boolean} reusable - If the post-process is reusable
+         */
+        constructor(name: string, ratio: number, camera: Camera, mesh?: Mesh, samples?: number, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Sets the new light position for light scattering effect
+         * @param {BABYLON.Vector3} The new custom light position
+         */
+        setCustomMeshPosition(position: Vector3): void;
+        /**
+         * Returns the light position for light scattering effect
+         * @return {BABYLON.Vector3} The custom light position
+         */
+        getCustomMeshPosition(): Vector3;
+        /**
+         * Disposes the internal assets and detaches the post-process from the camera
+         */
+        dispose(camera: Camera): void;
+        /**
+         * Returns the render target texture used by the post-process
+         * @return {BABYLON.RenderTargetTexture} The render target texture used by the post-process
+         */
+        getPass(): RenderTargetTexture;
+        private _meshExcluded(mesh);
+        private _createPass(scene, ratio);
+        private _updateMeshScreenCoordinates(scene);
+        /**
+        * Creates a default mesh for the Volumeric Light Scattering post-process
+        * @param {string} The mesh name
+        * @param {BABYLON.Scene} The scene where to create the mesh
+        * @return {BABYLON.Mesh} the default mesh
+        */
+        static CreateDefaultMesh(name: string, scene: Scene): Mesh;
     }
 }
 declare module BABYLON {
