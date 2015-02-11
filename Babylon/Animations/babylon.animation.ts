@@ -41,7 +41,7 @@
 
             mesh.animations.push(animation);
 
-            mesh.getScene().beginAnimation(mesh, 0, totalFrame,(animation.loopMode === 1));
+            return mesh.getScene().beginAnimation(mesh, 0, totalFrame,(animation.loopMode === 1));
 
         }
 
