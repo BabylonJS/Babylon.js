@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 6, 2),
+    'version': (1, 7, 0),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -564,7 +564,7 @@ class Mesh(FCurveAnimatable):
         
         world = object.matrix_world
         if object.parent and not hasSkeleton:
-            world *= object.parent.matrix_world.inverted()
+            world = object.matrix_local
             
         # use defaults when not None
         if forcedParent is None:
