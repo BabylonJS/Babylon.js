@@ -91,7 +91,9 @@
         }
 
         public dispose() {
-            document.body.removeChild(Gamepads.gamepadDOMInfo);
+            if (Gamepads.gamepadDOMInfo) {
+                document.body.removeChild(Gamepads.gamepadDOMInfo);
+            }
         }
 
         private _onGamepadConnected(evt) {
