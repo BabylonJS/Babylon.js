@@ -197,7 +197,8 @@ var BABYLON;
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -306,7 +307,7 @@ var BABYLON;
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = function (event) {
                         try {
-                            if (event.srcElement.error.name === "QuotaExceededError") {
+                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                 _this.hasReachedQuota = true;
                             }
                         }
@@ -420,7 +421,8 @@ var BABYLON;
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }

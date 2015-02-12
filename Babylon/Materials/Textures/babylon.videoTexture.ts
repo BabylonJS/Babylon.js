@@ -32,7 +32,8 @@
             });
 
             urls.forEach(url => {
-                var source = document.createElement("source");
+                //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850
+                var source = <HTMLSourceElement> document.createElement("source");
                 source.src = url;
                 this.video.appendChild(source);
             });

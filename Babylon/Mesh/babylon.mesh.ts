@@ -879,7 +879,8 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -1213,7 +1214,8 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
+                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
                 vertexData.applyToMesh(ground, updatable);
