@@ -714,6 +714,7 @@ var BABYLON;
                 canvas.height = heightMapHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
                 _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -973,6 +974,7 @@ var BABYLON;
                 canvas.height = heightMapHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
                 var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
                 vertexData.applyToMesh(ground, updatable);
