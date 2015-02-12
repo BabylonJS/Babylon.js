@@ -3,8 +3,10 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
     clean = require('gulp-clean'),
-    typescript = require('gulp-tsc'),
-    shaders = require('./gulp-shaders')
+    typescript = require('gulp-typescript'),
+	sourcemaps = require('gulp-sourcemaps'),
+	merge = require('merge2'),
+    shaders = require('./gulp-shaders'),
     gulpFilter = require('gulp-filter');
 
 /**
@@ -23,7 +25,8 @@ gulp.task('shaders', function() {
 gulp.task('typescript-to-js', function() {
   //Compile all ts file into their respective js file.
   return gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
-    .pipe(typescript({ target: 'ES5', sourcemap: true }))
+	.pipe(sourcemaps.init())
+    .pipe(typescript({ noExternalResolve: true, target: 'ES5'}))
     .pipe(gulp.dest('../../Babylon/'));
 });
 
@@ -31,13 +34,16 @@ gulp.task('typescript-to-js', function() {
  * Compile the declaration file babylon.d.ts
  */
 gulp.task('typescript-declaration', function() {
-  var declarationFilter = gulpFilter('**/*.d.ts');
+	
+	var tsResult = gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
+                       .pipe(typescript({
+                           declarationFiles: true,
+                           noExternalResolve: true,
+						   target: 'ES5'
+                       }));
 
-  return gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
-    .pipe(typescript({ target: 'ES5', declaration: true, out: 'tmp.js' }))
-    .pipe(declarationFilter)
-    .pipe(rename('babylon.d.ts'))
-    .pipe(gulp.dest('build/'));
+    return tsResult.dts.pipe(concat('babylon.d.ts'))
+	.pipe(gulp.dest('build/'));
 });
 
 /**
