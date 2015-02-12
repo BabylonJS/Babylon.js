@@ -5,13 +5,12 @@
   "main": "",
   "devDependencies": {
     "gulp": "^3.6.2",
-	"typescript": "1.3.0",
     "gulp-clean": "^0.3.0",
     "gulp-concat": "^2.2.0",
     "gulp-filter": "^0.4.1",
     "gulp-rename": "^1.2.0",
 	"gulp-typescript" : "2.0.0",
-	"gulp-sourcemaps" : "",
+	"gulp-sourcemaps" : "1.3.0",
     "gulp-uglify": "^0.3.0",
     "gulp-util": "^2.2.14",
     "through": "^2.3.4"
