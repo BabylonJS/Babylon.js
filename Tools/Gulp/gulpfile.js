@@ -24,16 +24,20 @@ gulp.task('shaders', function() {
  */
 gulp.task('typescript-to-js', function() {
   //Compile all ts file into their respective js file.
-  return gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
-	.pipe(sourcemaps.init())
-    .pipe(typescript({ noExternalResolve: true, target: 'ES5'}))
-    .pipe(gulp.dest('../../Babylon/'));
+  
+  var tsResult = gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
+                       .pipe(sourcemaps.init()) // This means sourcemaps will be generated
+                       .pipe(typescript({ noExternalResolve: true, target: 'ES5'}));
+  
+   return tsResult.js
+                .pipe(sourcemaps.write('.')) // Now the sourcemaps are added to the .js file
+                .pipe(gulp.dest('../../Babylon/'));
 });
 
 /**
  * Compile the declaration file babylon.d.ts
  */
-gulp.task('typescript-declaration', function() {
+gulp.task('typescript-declaration', ['typescript-to-js'], function() {
 	
 	var tsResult = gulp.src(['../../Babylon/**/*.ts','../../References/**/*.d.ts'])
                        .pipe(typescript({
@@ -209,7 +213,7 @@ gulp.task('default', function() {
 /**
  * The defaut typescript task, call the tasks: shaders, scripts, clean AFTER the task typescript-to-js
  */
-gulp.task('typescript', ['typescript-to-js', 'typescript-declaration'], function() {
+gulp.task('typescript', ['typescript-declaration'], function() {
     gulp.start('shaders','scripts', 'clean');
 });
 
