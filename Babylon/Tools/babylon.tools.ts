@@ -285,7 +285,8 @@
         public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
             var reader = new FileReader();
             reader.onload = e => {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
@@ -294,7 +295,8 @@
         public static ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer?: boolean): void {
             var reader = new FileReader();
             reader.onload = e => {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallBack;
             if (!useArrayBuffer) {
@@ -506,7 +508,9 @@
 
                 // Copy the pixels to a 2D canvas
                 var imageData = context.createImageData(width, height);
-                imageData.data.set(data);
+                //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
+                var data = <Uint8Array> (<any> imageData.data);
+                data.set(data);
                 context.putImageData(imageData, 0, 0);
 
                 var base64Image = screenshotCanvas.toDataURL();

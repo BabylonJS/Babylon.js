@@ -220,7 +220,8 @@ var BABYLON;
         Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
@@ -228,7 +229,8 @@ var BABYLON;
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallBack;
             if (!useArrayBuffer) {
@@ -412,7 +414,9 @@ var BABYLON;
                 var context = screenshotCanvas.getContext('2d');
                 // Copy the pixels to a 2D canvas
                 var imageData = context.createImageData(width, height);
-                imageData.data.set(data);
+                //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
+                var data = imageData.data;
+                data.set(data);
                 context.putImageData(imageData, 0, 0);
                 var base64Image = screenshotCanvas.toDataURL();
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
