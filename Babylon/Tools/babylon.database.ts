@@ -257,7 +257,8 @@ module BABYLON {
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -375,8 +376,8 @@ module BABYLON {
 
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = event => {
-                        try {
-                            if (event.srcElement.error.name === "QuotaExceededError") {
+                        try {//backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                 this.hasReachedQuota = true;
                             }
                         }
@@ -494,7 +495,7 @@ module BABYLON {
 
                 xhr.onprogress = progressCallback;
 
-                xhr.addEventListener("load", () => {
+                xhr.addEventListener("load", () => { 
                     if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;
@@ -507,7 +508,8 @@ module BABYLON {
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
