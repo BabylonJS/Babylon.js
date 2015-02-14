@@ -5,7 +5,6 @@ var gulp = require('gulp'),
     clean = require('gulp-clean'),
     typescript = require('gulp-typescript'),
 	sourcemaps = require('gulp-sourcemaps'),
-	merge = require('merge2'),
     shaders = require('./gulp-shaders'),
     gulpFilter = require('gulp-filter');
 
