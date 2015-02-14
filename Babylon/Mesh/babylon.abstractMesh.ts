@@ -827,6 +827,7 @@
                 if (currentIntersectInfo) {
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                         intersectInfo = currentIntersectInfo;
+                        intersectInfo.subMeshId = index;
 
                         if (fastCheck) {
                             break;
@@ -838,21 +839,22 @@
             if (intersectInfo) {
                 // Get picked point
                 var world = this.getWorldMatrix();
-                var worldOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, world);
+                var worldOrigin = Vector3.TransformCoordinates(ray.origin, world);
                 var direction = ray.direction.clone();
                 direction = direction.scale(intersectInfo.distance);
-                var worldDirection = BABYLON.Vector3.TransformNormal(direction, world);
+                var worldDirection = Vector3.TransformNormal(direction, world);
 
                 var pickedPoint = worldOrigin.add(worldDirection);
 
                 // Return result
                 pickingInfo.hit = true;
-                pickingInfo.distance = BABYLON.Vector3.Distance(worldOrigin, pickedPoint);
+                pickingInfo.distance = Vector3.Distance(worldOrigin, pickedPoint);
                 pickingInfo.pickedPoint = pickedPoint;
                 pickingInfo.pickedMesh = this;
                 pickingInfo.bu = intersectInfo.bu;
                 pickingInfo.bv = intersectInfo.bv;
                 pickingInfo.faceId = intersectInfo.faceId;
+                pickingInfo.subMeshId = intersectInfo.subMeshId;
                 return pickingInfo;
             }
 

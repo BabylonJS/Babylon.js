@@ -15,7 +15,7 @@ module BABYLON {
 
         static isUASupportingBlobStorage: boolean = true;
 
-        constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {          
+        constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {
             this.callbackManifestChecked = callbackManifestChecked;
             this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
@@ -30,8 +30,8 @@ module BABYLON {
         static parseURL = (url: string) => {
             var a = document.createElement('a');
             a.href = url;
-            var urlWithoutHash = url.substring(0, url.lastIndexOf("#")); 
-            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length); 
+            var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
+            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
             var absLocation = url.substring(0, url.indexOf(fileName, 0));
             return absLocation;
         }
@@ -61,7 +61,7 @@ module BABYLON {
             var manifestURLTimeStamped = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
             xhr.open("GET", manifestURLTimeStamped, true);
 
-            xhr.addEventListener("load", () => {
+            xhr.addEventListener("load",() => {
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
@@ -136,7 +136,7 @@ module BABYLON {
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
                         this.db = (<any>(event.target)).result;
-                        try {                            
+                        try {
                             var scenesStore = this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
                             var versionsStore = this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
                             var texturesStore = this.db.createObjectStore("textures", { keyPath: "textureUrl" });
@@ -192,7 +192,7 @@ module BABYLON {
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
                         blobTextureURL = URL.createObjectURL(texture.data, { oneTimeOnly: true });
-                       
+
                         image.onerror = () => {
                             BABYLON.Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
                             image.src = url;
@@ -247,7 +247,7 @@ module BABYLON {
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load", () => {
+                    xhr.addEventListener("load",() => {
                         if (xhr.status === 200) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
@@ -495,7 +495,7 @@ module BABYLON {
 
                 xhr.onprogress = progressCallback;
 
-                xhr.addEventListener("load", () => { 
+                xhr.addEventListener("load",() => {
                     if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;

@@ -697,6 +697,7 @@ var BABYLON;
                 if (currentIntersectInfo) {
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                         intersectInfo = currentIntersectInfo;
+                        intersectInfo.subMeshId = index;
                         if (fastCheck) {
                             break;
                         }
@@ -719,6 +720,7 @@ var BABYLON;
                 pickingInfo.bu = intersectInfo.bu;
                 pickingInfo.bv = intersectInfo.bv;
                 pickingInfo.faceId = intersectInfo.faceId;
+                pickingInfo.subMeshId = intersectInfo.subMeshId;
                 return pickingInfo;
             }
             return pickingInfo;
