@@ -12,9 +12,10 @@ var BABYLON;
         /**
          * @constructor
          * @param {string} name - The post-process name
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the post-process and/or internal pass (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
          * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
+         * @param {number} samples - The post-process quality, default 100
          * @param {number} samplingMode - The post-process filtering mode
          * @param {BABYLON.Engine} engine - The babylon engine
          * @param {boolean} reusable - If the post-process is reusable
@@ -23,7 +24,7 @@ var BABYLON;
             var _this = this;
             if (samples === void 0) { samples = 100; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
-            _super.call(this, name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
+            _super.call(this, name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             this._screenCoordinates = BABYLON.Vector2.Zero();
             /**
             * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
@@ -48,7 +49,7 @@ var BABYLON;
             // Configure mesh
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
             // Configure
-            this._createPass(scene, 0.5);
+            this._createPass(scene, ratio.passRatio || ratio);
             this.onApply = function (effect) {
                 _this._updateMeshScreenCoordinates(scene);
                 effect.setTexture("lightScatteringSampler", _this._volumetricLightScatteringRTT);

@@ -1231,7 +1231,7 @@ var __extends = this.__extends || function (d, b) {
             return result;
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
-            //produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
+            // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -1252,7 +1252,7 @@ var __extends = this.__extends || function (d, b) {
             return result;
         };
         Quaternion.RotationAlphaBetaGammaToRef = function (alpha, beta, gamma, result) {
-            //produces a quaternion from Euler angles in the z-x-z orientation
+            // Produces a quaternion from Euler angles in the z-x-z orientation
             var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
             var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
             var halfBeta = beta * 0.5;
@@ -2629,7 +2629,8 @@ var __extends = this.__extends || function (d, b) {
         Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
@@ -2637,7 +2638,8 @@ var __extends = this.__extends || function (d, b) {
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                callback(e.target.result);
+                //target doesn't have result from ts 1.3
+                callback(e.target['result']);
             };
             reader.onprogress = progressCallBack;
             if (!useArrayBuffer) {
@@ -2821,7 +2823,9 @@ var __extends = this.__extends || function (d, b) {
                 var context = screenshotCanvas.getContext('2d');
                 // Copy the pixels to a 2D canvas
                 var imageData = context.createImageData(width, height);
-                imageData.data.set(data);
+                //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
+                var data = imageData.data;
+                data.set(data);
                 context.putImageData(imageData, 0, 0);
                 var base64Image = screenshotCanvas.toDataURL();
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
@@ -9882,6 +9886,7 @@ var BABYLON;
                 if (currentIntersectInfo) {
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                         intersectInfo = currentIntersectInfo;
+                        intersectInfo.subMeshId = index;
                         if (fastCheck) {
                             break;
                         }
@@ -9904,6 +9909,7 @@ var BABYLON;
                 pickingInfo.bu = intersectInfo.bu;
                 pickingInfo.bv = intersectInfo.bv;
                 pickingInfo.faceId = intersectInfo.faceId;
+                pickingInfo.subMeshId = intersectInfo.subMeshId;
                 return pickingInfo;
             }
             return pickingInfo;
@@ -10692,6 +10698,7 @@ var BABYLON;
                 canvas.height = heightMapHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
                 _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -10951,6 +10958,7 @@ var BABYLON;
                 canvas.height = heightMapHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
                 var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
                 vertexData.applyToMesh(ground, updatable);
@@ -12990,6 +12998,7 @@ var BABYLON;
                 }
             });
             urls.forEach(function (url) {
+                //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850
                 var source = document.createElement("source");
                 source.src = url;
                 _this.video.appendChild(source);
@@ -14330,7 +14339,8 @@ var BABYLON;
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -14439,7 +14449,7 @@ var BABYLON;
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = function (event) {
                         try {
-                            if (event.srcElement.error.name === "QuotaExceededError") {
+                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                 _this.hasReachedQuota = true;
                             }
                         }
@@ -14553,7 +14563,8 @@ var BABYLON;
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -16850,6 +16861,7 @@ var BABYLON;
             this.bv = bv;
             this.distance = distance;
             this.faceId = 0;
+            this.subMeshId = 0;
         }
         return IntersectionInfo;
     })();
@@ -16863,6 +16875,7 @@ var BABYLON;
             this.bu = 0;
             this.bv = 0;
             this.faceId = -1;
+            this.subMeshId = 0;
         }
         // Methods
         PickingInfo.prototype.getNormal = function () {
@@ -27582,12 +27595,11 @@ var BABYLON;
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         function SSAORenderingPipeline(name, scene, ratio, cameras) {
             var _this = this;
-            if (ratio === void 0) { ratio = 1.0; }
             _super.call(this, scene.getEngine(), name);
             // Members
             /**
@@ -27620,11 +27632,13 @@ var BABYLON;
             // Set up assets
             this._createRandomTexture();
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
-            this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOCombinePostProcess();
+            var ssaoRatio = ratio.ssaoRatio || ratio;
+            var combineRatio = ratio.combineRatio || ratio;
+            this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOPostProcess(ssaoRatio);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
                 return _this._originalColorPostProcess;
@@ -27742,9 +27756,9 @@ var BABYLON;
                 effect.setTexture("randomSampler", _this._randomTexture);
             };
         };
-        SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function () {
+        SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function (ratio) {
             var _this = this;
-            this._ssaoCombinePostProcess = new BABYLON.PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"], 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoCombinePostProcess = new BABYLON.PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._ssaoCombinePostProcess.onApply = function (effect) {
                 effect.setTextureFromPostProcess("originalColor", _this._originalColorPostProcess);
             };
@@ -27783,9 +27797,10 @@ var BABYLON;
         /**
          * @constructor
          * @param {string} name - The post-process name
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the post-process and/or internal pass (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
          * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
+         * @param {number} samples - The post-process quality, default 100
          * @param {number} samplingMode - The post-process filtering mode
          * @param {BABYLON.Engine} engine - The babylon engine
          * @param {boolean} reusable - If the post-process is reusable
@@ -27794,7 +27809,7 @@ var BABYLON;
             var _this = this;
             if (samples === void 0) { samples = 100; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
-            _super.call(this, name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
+            _super.call(this, name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             this._screenCoordinates = BABYLON.Vector2.Zero();
             /**
             * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
@@ -27819,7 +27834,7 @@ var BABYLON;
             // Configure mesh
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
             // Configure
-            this._createPass(scene, 0.5);
+            this._createPass(scene, ratio.passRatio || ratio);
             this.onApply = function (effect) {
                 _this._updateMeshScreenCoordinates(scene);
                 effect.setTexture("lightScatteringSampler", _this._volumetricLightScatteringRTT);

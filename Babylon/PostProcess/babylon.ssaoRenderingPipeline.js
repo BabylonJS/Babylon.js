@@ -12,12 +12,11 @@ var BABYLON;
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         function SSAORenderingPipeline(name, scene, ratio, cameras) {
             var _this = this;
-            if (ratio === void 0) { ratio = 1.0; }
             _super.call(this, scene.getEngine(), name);
             // Members
             /**
@@ -50,11 +49,13 @@ var BABYLON;
             // Set up assets
             this._createRandomTexture();
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
-            this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOCombinePostProcess();
+            var ssaoRatio = ratio.ssaoRatio || ratio;
+            var combineRatio = ratio.combineRatio || ratio;
+            this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOPostProcess(ssaoRatio);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
                 return _this._originalColorPostProcess;
@@ -172,9 +173,9 @@ var BABYLON;
                 effect.setTexture("randomSampler", _this._randomTexture);
             };
         };
-        SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function () {
+        SSAORenderingPipeline.prototype._createSSAOCombinePostProcess = function (ratio) {
             var _this = this;
-            this._ssaoCombinePostProcess = new BABYLON.PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"], 1.0, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoCombinePostProcess = new BABYLON.PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._ssaoCombinePostProcess.onApply = function (effect) {
                 effect.setTextureFromPostProcess("originalColor", _this._originalColorPostProcess);
             };

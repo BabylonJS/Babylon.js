@@ -1521,7 +1521,7 @@
         }
 
         public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
-            //produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
+            // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -1546,7 +1546,7 @@
         }
 
         public static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void {
-            //produces a quaternion from Euler angles in the z-x-z orientation
+            // Produces a quaternion from Euler angles in the z-x-z orientation
             var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
             var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
             var halfBeta = beta * 0.5;
