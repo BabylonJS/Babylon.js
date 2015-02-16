@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export class _InstancesBatch {
         public mustReturn = false;
         public visibleInstances = new Array<Array<InstancedMesh>>();
@@ -1095,6 +1095,15 @@
         }
 
         // Statics
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean): Mesh {
+            var ribbon = new Mesh(name, scene);
+            var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset);
+
+            vertexData.applyToMesh(ribbon, updatable);
+
+            return ribbon;
+        }
+        
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
             var box = new Mesh(name, scene);
             var vertexData = VertexData.CreateBox(size);
