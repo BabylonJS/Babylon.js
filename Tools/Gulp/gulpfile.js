@@ -52,7 +52,7 @@ gulp.task('typescript-declaration', ['typescript-to-js'], function() {
 /**
  * Concat all js files in order into one big js file and minify it.
  * The list is based on https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version
- * Do not hesistate to update it if you need to add your own files.
+ * Do not hesitate to update it if you need to add your own files.
  */
 gulp.task('scripts', ['shaders'] ,function() {
   return gulp.src([
@@ -91,17 +91,17 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Mesh/babylon.InstancedMesh.js',
       '../../Babylon/Mesh/babylon.mesh.js',
       '../../Babylon/Mesh/babylon.subMesh.js',
-      '../../Babylon/Materials/textures/babylon.baseTexture.js',
-      '../../Babylon/Materials/textures/babylon.texture.js',
-      '../../Babylon/Materials/textures/babylon.cubeTexture.js',
-      '../../Babylon/Materials/textures/babylon.renderTargetTexture.js',
-      '../../Babylon/Materials/textures/procedurals/babylon.proceduralTexture.js',
-      '../../Babylon/Materials/textures/babylon.mirrorTexture.js',
-      '../../Babylon/Materials/textures/babylon.dynamicTexture.js',
-      '../../Babylon/Materials/textures/babylon.videoTexture.js',
-      '../../Babylon/Materials/textures/babylon.customProceduralTexture.js',
-      '../../Babylon/Materials/textures/babylon.proceduralTexture.js',
-      '../../Babylon/Materials/textures/babylon.standardProceduralTexture.js',
+      '../../Babylon/Materials/Textures/babylon.baseTexture.js',
+      '../../Babylon/Materials/Textures/babylon.texture.js',
+      '../../Babylon/Materials/Textures/babylon.cubeTexture.js',
+      '../../Babylon/Materials/Textures/babylon.renderTargetTexture.js',
+      '../../Babylon/Materials/Textures/Procedurals/babylon.proceduralTexture.js',
+      '../../Babylon/Materials/Textures/babylon.mirrorTexture.js',
+      '../../Babylon/Materials/Textures/babylon.dynamicTexture.js',
+      '../../Babylon/Materials/Textures/babylon.videoTexture.js',
+      '../../Babylon/Materials/Textures/Procedurals/babylon.customProceduralTexture.js',
+      '../../Babylon/Materials/Textures/babylon.proceduralTexture.js',
+      '../../Babylon/Materials/Textures/Procedurals/babylon.standardProceduralTexture.js',
       '../../Babylon/Materials/babylon.effect.js',
       'build/shaders.js',
       '../../Babylon/Materials/babylon.material.js',
@@ -203,14 +203,14 @@ gulp.task('clean', ['scripts'], function() {
 });
 
 /**
- * The defaut task, call the tasks: shaders, scripts, clean
+ * The default task, call the tasks: shaders, scripts, clean
  */
 gulp.task('default', function() {
     gulp.start('shaders','scripts', 'clean');
 });
 
 /**
- * The defaut typescript task, call the tasks: shaders, scripts, clean AFTER the task typescript-to-js
+ * The default typescript task, call the tasks: shaders, scripts, clean AFTER the task typescript-to-js
  */
 gulp.task('typescript', ['typescript-declaration'], function() {
     gulp.start('shaders','scripts', 'clean');
