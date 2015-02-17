@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     export class _InstancesBatch {
         public mustReturn = false;
         public visibleInstances = new Array<Array<InstancedMesh>>();
@@ -732,7 +732,7 @@ module BABYLON {
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                },() => { }, scene.database, getBinaryData);
+                }, () => { }, scene.database, getBinaryData);
             }
         }
 
@@ -889,7 +889,7 @@ module BABYLON {
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -910,7 +910,7 @@ module BABYLON {
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -991,8 +991,8 @@ module BABYLON {
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
-                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
+                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
+                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1060,7 +1060,7 @@ module BABYLON {
                 //parallel simplifier
                 settings.forEach((setting) => {
                     var simplifier = getSimplifier();
-                    simplifier.simplify(setting,(newMesh) => {
+                    simplifier.simplify(setting, (newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //check if it is the last
                         if (setting.quality === settings[settings.length - 1].quality && successCallback) {
@@ -1074,18 +1074,18 @@ module BABYLON {
                 var simplifier = getSimplifier();
 
                 var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting,(newMesh) => {
+                    simplifier.simplify(setting, (newMesh) => {
                         this.addLODLevel(setting.distance, newMesh);
                         //run the next quality level
                         callback();
                     });
                 }
 
-                AsyncLoop.Run(settings.length,(loop: AsyncLoop) => {
-                    runDecimation(settings[loop.index],() => {
+                AsyncLoop.Run(settings.length, (loop: AsyncLoop) => {
+                    runDecimation(settings[loop.index], () => {
                         loop.executeNext();
                     });
-                },() => {
+                }, () => {
                         //execution ended, run the success callback.
                         if (successCallback) {
                             successCallback();
@@ -1103,7 +1103,7 @@ module BABYLON {
 
             return ribbon;
         }
-        
+
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
             var box = new Mesh(name, scene);
             var vertexData = VertexData.CreateBox(size);
@@ -1237,7 +1237,7 @@ module BABYLON {
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
 
             return ground;
         }
