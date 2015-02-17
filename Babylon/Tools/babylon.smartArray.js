@@ -66,5 +66,4 @@ var BABYLON;
     })();
     BABYLON.SmartArray = SmartArray;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.smartArray.js.map
+//# sourceMappingURL=babylon.smartArray.js.map

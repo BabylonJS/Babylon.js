@@ -15,5 +15,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.DisplayPassPostProcess = DisplayPassPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.displayPassPostProcess.js.map
+//# sourceMappingURL=babylon.displayPassPostProcess.js.map

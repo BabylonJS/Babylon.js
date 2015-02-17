@@ -550,5 +550,4 @@ var BABYLON;
     })();
     BABYLON.QuadraticErrorSimplification = QuadraticErrorSimplification;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.meshSimplification.js.map
+//# sourceMappingURL=babylon.meshSimplification.js.map

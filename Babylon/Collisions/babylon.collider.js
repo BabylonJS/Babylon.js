@@ -270,5 +270,4 @@ var BABYLON;
     })();
     BABYLON.Collider = Collider;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Collisions/babylon.collider.js.map
+//# sourceMappingURL=babylon.collider.js.map

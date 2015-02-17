@@ -68,5 +68,4 @@ var BABYLON;
     })(BABYLON.Mesh);
     BABYLON.LinesMesh = LinesMesh;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.linesMesh.js.map
+//# sourceMappingURL=babylon.linesMesh.js.map

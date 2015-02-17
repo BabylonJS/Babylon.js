@@ -628,5 +628,4 @@ var BABYLON;
     })();
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.sceneSerializer.js.map
+//# sourceMappingURL=babylon.sceneSerializer.js.map

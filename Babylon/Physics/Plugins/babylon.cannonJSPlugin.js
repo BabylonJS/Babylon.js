@@ -249,5 +249,4 @@ var BABYLON;
     })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Physics/Plugins/babylon.cannonJSPlugin.js.map
+//# sourceMappingURL=babylon.cannonJSPlugin.js.map

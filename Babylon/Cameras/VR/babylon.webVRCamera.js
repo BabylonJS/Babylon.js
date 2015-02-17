@@ -67,5 +67,4 @@ var BABYLON;
     })(BABYLON.OculusCamera);
     BABYLON.WebVRCamera = WebVRCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Cameras/VR/babylon.webVRCamera.js.map
+//# sourceMappingURL=babylon.webVRCamera.js.map

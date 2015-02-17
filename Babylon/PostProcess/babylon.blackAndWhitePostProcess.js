@@ -15,5 +15,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.BlackAndWhitePostProcess = BlackAndWhitePostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.blackAndWhitePostProcess.js.map
+//# sourceMappingURL=babylon.blackAndWhitePostProcess.js.map

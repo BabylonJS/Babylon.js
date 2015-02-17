@@ -36,5 +36,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.MultiMaterial = MultiMaterial;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Materials/babylon.multiMaterial.js.map
+//# sourceMappingURL=babylon.multiMaterial.js.map

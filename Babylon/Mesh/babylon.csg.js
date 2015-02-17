@@ -497,5 +497,4 @@ var BABYLON;
     })();
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.csg.js.map
+//# sourceMappingURL=babylon.csg.js.map

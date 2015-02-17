@@ -23,5 +23,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.FxaaPostProcess = FxaaPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.fxaaPostProcess.js.map
+//# sourceMappingURL=babylon.fxaaPostProcess.js.map

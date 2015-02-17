@@ -795,5 +795,4 @@ var BABYLON;
     })();
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.tools.js.map
+//# sourceMappingURL=babylon.tools.js.map

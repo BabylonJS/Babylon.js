@@ -232,11 +232,14 @@ var BABYLON;
             var minlg; // minimal length among all paths from pathArray
             var lg = []; // array of path lengths : nb of vertex per path
             var idx = []; // array of path indexes : index of each path (first vertex) in positions array
+            var p; // path iterator
+            var i; // point iterator
+            var j; // point iterator
             // if single path in pathArray
             if (pathArray.length < 2) {
                 var ar1 = [];
                 var ar2 = [];
-                for (var i = 0; i < pathArray[0].length - offset; i++) {
+                for (i = 0; i < pathArray[0].length - offset; i++) {
                     ar1.push(pathArray[0][i]);
                     ar2.push(pathArray[0][i + offset]);
                 }
@@ -245,11 +248,7 @@ var BABYLON;
             // positions and horizontal distances (u)
             var idc = 0;
             minlg = pathArray[0].length;
-<<<<<<< HEAD
-            for (var p = 0; p < pathArray.length; p++) {
-=======
             for (p = 0; p < pathArray.length; p++) {
->>>>>>> upstream/master
                 uTotalDistance[p] = 0;
                 us[p] = [0];
                 var path = pathArray[p];
@@ -257,7 +256,7 @@ var BABYLON;
                 minlg = (minlg < l) ? minlg : l;
                 lg[p] = l;
                 idx[p] = idc;
-                var j = 0;
+                j = 0;
                 while (j < l) {
                     positions.push(path[j].x, path[j].y, path[j].z);
                     if (j > 0) {
@@ -269,51 +268,26 @@ var BABYLON;
                     j++;
                 }
                 if (closePath) {
-<<<<<<< HEAD
-                    var vectlg = path[0].subtract(path[j - 1]).length();
-                    var dist = vectlg + uTotalDistance[p];
-=======
                     vectlg = path[0].subtract(path[j - 1]).length();
                     dist = vectlg + uTotalDistance[p];
->>>>>>> upstream/master
                     uTotalDistance[p] = dist;
                 }
                 idc += l;
             }
-<<<<<<< HEAD
-            for (var i = 0; i < minlg; i++) {
-                vTotalDistance[i] = 0;
-                vs[i] = [0];
-                for (var p = 0; p < pathArray.length - 1; p++) {
-                    var path1 = pathArray[p];
-                    var path2 = pathArray[p + 1];
-                    var vectlg = path2[i].subtract(path1[i]).length();
-                    var dist = vectlg + vTotalDistance[i];
-=======
             for (i = 0; i < minlg; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
+                var path1;
+                var path2;
                 for (p = 0; p < pathArray.length - 1; p++) {
-                    var path1 = pathArray[p];
-                    var path2 = pathArray[p + 1];
+                    path1 = pathArray[p];
+                    path2 = pathArray[p + 1];
                     vectlg = path2[i].subtract(path1[i]).length();
                     dist = vectlg + vTotalDistance[i];
->>>>>>> upstream/master
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
                 }
                 if (closeArray) {
-<<<<<<< HEAD
-                    var path1 = pathArray[p];
-                    var path2 = pathArray[0];
-                    var vectlg = path2[i].subtract(path1[i]).length();
-                    var dist = vectlg + vTotalDistance[i];
-                    vTotalDistance[i] = dist;
-                }
-            }
-            for (var p = 0; p < pathArray.length; p++) {
-                for (var i = 0; i < minlg; i++) {
-=======
                     path1 = pathArray[p];
                     path2 = pathArray[0];
                     vectlg = path2[i].subtract(path1[i]).length();
@@ -321,48 +295,46 @@ var BABYLON;
                     vTotalDistance[i] = dist;
                 }
             }
+            // uvs
+            var u;
+            var v;
             for (p = 0; p < pathArray.length; p++) {
                 for (i = 0; i < minlg; i++) {
->>>>>>> upstream/master
-                    var u = us[p][i] / uTotalDistance[p];
-                    var v = vs[i][p] / vTotalDistance[i];
+                    u = us[p][i] / uTotalDistance[p];
+                    v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
                 }
             }
             // indices
-            var p = 0; // path index
-            var i = 0; // positions array index
+            p = 0; // path index
+            var pi = 0; // positions array index
             var l1 = lg[p] - 1; // path1 length
             var l2 = lg[p + 1] - 1; // path2 length
             var min = (l1 < l2) ? l1 : l2; // current path stop index
             var shft = idx[1] - idx[0]; // shift 
             var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	
-            while (i <= min && p < path1nb) {
-                // draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
-                var t1 = i;
-                var t2 = i + shft;
-                var t3 = i + 1;
-                var t4 = i + shft + 1;
-                indices.push(i, i + shft, i + 1);
-                indices.push(i + shft + 1, i + 1, i + shft);
-                i += 1;
-<<<<<<< HEAD
-                if (i == min) {
-=======
-                if (i === min) {
->>>>>>> upstream/master
+            var t1; // two consecutive triangles, so 4 points : point1
+            var t2; // point2
+            var t3; // point3
+            var t4; // point4
+            while (pi <= min && p < path1nb) {
+                // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
+                t1 = pi;
+                t2 = pi + shft;
+                t3 = pi + 1;
+                t4 = pi + shft + 1;
+                indices.push(pi, pi + shft, pi + 1);
+                indices.push(pi + shft + 1, pi + 1, pi + shft);
+                pi += 1;
+                if (pi === min) {
                     if (closePath) {
-                        indices.push(i, i + shft, idx[p]);
-                        indices.push(idx[p] + shft, idx[p], i + shft);
+                        indices.push(pi, pi + shft, idx[p]);
+                        indices.push(idx[p] + shft, idx[p], pi + shft);
                         t3 = idx[p];
                         t4 = idx[p] + shft;
                     }
                     p++;
-<<<<<<< HEAD
-                    if (p == lg.length - 1) {
-=======
                     if (p === lg.length - 1) {
->>>>>>> upstream/master
                         shft = idx[0] - idx[p];
                         l1 = lg[p] - 1;
                         l2 = lg[0] - 1;
@@ -372,20 +344,14 @@ var BABYLON;
                         l1 = lg[p] - 1;
                         l2 = lg[p + 1] - 1;
                     }
-                    i = idx[p];
-                    min = (l1 < l2) ? l1 + i : l2 + i;
+                    pi = idx[p];
+                    min = (l1 < l2) ? l1 + pi : l2 + pi;
                 }
             }
             // normals
-<<<<<<< HEAD
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            // Result
-            var vertexData = new BABYLON.VertexData();
-=======
             VertexData.ComputeNormals(positions, indices, normals);
             // Result
             var vertexData = new VertexData();
->>>>>>> upstream/master
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -938,5 +904,4 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map
+//# sourceMappingURL=babylon.mesh.vertexData.js.map

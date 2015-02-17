@@ -29,5 +29,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.ConvolutionPostProcess = ConvolutionPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.convolutionPostProcess.js.map
+//# sourceMappingURL=babylon.convolutionPostProcess.js.map

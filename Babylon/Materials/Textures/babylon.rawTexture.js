@@ -52,5 +52,4 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.RawTexture = RawTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.rawTexture.js.map
+//# sourceMappingURL=babylon.rawTexture.js.map

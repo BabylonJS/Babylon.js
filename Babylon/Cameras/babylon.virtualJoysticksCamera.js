@@ -42,5 +42,4 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Cameras/babylon.virtualJoysticksCamera.js.map
+//# sourceMappingURL=babylon.virtualJoysticksCamera.js.map

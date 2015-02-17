@@ -125,5 +125,4 @@ var BABYLON;
     })();
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.baseTexture.js.map
+//# sourceMappingURL=babylon.baseTexture.js.map

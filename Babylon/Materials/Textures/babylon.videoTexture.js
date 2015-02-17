@@ -55,5 +55,4 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.VideoTexture = VideoTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.videoTexture.js.map
+//# sourceMappingURL=babylon.videoTexture.js.map

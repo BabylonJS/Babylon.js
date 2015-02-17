@@ -40,5 +40,4 @@ var BABYLON;
     })();
     BABYLON.PostProcessRenderPass = PostProcessRenderPass;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../PostProcess/RenderPipeline/babylon.postProcessRenderPass.js.map
+//# sourceMappingURL=babylon.postProcessRenderPass.js.map

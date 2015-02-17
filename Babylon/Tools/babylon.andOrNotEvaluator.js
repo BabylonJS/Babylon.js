@@ -93,5 +93,4 @@ var BABYLON;
         Internals.AndOrNotEvaluator = AndOrNotEvaluator;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.andOrNotEvaluator.js.map
+//# sourceMappingURL=babylon.andOrNotEvaluator.js.map

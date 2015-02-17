@@ -539,5 +539,4 @@ var BABYLON;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.geometry.js.map
+//# sourceMappingURL=babylon.geometry.js.map

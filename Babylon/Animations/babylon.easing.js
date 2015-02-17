@@ -248,5 +248,4 @@ var BABYLON;
     })(EasingFunction);
     BABYLON.BezierCurveEase = BezierCurveEase;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Animations/babylon.easing.js.map
+//# sourceMappingURL=babylon.easing.js.map

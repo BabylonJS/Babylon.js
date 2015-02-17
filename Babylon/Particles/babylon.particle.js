@@ -27,5 +27,4 @@ var BABYLON;
     })();
     BABYLON.Particle = Particle;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Particles/babylon.particle.js.map
+//# sourceMappingURL=babylon.particle.js.map

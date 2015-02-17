@@ -52,7 +52,12 @@
             SceneLoader._registeredPlugins.push(plugin);
         }
 
-        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e:any) => void): void {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
+
             var manifestChecked = success => {
                 scene.database = database;
 
@@ -118,6 +123,11 @@
         * @param scene is the instance of BABYLON.Scene to append to
         */
         public static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
+
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
 
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;

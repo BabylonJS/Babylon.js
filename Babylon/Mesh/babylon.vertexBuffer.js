@@ -155,5 +155,4 @@ var BABYLON;
     })();
     BABYLON.VertexBuffer = VertexBuffer;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.vertexBuffer.js.map
+//# sourceMappingURL=babylon.vertexBuffer.js.map

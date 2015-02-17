@@ -43,5 +43,4 @@ var BABYLON;
     })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.mirrorTexture.js.map
+//# sourceMappingURL=babylon.mirrorTexture.js.map

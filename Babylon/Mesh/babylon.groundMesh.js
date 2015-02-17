@@ -38,5 +38,4 @@ var BABYLON;
     })(BABYLON.Mesh);
     BABYLON.GroundMesh = GroundMesh;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.groundMesh.js.map
+//# sourceMappingURL=babylon.groundMesh.js.map

@@ -114,5 +114,4 @@ var BABYLON;
     })();
     BABYLON.PostProcessRenderPipeline = PostProcessRenderPipeline;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js.map
+//# sourceMappingURL=babylon.postProcessRenderPipeline.js.map

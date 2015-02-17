@@ -241,5 +241,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.volumetricLightScatteringPostProcess.js.map
+//# sourceMappingURL=babylon.volumetricLightScatteringPostProcess.js.map

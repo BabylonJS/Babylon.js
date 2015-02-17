@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string): number[];
@@ -299,7 +299,7 @@ module BABYLON {
             var minlg: number;          	        // minimal length among all paths from pathArray
             var lg: number[] = [];        		    // array of path lengths : nb of vertex per path
             var idx: number[] = [];       		    // array of path indexes : index of each path (first vertex) in positions array
-            
+
             var p: number;							// path iterator
             var i: number;							// point iterator
             var j: number;							// point iterator
@@ -308,7 +308,7 @@ module BABYLON {
             if (pathArray.length < 2) {
                 var ar1: Vector3[] = [];
                 var ar2: Vector3[] = [];
-                for (var i = 0; i < pathArray[0].length - offset; i++) {
+                for (i = 0; i < pathArray[0].length - offset; i++) {
                     ar1.push(pathArray[0][i]);
                     ar2.push(pathArray[0][i + offset]);
                 }
@@ -373,7 +373,7 @@ module BABYLON {
             var u: number;
             var v: number;
             for (p = 0; p < pathArray.length; p++) {
-                for (var i = 0; i < minlg; i++) {
+                for (i = 0; i < minlg; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);

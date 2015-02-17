@@ -41,6 +41,10 @@ var BABYLON;
             SceneLoader._registeredPlugins.push(plugin);
         };
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
             var manifestChecked = function (success) {
                 scene.database = database;
                 var plugin = SceneLoader._getPluginForFilename(sceneFilename);
@@ -95,6 +99,10 @@ var BABYLON;
         * @param scene is the instance of BABYLON.Scene to append to
         */
         SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
             if (SceneLoader.ShowLoadingScreen) {
@@ -144,5 +152,4 @@ var BABYLON;
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Loading/babylon.sceneLoader.js.map
+//# sourceMappingURL=babylon.sceneLoader.js.map

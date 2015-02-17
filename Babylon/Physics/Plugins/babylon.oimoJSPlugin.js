@@ -310,5 +310,4 @@ var BABYLON;
     })();
     BABYLON.OimoJSPlugin = OimoJSPlugin;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Physics/Plugins/babylon.oimoJSPlugin.js.map
+//# sourceMappingURL=babylon.oimoJSPlugin.js.map

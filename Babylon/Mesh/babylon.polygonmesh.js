@@ -146,5 +146,4 @@ var BABYLON;
     })();
     BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.polygonmesh.js.map
+//# sourceMappingURL=babylon.polygonMesh.js.map

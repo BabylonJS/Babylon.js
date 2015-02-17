@@ -78,5 +78,4 @@ var BABYLON;
     })();
     BABYLON.OutlineRenderer = OutlineRenderer;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Rendering/babylon.outlineRenderer.js.map
+//# sourceMappingURL=babylon.outlineRenderer.js.map
