@@ -215,6 +215,137 @@ var BABYLON;
             result.indices = meshOrGeometry.getIndices();
             return result;
         };
+        VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset) {
+            closeArray = closeArray || false;
+            closePath = closePath || false;
+            var defaultOffset = Math.floor(pathArray[0].length / 2);
+            offset = offset || defaultOffset;
+            offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
+            var positions = [];
+            var indices = [];
+            var normals = [];
+            var uvs = [];
+            var us = []; // us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
+            var vs = []; // vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
+            var uTotalDistance = []; // uTotalDistance[p] : total distance of path p
+            var vTotalDistance = []; //  vTotalDistance[i] : total distance between points i of first and last path from pathArray
+            var minlg; // minimal length among all paths from pathArray
+            var lg = []; // array of path lengths : nb of vertex per path
+            var idx = []; // array of path indexes : index of each path (first vertex) in positions array
+            // if single path in pathArray
+            if (pathArray.length < 2) {
+                var ar1 = [];
+                var ar2 = [];
+                for (var i = 0; i < pathArray[0].length - offset; i++) {
+                    ar1.push(pathArray[0][i]);
+                    ar2.push(pathArray[0][i + offset]);
+                }
+                pathArray = [ar1, ar2];
+            }
+            // positions and horizontal distances (u)
+            var idc = 0;
+            minlg = pathArray[0].length;
+            for (var p = 0; p < pathArray.length; p++) {
+                uTotalDistance[p] = 0;
+                us[p] = [0];
+                var path = pathArray[p];
+                var l = path.length;
+                minlg = (minlg < l) ? minlg : l;
+                lg[p] = l;
+                idx[p] = idc;
+                var j = 0;
+                while (j < l) {
+                    positions.push(path[j].x, path[j].y, path[j].z);
+                    if (j > 0) {
+                        var vectlg = path[j].subtract(path[j - 1]).length();
+                        var dist = vectlg + uTotalDistance[p];
+                        us[p].push(dist);
+                        uTotalDistance[p] = dist;
+                    }
+                    j++;
+                }
+                if (closePath) {
+                    var vectlg = path[0].subtract(path[j - 1]).length();
+                    var dist = vectlg + uTotalDistance[p];
+                    uTotalDistance[p] = dist;
+                }
+                idc += l;
+            }
+            for (var i = 0; i < minlg; i++) {
+                vTotalDistance[i] = 0;
+                vs[i] = [0];
+                for (var p = 0; p < pathArray.length - 1; p++) {
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[p + 1];
+                    var vectlg = path2[i].subtract(path1[i]).length();
+                    var dist = vectlg + vTotalDistance[i];
+                    vs[i].push(dist);
+                    vTotalDistance[i] = dist;
+                }
+                if (closeArray) {
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[0];
+                    var vectlg = path2[i].subtract(path1[i]).length();
+                    var dist = vectlg + vTotalDistance[i];
+                    vTotalDistance[i] = dist;
+                }
+            }
+            for (var p = 0; p < pathArray.length; p++) {
+                for (var i = 0; i < minlg; i++) {
+                    var u = us[p][i] / uTotalDistance[p];
+                    var v = vs[i][p] / vTotalDistance[i];
+                    uvs.push(u, v);
+                }
+            }
+            // indices
+            var p = 0; // path index
+            var i = 0; // positions array index
+            var l1 = lg[p] - 1; // path1 length
+            var l2 = lg[p + 1] - 1; // path2 length
+            var min = (l1 < l2) ? l1 : l2; // current path stop index
+            var shft = idx[1] - idx[0]; // shift 
+            var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	
+            while (i <= min && p < path1nb) {
+                // draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
+                var t1 = i;
+                var t2 = i + shft;
+                var t3 = i + 1;
+                var t4 = i + shft + 1;
+                indices.push(i, i + shft, i + 1);
+                indices.push(i + shft + 1, i + 1, i + shft);
+                i += 1;
+                if (i == min) {
+                    if (closePath) {
+                        indices.push(i, i + shft, idx[p]);
+                        indices.push(idx[p] + shft, idx[p], i + shft);
+                        t3 = idx[p];
+                        t4 = idx[p] + shft;
+                    }
+                    p++;
+                    if (p == lg.length - 1) {
+                        shft = idx[0] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[0] - 1;
+                    }
+                    else {
+                        shft = idx[p + 1] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[p + 1] - 1;
+                    }
+                    i = idx[p];
+                    min = (l1 < l2) ? l1 + i : l2 + i;
+                }
+            }
+            // normals
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            // Result
+            var vertexData = new BABYLON.VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+        };
         VertexData.CreateBox = function (size) {
             var normalsSource = [
                 new BABYLON.Vector3(0, 0, 1),
@@ -761,4 +892,5 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
+
+//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map

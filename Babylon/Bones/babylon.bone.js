@@ -71,4 +71,5 @@ var BABYLON;
     })();
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.bone.js.map
+
+//# sourceMappingURL=../Bones/babylon.bone.js.map
