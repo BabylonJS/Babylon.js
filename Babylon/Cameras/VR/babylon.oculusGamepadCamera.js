@@ -141,5 +141,4 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.OculusGamepadCamera = OculusGamepadCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Cameras/VR/babylon.oculusGamepadCamera.js.map
+//# sourceMappingURL=babylon.oculusGamepadCamera.js.map

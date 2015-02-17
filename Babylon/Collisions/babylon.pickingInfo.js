@@ -55,5 +55,4 @@ var BABYLON;
     })();
     BABYLON.PickingInfo = PickingInfo;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Collisions/babylon.pickingInfo.js.map
+//# sourceMappingURL=babylon.pickingInfo.js.map

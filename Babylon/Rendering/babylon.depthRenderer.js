@@ -112,5 +112,4 @@ var BABYLON;
     })();
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Rendering/babylon.depthRenderer.js.map
+//# sourceMappingURL=babylon.depthRenderer.js.map

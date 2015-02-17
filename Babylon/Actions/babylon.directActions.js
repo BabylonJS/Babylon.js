@@ -203,5 +203,4 @@ var BABYLON;
     })(BABYLON.Action);
     BABYLON.StopSoundAction = StopSoundAction;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Actions/babylon.directActions.js.map
+//# sourceMappingURL=babylon.directActions.js.map

@@ -338,5 +338,4 @@ var BABYLON;
     })();
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Audio/babylon.sound.js.map
+//# sourceMappingURL=babylon.sound.js.map

@@ -87,5 +87,4 @@ var BABYLON;
     })();
     BABYLON.RenderingManager = RenderingManager;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Rendering/babylon.renderingManager.js.map
+//# sourceMappingURL=babylon.renderingManager.js.map

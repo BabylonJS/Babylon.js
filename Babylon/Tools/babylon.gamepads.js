@@ -542,5 +542,4 @@ var BABYLON;
     })(Gamepad);
     BABYLON.Xbox360Pad = Xbox360Pad;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.gamepads.js.map
+//# sourceMappingURL=babylon.gamepads.js.map

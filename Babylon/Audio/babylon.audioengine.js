@@ -66,5 +66,4 @@ var BABYLON;
     })();
     BABYLON.AudioEngine = AudioEngine;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Audio/babylon.audioengine.js.map
+//# sourceMappingURL=babylon.audioengine.js.map

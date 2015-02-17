@@ -92,5 +92,4 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.DynamicTexture = DynamicTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.dynamicTexture.js.map
+//# sourceMappingURL=babylon.dynamicTexture.js.map

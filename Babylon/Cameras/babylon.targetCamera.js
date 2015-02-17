@@ -171,5 +171,4 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Cameras/babylon.targetCamera.js.map
+//# sourceMappingURL=babylon.targetCamera.js.map

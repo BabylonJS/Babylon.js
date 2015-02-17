@@ -20,5 +20,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.FilterPostProcess = FilterPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.filterPostProcess.js.map
+//# sourceMappingURL=babylon.filterPostProcess.js.map

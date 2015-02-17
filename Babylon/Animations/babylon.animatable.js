@@ -87,5 +87,4 @@ var BABYLON;
     })();
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Animations/babylon.animatable.js.map
+//# sourceMappingURL=babylon.animatable.js.map

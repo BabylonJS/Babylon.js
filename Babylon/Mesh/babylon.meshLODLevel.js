@@ -12,5 +12,4 @@ var BABYLON;
         Internals.MeshLODLevel = MeshLODLevel;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.meshLODLevel.js.map
+//# sourceMappingURL=babylon.meshLODLevel.js.map

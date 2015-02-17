@@ -98,5 +98,4 @@ var BABYLON;
     })();
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.postProcess.js.map
+//# sourceMappingURL=babylon.postProcess.js.map

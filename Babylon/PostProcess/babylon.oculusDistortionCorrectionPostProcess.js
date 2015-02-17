@@ -38,5 +38,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.OculusDistortionCorrectionPostProcess = OculusDistortionCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.oculusDistortionCorrectionPostProcess.js.map
+//# sourceMappingURL=babylon.oculusDistortionCorrectionPostProcess.js.map

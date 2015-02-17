@@ -65,5 +65,4 @@ var BABYLON;
     })();
     BABYLON.BoundingBoxRenderer = BoundingBoxRenderer;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Rendering/babylon.boundingBoxRenderer.js.map
+//# sourceMappingURL=babylon.boundingBoxRenderer.js.map

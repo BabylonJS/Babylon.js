@@ -2402,5 +2402,4 @@ var BABYLON;
     })();
     BABYLON.Path2 = Path2;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Math/babylon.math.js.map
+//# sourceMappingURL=babylon.math.js.map

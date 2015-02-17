@@ -1,5 +1,3 @@
-/// <reference path="babylon.d.ts" />
-
 module BABYLON {
     export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
@@ -131,7 +129,7 @@ module BABYLON {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
             // this._originalColorPostProcess = undefined;
-            this._chromaticAberrationPostProcess = undefined
+            this._chromaticAberrationPostProcess = undefined;
             this._depthOfFieldPostProcess = undefined;
 
             this._grainTexture.dispose();
@@ -197,7 +195,7 @@ module BABYLON {
             this._grainTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._grainTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
-            var context = (<BABYLON.DynamicTexture>this._grainTexture).getContext();
+            var context = (<DynamicTexture>this._grainTexture).getContext();
 
             var rand = (min, max) => {
                 return Math.random() * (max - min) + min;
@@ -211,7 +209,7 @@ module BABYLON {
                     context.fillRect(x, y, 1, 1);
                 }
             }
-            (<BABYLON.DynamicTexture>this._grainTexture).update(false);
+            (<DynamicTexture>this._grainTexture).update(false);
         }
 
     }

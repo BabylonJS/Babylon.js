@@ -260,5 +260,4 @@ var BABYLON;
         Internals.TGATools = TGATools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Tools/babylon.tools.tga.js.map
+//# sourceMappingURL=babylon.tools.tga.js.map

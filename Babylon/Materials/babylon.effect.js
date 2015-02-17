@@ -340,5 +340,4 @@ var BABYLON;
     })();
     BABYLON.Effect = Effect;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Materials/babylon.effect.js.map
+//# sourceMappingURL=babylon.effect.js.map

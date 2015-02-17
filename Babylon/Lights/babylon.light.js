@@ -68,5 +68,4 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.Light = Light;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Lights/babylon.light.js.map
+//# sourceMappingURL=babylon.light.js.map

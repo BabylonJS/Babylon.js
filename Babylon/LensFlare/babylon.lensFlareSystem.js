@@ -175,5 +175,4 @@ var BABYLON;
     })();
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../LensFlare/babylon.lensFlareSystem.js.map
+//# sourceMappingURL=babylon.lensFlareSystem.js.map

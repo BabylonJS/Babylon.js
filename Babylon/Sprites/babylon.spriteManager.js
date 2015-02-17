@@ -141,5 +141,4 @@ var BABYLON;
     })();
     BABYLON.SpriteManager = SpriteManager;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Sprites/babylon.spriteManager.js.map
+//# sourceMappingURL=babylon.spriteManager.js.map

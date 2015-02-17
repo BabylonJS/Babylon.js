@@ -13374,6 +13374,7 @@ var BABYLON;
 blackAndWhitePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nvoid main(void) \n{\n	float luminance = dot(texture2D(textureSampler, vUV).rgb, vec3(0.3, 0.59, 0.11));\n	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);\n}",
 blurPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Parameters\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\n\nvoid main(void)\n{\n	float weights[7];\n	weights[0] = 0.05;\n	weights[1] = 0.1;\n	weights[2] = 0.2;\n	weights[3] = 0.3;\n	weights[4] = 0.2;\n	weights[5] = 0.1;\n	weights[6] = 0.05;\n\n	vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);\n	vec2 texelStep = texelSize * direction * blurWidth;\n	vec2 start = vUV - 3.0 * texelStep;\n\n	vec4 baseColor = vec4(0., 0., 0., 0.);\n	vec2 texelOffset = vec2(0., 0.);\n\n	for (int i = 0; i < 7; i++)\n	{\n		baseColor += texture2D(textureSampler, start + texelOffset) * weights[i];\n		texelOffset += texelStep;\n	}\n\n	gl_FragColor = baseColor;\n}",
 brickPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brickColor;\nuniform vec3 jointColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvoid main(void)\n{\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.05;\n	vec3 color = brickColor;\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(jointColor, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(jointColor, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float brickColorSwitch = mod(floor(yi) + floor(xi), 3.0);\n\n		if (brickColorSwitch == 0.0)\n			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);\n		else if (brickColorSwitch == 2.0)\n			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);\n	}\n\n	gl_FragColor = vec4(color, 1.0);\n}",
+chromaticAberrationPixelShader:"/*\n	BABYLON.JS Chromatic Aberration GLSL Shader\n	Author: Olivier Guyot\n	Separates very slightly R, G and B colors on the edges of the screen\n	Inspired by Francois Tarlier & Martins Upitis	\n*/\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\n// samplers\nuniform sampler2D textureSampler;	// original color\n\n// uniforms\nuniform float chromatic_aberration;\nuniform float screen_width;\nuniform float screen_height;\n\n// varyings\nvarying vec2 vUV;\n\n\nvoid main(void)\n{\n	vec2 centered_screen_pos = vec2(vUV.x-0.5, vUV.y-0.5);\n	float radius2 = centered_screen_pos.x*centered_screen_pos.x\n					+ centered_screen_pos.y*centered_screen_pos.y;\n	float radius = sqrt(radius2);\n\n	vec4 original = texture2D(textureSampler, vUV);\n\n	if(chromatic_aberration > 0.0) {\n		//index of refraction of each color channel, causing chromatic dispersion\n		vec3 ref_indices = vec3(0.6, 0.3, 0.0);\n		float ref_shiftX = chromatic_aberration * radius * 12.0 / screen_width;\n		float ref_shiftY = chromatic_aberration * radius * 12.0 / screen_height;\n\n		// shifts for red, green & blue\n		vec2 ref_coords_r = vec2(vUV.x + ref_indices.r*ref_shiftX, vUV.y + ref_indices.r*ref_shiftY*0.5);\n		vec2 ref_coords_g = vec2(vUV.x + ref_indices.g*ref_shiftX, vUV.y + ref_indices.g*ref_shiftY*0.5);\n		vec2 ref_coords_b = vec2(vUV.x + ref_indices.b*ref_shiftX, vUV.y + ref_indices.b*ref_shiftY*0.5);\n\n		original.r = texture2D(textureSampler, ref_coords_r).r;\n		original.g = texture2D(textureSampler, ref_coords_g).g;\n		original.b = texture2D(textureSampler, ref_coords_b).b;\n	}\n\n	gl_FragColor = original;\n}",
 cloudPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;\n\nuniform vec3 skyColor;\nuniform vec3 cloudColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 12.0;\n	vec3 c = mix(skyColor, cloudColor, fbm(p));\n	gl_FragColor = vec4(c, 1);\n\n}",
 colorPixelShader:"precision highp float;\n\nuniform vec4 color;\n\nvoid main(void) {\n	gl_FragColor = color;\n}",
 colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 position;\n\n// Uniforms\nuniform mat4 worldViewProjection;\n\nvoid main(void) {\n	gl_Position = worldViewProjection * vec4(position, 1.0);\n}",
@@ -13382,6 +13383,7 @@ defaultPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define MAP_
 defaultVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniforms\n\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 view;\nuniform mat4 viewProjection;\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n\n#ifdef SPECULAR\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\n// Output\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nvarying float fClipDistance;\n#endif\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\n#ifdef SHADOWS\n#ifdef LIGHT0\nuniform mat4 lightMatrix0;\nvarying vec4 vPositionFromLight0;\n#endif\n#ifdef LIGHT1\nuniform mat4 lightMatrix1;\nvarying vec4 vPositionFromLight1;\n#endif\n#ifdef LIGHT2\nuniform mat4 lightMatrix2;\nvarying vec4 vPositionFromLight2;\n#endif\n#ifdef LIGHT3\nuniform mat4 lightMatrix3;\nvarying vec4 vPositionFromLight3;\n#endif\n#endif\n\n#ifdef REFLECTION\nvarying vec3 vPositionUVW;\n#endif\n\nvoid main(void) {\n	mat4 finalWorld;\n\n#ifdef REFLECTION\n	vPositionUVW = position;\n#endif \n\n#ifdef INSTANCES\n	finalWorld = mat4(world0, world1, world2, world3);\n#else\n	finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n\n#ifdef BONES4\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n#else\n	finalWorld = finalWorld * (m0 + m1 + m2);\n#endif \n\n#endif\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n\n	vec4 worldPos = finalWorld * vec4(position, 1.0);\n	vPositionW = vec3(worldPos);\n	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\n\n	// Texture coordinates\n#ifndef UV1\n	vec2 uv = vec2(0., 0.);\n#endif\n#ifndef UV2\n	vec2 uv2 = vec2(0., 0.);\n#endif\n\n#ifdef DIFFUSE\n	if (vDiffuseInfos.x == 0.)\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef AMBIENT\n	if (vAmbientInfos.x == 0.)\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vAmbientUV = vec2(ambientMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef OPACITY\n	if (vOpacityInfos.x == 0.)\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef EMISSIVE\n	if (vEmissiveInfos.x == 0.)\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef SPECULAR\n	if (vSpecularInfos.x == 0.)\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n#ifdef BUMP\n	if (vBumpInfos.x == 0.)\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));\n	}\n	else\n	{\n		vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));\n	}\n#endif\n\n	// Clip plane\n#ifdef CLIPPLANE\n	fClipDistance = dot(worldPos, vClipPlane);\n#endif\n\n	// Fog\n#ifdef FOG\n	fFogDistance = (view * worldPos).z;\n#endif\n\n	// Shadows\n#ifdef SHADOWS\n#ifdef LIGHT0\n	vPositionFromLight0 = lightMatrix0 * worldPos;\n#endif\n#ifdef LIGHT1\n	vPositionFromLight1 = lightMatrix1 * worldPos;\n#endif\n#ifdef LIGHT2\n	vPositionFromLight2 = lightMatrix2 * worldPos;\n#endif\n#ifdef LIGHT3\n	vPositionFromLight3 = lightMatrix3 * worldPos;\n#endif\n#endif\n\n	// Vertex color\n#ifdef VERTEXCOLOR\n	vColor = color;\n#endif\n\n	// Point size\n#ifdef POINTSIZE\n	gl_PointSize = pointSize;\n#endif\n}",
 depthPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n\nuniform float far;\n\nvoid main(void)\n{\n#ifdef ALPHATEST\n	if (texture2D(diffuseSampler, vUV).a < 0.4)\n		discard;\n#endif\n\n	float depth = (gl_FragCoord.z / gl_FragCoord.w) / far;\n	gl_FragColor = vec4(depth, depth * depth, 0.0, 1.0);\n}",
 depthVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#else\n	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);\n#endif\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
+depthOfFieldPixelShader:"/*\n	BABYLON.JS Depth-of-field GLSL Shader\n	Author: Olivier Guyot\n	Does depth-of-field blur, edge blur, highlights enhancing\n	Inspired by Francois Tarlier & Martins Upitis\n*/\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\n\n// samplers\nuniform sampler2D textureSampler;\nuniform sampler2D depthSampler;\nuniform sampler2D grainSampler;\n\n// uniforms\nuniform float grain_amount;\nuniform bool pentagon;\nuniform float maxZ;\nuniform bool blur_noise;\nuniform float screen_width;\nuniform float screen_height;\nuniform float distortion;\nuniform float focus_depth;\nuniform float aperture;\nuniform float gain;\nuniform float threshold;\nuniform float edge_blur;\n\n// varyings\nvarying vec2 vUV;\n\n// constants\n#define PI 3.14159265\nconst int RING_1_SAMPLES = 4;\nconst int RING_2_SAMPLES = 6;\nconst int RING_3_SAMPLES = 9;\nconst int RING_4_SAMPLES = 12;\nconst int RING_5_SAMPLES = 16;\n//const int RING_6_SAMPLES = 15;\nconst float RING_STEP_DIST = 0.4;			// a new blur ring is added each time this distance is passed\nconst float PENTAGON_ANGLE_SUB = 1.2566;		// 2PI / 5\nconst float PENTAGON_ANGLE_SUB_HALF = 0.6283;	// 2PI / 10\n\n// common calculations\nvec2 centered_screen_pos;\nfloat radius2;\nfloat radius;\n\n\n// applies edge distortion on texture coords\nvec2 getDistortedCoords(vec2 coords) {\n\n	if(distortion == 0.0) { return coords; }\n\n	vec2 direction = 1.0 * normalize(centered_screen_pos);\n	vec2 dist_coords = vec2(0.5, 0.5);\n	dist_coords.x = 0.5 + direction.x * radius2 * 1.0;\n	dist_coords.y = 0.5 + direction.y * radius2 * 1.0;\n	float dist_amount = clamp(distortion*0.23, 0.0, 1.0);\n\n	dist_coords = mix(coords, dist_coords, dist_amount);\n\n	return dist_coords;\n}\n\n// picks either original screen color or highlights only\nvec4 getColor(vec2 coords, bool highlight) {\n\n	vec4 color = texture2D(textureSampler, coords);\n\n	if(highlight) {\n		float luminance = dot(color.rgb, vec3(0.2125, 0.7154, 0.0721));\n		float lum_threshold;\n		if(threshold > 1.0) { lum_threshold = 0.94 + 0.01 * threshold; }\n		else { lum_threshold = 0.5 + 0.44 * threshold; }\n		if(luminance < lum_threshold) {\n			color.rgb = vec3(0.0, 0.0, 0.0);\n			color.a = 1.0;\n		}\n	}\n\n	return color;\n}\n\n// returns a modifier to be applied on the radius, in order to simulate a pentagon\nfloat pentagonShape(float angle) {\n    float a1 = mod(angle, PENTAGON_ANGLE_SUB) / PENTAGON_ANGLE_SUB - 0.5;\n    float a2 = 0.5 - a1 * a1;\n    return 1.35 - 0.94 * a2;\n}\n\n// returns original screen color after blur\nvec4 getBlurColor(vec2 coords, float size, bool highlight) {\n\n	float w = (size/screen_width);\n	float h = (size/screen_height);\n\n	vec4 col = getColor(coords, highlight);\n	if(size == 0.0) { return col; }\n\n	float s = 1.0;\n	float pw;			// sample x relative coord\n	float ph;			// sample y relative coord\n	float bias = 0.65;	// inner/outer ring bias\n	if(highlight) { bias = 0.95; }\n	float sample_angle;\n	float ratio_rings;\n	float ring_radius;\n	float penta;		// pentagon shape modifier\n\n	int ring_count;\n	if(size >= 6.0 * RING_STEP_DIST) { ring_count = 6; }\n	else if(size >= 5.0 * RING_STEP_DIST) { ring_count = 5; }\n	else if(size >= 4.0 * RING_STEP_DIST) { ring_count = 4; }\n	else if(size >= 3.0 * RING_STEP_DIST) { ring_count = 3; }\n	else if(size >= 2.0 * RING_STEP_DIST) { ring_count = 2; }\n	else { ring_count = 1; }\n	\n	// RING 1\n	if(size > RING_STEP_DIST) {\n		ring_radius = size / float(ring_count);\n		ratio_rings = 1.0 / float(ring_count);\n		for(int i = 0; i < RING_1_SAMPLES; i++) {\n			sample_angle = PI *2.0 * float(i) / float(RING_1_SAMPLES);\n			if(pentagon) { penta = pentagonShape(sample_angle); }\n			else { penta = 1.0; }\n			pw = cos( sample_angle ) * penta * ring_radius;\n			ph = sin( sample_angle ) * penta * ring_radius;\n			col += getColor(coords + vec2(pw*w,ph*h), highlight) * mix( 1.0, ratio_rings, bias );\n			s += 1.0 * mix(1.0, ratio_rings, bias);\n		}\n	}	\n\n	// RING 2\n	if(size > RING_STEP_DIST * 2.0) {\n		ring_radius = 2.0 * size / float(ring_count);\n		ratio_rings = 2.0 / float(ring_count);\n		for(int i = 0; i < RING_2_SAMPLES; i++) {\n			sample_angle = PI *2.0 * float(i) / float(RING_2_SAMPLES);\n			if(pentagon) { penta = pentagonShape(sample_angle); }\n			else { penta = 1.0; }\n			pw = cos( sample_angle ) * penta * ring_radius;\n			ph = sin( sample_angle ) * penta * ring_radius;\n			col += getColor(coords + vec2(pw*w,ph*h), highlight) * mix( 1.0, ratio_rings, bias );\n			s += 1.0 * mix(1.0, ratio_rings, bias);  \n		}\n	}	\n\n	// RING 3\n	if(size > RING_STEP_DIST * 3.0) {\n		ring_radius = 3.0 * size / float(ring_count);\n		ratio_rings = 3.0 / float(ring_count);\n		for(int i = 0; i < RING_3_SAMPLES; i++) {\n			sample_angle = PI *2.0 * float(i) / float(RING_3_SAMPLES);\n			if(pentagon) { penta = pentagonShape(sample_angle); }\n			else { penta = 1.0; }\n			pw = cos( sample_angle ) * penta * ring_radius;\n			ph = sin( sample_angle ) * penta * ring_radius;\n			col += getColor(coords + vec2(pw*w,ph*h), highlight) * mix( 1.0, ratio_rings, bias );\n			s += 1.0 * mix(1.0, ratio_rings, bias);  \n		}\n	}	\n\n	// RING 4\n	if(size > RING_STEP_DIST * 4.0) {\n		ring_radius = 4.0 * size / float(ring_count);\n		ratio_rings = 4.0 / float(ring_count);\n		for(int i = 0; i < RING_4_SAMPLES; i++) {\n			sample_angle = PI *2.0 * float(i) / float(RING_4_SAMPLES);\n			if(pentagon) { penta = pentagonShape(sample_angle); }\n			else { penta = 1.0; }\n			pw = cos( sample_angle ) * penta * ring_radius;\n			ph = sin( sample_angle ) * penta * ring_radius;\n			col += getColor(coords + vec2(pw*w,ph*h), highlight) * mix( 1.0, ratio_rings, bias );\n			s += 1.0 * mix(1.0, ratio_rings, bias);  \n		}\n	}	\n\n	// RING 5\n	if(size > RING_STEP_DIST * 5.0) {\n		ring_radius = 5.0 * size / float(ring_count);\n		ratio_rings = 5.0 / float(ring_count);\n		for(int i = 0; i < RING_5_SAMPLES; i++) {\n			sample_angle = PI *2.0 * float(i) / float(RING_5_SAMPLES);\n			if(pentagon) { penta = pentagonShape(sample_angle); }\n			else { penta = 1.0; }\n			pw = cos( sample_angle ) * penta * ring_radius;\n			ph = sin( sample_angle ) * penta * ring_radius;\n			col += getColor(coords + vec2(pw*w,ph*h), highlight) * mix( 1.0, ratio_rings, bias );\n			s += 1.0 * mix(1.0, ratio_rings, bias);  \n		}\n	}	\n\n	col /= s;		// scales color according to samples taken\n	col.a = 1.0;\n\n	return col;\n}\n\n// on-the-fly constant noise\nvec2 rand(vec2 co)\n{\n	float noise1 = (fract(sin(dot(co ,vec2(12.9898,78.233))) * 43758.5453));\n	float noise2 = (fract(sin(dot(co ,vec2(12.9898,78.233)*2.0)) * 43758.5453));\n	return clamp(vec2(noise1,noise2),0.0,1.0);\n}\n\nvoid main(void)\n{\n\n	// Common calc\n	centered_screen_pos = vec2(vUV.x-0.5, vUV.y-0.5);\n	radius2 = centered_screen_pos.x*centered_screen_pos.x + centered_screen_pos.y*centered_screen_pos.y;\n	radius = sqrt(radius2);\n\n	vec4 final_color;\n	vec2 distorted_coords = getDistortedCoords(vUV);\n	vec2 texels_coords = vec2(vUV.x * screen_width, vUV.y * screen_height);	// varies from 0 to SCREEN_WIDTH or _HEIGHT\n\n	// blur from depth of field effect\n	float dof_blur_amount = 0.0;\n	if(focus_depth != -1.0) {\n		vec4 depth_sample = texture2D(depthSampler, distorted_coords);\n		float depth = depth_sample.r;\n		dof_blur_amount = abs(depth - focus_depth) * aperture * 3.5;\n		if(dof_blur_amount < 0.05) { dof_blur_amount = 0.0; }				// no blur at all\n		else if( depth - focus_depth < 0.0 ) { dof_blur_amount *= 2.0; }	// blur more when close to camera\n		dof_blur_amount = clamp(dof_blur_amount, 0.0, 1.0);\n	}\n\n	// blur from edge blur effect\n	float edge_blur_amount = 0.0;\n	if(edge_blur > 0.0) {\n		edge_blur_amount = clamp( ( radius*2.0 - 1.0 + 0.15*edge_blur ) * 1.5 , 0.0 , 1.0 ) * 1.3;\n	}\n\n	// total blur amount\n	float blur_amount = max(edge_blur_amount, dof_blur_amount);\n\n	// apply blur if necessary\n	if(blur_amount == 0.0) {\n		gl_FragColor = getColor(distorted_coords, false);\n	} else {\n		gl_FragColor = getBlurColor(distorted_coords, blur_amount * 1.7, false)\n					   + gain * blur_amount*getBlurColor(distorted_coords, blur_amount * 2.75, true);\n\n		if(blur_noise) {\n			// we put a slight amount of noise in the blurred color\n			vec2 noise = rand(distorted_coords) * 0.01 * blur_amount;\n			vec2 blurred_coord = vec2(distorted_coords.x + noise.x, distorted_coords.y + noise.y);\n			gl_FragColor = 0.04 * getColor(blurred_coord, false) + 0.96 * gl_FragColor;\n		}\n	}\n\n	if(grain_amount > 0.0) {\n		vec4 grain_color = texture2D(grainSampler, texels_coords*0.003);\n		gl_FragColor.rgb += ( -0.5 + grain_color.rgb ) * 0.20;\n	}\n}",
 displayPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(passSampler, vUV);\n}",
 filterPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform mat4 kernelMatrix;\n\nvoid main(void)\n{\n	vec3 baseColor = texture2D(textureSampler, vUV).rgb;\n	vec3 updatedColor = (kernelMatrix * vec4(baseColor, 1.0)).rgb;\n\n	gl_FragColor = vec4(updatedColor, 1.0);\n}",
 firePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float time;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alphaThreshold;\n\nvarying vec2 vUV;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n	vec2 p = vUV * 8.0;\n	float q = fbm(p - time * 0.1);\n	vec2 r = vec2(fbm(p + q + time * speed.x - p.x - p.y), fbm(p + q - time * speed.y));\n	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\n	vec3 color = c * cos(shift * vUV.y);\n	float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));\n\n	gl_FragColor = vec4(color, luminance * alphaThreshold + (1.0 - alphaThreshold));\n}",
@@ -14170,7 +14172,7 @@ var BABYLON;
         Database.prototype.checkManifestFile = function () {
             var _this = this;
             function noManifestFile() {
-                BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
+                //BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
                 that.enableSceneOffline = false;
                 that.enableTexturesOffline = false;
                 that.callbackManifestChecked(false);
@@ -14268,7 +14270,7 @@ var BABYLON;
         };
         Database.prototype.loadImageFromDB = function (url, image) {
             var _this = this;
-            var completeURL = BABYLON.Database.ReturnFullUrlLocation(url);
+            var completeURL = Database.ReturnFullUrlLocation(url);
             var saveAndLoadImage = function () {
                 if (!_this.hasReachedQuota && _this.db !== null) {
                     // the texture is not yet in the DB, let's try to save it
@@ -14338,7 +14340,7 @@ var BABYLON;
                     }
                     image.src = blobTextureURL;
                 };
-                if (BABYLON.Database.isUASupportingBlobStorage) {
+                if (Database.isUASupportingBlobStorage) {
                     var xhr = new XMLHttpRequest(), blob;
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
@@ -14375,7 +14377,7 @@ var BABYLON;
                             catch (ex) {
                                 // "DataCloneError" generated by Chrome when you try to inject blob into IndexedDB
                                 if (ex.code === 25) {
-                                    BABYLON.Database.isUASupportingBlobStorage = false;
+                                    Database.isUASupportingBlobStorage = false;
                                 }
                                 image.src = url;
                             }
@@ -14491,7 +14493,7 @@ var BABYLON;
         };
         Database.prototype.loadFileFromDB = function (url, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer) {
             var _this = this;
-            var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
+            var completeUrl = Database.ReturnFullUrlLocation(url);
             var saveAndLoadFile = function (event) {
                 // the scene is not yet in the DB, let's try to save it
                 _this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
@@ -16312,7 +16314,7 @@ var BABYLON;
             this._isDirty = false;
         };
         Skeleton.prototype.getAnimatables = function () {
-            if (!this._animatables || this._animatables.length != this.bones.length) {
+            if (!this._animatables || this._animatables.length !== this.bones.length) {
                 this._animatables = [];
                 for (var index = 0; index < this.bones.length; index++) {
                     this._animatables.push(this.bones[index]);
@@ -16321,7 +16323,7 @@ var BABYLON;
             return this._animatables;
         };
         Skeleton.prototype.clone = function (name, id) {
-            var result = new BABYLON.Skeleton(name, id || name, this._scene);
+            var result = new Skeleton(name, id || name, this._scene);
             for (var index = 0; index < this.bones.length; index++) {
                 var source = this.bones[index];
                 var parentBone = null;
@@ -18099,6 +18101,10 @@ var BABYLON;
             SceneLoader._registeredPlugins.push(plugin);
         };
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
             var manifestChecked = function (success) {
                 scene.database = database;
                 var plugin = SceneLoader._getPluginForFilename(sceneFilename);
@@ -18153,6 +18159,10 @@ var BABYLON;
         * @param scene is the instance of BABYLON.Scene to append to
         */
         SceneLoader.Append = function (rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
             if (SceneLoader.ShowLoadingScreen) {
@@ -20949,11 +20959,14 @@ var BABYLON;
             var minlg; // minimal length among all paths from pathArray
             var lg = []; // array of path lengths : nb of vertex per path
             var idx = []; // array of path indexes : index of each path (first vertex) in positions array
+            var p; // path iterator
+            var i; // point iterator
+            var j; // point iterator
             // if single path in pathArray
             if (pathArray.length < 2) {
                 var ar1 = [];
                 var ar2 = [];
-                for (var i = 0; i < pathArray[0].length - offset; i++) {
+                for (i = 0; i < pathArray[0].length - offset; i++) {
                     ar1.push(pathArray[0][i]);
                     ar2.push(pathArray[0][i + offset]);
                 }
@@ -20970,7 +20983,7 @@ var BABYLON;
                 minlg = (minlg < l) ? minlg : l;
                 lg[p] = l;
                 idx[p] = idc;
-                var j = 0;
+                j = 0;
                 while (j < l) {
                     positions.push(path[j].x, path[j].y, path[j].z);
                     if (j > 0) {
@@ -20991,9 +21004,11 @@ var BABYLON;
             for (i = 0; i < minlg; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
+                var path1;
+                var path2;
                 for (p = 0; p < pathArray.length - 1; p++) {
-                    var path1 = pathArray[p];
-                    var path2 = pathArray[p + 1];
+                    path1 = pathArray[p];
+                    path2 = pathArray[p + 1];
                     vectlg = path2[i].subtract(path1[i]).length();
                     dist = vectlg + vTotalDistance[i];
                     vs[i].push(dist);
@@ -21007,34 +21022,41 @@ var BABYLON;
                     vTotalDistance[i] = dist;
                 }
             }
+            // uvs
+            var u;
+            var v;
             for (p = 0; p < pathArray.length; p++) {
                 for (i = 0; i < minlg; i++) {
-                    var u = us[p][i] / uTotalDistance[p];
-                    var v = vs[i][p] / vTotalDistance[i];
+                    u = us[p][i] / uTotalDistance[p];
+                    v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
                 }
             }
             // indices
-            var p = 0; // path index
-            var i = 0; // positions array index
+            p = 0; // path index
+            var pi = 0; // positions array index
             var l1 = lg[p] - 1; // path1 length
             var l2 = lg[p + 1] - 1; // path2 length
             var min = (l1 < l2) ? l1 : l2; // current path stop index
             var shft = idx[1] - idx[0]; // shift 
             var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	
-            while (i <= min && p < path1nb) {
-                // draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
-                var t1 = i;
-                var t2 = i + shft;
-                var t3 = i + 1;
-                var t4 = i + shft + 1;
-                indices.push(i, i + shft, i + 1);
-                indices.push(i + shft + 1, i + 1, i + shft);
-                i += 1;
-                if (i === min) {
+            var t1; // two consecutive triangles, so 4 points : point1
+            var t2; // point2
+            var t3; // point3
+            var t4; // point4
+            while (pi <= min && p < path1nb) {
+                // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
+                t1 = pi;
+                t2 = pi + shft;
+                t3 = pi + 1;
+                t4 = pi + shft + 1;
+                indices.push(pi, pi + shft, pi + 1);
+                indices.push(pi + shft + 1, pi + 1, pi + shft);
+                pi += 1;
+                if (pi === min) {
                     if (closePath) {
-                        indices.push(i, i + shft, idx[p]);
-                        indices.push(idx[p] + shft, idx[p], i + shft);
+                        indices.push(pi, pi + shft, idx[p]);
+                        indices.push(idx[p] + shft, idx[p], pi + shft);
                         t3 = idx[p];
                         t4 = idx[p] + shft;
                     }
@@ -21049,8 +21071,8 @@ var BABYLON;
                         l1 = lg[p] - 1;
                         l2 = lg[p + 1] - 1;
                     }
-                    i = idx[p];
-                    min = (l1 < l2) ? l1 + i : l2 + i;
+                    pi = idx[p];
+                    min = (l1 < l2) ? l1 + pi : l2 + pi;
                 }
             }
             // normals
@@ -28161,3 +28183,226 @@ var BABYLON;
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.volumetricLightScatteringPostProcess.js.map
+var BABYLON;
+(function (BABYLON) {
+    var LensRenderingPipeline = (function (_super) {
+        __extends(LensRenderingPipeline, _super);
+        /**
+         * @constructor
+         * @param {string} name - The rendering pipeline name
+         * @param {object} parameters - An object containing all parameters (see below)
+         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
+         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
+
+            Effect parameters are as follow:
+            {
+                chromatic_aberration: number;		// from 0 to x (1 for realism)
+                edge_blur: number;					// from 0 to x (1 for realism)
+                distortion: number;					// from 0 to x (1 for realism)
+                grain_amount: number;				// from 0 to 1
+                grain_texture: BABYLON.Texture;		// texture to use for grain effect; if unset, use random B&W noise
+                dof_focus_depth: number;			// depth-of-field: focus depth; unset to disable
+                dof_aperture: number;				// depth-of-field: focus blur bias (default: 1)
+                dof_pentagon: boolean;				// depth-of-field: makes a pentagon-like "bokeh" effect
+                dof_gain: boolean;					// depth-of-field: depthOfField gain (default: 1)
+                dof_threshold: boolean;				// depth-of-field: depthOfField threshold (default: 1)
+                blur_noise: boolean;				// add a little bit of noise to the blur (default: true)
+            }
+
+            Note: if an effect parameter is unset, effect is disabled
+         */
+        function LensRenderingPipeline(name, parameters, scene, ratio, cameras) {
+            var _this = this;
+            if (ratio === void 0) { ratio = 1.0; }
+            _super.call(this, scene.getEngine(), name);
+            // Lens effects can be of the following:
+            // - chromatic aberration (slight shift of RGB colors)
+            // - blur on the edge of the lens
+            // - lens distortion
+            // - depth-of-field 'bokeh' effect (shapes appearing in blured areas, stronger highlights)
+            // - grain/dust-on-lens effect
+            // Two additional texture samplers are needed:
+            // - depth map (for depth-of-field)
+            // - grain texture
+            /**
+            * The chromatic aberration PostProcess id in the pipeline
+            * @type {string}
+            */
+            this.LensChromaticAberrationEffect = "LensChromaticAberrationEffect";
+            /**
+            * The depth-of-field PostProcess id in the pipeline
+            * @type {string}
+            */
+            this.LensDepthOfFieldEffect = "LensDepthOfFieldEffect";
+            this._scene = scene;
+            // Fetch texture samplers
+            this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
+            if (parameters.grain_texture) {
+                this._grainTexture = parameters.grain_texture;
+            }
+            else {
+                this._createGrainTexture();
+            }
+            // save parameters
+            this._edgeBlur = parameters.edge_blur ? parameters.edge_blur : 0;
+            this._grainAmount = parameters.grain_amount ? parameters.grain_amount : 0;
+            this._chromaticAberration = parameters.chromatic_aberration ? parameters.chromatic_aberration : 0;
+            this._distortion = parameters.distortion ? parameters.distortion : 0;
+            this._highlightsGain = parameters.dof_gain ? parameters.dof_gain : 1;
+            this._highlightsThreshold = parameters.dof_threshold ? parameters.dof_threshold : 1;
+            this._dofDepth = parameters.dof_focus_depth !== undefined ? parameters.dof_focus_depth : -1;
+            this._dofAperture = parameters.dof_aperture ? parameters.dof_aperture : 1;
+            this._dofPentagon = parameters.dof_pentagon !== undefined ? parameters.dof_pentagon : true;
+            this._blurNoise = parameters.blur_noise !== undefined ? parameters.blur_noise : true;
+            // Create effects
+            this._createChromaticAberrationPostProcess(ratio);
+            this._createDepthOfFieldPostProcess(ratio);
+            // Set up pipeline
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () {
+                return _this._chromaticAberrationPostProcess;
+            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () {
+                return _this._depthOfFieldPostProcess;
+            }, true));
+            // Finish
+            scene.postProcessRenderPipelineManager.addPipeline(this);
+            if (cameras) {
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
+        }
+        // public methods
+        LensRenderingPipeline.prototype.setEdgeBlur = function (amount) {
+            this._edgeBlur = amount;
+        };
+        LensRenderingPipeline.prototype.disableEdgeBlur = function () {
+            this._edgeBlur = 0;
+        };
+        LensRenderingPipeline.prototype.setGrainAmount = function (amount) {
+            this._grainAmount = amount;
+        };
+        LensRenderingPipeline.prototype.disableGrain = function () {
+            this._grainAmount = 0;
+        };
+        LensRenderingPipeline.prototype.setChromaticAberration = function (amount) {
+            this._chromaticAberration = amount;
+        };
+        LensRenderingPipeline.prototype.disableChromaticAberration = function () {
+            this._chromaticAberration = 0;
+        };
+        LensRenderingPipeline.prototype.setEdgeDistortion = function (amount) {
+            this._distortion = amount;
+        };
+        LensRenderingPipeline.prototype.disableEdgeDistortion = function () {
+            this._distortion = 0;
+        };
+        LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
+            this._highlightsGain = amount;
+        };
+        LensRenderingPipeline.prototype.setHighlightsThreshold = function (amount) {
+            this._highlightsThreshold = amount;
+        };
+        LensRenderingPipeline.prototype.setFocusDepth = function (amount) {
+            this._dofDepth = amount;
+        };
+        LensRenderingPipeline.prototype.disableDepthOfField = function () {
+            this._dofDepth = -1;
+        };
+        LensRenderingPipeline.prototype.setAperture = function (amount) {
+            this._dofAperture = amount;
+        };
+        LensRenderingPipeline.prototype.enablePentagonBokeh = function () {
+            this._dofPentagon = true;
+        };
+        LensRenderingPipeline.prototype.disablePentagonBokeh = function () {
+            this._dofPentagon = false;
+        };
+        LensRenderingPipeline.prototype.enableNoiseBlur = function () {
+            this._blurNoise = true;
+        };
+        LensRenderingPipeline.prototype.disableNoiseBlur = function () {
+            this._blurNoise = false;
+        };
+        /**
+         * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
+         */
+        LensRenderingPipeline.prototype.dispose = function (disableDepthRender) {
+            if (disableDepthRender === void 0) { disableDepthRender = false; }
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+            // this._originalColorPostProcess = undefined;
+            this._chromaticAberrationPostProcess = undefined;
+            this._depthOfFieldPostProcess = undefined;
+            this._grainTexture.dispose();
+            if (disableDepthRender)
+                this._scene.disableDepthRenderer();
+        };
+        // colors shifting and distortion
+        LensRenderingPipeline.prototype._createChromaticAberrationPostProcess = function (ratio) {
+            var _this = this;
+            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "./chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._chromaticAberrationPostProcess.onApply = function (effect) {
+                effect.setFloat('chromatic_aberration', _this._chromaticAberration);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
+            };
+        };
+        // colors shifting and distortion
+        LensRenderingPipeline.prototype._createDepthOfFieldPostProcess = function (ratio) {
+            var _this = this;
+            this._depthOfFieldPostProcess = new BABYLON.PostProcess("LensDepthOfField", "./depthOfField", [
+                "gain",
+                "threshold",
+                "focus_depth",
+                "aperture",
+                "pentagon",
+                "maxZ",
+                "edge_blur",
+                "chromatic_aberration",
+                "distortion",
+                "blur_noise",
+                "grain_amount",
+                "screen_width",
+                "screen_height"
+            ], ["depthSampler", "grainSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._depthOfFieldPostProcess.onApply = function (effect) {
+                effect.setBool('pentagon', _this._dofPentagon);
+                effect.setBool('blur_noise', _this._blurNoise);
+                effect.setFloat('maxZ', _this._scene.activeCamera.maxZ);
+                effect.setFloat('grain_amount', _this._grainAmount);
+                effect.setTexture("depthSampler", _this._depthTexture);
+                effect.setTexture("grainSampler", _this._grainTexture);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
+                effect.setFloat('distortion', _this._distortion);
+                effect.setFloat('focus_depth', _this._dofDepth);
+                effect.setFloat('aperture', _this._dofAperture);
+                effect.setFloat('gain', _this._highlightsGain);
+                effect.setFloat('threshold', _this._highlightsThreshold);
+                effect.setFloat('edge_blur', _this._edgeBlur);
+            };
+        };
+        // creates a black and white random noise texture, 512x512
+        LensRenderingPipeline.prototype._createGrainTexture = function () {
+            var size = 512;
+            this._grainTexture = new BABYLON.DynamicTexture("LensNoiseTexture", size, this._scene, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            this._grainTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+            this._grainTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            var context = this._grainTexture.getContext();
+            var rand = function (min, max) {
+                return Math.random() * (max - min) + min;
+            };
+            var value;
+            for (var x = 0; x < size; x++) {
+                for (var y = 0; y < size; y++) {
+                    value = Math.floor(rand(0.42, 0.58) * 255);
+                    context.fillStyle = 'rgb(' + value + ', ' + value + ', ' + value + ')';
+                    context.fillRect(x, y, 1, 1);
+                }
+            }
+            this._grainTexture.update(false);
+        };
+        return LensRenderingPipeline;
+    })(BABYLON.PostProcessRenderPipeline);
+    BABYLON.LensRenderingPipeline = LensRenderingPipeline;
+})(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.lensRenderingPipeline.js.map

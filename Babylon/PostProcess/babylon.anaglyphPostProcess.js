@@ -15,5 +15,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.AnaglyphPostProcess = AnaglyphPostProcess;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../PostProcess/babylon.anaglyphPostProcess.js.map
+//# sourceMappingURL=babylon.anaglyphPostProcess.js.map

@@ -59,5 +59,4 @@ var BABYLON;
     })(BABYLON.BaseTexture);
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../../Materials/Textures/babylon.cubeTexture.js.map
+//# sourceMappingURL=babylon.cubeTexture.js.map

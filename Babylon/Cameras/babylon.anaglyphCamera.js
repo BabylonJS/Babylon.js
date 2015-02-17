@@ -79,5 +79,4 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.AnaglyphFreeCamera = AnaglyphFreeCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Cameras/babylon.anaglyphCamera.js.map
+//# sourceMappingURL=babylon.anaglyphCamera.js.map

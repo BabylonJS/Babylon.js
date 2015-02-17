@@ -60,5 +60,4 @@ var BABYLON;
     })(BABYLON.Light);
     BABYLON.SpotLight = SpotLight;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Lights/babylon.spotLight.js.map
+//# sourceMappingURL=babylon.spotLight.js.map
