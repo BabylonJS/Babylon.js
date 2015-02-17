@@ -47,4 +47,5 @@ var BABYLON;
     })();
     BABYLON.BoundingSphere = BoundingSphere;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.boundingSphere.js.map
+
+//# sourceMappingURL=../Culling/babylon.boundingSphere.js.map

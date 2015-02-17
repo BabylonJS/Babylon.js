@@ -493,4 +493,5 @@ var BABYLON;
     })();
     BABYLON.Database = Database;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.database.js.map
+
+//# sourceMappingURL=../Tools/babylon.database.js.map

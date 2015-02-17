@@ -153,4 +153,5 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.renderTargetTexture.js.map
+
+//# sourceMappingURL=../../Materials/Textures/babylon.renderTargetTexture.js.map

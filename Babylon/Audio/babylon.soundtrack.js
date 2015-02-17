@@ -76,4 +76,5 @@ var BABYLON;
     })();
     BABYLON.SoundTrack = SoundTrack;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.soundtrack.js.map
+
+//# sourceMappingURL=../Audio/babylon.soundtrack.js.map

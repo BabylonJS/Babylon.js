@@ -124,4 +124,5 @@ var BABYLON;
     })();
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.material.js.map
+
+//# sourceMappingURL=../Materials/babylon.material.js.map

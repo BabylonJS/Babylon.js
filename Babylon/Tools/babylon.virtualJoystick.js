@@ -310,4 +310,5 @@ var BABYLON;
         VirtualJoystick.Collection = Collection;
     })(VirtualJoystick = BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.virtualJoystick.js.map
+
+//# sourceMappingURL=../Tools/babylon.virtualJoystick.js.map
