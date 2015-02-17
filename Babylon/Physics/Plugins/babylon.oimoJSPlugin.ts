@@ -23,18 +23,31 @@ module BABYLON {
             this.unregisterMesh(mesh);
             mesh.computeWorldMatrix(true);
 
+
+            var initialRotation = null;
+            if (mesh.rotationQuaternion) {
+                initialRotation = mesh.rotationQuaternion.clone();
+                mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                mesh.computeWorldMatrix(true);
+            }
+
+            var bbox = mesh.getBoundingInfo().boundingBox;
+
+            // The delta between the mesh position and the mesh bounding box center
+            var deltaPosition = mesh.position.subtract(bbox.center);
+
+            // Transform delta position with the rotation
+            if (initialRotation) {
+                var m = new BABYLON.Matrix();
+                initialRotation.toRotationMatrix(m);
+                deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
+            }
+
             // register mesh
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
 
-                    var initialRotation = null;
-                    if (mesh.rotationQuaternion) {
-                        initialRotation = mesh.rotationQuaternion.clone();
-                        mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
-                        mesh.computeWorldMatrix(true);
-                    }
 
-                    var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
@@ -43,16 +56,6 @@ module BABYLON {
                         this._checkWithEpsilon(radiusX),
                         this._checkWithEpsilon(radiusY),
                         this._checkWithEpsilon(radiusZ)) / 2;
-
-                    // The delta between the mesh position and the mesh bounding box center
-                    var deltaPosition = mesh.position.subtract(bbox.center);
-
-                    // Transform delta position with the rotation
-                    if (initialRotation) {
-                        var m = new BABYLON.Matrix();
-                        initialRotation.toRotationMatrix(m);
-                        deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
-                    }
 
                     body = new OIMO.Body({
                         type: 'sphere',
@@ -64,45 +67,19 @@ module BABYLON {
                         world: this._world
                     });
 
-                    // Restore rotation
-                    if (initialRotation) {
-                        body.setQuaternion(initialRotation);
-                    }
-
-                    this._registeredMeshes.push({
-                        mesh: mesh,
-                        body: body,
-                        delta: deltaPosition
-                    });
                     break;
 
-                case BABYLON.PhysicsEngine.PlaneImpostor:
-                case BABYLON.PhysicsEngine.BoxImpostor:
+                case PhysicsEngine.PlaneImpostor:
+                //Oimo "fakes" a cylinder as a box, so why don't we!
+                case PhysicsEngine.CylinderImpostor:
+                case PhysicsEngine.BoxImpostor:
 
-                    initialRotation = null;
-                    if (mesh.rotationQuaternion) {
-                        initialRotation = mesh.rotationQuaternion.clone();
-                        mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
-                        mesh.computeWorldMatrix(true);
-                    }
-
-                    bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min);
                     var sizeX = this._checkWithEpsilon(box.x);
                     var sizeY = this._checkWithEpsilon(box.y);
                     var sizeZ = this._checkWithEpsilon(box.z);
-
-                    // The delta between the mesh position and the mesh boudning box center
-                    deltaPosition = mesh.position.subtract(bbox.center);
-
-                    // Transform delta position with the rotation
-                    if (initialRotation) {
-                        m = new BABYLON.Matrix();
-                        initialRotation.toRotationMatrix(m);
-                        deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
-                    }
 
                     body = new OIMO.Body({
                         type: 'box',
@@ -114,18 +91,24 @@ module BABYLON {
                         world: this._world
                     });
 
-                    if (initialRotation) {
-                        body.setQuaternion(initialRotation);
-                    }
-
-                    this._registeredMeshes.push({
-                        mesh: mesh,
-                        body: body,
-                        delta: deltaPosition
-                    });
                     break;
-
             }
+
+            //If quaternion was set as the rotation of the object
+            if (initialRotation) {
+                //We have to access the rigid body's properties to set the quaternion. 
+                //The setQuaternion function of Oimo only sets the newOrientation that is only set after an impulse is given or a collision.
+                body.body.orientation = new OIMO.Quat(initialRotation.w, initialRotation.x, initialRotation.y, initialRotation.z);
+                //update the internal rotation matrix
+                body.body.syncShapes();
+            }
+
+            this._registeredMeshes.push({
+                mesh: mesh,
+                body: body,
+                delta: deltaPosition
+            });
+
             return body;
         }
 
@@ -386,7 +369,7 @@ module BABYLON {
                         if (!mesh.rotationQuaternion) {
                             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                         }
-                        mesh.rotationQuaternion.fromRotationMatrix(mtx);
+                        Quaternion.FromRotationMatrixToRef(mtx, mesh.rotationQuaternion);
                         mesh.computeWorldMatrix();
                     }
                 }

@@ -190,7 +190,7 @@ var BABYLON;
             return VertexData._ExtractFrom(geometry);
         };
         VertexData._ExtractFrom = function (meshOrGeometry) {
-            var result = new BABYLON.VertexData();
+            var result = new VertexData();
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
                 result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             }
@@ -245,7 +245,11 @@ var BABYLON;
             // positions and horizontal distances (u)
             var idc = 0;
             minlg = pathArray[0].length;
+<<<<<<< HEAD
             for (var p = 0; p < pathArray.length; p++) {
+=======
+            for (p = 0; p < pathArray.length; p++) {
+>>>>>>> upstream/master
                 uTotalDistance[p] = 0;
                 us[p] = [0];
                 var path = pathArray[p];
@@ -265,12 +269,18 @@ var BABYLON;
                     j++;
                 }
                 if (closePath) {
+<<<<<<< HEAD
                     var vectlg = path[0].subtract(path[j - 1]).length();
                     var dist = vectlg + uTotalDistance[p];
+=======
+                    vectlg = path[0].subtract(path[j - 1]).length();
+                    dist = vectlg + uTotalDistance[p];
+>>>>>>> upstream/master
                     uTotalDistance[p] = dist;
                 }
                 idc += l;
             }
+<<<<<<< HEAD
             for (var i = 0; i < minlg; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
@@ -279,10 +289,21 @@ var BABYLON;
                     var path2 = pathArray[p + 1];
                     var vectlg = path2[i].subtract(path1[i]).length();
                     var dist = vectlg + vTotalDistance[i];
+=======
+            for (i = 0; i < minlg; i++) {
+                vTotalDistance[i] = 0;
+                vs[i] = [0];
+                for (p = 0; p < pathArray.length - 1; p++) {
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[p + 1];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+>>>>>>> upstream/master
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
                 }
                 if (closeArray) {
+<<<<<<< HEAD
                     var path1 = pathArray[p];
                     var path2 = pathArray[0];
                     var vectlg = path2[i].subtract(path1[i]).length();
@@ -292,6 +313,17 @@ var BABYLON;
             }
             for (var p = 0; p < pathArray.length; p++) {
                 for (var i = 0; i < minlg; i++) {
+=======
+                    path1 = pathArray[p];
+                    path2 = pathArray[0];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+                    vTotalDistance[i] = dist;
+                }
+            }
+            for (p = 0; p < pathArray.length; p++) {
+                for (i = 0; i < minlg; i++) {
+>>>>>>> upstream/master
                     var u = us[p][i] / uTotalDistance[p];
                     var v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
@@ -314,7 +346,11 @@ var BABYLON;
                 indices.push(i, i + shft, i + 1);
                 indices.push(i + shft + 1, i + 1, i + shft);
                 i += 1;
+<<<<<<< HEAD
                 if (i == min) {
+=======
+                if (i === min) {
+>>>>>>> upstream/master
                     if (closePath) {
                         indices.push(i, i + shft, idx[p]);
                         indices.push(idx[p] + shft, idx[p], i + shft);
@@ -322,7 +358,11 @@ var BABYLON;
                         t4 = idx[p] + shft;
                     }
                     p++;
+<<<<<<< HEAD
                     if (p == lg.length - 1) {
+=======
+                    if (p === lg.length - 1) {
+>>>>>>> upstream/master
                         shft = idx[0] - idx[p];
                         l1 = lg[p] - 1;
                         l2 = lg[0] - 1;
@@ -337,9 +377,15 @@ var BABYLON;
                 }
             }
             // normals
+<<<<<<< HEAD
             BABYLON.VertexData.ComputeNormals(positions, indices, normals);
             // Result
             var vertexData = new BABYLON.VertexData();
+=======
+            VertexData.ComputeNormals(positions, indices, normals);
+            // Result
+            var vertexData = new VertexData();
+>>>>>>> upstream/master
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -392,7 +438,7 @@ var BABYLON;
                 uvs.push(1.0, 0.0);
             }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -438,7 +484,7 @@ var BABYLON;
                 }
             }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -467,7 +513,7 @@ var BABYLON;
             };
             var createCylinderCap = function (isTop) {
                 var radius = isTop ? radiusTop : radiusBottom;
-                if (radius == 0) {
+                if (radius === 0) {
                     return;
                 }
                 var vbase = positions.length / 3;
@@ -477,14 +523,14 @@ var BABYLON;
                     offset.scaleInPlace(-1);
                     textureScale.x = -textureScale.x;
                 }
-                for (i = 0; i < tessellation; i++) {
+                for (var i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     positions.push(position.x, position.y, position.z);
                     uvs.push(textureCoordinate.x, textureCoordinate.y);
                 }
-                for (var i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         indices.push(vbase);
                         indices.push(vbase + (i + 2) % tessellation);
@@ -516,8 +562,8 @@ var BABYLON;
                 }
             }
             subdivisions += 1;
-            for (var s = 0; s < subdivisions - 1; s++) {
-                for (var i = 0; i <= tessellation; i++) {
+            for (s = 0; s < subdivisions - 1; s++) {
+                for (i = 0; i <= tessellation; i++) {
                     indices.push(i * subdivisions + s);
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
                     indices.push(i * subdivisions + (s + 1));
@@ -530,9 +576,9 @@ var BABYLON;
             createCylinderCap(true);
             createCylinderCap(false);
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -578,7 +624,7 @@ var BABYLON;
                 }
             }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -596,7 +642,7 @@ var BABYLON;
                 }
             }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             return vertexData;
@@ -630,7 +676,7 @@ var BABYLON;
                 }
             }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -653,11 +699,6 @@ var BABYLON;
                 'w': (xmax - xmin) / subdivisions.w,
                 'h': (zmax - zmin) / subdivisions.h
             };
-            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
-                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
-                    applyTile(xmin + tileCol * tileSize.w, zmin + tileRow * tileSize.h, xmin + (tileCol + 1) * tileSize.w, zmin + (tileRow + 1) * tileSize.h);
-                }
-            }
             function applyTile(xTileMin, zTileMin, xTileMax, zTileMax) {
                 // Indices
                 var base = positions.length / 3;
@@ -692,8 +733,13 @@ var BABYLON;
                     }
                 }
             }
+            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
+                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
+                    applyTile(xmin + tileCol * tileSize.w, zmin + tileRow * tileSize.h, xmin + (tileCol + 1) * tileSize.w, zmin + (tileRow + 1) * tileSize.h);
+                }
+            }
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -735,9 +781,9 @@ var BABYLON;
                 }
             }
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -772,7 +818,7 @@ var BABYLON;
             indices.push(2);
             indices.push(3);
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -841,9 +887,9 @@ var BABYLON;
                 }
             }
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;

@@ -49,10 +49,12 @@ var BABYLON;
             for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
+                var needToStepBack = false;
                 if (renderingGroup) {
                     this._clearDepthBuffer();
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
+                        needToStepBack = true;
                     }
                 }
                 if (renderSprites) {
@@ -60,6 +62,9 @@ var BABYLON;
                 }
                 if (renderParticles) {
                     this._renderParticles(index, activeMeshes);
+                }
+                if (needToStepBack) {
+                    index--;
                 }
             }
         };

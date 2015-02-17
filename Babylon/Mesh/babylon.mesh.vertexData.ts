@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string): number[];
@@ -20,25 +20,25 @@ module BABYLON {
 
         public set(data: number[], kind: string) {
             switch (kind) {
-                case BABYLON.VertexBuffer.PositionKind:
+                case VertexBuffer.PositionKind:
                     this.positions = data;
                     break;
-                case BABYLON.VertexBuffer.NormalKind:
+                case VertexBuffer.NormalKind:
                     this.normals = data;
                     break;
-                case BABYLON.VertexBuffer.UVKind:
+                case VertexBuffer.UVKind:
                     this.uvs = data;
                     break;
-                case BABYLON.VertexBuffer.UV2Kind:
+                case VertexBuffer.UV2Kind:
                     this.uv2s = data;
                     break;
-                case BABYLON.VertexBuffer.ColorKind:
+                case VertexBuffer.ColorKind:
                     this.colors = data;
                     break;
-                case BABYLON.VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesKind:
                     this.matricesIndices = data;
                     break;
-                case BABYLON.VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsKind:
                     this.matricesWeights = data;
                     break;
             }
@@ -62,31 +62,31 @@ module BABYLON {
 
         private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean) {
             if (this.positions) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
             }
 
             if (this.normals) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
             }
 
             if (this.uvs) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
             }
 
             if (this.uv2s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uv2s, updatable);
             }
 
             if (this.colors) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
             }
 
             if (this.matricesIndices) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
             }
 
             if (this.matricesWeights) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
             }
 
             if (this.indices) {
@@ -96,31 +96,31 @@ module BABYLON {
 
         private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean) {
             if (this.positions) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
             }
 
             if (this.normals) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
             }
 
             if (this.uvs) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
             }
 
             if (this.uv2s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
             }
 
             if (this.colors) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
             }
 
             if (this.matricesIndices) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
             }
 
             if (this.matricesWeights) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
             }
 
             if (this.indices) {
@@ -129,15 +129,15 @@ module BABYLON {
         }
 
         public transform(matrix: Matrix): void {
-            var transformed = BABYLON.Vector3.Zero();
+            var transformed = Vector3.Zero();
 
             if (this.positions) {
-                var position = BABYLON.Vector3.Zero();
+                var position = Vector3.Zero();
 
                 for (var index = 0; index < this.positions.length; index += 3) {
-                    BABYLON.Vector3.FromArrayToRef(this.positions, index, position);
+                    Vector3.FromArrayToRef(this.positions, index, position);
 
-                    BABYLON.Vector3.TransformCoordinatesToRef(position, matrix, transformed);
+                    Vector3.TransformCoordinatesToRef(position, matrix, transformed);
                     this.positions[index] = transformed.x;
                     this.positions[index + 1] = transformed.y;
                     this.positions[index + 2] = transformed.z;
@@ -145,12 +145,12 @@ module BABYLON {
             }
 
             if (this.normals) {
-                var normal = BABYLON.Vector3.Zero();
+                var normal = Vector3.Zero();
 
                 for (index = 0; index < this.normals.length; index += 3) {
-                    BABYLON.Vector3.FromArrayToRef(this.normals, index, normal);
+                    Vector3.FromArrayToRef(this.normals, index, normal);
 
-                    BABYLON.Vector3.TransformNormalToRef(normal, matrix, transformed);
+                    Vector3.TransformNormalToRef(normal, matrix, transformed);
                     this.normals[index] = transformed.x;
                     this.normals[index + 1] = transformed.y;
                     this.normals[index + 2] = transformed.z;
@@ -245,34 +245,34 @@ module BABYLON {
         }
 
         private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData): VertexData {
-            var result = new BABYLON.VertexData();
+            var result = new VertexData();
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                result.uv2s = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind);
             }
 
             result.indices = meshOrGeometry.getIndices();
@@ -280,166 +280,164 @@ module BABYLON {
             return result;
         }
 
-		public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number): VertexData {
-			
-			closeArray = closeArray || false;
-  			closePath = closePath || false;
-  			var defaultOffset = Math.floor(pathArray[0].length / 2);
-  			offset = offset || defaultOffset;
-  			offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-			
-			
-			var positions = [];
-		  	var indices = [];
-		  	var normals = [];
-		  	var uvs = [];
-		  	
-		  	var us = [];        		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
-		  	var vs = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
-		  	var uTotalDistance = []; 	// uTotalDistance[p] : total distance of path p
-		  	var vTotalDistance = []; 	//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
-		  	var minlg;          		// minimal length among all paths from pathArray
-		  	var lg = [];        		// array of path lengths : nb of vertex per path
-		  	var idx = [];       		// array of path indexes : index of each path (first vertex) in positions array
-		  	
-		  	// if single path in pathArray
-			if ( pathArray.length < 2) {
-			    var ar1 = [];
-			    var ar2 = [];
-			    for (var i = 0; i < pathArray[0].length - offset; i++) {
-			      ar1.push(pathArray[0][i]);
-			      ar2.push(pathArray[0][i+offset]);
-			    }
-			    pathArray = [ar1, ar2];
-			}
-			
-			// positions and horizontal distances (u)
-			var idc = 0;
-			minlg = pathArray[0].length;
-			for(var p = 0; p < pathArray.length; p++) {
-			    uTotalDistance[p] = 0;
-			    us[p] = [0];
-			    var path = pathArray[p];
-			    var l = path.length;
-			    minlg = (minlg < l) ? minlg : l;
-			    lg[p] = l;
-			    idx[p] = idc;
-			    var j = 0;
-			    while (j < l) {
-			      	positions.push(path[j].x, path[j].y, path[j].z);
-			      	if (j > 0) {
-			        	var vectlg = path[j].subtract(path[j-1]).length();
-			        	var dist = vectlg + uTotalDistance[p];
-			        	us[p].push(dist);
-			        	uTotalDistance[p] = dist;
-			      	}
-			      	j++;
-			    }
-			    if ( closePath ) {
-			      	var vectlg = path[0].subtract(path[j-1]).length();
-			      	var dist = vectlg + uTotalDistance[p];
-			      	uTotalDistance[p] = dist;
-			    }
-			    idc += l;
-			  }			
-			
-			  // vertical distances (v)
-			  for(var i = 0; i < minlg; i++) {
-			    vTotalDistance[i] = 0;
-			    vs[i] =[0];
-				    for (var p = 0; p < pathArray.length-1; p++) {
-				    var path1 = pathArray[p];
-				    var path2 = pathArray[p+1];
-				    var vectlg = path2[i].subtract(path1[i]).length();
-				    var dist =  vectlg + vTotalDistance[i];
-				    vs[i].push(dist);
-				    vTotalDistance[i] = dist;
-			    }
-			    if (closeArray) {
-					var path1 = pathArray[p];
-					var path2 = pathArray[0];
-					var vectlg = path2[i].subtract(path1[i]).length();
-					var dist =  vectlg + vTotalDistance[i];
-					vTotalDistance[i] = dist;
-			    }
-			  }			
-		
-		
-			// uvs
-			for(var p = 0; p < pathArray.length; p++) {
-				for(var i = 0; i < minlg; i++) {
-				    var u = us[p][i] / uTotalDistance[p];
-				    var v = vs[i][p] / vTotalDistance[i];
-				    uvs.push(u, v);
-				}
-			}
-			
-			// indices
-			var p = 0;                    		// path index
-			var i = 0;                    		// positions array index
-			var l1 = lg[p] - 1;           		// path1 length
-			var l2 = lg[p+1] - 1;         		// path2 length
-			var min = ( l1 < l2 ) ? l1 : l2 ;   // current path stop index
-			var shft = idx[1] - idx[0];         // shift 
-			var path1nb = closeArray ? lg.length : lg.length -1;     // number of path1 to iterate	
-			
-			
-			while ( i <= min && p < path1nb ) {       //  stay under min and don't go over next to last path
-				// draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
-				var t1 = i;
-				var t2 = i + shft;
-				var t3 = i +1;
-				var t4 = i + shft + 1;
-			
-				indices.push(i, i+shft, i+1);
-				indices.push(i+shft+1, i+1, i+shft);  
-			  	i += 1;
-			  	if ( i == min  ) {                   			// if end of one of two consecutive paths reached, go next existing path
-			    	if (closePath) {                          	// if closePath, add last triangles between start and end of the paths
-			      		indices.push(i, i+shft, idx[p]);
-			      		indices.push(idx[p]+shft, idx[p], i+shft);
-			      		t3 = idx[p];
-			      		t4 = idx[p] + shft;
-			    	}
-			    	p++; 
-			    	if ( p == lg.length - 1 ) {                 // last path of pathArray reached <=> closeArray == true
-			      		shft = idx[0] - idx[p];
-			      		l1 = lg[p] - 1;
-			      		l2 = lg[0] - 1; 
-			    	}
-			    	else {  
-			      		shft = idx[p+1] - idx[p]; 
-			      		l1 = lg[p] - 1;
-			      		l2 = lg[p+1] - 1;         
-			    	}   
-			
-			    	i = idx[p];
-			    	min = ( l1 < l2 ) ? l1 + i : l2 + i;
-			  	}
-			} 		
-			
-			// normals
-			BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            
+        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number): VertexData {
+            closeArray = closeArray || false;
+            closePath = closePath || false;
+            var defaultOffset = Math.floor(pathArray[0].length / 2);
+            offset = offset || defaultOffset;
+            offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
+
+            var positions = [];
+            var indices = [];
+            var normals = [];
+            var uvs = [];
+
+            var us = [];        		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
+            var vs = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
+            var uTotalDistance = []; 	// uTotalDistance[p] : total distance of path p
+            var vTotalDistance = []; 	//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
+            var minlg;          		// minimal length among all paths from pathArray
+            var lg = [];        		// array of path lengths : nb of vertex per path
+            var idx = [];       		// array of path indexes : index of each path (first vertex) in positions array
+
+            // if single path in pathArray
+            if (pathArray.length < 2) {
+                var ar1 = [];
+                var ar2 = [];
+                for (var i = 0; i < pathArray[0].length - offset; i++) {
+                    ar1.push(pathArray[0][i]);
+                    ar2.push(pathArray[0][i + offset]);
+                }
+                pathArray = [ar1, ar2];
+            }
+
+            // positions and horizontal distances (u)
+            var idc = 0;
+            minlg = pathArray[0].length;
+            for (p = 0; p < pathArray.length; p++) {
+                uTotalDistance[p] = 0;
+                us[p] = [0];
+                var path = pathArray[p];
+                var l = path.length;
+                minlg = (minlg < l) ? minlg : l;
+                lg[p] = l;
+                idx[p] = idc;
+                var j = 0;
+                while (j < l) {
+                    positions.push(path[j].x, path[j].y, path[j].z);
+                    if (j > 0) {
+                        var vectlg = path[j].subtract(path[j - 1]).length();
+                        var dist = vectlg + uTotalDistance[p];
+                        us[p].push(dist);
+                        uTotalDistance[p] = dist;
+                    }
+                    j++;
+                }
+                if (closePath) {
+                    vectlg = path[0].subtract(path[j - 1]).length();
+                    dist = vectlg + uTotalDistance[p];
+                    uTotalDistance[p] = dist;
+                }
+                idc += l;
+            }
+
+            // vertical distances (v)
+            for (i = 0; i < minlg; i++) {
+                vTotalDistance[i] = 0;
+                vs[i] = [0];
+                for (p = 0; p < pathArray.length - 1; p++) {
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[p + 1];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+                    vs[i].push(dist);
+                    vTotalDistance[i] = dist;
+                }
+                if (closeArray) {
+                    path1 = pathArray[p];
+                    path2 = pathArray[0];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+                    vTotalDistance[i] = dist;
+                }
+            }
+
+
+            // uvs
+            for (p = 0; p < pathArray.length; p++) {
+                for (i = 0; i < minlg; i++) {
+                    var u = us[p][i] / uTotalDistance[p];
+                    var v = vs[i][p] / vTotalDistance[i];
+                    uvs.push(u, v);
+                }
+            }
+
+            // indices
+            var p = 0;                    		// path index
+            var i = 0;                    		// positions array index
+            var l1 = lg[p] - 1;           		// path1 length
+            var l2 = lg[p + 1] - 1;         		// path2 length
+            var min = (l1 < l2) ? l1 : l2;   // current path stop index
+            var shft = idx[1] - idx[0];         // shift 
+            var path1nb = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	
+
+
+            while (i <= min && p < path1nb) {       //  stay under min and don't go over next to last path
+                // draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
+                var t1 = i;
+                var t2 = i + shft;
+                var t3 = i + 1;
+                var t4 = i + shft + 1;
+
+                indices.push(i, i + shft, i + 1);
+                indices.push(i + shft + 1, i + 1, i + shft);
+                i += 1;
+                if (i === min) {                   			// if end of one of two consecutive paths reached, go next existing path
+                    if (closePath) {                          	// if closePath, add last triangles between start and end of the paths
+                        indices.push(i, i + shft, idx[p]);
+                        indices.push(idx[p] + shft, idx[p], i + shft);
+                        t3 = idx[p];
+                        t4 = idx[p] + shft;
+                    }
+                    p++;
+                    if (p === lg.length - 1) {                 // last path of pathArray reached <=> closeArray == true
+                        shft = idx[0] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[0] - 1;
+                    }
+                    else {
+                        shft = idx[p + 1] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[p + 1] - 1;
+                    }
+
+                    i = idx[p];
+                    min = (l1 < l2) ? l1 + i : l2 + i;
+                }
+            }
+
+            // normals
+            VertexData.ComputeNormals(positions, indices, normals);
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
-            vertexData.uvs = uvs;			
-				
-			return vertexData;
-		}
+            vertexData.uvs = uvs;
+
+            return vertexData;
+        }
 
         public static CreateBox(size: number): VertexData {
             var normalsSource = [
-                new BABYLON.Vector3(0, 0, 1),
-                new BABYLON.Vector3(0, 0, -1),
-                new BABYLON.Vector3(1, 0, 0),
-                new BABYLON.Vector3(-1, 0, 0),
-                new BABYLON.Vector3(0, 1, 0),
-                new BABYLON.Vector3(0, -1, 0)
+                new Vector3(0, 0, 1),
+                new Vector3(0, 0, -1),
+                new Vector3(1, 0, 0),
+                new Vector3(-1, 0, 0),
+                new Vector3(0, 1, 0),
+                new Vector3(0, -1, 0)
             ];
 
             var indices = [];
@@ -454,8 +452,8 @@ module BABYLON {
                 var normal = normalsSource[index];
 
                 // Get two vectors perpendicular to the face normal and to each other.
-                var side1 = new BABYLON.Vector3(normal.y, normal.z, normal.x);
-                var side2 = BABYLON.Vector3.Cross(normal, side1);
+                var side1 = new Vector3(normal.y, normal.z, normal.x);
+                var side2 = Vector3.Cross(normal, side1);
 
                 // Six indices (two triangles) per face.
                 var verticesLength = positions.length / 3;
@@ -490,7 +488,7 @@ module BABYLON {
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -524,13 +522,13 @@ module BABYLON {
 
                     var angleY = normalizedY * Math.PI * 2;
 
-                    var rotationZ = BABYLON.Matrix.RotationZ(-angleZ);
-                    var rotationY = BABYLON.Matrix.RotationY(angleY);
-                    var afterRotZ = BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.Up(), rotationZ);
-                    var complete = BABYLON.Vector3.TransformCoordinates(afterRotZ, rotationY);
+                    var rotationZ = Matrix.RotationZ(-angleZ);
+                    var rotationY = Matrix.RotationY(angleY);
+                    var afterRotZ = Vector3.TransformCoordinates(Vector3.Up(), rotationZ);
+                    var complete = Vector3.TransformCoordinates(afterRotZ, rotationY);
 
                     var vertex = complete.scale(radius);
-                    var normal = BABYLON.Vector3.Normalize(vertex);
+                    var normal = Vector3.Normalize(vertex);
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -552,7 +550,7 @@ module BABYLON {
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -582,19 +580,19 @@ module BABYLON {
                 var dx = Math.cos(angle);
                 var dz = Math.sin(angle);
 
-                return new BABYLON.Vector3(dx, 0, dz);
+                return new Vector3(dx, 0, dz);
             };
 
             var createCylinderCap = isTop => {
                 var radius = isTop ? radiusTop : radiusBottom;
 
-                if (radius == 0) {
+                if (radius === 0) {
                     return;
                 }
                 var vbase = positions.length / 3;
 
-                var offset = new BABYLON.Vector3(0, height / 2, 0);
-                var textureScale = new BABYLON.Vector2(0.5, 0.5);
+                var offset = new Vector3(0, height / 2, 0);
+                var textureScale = new Vector2(0.5, 0.5);
 
                 if (!isTop) {
                     offset.scaleInPlace(-1);
@@ -602,10 +600,10 @@ module BABYLON {
                 }
 
                 // Positions, normals & uvs
-                for (i = 0; i < tessellation; i++) {
+                for (var i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new BABYLON.Vector2(
+                    var textureCoordinate = new Vector2(
                         circleVector.x * textureScale.x + 0.5,
                         circleVector.z * textureScale.y + 0.5
                         );
@@ -615,7 +613,7 @@ module BABYLON {
                 }
 
                 // Indices
-                for (var i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         indices.push(vbase);
                         indices.push(vbase + (i + 2) % tessellation);
@@ -628,15 +626,15 @@ module BABYLON {
                 }
             };
 
-            var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
-            var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
+            var base = new Vector3(0, -1, 0).scale(height / 2);
+            var offset = new Vector3(0, 1, 0).scale(height / subdivisions);
             var stride = tessellation + 1;
 
             // Positions, normals & uvs
             for (var i = 0; i <= tessellation; i++) {
                 var circleVector = getCircleVector(i);
-                var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
-                var position, radius = radiusBottom;
+                var textureCoordinate = new Vector2(i / tessellation, 0);
+                var position: Vector3, radius = radiusBottom;
 
                 for (var s = 0; s <= subdivisions; s++) {
                     // Update variables
@@ -653,8 +651,8 @@ module BABYLON {
 
             subdivisions += 1;
             // Indices
-            for (var s = 0; s < subdivisions - 1; s++) {
-                for (var i = 0; i <= tessellation; i++) {
+            for (s = 0; s < subdivisions - 1; s++) {
+                for (i = 0; i <= tessellation; i++) {
                     indices.push(i * subdivisions + s);
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
                     indices.push(i * subdivisions + (s + 1));
@@ -670,10 +668,10 @@ module BABYLON {
             createCylinderCap(false);
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -700,7 +698,7 @@ module BABYLON {
 
                 var outerAngle = i * Math.PI * 2.0 / tessellation - Math.PI / 2.0;
 
-                var transform = BABYLON.Matrix.Translation(diameter / 2.0, 0, 0).multiply(BABYLON.Matrix.RotationY(outerAngle));
+                var transform = Matrix.Translation(diameter / 2.0, 0, 0).multiply(Matrix.RotationY(outerAngle));
 
                 for (var j = 0; j <= tessellation; j++) {
                     var v = 1 - j / tessellation;
@@ -710,12 +708,12 @@ module BABYLON {
                     var dy = Math.sin(innerAngle);
 
                     // Create a vertex.
-                    var normal = new BABYLON.Vector3(dx, dy, 0);
+                    var normal = new Vector3(dx, dy, 0);
                     var position = normal.scale(thickness / 2);
-                    var textureCoordinate = new BABYLON.Vector2(u, v);
+                    var textureCoordinate = new Vector2(u, v);
 
-                    position = BABYLON.Vector3.TransformCoordinates(position, transform);
-                    normal = BABYLON.Vector3.TransformNormal(normal, transform);
+                    position = Vector3.TransformCoordinates(position, transform);
+                    normal = Vector3.TransformNormal(normal, transform);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -736,7 +734,7 @@ module BABYLON {
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -760,7 +758,7 @@ module BABYLON {
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -773,7 +771,7 @@ module BABYLON {
             var positions = [];
             var normals = [];
             var uvs = [];
-            var row, col;
+            var row: number, col: number;
 
             width = width || 1;
             height = height || 1;
@@ -781,8 +779,8 @@ module BABYLON {
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
-                    var normal = new BABYLON.Vector3(0, 1.0, 0);
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -803,7 +801,7 @@ module BABYLON {
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -818,7 +816,7 @@ module BABYLON {
             var positions = [];
             var normals = [];
             var uvs = [];
-            var row, col, tileRow, tileCol;
+            var row: number, col: number, tileRow: number, tileCol: number;
 
             subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
@@ -829,17 +827,6 @@ module BABYLON {
                 'w': (xmax - xmin) / subdivisions.w,
                 'h': (zmax - zmin) / subdivisions.h
             };
-
-            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
-                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
-                    applyTile(
-                        xmin + tileCol * tileSize.w,
-                        zmin + tileRow * tileSize.h,
-                        xmin + (tileCol + 1) * tileSize.w,
-                        zmin + (tileRow + 1) * tileSize.h
-                        );
-                }
-            }
 
             function applyTile(xTileMin: number, zTileMin: number, xTileMax: number, zTileMax: number) {
                 // Indices
@@ -864,8 +851,8 @@ module BABYLON {
                 }
 
                 // Position, normals and uvs
-                var position = BABYLON.Vector3.Zero();
-                var normal = new BABYLON.Vector3(0, 1.0, 0);
+                var position = Vector3.Zero();
+                var normal = new Vector3(0, 1.0, 0);
                 for (row = 0; row <= precision.h; row++) {
                     position.z = (row * (zTileMax - zTileMin)) / precision.h + zTileMin;
                     for (col = 0; col <= precision.w; col++) {
@@ -879,8 +866,19 @@ module BABYLON {
                 }
             }
 
+            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
+                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
+                    applyTile(
+                        xmin + tileCol * tileSize.w,
+                        zmin + tileRow * tileSize.h,
+                        xmin + (tileCol + 1) * tileSize.w,
+                        zmin + (tileRow + 1) * tileSize.h
+                        );
+                }
+            }
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -900,7 +898,7 @@ module BABYLON {
             // Vertices
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
 
                     // Compute height
                     var heightMapX = (((position.x + width / 2) / width) * (bufferWidth - 1)) | 0;
@@ -936,10 +934,10 @@ module BABYLON {
             }
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -985,7 +983,7 @@ module BABYLON {
             indices.push(3);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -1021,7 +1019,7 @@ module BABYLON {
                 var ty = radius * (2 + cs) * su * 0.5;
                 var tz = radius * Math.sin(quOverP) * 0.5;
 
-                return new BABYLON.Vector3(tx, ty, tz);
+                return new Vector3(tx, ty, tz);
             };
 
             // Vertices
@@ -1033,8 +1031,8 @@ module BABYLON {
                 var tang = p2.subtract(p1);
                 var n = p2.add(p1);
 
-                var bitan = BABYLON.Vector3.Cross(tang, n);
-                n = BABYLON.Vector3.Cross(bitan, tang);
+                var bitan = Vector3.Cross(tang, n);
+                n = Vector3.Cross(bitan, tang);
 
                 bitan.normalize();
                 n.normalize();
@@ -1068,10 +1066,10 @@ module BABYLON {
             }
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -1088,7 +1086,7 @@ module BABYLON {
             var index;
 
             for (index = 0; index < positions.length; index += 3) {
-                var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
+                var vector3 = new Vector3(positions[index], positions[index + 1], positions[index + 2]);
                 positionVectors.push(vector3);
                 facesOfVertices.push([]);
             }
@@ -1106,7 +1104,7 @@ module BABYLON {
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
 
-                facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+                facesNormals[index] = Vector3.Normalize(Vector3.Cross(p1p2, p3p2));
                 facesOfVertices[i1].push(index);
                 facesOfVertices[i2].push(index);
                 facesOfVertices[i3].push(index);
@@ -1115,12 +1113,12 @@ module BABYLON {
             for (index = 0; index < positionVectors.length; index++) {
                 var faces = facesOfVertices[index];
 
-                var normal = BABYLON.Vector3.Zero();
+                var normal = Vector3.Zero();
                 for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
                     normal.addInPlace(facesNormals[faces[faceIndex]]);
                 }
 
-                normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
+                normal = Vector3.Normalize(normal.scale(1.0 / faces.length));
 
                 normals[index * 3] = normal.x;
                 normals[index * 3 + 1] = normal.y;
