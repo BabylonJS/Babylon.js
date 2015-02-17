@@ -891,6 +891,12 @@ var BABYLON;
             }
         };
         // Statics
+        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable) {
+            var ribbon = new Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset);
+            vertexData.applyToMesh(ribbon, updatable);
+            return ribbon;
+        };
         Mesh.CreateBox = function (name, size, scene, updatable) {
             var box = new Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateBox(size);

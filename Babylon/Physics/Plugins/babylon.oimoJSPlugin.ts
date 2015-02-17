@@ -47,7 +47,7 @@ module BABYLON {
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
 
-                    
+
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
