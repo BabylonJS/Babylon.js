@@ -1218,4 +1218,5 @@ var BABYLON;
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.babylonFileLoader.js.map
+
+//# sourceMappingURL=../../Loading/Plugins/babylon.babylonFileLoader.js.map

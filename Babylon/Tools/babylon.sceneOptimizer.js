@@ -310,4 +310,5 @@ var BABYLON;
     })();
     BABYLON.SceneOptimizer = SceneOptimizer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneOptimizer.js.map
+
+//# sourceMappingURL=../Tools/babylon.sceneOptimizer.js.map

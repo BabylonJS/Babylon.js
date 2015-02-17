@@ -245,7 +245,11 @@ var BABYLON;
             // positions and horizontal distances (u)
             var idc = 0;
             minlg = pathArray[0].length;
+<<<<<<< HEAD
+            for (var p = 0; p < pathArray.length; p++) {
+=======
             for (p = 0; p < pathArray.length; p++) {
+>>>>>>> upstream/master
                 uTotalDistance[p] = 0;
                 us[p] = [0];
                 var path = pathArray[p];
@@ -265,12 +269,27 @@ var BABYLON;
                     j++;
                 }
                 if (closePath) {
+<<<<<<< HEAD
+                    var vectlg = path[0].subtract(path[j - 1]).length();
+                    var dist = vectlg + uTotalDistance[p];
+=======
                     vectlg = path[0].subtract(path[j - 1]).length();
                     dist = vectlg + uTotalDistance[p];
+>>>>>>> upstream/master
                     uTotalDistance[p] = dist;
                 }
                 idc += l;
             }
+<<<<<<< HEAD
+            for (var i = 0; i < minlg; i++) {
+                vTotalDistance[i] = 0;
+                vs[i] = [0];
+                for (var p = 0; p < pathArray.length - 1; p++) {
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[p + 1];
+                    var vectlg = path2[i].subtract(path1[i]).length();
+                    var dist = vectlg + vTotalDistance[i];
+=======
             for (i = 0; i < minlg; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
@@ -279,10 +298,22 @@ var BABYLON;
                     var path2 = pathArray[p + 1];
                     vectlg = path2[i].subtract(path1[i]).length();
                     dist = vectlg + vTotalDistance[i];
+>>>>>>> upstream/master
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
                 }
                 if (closeArray) {
+<<<<<<< HEAD
+                    var path1 = pathArray[p];
+                    var path2 = pathArray[0];
+                    var vectlg = path2[i].subtract(path1[i]).length();
+                    var dist = vectlg + vTotalDistance[i];
+                    vTotalDistance[i] = dist;
+                }
+            }
+            for (var p = 0; p < pathArray.length; p++) {
+                for (var i = 0; i < minlg; i++) {
+=======
                     path1 = pathArray[p];
                     path2 = pathArray[0];
                     vectlg = path2[i].subtract(path1[i]).length();
@@ -292,6 +323,7 @@ var BABYLON;
             }
             for (p = 0; p < pathArray.length; p++) {
                 for (i = 0; i < minlg; i++) {
+>>>>>>> upstream/master
                     var u = us[p][i] / uTotalDistance[p];
                     var v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
@@ -314,7 +346,11 @@ var BABYLON;
                 indices.push(i, i + shft, i + 1);
                 indices.push(i + shft + 1, i + 1, i + shft);
                 i += 1;
+<<<<<<< HEAD
+                if (i == min) {
+=======
                 if (i === min) {
+>>>>>>> upstream/master
                     if (closePath) {
                         indices.push(i, i + shft, idx[p]);
                         indices.push(idx[p] + shft, idx[p], i + shft);
@@ -322,7 +358,11 @@ var BABYLON;
                         t4 = idx[p] + shft;
                     }
                     p++;
+<<<<<<< HEAD
+                    if (p == lg.length - 1) {
+=======
                     if (p === lg.length - 1) {
+>>>>>>> upstream/master
                         shft = idx[0] - idx[p];
                         l1 = lg[p] - 1;
                         l2 = lg[0] - 1;
@@ -337,9 +377,15 @@ var BABYLON;
                 }
             }
             // normals
+<<<<<<< HEAD
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            // Result
+            var vertexData = new BABYLON.VertexData();
+=======
             VertexData.ComputeNormals(positions, indices, normals);
             // Result
             var vertexData = new VertexData();
+>>>>>>> upstream/master
             vertexData.indices = indices;
             vertexData.positions = positions;
             vertexData.normals = normals;
@@ -892,4 +938,5 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
+
+//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map

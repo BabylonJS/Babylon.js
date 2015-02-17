@@ -189,4 +189,5 @@ var BABYLON;
     })(BABYLON.BaseTexture);
     BABYLON.Texture = Texture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.texture.js.map
+
+//# sourceMappingURL=../../Materials/Textures/babylon.texture.js.map

@@ -21,4 +21,5 @@ var BABYLON;
     })();
     BABYLON.LensFlare = LensFlare;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensFlare.js.map
+
+//# sourceMappingURL=../LensFlare/babylon.lensFlare.js.map
