@@ -4,11 +4,12 @@ module BABYLON {
     export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
     	// Lens effects can be of the following:
-    	// - chromatic aberration (slight shift of RGB colors)
-    	// - blur on the edge of the lens
-    	// - lens distortion
-    	// - depth-of-field 'bokeh' effect (shapes appearing in blured areas, stronger highlights)
-    	// - grain/dust-on-lens effect
+        // - chromatic aberration (slight shift of RGB colors)
+        // - blur on the edge of the lens
+        // - lens distortion
+        // - depth-of-field blur & highlights enhancing
+        // - depth-of-field 'bokeh' effect (shapes appearing in blurred areas)
+        // - grain effect (noise or custom texture)
 
     	// Two additional texture samplers are needed:
     	// - depth map (for depth-of-field)
@@ -130,7 +131,6 @@ module BABYLON {
         public dispose(disableDepthRender: boolean = false): void {
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
-            // this._originalColorPostProcess = undefined;
             this._chromaticAberrationPostProcess = undefined
             this._depthOfFieldPostProcess = undefined;
 
@@ -142,7 +142,7 @@ module BABYLON {
 
         // colors shifting and distortion
         private _createChromaticAberrationPostProcess(ratio: number): void {
-            this._chromaticAberrationPostProcess = new PostProcess("LensChromaticAberration", "./chromaticAberration",
+            this._chromaticAberrationPostProcess = new PostProcess("LensChromaticAberration", "chromaticAberration",
             	["chromatic_aberration", "screen_width", "screen_height"],		// uniforms
             	[],											// samplers
                 ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
@@ -157,7 +157,7 @@ module BABYLON {
 
         // colors shifting and distortion
         private _createDepthOfFieldPostProcess(ratio: number): void {
-            this._depthOfFieldPostProcess = new PostProcess("LensDepthOfField", "./depthOfField",
+            this._depthOfFieldPostProcess = new PostProcess("LensDepthOfField", "depthOfField",
             	[
             		"gain", "threshold", "focus_depth", "aperture", "pentagon", "maxZ", "edge_blur",
             		"chromatic_aberration", "distortion", "blur_noise", "grain_amount", "screen_width", "screen_height"
