@@ -108,4 +108,5 @@ var BABYLON;
     })();
     BABYLON.Analyser = Analyser;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.analyser.js.map
+
+//# sourceMappingURL=../Audio/babylon.analyser.js.map

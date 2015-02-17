@@ -205,4 +205,5 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map
+
+//# sourceMappingURL=../PostProcess/babylon.ssaoRenderingPipeline.js.map

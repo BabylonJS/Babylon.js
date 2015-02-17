@@ -353,4 +353,5 @@ var BABYLON;
     })();
     BABYLON.Animation = Animation;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.animation.js.map
+
+//# sourceMappingURL=../Animations/babylon.animation.js.map
