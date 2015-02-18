@@ -46,6 +46,8 @@
         public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
 
+        public _activeMeshes = new SmartArray<Mesh>(256);
+
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
@@ -54,6 +56,14 @@
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+        }
+
+        public getActiveMeshes(): SmartArray<Mesh> {
+            return this._activeMeshes;
+        }
+
+        public isActiveMesh(mesh: Mesh): boolean {
+            return (this._activeMeshes.indexOf(mesh) !== -1);
         }
 
         //Cache

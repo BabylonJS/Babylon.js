@@ -31,6 +31,7 @@ var BABYLON;
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
+            this._activeMeshes = new BABYLON.SmartArray(256);
             scene.cameras.push(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -64,6 +65,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Camera.prototype.getActiveMeshes = function () {
+            return this._activeMeshes;
+        };
+        Camera.prototype.isActiveMesh = function (mesh) {
+            return (this._activeMeshes.indexOf(mesh) !== -1);
+        };
         //Cache
         Camera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);

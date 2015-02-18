@@ -89,7 +89,7 @@ var BABYLON;
                     var viewport = _this._camera.viewport;
                     var globalViewport = viewport.toGlobal(engine);
                     // Meshes
-                    var meshes = _this._scene.getActiveMeshes();
+                    var meshes = _this._camera.getActiveMeshes();
                     for (var index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
                         var position = mesh.getBoundingInfo().boundingSphere.center;

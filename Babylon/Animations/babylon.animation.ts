@@ -29,7 +29,7 @@
             }
 
             if (dataType == undefined) {
-                return;
+                return null;
             }
 
             var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);

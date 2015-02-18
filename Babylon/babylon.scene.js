@@ -785,6 +785,7 @@ var BABYLON;
             }
         };
         Scene.prototype._evaluateActiveMeshes = function () {
+            this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
             this._processedMaterials.reset();
@@ -831,6 +832,7 @@ var BABYLON;
                 mesh._preActivate();
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
+                    this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
                     this._activeMesh(meshLOD);
                 }
