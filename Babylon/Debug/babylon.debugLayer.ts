@@ -142,7 +142,7 @@
                     var globalViewport = viewport.toGlobal(engine);
 
                     // Meshes
-                    var meshes = this._scene.getActiveMeshes();
+                    var meshes = this._camera.getActiveMeshes();
                     for (var index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
 

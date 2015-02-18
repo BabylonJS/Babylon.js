@@ -32,7 +32,7 @@ var BABYLON;
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
             }
             if (dataType == undefined) {
-                return;
+                return null;
             }
             var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
             var keys = [];
