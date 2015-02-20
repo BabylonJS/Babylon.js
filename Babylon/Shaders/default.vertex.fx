@@ -4,7 +4,9 @@ precision highp float;
 
 // Attributes
 attribute vec3 position;
+#ifdef NORMAL
 attribute vec3 normal;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -79,7 +81,9 @@ uniform float pointSize;
 
 // Output
 varying vec3 vPositionW;
+#ifdef NORMAL
 varying vec3 vNormalW;
+#endif
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
@@ -147,7 +151,10 @@ void main(void) {
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
+
+#ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+#endif
 
 	// Texture coordinates
 #ifndef UV1

@@ -73,6 +73,8 @@ var BABYLON;
             var engine = scene.getEngine();
             var defines = [];
             var fallbacks = new BABYLON.EffectFallbacks();
+            var needNormals = false;
+            var needUVs = false;
             // Textures
             if (scene.texturesEnabled) {
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -80,6 +82,7 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needUVs = true;
                         defines.push("#define DIFFUSE");
                     }
                 }
@@ -88,6 +91,7 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needUVs = true;
                         defines.push("#define AMBIENT");
                     }
                 }
@@ -96,6 +100,7 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needUVs = true;
                         defines.push("#define OPACITY");
                         if (this.opacityTexture.getAlphaFromRGB) {
                             defines.push("#define OPACITYRGB");
@@ -107,6 +112,8 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needNormals = true;
+                        needUVs = true;
                         defines.push("#define REFLECTION");
                         fallbacks.addFallback(0, "REFLECTION");
                     }
@@ -116,6 +123,7 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needUVs = true;
                         defines.push("#define EMISSIVE");
                     }
                 }
@@ -124,6 +132,7 @@ var BABYLON;
                         return false;
                     }
                     else {
+                        needUVs = true;
                         defines.push("#define SPECULAR");
                         fallbacks.addFallback(0, "SPECULAR");
                     }
@@ -134,6 +143,7 @@ var BABYLON;
                     return false;
                 }
                 else {
+                    needUVs = true;
                     defines.push("#define BUMP");
                     fallbacks.addFallback(0, "BUMP");
                 }
@@ -192,6 +202,7 @@ var BABYLON;
                     if (!light.canAffectMesh(mesh)) {
                         continue;
                     }
+                    needNormals = true;
                     defines.push("#define LIGHT" + lightIndex);
                     if (lightIndex > 0) {
                         fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
@@ -263,20 +274,27 @@ var BABYLON;
                         fallbacks.addFallback(fresnelRank, "EMISSIVEFRESNEL");
                         fresnelRank++;
                     }
+                    needNormals = true;
                     defines.push("#define FRESNEL");
                     fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
                 }
             }
             // Attribs
-            var attribs = [BABYLON.VertexBuffer.PositionKind, BABYLON.VertexBuffer.NormalKind];
+            var attribs = [BABYLON.VertexBuffer.PositionKind];
             if (mesh) {
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    attribs.push(BABYLON.VertexBuffer.UVKind);
-                    defines.push("#define UV1");
+                if (needNormals && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                    attribs.push(BABYLON.VertexBuffer.NormalKind);
+                    defines.push("#define NORMAL");
                 }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                if (needUVs) {
+                    if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                        attribs.push(BABYLON.VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                        attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
                 if (mesh.useVertexColors && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);

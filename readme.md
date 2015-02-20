@@ -76,6 +76,8 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Shadow Maps and Variance Shadow Maps
  - Rendering layers
  - Post-processes (blur, refraction, black'n'white, fxaa, customs...)
+ - SSAO
+ - Volumetric Light Scattering 
  - Lens flares
  - Multi-views
 -  Textures:

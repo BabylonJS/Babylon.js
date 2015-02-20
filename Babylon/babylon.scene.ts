@@ -1474,6 +1474,10 @@
         }
 
         private _updateAudioParameters() {
+            if (this.mainSoundTrack.soundCollection.length === 0 || this.soundTracks.length === 0) {
+                return;
+            }
+
             var listeningCamera: Camera;
             var audioEngine = Engine.audioEngine;
 

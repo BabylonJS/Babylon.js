@@ -89,6 +89,8 @@
             var engine = scene.getEngine();
             var defines = [];
             var fallbacks = new EffectFallbacks();
+            var needNormals = false;
+            var needUVs = false;
 
             // Textures
             if (scene.texturesEnabled) {
@@ -96,6 +98,7 @@
                     if (!this.diffuseTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define DIFFUSE");
                     }
                 }
@@ -104,6 +107,7 @@
                     if (!this.ambientTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define AMBIENT");
                     }
                 }
@@ -112,6 +116,7 @@
                     if (!this.opacityTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define OPACITY");
 
                         if (this.opacityTexture.getAlphaFromRGB) {
@@ -124,6 +129,8 @@
                     if (!this.reflectionTexture.isReady()) {
                         return false;
                     } else {
+                        needNormals = true;
+                        needUVs = true;
                         defines.push("#define REFLECTION");
                         fallbacks.addFallback(0, "REFLECTION");
                     }
@@ -133,6 +140,7 @@
                     if (!this.emissiveTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define EMISSIVE");
                     }
                 }
@@ -141,6 +149,7 @@
                     if (!this.specularTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define SPECULAR");
                         fallbacks.addFallback(0, "SPECULAR");
                     }
@@ -151,6 +160,7 @@
                 if (!this.bumpTexture.isReady()) {
                     return false;
                 } else {
+                    needUVs = true;
                     defines.push("#define BUMP");
                     fallbacks.addFallback(0, "BUMP");
                 }
@@ -224,7 +234,7 @@
                     if (!light.canAffectMesh(mesh)) {
                         continue;
                     }
-
+                    needNormals = true;
                     defines.push("#define LIGHT" + lightIndex);
 
                     if (lightIndex > 0) {
@@ -312,6 +322,7 @@
                         fresnelRank++;
                     }
 
+                    needNormals = true;
                     defines.push("#define FRESNEL");
                     fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
                 }
@@ -319,15 +330,21 @@
 
 
             // Attribs
-            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+            var attribs = [VertexBuffer.PositionKind];
             if (mesh) {
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
+                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                    attribs.push(VertexBuffer.NormalKind);
+                    defines.push("#define NORMAL");
                 }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                if (needUVs) {
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
                 if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                     attribs.push(VertexBuffer.ColorKind);
