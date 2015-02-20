@@ -19,7 +19,7 @@
                 }
             } catch (e) {
                 this.canUseWebAudio = false;
-                BABYLON.Tools.Error("Web Audio: " + e.message);
+                Tools.Error("Web Audio: " + e.message);
             }
 
             // create a global volume gain node 

@@ -18,7 +18,10 @@ uniform vec3 vEmissiveColor;
 
 // Input
 varying vec3 vPositionW;
+
+#ifdef NORMAL
 varying vec3 vNormalW;
+#endif
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
@@ -492,11 +495,17 @@ void main(void) {
 #endif
 
 	// Bump
+#ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
+
 
 #ifdef BUMP
 	normalW = perturbNormal(viewDirectionW);
 #endif
+
 
 	// Ambient color
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
