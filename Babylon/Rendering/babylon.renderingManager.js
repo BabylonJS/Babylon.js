@@ -24,7 +24,7 @@ var BABYLON;
             this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
         RenderingManager.prototype._renderSprites = function (index) {
-            if (this._scene.spriteManagers.length === 0) {
+            if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
                 return;
             }
             // Sprites       

@@ -137,6 +137,7 @@
         public particleSystems = new Array<ParticleSystem>();
 
         // Sprites
+        public spritesEnabled = true;
         public spriteManagers = new Array<SpriteManager>();
 
         // Layers

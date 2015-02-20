@@ -74,6 +74,7 @@ var BABYLON;
             this.particlesEnabled = true;
             this.particleSystems = new Array();
             // Sprites
+            this.spritesEnabled = true;
             this.spriteManagers = new Array();
             // Layers
             this.layers = new Array();
