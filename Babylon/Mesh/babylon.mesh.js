@@ -71,6 +71,34 @@ var BABYLON;
                 this.parent = parent;
             }
         }
+        Object.defineProperty(Mesh, "FRONTSIDE", {
+            get: function () {
+                return Mesh._FRONTSIDE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "BACKSIDE", {
+            get: function () {
+                return Mesh._BACKSIDE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "DOUBLESIDE", {
+            get: function () {
+                return Mesh._DOUBLESIDE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "DEFAULTSIDE", {
+            get: function () {
+                return Mesh._DEFAULTSIDE;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {
@@ -268,7 +296,7 @@ var BABYLON;
             var totalIndices = this.getTotalIndices();
             var subdivisionSize = (totalIndices / count) | 0;
             var offset = 0;
-            while (subdivisionSize % 3 != 0) {
+            while (subdivisionSize % 3 !== 0) {
                 subdivisionSize++;
             }
             this.releaseSubMeshes();
@@ -891,26 +919,30 @@ var BABYLON;
             }
         };
         // Statics
-        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable) {
+        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var ribbon = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset);
+            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
             vertexData.applyToMesh(ribbon, updatable);
             return ribbon;
         };
-        Mesh.CreateBox = function (name, size, scene, updatable) {
+        Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var box = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateBox(size);
+            var vertexData = BABYLON.VertexData.CreateBox(size, sideOrientation);
             vertexData.applyToMesh(box, updatable);
             return box;
         };
-        Mesh.CreateSphere = function (name, segments, diameter, scene, updatable) {
+        Mesh.CreateSphere = function (name, segments, diameter, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var sphere = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter);
+            var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter, sideOrientation);
             vertexData.applyToMesh(sphere, updatable);
             return sphere;
         };
         // Cylinder and cone (Code inspired by SharpDX.org)
-        Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable) {
+        Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             // subdivisions is a new parameter, we need to support old signature
             if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
                 if (scene !== undefined) {
@@ -925,15 +957,17 @@ var BABYLON;
             return cylinder;
         };
         // Torus  (Code from SharpDX.org)
-        Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable) {
+        Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var torus = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation);
+            var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
             vertexData.applyToMesh(torus, updatable);
             return torus;
         };
-        Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable) {
+        Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var torusKnot = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+            var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
             vertexData.applyToMesh(torusKnot, updatable);
             return torusKnot;
         };
@@ -945,9 +979,10 @@ var BABYLON;
             return lines;
         };
         // Plane & ground
-        Mesh.CreatePlane = function (name, size, scene, updatable) {
+        Mesh.CreatePlane = function (name, size, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var plane = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreatePlane(size);
+            var vertexData = BABYLON.VertexData.CreatePlane(size, sideOrientation);
             vertexData.applyToMesh(plane, updatable);
             return plane;
         };
@@ -1054,6 +1089,11 @@ var BABYLON;
             }
             return newMesh;
         };
+        // Consts
+        Mesh._FRONTSIDE = 0;
+        Mesh._BACKSIDE = 1;
+        Mesh._DOUBLESIDE = 2;
+        Mesh._DEFAULTSIDE = 0;
         return Mesh;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
