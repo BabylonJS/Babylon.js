@@ -905,11 +905,6 @@ var BABYLON;
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
             BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
-                skeleton.prepare();
-                this._activeBones += skeleton.bones.length;
-            }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled) {
@@ -1059,6 +1054,11 @@ var BABYLON;
                 BABYLON.Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
                 BABYLON.Tools.EndPerformanceCounter("Physics");
+            }
+            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
+                var skeleton = this._activeSkeletons.data[skeletonIndex];
+                skeleton.prepare();
+                this._activeBones += skeleton.bones.length;
             }
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
