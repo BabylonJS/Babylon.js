@@ -221,7 +221,7 @@
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
-        private _activeBones = 0;
+        public _activeBones = 0;
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
@@ -1171,6 +1171,13 @@
             this._evaluateActiveMeshesDuration += Tools.Now - beforeEvaluateActiveMeshesDate;
             Tools.EndPerformanceCounter("Active meshes evaluation");
 
+            // Skeletons
+            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
+                var skeleton = this._activeSkeletons.data[skeletonIndex];
+
+                skeleton.prepare();
+            }
+
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled) {
@@ -1350,15 +1357,6 @@
                 Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
-            }
-
-            // Skeletons
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
-
-                skeleton.prepare();
-
-                this._activeBones += skeleton.bones.length;
             }
 
             // Customs render targets

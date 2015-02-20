@@ -39,6 +39,7 @@ var BABYLON;
             }
             this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
             this._isDirty = false;
+            this._scene._activeBones += this.bones.length;
         };
         Skeleton.prototype.getAnimatables = function () {
             if (!this._animatables || this._animatables.length !== this.bones.length) {
