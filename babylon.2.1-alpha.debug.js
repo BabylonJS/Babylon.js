@@ -7600,6 +7600,7 @@ var BABYLON;
             this.particlesEnabled = true;
             this.particleSystems = new Array();
             // Sprites
+            this.spritesEnabled = true;
             this.spriteManagers = new Array();
             // Layers
             this.layers = new Array();
@@ -11618,7 +11619,7 @@ var BABYLON;
             this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
         };
         RenderingManager.prototype._renderSprites = function (index) {
-            if (this._scene.spriteManagers.length === 0) {
+            if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
                 return;
             }
             // Sprites       
@@ -13383,7 +13384,7 @@ var BABYLON;
 blackAndWhitePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nvoid main(void) \n{\n	float luminance = dot(texture2D(textureSampler, vUV).rgb, vec3(0.3, 0.59, 0.11));\n	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);\n}",
 blurPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\n// Parameters\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\n\nvoid main(void)\n{\n	float weights[7];\n	weights[0] = 0.05;\n	weights[1] = 0.1;\n	weights[2] = 0.2;\n	weights[3] = 0.3;\n	weights[4] = 0.2;\n	weights[5] = 0.1;\n	weights[6] = 0.05;\n\n	vec2 texelSize = vec2(1.0 / screenSize.x, 1.0 / screenSize.y);\n	vec2 texelStep = texelSize * direction * blurWidth;\n	vec2 start = vUV - 3.0 * texelStep;\n\n	vec4 baseColor = vec4(0., 0., 0., 0.);\n	vec2 texelOffset = vec2(0., 0.);\n\n	for (int i = 0; i < 7; i++)\n	{\n		baseColor += texture2D(textureSampler, start + texelOffset) * weights[i];\n		texelOffset += texelStep;\n	}\n\n	gl_FragColor = baseColor;\n}",
 brickPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brickColor;\nuniform vec3 jointColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nfloat round(float number){\n	return sign(number)*floor(abs(number) + 0.5);\n}\n\nvoid main(void)\n{\n	float brickW = 1.0 / numberOfBricksWidth;\n	float brickH = 1.0 / numberOfBricksHeight;\n	float jointWPercentage = 0.01;\n	float jointHPercentage = 0.05;\n	vec3 color = brickColor;\n	float yi = vUV.y / brickH;\n	float nyi = round(yi);\n	float xi = vUV.x / brickW;\n\n	if (mod(floor(yi), 2.0) == 0.0){\n		xi = xi - 0.5;\n	}\n\n	float nxi = round(xi);\n	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);\n\n	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){\n		color = mix(jointColor, vec3(0.37, 0.25, 0.25), (yi - nyi) / jointHPercentage + 0.2);\n	}\n	else if (xi < nxi + jointWPercentage && xi > nxi - jointWPercentage){\n		color = mix(jointColor, vec3(0.44, 0.44, 0.44), (xi - nxi) / jointWPercentage + 0.2);\n	}\n	else {\n		float brickColorSwitch = mod(floor(yi) + floor(xi), 3.0);\n\n		if (brickColorSwitch == 0.0)\n			color = mix(color, vec3(0.33, 0.33, 0.33), 0.3);\n		else if (brickColorSwitch == 2.0)\n			color = mix(color, vec3(0.11, 0.11, 0.11), 0.3);\n	}\n\n	gl_FragColor = vec4(color, 1.0);\n}",
-chromaticAberrationPixelShader:"/*\n	BABYLON.JS Chromatic Aberration GLSL Shader\n	Author: Olivier Guyot\n	Separates very slightly R, G and B colors on the edges of the screen\n	Inspired by Francois Tarlier & Martins Upitis	\n*/\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\n// samplers\nuniform sampler2D textureSampler;	// original color\n\n// uniforms\nuniform float chromatic_aberration;\nuniform float screen_width;\nuniform float screen_height;\n\n// varyings\nvarying vec2 vUV;\n\n\nvoid main(void)\n{\n	vec2 centered_screen_pos = vec2(vUV.x-0.5, vUV.y-0.5);\n	float radius2 = centered_screen_pos.x*centered_screen_pos.x\n					+ centered_screen_pos.y*centered_screen_pos.y;\n	float radius = sqrt(radius2);\n\n	vec4 original = texture2D(textureSampler, vUV);\n\n	if(chromatic_aberration > 0.0) {\n		//index of refraction of each color channel, causing chromatic dispersion\n		vec3 ref_indices = vec3(0.6, 0.3, 0.0);\n		float ref_shiftX = chromatic_aberration * radius * 12.0 / screen_width;\n		float ref_shiftY = chromatic_aberration * radius * 12.0 / screen_height;\n\n		// shifts for red, green & blue\n		vec2 ref_coords_r = vec2(vUV.x + ref_indices.r*ref_shiftX, vUV.y + ref_indices.r*ref_shiftY*0.5);\n		vec2 ref_coords_g = vec2(vUV.x + ref_indices.g*ref_shiftX, vUV.y + ref_indices.g*ref_shiftY*0.5);\n		vec2 ref_coords_b = vec2(vUV.x + ref_indices.b*ref_shiftX, vUV.y + ref_indices.b*ref_shiftY*0.5);\n\n		original.r = texture2D(textureSampler, ref_coords_r).r;\n		original.g = texture2D(textureSampler, ref_coords_g).g;\n		original.b = texture2D(textureSampler, ref_coords_b).b;\n	}\n\n	gl_FragColor = original;\n}",
+chromaticAberrationPixelShader:"/*\n	BABYLON.JS Chromatic Aberration GLSL Shader\n	Author: Olivier Guyot\n	Separates very slightly R, G and B colors on the edges of the screen\n	Inspired by Francois Tarlier & Martins Upitis	\n*/\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\n// samplers\nuniform sampler2D textureSampler;	// original color\n\n// uniforms\nuniform float chromatic_aberration;\nuniform float screen_width;\nuniform float screen_height;\n\n// varyings\nvarying vec2 vUV;\n\nvoid main(void)\n{\n	vec2 centered_screen_pos = vec2(vUV.x-0.5, vUV.y-0.5);\n	float radius2 = centered_screen_pos.x*centered_screen_pos.x\n					+ centered_screen_pos.y*centered_screen_pos.y;\n	float radius = sqrt(radius2);\n\n	vec4 original = texture2D(textureSampler, vUV);\n\n	if(chromatic_aberration > 0.0) {\n		//index of refraction of each color channel, causing chromatic dispersion\n		vec3 ref_indices = vec3(0.6, 0.3, 0.0);\n		float ref_shiftX = chromatic_aberration * radius * 12.0 / screen_width;\n		float ref_shiftY = chromatic_aberration * radius * 12.0 / screen_height;\n\n		// shifts for red, green & blue\n		vec2 ref_coords_r = vec2(vUV.x + ref_indices.r*ref_shiftX, vUV.y + ref_indices.r*ref_shiftY*0.5);\n		vec2 ref_coords_g = vec2(vUV.x + ref_indices.g*ref_shiftX, vUV.y + ref_indices.g*ref_shiftY*0.5);\n		vec2 ref_coords_b = vec2(vUV.x + ref_indices.b*ref_shiftX, vUV.y + ref_indices.b*ref_shiftY*0.5);\n\n		original.r = texture2D(textureSampler, ref_coords_r).r;\n		original.g = texture2D(textureSampler, ref_coords_g).g;\n		original.b = texture2D(textureSampler, ref_coords_b).b;\n	}\n\n	gl_FragColor = original;\n}",
 cloudPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUV;\n\nuniform vec3 skyColor;\nuniform vec3 cloudColor;\n\nfloat rand(vec2 n) {\n	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\n}\n\nfloat noise(vec2 n) {\n	const vec2 d = vec2(0.0, 1.0);\n	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\n}\n\nfloat fbm(vec2 n) {\n	float total = 0.0, amplitude = 1.0;\n	for (int i = 0; i < 4; i++) {\n		total += noise(n) * amplitude;\n		n += n;\n		amplitude *= 0.5;\n	}\n	return total;\n}\n\nvoid main() {\n\n	vec2 p = vUV * 12.0;\n	vec3 c = mix(skyColor, cloudColor, fbm(p));\n	gl_FragColor = vec4(c, 1);\n\n}",
 colorPixelShader:"precision highp float;\n\nuniform vec4 color;\n\nvoid main(void) {\n	gl_FragColor = color;\n}",
 colorVertexShader:"precision highp float;\n\n// Attributes\nattribute vec3 position;\n\n// Uniforms\nuniform mat4 worldViewProjection;\n\nvoid main(void) {\n	gl_Position = worldViewProjection * vec4(position, 1.0);\n}",
@@ -17005,7 +17006,8 @@ var BABYLON;
                     switch (filesToLoad[i].type) {
                         case "image/jpeg":
                         case "image/png":
-                            BABYLON.FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
+                        case "image/bmp":
+                            FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
@@ -17016,7 +17018,7 @@ var BABYLON;
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
                         case "audio/ogg":
-                            BABYLON.FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
+                            FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         default:
                             if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
@@ -23244,21 +23246,22 @@ var BABYLON;
             return this._triggerParameter;
         };
         Action.prototype._executeCurrent = function (evt) {
-            if (this._condition) {
+            if (this._nextActiveAction._condition) {
+                var condition = this._nextActiveAction._condition;
                 var currentRenderId = this._actionManager.getScene().getRenderId();
                 // We cache the current evaluation for the current frame
-                if (this._condition._evaluationId === currentRenderId) {
-                    if (!this._condition._currentResult) {
+                if (condition._evaluationId === currentRenderId) {
+                    if (!condition._currentResult) {
                         return;
                     }
                 }
                 else {
-                    this._condition._evaluationId = currentRenderId;
-                    if (!this._condition.isValid()) {
-                        this._condition._currentResult = false;
+                    condition._evaluationId = currentRenderId;
+                    if (!condition.isValid()) {
+                        condition._currentResult = false;
                         return;
                     }
-                    this._condition._currentResult = true;
+                    condition._currentResult = true;
                 }
             }
             this._nextActiveAction.execute(evt);
@@ -26760,6 +26763,9 @@ var BABYLON;
                 });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, function (element) {
                     _this._scene.skeletonsEnabled = element.checked;
+                });
+                this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, function (element) {
+                    _this._scene.spritesEnabled = element.checked;
                 });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) {
                     _this._scene.texturesEnabled = element.checked;

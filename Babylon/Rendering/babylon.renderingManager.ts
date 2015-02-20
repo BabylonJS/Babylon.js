@@ -34,7 +34,7 @@
         }
 
         private _renderSprites(index: number): void {
-            if (this._scene.spriteManagers.length === 0) {
+            if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
                 return;
             }
 

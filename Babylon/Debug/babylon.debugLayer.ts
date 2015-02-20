@@ -648,6 +648,7 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, (element) => { this._scene.renderTargetsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, (element) => { this._scene.shadowsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, (element) => { this._scene.spritesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
 
                 this._globalDiv.appendChild(this._statsDiv);

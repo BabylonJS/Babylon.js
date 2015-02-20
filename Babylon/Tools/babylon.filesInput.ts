@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class FilesInput {
-        private engine: BABYLON.Engine;
-        private currentScene: BABYLON.Scene;
+        private engine: Engine;
+        private currentScene: Scene;
         private canvas: HTMLCanvasElement;
         private sceneLoadedCallback;
         private progressCallback;
@@ -14,7 +14,7 @@
 
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
         /// loading progress callback and optionnal addionnal logic to call in the rendering loop
-        constructor(p_engine: BABYLON.Engine, p_scene: BABYLON.Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback,
+        constructor(p_engine: Engine, p_scene: Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback,
             p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
             this.engine = p_engine;
             this.canvas = p_canvas;
@@ -86,7 +86,8 @@
                     switch (filesToLoad[i].type) {
                         case "image/jpeg":
                         case "image/png":
-                            BABYLON.FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
+                        case "image/bmp":
+                            FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
@@ -97,7 +98,7 @@
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
                         case "audio/ogg":
-                            BABYLON.FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
+                            FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         default:
                             if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1
@@ -116,7 +117,7 @@
                         this.currentScene.dispose();
                     }
 
-                    BABYLON.SceneLoader.Load("file:", sceneFileToLoad, this.engine, (newScene) => {
+                    SceneLoader.Load("file:", sceneFileToLoad, this.engine, (newScene) => {
                         that.currentScene = newScene;
 
                         // Wait for textures and shaders to be ready
@@ -137,7 +138,7 @@
                     });
                 }
                 else {
-                    BABYLON.Tools.Error("Please provide a valid .babylon file.");
+                    Tools.Error("Please provide a valid .babylon file.");
                 }
             }
         }

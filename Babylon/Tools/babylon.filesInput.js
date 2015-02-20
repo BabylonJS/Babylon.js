@@ -71,7 +71,8 @@ var BABYLON;
                     switch (filesToLoad[i].type) {
                         case "image/jpeg":
                         case "image/png":
-                            BABYLON.FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
+                        case "image/bmp":
+                            FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
@@ -82,7 +83,7 @@ var BABYLON;
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
                         case "audio/ogg":
-                            BABYLON.FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
+                            FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
                             break;
                         default:
                             if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {

@@ -20,7 +20,6 @@ uniform float screen_height;
 // varyings
 varying vec2 vUV;
 
-
 void main(void)
 {
 	vec2 centered_screen_pos = vec2(vUV.x-0.5, vUV.y-0.5);
