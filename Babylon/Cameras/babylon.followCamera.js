@@ -51,4 +51,5 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.followCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.followCamera.js.map

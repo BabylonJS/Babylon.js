@@ -150,4 +150,5 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.instancedMesh.js.map
+
+//# sourceMappingURL=../Mesh/babylon.InstancedMesh.js.map

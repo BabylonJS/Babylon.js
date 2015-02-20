@@ -398,31 +398,33 @@ var BABYLON;
             Primitives._Primitive = _Primitive;
             var Box = (function (_super) {
                 __extends(Box, _super);
-                function Box(id, scene, size, canBeRegenerated, mesh) {
+                function Box(id, scene, size, side, canBeRegenerated, mesh) {
                     this.size = size;
+                    this.side = side;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Box.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateBox(this.size);
+                    return BABYLON.VertexData.CreateBox(this.size, this.side);
                 };
                 Box.prototype.copy = function (id) {
-                    return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                    return new Box(id, this.getScene(), this.size, this.side, this.canBeRegenerated(), null);
                 };
                 return Box;
             })(_Primitive);
             Primitives.Box = Box;
             var Sphere = (function (_super) {
                 __extends(Sphere, _super);
-                function Sphere(id, scene, segments, diameter, canBeRegenerated, mesh) {
+                function Sphere(id, scene, segments, diameter, side, canBeRegenerated, mesh) {
                     this.segments = segments;
                     this.diameter = diameter;
+                    this.side = side;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Sphere.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateSphere(this.segments, this.diameter);
+                    return BABYLON.VertexData.CreateSphere(this.segments, this.diameter, this.side);
                 };
                 Sphere.prototype.copy = function (id) {
-                    return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null);
+                    return new Sphere(id, this.getScene(), this.segments, this.diameter, this.side, this.canBeRegenerated(), null);
                 };
                 return Sphere;
             })(_Primitive);
@@ -449,17 +451,17 @@ var BABYLON;
             Primitives.Cylinder = Cylinder;
             var Torus = (function (_super) {
                 __extends(Torus, _super);
-                function Torus(id, scene, diameter, thickness, tessellation, canBeRegenerated, mesh) {
+                function Torus(id, scene, diameter, thickness, tessellation, side, canBeRegenerated, mesh) {
                     this.diameter = diameter;
                     this.thickness = thickness;
                     this.tessellation = tessellation;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Torus.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation);
+                    return BABYLON.VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
                 };
                 Torus.prototype.copy = function (id) {
-                    return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
+                    return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.side, this.canBeRegenerated(), null);
                 };
                 return Torus;
             })(_Primitive);
@@ -503,35 +505,37 @@ var BABYLON;
             Primitives.TiledGround = TiledGround;
             var Plane = (function (_super) {
                 __extends(Plane, _super);
-                function Plane(id, scene, size, canBeRegenerated, mesh) {
+                function Plane(id, scene, size, side, canBeRegenerated, mesh) {
                     this.size = size;
+                    this.side = side;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Plane.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreatePlane(this.size);
+                    return BABYLON.VertexData.CreatePlane(this.size, this.side);
                 };
                 Plane.prototype.copy = function (id) {
-                    return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                    return new Plane(id, this.getScene(), this.size, this.side, this.canBeRegenerated(), null);
                 };
                 return Plane;
             })(_Primitive);
             Primitives.Plane = Plane;
             var TorusKnot = (function (_super) {
                 __extends(TorusKnot, _super);
-                function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh) {
+                function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, side, canBeRegenerated, mesh) {
                     this.radius = radius;
                     this.tube = tube;
                     this.radialSegments = radialSegments;
                     this.tubularSegments = tubularSegments;
                     this.p = p;
                     this.q = q;
+                    this.side = side;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TorusKnot.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q);
+                    return BABYLON.VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side);
                 };
                 TorusKnot.prototype.copy = function (id) {
-                    return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
+                    return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side, this.canBeRegenerated(), null);
                 };
                 return TorusKnot;
             })(_Primitive);
@@ -539,4 +543,5 @@ var BABYLON;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.geometry.js.map
+
+//# sourceMappingURL=../Mesh/babylon.geometry.js.map

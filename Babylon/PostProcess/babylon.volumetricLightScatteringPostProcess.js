@@ -232,7 +232,7 @@ var BABYLON;
         * @return {BABYLON.Mesh} the default mesh
         */
         VolumetricLightScatteringPostProcess.CreateDefaultMesh = function (name, scene) {
-            var mesh = BABYLON.Mesh.CreatePlane(name, 1, scene);
+            var mesh = BABYLON.Mesh.CreatePlane(name, 1, BABYLON.Mesh.FrontSide, scene);
             mesh.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
             mesh.material = new BABYLON.StandardMaterial(name + "Material", scene);
             return mesh;
@@ -241,4 +241,5 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.volumetricLightScatteringPostProcess.js.map
+
+//# sourceMappingURL=../PostProcess/babylon.volumetricLightScatteringPostProcess.js.map

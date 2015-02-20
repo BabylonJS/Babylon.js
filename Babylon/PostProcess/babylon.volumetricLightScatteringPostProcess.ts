@@ -287,7 +287,7 @@
         * @return {BABYLON.Mesh} the default mesh
         */
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-            var mesh = Mesh.CreatePlane(name, 1, scene);
+            var mesh = Mesh.CreatePlane(name, 1, BABYLON.Mesh.FrontSide, scene);
             mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
             mesh.material = new StandardMaterial(name + "Material", scene);
             return mesh;

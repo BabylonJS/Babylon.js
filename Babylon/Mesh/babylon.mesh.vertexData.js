@@ -215,7 +215,8 @@ var BABYLON;
             result.indices = meshOrGeometry.getIndices();
             return result;
         };
-        VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset) {
+        VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DefaultSide; }
             closeArray = closeArray || false;
             closePath = closePath || false;
             var defaultOffset = Math.floor(pathArray[0].length / 2);
@@ -350,6 +351,8 @@ var BABYLON;
             }
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
+            // sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -358,7 +361,7 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateBox = function (size) {
+        VertexData.CreateBox = function (size, sideOrientation) {
             var normalsSource = [
                 new BABYLON.Vector3(0, 0, 1),
                 new BABYLON.Vector3(0, 0, -1),
@@ -403,6 +406,8 @@ var BABYLON;
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(1.0, 0.0);
             }
+            // sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -411,7 +416,8 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateSphere = function (segments, diameter) {
+        VertexData.CreateSphere = function (segments, diameter, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DefaultSide; }
             segments = segments || 32;
             diameter = diameter || 1;
             var radius = diameter / 2;
@@ -449,6 +455,8 @@ var BABYLON;
                     }
                 }
             }
+            // Sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -457,7 +465,7 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation, subdivisions) {
+        VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation, sideOrientation, subdivisions) {
             if (subdivisions === void 0) { subdivisions = 1; }
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
@@ -543,6 +551,8 @@ var BABYLON;
             createCylinderCap(false);
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
+            // Sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -551,7 +561,7 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateTorus = function (diameter, thickness, tessellation) {
+        VertexData.CreateTorus = function (diameter, thickness, tessellation, sideOrientation) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -589,6 +599,8 @@ var BABYLON;
                     indices.push(nextI * stride + j);
                 }
             }
+            // Sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -756,7 +768,7 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreatePlane = function (size) {
+        VertexData.CreatePlane = function (size, sideOrientation) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -783,6 +795,8 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
+            // Sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -792,7 +806,7 @@ var BABYLON;
             return vertexData;
         };
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q) {
+        VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q, sideOrientation) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -854,6 +868,8 @@ var BABYLON;
             }
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
+            // Sides
+            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -900,8 +916,52 @@ var BABYLON;
                 normals[index * 3 + 2] = normal.z;
             }
         };
+        VertexData.ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
+            var li = indices.length;
+            var ln = normals.length;
+            var i;
+            var n;
+            sideOrientation = sideOrientation || BABYLON.Mesh.DefaultSide;
+            switch (sideOrientation) {
+                case BABYLON.Mesh.FrontSide:
+                    break;
+                case BABYLON.Mesh.BackSide:
+                    var tmp;
+                    for (i = 0; i < li; i += 3) {
+                        tmp = indices[i];
+                        indices[i] = indices[i + 2];
+                        indices[i + 2] = tmp;
+                    }
+                    for (var n = 0; n < ln; n++) {
+                        normals[n] = -normals[n];
+                    }
+                    break;
+                case BABYLON.Mesh.DoubleSide:
+                    // positions 
+                    var lp = positions.length;
+                    var l = lp / 3;
+                    for (var p = 0; p < lp; p++) {
+                        positions[lp + p] = positions[p];
+                    }
+                    for (i = 0; i < li; i += 3) {
+                        indices[i + li] = indices[i + 2] + l;
+                        indices[i + 1 + li] = indices[i + 1] + l;
+                        indices[i + 2 + li] = indices[i] + l;
+                    }
+                    for (var n = 0; n < ln; n++) {
+                        normals[ln + n] = -normals[n];
+                    }
+                    // uvs
+                    var lu = uvs.length;
+                    for (var u = 0; u < lu; u++) {
+                        uvs[u + lu] = uvs[u];
+                    }
+                    break;
+            }
+        };
         return VertexData;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
+
+//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map

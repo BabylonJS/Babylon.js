@@ -443,4 +443,5 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.arcRotateCamera.js.map

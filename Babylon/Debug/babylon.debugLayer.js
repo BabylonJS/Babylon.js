@@ -577,4 +577,5 @@ var BABYLON;
     })();
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.debugLayer.js.map
+
+//# sourceMappingURL=../Debug/babylon.debugLayer.js.map

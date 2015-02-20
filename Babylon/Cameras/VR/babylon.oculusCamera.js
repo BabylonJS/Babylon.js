@@ -112,4 +112,5 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.OculusCamera = OculusCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.oculusCamera.js.map
+
+//# sourceMappingURL=../../Cameras/VR/babylon.oculusCamera.js.map
