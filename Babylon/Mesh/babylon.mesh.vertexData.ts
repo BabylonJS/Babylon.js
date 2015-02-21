@@ -280,7 +280,7 @@
             return result;
         }
 
-        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number): VertexData {
+        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             closeArray = closeArray || false;
             closePath = closePath || false;
             var defaultOffset = Math.floor(pathArray[0].length / 2);
@@ -430,6 +430,9 @@
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
 
+            // sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -441,7 +444,7 @@
             return vertexData;
         }
 
-        public static CreateBox(size: number): VertexData {
+        public static CreateBox(size: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -498,6 +501,9 @@
                 uvs.push(1.0, 0.0);
             }
 
+            // sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -509,7 +515,7 @@
             return vertexData;
         }
 
-        public static CreateSphere(segments: number, diameter: number): VertexData {
+        public static CreateSphere(segments: number, diameter: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
 
             segments = segments || 32;
             diameter = diameter || 1;
@@ -560,6 +566,9 @@
                 }
             }
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -571,7 +580,7 @@
             return vertexData;
         }
 
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1): VertexData {
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
             var indices = [];
@@ -681,6 +690,9 @@
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -692,7 +704,7 @@
             return vertexData;
         }
 
-        public static CreateTorus(diameter, thickness, tessellation) {
+        public static CreateTorus(diameter, thickness, tessellation, sideOrientation: number = Mesh.DEFAULTSIDE) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -744,8 +756,12 @@
                 }
             }
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
+
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -958,7 +974,7 @@
             return vertexData;
         }
 
-        public static CreatePlane(size: number): VertexData {
+        public static CreatePlane(size: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -993,6 +1009,9 @@
             indices.push(2);
             indices.push(3);
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -1005,7 +1024,7 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number): VertexData {
+        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1079,6 +1098,9 @@
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
             var vertexData = new VertexData();
 
@@ -1134,6 +1156,60 @@
                 normals[index * 3] = normal.x;
                 normals[index * 3 + 1] = normal.y;
                 normals[index * 3 + 2] = normal.z;
+            }
+        }
+
+        private static _ComputeSides(sideOrientation: number, positions: number[], indices: number[], normals: number[], uvs: number[]) {
+            var li: number = indices.length;
+            var ln: number = normals.length;
+            var i: number;
+            var n: number;
+            sideOrientation = sideOrientation || Mesh.DEFAULTSIDE;
+
+            switch (sideOrientation) {
+
+                case Mesh.FRONTSIDE:
+                    // nothing changed
+                    break;
+
+                case Mesh.BACKSIDE:
+                    var tmp: number;
+                    // indices
+                    for (i = 0; i < li; i += 3) {
+                        tmp = indices[i];
+                        indices[i] = indices[i + 2];
+                        indices[i + 2] = tmp;
+                    }
+                    // normals
+                    for (n = 0; n < ln; n++) {
+                        normals[n] = -normals[n];
+                    }
+                    break;
+
+                case Mesh.DOUBLESIDE:
+                    // positions 
+                    var lp: number = positions.length;
+                    var l: number = lp / 3;
+                    for (var p = 0; p < lp; p++) {
+                        positions[lp + p] = positions[p];
+                    }
+                    // indices
+                    for (i = 0; i < li; i += 3) {
+                        indices[i + li] = indices[i + 2] + l;
+                        indices[i + 1 + li] = indices[i + 1] + l;
+                        indices[i + 2 + li] = indices[i] + l;
+                    }
+                    // normals
+                    for (n = 0; n < ln; n++) {
+                        normals[ln + n] = -normals[n];
+                    }
+
+                    // uvs
+                    var lu: number = uvs.length;
+                    for (var u: number = 0; u < lu; u++) {
+                        uvs[u + lu] = uvs[u];
+                    }
+                    break;
             }
         }
     }
