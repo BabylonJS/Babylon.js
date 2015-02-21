@@ -6,6 +6,29 @@
     }
 
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
+        // Consts
+        public static _FRONTSIDE: number = 0;
+        public static _BACKSIDE: number = 1;
+        public static _DOUBLESIDE: number = 2;
+        public static _DEFAULTSIDE: number = 0;
+
+        public static get FRONTSIDE(): number {
+            return Mesh._FRONTSIDE;
+        }
+
+        public static get BACKSIDE(): number {
+            return Mesh._BACKSIDE;
+        }
+
+        public static get DOUBLESIDE(): number {
+            return Mesh._DOUBLESIDE;
+        }
+
+        public static get DEFAULTSIDE(): number {
+            return Mesh._DEFAULTSIDE;
+        }
+
+
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
@@ -312,7 +335,7 @@
             var offset = 0;
 
             // Ensure that subdivisionSize is a multiple of 3
-            while (subdivisionSize % 3 != 0) {
+            while (subdivisionSize % 3 !== 0) {
                 subdivisionSize++;
             }
 
@@ -1095,27 +1118,27 @@
         }
 
         // Statics
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var ribbon = new Mesh(name, scene);
-            var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset);
+            var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
 
             vertexData.applyToMesh(ribbon, updatable);
 
             return ribbon;
         }
 
-        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var box = new Mesh(name, scene);
-            var vertexData = VertexData.CreateBox(size);
+            var vertexData = VertexData.CreateBox(size, sideOrientation);
 
             vertexData.applyToMesh(box, updatable);
 
             return box;
         }
 
-        public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var sphere = new Mesh(name, scene);
-            var vertexData = VertexData.CreateSphere(segments, diameter);
+            var vertexData = VertexData.CreateSphere(segments, diameter, sideOrientation);
 
             vertexData.applyToMesh(sphere, updatable);
 
@@ -1123,7 +1146,7 @@
         }
 
         // Cylinder and cone (Code inspired by SharpDX.org)
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any): Mesh {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // subdivisions is a new parameter, we need to support old signature
             if (scene === undefined || !(scene instanceof Scene)) {
                 if (scene !== undefined) {
@@ -1142,18 +1165,18 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var torus = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation);
+            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
 
             vertexData.applyToMesh(torus, updatable);
 
             return torus;
         }
 
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var torusKnot = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
 
             vertexData.applyToMesh(torusKnot, updatable);
 
@@ -1172,9 +1195,9 @@
         }
 
         // Plane & ground
-        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
-            var vertexData = VertexData.CreatePlane(size);
+            var vertexData = VertexData.CreatePlane(size, sideOrientation);
 
             vertexData.applyToMesh(plane, updatable);
 
