@@ -352,7 +352,7 @@ var BABYLON;
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
             // sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -408,7 +408,7 @@ var BABYLON;
                 uvs.push(1.0, 0.0);
             }
             // sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -457,7 +457,7 @@ var BABYLON;
                 }
             }
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -554,7 +554,7 @@ var BABYLON;
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -603,7 +603,7 @@ var BABYLON;
                 }
             }
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -800,7 +800,7 @@ var BABYLON;
             indices.push(2);
             indices.push(3);
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -874,7 +874,7 @@ var BABYLON;
             // Normals
             VertexData.ComputeNormals(positions, indices, normals);
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -921,7 +921,7 @@ var BABYLON;
                 normals[index * 3 + 2] = normal.z;
             }
         };
-        VertexData.ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
+        VertexData._ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
             var li = indices.length;
             var ln = normals.length;
             var i;

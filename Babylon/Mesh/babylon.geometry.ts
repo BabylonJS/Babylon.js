@@ -500,6 +500,33 @@
             }
         }
 
+        export class Ribbon extends _Primitive {
+            // Members
+            public pathArray: Vector3[][];
+            public closeArray: boolean;
+            public closePath: boolean;
+            public offset: number;
+            public side: number;
+
+            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.pathArray = pathArray;
+                this.closeArray = closeArray;
+                this.closePath = closePath;
+                this.offset = offset;
+                this.side = side;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
+            }
+
+            public copy(id: string): Geometry {
+                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
+            }
+        }
+
         export class Box extends _Primitive {
             // Members
             public size: number;

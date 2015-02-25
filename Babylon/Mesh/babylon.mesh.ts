@@ -38,8 +38,8 @@
 
         // Private
         public _geometry: Geometry;
-        private _onBeforeRenderCallbacks = new Array<() => void>();
-        private _onAfterRenderCallbacks = new Array<() => void>();
+        private _onBeforeRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
+        private _onAfterRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any, Mesh) => void;
         public _visibleInstances: any = {};
@@ -276,7 +276,7 @@
         // Methods  
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
-            if (this._preActivateId == sceneRenderId) {
+            if (this._preActivateId === sceneRenderId) {
                 return;
             }
 
@@ -467,11 +467,11 @@
             }
         }
 
-        public registerBeforeRender(func: () => void): void {
+        public registerBeforeRender(func: (mesh: AbstractMesh) => void): void {
             this._onBeforeRenderCallbacks.push(func);
         }
 
-        public unregisterBeforeRender(func: () => void): void {
+        public unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void {
             var index = this._onBeforeRenderCallbacks.indexOf(func);
 
             if (index > -1) {
@@ -627,7 +627,7 @@
             }
 
             for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
+                this._onBeforeRenderCallbacks[callbackIndex](this);
             }
 
             var engine = scene.getEngine();
@@ -687,7 +687,7 @@
             }
 
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
+                this._onAfterRenderCallbacks[callbackIndex](this);
             }
         }
 
@@ -742,7 +742,7 @@
 
                 scene._addPendingData(that);
 
-                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1) ? true : false;
+                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
                 Tools.LoadFile(this.delayLoadingFile, data => {
 
@@ -1246,7 +1246,7 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
+                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
                 var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
@@ -1265,10 +1265,41 @@
             return ground;
         }
 
+        public static CreateTube(name: string, path: Vector3[], radius: number, tesselation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var tube: Mesh;
+            var path3D: Path3D = new BABYLON.Path3D(path);
+            var tangents: Vector3[] = path3D.getTangents();
+            var normals: Vector3[] = path3D.getNormals();
+            var distances: number[] = path3D.getDistances();
+            var pi2: number = Math.PI * 2;
+            var step: number = pi2 / tesselation;
+            var returnRadius: { (i: number, distance: number): number; } = function(i, distance) { return radius };
+            var radiusFunction: { (i: number, distance: number): number; } = radiusFunction || returnRadius; 
+            var circlePaths: Vector3[][] = [];
+            var circlePath: Vector3[];
+            var rad: number;
+            var normal: Vector3;
+            var rotated: Vector3;
+            var rotationMatrix: Matrix;
+            for (var i: number = 0; i < path.length; i++) {
+                rad = radiusFunction(i, distances[i]);      // current radius
+                circlePath = [];                            // current circle array
+                normal =  normals[i]                        // current normal  
+                for( var ang: number = 0; ang < pi2; ang += step) {
+                    rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
+                    rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                    circlePath.push(rotated);
+                }
+                circlePaths.push(circlePath);
+            }
+            tube = BABYLON.Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            return tube;
+        }
+
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
-            var minVector = null;
-            var maxVector = null;
+            var minVector: Vector3 = null;
+            var maxVector: Vector3 = null;
             for (var i in meshes) {
                 var mesh = meshes[i];
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
