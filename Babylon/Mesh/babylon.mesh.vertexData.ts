@@ -431,7 +431,7 @@
             VertexData.ComputeNormals(positions, indices, normals);
 
             // sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -502,7 +502,7 @@
             }
 
             // sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -567,7 +567,7 @@
             }
 
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -691,7 +691,7 @@
             VertexData.ComputeNormals(positions, indices, normals);
 
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -757,7 +757,7 @@
             }
 
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -1010,7 +1010,7 @@
             indices.push(3);
 
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -1099,7 +1099,7 @@
             VertexData.ComputeNormals(positions, indices, normals);
 
             // Sides
-            VertexData.ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
             var vertexData = new VertexData();
@@ -1159,7 +1159,7 @@
             }
         }
 
-        public static ComputeSides(sideOrientation: number, positions: number[], indices: number[], normals: number[], uvs: number[]) {
+        private static _ComputeSides(sideOrientation: number, positions: number[], indices: number[], normals: number[], uvs: number[]) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;
@@ -1174,7 +1174,6 @@
 
                 case Mesh.BACKSIDE:
                     var tmp: number;
-                    // positions unchanged
                     // indices
                     for (i = 0; i < li; i += 3) {
                         tmp = indices[i];
@@ -1185,7 +1184,6 @@
                     for (n = 0; n < ln; n++) {
                         normals[n] = -normals[n];
                     }
-                    // uvs unchanged                    
                     break;
 
                 case Mesh.DOUBLESIDE:
@@ -1205,6 +1203,7 @@
                     for (n = 0; n < ln; n++) {
                         normals[ln + n] = -normals[n];
                     }
+
                     // uvs
                     var lu: number = uvs.length;
                     for (var u: number = 0; u < lu; u++) {

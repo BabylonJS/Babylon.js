@@ -535,6 +535,7 @@ declare module BABYLON {
         textures: BaseTexture[];
         particlesEnabled: boolean;
         particleSystems: ParticleSystem[];
+        spritesEnabled: boolean;
         spriteManagers: SpriteManager[];
         layers: Layer[];
         skeletonsEnabled: boolean;
@@ -587,7 +588,7 @@ declare module BABYLON {
         private _renderTargets;
         _activeParticleSystems: SmartArray<ParticleSystem>;
         private _activeSkeletons;
-        private _activeBones;
+        _activeBones: number;
         private _renderingManager;
         private _physicsEngine;
         _activeAnimatables: Animatable[];
@@ -1522,7 +1523,10 @@ declare module BABYLON {
         private _worldMatrix;
         _postProcesses: PostProcess[];
         _postProcessesTakenIndices: any[];
+        _activeMeshes: SmartArray<Mesh>;
         constructor(name: string, position: Vector3, scene: Scene);
+        getActiveMeshes(): SmartArray<Mesh>;
+        isActiveMesh(mesh: Mesh): boolean;
         _initCache(): void;
         _updateCache(ignoreParentClass?: boolean): void;
         _updateFromScene(): void;
@@ -3381,14 +3385,16 @@ declare module BABYLON {
         }
         class Box extends _Primitive {
             size: number;
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
         class Sphere extends _Primitive {
             segments: number;
             diameter: number;
-            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3398,7 +3404,8 @@ declare module BABYLON {
             diameterBottom: number;
             tessellation: number;
             subdivisions: number;
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3406,7 +3413,8 @@ declare module BABYLON {
             diameter: number;
             thickness: number;
             tessellation: number;
-            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3443,7 +3451,8 @@ declare module BABYLON {
         }
         class Plane extends _Primitive {
             size: number;
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3454,7 +3463,8 @@ declare module BABYLON {
             tubularSegments: number;
             p: number;
             q: number;
-            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            side: number;
+            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3524,6 +3534,14 @@ declare module BABYLON {
         renderSelf: boolean[];
     }
     class Mesh extends AbstractMesh implements IGetSetVerticesData {
+        static _FRONTSIDE: number;
+        static _BACKSIDE: number;
+        static _DOUBLESIDE: number;
+        static _DEFAULTSIDE: number;
+        static FRONTSIDE: number;
+        static BACKSIDE: number;
+        static DOUBLESIDE: number;
+        static DEFAULTSIDE: number;
         delayLoadState: number;
         instances: InstancedMesh[];
         delayLoadingFile: string;
@@ -3592,8 +3610,8 @@ declare module BABYLON {
         setIndices(indices: number[], totalVertices?: number): void;
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
         _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
-        registerBeforeRender(func: () => void): void;
-        unregisterBeforeRender(func: () => void): void;
+        registerBeforeRender(func: (mesh: AbstractMesh) => void): void;
+        unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void;
         registerAfterRender(func: () => void): void;
         unregisterAfterRender(func: () => void): void;
         _getInstancesRenderList(subMeshId: number): _InstancesBatch;
@@ -3626,14 +3644,14 @@ declare module BABYLON {
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, type?: SimplificationType, successCallback?: () => void): void;
-        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean): Mesh;
-        static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh;
-        static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh;
-        static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any): Mesh;
-        static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh;
-        static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
+        static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean): LinesMesh;
-        static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
         static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
             w: number;
@@ -3681,11 +3699,11 @@ declare module BABYLON {
         static ExtractFromMesh(mesh: Mesh): VertexData;
         static ExtractFromGeometry(geometry: Geometry): VertexData;
         private static _ExtractFrom(meshOrGeometry);
-        static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number): VertexData;
-        static CreateBox(size: number): VertexData;
-        static CreateSphere(segments: number, diameter: number): VertexData;
-        static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number): VertexData;
-        static CreateTorus(diameter: any, thickness: any, tessellation: any): VertexData;
+        static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation?: number): VertexData;
+        static CreateBox(size: number, sideOrientation?: number): VertexData;
+        static CreateSphere(segments: number, diameter: number, sideOrientation?: number): VertexData;
+        static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, sideOrientation?: number): VertexData;
+        static CreateTorus(diameter: any, thickness: any, tessellation: any, sideOrientation?: number): VertexData;
         static CreateLines(points: Vector3[]): VertexData;
         static CreateGround(width: number, height: number, subdivisions: number): VertexData;
         static CreateTiledGround(xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: {
@@ -3696,9 +3714,10 @@ declare module BABYLON {
             h: number;
         }): VertexData;
         static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number): VertexData;
-        static CreatePlane(size: number): VertexData;
-        static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number): VertexData;
+        static CreatePlane(size: number, sideOrientation?: number): VertexData;
+        static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation?: number): VertexData;
         static ComputeNormals(positions: number[], indices: number[], normals: number[]): void;
+        private static _ComputeSides(sideOrientation, positions, indices, normals, uvs);
     }
 }
 declare module BABYLON.Internals {
@@ -4769,7 +4788,7 @@ declare module BABYLON {
         private elementToMonitor;
         static FilesTextures: any[];
         static FilesToLoad: any[];
-        constructor(p_engine: BABYLON.Engine, p_scene: BABYLON.Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback: any, p_progressCallback: any, p_additionnalRenderLoopLogicCallback: any, p_textureLoadingCallback: any, p_startingProcessingFilesCallback: any);
+        constructor(p_engine: Engine, p_scene: Scene, p_canvas: HTMLCanvasElement, p_sceneLoadedCallback: any, p_progressCallback: any, p_additionnalRenderLoopLogicCallback: any, p_textureLoadingCallback: any, p_startingProcessingFilesCallback: any);
         monitorElementForDragNDrop(p_elementToMonitor: HTMLElement): void;
         private renderFunction();
         private drag(e);
