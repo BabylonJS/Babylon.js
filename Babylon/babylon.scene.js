@@ -1150,7 +1150,7 @@ var BABYLON;
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
         Scene.prototype._updateAudioParameters = function () {
-            if (this.mainSoundTrack.soundCollection.length === 0 || this.soundTracks.length === 0) {
+            if (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0) {
                 return;
             }
             var listeningCamera;

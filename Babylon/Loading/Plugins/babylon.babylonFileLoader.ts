@@ -871,6 +871,9 @@
 
         // traverse graph per trigger
         var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action) => {
+            if (parsedAction.detached)
+                return;
+
             var parameters = new Array<any>();
             var target: any = null;
             var propertyPath: string = null;

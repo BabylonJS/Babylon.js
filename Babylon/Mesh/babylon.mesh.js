@@ -1029,6 +1029,36 @@ var BABYLON;
             }, scene.database);
             return ground;
         };
+        Mesh.CreateTube = function (name, path, radius, tesselation, radiusFunction, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var path3D = new BABYLON.Path3D(path);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var distances = path3D.getDistances();
+            var pi2 = Math.PI * 2;
+            var step = pi2 / tesselation;
+            var returnRadius = function (i, distance) { return radius; };
+            var radiusFunctionFinal = radiusFunction || returnRadius;
+            var circlePaths = [];
+            var circlePath;
+            var rad;
+            var normal;
+            var rotated;
+            var rotationMatrix;
+            for (var i = 0; i < path.length; i++) {
+                rad = radiusFunctionFinal(i, distances[i]); // current radius
+                circlePath = []; // current circle array
+                normal = normals[i]; // current normal  
+                for (var ang = 0; ang < pi2; ang += step) {
+                    rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
+                    rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                    circlePath.push(rotated);
+                }
+                circlePaths.push(circlePath);
+            }
+            var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            return tube;
+        };
         // Tools
         Mesh.MinMax = function (meshes) {
             var minVector = null;

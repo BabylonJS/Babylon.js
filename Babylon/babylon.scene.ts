@@ -1474,7 +1474,7 @@
         }
 
         private _updateAudioParameters() {
-            if (this.mainSoundTrack.soundCollection.length === 0 || this.soundTracks.length === 0) {
+            if (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0) {
                 return;
             }
 
