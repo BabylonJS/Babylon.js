@@ -1265,6 +1265,37 @@
             return ground;
         }
 
+        public static CreateTube(name: string, path: Vector3[], radius: number, tesselation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var tube: Mesh;
+            var path3D: Path3D = new BABYLON.Path3D(path);
+            var tangents: Vector3[] = path3D.getTangents();
+            var normals: Vector3[] = path3D.getNormals();
+            var distances: number[] = path3D.getDistances();
+            var pi2: number = Math.PI * 2;
+            var step: number = pi2 / tesselation;
+            var returnRadius: { (i: number, distance: number): number; } = function(i, distance) { return radius };
+            var radiusFunction: { (i: number, distance: number): number; } = radiusFunction || returnRadius; 
+            var circlePaths: Vector3[][] = [];
+            var circlePath: Vector3[];
+            var rad: number;
+            var normal: Vector3;
+            var rotated: Vector3;
+            var rotationMatrix: Matrix;
+            for (var i: number = 0; i < path.length; i++) {
+                rad = radiusFunction(i, distances[i]);      // current radius
+                circlePath = [];                            // current circle array
+                normal =  normals[i]                        // current normal  
+                for( var ang: number = 0; ang < pi2; ang += step) {
+                    rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
+                    rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                    circlePath.push(rotated);
+                }
+                circlePaths.push(circlePath);
+            }
+            tube = BABYLON.Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            return tube;
+        }
+
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
