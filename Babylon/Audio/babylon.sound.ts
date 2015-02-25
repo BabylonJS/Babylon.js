@@ -123,15 +123,20 @@
                 else {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
-                this._soundGain.disconnect();
-                this._soundSource.disconnect();
+                if (this._soundGain) {
+                    this._soundGain.disconnect();
+                    this._soundGain = null;
+                }
                 if (this._soundPanner) {
                     this._soundPanner.disconnect();
                     this._soundPanner = null;
                 }
+                if (this._soundSource) {
+                    this._soundSource.disconnect();
+                    this._soundSource = null;
+                }
                 this._audioBuffer = null;
-                this._soundGain = null;
-                this._soundSource = null;
+
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;

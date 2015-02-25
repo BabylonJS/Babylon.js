@@ -396,6 +396,26 @@ var BABYLON;
                 return _Primitive;
             })(Geometry);
             Primitives._Primitive = _Primitive;
+            var Ribbon = (function (_super) {
+                __extends(Ribbon, _super);
+                function Ribbon(id, scene, pathArray, closeArray, closePath, offset, canBeRegenerated, mesh, side) {
+                    if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    this.pathArray = pathArray;
+                    this.closeArray = closeArray;
+                    this.closePath = closePath;
+                    this.offset = offset;
+                    this.side = side;
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+                }
+                Ribbon.prototype._regenerateVertexData = function () {
+                    return BABYLON.VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
+                };
+                Ribbon.prototype.copy = function (id) {
+                    return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
+                };
+                return Ribbon;
+            })(_Primitive);
+            Primitives.Ribbon = Ribbon;
             var Box = (function (_super) {
                 __extends(Box, _super);
                 function Box(id, scene, size, canBeRegenerated, mesh, side) {

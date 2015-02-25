@@ -689,6 +689,8 @@ var BABYLON;
             };
             // traverse graph per trigger
             var traverse = function (parsedAction, trigger, condition, action) {
+                if (parsedAction.detached)
+                    return;
                 var parameters = new Array();
                 var target = null;
                 var propertyPath = null;
