@@ -1069,52 +1069,14 @@
          * @param type the type of simplification to run.
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, type: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
-
-            var getSimplifier = (): ISimplifier => {
-                switch (type) {
-                    case SimplificationType.QUADRATIC:
-                    default:
-                        return new QuadraticErrorSimplification(this);
-                }
-            }
-
-            if (parallelProcessing) {
-                //parallel simplifier
-                settings.forEach((setting) => {
-                    var simplifier = getSimplifier();
-                    simplifier.simplify(setting, (newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //check if it is the last
-                        if (setting.quality === settings[settings.length - 1].quality && successCallback) {
-                            //all done, run the success callback.
-                            successCallback();
-                        }
-                    });
-                });
-            } else {
-                //single simplifier.
-                var simplifier = getSimplifier();
-
-                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting, (newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //run the next quality level
-                        callback();
-                    });
-                }
-
-                AsyncLoop.Run(settings.length, (loop: AsyncLoop) => {
-                    runDecimation(settings[loop.index], () => {
-                        loop.executeNext();
-                    });
-                }, () => {
-                        //execution ended, run the success callback.
-                        if (successCallback) {
-                            successCallback();
-                        }
-                    });
-            }
+        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
+            this.getScene().simplificationQueue.addTask({
+                settings: settings,
+                parallelProcessing: parallelProcessing,
+                mesh: this,
+                simplificationType: simplificationType,
+                successCallback: successCallback
+            });            
         }
 
         // Statics
