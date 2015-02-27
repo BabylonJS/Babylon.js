@@ -8,6 +8,71 @@ var BABYLON;
         return SimplificationSettings;
     })();
     BABYLON.SimplificationSettings = SimplificationSettings;
+    var SimplificationQueue = (function () {
+        function SimplificationQueue() {
+            this.running = false;
+            this._simplificationArray = [];
+        }
+        SimplificationQueue.prototype.executeNext = function () {
+            var task = this._simplificationArray.pop();
+            if (task) {
+                this.running = true;
+                this.runSimplification(task);
+            }
+            else {
+                this.running = false;
+            }
+        };
+        SimplificationQueue.prototype.runSimplification = function (task) {
+            var _this = this;
+            if (task.parallelProcessing) {
+                //parallel simplifier
+                task.settings.forEach(function (setting) {
+                    var simplifier = _this.getSimplifier(task);
+                    simplifier.simplify(setting, function (newMesh) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //check if it is the last
+                        if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
+                            //all done, run the success callback.
+                            task.successCallback();
+                        }
+                        _this.executeNext();
+                    });
+                });
+            }
+            else {
+                //single simplifier.
+                var simplifier = this.getSimplifier(task);
+                var runDecimation = function (setting, callback) {
+                    simplifier.simplify(setting, function (newMesh) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //run the next quality level
+                        callback();
+                    });
+                };
+                BABYLON.AsyncLoop.Run(task.settings.length, function (loop) {
+                    runDecimation(task.settings[loop.index], function () {
+                        loop.executeNext();
+                    });
+                }, function () {
+                    //execution ended, run the success callback.
+                    if (task.successCallback) {
+                        task.successCallback();
+                    }
+                    _this.executeNext();
+                });
+            }
+        };
+        SimplificationQueue.prototype.getSimplifier = function (task) {
+            switch (task.simplificationType) {
+                case 0 /* QUADRATIC */:
+                default:
+                    return new QuadraticErrorSimplification(task.mesh);
+            }
+        };
+        return SimplificationQueue;
+    })();
+    BABYLON.SimplificationQueue = SimplificationQueue;
     /**
      * The implemented types of simplification.
      * At the moment only Quadratic Error Decimation is implemented.
@@ -105,12 +170,36 @@ var BABYLON;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
             this.decimationIterations = 100;
+            this.boundingBoxEpsilon = BABYLON.Engine.Epsilon;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;
             this.initWithMesh(this._mesh, function () {
                 _this.runDecimation(settings, successCallback);
             });
+        };
+        QuadraticErrorSimplification.prototype.isTriangleOnBoundingBox = function (triangle) {
+            var _this = this;
+            var gCount = 0;
+            triangle.vertices.forEach(function (vId) {
+                var count = 0;
+                var vPos = _this.vertices[vId].position;
+                var bbox = _this._mesh.getBoundingInfo().boundingBox;
+                if (bbox.maximum.x - vPos.x < _this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > _this.boundingBoxEpsilon)
+                    ++count;
+                if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
+                    ++count;
+                if (bbox.maximum.z == vPos.z || vPos.z == bbox.minimum.z)
+                    ++count;
+                if (count > 1) {
+                    ++gCount;
+                }
+                ;
+            });
+            if (gCount > 1) {
+                console.log(triangle, gCount);
+            }
+            return gCount > 1;
         };
         QuadraticErrorSimplification.prototype.runDecimation = function (settings, successCallback) {
             var _this = this;
@@ -357,7 +446,7 @@ var BABYLON;
                 var s = this.references[vertex1.triangleStart + i].vertexId;
                 var id1 = t.vertices[(s + 1) % 3];
                 var id2 = t.vertices[(s + 2) % 3];
-                if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
+                if ((id1 === index2 || id2 === index2)) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
