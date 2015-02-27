@@ -34,7 +34,7 @@
         simplificationType: SimplificationType;
         mesh: Mesh;
         successCallback? : () => void;
-        submesh?: number;
+        submeshIndex: number;
         parallelProcessing: boolean;
     }
     
@@ -106,7 +106,7 @@
             switch (task.simplificationType) {
                 case SimplificationType.QUADRATIC:
                 default:
-                    return new QuadraticErrorSimplification(task.mesh);
+                    return new QuadraticErrorSimplification(task.mesh, task.submeshIndex);
             }
         }
     }
@@ -228,14 +228,14 @@
 
         public boundingBoxEpsilon: number;
 
-        constructor(private _mesh: Mesh) {
+        constructor(private _mesh: Mesh, private _submeshIndex:number = 0) {
             this.aggressiveness = 7;
             this.decimationIterations = 100;
             this.boundingBoxEpsilon = Engine.Epsilon;
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void) {
-            this.initWithMesh(this._mesh,() => {
+            this.initWithMesh(this._mesh, this._submeshIndex, () => {
                 this.runDecimation(settings, successCallback);
             });
         }
@@ -370,7 +370,7 @@
                 });
         }
 
-        private initWithMesh(mesh: Mesh, callback: Function) {
+        private initWithMesh(mesh: Mesh, submeshIndex:number, callback: Function) {
             if (!mesh) return;
 
             this.vertices = [];
@@ -383,28 +383,32 @@
             var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
             var indices = mesh.getIndices();
+            var submesh = mesh.subMeshes[submeshIndex];
 
             var vertexInit = (i) => {
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), null, i);
+                var offset = i + submesh.verticesStart;
+                var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), null, i);
                 if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    vertex.uv = Vector2.FromArray(uvs, i * 2);
+                    vertex.uv = Vector2.FromArray(uvs, offset * 2);
                 } else if (this._mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    vertex.color = Color4.FromArray(colorsData, i * 4);
+                    vertex.color = Color4.FromArray(colorsData, offset * 4);
                 }
                 this.vertices.push(vertex);
             };
-            var totalVertices = mesh.getTotalVertices();
+            //var totalVertices = mesh.getTotalVertices();
+            var totalVertices = submesh.verticesCount;
             AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit,() => {
 
                 var indicesInit = (i) => {
-                    var pos = i * 3;
+                    var offset = submesh.indexStart + i;
+                    var pos = offset * 3;
                     var i0 = indices[pos + 0];
                     var i1 = indices[pos + 1];
                     var i2 = indices[pos + 2];
                     var triangle = new DecimationTriangle([this.vertices[i0].id, this.vertices[i1].id, this.vertices[i2].id]);
                     this.triangles.push(triangle);
                 };
-                AsyncLoop.SyncAsyncForLoop(indices.length / 3, this.syncIterations, indicesInit,() => {
+                AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit,() => {
                     this.init(callback);
                 });
             });
