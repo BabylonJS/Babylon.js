@@ -13,6 +13,9 @@ var BABYLON;
             this.running = false;
             this._simplificationArray = [];
         }
+        SimplificationQueue.prototype.addTask = function (task) {
+            this._simplificationArray.push(task);
+        };
         SimplificationQueue.prototype.executeNext = function () {
             var task = this._simplificationArray.pop();
             if (task) {

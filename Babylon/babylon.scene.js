@@ -137,6 +137,8 @@ var BABYLON;
             this.attachControl();
             this._debugLayer = new BABYLON.DebugLayer(this);
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            //simplification queue
+            this.simplificationQueue = new BABYLON.SimplificationQueue();
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
@@ -1041,6 +1043,10 @@ var BABYLON;
             // Actions
             if (this.actionManager) {
                 this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
+            }
+            //Simplification Queue
+            if (!this.simplificationQueue.running) {
+                this.simplificationQueue.executeNext();
             }
             // Before render
             if (this.beforeRender) {

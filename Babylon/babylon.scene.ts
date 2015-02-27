@@ -190,6 +190,9 @@
         public mainSoundTrack: SoundTrack;
         public soundTracks = new Array<SoundTrack>();
 
+        //Simplification Queue
+        public simplificationQueue: SimplificationQueue;
+
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
@@ -271,6 +274,9 @@
 
             this._debugLayer = new DebugLayer(this);
             this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+
+            //simplification queue
+            this.simplificationQueue = new SimplificationQueue();
         }
 
         // Properties 
@@ -1336,6 +1342,11 @@
             // Actions
             if (this.actionManager) {
                 this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger, null);
+            }
+
+            //Simplification Queue
+            if (!this.simplificationQueue.running) {
+                this.simplificationQueue.executeNext();
             }
 
             // Before render

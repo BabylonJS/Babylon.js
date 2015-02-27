@@ -47,6 +47,10 @@
             this._simplificationArray = [];
         }
 
+        public addTask(task: ISimplificationTask) {
+            this._simplificationArray.push(task);
+        }
+
         public executeNext() {
             var task = this._simplificationArray.pop();
             if (task) {
