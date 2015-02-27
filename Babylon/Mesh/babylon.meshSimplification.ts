@@ -29,6 +29,84 @@
         }
     }
 
+    export interface ISimplificationTask {
+        settings: Array<ISimplificationSettings>;
+        simplificationType: SimplificationType;
+        mesh: Mesh;
+        successCallback? : () => void;
+        submesh?: number;
+        parallelProcessing: boolean;
+    }
+    
+    export class SimplificationQueue {
+        private _simplificationArray: Array<ISimplificationTask>;
+        public running;
+
+        constructor() {
+            this.running = false;
+            this._simplificationArray = [];
+        }
+
+        public executeNext() {
+            var task = this._simplificationArray.pop();
+            if (task) {
+                this.running = true;
+                this.runSimplification(task);
+            } else {
+                this.running = false;
+            }
+        }
+
+        public runSimplification(task: ISimplificationTask) {
+            if (task.parallelProcessing) {
+                //parallel simplifier
+                task.settings.forEach((setting) => {
+                    var simplifier = this.getSimplifier(task);
+                    simplifier.simplify(setting,(newMesh) => {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //check if it is the last
+                        if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
+                            //all done, run the success callback.
+                            task.successCallback();
+                        }
+                        this.executeNext();
+                    });
+                });
+            } else {
+                //single simplifier.
+                var simplifier = this.getSimplifier(task);
+
+                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
+                    simplifier.simplify(setting,(newMesh) => {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //run the next quality level
+                        callback();
+                    });
+                }
+
+                AsyncLoop.Run(task.settings.length,(loop: AsyncLoop) => {
+                    runDecimation(task.settings[loop.index],() => {
+                        loop.executeNext();
+                    });
+                },() => {
+                        //execution ended, run the success callback.
+                        if (task.successCallback) {
+                            task.successCallback();
+                        }
+                        this.executeNext();
+                    });
+            }
+        }
+
+        private getSimplifier(task: ISimplificationTask) : ISimplifier {
+            switch (task.simplificationType) {
+                case SimplificationType.QUADRATIC:
+                default:
+                    return new QuadraticErrorSimplification(task.mesh);
+            }
+        }
+    }
+
     /**
      * The implemented types of simplification.
      * At the moment only Quadratic Error Decimation is implemented.
@@ -144,15 +222,45 @@
         public aggressiveness: number;
         public decimationIterations: number;
 
+        public boundingBoxEpsilon: number;
+
         constructor(private _mesh: Mesh) {
             this.aggressiveness = 7;
             this.decimationIterations = 100;
+            this.boundingBoxEpsilon = Engine.Epsilon;
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void) {
             this.initWithMesh(this._mesh,() => {
                 this.runDecimation(settings, successCallback);
             });
+        }
+
+        private isTriangleOnBoundingBox(triangle: DecimationTriangle): boolean {
+            var gCount = 0;
+            triangle.vertices.forEach((vId) => {
+                var count = 0;
+                var vPos = this.vertices[vId].position;
+                var bbox = this._mesh.getBoundingInfo().boundingBox;
+
+                if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon|| vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
+                    ++count;
+
+                if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
+                    ++count;
+
+                if (bbox.maximum.z == vPos.z || vPos.z == bbox.minimum.z)
+                    ++count;
+
+                if (count > 1) {
+                    ++gCount;
+                };
+            });
+            if (gCount > 1) {
+                console.log(triangle, gCount);
+            }
+            return gCount > 1;
+            
         }
 
         private runDecimation(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void) {
@@ -427,7 +535,7 @@
                 var id1 = t.vertices[(s + 1) % 3];
                 var id2 = t.vertices[(s + 2) % 3];
 
-                if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
+                if ((id1 === index2 || id2 === index2)/* && !this.isTriangleOnBoundingBox(t)*/) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
