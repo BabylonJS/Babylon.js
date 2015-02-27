@@ -14,6 +14,19 @@
             return this.transformedPosition ? this.transformedPosition : this.position;
         }
 
+        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            var activeCamera = this.getScene().activeCamera;
+            Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+        }
+
+        public supportsVSM(): boolean {
+            return true;
+        }
+
+        public needRefreshPerFrame(): boolean {
+            return false;
+        }
+
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;

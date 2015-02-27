@@ -6,6 +6,7 @@ var BABYLON;
             // Members
             this.filter = ShadowGenerator.FILTER_NONE;
             this._darkness = 0;
+            this._bias = 0.0001;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
             this._projectionMatrix = BABYLON.Matrix.Zero();
@@ -94,7 +95,7 @@ var BABYLON;
         });
         Object.defineProperty(ShadowGenerator.prototype, "useVarianceShadowMap", {
             get: function () {
-                return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+                return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
             },
             set: function (value) {
                 this.filter = (value ? ShadowGenerator.FILTER_VARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
@@ -104,7 +105,7 @@ var BABYLON;
         });
         Object.defineProperty(ShadowGenerator.prototype, "usePoissonSampling", {
             get: function () {
-                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING || (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && !this._light.supportsVSM());
             },
             set: function (value) {
                 this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -163,17 +164,21 @@ var BABYLON;
         };
         // Methods
         ShadowGenerator.prototype.getTransformMatrix = function () {
+            var scene = this._scene;
+            if (this._currentRenderID === scene.getRenderId()) {
+                return this._transformMatrix;
+            }
+            this._currentRenderID = scene.getRenderId();
             var lightPosition = this._light.position;
             var lightDirection = this._light.direction;
             if (this._light.computeTransformedPosition()) {
                 lightPosition = this._light.transformedPosition;
             }
-            if (!this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
+            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
                 this._cachedPosition = lightPosition.clone();
                 this._cachedDirection = lightDirection.clone();
-                var activeCamera = this._scene.activeCamera;
                 BABYLON.Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), BABYLON.Vector3.Up(), this._viewMatrix);
-                BABYLON.Matrix.PerspectiveFovLHToRef(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ, this._projectionMatrix);
+                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
             return this._transformMatrix;
@@ -188,6 +193,12 @@ var BABYLON;
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
+        };
+        ShadowGenerator.prototype.getBias = function () {
+            return this._bias;
+        };
+        ShadowGenerator.prototype.setBias = function (bias) {
+            this._bias = bias;
         };
         ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
             this._transparencyShadow = hasShadow;

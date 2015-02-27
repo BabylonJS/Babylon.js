@@ -91,6 +91,7 @@ var BABYLON;
             this.postProcessesEnabled = true;
             // Customs render targets
             this.renderTargetsEnabled = true;
+            this.dumpNextRenderTargets = false;
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
@@ -100,6 +101,7 @@ var BABYLON;
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
             this.soundTracks = new Array();
+            this._audioEnabled = true;
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -917,7 +919,7 @@ var BABYLON;
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -1076,7 +1078,7 @@ var BABYLON;
                         engine.setViewport(this.activeCamera.viewport);
                         // Camera
                         this.updateTransformMatrix();
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -1146,11 +1148,14 @@ var BABYLON;
                 this._toBeDisposed[index] = null;
             }
             this._toBeDisposed.reset();
+            if (this.dumpNextRenderTargets) {
+                this.dumpNextRenderTargets = false;
+            }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
         Scene.prototype._updateAudioParameters = function () {
-            if (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0) {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
                 return;
             }
             var listeningCamera;
@@ -1179,6 +1184,46 @@ var BABYLON;
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
+                    }
+                }
+            }
+        };
+        Object.defineProperty(Scene.prototype, "audioEnabled", {
+            get: function () {
+                return this._audioEnabled;
+            },
+            set: function (value) {
+                this._audioEnabled = value;
+                if (this._audioEnabled) {
+                    this._enableAudio();
+                }
+                else {
+                    this._disableAudio();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype._disableAudio = function () {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                this.mainSoundTrack.soundCollection[i].pause();
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    this.soundTracks[i].soundCollection[j].pause();
+                }
+            }
+        };
+        Scene.prototype._enableAudio = function () {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                if (this.mainSoundTrack.soundCollection[i].isPaused) {
+                    this.mainSoundTrack.soundCollection[i].play();
+                }
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    if (this.soundTracks[i].soundCollection[j].isPaused) {
+                        this.soundTracks[i].soundCollection[j].play();
                     }
                 }
             }
@@ -1215,10 +1260,7 @@ var BABYLON;
             this._onAfterRenderCallbacks = [];
             this.detachControl();
             // Release sounds & sounds tracks
-            this.mainSoundTrack.dispose();
-            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
-                this.soundTracks[scIndex].dispose();
-            }
+            this.disposeSounds();
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -1261,6 +1303,13 @@ var BABYLON;
                 this._engine.scenes.splice(index, 1);
             }
             this._engine.wipeCaches();
+        };
+        // Release sounds & sounds tracks
+        Scene.prototype.disposeSounds = function () {
+            this.mainSoundTrack.dispose();
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
         };
         // Collisions
         Scene.prototype._getNewPosition = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
@@ -1509,6 +1558,19 @@ var BABYLON;
         };
         Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        };
+        // Audio
+        Scene.prototype.switchAudioModeForHeadphones = function () {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        };
+        Scene.prototype.switchAudioModeForNormalSpeakers = function () {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
+            }
         };
         // Statics
         Scene._FOGMODE_NONE = 0;

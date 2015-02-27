@@ -460,17 +460,31 @@
         private _generateCheckBox(root: HTMLDivElement, title: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
 
-            var boundingBoxesCheckbox = document.createElement("input");
-            boundingBoxesCheckbox.type = "checkbox";
-            boundingBoxesCheckbox.checked = initialState;
+            var checkBox = document.createElement("input");
+            checkBox.type = "checkbox";
+            checkBox.checked = initialState;
 
-            boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
+            checkBox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
             });
 
-            label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(checkBox);
             label.appendChild(document.createTextNode(title));
             root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        }
+
+        private _generateButton(root: HTMLDivElement, title: string, task: (element, tag) => void, tag: any = null): void {
+            var button = document.createElement("button");
+            button.innerHTML = title;
+            button.style.height = "20px";
+            button.style.color = "#222222";
+
+            button.addEventListener("click",(evt: Event) => {
+                task(evt.target, tag);
+            });
+
+            root.appendChild(button);
             root.appendChild(document.createElement("br"));
         }
 
@@ -650,7 +664,28 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, (element) => { this._scene.spritesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
-
+                if (Engine.audioEngine.canUseWebAudio) {
+                    this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                    this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
+                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", true, (element) => {
+                        if (element.checked) {
+                            this._scene.switchAudioModeForHeadphones();
+                        }
+                    });
+                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", false, (element) => {
+                        if (element.checked) {
+                            this._scene.switchAudioModeForNormalSpeakers();
+                        }
+                    });
+                    this._generateCheckBox(this._optionsSubsetDiv, "Disable audio", !this._scene.audioEnabled, (element) => {
+                        this._scene.audioEnabled = !element.checked;
+                    });
+                }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
+                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets",(element) => { this._scene.dumpNextRenderTargets = true; });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+  
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);

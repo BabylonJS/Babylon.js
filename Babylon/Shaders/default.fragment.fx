@@ -35,7 +35,7 @@ uniform vec3 vLightSpecular0;
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
 uniform sampler2D shadowSampler0;
-uniform float darkness0;
+uniform vec3 shadowsInfo0;
 #endif
 #ifdef SPOTLIGHT0
 uniform vec4 vLightDirection0;
@@ -52,7 +52,7 @@ uniform vec3 vLightSpecular1;
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
 uniform sampler2D shadowSampler1;
-uniform float darkness1;
+uniform vec3 shadowsInfo1;
 #endif
 #ifdef SPOTLIGHT1
 uniform vec4 vLightDirection1;
@@ -69,7 +69,7 @@ uniform vec3 vLightSpecular2;
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
 uniform sampler2D shadowSampler2;
-uniform float darkness2;
+uniform vec3 shadowsInfo2;
 #endif
 #ifdef SPOTLIGHT2
 uniform vec4 vLightDirection2;
@@ -86,7 +86,7 @@ uniform vec3 vLightSpecular3;
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
 uniform sampler2D shadowSampler3;
-uniform float darkness3;
+uniform vec3 shadowsInfo3;
 #endif
 #ifdef SPOTLIGHT3
 uniform vec4 vLightDirection3;
@@ -213,7 +213,7 @@ float unpackHalf(vec2 color)
 	return color.x + (color.y / 255.0);
 }
 
-float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness)
+float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float bias)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
@@ -223,7 +223,7 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float dark
 		return 1.0;
 	}
 
-	float shadow = unpack(texture2D(shadowSampler, uv));
+	float shadow = unpack(texture2D(shadowSampler, uv)) + bias;
 
 	if (depth.z > shadow)
 	{
@@ -232,7 +232,7 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float dark
 	return 1.;
 }
 
-float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)
+float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float bias)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
@@ -251,10 +251,10 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler)
 	poissonDisk[3] = vec2(0.34495938, 0.29387760);
 
 	// Poisson Sampling
-	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / 1500.0))  <  depth.z) visibility -= 0.2;
-	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / 1500.0))  <  depth.z) visibility -= 0.2;
-	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / 1500.0))  <  depth.z) visibility -= 0.2;
-	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / 1500.0))  <  depth.z) visibility -= 0.2;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / mapSize)) + bias  <  depth.z) visibility -= 0.25;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / mapSize)) + bias  <  depth.z) visibility -= 0.25;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / mapSize)) + bias  <  depth.z) visibility -= 0.25;
+	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / mapSize)) + bias  <  depth.z) visibility -= 0.25;
 
 	return visibility;
 }
@@ -268,10 +268,10 @@ float ChebychevInequality(vec2 moments, float t)
 	}
 
 	float variance = moments.y - (moments.x * moments.x);
-	variance = max(variance, 0.);
+	variance = max(variance, 0.02);
 
 	float d = t - moments.x;
-	return variance / (variance + d * d);
+	return clamp(variance / (variance + d * d) - 0.2, 0., 1.0);
 }
 
 float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
@@ -279,7 +279,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
 
-	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0 || depth.z > 1.0)
 	{
 		return 1.0;
 	}
@@ -287,7 +287,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
 	vec4 texel = texture2D(shadowSampler, uv);
 
 	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-	return clamp(1.3 - ChebychevInequality(moments, depth.z), 0., 1.0);
+	return 1.0 - ChebychevInequality(moments, depth.z);
 }
 #endif
 
@@ -420,7 +420,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 	if (cosAngle >= lightDirection.w)
 	{
 		cosAngle = max(0., pow(cosAngle, lightData.w));
-		spotAtten = max(0., (cosAngle - lightDirection.w) / (1. - cosAngle));
+		spotAtten = clamp((cosAngle - lightDirection.w) / (1. - cosAngle), 0.0, 1.0);
 
 		// Diffuse
 		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
@@ -534,9 +534,9 @@ void main(void) {
 	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);
 #else
 	#ifdef SHADOWPCF0
-		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0);
+		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z);
 	#else
-		shadow = computeShadow(vPositionFromLight0, shadowSampler0, darkness0);
+		shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
 	#endif
 #endif
 #else
@@ -561,9 +561,9 @@ void main(void) {
 	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);
 #else
 	#ifdef SHADOWPCF1
-		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1);
+		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z);
 	#else
-		shadow = computeShadow(vPositionFromLight1, shadowSampler1, darkness1);
+		shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
 	#endif
 #endif
 #else
@@ -588,9 +588,9 @@ void main(void) {
 	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);
 #else
 	#ifdef SHADOWPCF2
-		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2);
+		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z);
 	#else
-		shadow = computeShadow(vPositionFromLight2, shadowSampler2, darkness2);
+		shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
 	#endif	
 #endif	
 #else
@@ -615,9 +615,9 @@ void main(void) {
 	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);
 #else
 	#ifdef SHADOWPCF3
-		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3);
+		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z);
 	#else
-		shadow = computeShadow(vPositionFromLight3, shadowSampler3, darkness3);
+		shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 	#endif	
 #endif	
 #else

@@ -20,6 +20,37 @@ var BABYLON;
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         };
+        DirectionalLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
+            var orthoLeft = Number.MAX_VALUE;
+            var orthoRight = Number.MIN_VALUE;
+            var orthoTop = Number.MIN_VALUE;
+            var orthoBottom = Number.MAX_VALUE;
+            var tempVector3 = BABYLON.Vector3.Zero();
+            var activeCamera = this.getScene().activeCamera;
+            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                var boundingBox = renderList[meshIndex].getBoundingInfo().boundingBox;
+                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                    BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+                    if (tempVector3.x < orthoLeft)
+                        orthoLeft = tempVector3.x;
+                    if (tempVector3.y < orthoBottom)
+                        orthoBottom = tempVector3.y;
+                    if (tempVector3.x > orthoRight)
+                        orthoRight = tempVector3.x;
+                    if (tempVector3.y > orthoTop)
+                        orthoTop = tempVector3.y;
+                }
+            }
+            var orthoWidth = Math.max(Math.abs(orthoRight), Math.abs(orthoLeft)) * 1.1;
+            var orthoHeight = Math.max(Math.abs(orthoTop), Math.abs(orthoBottom)) * 1.1;
+            BABYLON.Matrix.OrthoOffCenterLHToRef(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, activeCamera.minZ, activeCamera.maxZ, matrix);
+        };
+        DirectionalLight.prototype.supportsVSM = function () {
+            return false;
+        };
+        DirectionalLight.prototype.needRefreshPerFrame = function () {
+            return true;
+        };
         DirectionalLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {

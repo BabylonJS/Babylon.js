@@ -21,14 +21,14 @@
         public filter = ShadowGenerator.FILTER_NONE;
 
         public get useVarianceShadowMap(): boolean {
-            return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP;
+            return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
         }
         public set useVarianceShadowMap(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_VARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
         public get usePoissonSampling(): boolean {
-            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING || (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && !this._light.supportsVSM());
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -38,6 +38,7 @@
         private _scene: Scene;
         private _shadowMap: RenderTargetTexture;
         private _darkness = 0;
+        private _bias = 0.0001;
         private _transparencyShadow = false;
         private _effect: Effect;
 
@@ -48,6 +49,7 @@
         private _cachedPosition: Vector3;
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
+        private _currentRenderID: number;
 
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
@@ -192,6 +194,13 @@
 
         // Methods
         public getTransformMatrix(): Matrix {
+            var scene = this._scene;
+            if (this._currentRenderID === scene.getRenderId()) {
+                return this._transformMatrix;
+            }
+
+            this._currentRenderID = scene.getRenderId();
+
             var lightPosition = this._light.position;
             var lightDirection = this._light.direction;
 
@@ -199,15 +208,14 @@
                 lightPosition = this._light.transformedPosition;
             }
 
-            if (!this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
+            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
 
                 this._cachedPosition = lightPosition.clone();
                 this._cachedDirection = lightDirection.clone();
 
-                var activeCamera = this._scene.activeCamera;
-
                 Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), Vector3.Up(), this._viewMatrix);
-                Matrix.PerspectiveFovLHToRef(Math.PI / 2.0, 1.0, activeCamera.minZ, activeCamera.maxZ, this._projectionMatrix);
+
+                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
 
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
@@ -226,6 +234,14 @@
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
+        }
+
+        public getBias(): number {
+            return this._bias;
+        }
+
+        public setBias(bias: number): void {
+            this._bias = bias;
         }
 
         public setTransparencyShadow(hasShadow: boolean): void {
