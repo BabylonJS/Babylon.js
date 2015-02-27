@@ -7,7 +7,7 @@ vec4 pack(float depth)
 	const vec4 bitOffset = vec4(255. * 255. * 255., 255. * 255., 255., 1.);
 	const vec4 bitMask = vec4(0., 1. / 255., 1. / 255., 1. / 255.);
 	
-	vec4 comp = mod(depth * bitOffset * vec4(254.), vec4(255.)) / vec4(254.);
+	vec4 comp = mod(depth * bitOffset * vec4(255.), vec4(255.)) / vec4(255.);
 	comp -= comp.xxyz * bitMask;
 	
 	return comp;
@@ -39,7 +39,7 @@ void main(void)
 #endif
 
 #ifdef VSM
-	float moment1 = gl_FragCoord.z / gl_FragCoord.w;
+	float moment1 = gl_FragCoord.z;
 	float moment2 = moment1 * moment1;
 	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
 #else

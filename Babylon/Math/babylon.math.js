@@ -1709,11 +1709,16 @@ var BABYLON;
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
         };
         Matrix.OrthoLH = function (width, height, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.OrthoLHToRef = function (width, height, znear, zfar, result) {
             var hw = 2.0 / width;
             var hh = 2.0 / height;
             var id = 1.0 / (zfar - znear);
             var nid = znear / (znear - zfar);
-            return Matrix.FromValues(hw, 0, 0, 0, 0, hh, 0, 0, 0, 0, id, 0, 0, 0, nid, 1);
+            Matrix.FromValuesToRef(hw, 0, 0, 0, 0, hh, 0, 0, 0, 0, id, 0, 0, 0, nid, 1, result);
         };
         Matrix.OrthoOffCenterLH = function (left, right, bottom, top, znear, zfar) {
             var matrix = Matrix.Zero();

@@ -21,6 +21,49 @@
             return this.direction;
         }
 
+        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            var orthoLeft = Number.MAX_VALUE;
+            var orthoRight = Number.MIN_VALUE;
+            var orthoTop = Number.MIN_VALUE;
+            var orthoBottom = Number.MAX_VALUE;
+
+            var tempVector3 = Vector3.Zero();
+
+            var activeCamera = this.getScene().activeCamera;
+
+            // Check extends
+            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                var boundingBox = renderList[meshIndex].getBoundingInfo().boundingBox;
+
+                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                    Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+
+                    if (tempVector3.x < orthoLeft)
+                        orthoLeft = tempVector3.x;
+                    if (tempVector3.y < orthoBottom)
+                        orthoBottom = tempVector3.y;
+
+                    if (tempVector3.x > orthoRight)
+                        orthoRight = tempVector3.x;
+                    if (tempVector3.y > orthoTop)
+                        orthoTop = tempVector3.y;
+                }
+            }
+
+            var orthoWidth = Math.max(Math.abs(orthoRight), Math.abs(orthoLeft)) * 1.1;
+            var orthoHeight = Math.max(Math.abs(orthoTop), Math.abs(orthoBottom)) * 1.1;
+
+            Matrix.OrthoOffCenterLHToRef(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, activeCamera.minZ, activeCamera.maxZ, matrix);
+        }
+
+        public supportsVSM(): boolean {
+            return false;
+        }
+
+        public needRefreshPerFrame(): boolean {
+            return true;
+        }
+
         public computeTransformedPosition(): boolean {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {

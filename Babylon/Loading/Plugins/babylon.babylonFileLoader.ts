@@ -870,13 +870,14 @@
         };
 
         // traverse graph per trigger
-        var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action) => {
+        var traverse = (parsedAction: any, trigger: any, condition: Condition, action: Action, combineArray: Array<Action> = null) => {
             if (parsedAction.detached)
                 return;
 
             var parameters = new Array<any>();
             var target: any = null;
             var propertyPath: string = null;
+            var combine = parsedAction.combine && parsedAction.combine.length > 0;
 
             // Parameters
             if (parsedAction.type === 2)
@@ -884,26 +885,35 @@
             else
                 parameters.push(trigger);
 
-            for (var i = 0; i < parsedAction.properties.length; i++) {
-                var value = parsedAction.properties[i].value;
-                var name = parsedAction.properties[i].name;
-
-                if (name === "target")
-                    value = target = scene.getNodeByName(value);
-                else if (name === "parent")
-                    value = scene.getNodeByName(value);
-                else if (name === "sound")
-                    value = scene.getSoundByName(value);
-                else if (name !== "propertyPath") {
-                    if (parsedAction.type === 2 && name === "operator")
-                        value = BABYLON.ValueCondition[value];
-                    else
-                        value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
-                } else {
-                    propertyPath = value;
+            if (combine) {
+                var actions = new Array<Action>();
+                for (var j = 0; j < parsedAction.combine.length; j++) {
+                    traverse(parsedAction.combine[j], ActionManager.NothingTrigger, condition, action, actions);
                 }
+                parameters.push(actions);
+            }
+            else {
+                for (var i = 0; i < parsedAction.properties.length; i++) {
+                    var value = parsedAction.properties[i].value;
+                    var name = parsedAction.properties[i].name;
 
-                parameters.push(value);
+                    if (name === "target")
+                        value = target = scene.getNodeByName(value);
+                    else if (name === "parent")
+                        value = scene.getNodeByName(value);
+                    else if (name === "sound")
+                        value = scene.getSoundByName(value);
+                    else if (name !== "propertyPath") {
+                        if (parsedAction.type === 2 && name === "operator")
+                            value = BABYLON.ValueCondition[value];
+                        else
+                            value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                    } else {
+                        propertyPath = value;
+                    }
+
+                    parameters.push(value);
+                }
             }
             parameters.push(condition);
 
@@ -914,21 +924,27 @@
                 parameters[parameters.length - 2] = condition;
             }
 
-            // Action or condition(s)
+            // Action or condition(s) and not CombineAction
             var newAction = instanciate(parsedAction.name, parameters);
-            if (newAction instanceof BABYLON.Condition) {
-                condition = newAction;
-                newAction = action;
-            } else {
-                condition = null;
-                if (action)
-                    action.then(newAction);
-                else
-                    actionManager.registerAction(newAction);
+            if (combineArray === null) {
+                if (newAction instanceof BABYLON.Condition) {
+                    condition = newAction;
+                    newAction = action;
+                } else {
+                    condition = null;
+                    if (action)
+                        action.then(newAction);
+                    else
+                        actionManager.registerAction(newAction);
+                }
+            }
+            else {
+                if (combineArray !== null)
+                    combineArray.push(newAction);
             }
 
             for (var i = 0; i < parsedAction.children.length; i++)
-                traverse(parsedAction.children[i], trigger, condition, newAction);
+                traverse(parsedAction.children[i], trigger, condition, newAction, null);
         };
 
         // triggers

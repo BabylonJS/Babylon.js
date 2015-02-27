@@ -2166,15 +2166,23 @@
         }
 
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
+            var matrix = Matrix.Zero();
+
+            Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+
+            return matrix;
+        }
+
+        public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
             var hw = 2.0 / width;
             var hh = 2.0 / height;
             var id = 1.0 / (zfar - znear);
             var nid = znear / (znear - zfar);
 
-            return Matrix.FromValues(hw, 0, 0, 0,
+            Matrix.FromValuesToRef(hw, 0, 0, 0,
                 0, hh, 0, 0,
                 0, 0, id, 0,
-                0, 0, nid, 1);
+                0, 0, nid, 1, result);
         }
 
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {

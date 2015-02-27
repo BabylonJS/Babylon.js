@@ -20,7 +20,8 @@
         private _volume: number = 1;
         private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
-        private _isPlaying: boolean = false;
+        public isPlaying: boolean = false;
+        public isPaused: boolean = false;
         private _isDirectional: boolean = false;
         private _readyToPlayCallback: () => any;
         private _audioBuffer: AudioBuffer;
@@ -113,7 +114,7 @@
 
         public dispose() {
             if (Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
-                if (this._isPlaying) {
+                if (this.isPlaying) {
                     this.stop();
                 }
                 this._isReadyToPlay = false;
@@ -198,6 +199,20 @@
             }
         }
 
+        public switchPanningModelToHRTF() {
+            this._switchPanningModel("HRTF");    
+        }
+
+        public switchPanningModelToEqualPower() {
+            this._switchPanningModel("equalpower");
+        }
+
+        private _switchPanningModel(newModel: string) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
+                this._soundPanner.panningModel = newModel;
+            }
+        }
+
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
             if (Engine.audioEngine.canUseWebAudio) {
                 this._ouputAudioNode.disconnect();
@@ -221,7 +236,7 @@
             this._coneOuterGain = coneOuterGain;
             this._isDirectional = true;
 
-            if (this._isPlaying && this.loop) {
+            if (this.isPlaying && this.loop) {
                 this.stop();
                 this.play();
             }
@@ -230,7 +245,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this._isPlaying && this.spatialSound) {
+            if (this.isPlaying && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -238,7 +253,7 @@
         public setLocalDirectionToMesh(newLocalDirection: Vector3) {
             this._localDirection = newLocalDirection;
 
-            if (this._connectedMesh && this._isPlaying) {
+            if (this._connectedMesh && this.isPlaying) {
                 this._updateDirection();
             }
         }
@@ -266,9 +281,9 @@
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
         */
         public play(time?: number) {
-            if (this._isReadyToPlay) {
+            if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
-                    var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
+                    var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
@@ -291,15 +306,21 @@
                     this._soundSource.loop = this.loop;
                     this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
-                    if (this.onended) {
-                        this._soundSource.onended = this.onended;
-                    }
-                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
-                    this._isPlaying = true;
+                    this._soundSource.onended = () => { this._onended(); };
+                    this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                    this.isPlaying = true;
+                    this.isPaused = false;
                 }
                 catch (ex) {
                     Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
+            }
+        }
+
+        private _onended() {
+            this.isPlaying = false;
+            if (this.onended) {
+                this.onended();
             }
         }
 
@@ -308,17 +329,18 @@
         * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
         */
         public stop(time?: number) {
-            if (this._isPlaying) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
+            if (this.isPlaying) {
+                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._isPlaying = false;
+                this.isPlaying = false;
             }
         }
 
         public pause() {
-            if (this._isPlaying) {
-                this._soundSource.stop(0);
+            if (this.isPlaying) {
+                this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this.isPaused = true;
             }
         }
 
@@ -337,7 +359,7 @@
 
         public setPlaybackRate(newPlaybackRate: number) {
             this._playbackRate = newPlaybackRate;
-            if (this._isPlaying) {
+            if (this.isPlaying) {
                 this._soundSource.playbackRate.value = this._playbackRate;
             }
         }
@@ -351,7 +373,7 @@
             if (!this.spatialSound) {
                 this._createSpatialParameters();
                 this.spatialSound = true;
-                if (this._isPlaying && this.loop) {
+                if (this.isPlaying && this.loop) {
                     this.stop();
                     this.play();
                 }
@@ -363,7 +385,7 @@
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
-            if (this._isDirectional && this._isPlaying) {
+            if (this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }

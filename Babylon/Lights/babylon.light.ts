@@ -9,6 +9,12 @@
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+
+        supportsVSM(): boolean;
+
+        needRefreshPerFrame(): boolean;
+
         _shadowGenerator: ShadowGenerator;
     }
 
@@ -38,7 +44,7 @@
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
-
+       
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
         }
 

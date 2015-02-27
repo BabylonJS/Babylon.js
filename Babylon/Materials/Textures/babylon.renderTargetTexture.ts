@@ -87,7 +87,7 @@
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
 
-        public render(useCameraPostProcess?: boolean) {
+        public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -160,6 +160,11 @@
 
             if (this.onAfterRender) {
                 this.onAfterRender();
+            }
+
+            // Dump ?
+            if (dumpForDebug) {
+                Tools.DumpFramebuffer(this._size, this._size, engine);
             }
 
             // Unbind

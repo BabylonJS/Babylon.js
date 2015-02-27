@@ -78,7 +78,7 @@ var BABYLON;
             this.releaseInternalTexture();
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         };
-        RenderTargetTexture.prototype.render = function (useCameraPostProcess) {
+        RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             if (this._waitingRenderList) {
@@ -134,6 +134,10 @@ var BABYLON;
             }
             if (this.onAfterRender) {
                 this.onAfterRender();
+            }
+            // Dump ?
+            if (dumpForDebug) {
+                BABYLON.Tools.DumpFramebuffer(this._size, this._size, engine);
             }
             // Unbind
             engine.unBindFramebuffer(this._texture);

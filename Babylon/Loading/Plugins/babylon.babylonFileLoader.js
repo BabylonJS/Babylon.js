@@ -688,36 +688,47 @@ var BABYLON;
                 return parseFloat(values[0]);
             };
             // traverse graph per trigger
-            var traverse = function (parsedAction, trigger, condition, action) {
+            var traverse = function (parsedAction, trigger, condition, action, combineArray) {
+                if (combineArray === void 0) { combineArray = null; }
                 if (parsedAction.detached)
                     return;
                 var parameters = new Array();
                 var target = null;
                 var propertyPath = null;
+                var combine = parsedAction.combine && parsedAction.combine.length > 0;
                 // Parameters
                 if (parsedAction.type === 2)
                     parameters.push(actionManager);
                 else
                     parameters.push(trigger);
-                for (var i = 0; i < parsedAction.properties.length; i++) {
-                    var value = parsedAction.properties[i].value;
-                    var name = parsedAction.properties[i].name;
-                    if (name === "target")
-                        value = target = scene.getNodeByName(value);
-                    else if (name === "parent")
-                        value = scene.getNodeByName(value);
-                    else if (name === "sound")
-                        value = scene.getSoundByName(value);
-                    else if (name !== "propertyPath") {
-                        if (parsedAction.type === 2 && name === "operator")
-                            value = BABYLON.ValueCondition[value];
-                        else
-                            value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                if (combine) {
+                    var actions = new Array();
+                    for (var j = 0; j < parsedAction.combine.length; j++) {
+                        traverse(parsedAction.combine[j], BABYLON.ActionManager.NothingTrigger, condition, action, actions);
                     }
-                    else {
-                        propertyPath = value;
+                    parameters.push(actions);
+                }
+                else {
+                    for (var i = 0; i < parsedAction.properties.length; i++) {
+                        var value = parsedAction.properties[i].value;
+                        var name = parsedAction.properties[i].name;
+                        if (name === "target")
+                            value = target = scene.getNodeByName(value);
+                        else if (name === "parent")
+                            value = scene.getNodeByName(value);
+                        else if (name === "sound")
+                            value = scene.getSoundByName(value);
+                        else if (name !== "propertyPath") {
+                            if (parsedAction.type === 2 && name === "operator")
+                                value = BABYLON.ValueCondition[value];
+                            else
+                                value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
+                        }
+                        else {
+                            propertyPath = value;
+                        }
+                        parameters.push(value);
                     }
-                    parameters.push(value);
                 }
                 parameters.push(condition);
                 // If interpolate value action
@@ -726,21 +737,27 @@ var BABYLON;
                     parameters[parameters.length - 1] = param;
                     parameters[parameters.length - 2] = condition;
                 }
-                // Action or condition(s)
+                // Action or condition(s) and not CombineAction
                 var newAction = instanciate(parsedAction.name, parameters);
-                if (newAction instanceof BABYLON.Condition) {
-                    condition = newAction;
-                    newAction = action;
+                if (combineArray === null) {
+                    if (newAction instanceof BABYLON.Condition) {
+                        condition = newAction;
+                        newAction = action;
+                    }
+                    else {
+                        condition = null;
+                        if (action)
+                            action.then(newAction);
+                        else
+                            actionManager.registerAction(newAction);
+                    }
                 }
                 else {
-                    condition = null;
-                    if (action)
-                        action.then(newAction);
-                    else
-                        actionManager.registerAction(newAction);
+                    if (combineArray !== null)
+                        combineArray.push(newAction);
                 }
                 for (var i = 0; i < parsedAction.children.length; i++)
-                    traverse(parsedAction.children[i], trigger, condition, newAction);
+                    traverse(parsedAction.children[i], trigger, condition, newAction, null);
             };
             for (var i = 0; i < parsedActions.children.length; i++) {
                 var triggerParams;
