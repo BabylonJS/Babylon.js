@@ -70,7 +70,7 @@ var BABYLON;
             switch (task.simplificationType) {
                 case 0 /* QUADRATIC */:
                 default:
-                    return new QuadraticErrorSimplification(task.mesh);
+                    return new QuadraticErrorSimplification(task.mesh, task.submeshIndex);
             }
         };
         return SimplificationQueue;
@@ -167,8 +167,10 @@ var BABYLON;
      * @author RaananW
      */
     var QuadraticErrorSimplification = (function () {
-        function QuadraticErrorSimplification(_mesh) {
+        function QuadraticErrorSimplification(_mesh, _submeshIndex) {
+            if (_submeshIndex === void 0) { _submeshIndex = 0; }
             this._mesh = _mesh;
+            this._submeshIndex = _submeshIndex;
             this.initialised = false;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
@@ -177,7 +179,7 @@ var BABYLON;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;
-            this.initWithMesh(this._mesh, function () {
+            this.initWithMesh(this._mesh, this._submeshIndex, function () {
                 _this.runDecimation(settings, successCallback);
             });
         };
@@ -298,7 +300,7 @@ var BABYLON;
                 }, 0);
             });
         };
-        QuadraticErrorSimplification.prototype.initWithMesh = function (mesh, callback) {
+        QuadraticErrorSimplification.prototype.initWithMesh = function (mesh, submeshIndex, callback) {
             var _this = this;
             if (!mesh)
                 return;
@@ -311,27 +313,31 @@ var BABYLON;
             var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
             var indices = mesh.getIndices();
+            var submesh = mesh.subMeshes[submeshIndex];
             var vertexInit = function (i) {
-                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, i * 3), BABYLON.Vector3.FromArray(normalData, i * 3), null, i);
+                var offset = i + submesh.verticesStart;
+                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), BABYLON.Vector3.FromArray(normalData, offset * 3), null, i);
                 if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    vertex.uv = BABYLON.Vector2.FromArray(uvs, i * 2);
+                    vertex.uv = BABYLON.Vector2.FromArray(uvs, offset * 2);
                 }
                 else if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                    vertex.color = BABYLON.Color4.FromArray(colorsData, i * 4);
+                    vertex.color = BABYLON.Color4.FromArray(colorsData, offset * 4);
                 }
                 _this.vertices.push(vertex);
             };
-            var totalVertices = mesh.getTotalVertices();
+            //var totalVertices = mesh.getTotalVertices();
+            var totalVertices = submesh.verticesCount;
             BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit, function () {
                 var indicesInit = function (i) {
-                    var pos = i * 3;
+                    var offset = submesh.indexStart + i;
+                    var pos = offset * 3;
                     var i0 = indices[pos + 0];
                     var i1 = indices[pos + 1];
                     var i2 = indices[pos + 2];
                     var triangle = new DecimationTriangle([_this.vertices[i0].id, _this.vertices[i1].id, _this.vertices[i2].id]);
                     _this.triangles.push(triangle);
                 };
-                BABYLON.AsyncLoop.SyncAsyncForLoop(indices.length / 3, _this.syncIterations, indicesInit, function () {
+                BABYLON.AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, _this.syncIterations, indicesInit, function () {
                     _this.init(callback);
                 });
             });

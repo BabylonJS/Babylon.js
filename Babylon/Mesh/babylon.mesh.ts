@@ -1070,13 +1070,16 @@
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
-            this.getScene().simplificationQueue.addTask({
-                settings: settings,
-                parallelProcessing: parallelProcessing,
-                mesh: this,
-                simplificationType: simplificationType,
-                successCallback: successCallback
-            });            
+            this.subMeshes.forEach((submesh, index) => {
+                this.getScene().simplificationQueue.addTask({
+                    settings: settings,
+                    parallelProcessing: parallelProcessing,
+                    mesh: this,
+                    submeshIndex:index,
+                    simplificationType: simplificationType,
+                    successCallback: successCallback
+                });  
+            }); 
         }
 
         // Statics

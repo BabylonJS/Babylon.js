@@ -872,14 +872,18 @@ var BABYLON;
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
+            var _this = this;
             if (parallelProcessing === void 0) { parallelProcessing = true; }
             if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
-            this.getScene().simplificationQueue.addTask({
-                settings: settings,
-                parallelProcessing: parallelProcessing,
-                mesh: this,
-                simplificationType: simplificationType,
-                successCallback: successCallback
+            this.subMeshes.forEach(function (submesh, index) {
+                _this.getScene().simplificationQueue.addTask({
+                    settings: settings,
+                    parallelProcessing: parallelProcessing,
+                    mesh: _this,
+                    submeshIndex: index,
+                    simplificationType: simplificationType,
+                    successCallback: successCallback
+                });
             });
         };
         // Statics
