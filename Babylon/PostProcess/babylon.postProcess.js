@@ -2,6 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
         function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable, defines) {
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
             this.name = name;
             this.width = -1;
             this.height = -1;
@@ -87,6 +88,9 @@ var BABYLON;
                     this._engine._releaseTexture(this._textures.data[i]);
                 }
                 this._textures.reset();
+            }
+            if (!camera) {
+                return;
             }
             camera.detachPostProcess(this);
             var index = camera._postProcesses.indexOf(this);

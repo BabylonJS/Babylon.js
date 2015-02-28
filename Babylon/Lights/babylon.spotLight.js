@@ -18,9 +18,12 @@ var BABYLON;
         SpotLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
-        SpotLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
+        SpotLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList, useVSM) {
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
+        };
+        SpotLight.prototype.getVSMOffset = function () {
+            return 0.2;
         };
         SpotLight.prototype.supportsVSM = function () {
             return true;

@@ -35,7 +35,7 @@ uniform vec3 vLightSpecular0;
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
 uniform sampler2D shadowSampler0;
-uniform vec3 shadowsInfo0;
+uniform vec4 shadowsInfo0;
 #endif
 #ifdef SPOTLIGHT0
 uniform vec4 vLightDirection0;
@@ -52,7 +52,7 @@ uniform vec3 vLightSpecular1;
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
 uniform sampler2D shadowSampler1;
-uniform vec3 shadowsInfo1;
+uniform vec4 shadowsInfo1;
 #endif
 #ifdef SPOTLIGHT1
 uniform vec4 vLightDirection1;
@@ -69,7 +69,7 @@ uniform vec3 vLightSpecular2;
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
 uniform sampler2D shadowSampler2;
-uniform vec3 shadowsInfo2;
+uniform vec4 shadowsInfo2;
 #endif
 #ifdef SPOTLIGHT2
 uniform vec4 vLightDirection2;
@@ -86,7 +86,7 @@ uniform vec3 vLightSpecular3;
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
 uniform sampler2D shadowSampler3;
-uniform vec3 shadowsInfo3;
+uniform vec4 shadowsInfo3;
 #endif
 #ifdef SPOTLIGHT3
 uniform vec4 vLightDirection3;
@@ -204,8 +204,8 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 
 float unpack(vec4 color)
 {
-	const vec4 bitShift = vec4(1. / (255. * 255. * 255.), 1. / (255. * 255.), 1. / 255., 1.);
-	return dot(color, bitShift);
+	const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+	return dot(color, bit_shift);
 }
 
 float unpackHalf(vec2 color)
@@ -260,7 +260,7 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 }
 
 // Thanks to http://devmaster.net/
-float ChebychevInequality(vec2 moments, float t)
+float ChebychevInequality(vec2 moments, float t, float offset)
 {
 	if (t <= moments.x)
 	{
@@ -271,10 +271,10 @@ float ChebychevInequality(vec2 moments, float t)
 	variance = max(variance, 0.02);
 
 	float d = t - moments.x;
-	return clamp(variance / (variance + d * d) - 0.2, 0., 1.0);
+	return clamp(variance / (variance + d * d) - offset, 0., 1.0);
 }
 
-float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
+float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float offset)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
@@ -287,7 +287,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler)
 	vec4 texel = texture2D(shadowSampler, uv);
 
 	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-	return 1.0 - ChebychevInequality(moments, depth.z);
+	return 1.0 - ChebychevInequality(moments, depth.z, offset);
 }
 #endif
 
@@ -531,7 +531,7 @@ void main(void) {
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
-	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0);
+	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.w);
 #else
 	#ifdef SHADOWPCF0
 		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z);
@@ -558,7 +558,7 @@ void main(void) {
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
-	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1);
+	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.w);
 #else
 	#ifdef SHADOWPCF1
 		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z);
@@ -585,7 +585,7 @@ void main(void) {
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
-	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2);
+	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.w);
 #else
 	#ifdef SHADOWPCF2
 		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z);
@@ -612,7 +612,7 @@ void main(void) {
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3);
+	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.w);
 #else
 	#ifdef SHADOWPCF3
 		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z);

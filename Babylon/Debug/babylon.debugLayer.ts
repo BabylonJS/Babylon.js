@@ -282,7 +282,7 @@
                 var centerY = projectedPosition.y;
                 var clientRect = this._drawingCanvas.getBoundingClientRect();
 
-                if (this._isClickInsideRect(clientRect.left * this._ratio + centerX - 5, clientRect.top * this._ratio + centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
+                if (this._showUI && this._isClickInsideRect(clientRect.left * this._ratio + centerX - 5, clientRect.top * this._ratio + centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
                     onClick();
                 }
 
@@ -335,7 +335,7 @@
 
             var engine = this._scene.getEngine();
 
-            this._scene.unregisterAfterRender(this._syncData);
+            this._scene.unregisterBeforeRender(this._syncData);
             document.body.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
@@ -390,7 +390,7 @@
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
-            this._scene.registerAfterRender(this._syncData);
+            this._scene.registerBeforeRender(this._syncData);
         }
 
         private _clearLabels(): void {

@@ -141,6 +141,9 @@ var BABYLON;
             }
             // Unbind
             engine.unBindFramebuffer(this._texture);
+            if (this.onAfterUnbind) {
+                this.onAfterUnbind();
+            }
         };
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();
