@@ -9,10 +9,10 @@
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>, useVSM: boolean): void;
 
+        getVSMOffset(): number;
         supportsVSM(): boolean;
-
         needRefreshPerFrame(): boolean;
 
         _shadowGenerator: ShadowGenerator;

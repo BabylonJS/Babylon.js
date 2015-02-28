@@ -6,6 +6,7 @@
         public coordinatesMode = Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
+        public onAfterUnbind: () => void;
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
@@ -169,6 +170,10 @@
 
             // Unbind
             engine.unBindFramebuffer(this._texture);
+
+            if (this.onAfterUnbind) {
+                this.onAfterUnbind();
+            }
         }
 
         public clone(): RenderTargetTexture {

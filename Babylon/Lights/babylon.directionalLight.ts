@@ -6,6 +6,9 @@
         public transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
+        public shadowOrthoScale = 1.1;
+        public shadowOrthoDepthScale = 3;
+
         constructor(name: string, public direction: Vector3, scene: Scene) {
             super(name, scene);
 
@@ -21,11 +24,13 @@
             return this.direction;
         }
 
-        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>, useVSM: boolean): void {
             var orthoLeft = Number.MAX_VALUE;
             var orthoRight = Number.MIN_VALUE;
             var orthoTop = Number.MIN_VALUE;
             var orthoBottom = Number.MAX_VALUE;
+            var orthoNear = Number.MAX_VALUE;
+            var orthoFar = Number.MIN_VALUE;
 
             var tempVector3 = Vector3.Zero();
 
@@ -47,17 +52,27 @@
                         orthoRight = tempVector3.x;
                     if (tempVector3.y > orthoTop)
                         orthoTop = tempVector3.y;
+
+                    if (tempVector3.z < orthoNear)
+                        orthoNear = tempVector3.z;
+                    if (tempVector3.z > orthoFar)
+                        orthoFar = tempVector3.z;
                 }
             }
 
-            var orthoWidth = Math.max(Math.abs(orthoRight), Math.abs(orthoLeft)) * 1.1;
-            var orthoHeight = Math.max(Math.abs(orthoTop), Math.abs(orthoBottom)) * 1.1;
+            var orthoWidth = Math.max(Math.abs(orthoRight), Math.abs(orthoLeft)) * this.shadowOrthoScale;
+            var orthoHeight = Math.max(Math.abs(orthoTop), Math.abs(orthoBottom)) * this.shadowOrthoScale;
+            var orthoDepth = Math.max(Math.abs(orthoNear), Math.abs(orthoFar)) * this.shadowOrthoDepthScale;
 
-            Matrix.OrthoOffCenterLHToRef(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, activeCamera.minZ, activeCamera.maxZ, matrix);
+            Matrix.OrthoOffCenterLHToRef(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, useVSM ? -orthoDepth : activeCamera.minZ, orthoDepth, matrix);
+        }
+
+        public getVSMOffset(): number {
+            return 0.55;
         }
 
         public supportsVSM(): boolean {
-            return false;
+            return true;
         }
 
         public needRefreshPerFrame(): boolean {

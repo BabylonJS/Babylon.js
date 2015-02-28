@@ -3,6 +3,7 @@
         private static _FILTER_NONE = 0;
         private static _FILTER_VARIANCESHADOWMAP = 1;
         private static _FILTER_POISSONSAMPLING = 2;
+        private static _FILTER_BLURVARIANCESHADOWMAP = 3;
 
         // Static
         public static get FILTER_NONE(): number {
@@ -17,8 +18,13 @@
             return ShadowGenerator._FILTER_POISSONSAMPLING;
         }
 
+        public static get FILTER_BLURVARIANCESHADOWMAP(): number {
+            return ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP;
+        }
+
         // Members
         public filter = ShadowGenerator.FILTER_NONE;
+        public blurSize = 2;
 
         public get useVarianceShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
@@ -28,15 +34,23 @@
         }
 
         public get usePoissonSampling(): boolean {
-            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING || (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && !this._light.supportsVSM());
+            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
         }
 
+        public get useBlurVarianceShadowMap(): boolean {
+            return this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP && this._light.supportsVSM();
+        }
+        public set useBlurVarianceShadowMap(value: boolean) {
+            this.filter = (value ? ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP : ShadowGenerator.FILTER_NONE);
+        }
+
         private _light: IShadowLight;
         private _scene: Scene;
         private _shadowMap: RenderTargetTexture;
+        private _shadowMap2: RenderTargetTexture;
         private _darkness = 0;
         private _bias = 0.0001;
         private _transparencyShadow = false;
@@ -50,6 +64,8 @@
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
         private _currentRenderID: number;
+        private _downSamplePostprocess: PassPostProcess;
+        private _boxBlurPostprocess: PostProcess;
 
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
@@ -62,6 +78,29 @@
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
+
+            this._shadowMap.onAfterUnbind = () => {
+                if (this.filter !== ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP) {
+                    return;
+                }
+
+                if (!this._shadowMap2) {
+                    this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+                    this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
+                    this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    
+                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurSize, null, Texture.NEAREST_SAMPLINGMODE, this._scene.getEngine());
+                    this._downSamplePostprocess.onApply = effect => {
+                        effect.setTexture("textureSampler", this._shadowMap);
+                    };
+                    this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize"], [], 1.0 / this.blurSize, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                    this._boxBlurPostprocess.onApply = effect => {
+                        effect.setFloat2("screenSize", mapSize / this.blurSize, mapSize / this.blurSize);
+                    };
+                }
+
+                this._scene.postProcessManager.directRender([this._downSamplePostprocess, this._boxBlurPostprocess], this._shadowMap2.getInternalTexture());
+            }
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
@@ -110,7 +149,7 @@
             };
 
             this._shadowMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
-                var index;
+                var index: number;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
@@ -132,7 +171,7 @@
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
 
-            if (this.useVarianceShadowMap) {
+            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
             }
 
@@ -188,6 +227,14 @@
             return this._shadowMap;
         }
 
+        public getShadowMapForRendering(): RenderTargetTexture {
+            if (this._shadowMap2) {
+                return this._shadowMap2;
+            }
+
+            return this._shadowMap;
+        }
+
         public getLight(): IShadowLight {
             return this._light;
         }
@@ -215,7 +262,7 @@
 
                 Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), Vector3.Up(), this._viewMatrix);
 
-                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
+                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList, this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP || this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP);
 
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
@@ -250,6 +297,18 @@
 
         public dispose(): void {
             this._shadowMap.dispose();
+
+            if (this._shadowMap2) {
+                this._shadowMap2.dispose();
+            }
+
+            if (this._downSamplePostprocess) {
+                this._downSamplePostprocess.dispose();
+            }
+
+            if (this._boxBlurPostprocess) {
+                this._boxBlurPostprocess.dispose();
+            }
         }
     }
 } 
