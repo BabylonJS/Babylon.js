@@ -148,6 +148,17 @@
             return this;
         }
 
+        public getLODLevelAtDistance(distance: number) : Mesh {
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance === distance) {
+                    return level.mesh;
+                }
+            }
+            return null;
+        }
+
         /**
          * Remove a mesh from the LOD array
          * @param {BABYLON.Mesh} mesh - the mesh to be removed.
@@ -1069,17 +1080,14 @@
          * @param type the type of simplification to run.
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
-            this.subMeshes.forEach((submesh, index) => {
-                this.getScene().simplificationQueue.addTask({
-                    settings: settings,
-                    parallelProcessing: parallelProcessing,
-                    mesh: this,
-                    submeshIndex:index,
-                    simplificationType: simplificationType,
-                    successCallback: successCallback
-                });  
-            }); 
+        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void) {
+            this.getScene().simplificationQueue.addTask({
+                settings: settings,
+                parallelProcessing: parallelProcessing,
+                mesh: this,
+                simplificationType: simplificationType,
+                successCallback: successCallback
+            });  
         }
 
         // Statics

@@ -28,6 +28,8 @@ var BABYLON;
         };
         SimplificationQueue.prototype.runSimplification = function (task) {
             var _this = this;
+            function setLODLevel(distance, mesh) {
+            }
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach(function (setting) {
@@ -70,7 +72,7 @@ var BABYLON;
             switch (task.simplificationType) {
                 case 0 /* QUADRATIC */:
                 default:
-                    return new QuadraticErrorSimplification(task.mesh, task.submeshIndex);
+                    return new QuadraticErrorSimplification(task.mesh);
             }
         };
         return SimplificationQueue;
@@ -167,10 +169,8 @@ var BABYLON;
      * @author RaananW
      */
     var QuadraticErrorSimplification = (function () {
-        function QuadraticErrorSimplification(_mesh, _submeshIndex) {
-            if (_submeshIndex === void 0) { _submeshIndex = 0; }
+        function QuadraticErrorSimplification(_mesh) {
             this._mesh = _mesh;
-            this._submeshIndex = _submeshIndex;
             this.initialised = false;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
@@ -179,8 +179,17 @@ var BABYLON;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;
-            this.initWithMesh(this._mesh, this._submeshIndex, function () {
-                _this.runDecimation(settings, successCallback);
+            //iterating through the submeshes array, one after the other.
+            BABYLON.AsyncLoop.Run(this._mesh.subMeshes.length, function (loop) {
+                _this.initWithMesh(_this._mesh, loop.index, function () {
+                    _this.runDecimation(settings, loop.index, function () {
+                        loop.executeNext();
+                    });
+                });
+            }, function () {
+                setTimeout(function () {
+                    successCallback(_this._reconstructedMesh);
+                }, 0);
             });
         };
         QuadraticErrorSimplification.prototype.isTriangleOnBoundingBox = function (triangle) {
@@ -206,7 +215,7 @@ var BABYLON;
             }
             return gCount > 1;
         };
-        QuadraticErrorSimplification.prototype.runDecimation = function (settings, successCallback) {
+        QuadraticErrorSimplification.prototype.runDecimation = function (settings, submeshIndex, successCallback) {
             var _this = this;
             var targetCount = ~~(this.triangles.length * settings.quality);
             var deletedTriangles = 0;
@@ -296,7 +305,8 @@ var BABYLON;
                 }
             }, function () {
                 setTimeout(function () {
-                    successCallback(_this.reconstructMesh());
+                    _this.reconstructMesh(submeshIndex);
+                    successCallback();
                 }, 0);
             });
         };
@@ -365,7 +375,7 @@ var BABYLON;
                 });
             });
         };
-        QuadraticErrorSimplification.prototype.reconstructMesh = function () {
+        QuadraticErrorSimplification.prototype.reconstructMesh = function (submeshIndex) {
             var newTriangles = [];
             var i;
             for (i = 0; i < this.vertices.length; ++i) {
@@ -403,10 +413,10 @@ var BABYLON;
                 }
             }
             this.vertices = this.vertices.slice(0, dst);
-            var newPositionData = [];
-            var newNormalData = [];
-            var newUVsData = [];
-            var newColorsData = [];
+            var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind); //[];
+            var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind); //[];
+            var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind); //[];
+            var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind); //[];
             for (i = 0; i < newVerticesOrder.length; ++i) {
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
@@ -425,27 +435,33 @@ var BABYLON;
                     newColorsData.push(this.vertices[i].color.a);
                 }
             }
-            var newIndicesArray = [];
+            var newIndicesArray = this._reconstructedMesh.getIndices(); //[];
             for (i = 0; i < newTriangles.length; ++i) {
                 newIndicesArray.push(newTriangles[i].vertices[0]);
                 newIndicesArray.push(newTriangles[i].vertices[1]);
                 newIndicesArray.push(newTriangles[i].vertices[2]);
             }
-            //not cloning, to avoid geometry problems. Creating a whole new mesh.
-            var newMesh = new BABYLON.Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
-            newMesh.material = this._mesh.material;
-            newMesh.parent = this._mesh.parent;
-            newMesh.setIndices(newIndicesArray);
-            newMesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, newPositionData);
-            newMesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, newNormalData);
+            var startingVertex = this._reconstructedMesh.getTotalVertices();
+            var startingIndex = this._reconstructedMesh.getTotalIndices();
+            this._reconstructedMesh.setIndices(newIndicesArray);
+            this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, newPositionData);
+            this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, newNormalData);
             if (newUVsData.length > 0)
-                newMesh.setVerticesData(BABYLON.VertexBuffer.UVKind, newUVsData);
+                this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
-                newMesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, newColorsData);
+                this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, newColorsData);
             //preparing the skeleton support
             if (this._mesh.skeleton) {
             }
-            return newMesh;
+            //create submesh
+            var originalSubmesh = this._mesh.subMeshes[submeshIndex];
+            var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length, this._reconstructedMesh);
+            //return newMesh;
+        };
+        QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
+            this._reconstructedMesh = new BABYLON.Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
+            this._reconstructedMesh.material = this._mesh.material;
+            this._reconstructedMesh.parent = this._mesh.parent;
         };
         QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
