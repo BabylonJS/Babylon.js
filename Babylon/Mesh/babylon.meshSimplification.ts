@@ -252,6 +252,7 @@
                 });
             },() => {
                     setTimeout(() => {
+                        this._reconstructedMesh.isVisible = true;
                         successCallback(this._reconstructedMesh);
                     }, 0);
                 });
@@ -405,7 +406,7 @@
             var submesh = mesh.subMeshes[submeshIndex];
 
             var vertexInit = (i) => {
-                var offset = i;// + submesh.verticesStart;
+                var offset = i + submesh.verticesStart;
                 var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), null, i);
                 if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     vertex.uv = Vector2.FromArray(uvs, offset * 2);
@@ -420,10 +421,10 @@
 
                 var indicesInit = (i) => {
                     var offset = (submesh.indexStart/3) + i;
-                    var pos = offset * 3;
-                    var i0 = indices[pos + 0];
-                    var i1 = indices[pos + 1];
-                    var i2 = indices[pos + 2];
+                    var pos = (offset * 3);
+                    var i0 = indices[pos + 0] - submesh.verticesStart;
+                    var i1 = indices[pos + 1] - submesh.verticesStart;
+                    var i2 = indices[pos + 2] - submesh.verticesStart;
                     var triangle = new DecimationTriangle([this.vertices[i0].id, this.vertices[i1].id, this.vertices[i2].id]);
                     this.triangles.push(triangle);
                 };
@@ -551,9 +552,9 @@
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(function (submesh) {
-                    new SubMesh(submesh.materialIndex, /*submesh.verticesStart, submesh.verticesCount,*/ 0, newPositionData.length/3, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, /*startingVertex, newVerticesOrder.length,*/ 0, newPositionData.length / 3, startingIndex, newTriangles.length*3, this._reconstructedMesh);
+                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length*3, this._reconstructedMesh);
             }
         }
 
@@ -561,6 +562,7 @@
             this._reconstructedMesh = new Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
+            this._reconstructedMesh.isVisible = false;
         }
 
         private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
