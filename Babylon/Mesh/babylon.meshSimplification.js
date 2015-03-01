@@ -443,6 +443,7 @@ var BABYLON;
             }
             var startingVertex = this._reconstructedMesh.getTotalVertices();
             var startingIndex = this._reconstructedMesh.getTotalIndices();
+            //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
             this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, newPositionData);
             this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, newNormalData);
@@ -450,9 +451,6 @@ var BABYLON;
                 this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
                 this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, newColorsData);
-            //preparing the skeleton support
-            if (this._mesh.skeleton) {
-            }
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
             var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length, this._reconstructedMesh);
