@@ -530,6 +530,7 @@
             var startingVertex = this._reconstructedMesh.getTotalVertices();
             var startingIndex = this._reconstructedMesh.getTotalIndices();
 
+            //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
             this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
             this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
@@ -537,13 +538,7 @@
                 this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
                 this._reconstructedMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
-
-            //preparing the skeleton support
-            if (this._mesh.skeleton) {
-                //newMesh.skeleton = this._mesh.skeleton.clone("", "");
-                //newMesh.getScene().beginAnimation(newMesh.skeleton, 0, 100, true, 1.0);
-            }
-
+            
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
             var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length, this._reconstructedMesh);
