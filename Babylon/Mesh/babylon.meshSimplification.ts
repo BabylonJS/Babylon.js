@@ -238,9 +238,11 @@
             this.aggressiveness = 7;
             this.decimationIterations = 100;
             this.boundingBoxEpsilon = Engine.Epsilon;
+            
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
+            this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
             AsyncLoop.Run(this._mesh.subMeshes.length,(loop: AsyncLoop) => {
                 this.initWithMesh(this._mesh, loop.index,() => {
@@ -380,6 +382,7 @@
                 }
             },() => {
                     setTimeout(() => {
+                        //reconstruct this part of the mesh
                         this.reconstructMesh(submeshIndex);
                         successCallback();
                     }, 0);
@@ -402,7 +405,7 @@
             var submesh = mesh.subMeshes[submeshIndex];
 
             var vertexInit = (i) => {
-                var offset = i + submesh.verticesStart;
+                var offset = i;// + submesh.verticesStart;
                 var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), null, i);
                 if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     vertex.uv = Vector2.FromArray(uvs, offset * 2);
@@ -416,7 +419,7 @@
             AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit,() => {
 
                 var indicesInit = (i) => {
-                    var offset = submesh.indexStart + i;
+                    var offset = (submesh.indexStart/3) + i;
                     var pos = offset * 3;
                     var i0 = indices[pos + 0];
                     var i1 = indices[pos + 1];
@@ -497,12 +500,12 @@
             }
             this.vertices = this.vertices.slice(0, dst);
 
-            var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind);//[];
-            var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind);//[];
-            var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind);//[];
-            var newColorsData = this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind);//[];
+            var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || [];
+            var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || [];
+            var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
+            var newColorsData = this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || [];
 
-            for (i = 0; i < newVerticesOrder.length; ++i) {
+            for (i = 0; i < newVerticesOrder.length; ++i) { 
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
                 newPositionData.push(this.vertices[i].position.z);
@@ -520,17 +523,21 @@
                 }
             }
 
+            var startingIndex = this._reconstructedMesh.getTotalIndices();
+            var startingVertex = this._reconstructedMesh.getTotalVertices();
+            
+            var submeshesArray = this._reconstructedMesh.subMeshes;
+            this._reconstructedMesh.subMeshes = [];
+
             var newIndicesArray: Array<number> = this._reconstructedMesh.getIndices(); //[];
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0]);
-                newIndicesArray.push(newTriangles[i].vertices[1]);
-                newIndicesArray.push(newTriangles[i].vertices[2]);
+                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
             }
-            
-            var startingVertex = this._reconstructedMesh.getTotalVertices();
-            var startingIndex = this._reconstructedMesh.getTotalIndices();
 
             //overwriting the old vertex buffers and indices.
+
             this._reconstructedMesh.setIndices(newIndicesArray);
             this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
             this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
@@ -541,8 +548,13 @@
             
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
-            var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length, this._reconstructedMesh);
-            //return newMesh;
+            if (submeshIndex > 0) {
+                this._reconstructedMesh.subMeshes = [];
+                submeshesArray.forEach(function (submesh) {
+                    new SubMesh(submesh.materialIndex, /*submesh.verticesStart, submesh.verticesCount,*/ 0, newPositionData.length/3, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                });
+                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, /*startingVertex, newVerticesOrder.length,*/ 0, newPositionData.length / 3, startingIndex, newTriangles.length*3, this._reconstructedMesh);
+            }
         }
 
         private initDecimatedMesh() {
