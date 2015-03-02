@@ -182,12 +182,12 @@
             key.frame = animationKey.frame;
 
             switch (dataType) {
-            case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+            case Animation.ANIMATIONTYPE_FLOAT:
                 key.values = [animationKey.value];
                 break;
-            case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-            case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-            case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+            case Animation.ANIMATIONTYPE_QUATERNION:
+            case Animation.ANIMATIONTYPE_MATRIX:
+            case Animation.ANIMATIONTYPE_VECTOR3:
                 key.values = animationKey.value.asArray();
                 break;
             }
@@ -291,7 +291,7 @@
             return null;
         }
 
-        if (texture instanceof BABYLON.CubeTexture) {
+        if (texture instanceof CubeTexture) {
             serializationObject.name = texture.name;
             serializationObject.hasAlpha = texture.hasAlpha;
             serializationObject.level = texture.level;
@@ -300,7 +300,7 @@
             return serializationObject;
         }
 
-        if (texture instanceof BABYLON.MirrorTexture) {
+        if (texture instanceof MirrorTexture) {
             var mirrorTexture = <MirrorTexture>texture;
             serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
             serializationObject.renderList = [];
@@ -310,7 +310,7 @@
             }
 
             serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
-        } else if (texture instanceof BABYLON.RenderTargetTexture) {
+        } else if (texture instanceof RenderTargetTexture) {
             var renderTargetTexture = <RenderTargetTexture>texture;
             serializationObject.renderTargetSize = renderTargetTexture.getRenderSize();
             serializationObject.renderList = [];
@@ -418,7 +418,7 @@
                 size: flare.size,
                 position: flare.position,
                 color: flare.color.asArray(),
-                textureName: BABYLON.Tools.GetFilename(flare.texture.name)
+                textureName: Tools.GetFilename(flare.texture.name)
             });
         }
 
@@ -496,33 +496,33 @@
     var serializeVertexData = (vertexData: Geometry): any => {
         var serializationObject = serializeGeometryBase(vertexData);
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-            serializationObject.positions = vertexData.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+            serializationObject.positions = vertexData.getVerticesData(VertexBuffer.PositionKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-            serializationObject.normals = vertexData.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+            serializationObject.normals = vertexData.getVerticesData(VertexBuffer.NormalKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-            serializationObject.uvs = vertexData.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UVKind)) {
+            serializationObject.uvs = vertexData.getVerticesData(VertexBuffer.UVKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-            serializationObject.uvs2 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+            serializationObject.uvs2 = vertexData.getVerticesData(VertexBuffer.UV2Kind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-            serializationObject.colors = vertexData.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+            serializationObject.colors = vertexData.getVerticesData(VertexBuffer.ColorKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+            serializationObject.matricesIndices = vertexData.getVerticesData(VertexBuffer.MatricesIndicesKind);
             serializationObject.matricesIndices._isExpanded = true;
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+            serializationObject.matricesWeights = vertexData.getVerticesData(VertexBuffer.MatricesWeightsKind);
         }
 
         serializationObject.indices = vertexData.getIndices();
@@ -684,16 +684,16 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
+        if (mesh.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
 
             switch (mesh.getPhysicsImpostor()) {
-            case BABYLON.PhysicsEngine.BoxImpostor:
+            case PhysicsEngine.BoxImpostor:
                 serializationObject.physicsImpostor = 1;
                 break;
-            case BABYLON.PhysicsEngine.SphereImpostor:
+            case PhysicsEngine.SphereImpostor:
                 serializationObject.physicsImpostor = 2;
                 break;
             }
@@ -771,9 +771,9 @@
             for (index = 0; index < scene.materials.length; index++) {
                 var material = scene.materials[index];
 
-                if (material instanceof BABYLON.StandardMaterial) {
+                if (material instanceof StandardMaterial) {
                     serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
-                } else if (material instanceof BABYLON.MultiMaterial) {
+                } else if (material instanceof MultiMaterial) {
                     serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>material));
                 }
             }
@@ -813,7 +813,7 @@
 
                 if (abstractMesh instanceof Mesh) {
                     var mesh = <Mesh>abstractMesh;
-                    if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                    if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
                         serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
                     }
                 }
