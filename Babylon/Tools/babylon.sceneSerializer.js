@@ -56,21 +56,27 @@ var BABYLON;
         if (camera.parent) {
             serializationObject.parentId = camera.parent.id;
         }
-        // Target
-        serializationObject.rotation = camera.rotation.asArray();
-        // Locked target
-        if (camera.lockedTarget && camera.lockedTarget.id) {
-            serializationObject.lockedTargetId = camera.lockedTarget.id;
-        }
         serializationObject.fov = camera.fov;
         serializationObject.minZ = camera.minZ;
         serializationObject.maxZ = camera.maxZ;
-        serializationObject.speed = camera.speed;
         serializationObject.inertia = camera.inertia;
-        serializationObject.checkCollisions = camera.checkCollisions;
-        serializationObject.applyGravity = camera.applyGravity;
-        if (camera.ellipsoid) {
-            serializationObject.ellipsoid = camera.ellipsoid.asArray();
+        //general properties that not all cameras have. The [] is due to typescript's type safety
+        if (camera['speed'] !== undefined) {
+            serializationObject.speed = camera['speed'];
+        }
+        // Target
+        if (camera['rotation'] && camera['rotation'] instanceof BABYLON.Vector3) {
+            serializationObject.rotation = camera['rotation'].asArray();
+        }
+        // Locked target
+        if (camera['lockedTarget'] && camera['lockedTarget'].id) {
+            serializationObject.lockedTargetId = camera['lockedTarget'].id;
+        }
+        //will be undefined if not defined.
+        serializationObject.checkCollisions = camera['checkCollisions'];
+        serializationObject.applyGravity = camera['applyGravity'];
+        if (camera['ellipsoid']) {
+            serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
         // Animations
         appendAnimations(camera, serializationObject);

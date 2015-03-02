@@ -6,22 +6,22 @@
         serializationObject.id = light.id;
         serializationObject.tags = Tags.GetTags(light);
 
-        if (light instanceof BABYLON.PointLight) {
+        if (light instanceof PointLight) {
             serializationObject.type = 0;
             serializationObject.position = (<PointLight>light).position.asArray();
-        } else if (light instanceof BABYLON.DirectionalLight) {
+        } else if (light instanceof DirectionalLight) {
             serializationObject.type = 1;
             var directionalLight = <DirectionalLight>light;
             serializationObject.position = directionalLight.position.asArray();
             serializationObject.direction = directionalLight.direction.asArray();
-        } else if (light instanceof BABYLON.SpotLight) {
+        } else if (light instanceof SpotLight) {
             serializationObject.type = 2;
             var spotLight = <SpotLight>light;
             serializationObject.position = spotLight.position.asArray();
             serializationObject.direction = spotLight.position.asArray();
             serializationObject.angle = spotLight.angle;
             serializationObject.exponent = spotLight.exponent;
-        } else if (light instanceof BABYLON.HemisphericLight) {
+        } else if (light instanceof HemisphericLight) {
             serializationObject.type = 3;
             var hemisphericLight = <HemisphericLight>light;
             serializationObject.direction = hemisphericLight.direction.asArray();
@@ -52,7 +52,7 @@
         return serializationObject;
     }
 
-    var serializeCamera = (camera: FreeCamera): any => {
+    var serializeCamera = (camera: Camera): any => {
         var serializationObject:any = {};
         serializationObject.name = camera.name;
         serializationObject.tags = Tags.GetTags(camera);
@@ -64,26 +64,33 @@
             serializationObject.parentId = camera.parent.id;
         }
 
-        // Target
-        serializationObject.rotation = camera.rotation.asArray();
-
-        // Locked target
-        if (camera.lockedTarget && camera.lockedTarget.id) {
-            serializationObject.lockedTargetId = camera.lockedTarget.id;
-        }
-
         serializationObject.fov = camera.fov;
         serializationObject.minZ = camera.minZ;
         serializationObject.maxZ = camera.maxZ;
 
-        serializationObject.speed = camera.speed;
         serializationObject.inertia = camera.inertia;
+        
+        //general properties that not all cameras have. The [] is due to typescript's type safety
+        if (camera['speed'] !== undefined) {
+            serializationObject.speed = camera['speed'];
+        }
 
-        serializationObject.checkCollisions = camera.checkCollisions;
-        serializationObject.applyGravity = camera.applyGravity;
+        // Target
+        if (camera['rotation'] && camera['rotation'] instanceof Vector3) {
+            serializationObject.rotation = camera['rotation'].asArray();
+        }
 
-        if (camera.ellipsoid) {
-            serializationObject.ellipsoid = camera.ellipsoid.asArray();
+        // Locked target
+        if (camera['lockedTarget'] && camera['lockedTarget'].id) {
+            serializationObject.lockedTargetId = camera['lockedTarget'].id;
+        }
+
+        //will be undefined if not defined.
+        serializationObject.checkCollisions = camera['checkCollisions'];
+        serializationObject.applyGravity = camera['applyGravity'];
+
+        if (camera['ellipsoid']) {
+            serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
 
         // Animations
