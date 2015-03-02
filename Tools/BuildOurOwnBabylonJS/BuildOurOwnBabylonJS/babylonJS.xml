@@ -8,7 +8,7 @@
   <script src="Babylon/Mesh/babylon.polygonMesh.js"></script>
   <script src="Babylon/Materials/Textures/babylon.rawTexture.js"></script>
   <script src="Babylon/Audio/babylon.analyser.js"></script>
-  <script src="Babylon/Audio/babylon.audioengine.js"></script>
+  <script src="Babylon/Audio/babylon.audioEngine.js"></script>
   <script src="Babylon/Audio/babylon.sound.js"></script>
   <script src="Babylon/Audio/babylon.soundtrack.js"></script>
   <script src="Babylon/Debug/babylon.debugLayer.js"></script>
@@ -92,7 +92,7 @@
   <script src="Babylon/Materials/textures/babylon.standardProceduralTexture.js"></script>
   <script src="Babylon/Mesh/babylon.subMesh.js"></script>
   <script src="Babylon/Mesh/babylon.mesh.js"></script>
-  <script src="Babylon/Mesh/babylon.InstancedMesh.js"></script>
+  <script src="Babylon/Mesh/babylon.instancedMesh.js"></script>
   <script src="Babylon/Mesh/babylon.vertexBuffer.js"></script>
   <script src="Babylon/babylon.scene.js"></script>
   <script src="Babylon/Rendering/babylon.renderingGroup.js"></script>
