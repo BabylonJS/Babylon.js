@@ -1201,7 +1201,7 @@
                     var angleStep: number = rotate(i, distances[i]);
                     var scaleRatio: number = scl(i, distances[i]);
                     var rotationMatrix: Matrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
-                    var planed: Vector3 = ( (tangents[i].scale(shape[p].x)).add(normals[i].scale(shape[p].y)).add(binormals[i].scale(shape[p].z)) );
+                    var planed: Vector3 = ( (tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)) );
                     var rotated: Vector3 = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
                     shapePath.push(rotated);
                 }
