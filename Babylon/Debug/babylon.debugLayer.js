@@ -56,7 +56,7 @@ var BABYLON;
                     y: evt.clientY * _this._ratio
                 };
             };
-            this._syncData = function () {
+            this._syncUI = function () {
                 if (_this._showUI) {
                     if (_this._displayStatistics) {
                         _this._displayStats();
@@ -82,6 +82,8 @@ var BABYLON;
                         _this._treeDiv.style.display = "none";
                     }
                 }
+            };
+            this._syncData = function () {
                 if (_this._labelsEnabled || !_this._showUI) {
                     _this._camera.getViewMatrix().multiplyToRef(_this._camera.getProjectionMatrix(), _this._transformationMatrix);
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
@@ -238,6 +240,7 @@ var BABYLON;
             this._enabled = false;
             var engine = this._scene.getEngine();
             this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
             window.removeEventListener("resize", this._syncPositions);
             this._scene.forceShowBoundingBoxes = false;
@@ -282,6 +285,7 @@ var BABYLON;
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
             this._syncPositions();
             this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         };
         DebugLayer.prototype._clearLabels = function () {
             this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
@@ -353,6 +357,7 @@ var BABYLON;
             button.innerHTML = title;
             button.style.height = "20px";
             button.style.color = "#222222";
+            button.className = "debugLayerButton";
             button.addEventListener("click", function (evt) {
                 task(evt.target, tag);
             });

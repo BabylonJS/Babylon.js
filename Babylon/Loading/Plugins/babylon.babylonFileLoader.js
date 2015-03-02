@@ -759,8 +759,7 @@ var BABYLON;
                     }
                 }
                 else {
-                    if (combineArray !== null)
-                        combineArray.push(newAction);
+                    combineArray.push(newAction);
                 }
                 for (var i = 0; i < parsedAction.children.length; i++)
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
