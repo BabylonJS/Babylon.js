@@ -114,4 +114,5 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.touchCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.touchCamera.js.map

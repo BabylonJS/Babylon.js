@@ -130,4 +130,5 @@ var BABYLON;
     })();
     BABYLON.FilesInput = FilesInput;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.filesInput.js.map
+
+//# sourceMappingURL=../Tools/babylon.filesInput.js.map
