@@ -179,6 +179,7 @@ var BABYLON;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;
+            this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
             BABYLON.AsyncLoop.Run(this._mesh.subMeshes.length, function (loop) {
                 _this.initWithMesh(_this._mesh, loop.index, function () {
@@ -188,6 +189,7 @@ var BABYLON;
                 });
             }, function () {
                 setTimeout(function () {
+                    _this._reconstructedMesh.isVisible = true;
                     successCallback(_this._reconstructedMesh);
                 }, 0);
             });
@@ -305,6 +307,7 @@ var BABYLON;
                 }
             }, function () {
                 setTimeout(function () {
+                    //reconstruct this part of the mesh
                     _this.reconstructMesh(submeshIndex);
                     successCallback();
                 }, 0);
@@ -339,11 +342,11 @@ var BABYLON;
             var totalVertices = submesh.verticesCount;
             BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit, function () {
                 var indicesInit = function (i) {
-                    var offset = submesh.indexStart + i;
-                    var pos = offset * 3;
-                    var i0 = indices[pos + 0];
-                    var i1 = indices[pos + 1];
-                    var i2 = indices[pos + 2];
+                    var offset = (submesh.indexStart / 3) + i;
+                    var pos = (offset * 3);
+                    var i0 = indices[pos + 0] - submesh.verticesStart;
+                    var i1 = indices[pos + 1] - submesh.verticesStart;
+                    var i2 = indices[pos + 2] - submesh.verticesStart;
                     var triangle = new DecimationTriangle([_this.vertices[i0].id, _this.vertices[i1].id, _this.vertices[i2].id]);
                     _this.triangles.push(triangle);
                 };
@@ -413,10 +416,10 @@ var BABYLON;
                 }
             }
             this.vertices = this.vertices.slice(0, dst);
-            var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind); //[];
-            var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind); //[];
-            var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind); //[];
-            var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind); //[];
+            var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind) || [];
+            var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || [];
+            var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || [];
+            var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind) || [];
             for (i = 0; i < newVerticesOrder.length; ++i) {
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
@@ -435,14 +438,16 @@ var BABYLON;
                     newColorsData.push(this.vertices[i].color.a);
                 }
             }
+            var startingIndex = this._reconstructedMesh.getTotalIndices();
+            var startingVertex = this._reconstructedMesh.getTotalVertices();
+            var submeshesArray = this._reconstructedMesh.subMeshes;
+            this._reconstructedMesh.subMeshes = [];
             var newIndicesArray = this._reconstructedMesh.getIndices(); //[];
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0]);
-                newIndicesArray.push(newTriangles[i].vertices[1]);
-                newIndicesArray.push(newTriangles[i].vertices[2]);
+                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
             }
-            var startingVertex = this._reconstructedMesh.getTotalVertices();
-            var startingIndex = this._reconstructedMesh.getTotalIndices();
             //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
             this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, newPositionData);
@@ -453,13 +458,19 @@ var BABYLON;
                 this._reconstructedMesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, newColorsData);
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
-            var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length, this._reconstructedMesh);
-            //return newMesh;
+            if (submeshIndex > 0) {
+                this._reconstructedMesh.subMeshes = [];
+                submeshesArray.forEach(function (submesh) {
+                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                });
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+            }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
             this._reconstructedMesh = new BABYLON.Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
+            this._reconstructedMesh.isVisible = false;
         };
         QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
