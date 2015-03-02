@@ -69,7 +69,36 @@
         serializationObject.maxZ = camera.maxZ;
 
         serializationObject.inertia = camera.inertia;
-        
+
+        //setting the type
+        if (camera instanceof FreeCamera) {
+            serializationObject.type = "FreeCamera";
+        } else if (camera instanceof ArcRotateCamera) {
+            serializationObject.type = "ArcRotateCamera";
+        } else if (camera instanceof AnaglyphArcRotateCamera) {
+            serializationObject.type = "AnaglyphArcRotateCamera";
+        } else if (camera instanceof GamepadCamera) {
+            serializationObject.type = "GamepadCamera";
+        } else if (camera instanceof AnaglyphFreeCamera) {
+            serializationObject.type = "AnaglyphFreeCamera";
+        } else if (camera instanceof DeviceOrientationCamera) {
+            serializationObject.type = "DeviceOrientationCamera";
+        } else if (camera instanceof FollowCamera) {
+            serializationObject.type = "FollowCamera";
+        } else if (camera instanceof OculusCamera) {
+            serializationObject.type = "OculusCamera";
+        } else if (camera instanceof OculusGamepadCamera) {
+            serializationObject.type = "OculusGamepadCamera";
+        } else if (camera instanceof TouchCamera) {
+            serializationObject.type = "TouchCamera";
+        } else if (camera instanceof VirtualJoysticksCamera) {
+            serializationObject.type = "VirtualJoysticksCamera";
+        } else if (camera instanceof WebVRCamera) {
+            serializationObject.type = "WebVRCamera";
+        } else if (camera instanceof VRDeviceOrientationCamera) {
+            serializationObject.type = "VRDeviceOrientationCamera";
+        } 
+
         //general properties that not all cameras have. The [] is due to typescript's type safety
         if (camera['speed'] !== undefined) {
             serializationObject.speed = camera['speed'];
