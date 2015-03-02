@@ -758,11 +758,9 @@
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-
-                if (camera instanceof BABYLON.FreeCamera) {
-                    serializationObject.cameras.push(serializeCamera(<FreeCamera>camera));
-                }
+                serializationObject.cameras.push(serializeCamera(camera));
             }
+
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
