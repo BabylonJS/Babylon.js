@@ -299,4 +299,5 @@ var BABYLON;
     })();
     BABYLON.ShadowGenerator = ShadowGenerator;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.shadowGenerator.js.map
+
+//# sourceMappingURL=../../Lights/Shadows/babylon.shadowGenerator.js.map

@@ -92,4 +92,5 @@ var BABYLON;
     })(BABYLON.Light);
     BABYLON.DirectionalLight = DirectionalLight;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.directionalLight.js.map
+
+//# sourceMappingURL=../Lights/babylon.directionalLight.js.map

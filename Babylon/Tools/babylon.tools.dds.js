@@ -179,4 +179,5 @@ var BABYLON;
         Internals.DDSTools = DDSTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tools.dds.js.map
+
+//# sourceMappingURL=../Tools/babylon.tools.dds.js.map

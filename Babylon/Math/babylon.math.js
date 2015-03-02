@@ -2491,4 +2491,5 @@ var BABYLON;
     })();
     BABYLON.Path3D = Path3D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map
+
+//# sourceMappingURL=../Math/babylon.math.js.map
