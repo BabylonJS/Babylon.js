@@ -470,7 +470,7 @@
 
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);        
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -1536,7 +1536,7 @@
             this._audioEnabled = value;
             if (this._audioEnabled) {
                 this._enableAudio();
-                }
+            }
             else {
                 this._disableAudio();
             }

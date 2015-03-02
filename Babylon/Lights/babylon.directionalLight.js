@@ -29,7 +29,15 @@ var BABYLON;
             var tempVector3 = BABYLON.Vector3.Zero();
             var activeCamera = this.getScene().activeCamera;
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
-                var boundingBox = renderList[meshIndex].getBoundingInfo().boundingBox;
+                var mesh = renderList[meshIndex];
+                if (!mesh) {
+                    continue;
+                }
+                var boundingInfo = mesh.getBoundingInfo();
+                if (!boundingInfo) {
+                    continue;
+                }
+                var boundingBox = boundingInfo.boundingBox;
                 for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
                     BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
                     if (tempVector3.x < orthoLeft)

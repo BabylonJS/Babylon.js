@@ -148,7 +148,7 @@
             return this;
         }
 
-        public getLODLevelAtDistance(distance: number) : Mesh {
+        public getLODLevelAtDistance(distance: number): Mesh {
             for (var index = 0; index < this._LODLevels.length; index++) {
                 var level = this._LODLevels[index];
 
@@ -766,7 +766,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                },() => { }, scene.database, getBinaryData);
             }
         }
 
@@ -923,7 +923,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -944,7 +944,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1025,8 +1025,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
-                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
+                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
+                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1087,7 +1087,7 @@
                 mesh: this,
                 simplificationType: simplificationType,
                 successCallback: successCallback
-            });  
+            });
         }
 
         // Statics
@@ -1233,7 +1233,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
 
             return ground;
         }

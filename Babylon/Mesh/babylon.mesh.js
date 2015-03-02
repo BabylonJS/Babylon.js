@@ -882,7 +882,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
+            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,

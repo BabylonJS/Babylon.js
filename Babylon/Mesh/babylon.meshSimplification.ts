@@ -33,10 +33,10 @@
         settings: Array<ISimplificationSettings>;
         simplificationType: SimplificationType;
         mesh: Mesh;
-        successCallback? : () => void;
+        successCallback?: () => void;
         parallelProcessing: boolean;
     }
-    
+
     export class SimplificationQueue {
         private _simplificationArray: Array<ISimplificationTask>;
         public running;
@@ -106,7 +106,7 @@
             }
         }
 
-        private getSimplifier(task: ISimplificationTask) : ISimplifier {
+        private getSimplifier(task: ISimplificationTask): ISimplifier {
             switch (task.simplificationType) {
                 case SimplificationType.QUADRATIC:
                 default:
@@ -238,7 +238,7 @@
             this.aggressiveness = 7;
             this.decimationIterations = 100;
             this.boundingBoxEpsilon = Engine.Epsilon;
-            
+
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
@@ -246,7 +246,7 @@
             //iterating through the submeshes array, one after the other.
             AsyncLoop.Run(this._mesh.subMeshes.length,(loop: AsyncLoop) => {
                 this.initWithMesh(this._mesh, loop.index,() => {
-                    this.runDecimation(settings, loop.index, () => {
+                    this.runDecimation(settings, loop.index,() => {
                         loop.executeNext();
                     });
                 });
@@ -265,7 +265,7 @@
                 var vPos = this.vertices[vId].position;
                 var bbox = this._mesh.getBoundingInfo().boundingBox;
 
-                if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon|| vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
+                if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
                     ++count;
 
                 if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
@@ -282,10 +282,10 @@
                 console.log(triangle, gCount);
             }
             return gCount > 1;
-            
+
         }
 
-        private runDecimation(settings: ISimplificationSettings, submeshIndex:number, successCallback: () => void) {
+        private runDecimation(settings: ISimplificationSettings, submeshIndex: number, successCallback: () => void) {
             var targetCount = ~~(this.triangles.length * settings.quality);
             var deletedTriangles = 0;
 
@@ -390,7 +390,7 @@
                 });
         }
 
-        private initWithMesh(mesh: Mesh, submeshIndex:number, callback: Function) {
+        private initWithMesh(mesh: Mesh, submeshIndex: number, callback: Function) {
             if (!mesh) return;
 
             this.vertices = [];
@@ -420,7 +420,7 @@
             AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit,() => {
 
                 var indicesInit = (i) => {
-                    var offset = (submesh.indexStart/3) + i;
+                    var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
                     var i0 = indices[pos + 0] - submesh.verticesStart;
                     var i1 = indices[pos + 1] - submesh.verticesStart;
@@ -506,7 +506,7 @@
             var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
             var newColorsData = this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || [];
 
-            for (i = 0; i < newVerticesOrder.length; ++i) { 
+            for (i = 0; i < newVerticesOrder.length; ++i) {
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
                 newPositionData.push(this.vertices[i].position.z);
@@ -526,7 +526,7 @@
 
             var startingIndex = this._reconstructedMesh.getTotalIndices();
             var startingVertex = this._reconstructedMesh.getTotalVertices();
-            
+
             var submeshesArray = this._reconstructedMesh.subMeshes;
             this._reconstructedMesh.subMeshes = [];
 
@@ -554,7 +554,7 @@
                 submeshesArray.forEach(function (submesh) {
                     new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length*3, this._reconstructedMesh);
+                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         }
 
