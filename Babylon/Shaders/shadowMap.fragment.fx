@@ -22,9 +22,7 @@ vec2 packHalf(float depth)
 	return color - (color.yy * bitOffset);
 }
 
-#ifndef VSM
 varying vec4 vPosition;
-#endif
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -39,8 +37,11 @@ void main(void)
 #endif
 
 #ifdef VSM
-	float moment1 = gl_FragCoord.z;
+	float depth = vPosition.z / vPosition.w;
+
+	float moment1 = depth;
 	float moment2 = moment1 * moment1;
+
 	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
 #else
 	gl_FragColor = pack(vPosition.z / vPosition.w);

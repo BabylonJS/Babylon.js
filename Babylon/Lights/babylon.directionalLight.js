@@ -11,8 +11,7 @@ var BABYLON;
         function DirectionalLight(name, direction, scene) {
             _super.call(this, name, scene);
             this.direction = direction;
-            this.shadowOrthoScale = 1.1;
-            this.shadowOrthoDepthScale = 3;
+            this.shadowOrthoScale = 0.1;
             this.position = direction.scale(-1);
         }
         DirectionalLight.prototype.getAbsolutePosition = function () {
@@ -22,13 +21,11 @@ var BABYLON;
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
         };
-        DirectionalLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList, useVSM) {
+        DirectionalLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
             var orthoLeft = Number.MAX_VALUE;
             var orthoRight = Number.MIN_VALUE;
             var orthoTop = Number.MIN_VALUE;
             var orthoBottom = Number.MAX_VALUE;
-            var orthoNear = Number.MAX_VALUE;
-            var orthoFar = Number.MIN_VALUE;
             var tempVector3 = BABYLON.Vector3.Zero();
             var activeCamera = this.getScene().activeCamera;
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
@@ -43,19 +40,11 @@ var BABYLON;
                         orthoRight = tempVector3.x;
                     if (tempVector3.y > orthoTop)
                         orthoTop = tempVector3.y;
-                    if (tempVector3.z < orthoNear)
-                        orthoNear = tempVector3.z;
-                    if (tempVector3.z > orthoFar)
-                        orthoFar = tempVector3.z;
                 }
             }
-            var orthoWidth = Math.max(Math.abs(orthoRight), Math.abs(orthoLeft)) * this.shadowOrthoScale;
-            var orthoHeight = Math.max(Math.abs(orthoTop), Math.abs(orthoBottom)) * this.shadowOrthoScale;
-            var orthoDepth = Math.max(Math.abs(orthoNear), Math.abs(orthoFar)) * this.shadowOrthoDepthScale;
-            BABYLON.Matrix.OrthoOffCenterLHToRef(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, useVSM ? -orthoDepth : activeCamera.minZ, orthoDepth, matrix);
-        };
-        DirectionalLight.prototype.getVSMOffset = function () {
-            return 0.55;
+            var xOffset = orthoRight - orthoLeft;
+            var yOffset = orthoTop - orthoBottom;
+            BABYLON.Matrix.OrthoOffCenterLHToRef(orthoLeft - xOffset * this.shadowOrthoScale, orthoRight + xOffset * this.shadowOrthoScale, orthoBottom - yOffset * this.shadowOrthoScale, orthoTop + yOffset * this.shadowOrthoScale, -activeCamera.maxZ, activeCamera.maxZ, matrix);
         };
         DirectionalLight.prototype.supportsVSM = function () {
             return true;

@@ -5,9 +5,10 @@ var BABYLON;
             var _this = this;
             // Members
             this.filter = ShadowGenerator.FILTER_NONE;
-            this.blurSize = 2;
+            this.blurScale = 2;
+            this._blurBoxOffset = 0;
             this._darkness = 0;
-            this._bias = 0.0001;
+            this._bias = 0.00005;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
             this._projectionMatrix = BABYLON.Matrix.Zero();
@@ -15,6 +16,7 @@ var BABYLON;
             this._worldViewProjection = BABYLON.Matrix.Zero();
             this._light = light;
             this._scene = light.getScene();
+            this._mapSize = mapSize;
             light._shadowGenerator = this;
             // Render target
             this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
@@ -22,21 +24,18 @@ var BABYLON;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.renderParticles = false;
             this._shadowMap.onAfterUnbind = function () {
-                if (_this.filter !== ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP) {
+                if (!_this.useBlurVarianceShadowMap) {
                     return;
                 }
                 if (!_this._shadowMap2) {
                     _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurSize, null, BABYLON.Texture.NEAREST_SAMPLINGMODE, _this._scene.getEngine());
+                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.NEAREST_SAMPLINGMODE, _this._scene.getEngine());
                     _this._downSamplePostprocess.onApply = function (effect) {
                         effect.setTexture("textureSampler", _this._shadowMap);
                     };
-                    _this._boxBlurPostprocess = new BABYLON.PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize"], [], 1.0 / _this.blurSize, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, _this._scene.getEngine());
-                    _this._boxBlurPostprocess.onApply = function (effect) {
-                        effect.setFloat2("screenSize", mapSize / _this.blurSize, mapSize / _this.blurSize);
-                    };
+                    _this.blurBoxOffset = 1;
                 }
                 _this._scene.postProcessManager.directRender([_this._downSamplePostprocess, _this._boxBlurPostprocess], _this._shadowMap2.getInternalTexture());
             };
@@ -90,6 +89,14 @@ var BABYLON;
                     }
                 }
             };
+            this._shadowMap.onClear = function (engine) {
+                if (_this.useBlurVarianceShadowMap || _this.useVarianceShadowMap) {
+                    engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
+                }
+                else {
+                    engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                }
+            };
         }
         Object.defineProperty(ShadowGenerator, "FILTER_NONE", {
             // Static
@@ -120,6 +127,27 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ShadowGenerator.prototype, "blurBoxOffset", {
+            get: function () {
+                return this._blurBoxOffset;
+            },
+            set: function (value) {
+                var _this = this;
+                if (this._blurBoxOffset === value) {
+                    return;
+                }
+                this._blurBoxOffset = value;
+                if (this._boxBlurPostprocess) {
+                    this._boxBlurPostprocess.dispose();
+                }
+                this._boxBlurPostprocess = new BABYLON.PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
+                this._boxBlurPostprocess.onApply = function (effect) {
+                    effect.setFloat2("screenSize", _this._mapSize / _this.blurScale, _this._mapSize / _this.blurScale);
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ShadowGenerator.prototype, "useVarianceShadowMap", {
             get: function () {
                 return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
@@ -132,7 +160,7 @@ var BABYLON;
         });
         Object.defineProperty(ShadowGenerator.prototype, "usePoissonSampling", {
             get: function () {
-                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING || (!this._light.supportsVSM() && (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP || this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP));
             },
             set: function (value) {
                 this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -221,7 +249,7 @@ var BABYLON;
                 this._cachedPosition = lightPosition.clone();
                 this._cachedDirection = lightDirection.clone();
                 BABYLON.Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), BABYLON.Vector3.Up(), this._viewMatrix);
-                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList, this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP || this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP);
+                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
             return this._transformMatrix;
@@ -245,6 +273,11 @@ var BABYLON;
         };
         ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
             this._transparencyShadow = hasShadow;
+        };
+        ShadowGenerator.prototype._packHalf = function (depth) {
+            var scale = depth * 255.0;
+            var fract = scale - Math.floor(scale);
+            return new BABYLON.Vector2(depth - fract / 255.0, fract);
         };
         ShadowGenerator.prototype.dispose = function () {
             this._shadowMap.dispose();

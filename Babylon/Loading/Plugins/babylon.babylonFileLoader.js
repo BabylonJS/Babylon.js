@@ -215,8 +215,14 @@ var BABYLON;
             if (parsedShadowGenerator.usePoissonSampling) {
                 shadowGenerator.usePoissonSampling = true;
             }
-            else {
-                shadowGenerator.useVarianceShadowMap = parsedShadowGenerator.useVarianceShadowMap;
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useVarianceShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurVarianceShadowMap = true;
+            }
+            if (parsedShadowGenerator.bias) {
+                shadowGenerator.setBias(parsedShadowGenerator.bias);
             }
             return shadowGenerator;
         };

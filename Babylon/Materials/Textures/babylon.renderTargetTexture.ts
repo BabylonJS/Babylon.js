@@ -7,6 +7,7 @@
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
         public onAfterUnbind: () => void;
+        public onClear: (engine: Engine) => void;
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
@@ -142,7 +143,11 @@
             }
 
             // Clear
-            engine.clear(scene.clearColor, true, true);
+            if (this.onClear) {
+                this.onClear(engine);
+            } else {
+                engine.clear(scene.clearColor, true, true);
+            }
 
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
