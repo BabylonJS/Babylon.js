@@ -29,6 +29,92 @@
         }
     }
 
+    export interface ISimplificationTask {
+        settings: Array<ISimplificationSettings>;
+        simplificationType: SimplificationType;
+        mesh: Mesh;
+        successCallback? : () => void;
+        parallelProcessing: boolean;
+    }
+    
+    export class SimplificationQueue {
+        private _simplificationArray: Array<ISimplificationTask>;
+        public running;
+
+        constructor() {
+            this.running = false;
+            this._simplificationArray = [];
+        }
+
+        public addTask(task: ISimplificationTask) {
+            this._simplificationArray.push(task);
+        }
+
+        public executeNext() {
+            var task = this._simplificationArray.pop();
+            if (task) {
+                this.running = true;
+                this.runSimplification(task);
+            } else {
+                this.running = false;
+            }
+        }
+
+        public runSimplification(task: ISimplificationTask) {
+
+            function setLODLevel(distance: number, mesh: Mesh) {
+
+            }
+
+            if (task.parallelProcessing) {
+                //parallel simplifier
+                task.settings.forEach((setting) => {
+                    var simplifier = this.getSimplifier(task);
+                    simplifier.simplify(setting,(newMesh) => {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //check if it is the last
+                        if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
+                            //all done, run the success callback.
+                            task.successCallback();
+                        }
+                        this.executeNext();
+                    });
+                });
+            } else {
+                //single simplifier.
+                var simplifier = this.getSimplifier(task);
+
+                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
+                    simplifier.simplify(setting,(newMesh) => {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                        //run the next quality level
+                        callback();
+                    });
+                }
+
+                AsyncLoop.Run(task.settings.length,(loop: AsyncLoop) => {
+                    runDecimation(task.settings[loop.index],() => {
+                        loop.executeNext();
+                    });
+                },() => {
+                        //execution ended, run the success callback.
+                        if (task.successCallback) {
+                            task.successCallback();
+                        }
+                        this.executeNext();
+                    });
+            }
+        }
+
+        private getSimplifier(task: ISimplificationTask) : ISimplifier {
+            switch (task.simplificationType) {
+                case SimplificationType.QUADRATIC:
+                default:
+                    return new QuadraticErrorSimplification(task.mesh);
+            }
+        }
+    }
+
     /**
      * The implemented types of simplification.
      * At the moment only Quadratic Error Decimation is implemented.
@@ -139,23 +225,67 @@
 
         private initialised: boolean = false;
 
+        private _reconstructedMesh: Mesh;
+
         public syncIterations = 5000;
 
         public aggressiveness: number;
         public decimationIterations: number;
 
+        public boundingBoxEpsilon: number;
+
         constructor(private _mesh: Mesh) {
             this.aggressiveness = 7;
             this.decimationIterations = 100;
+            this.boundingBoxEpsilon = Engine.Epsilon;
+            
         }
 
-        public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void) {
-            this.initWithMesh(this._mesh,() => {
-                this.runDecimation(settings, successCallback);
+        public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
+            this.initDecimatedMesh();
+            //iterating through the submeshes array, one after the other.
+            AsyncLoop.Run(this._mesh.subMeshes.length,(loop: AsyncLoop) => {
+                this.initWithMesh(this._mesh, loop.index,() => {
+                    this.runDecimation(settings, loop.index, () => {
+                        loop.executeNext();
+                    });
+                });
+            },() => {
+                    setTimeout(() => {
+                        this._reconstructedMesh.isVisible = true;
+                        successCallback(this._reconstructedMesh);
+                    }, 0);
+                });
+        }
+
+        private isTriangleOnBoundingBox(triangle: DecimationTriangle): boolean {
+            var gCount = 0;
+            triangle.vertices.forEach((vId) => {
+                var count = 0;
+                var vPos = this.vertices[vId].position;
+                var bbox = this._mesh.getBoundingInfo().boundingBox;
+
+                if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon|| vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
+                    ++count;
+
+                if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
+                    ++count;
+
+                if (bbox.maximum.z == vPos.z || vPos.z == bbox.minimum.z)
+                    ++count;
+
+                if (count > 1) {
+                    ++gCount;
+                };
             });
+            if (gCount > 1) {
+                console.log(triangle, gCount);
+            }
+            return gCount > 1;
+            
         }
 
-        private runDecimation(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void) {
+        private runDecimation(settings: ISimplificationSettings, submeshIndex:number, successCallback: () => void) {
             var targetCount = ~~(this.triangles.length * settings.quality);
             var deletedTriangles = 0;
 
@@ -253,12 +383,14 @@
                 }
             },() => {
                     setTimeout(() => {
-                        successCallback(this.reconstructMesh());
+                        //reconstruct this part of the mesh
+                        this.reconstructMesh(submeshIndex);
+                        successCallback();
                     }, 0);
                 });
         }
 
-        private initWithMesh(mesh: Mesh, callback: Function) {
+        private initWithMesh(mesh: Mesh, submeshIndex:number, callback: Function) {
             if (!mesh) return;
 
             this.vertices = [];
@@ -271,28 +403,32 @@
             var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
             var indices = mesh.getIndices();
+            var submesh = mesh.subMeshes[submeshIndex];
 
             var vertexInit = (i) => {
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, i * 3), Vector3.FromArray(normalData, i * 3), null, i);
+                var offset = i + submesh.verticesStart;
+                var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), null, i);
                 if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    vertex.uv = Vector2.FromArray(uvs, i * 2);
+                    vertex.uv = Vector2.FromArray(uvs, offset * 2);
                 } else if (this._mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    vertex.color = Color4.FromArray(colorsData, i * 4);
+                    vertex.color = Color4.FromArray(colorsData, offset * 4);
                 }
                 this.vertices.push(vertex);
             };
-            var totalVertices = mesh.getTotalVertices();
+            //var totalVertices = mesh.getTotalVertices();
+            var totalVertices = submesh.verticesCount;
             AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit,() => {
 
                 var indicesInit = (i) => {
-                    var pos = i * 3;
-                    var i0 = indices[pos + 0];
-                    var i1 = indices[pos + 1];
-                    var i2 = indices[pos + 2];
+                    var offset = (submesh.indexStart/3) + i;
+                    var pos = (offset * 3);
+                    var i0 = indices[pos + 0] - submesh.verticesStart;
+                    var i1 = indices[pos + 1] - submesh.verticesStart;
+                    var i2 = indices[pos + 2] - submesh.verticesStart;
                     var triangle = new DecimationTriangle([this.vertices[i0].id, this.vertices[i1].id, this.vertices[i2].id]);
                     this.triangles.push(triangle);
                 };
-                AsyncLoop.SyncAsyncForLoop(indices.length / 3, this.syncIterations, indicesInit,() => {
+                AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit,() => {
                     this.init(callback);
                 });
             });
@@ -322,7 +458,7 @@
             });
         }
 
-        private reconstructMesh(): Mesh {
+        private reconstructMesh(submeshIndex: number) {
 
             var newTriangles: Array<DecimationTriangle> = [];
             var i: number;
@@ -365,12 +501,12 @@
             }
             this.vertices = this.vertices.slice(0, dst);
 
-            var newPositionData = [];
-            var newNormalData = [];
-            var newUVsData = [];
-            var newColorsData = [];
+            var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || [];
+            var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || [];
+            var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
+            var newColorsData = this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || [];
 
-            for (i = 0; i < newVerticesOrder.length; ++i) {
+            for (i = 0; i < newVerticesOrder.length; ++i) { 
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
                 newPositionData.push(this.vertices[i].position.z);
@@ -388,32 +524,45 @@
                 }
             }
 
-            var newIndicesArray: Array<number> = [];
+            var startingIndex = this._reconstructedMesh.getTotalIndices();
+            var startingVertex = this._reconstructedMesh.getTotalVertices();
+            
+            var submeshesArray = this._reconstructedMesh.subMeshes;
+            this._reconstructedMesh.subMeshes = [];
+
+            var newIndicesArray: Array<number> = this._reconstructedMesh.getIndices(); //[];
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0]);
-                newIndicesArray.push(newTriangles[i].vertices[1]);
-                newIndicesArray.push(newTriangles[i].vertices[2]);
+                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
+                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
             }
 
-            //not cloning, to avoid geometry problems. Creating a whole new mesh.
-            var newMesh = new Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
-            newMesh.material = this._mesh.material;
-            newMesh.parent = this._mesh.parent;
-            newMesh.setIndices(newIndicesArray);
-            newMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
-            newMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+            //overwriting the old vertex buffers and indices.
+
+            this._reconstructedMesh.setIndices(newIndicesArray);
+            this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
+            this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
             if (newUVsData.length > 0)
-                newMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
+                this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
-                newMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
-
-            //preparing the skeleton support
-            if (this._mesh.skeleton) {
-                //newMesh.skeleton = this._mesh.skeleton.clone("", "");
-                //newMesh.getScene().beginAnimation(newMesh.skeleton, 0, 100, true, 1.0);
+                this._reconstructedMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
+            
+            //create submesh
+            var originalSubmesh = this._mesh.subMeshes[submeshIndex];
+            if (submeshIndex > 0) {
+                this._reconstructedMesh.subMeshes = [];
+                submeshesArray.forEach(function (submesh) {
+                    new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                });
+                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length*3, this._reconstructedMesh);
             }
+        }
 
-            return newMesh;
+        private initDecimatedMesh() {
+            this._reconstructedMesh = new Mesh(this._mesh.name + "Decimated", this._mesh.getScene());
+            this._reconstructedMesh.material = this._mesh.material;
+            this._reconstructedMesh.parent = this._mesh.parent;
+            this._reconstructedMesh.isVisible = false;
         }
 
         private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
@@ -427,7 +576,7 @@
                 var id1 = t.vertices[(s + 1) % 3];
                 var id2 = t.vertices[(s + 2) % 3];
 
-                if ((id1 === index2 || id2 === index2) && borderFactor < 2) {
+                if ((id1 === index2 || id2 === index2)/* && !this.isTriangleOnBoundingBox(t)*/) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
