@@ -99,6 +99,24 @@
             serializationObject.type = "VRDeviceOrientationCamera";
         } 
 
+        //special properties of specific cameras
+        if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
+            var arcCamera = <ArcRotateCamera> camera;
+            serializationObject.alpha = arcCamera.alpha;
+            serializationObject.beta = arcCamera.beta;
+            serializationObject.radius = arcCamera.radius;
+        } else if (camera instanceof FollowCamera) {
+            var followCam = <FollowCamera> camera;
+            serializationObject.radius = followCam.radius;
+            serializationObject.heightOffset = followCam.heightOffset;
+            serializationObject.rotationOffset = followCam.rotationOffset;
+        } else if (camera instanceof AnaglyphFreeCamera || camera instanceof AnaglyphArcRotateCamera) {
+            //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
+            if (camera['_eye_space'] !== undefined) {
+                serializationObject.eye_space = Tools.ToDegrees(camera['_eye_space']);
+            }
+        }
+
         //general properties that not all cameras have. The [] is due to typescript's type safety
         if (camera['speed'] !== undefined) {
             serializationObject.speed = camera['speed'];
@@ -114,9 +132,12 @@
             serializationObject.lockedTargetId = camera['lockedTarget'].id;
         }
 
-        //will be undefined if not defined.
-        serializationObject.checkCollisions = camera['checkCollisions'];
-        serializationObject.applyGravity = camera['applyGravity'];
+        if (camera['checkCollisions'] !== undefined) {
+            serializationObject.checkCollisions = camera['checkCollisions'];
+        }
+        if (camera['applyGravity'] !== undefined) {
+            serializationObject.applyGravity = camera['applyGravity'];
+        }
 
         if (camera['ellipsoid']) {
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
