@@ -984,10 +984,10 @@ var BABYLON;
             var scl = custom ? scaleFunction : returnScale;
             for (var i = 0; i < curve.length; i++) {
                 var shapePath = new Array();
+                var angleStep = rotate(i, distances[i]);
+                var scaleRatio = scl(i, distances[i]);
+                var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
                 for (var p = 0; p < shape.length; p++) {
-                    var angleStep = rotate(i, distances[i]);
-                    var scaleRatio = scl(i, distances[i]);
-                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
                     var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
                     var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
                     shapePath.push(rotated);
