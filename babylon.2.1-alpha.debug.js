@@ -11258,6 +11258,53 @@ var BABYLON;
             vertexData.applyToMesh(lines, updatable);
             return lines;
         };
+        // Extrusion
+        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            scale = scale || 1;
+            rotation = rotation || 0;
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            return extruded;
+        };
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            ribbonCloseArray = ribbonCloseArray || false;
+            ribbonClosePath = ribbonClosePath || false;
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            return extrudedCustom;
+        };
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
+            var path3D = new BABYLON.Path3D(curve);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var binormals = path3D.getBinormals();
+            var distances = path3D.getDistances();
+            var shapePaths = new Array();
+            var angle = 0;
+            var returnScale = function (i, distance) {
+                return scale;
+            };
+            var returnRotation = function (i, distance) {
+                return rotation;
+            };
+            var rotate = custom ? rotateFunction : returnRotation;
+            var scl = custom ? scaleFunction : returnScale;
+            for (var i = 0; i < curve.length; i++) {
+                var shapePath = new Array();
+                for (var p = 0; p < shape.length; p++) {
+                    var angleStep = rotate(i, distances[i]);
+                    var scaleRatio = scl(i, distances[i]);
+                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                    var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                    shapePath.push(rotated);
+                }
+                shapePaths.push(shapePath);
+                angle += angleStep;
+            }
+            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
+            return extrudedGeneric;
+        };
         // Plane & ground
         Mesh.CreatePlane = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
@@ -19408,8 +19455,7 @@ var BABYLON;
                     }
                 }
                 else {
-                    if (combineArray !== null)
-                        combineArray.push(newAction);
+                    combineArray.push(newAction);
                 }
                 for (var i = 0; i < parsedAction.children.length; i++)
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
@@ -26849,7 +26895,7 @@ var BABYLON;
                     y: evt.clientY * _this._ratio
                 };
             };
-            this._syncData = function () {
+            this._syncUI = function () {
                 if (_this._showUI) {
                     if (_this._displayStatistics) {
                         _this._displayStats();
@@ -26875,6 +26921,8 @@ var BABYLON;
                         _this._treeDiv.style.display = "none";
                     }
                 }
+            };
+            this._syncData = function () {
                 if (_this._labelsEnabled || !_this._showUI) {
                     _this._camera.getViewMatrix().multiplyToRef(_this._camera.getProjectionMatrix(), _this._transformationMatrix);
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
@@ -27031,6 +27079,7 @@ var BABYLON;
             this._enabled = false;
             var engine = this._scene.getEngine();
             this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
             window.removeEventListener("resize", this._syncPositions);
             this._scene.forceShowBoundingBoxes = false;
@@ -27075,6 +27124,7 @@ var BABYLON;
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
             this._syncPositions();
             this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         };
         DebugLayer.prototype._clearLabels = function () {
             this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
@@ -27146,6 +27196,7 @@ var BABYLON;
             button.innerHTML = title;
             button.style.height = "20px";
             button.style.color = "#222222";
+            button.className = "debugLayerButton";
             button.addEventListener("click", function (evt) {
                 task(evt.target, tag);
             });
