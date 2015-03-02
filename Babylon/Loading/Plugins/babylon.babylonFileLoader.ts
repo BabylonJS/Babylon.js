@@ -1,6 +1,6 @@
 ﻿module BABYLON.Internals {
 
-    var checkColors4 = (colors: number[], count:number): number[] => {
+    var checkColors4 = (colors: number[], count: number): number[]=> {
         // Check if color3 was used
         if (colors.length === count * 3) {
             var colors4 = [];
@@ -269,8 +269,14 @@
 
         if (parsedShadowGenerator.usePoissonSampling) {
             shadowGenerator.usePoissonSampling = true;
-        } else {
-            shadowGenerator.useVarianceShadowMap = parsedShadowGenerator.useVarianceShadowMap;
+        } else if (parsedShadowGenerator.useVarianceShadowMap) {
+            shadowGenerator.useVarianceShadowMap = true;
+        } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+            shadowGenerator.useBlurVarianceShadowMap = true;
+        }
+
+        if (parsedShadowGenerator.bias) {
+            shadowGenerator.setBias(parsedShadowGenerator.bias);
         }
 
         return shadowGenerator;
@@ -967,7 +973,7 @@
     var parseSound = (parsedSound, scene: Scene, rootUrl) => {
         var soundName = parsedSound.name;
         var soundUrl = rootUrl + soundName;
-        
+
         var options = {
             autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
             spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
@@ -978,7 +984,7 @@
             playbackRate: parsedSound.playbackRate
         };
 
-        var newSound = new BABYLON.Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
+        var newSound = new BABYLON.Sound(soundName, soundUrl, scene,() => { scene._removePendingData(newSound); }, options);
         scene._addPendingData(newSound);
 
         if (parsedSound.position) {

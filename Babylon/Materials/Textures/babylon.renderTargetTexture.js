@@ -120,7 +120,12 @@ var BABYLON;
                 this.onBeforeRender();
             }
             // Clear
-            engine.clear(scene.clearColor, true, true);
+            if (this.onClear) {
+                this.onClear(engine);
+            }
+            else {
+                engine.clear(scene.clearColor, true, true);
+            }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }

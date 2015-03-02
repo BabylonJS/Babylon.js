@@ -24,9 +24,7 @@ uniform mat4 viewProjection;
 uniform mat4 mBones[BonesPerMesh];
 #endif
 
-#ifndef VSM
 varying vec4 vPosition;
-#endif
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -55,10 +53,8 @@ void main(void)
 	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
 #endif
 
-#ifndef VSM
 	vPosition = viewProjection * finalWorld * vec4(position, 1.0);
-#endif
-	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+	gl_Position = vPosition;
 
 #ifdef ALPHATEST
 #ifdef UV1

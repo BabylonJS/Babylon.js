@@ -24,7 +24,29 @@
 
         // Members
         public filter = ShadowGenerator.FILTER_NONE;
-        public blurSize = 2;
+        public blurScale = 2;
+        private _blurBoxOffset = 0;
+
+        public get blurBoxOffset(): number {
+            return this._blurBoxOffset;
+        }
+
+        public set blurBoxOffset(value:number) {
+            if (this._blurBoxOffset === value) {
+                return;
+            }
+
+            this._blurBoxOffset = value;
+
+            if (this._boxBlurPostprocess) {
+                this._boxBlurPostprocess.dispose();
+            }
+
+            this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
+            this._boxBlurPostprocess.onApply = effect => {
+                effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
+            };
+        }
 
         public get useVarianceShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
@@ -34,7 +56,11 @@
         }
 
         public get usePoissonSampling(): boolean {
-            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
+            return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING ||
+                (!this._light.supportsVSM() && (
+                    this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
+                    this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP
+                ));
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -52,7 +78,7 @@
         private _shadowMap: RenderTargetTexture;
         private _shadowMap2: RenderTargetTexture;
         private _darkness = 0;
-        private _bias = 0.0001;
+        private _bias = 0.00005;
         private _transparencyShadow = false;
         private _effect: Effect;
 
@@ -66,10 +92,12 @@
         private _currentRenderID: number;
         private _downSamplePostprocess: PassPostProcess;
         private _boxBlurPostprocess: PostProcess;
+        private _mapSize: number;
 
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
             this._scene = light.getScene();
+            this._mapSize = mapSize;
 
             light._shadowGenerator = this;
 
@@ -80,7 +108,7 @@
             this._shadowMap.renderParticles = false;
 
             this._shadowMap.onAfterUnbind = () => {
-                if (this.filter !== ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP) {
+                if (!this.useBlurVarianceShadowMap) {
                     return;
                 }
 
@@ -89,14 +117,12 @@
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
                     
-                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurSize, null, Texture.NEAREST_SAMPLINGMODE, this._scene.getEngine());
+                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.NEAREST_SAMPLINGMODE, this._scene.getEngine());
                     this._downSamplePostprocess.onApply = effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
                     };
-                    this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize"], [], 1.0 / this.blurSize, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                    this._boxBlurPostprocess.onApply = effect => {
-                        effect.setFloat2("screenSize", mapSize / this.blurSize, mapSize / this.blurSize);
-                    };
+
+                    this.blurBoxOffset = 1;
                 }
 
                 this._scene.postProcessManager.directRender([this._downSamplePostprocess, this._boxBlurPostprocess], this._shadowMap2.getInternalTexture());
@@ -166,6 +192,13 @@
                 }
             };
 
+            this._shadowMap.onClear = (engine: Engine) => {
+                if (this.useBlurVarianceShadowMap || this.useVarianceShadowMap) {
+                    engine.clear(new Color4(0, 0, 0, 0), true, true);
+                } else {
+                    engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                }
+            }
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -262,7 +295,7 @@
 
                 Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), Vector3.Up(), this._viewMatrix);
 
-                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList, this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP || this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP);
+                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
 
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
@@ -293,6 +326,13 @@
 
         public setTransparencyShadow(hasShadow: boolean): void {
             this._transparencyShadow = hasShadow;
+        }
+
+        private _packHalf(depth: number): Vector2 { 
+            var scale = depth * 255.0;
+            var fract = scale - Math.floor(scale);
+
+            return new Vector2(depth - fract / 255.0, fract);
         }
 
         public dispose(): void {
