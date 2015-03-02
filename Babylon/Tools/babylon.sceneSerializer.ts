@@ -6,22 +6,22 @@
         serializationObject.id = light.id;
         serializationObject.tags = Tags.GetTags(light);
 
-        if (light instanceof BABYLON.PointLight) {
+        if (light instanceof PointLight) {
             serializationObject.type = 0;
             serializationObject.position = (<PointLight>light).position.asArray();
-        } else if (light instanceof BABYLON.DirectionalLight) {
+        } else if (light instanceof DirectionalLight) {
             serializationObject.type = 1;
             var directionalLight = <DirectionalLight>light;
             serializationObject.position = directionalLight.position.asArray();
             serializationObject.direction = directionalLight.direction.asArray();
-        } else if (light instanceof BABYLON.SpotLight) {
+        } else if (light instanceof SpotLight) {
             serializationObject.type = 2;
             var spotLight = <SpotLight>light;
             serializationObject.position = spotLight.position.asArray();
             serializationObject.direction = spotLight.position.asArray();
             serializationObject.angle = spotLight.angle;
             serializationObject.exponent = spotLight.exponent;
-        } else if (light instanceof BABYLON.HemisphericLight) {
+        } else if (light instanceof HemisphericLight) {
             serializationObject.type = 3;
             var hemisphericLight = <HemisphericLight>light;
             serializationObject.direction = hemisphericLight.direction.asArray();
@@ -52,7 +52,7 @@
         return serializationObject;
     }
 
-    var serializeCamera = (camera: FreeCamera): any => {
+    var serializeCamera = (camera: Camera): any => {
         var serializationObject:any = {};
         serializationObject.name = camera.name;
         serializationObject.tags = Tags.GetTags(camera);
@@ -64,26 +64,83 @@
             serializationObject.parentId = camera.parent.id;
         }
 
-        // Target
-        serializationObject.rotation = camera.rotation.asArray();
-
-        // Locked target
-        if (camera.lockedTarget && camera.lockedTarget.id) {
-            serializationObject.lockedTargetId = camera.lockedTarget.id;
-        }
-
         serializationObject.fov = camera.fov;
         serializationObject.minZ = camera.minZ;
         serializationObject.maxZ = camera.maxZ;
 
-        serializationObject.speed = camera.speed;
         serializationObject.inertia = camera.inertia;
 
-        serializationObject.checkCollisions = camera.checkCollisions;
-        serializationObject.applyGravity = camera.applyGravity;
+        //setting the type
+        if (camera instanceof FreeCamera) {
+            serializationObject.type = "FreeCamera";
+        } else if (camera instanceof ArcRotateCamera) {
+            serializationObject.type = "ArcRotateCamera";
+        } else if (camera instanceof AnaglyphArcRotateCamera) {
+            serializationObject.type = "AnaglyphArcRotateCamera";
+        } else if (camera instanceof GamepadCamera) {
+            serializationObject.type = "GamepadCamera";
+        } else if (camera instanceof AnaglyphFreeCamera) {
+            serializationObject.type = "AnaglyphFreeCamera";
+        } else if (camera instanceof DeviceOrientationCamera) {
+            serializationObject.type = "DeviceOrientationCamera";
+        } else if (camera instanceof FollowCamera) {
+            serializationObject.type = "FollowCamera";
+        } else if (camera instanceof OculusCamera) {
+            serializationObject.type = "OculusCamera";
+        } else if (camera instanceof OculusGamepadCamera) {
+            serializationObject.type = "OculusGamepadCamera";
+        } else if (camera instanceof TouchCamera) {
+            serializationObject.type = "TouchCamera";
+        } else if (camera instanceof VirtualJoysticksCamera) {
+            serializationObject.type = "VirtualJoysticksCamera";
+        } else if (camera instanceof WebVRCamera) {
+            serializationObject.type = "WebVRCamera";
+        } else if (camera instanceof VRDeviceOrientationCamera) {
+            serializationObject.type = "VRDeviceOrientationCamera";
+        } 
 
-        if (camera.ellipsoid) {
-            serializationObject.ellipsoid = camera.ellipsoid.asArray();
+        //special properties of specific cameras
+        if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
+            var arcCamera = <ArcRotateCamera> camera;
+            serializationObject.alpha = arcCamera.alpha;
+            serializationObject.beta = arcCamera.beta;
+            serializationObject.radius = arcCamera.radius;
+        } else if (camera instanceof FollowCamera) {
+            var followCam = <FollowCamera> camera;
+            serializationObject.radius = followCam.radius;
+            serializationObject.heightOffset = followCam.heightOffset;
+            serializationObject.rotationOffset = followCam.rotationOffset;
+        } else if (camera instanceof AnaglyphFreeCamera || camera instanceof AnaglyphArcRotateCamera) {
+            //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
+            if (camera['_eyeSpace'] !== undefined) {
+                serializationObject.eye_space = Tools.ToDegrees(camera['_eyeSpace']);
+            }
+        }
+
+        //general properties that not all cameras have. The [] is due to typescript's type safety
+        if (camera['speed'] !== undefined) {
+            serializationObject.speed = camera['speed'];
+        }
+
+        // Target
+        if (camera['rotation'] && camera['rotation'] instanceof Vector3) {
+            serializationObject.rotation = camera['rotation'].asArray();
+        }
+
+        // Locked target
+        if (camera['lockedTarget'] && camera['lockedTarget'].id) {
+            serializationObject.lockedTargetId = camera['lockedTarget'].id;
+        }
+
+        if (camera['checkCollisions'] !== undefined) {
+            serializationObject.checkCollisions = camera['checkCollisions'];
+        }
+        if (camera['applyGravity'] !== undefined) {
+            serializationObject.applyGravity = camera['applyGravity'];
+        }
+
+        if (camera['ellipsoid']) {
+            serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
 
         // Animations
@@ -125,12 +182,12 @@
             key.frame = animationKey.frame;
 
             switch (dataType) {
-            case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
+            case Animation.ANIMATIONTYPE_FLOAT:
                 key.values = [animationKey.value];
                 break;
-            case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-            case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-            case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
+            case Animation.ANIMATIONTYPE_QUATERNION:
+            case Animation.ANIMATIONTYPE_MATRIX:
+            case Animation.ANIMATIONTYPE_VECTOR3:
                 key.values = animationKey.value.asArray();
                 break;
             }
@@ -234,7 +291,7 @@
             return null;
         }
 
-        if (texture instanceof BABYLON.CubeTexture) {
+        if (texture instanceof CubeTexture) {
             serializationObject.name = texture.name;
             serializationObject.hasAlpha = texture.hasAlpha;
             serializationObject.level = texture.level;
@@ -243,7 +300,7 @@
             return serializationObject;
         }
 
-        if (texture instanceof BABYLON.MirrorTexture) {
+        if (texture instanceof MirrorTexture) {
             var mirrorTexture = <MirrorTexture>texture;
             serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
             serializationObject.renderList = [];
@@ -253,7 +310,7 @@
             }
 
             serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
-        } else if (texture instanceof BABYLON.RenderTargetTexture) {
+        } else if (texture instanceof RenderTargetTexture) {
             var renderTargetTexture = <RenderTargetTexture>texture;
             serializationObject.renderTargetSize = renderTargetTexture.getRenderSize();
             serializationObject.renderList = [];
@@ -361,7 +418,7 @@
                 size: flare.size,
                 position: flare.position,
                 color: flare.color.asArray(),
-                textureName: BABYLON.Tools.GetFilename(flare.texture.name)
+                textureName: Tools.GetFilename(flare.texture.name)
             });
         }
 
@@ -439,33 +496,33 @@
     var serializeVertexData = (vertexData: Geometry): any => {
         var serializationObject = serializeGeometryBase(vertexData);
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-            serializationObject.positions = vertexData.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+            serializationObject.positions = vertexData.getVerticesData(VertexBuffer.PositionKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-            serializationObject.normals = vertexData.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+            serializationObject.normals = vertexData.getVerticesData(VertexBuffer.NormalKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-            serializationObject.uvs = vertexData.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UVKind)) {
+            serializationObject.uvs = vertexData.getVerticesData(VertexBuffer.UVKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-            serializationObject.uvs2 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+            serializationObject.uvs2 = vertexData.getVerticesData(VertexBuffer.UV2Kind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-            serializationObject.colors = vertexData.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+            serializationObject.colors = vertexData.getVerticesData(VertexBuffer.ColorKind);
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+            serializationObject.matricesIndices = vertexData.getVerticesData(VertexBuffer.MatricesIndicesKind);
             serializationObject.matricesIndices._isExpanded = true;
         }
 
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+            serializationObject.matricesWeights = vertexData.getVerticesData(VertexBuffer.MatricesWeightsKind);
         }
 
         serializationObject.indices = vertexData.getIndices();
@@ -627,16 +684,16 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
+        if (mesh.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
 
             switch (mesh.getPhysicsImpostor()) {
-            case BABYLON.PhysicsEngine.BoxImpostor:
+            case PhysicsEngine.BoxImpostor:
                 serializationObject.physicsImpostor = 1;
                 break;
-            case BABYLON.PhysicsEngine.SphereImpostor:
+            case PhysicsEngine.SphereImpostor:
                 serializationObject.physicsImpostor = 2;
                 break;
             }
@@ -701,11 +758,9 @@
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-
-                if (camera instanceof BABYLON.FreeCamera) {
-                    serializationObject.cameras.push(serializeCamera(<FreeCamera>camera));
-                }
+                serializationObject.cameras.push(serializeCamera(camera));
             }
+
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
@@ -716,9 +771,9 @@
             for (index = 0; index < scene.materials.length; index++) {
                 var material = scene.materials[index];
 
-                if (material instanceof BABYLON.StandardMaterial) {
+                if (material instanceof StandardMaterial) {
                     serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
-                } else if (material instanceof BABYLON.MultiMaterial) {
+                } else if (material instanceof MultiMaterial) {
                     serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>material));
                 }
             }
@@ -758,7 +813,7 @@
 
                 if (abstractMesh instanceof Mesh) {
                     var mesh = <Mesh>abstractMesh;
-                    if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                    if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
                         serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
                     }
                 }
