@@ -11,6 +11,7 @@ var BABYLON;
         function DirectionalLight(name, direction, scene) {
             _super.call(this, name, scene);
             this.direction = direction;
+            this.shadowOrthoScale = 0.1;
             this.position = direction.scale(-1);
         }
         DirectionalLight.prototype.getAbsolutePosition = function () {
@@ -19,6 +20,45 @@ var BABYLON;
         DirectionalLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
             return this.direction;
+        };
+        DirectionalLight.prototype.setShadowProjectionMatrix = function (matrix, viewMatrix, renderList) {
+            var orthoLeft = Number.MAX_VALUE;
+            var orthoRight = Number.MIN_VALUE;
+            var orthoTop = Number.MIN_VALUE;
+            var orthoBottom = Number.MAX_VALUE;
+            var tempVector3 = BABYLON.Vector3.Zero();
+            var activeCamera = this.getScene().activeCamera;
+            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                var mesh = renderList[meshIndex];
+                if (!mesh) {
+                    continue;
+                }
+                var boundingInfo = mesh.getBoundingInfo();
+                if (!boundingInfo) {
+                    continue;
+                }
+                var boundingBox = boundingInfo.boundingBox;
+                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                    BABYLON.Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+                    if (tempVector3.x < orthoLeft)
+                        orthoLeft = tempVector3.x;
+                    if (tempVector3.y < orthoBottom)
+                        orthoBottom = tempVector3.y;
+                    if (tempVector3.x > orthoRight)
+                        orthoRight = tempVector3.x;
+                    if (tempVector3.y > orthoTop)
+                        orthoTop = tempVector3.y;
+                }
+            }
+            var xOffset = orthoRight - orthoLeft;
+            var yOffset = orthoTop - orthoBottom;
+            BABYLON.Matrix.OrthoOffCenterLHToRef(orthoLeft - xOffset * this.shadowOrthoScale, orthoRight + xOffset * this.shadowOrthoScale, orthoBottom - yOffset * this.shadowOrthoScale, orthoTop + yOffset * this.shadowOrthoScale, -activeCamera.maxZ, activeCamera.maxZ, matrix);
+        };
+        DirectionalLight.prototype.supportsVSM = function () {
+            return true;
+        };
+        DirectionalLight.prototype.needRefreshPerFrame = function () {
+            return true;
         };
         DirectionalLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {

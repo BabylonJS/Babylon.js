@@ -148,6 +148,17 @@
             return this;
         }
 
+        public getLODLevelAtDistance(distance: number): Mesh {
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance === distance) {
+                    return level.mesh;
+                }
+            }
+            return null;
+        }
+
         /**
          * Remove a mesh from the LOD array
          * @param {BABYLON.Mesh} mesh - the mesh to be removed.
@@ -755,7 +766,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                },() => { }, scene.database, getBinaryData);
             }
         }
 
@@ -912,7 +923,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -933,7 +944,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1014,8 +1025,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
-                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
+                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
+                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1069,52 +1080,14 @@
          * @param type the type of simplification to run.
          * successCallback optional success callback to be called after the simplification finished processing all settings.
          */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, type: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
-
-            var getSimplifier = (): ISimplifier => {
-                switch (type) {
-                    case SimplificationType.QUADRATIC:
-                    default:
-                        return new QuadraticErrorSimplification(this);
-                }
-            }
-
-            if (parallelProcessing) {
-                //parallel simplifier
-                settings.forEach((setting) => {
-                    var simplifier = getSimplifier();
-                    simplifier.simplify(setting, (newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //check if it is the last
-                        if (setting.quality === settings[settings.length - 1].quality && successCallback) {
-                            //all done, run the success callback.
-                            successCallback();
-                        }
-                    });
-                });
-            } else {
-                //single simplifier.
-                var simplifier = getSimplifier();
-
-                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting, (newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //run the next quality level
-                        callback();
-                    });
-                }
-
-                AsyncLoop.Run(settings.length, (loop: AsyncLoop) => {
-                    runDecimation(settings[loop.index], () => {
-                        loop.executeNext();
-                    });
-                }, () => {
-                        //execution ended, run the success callback.
-                        if (successCallback) {
-                            successCallback();
-                        }
-                    });
-            }
+        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void) {
+            this.getScene().simplificationQueue.addTask({
+                settings: settings,
+                parallelProcessing: parallelProcessing,
+                mesh: this,
+                simplificationType: simplificationType,
+                successCallback: successCallback
+            });
         }
 
         // Statics
@@ -1282,9 +1255,40 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
 
             return ground;
+        }
+
+        public static CreateTube(name: string, path: Vector3[], radius: number, tesselation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var path3D: Path3D = new Path3D(path);
+            var tangents: Vector3[] = path3D.getTangents();
+            var normals: Vector3[] = path3D.getNormals();
+            var distances: number[] = path3D.getDistances();
+            var pi2: number = Math.PI * 2;
+            var step: number = pi2 / tesselation;
+            var returnRadius: { (i: number, distance: number): number; } = (i, distance) => radius;
+            var radiusFunctionFinal: { (i: number, distance: number): number; } = radiusFunction || returnRadius;
+
+            var circlePaths: Vector3[][] = [];
+            var circlePath: Vector3[];
+            var rad: number;
+            var normal: Vector3;
+            var rotated: Vector3;
+            var rotationMatrix: Matrix;
+            for (var i: number = 0; i < path.length; i++) {
+                rad = radiusFunctionFinal(i, distances[i]);      // current radius
+                circlePath = [];                            // current circle array
+                normal = normals[i];                        // current normal  
+                for (var ang: number = 0; ang < pi2; ang += step) {
+                    rotationMatrix = Matrix.RotationAxis(tangents[i], ang);
+                    rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                    circlePath.push(rotated);
+                }
+                circlePaths.push(circlePath);
+            }
+            var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            return tube;
         }
 
         // Tools

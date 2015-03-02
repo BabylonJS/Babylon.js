@@ -13,11 +13,11 @@
         private _engine: Engine;
         private _renderRatio: number;
         private _reusable = false;
-        public _textures = new BABYLON.SmartArray<WebGLTexture>(2);
+        public _textures = new SmartArray<WebGLTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number, engine?: Engine, reusable?: boolean, defines?: string) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -29,7 +29,7 @@
             }
 
             this._renderRatio = ratio;
-            this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            this.renderTargetSamplingMode = samplingMode ? samplingMode : Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
 
             samplers = samplers || [];
@@ -99,7 +99,7 @@
             // States
             this._engine.enableEffect(this._effect);
             this._engine.setState(false);
-            this._engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            this._engine.setAlphaMode(Engine.ALPHA_DISABLE);
             this._engine.setDepthBuffer(false);
             this._engine.setDepthWrite(false);
 
@@ -114,7 +114,7 @@
             return this._effect;
         }
 
-        public dispose(camera: Camera): void {
+        public dispose(camera?: Camera): void {
             camera = camera || this._camera;
 
             if (this._textures.length > 0) {
@@ -124,6 +124,9 @@
                 this._textures.reset();
             }
 
+            if (!camera) {
+                return;
+            }
             camera.detachPostProcess(this);
 
             var index = camera._postProcesses.indexOf(this);

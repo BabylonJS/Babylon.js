@@ -1709,11 +1709,16 @@ var BABYLON;
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
         };
         Matrix.OrthoLH = function (width, height, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.OrthoLHToRef = function (width, height, znear, zfar, result) {
             var hw = 2.0 / width;
             var hh = 2.0 / height;
             var id = 1.0 / (zfar - znear);
             var nid = znear / (znear - zfar);
-            return Matrix.FromValues(hw, 0, 0, 0, 0, hh, 0, 0, 0, 0, id, 0, 0, 0, nid, 1);
+            Matrix.FromValuesToRef(hw, 0, 0, 0, 0, hh, 0, 0, 0, 0, id, 0, 0, 0, nid, 1, result);
         };
         Matrix.OrthoOffCenterLH = function (left, right, bottom, top, znear, zfar) {
             var matrix = Matrix.Zero();
@@ -2401,6 +2406,90 @@ var BABYLON;
         return Path2;
     })();
     BABYLON.Path2 = Path2;
+    var Path3D = (function () {
+        function Path3D(path) {
+            this.path = path;
+            this._curve = [];
+            this._distances = [];
+            this._tangents = [];
+            this._normals = [];
+            this._binormals = [];
+            this._curve = path.slice(); // copy array         
+            var l = this._curve.length;
+            // first and last tangents
+            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0].normalize();
+            this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
+            this._tangents[l - 1].normalize();
+            // normals and binormals at first point : arbitrary vector with _normalVector()
+            var tg0 = this._tangents[0];
+            var pp0 = this._normalVector(this._curve[0], tg0);
+            this._normals[0] = pp0;
+            this._normals[0].normalize();
+            this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
+            this._normals[0].normalize();
+            this._distances[0] = 0;
+            // normals and binormals : next points
+            var prev; // previous vector (segment)
+            var cur; // current vector (segment)
+            var curTang; // current tangent
+            var prevNorm; // previous normal
+            var prevBinor; // previous binormal
+            for (var i = 1; i < l; i++) {
+                // tangents
+                prev = this._curve[i].subtract(this._curve[i - 1]);
+                if (i < l - 1) {
+                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    this._tangents[i] = prev.add(cur);
+                    this._tangents[i].normalize();
+                }
+                this._distances[i] = this._distances[i - 1] + prev.length();
+                // normals and binormals
+                // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
+                curTang = this._tangents[i];
+                prevNorm = this._normals[i - 1];
+                prevBinor = this._binormals[i - 1];
+                this._normals[i] = Vector3.Cross(prevBinor, curTang);
+                this._normals[i].normalize();
+                this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
+                this._binormals[i].normalize();
+            }
+        }
+        Path3D.prototype.getCurve = function () {
+            return this._curve;
+        };
+        Path3D.prototype.getTangents = function () {
+            return this._tangents;
+        };
+        Path3D.prototype.getNormals = function () {
+            return this._normals;
+        };
+        Path3D.prototype.getBinormals = function () {
+            return this._binormals;
+        };
+        Path3D.prototype.getDistances = function () {
+            return this._distances;
+        };
+        // private function normalVector(v0, vt) :
+        // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
+        Path3D.prototype._normalVector = function (v0, vt) {
+            var point;
+            if (vt.x !== 1) {
+                point = new Vector3(1, 0, 0);
+            }
+            else if (vt.y !== 1) {
+                point = new Vector3(0, 1, 0);
+            }
+            else if (vt.z !== 1) {
+                point = new Vector3(0, 0, 1);
+            }
+            var normal0 = Vector3.Cross(vt, point);
+            normal0.normalize();
+            return normal0;
+        };
+        return Path3D;
+    })();
+    BABYLON.Path3D = Path3D;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=../Math/babylon.math.js.map

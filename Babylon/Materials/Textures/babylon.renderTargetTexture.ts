@@ -6,6 +6,8 @@
         public coordinatesMode = Texture.PROJECTION_MODE;
         public onBeforeRender: () => void;
         public onAfterRender: () => void;
+        public onAfterUnbind: () => void;
+        public onClear: (engine: Engine) => void;
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
 
@@ -87,7 +89,7 @@
             this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
         }
 
-        public render(useCameraPostProcess?: boolean) {
+        public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -141,7 +143,11 @@
             }
 
             // Clear
-            engine.clear(scene.clearColor, true, true);
+            if (this.onClear) {
+                this.onClear(engine);
+            } else {
+                engine.clear(scene.clearColor, true, true);
+            }
 
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -162,8 +168,17 @@
                 this.onAfterRender();
             }
 
+            // Dump ?
+            if (dumpForDebug) {
+                Tools.DumpFramebuffer(this._size, this._size, engine);
+            }
+
             // Unbind
             engine.unBindFramebuffer(this._texture);
+
+            if (this.onAfterUnbind) {
+                this.onAfterUnbind();
+            }
         }
 
         public clone(): RenderTargetTexture {

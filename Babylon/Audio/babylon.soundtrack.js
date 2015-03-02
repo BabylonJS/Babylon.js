@@ -62,6 +62,20 @@ var BABYLON;
                 this._trackGain.gain.value = newVolume;
             }
         };
+        SoundTrack.prototype.switchPanningModelToHRTF = function () {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                for (var i = 0; i < this.soundCollection.length; i++) {
+                    this.soundCollection[i].switchPanningModelToHRTF();
+                }
+            }
+        };
+        SoundTrack.prototype.switchPanningModelToEqualPower = function () {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                for (var i = 0; i < this.soundCollection.length; i++) {
+                    this.soundCollection[i].switchPanningModelToEqualPower();
+                }
+            }
+        };
         SoundTrack.prototype.connectToAnalyser = function (analyser) {
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();

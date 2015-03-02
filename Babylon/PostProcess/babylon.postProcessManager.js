@@ -32,8 +32,38 @@ var BABYLON;
             postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
             return true;
         };
-        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture) {
-            var postProcesses = this._scene.activeCamera._postProcesses;
+        PostProcessManager.prototype.directRender = function (postProcesses, targetTexture) {
+            var engine = this._scene.getEngine();
+            for (var index = 0; index < postProcesses.length; index++) {
+                if (index < postProcesses.length - 1) {
+                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
+                }
+                else {
+                    if (targetTexture) {
+                        engine.bindFramebuffer(targetTexture);
+                    }
+                    else {
+                        engine.restoreDefaultFramebuffer();
+                    }
+                }
+                var pp = postProcesses[index];
+                var effect = pp.apply();
+                if (effect) {
+                    if (pp.onBeforeRender) {
+                        pp.onBeforeRender(effect);
+                    }
+                    // VBOs
+                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+                    // Draw order
+                    engine.draw(true, 0, 6);
+                }
+            }
+            // Restore depth buffer
+            engine.setDepthBuffer(true);
+            engine.setDepthWrite(true);
+        };
+        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, postProcesses) {
+            postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
                 return;

@@ -162,6 +162,7 @@
 
         // Customs render targets
         public renderTargetsEnabled = true;
+        public dumpNextRenderTargets = false;
         public customRenderTargets = new Array<RenderTargetTexture>();
 
         // Delay loading
@@ -189,6 +190,10 @@
         // Sound Tracks
         public mainSoundTrack: SoundTrack;
         public soundTracks = new Array<SoundTrack>();
+        private _audioEnabled = true;
+
+        //Simplification Queue
+        public simplificationQueue: SimplificationQueue;
 
         // Private
         private _engine: Engine;
@@ -271,6 +276,9 @@
 
             this._debugLayer = new DebugLayer(this);
             this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+
+            //simplification queue
+            this.simplificationQueue = new SimplificationQueue();
         }
 
         // Properties 
@@ -462,7 +470,7 @@
 
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);        
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -1186,10 +1194,12 @@
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+
                 this._renderId++;
             }
 
@@ -1338,6 +1348,11 @@
                 this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger, null);
             }
 
+            //Simplification Queue
+            if (!this.simplificationQueue.running) {
+                this.simplificationQueue.executeNext();
+            }
+
             // Before render
             if (this.beforeRender) {
                 this.beforeRender();
@@ -1381,7 +1396,7 @@
                         // Camera
                         this.updateTransformMatrix();
 
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -1468,13 +1483,16 @@
 
             this._toBeDisposed.reset();
 
+            if (this.dumpNextRenderTargets) {
+                this.dumpNextRenderTargets = false;
+            }
 
             Tools.EndPerformanceCounter("Scene rendering");
             this._lastFrameDuration = Tools.Now - startDate;
         }
 
         private _updateAudioParameters() {
-            if (this.mainSoundTrack.soundCollection.length === 0 || this.soundTracks.length === 0) {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
                 return;
             }
 
@@ -1505,6 +1523,46 @@
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
+                    }
+                }
+            }
+        }
+
+        public get audioEnabled(): boolean {
+            return this._audioEnabled;
+        }
+
+        public set audioEnabled(value: boolean) {
+            this._audioEnabled = value;
+            if (this._audioEnabled) {
+                this._enableAudio();
+            }
+            else {
+                this._disableAudio();
+            }
+        }
+
+        private _disableAudio() {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                this.mainSoundTrack.soundCollection[i].pause();
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    this.soundTracks[i].soundCollection[j].pause();
+                }
+            }
+        }
+
+        private _enableAudio() {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                if (this.mainSoundTrack.soundCollection[i].isPaused) {
+                    this.mainSoundTrack.soundCollection[i].play();
+                }
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    if (this.soundTracks[i].soundCollection[j].isPaused) {
+                        this.soundTracks[i].soundCollection[j].play();
                     }
                 }
             }
@@ -1555,11 +1613,7 @@
             this.detachControl();
 
             // Release sounds & sounds tracks
-            this.mainSoundTrack.dispose();
-
-            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
-                this.soundTracks[scIndex].dispose();
-            }
+            this.disposeSounds();
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -1624,6 +1678,15 @@
             }
 
             this._engine.wipeCaches();
+        }
+
+        // Release sounds & sounds tracks
+        public disposeSounds() {
+            this.mainSoundTrack.dispose();
+
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
         }
 
         // Collisions
@@ -1934,6 +1997,23 @@
 
         public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        }
+
+        // Audio
+        public switchAudioModeForHeadphones() {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        }
+
+        public switchAudioModeForNormalSpeakers() {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
+            }
         }
     }
 } 

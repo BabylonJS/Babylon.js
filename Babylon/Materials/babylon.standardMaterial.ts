@@ -267,7 +267,7 @@
                                 shadowsActivated = true;
                             }
 
-                            if (shadowGenerator.useVarianceShadowMap) {
+                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
                                 defines.push("#define SHADOWVSM" + lightIndex);
                                 if (lightIndex > 0) {
                                     fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
@@ -397,7 +397,7 @@
                         "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
-                        "darkness0", "darkness1", "darkness2", "darkness3",
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
                         "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
@@ -584,8 +584,8 @@
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
                             this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
-                            this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
+                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.getBias());
                         }
                     }
 

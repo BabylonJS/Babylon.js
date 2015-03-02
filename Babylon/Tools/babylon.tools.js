@@ -228,6 +228,10 @@ var BABYLON;
         };
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
+            reader.onerror = function (e) {
+                Tools.Log("Error while reading file: " + fileToLoad.name);
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.81, 0], meshes: [], cameras: [], lights: [] }));
+            };
             reader.onload = function (e) {
                 //target doesn't have result from ts 1.3
                 callback(e.target['result']);
@@ -349,6 +353,56 @@ var BABYLON;
                 }
             }
         };
+        Tools.DumpFramebuffer = function (width, height, engine) {
+            // Read the contents of the framebuffer
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
+            //Reading datas from WebGL
+            var data = engine.readPixels(0, 0, width, height);
+            for (var i = 0; i < halfHeight; i++) {
+                for (var j = 0; j < numberOfChannelsByLine; j++) {
+                    var currentCell = j + i * numberOfChannelsByLine;
+                    var targetLine = height - i - 1;
+                    var targetCell = j + targetLine * numberOfChannelsByLine;
+                    var temp = data[currentCell];
+                    data[currentCell] = data[targetCell];
+                    data[targetCell] = temp;
+                }
+            }
+            // Create a 2D canvas to store the result
+            if (!screenshotCanvas) {
+                screenshotCanvas = document.createElement('canvas');
+            }
+            screenshotCanvas.width = width;
+            screenshotCanvas.height = height;
+            var context = screenshotCanvas.getContext('2d');
+            // Copy the pixels to a 2D canvas
+            var imageData = context.createImageData(width, height);
+            //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
+            var castData = imageData.data;
+            castData.set(data);
+            context.putImageData(imageData, 0, 0);
+            var base64Image = screenshotCanvas.toDataURL();
+            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = base64Image;
+                var date = new Date();
+                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
+                a.setAttribute("download", "screenshot-" + stringDate + ".png");
+                window.document.body.appendChild(a);
+                a.addEventListener("click", function () {
+                    a.parentElement.removeChild(a);
+                });
+                a.click();
+            }
+            else {
+                var newWindow = window.open("");
+                var img = newWindow.document.createElement("img");
+                img.src = base64Image;
+                newWindow.document.body.appendChild(img);
+            }
+        };
         Tools.CreateScreenshot = function (engine, camera, size) {
             var width;
             var height;
@@ -390,54 +444,7 @@ var BABYLON;
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
             texture.onAfterRender = function () {
-                // Read the contents of the framebuffer
-                var numberOfChannelsByLine = width * 4;
-                var halfHeight = height / 2;
-                //Reading datas from WebGL
-                var data = engine.readPixels(0, 0, width, height);
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-                // Create a 2D canvas to store the result
-                if (!screenshotCanvas) {
-                    screenshotCanvas = document.createElement('canvas');
-                }
-                screenshotCanvas.width = width;
-                screenshotCanvas.height = height;
-                var context = screenshotCanvas.getContext('2d');
-                // Copy the pixels to a 2D canvas
-                var imageData = context.createImageData(width, height);
-                //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
-                var data = imageData.data;
-                data.set(data);
-                context.putImageData(imageData, 0, 0);
-                var base64Image = screenshotCanvas.toDataURL();
-                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                if (("download" in document.createElement("a"))) {
-                    var a = window.document.createElement("a");
-                    a.href = base64Image;
-                    var date = new Date();
-                    var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                    a.setAttribute("download", "screenshot-" + stringDate + ".png");
-                    window.document.body.appendChild(a);
-                    a.addEventListener("click", function () {
-                        a.parentElement.removeChild(a);
-                    });
-                    a.click();
-                }
-                else {
-                    var newWindow = window.open("");
-                    var img = newWindow.document.createElement("img");
-                    img.src = base64Image;
-                    newWindow.document.body.appendChild(img);
-                }
+                Tools.DumpFramebuffer(width, height, engine);
             };
             scene.incrementRenderId();
             texture.render(true);

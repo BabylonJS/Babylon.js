@@ -4,42 +4,42 @@ var BABYLON;
         /// Register to core BabylonJS object: engine, scene, rendering canvas, callback function when the scene will be loaded,
         /// loading progress callback and optionnal addionnal logic to call in the rendering loop
         function FilesInput(p_engine, p_scene, p_canvas, p_sceneLoadedCallback, p_progressCallback, p_additionnalRenderLoopLogicCallback, p_textureLoadingCallback, p_startingProcessingFilesCallback) {
-            this.engine = p_engine;
-            this.canvas = p_canvas;
-            this.currentScene = p_scene;
-            this.sceneLoadedCallback = p_sceneLoadedCallback;
-            this.progressCallback = p_progressCallback;
-            this.additionnalRenderLoopLogicCallback = p_additionnalRenderLoopLogicCallback;
-            this.textureLoadingCallback = p_textureLoadingCallback;
-            this.startingProcessingFilesCallback = p_startingProcessingFilesCallback;
+            this._engine = p_engine;
+            this._canvas = p_canvas;
+            this._currentScene = p_scene;
+            this._sceneLoadedCallback = p_sceneLoadedCallback;
+            this._progressCallback = p_progressCallback;
+            this._additionnalRenderLoopLogicCallback = p_additionnalRenderLoopLogicCallback;
+            this._textureLoadingCallback = p_textureLoadingCallback;
+            this._startingProcessingFilesCallback = p_startingProcessingFilesCallback;
         }
         FilesInput.prototype.monitorElementForDragNDrop = function (p_elementToMonitor) {
             var _this = this;
             if (p_elementToMonitor) {
-                this.elementToMonitor = p_elementToMonitor;
-                this.elementToMonitor.addEventListener("dragenter", function (e) {
+                this._elementToMonitor = p_elementToMonitor;
+                this._elementToMonitor.addEventListener("dragenter", function (e) {
                     _this.drag(e);
                 }, false);
-                this.elementToMonitor.addEventListener("dragover", function (e) {
+                this._elementToMonitor.addEventListener("dragover", function (e) {
                     _this.drag(e);
                 }, false);
-                this.elementToMonitor.addEventListener("drop", function (e) {
+                this._elementToMonitor.addEventListener("drop", function (e) {
                     _this.drop(e);
                 }, false);
             }
         };
         FilesInput.prototype.renderFunction = function () {
-            if (this.additionnalRenderLoopLogicCallback) {
-                this.additionnalRenderLoopLogicCallback();
+            if (this._additionnalRenderLoopLogicCallback) {
+                this._additionnalRenderLoopLogicCallback();
             }
-            if (this.currentScene) {
-                if (this.textureLoadingCallback) {
-                    var remaining = this.currentScene.getWaitingItemsCount();
+            if (this._currentScene) {
+                if (this._textureLoadingCallback) {
+                    var remaining = this._currentScene.getWaitingItemsCount();
                     if (remaining > 0) {
-                        this.textureLoadingCallback(remaining);
+                        this._textureLoadingCallback(remaining);
                     }
                 }
-                this.currentScene.render();
+                this._currentScene.render();
             }
         };
         FilesInput.prototype.drag = function (e) {
@@ -52,27 +52,23 @@ var BABYLON;
             this.loadFiles(eventDrop);
         };
         FilesInput.prototype.loadFiles = function (event) {
-            var _this = this;
-            var that = this;
-            if (this.startingProcessingFilesCallback)
-                this.startingProcessingFilesCallback();
-            var sceneFileToLoad;
-            var filesToLoad;
+            if (this._startingProcessingFilesCallback)
+                this._startingProcessingFilesCallback();
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
-                filesToLoad = event.dataTransfer.files;
+                this._filesToLoad = event.dataTransfer.files;
             }
             // Handling files from input files
             if (event && event.target && event.target.files) {
-                filesToLoad = event.target.files;
+                this._filesToLoad = event.target.files;
             }
-            if (filesToLoad && filesToLoad.length > 0) {
-                for (var i = 0; i < filesToLoad.length; i++) {
-                    switch (filesToLoad[i].type) {
+            if (this._filesToLoad && this._filesToLoad.length > 0) {
+                for (var i = 0; i < this._filesToLoad.length; i++) {
+                    switch (this._filesToLoad[i].type) {
                         case "image/jpeg":
                         case "image/png":
                         case "image/bmp":
-                            FilesInput.FilesTextures[filesToLoad[i].name] = filesToLoad[i];
+                            FilesInput.FilesTextures[this._filesToLoad[i].name] = this._filesToLoad[i];
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
@@ -83,45 +79,51 @@ var BABYLON;
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
                         case "audio/ogg":
-                            FilesInput.FilesToLoad[filesToLoad[i].name] = filesToLoad[i];
+                            FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
                             break;
                         default:
-                            if (filesToLoad[i].name.indexOf(".babylon") !== -1 && filesToLoad[i].name.indexOf(".manifest") === -1 && filesToLoad[i].name.indexOf(".incremental") === -1 && filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
-                                sceneFileToLoad = filesToLoad[i];
+                            if (this._filesToLoad[i].name.indexOf(".babylon") !== -1 && this._filesToLoad[i].name.indexOf(".manifest") === -1 && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
+                                this._sceneFileToLoad = this._filesToLoad[i];
                             }
                             break;
                     }
                 }
-                // If a ".babylon" file has been provided
-                if (sceneFileToLoad) {
-                    if (this.currentScene) {
-                        this.engine.stopRenderLoop();
-                        this.currentScene.dispose();
-                    }
-                    BABYLON.SceneLoader.Load("file:", sceneFileToLoad, this.engine, function (newScene) {
-                        that.currentScene = newScene;
-                        // Wait for textures and shaders to be ready
-                        that.currentScene.executeWhenReady(function () {
-                            // Attach camera to canvas inputs
-                            if (that.currentScene.activeCamera) {
-                                that.currentScene.activeCamera.attachControl(that.canvas);
-                            }
-                            if (that.sceneLoadedCallback) {
-                                that.sceneLoadedCallback(sceneFileToLoad, that.currentScene);
-                            }
-                            that.engine.runRenderLoop(function () {
-                                that.renderFunction();
-                            });
-                        });
-                    }, function (progress) {
-                        if (_this.progressCallback) {
-                            _this.progressCallback(progress);
+                this.reload();
+            }
+        };
+        FilesInput.prototype.reload = function () {
+            var _this = this;
+            var that = this;
+            // If a ".babylon" file has been provided
+            if (this._sceneFileToLoad) {
+                if (this._currentScene) {
+                    this._engine.stopRenderLoop();
+                    this._currentScene.dispose();
+                }
+                BABYLON.SceneLoader.Load("file:", this._sceneFileToLoad, this._engine, function (newScene) {
+                    that._currentScene = newScene;
+                    // Wait for textures and shaders to be ready
+                    that._currentScene.executeWhenReady(function () {
+                        // Attach camera to canvas inputs
+                        if (!that._currentScene.activeCamera || that._currentScene.lights.length === 0) {
+                            that._currentScene.createDefaultCameraOrLight();
                         }
+                        that._currentScene.activeCamera.attachControl(that._canvas);
+                        if (that._sceneLoadedCallback) {
+                            that._sceneLoadedCallback(_this._sceneFileToLoad, that._currentScene);
+                        }
+                        that._engine.runRenderLoop(function () {
+                            that.renderFunction();
+                        });
                     });
-                }
-                else {
-                    BABYLON.Tools.Error("Please provide a valid .babylon file.");
-                }
+                }, function (progress) {
+                    if (_this._progressCallback) {
+                        _this._progressCallback(progress);
+                    }
+                });
+            }
+            else {
+                BABYLON.Tools.Error("Please provide a valid .babylon file.");
             }
         };
         FilesInput.FilesTextures = new Array();
