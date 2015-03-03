@@ -222,7 +222,7 @@ var BABYLON;
                 shadowGenerator.useBlurVarianceShadowMap = true;
             }
             if (parsedShadowGenerator.bias) {
-                shadowGenerator.setBias(parsedShadowGenerator.bias);
+                shadowGenerator.bias = parsedShadowGenerator.bias;
             }
             return shadowGenerator;
         };

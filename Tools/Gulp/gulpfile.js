@@ -183,7 +183,8 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Rendering/babylon.depthRenderer.js',
       '../../Babylon/PostProcess/babylon.ssaoRenderingPipeline.js',
       '../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js',
-      '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js'
+      '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js',
+	  '../../Babylon/PostProcess/babylon.colorCorrectionPostProcess.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))
