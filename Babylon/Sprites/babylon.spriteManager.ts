@@ -19,11 +19,17 @@
         private _effectBase: Effect;
         private _effectFog: Effect;
 
-        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number) {
+        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
-            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
+            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            
+            // temp fix for correct 'pixelated' appearance
+            if(samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                this._spriteTexture.anisotropicFilteringLevel = 1;
+            }
+
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
 
             this._scene = scene;
