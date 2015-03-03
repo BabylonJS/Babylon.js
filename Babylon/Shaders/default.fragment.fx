@@ -216,7 +216,8 @@ float unpackHalf(vec2 color)
 float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float darkness, float bias)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
+	depth = 0.5 * depth + vec3(0.5);
+	vec2 uv = depth.xy;
 
 	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 	{
@@ -235,7 +236,8 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float dark
 float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float bias)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
+	depth = 0.5 * depth + vec3(0.5);
+	vec2 uv = depth.xy;
 
 	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
 	{
@@ -262,23 +264,25 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 // Thanks to http://devmaster.net/
 float ChebychevInequality(vec2 moments, float t, float bias)
 {
+	bias = 0.02 + bias;
 	if (t <= moments.x)
 	{
 		return 0.0;
 	}
 
 	float variance = moments.y - (moments.x * moments.x);
-	variance = max(variance, 0.02 + bias);
+	variance = max(variance, bias);
 
 	float d = t - moments.x;
 
-	return clamp(variance / (variance + d * d) - 0.05, 0.0, 1.0);
+	return clamp(variance / (variance + d * d) - 0.05 - bias, 0.0, 1.0);
 }
 
 float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
-	vec2 uv = 0.5 * depth.xy + vec2(0.5, 0.5);
+	depth = 0.5 * depth + vec3(0.5);
+	vec2 uv = depth.xy;
 
 	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0 || depth.z > 1.0)
 	{

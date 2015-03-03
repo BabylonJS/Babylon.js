@@ -482,8 +482,9 @@
         private _generateButton(root: HTMLDivElement, title: string, task: (element, tag) => void, tag: any = null): void {
             var button = document.createElement("button");
             button.innerHTML = title;
-            button.style.height = "20px";
-            button.style.color = "#222222";
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white"; 
             button.className = "debugLayerButton";
 
             button.addEventListener("click",(evt: Event) => {

@@ -355,8 +355,9 @@ var BABYLON;
             if (tag === void 0) { tag = null; }
             var button = document.createElement("button");
             button.innerHTML = title;
-            button.style.height = "20px";
-            button.style.color = "#222222";
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white";
             button.className = "debugLayerButton";
             button.addEventListener("click", function (evt) {
                 task(evt.target, tag);

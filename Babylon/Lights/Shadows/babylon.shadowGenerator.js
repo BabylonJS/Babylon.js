@@ -7,8 +7,8 @@ var BABYLON;
             this.filter = ShadowGenerator.FILTER_NONE;
             this.blurScale = 2;
             this._blurBoxOffset = 0;
-            this._darkness = 0;
             this._bias = 0.00005;
+            this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
             this._projectionMatrix = BABYLON.Matrix.Zero();
@@ -123,6 +123,16 @@ var BABYLON;
         Object.defineProperty(ShadowGenerator, "FILTER_BLURVARIANCESHADOWMAP", {
             get: function () {
                 return ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ShadowGenerator.prototype, "bias", {
+            get: function () {
+                return this._bias;
+            },
+            set: function (bias) {
+                this._bias = bias;
             },
             enumerable: true,
             configurable: true
@@ -264,12 +274,6 @@ var BABYLON;
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
-        };
-        ShadowGenerator.prototype.getBias = function () {
-            return this._bias;
-        };
-        ShadowGenerator.prototype.setBias = function (bias) {
-            this._bias = bias;
         };
         ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
             this._transparencyShadow = hasShadow;
