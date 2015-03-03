@@ -3108,4 +3108,48 @@
             return normal0;        
         }
     }
+
+    export class Curve3 {
+        private _points: Vector3[];
+
+        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        public static QuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number) {
+            nbPoints = nbPoints > 2 ? nbPoints : 3;
+            var bez: Vector3[] = [];
+            var step: number = 1 / nbPoints;
+            var equation = function(t: number, val0: number, val1: number, val2: number) {
+                var res: number = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                return res;
+            }
+            for(var i: number = 0; i <= 1; i += step) {
+                bez.push( new BABYLON.Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)) );
+            }
+            return new Curve3(bez);
+        }
+
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        public static CubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number) {
+            nbPoints = nbPoints > 3 ? nbPoints : 4;
+            var bez: Vector3[] = [];
+            var step: number = 1 / nbPoints;
+            var equation = function(t: number, val0: number, val1: number, val2: number, val3: number) {
+                var res: number = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 -t) * val1  + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                return res;
+            }
+            for(var i: number = 0; i <= 1; i += step) {
+                bez.push( new BABYLON.Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)) );
+            }
+            return new Curve3(bez);
+        }
+
+        // Spline (cubic spline) : to be done here ...
+
+        constructor(points: Vector3[]){
+            this._points = points;
+        }
+
+        public getPoints() {
+            return this._points;
+        }
+    }
 }
