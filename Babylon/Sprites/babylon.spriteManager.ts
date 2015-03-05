@@ -25,11 +25,6 @@
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-            // temp fix for correct 'pixelated' appearance
-            if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-                this._spriteTexture.anisotropicFilteringLevel = 1;
-            }
-
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
 
             this._scene = scene;

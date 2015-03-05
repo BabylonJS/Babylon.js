@@ -4976,9 +4976,13 @@ var __extends = this.__extends || function (d, b) {
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            var value = texture.anisotropicFilteringLevel;
+            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                value = 1;
+            }
+            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                texture._cachedAnisotropicFilteringLevel = value;
             }
         };
         Engine.prototype.readPixels = function (x, y, width, height) {
@@ -15140,10 +15144,6 @@ var BABYLON;
             this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            // temp fix for correct 'pixelated' appearance
-            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                this._spriteTexture.anisotropicFilteringLevel = 1;
-            }
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
             this._scene = scene;
             this._scene.spriteManagers.push(this);
@@ -24780,7 +24780,8 @@ var BABYLON;
             var updatable = false;
             var stopChecking = false;
             for (var kind in this._vertexBuffers) {
-                vertexData.set(this.getVerticesData(kind), kind);
+                // using slice() to make a copy of the array and not just reference it
+                vertexData.set(this.getVerticesData(kind).slice(0), kind);
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
                     stopChecking = !updatable;
