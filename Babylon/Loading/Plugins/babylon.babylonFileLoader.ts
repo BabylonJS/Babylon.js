@@ -454,7 +454,12 @@
 
         // Target
         if (parsedCamera.target) {
-            camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+            if (camera.setTarget) {
+                camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+            } else {
+                //For ArcRotate
+                camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
+            }
         } else {
             camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
         }
