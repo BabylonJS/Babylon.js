@@ -88,7 +88,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Rendering/babylon.renderingGroup.js',
       '../../Babylon/babylon.scene.js',
       '../../Babylon/Mesh/babylon.vertexBuffer.js',
-      '../../Babylon/Mesh/babylon.InstancedMesh.js',
+      '../../Babylon/Mesh/babylon.instancedMesh.js',
       '../../Babylon/Mesh/babylon.mesh.js',
       '../../Babylon/Mesh/babylon.subMesh.js',
       '../../Babylon/Materials/Textures/babylon.baseTexture.js',
@@ -172,18 +172,19 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Cameras/VR/babylon.webVRCamera.js',
       '../../Babylon/Tools/babylon.sceneOptimizer.js',
       '../../Babylon/Mesh/babylon.meshLODLevel.js',
-      '../../Babylon/Audio/babylon.audioengine.js',
+      '../../Babylon/Audio/babylon.audioEngine.js',
       '../../Babylon/Audio/babylon.sound.js',
       '../../Babylon/Audio/babylon.soundtrack.js',
       '../../Babylon/Debug/babylon.debugLayer.js',
       '../../Babylon/Materials/Textures/babylon.rawTexture.js',
       '../../Babylon/Mesh/babylon.polygonMesh.js',
-	  '../../Babylon/Mesh/babylon.meshSimplification.js',
-	  '../../Babylon/Audio/babylon.analyser.js',
-	  '../../Babylon/Rendering/babylon.depthRenderer.js',
-	  '../../Babylon/PostProcess/babylon.ssaoRenderingPipeline.js',
-	  '../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js',
-	  '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js'
+      '../../Babylon/Mesh/babylon.meshSimplification.js',
+      '../../Babylon/Audio/babylon.analyser.js',
+      '../../Babylon/Rendering/babylon.depthRenderer.js',
+      '../../Babylon/PostProcess/babylon.ssaoRenderingPipeline.js',
+      '../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js',
+      '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js',
+	  '../../Babylon/PostProcess/babylon.colorCorrectionPostProcess.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))

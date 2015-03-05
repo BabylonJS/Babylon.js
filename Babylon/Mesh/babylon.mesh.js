@@ -959,6 +959,7 @@ var BABYLON;
             var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
             return extruded;
         };
+<<<<<<< HEAD
         Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             ribbonCloseArray = ribbonCloseArray || false;
@@ -995,6 +996,16 @@ var BABYLON;
                 shapePaths.push(shapePath);
                 angle += angleStep;
             }
+=======
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            return extrudedCustom;
+        };
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotationFunction, rbCA, rbCP, custom, scene, updtbl, side) {
+            var path3D = new BABYLON.Path3D(curve);
+            var shapePaths = [];
+>>>>>>> a2f7b504bf990ef8502cd0b9faa3102e21a0d510
             var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
             return extrudedGeneric;
         };
@@ -1059,7 +1070,7 @@ var BABYLON;
             var step = pi2 / tesselation;
             var returnRadius = function (i, distance) { return radius; };
             var radiusFunctionFinal = radiusFunction || returnRadius;
-            var circlePaths = [];
+            var circlePaths = new Array();
             var circlePath;
             var rad;
             var normal;
@@ -1067,7 +1078,7 @@ var BABYLON;
             var rotationMatrix;
             for (var i = 0; i < path.length; i++) {
                 rad = radiusFunctionFinal(i, distances[i]); // current radius
-                circlePath = []; // current circle array
+                circlePath = Array(); // current circle array
                 normal = normals[i]; // current normal  
                 for (var ang = 0; ang < pi2; ang += step) {
                     rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);

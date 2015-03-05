@@ -102,6 +102,7 @@ var BABYLON;
             this._proceduralTextures = new Array();
             this.soundTracks = new Array();
             this._audioEnabled = true;
+            this._headphone = false;
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -1195,6 +1196,7 @@ var BABYLON;
             }
         };
         Object.defineProperty(Scene.prototype, "audioEnabled", {
+            // Audio
             get: function () {
                 return this._audioEnabled;
             },
@@ -1232,6 +1234,34 @@ var BABYLON;
                         this.soundTracks[i].soundCollection[j].play();
                     }
                 }
+            }
+        };
+        Object.defineProperty(Scene.prototype, "headphone", {
+            get: function () {
+                return this._headphone;
+            },
+            set: function (value) {
+                this._headphone = value;
+                if (this._headphone) {
+                    this._switchAudioModeForHeadphones();
+                }
+                else {
+                    this._switchAudioModeForNormalSpeakers();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype._switchAudioModeForHeadphones = function () {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        };
+        Scene.prototype._switchAudioModeForNormalSpeakers = function () {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
             }
         };
         Scene.prototype.enableDepthRenderer = function () {
@@ -1564,19 +1594,6 @@ var BABYLON;
         };
         Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
-        };
-        // Audio
-        Scene.prototype.switchAudioModeForHeadphones = function () {
-            this.mainSoundTrack.switchPanningModelToHRTF();
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToHRTF();
-            }
-        };
-        Scene.prototype.switchAudioModeForNormalSpeakers = function () {
-            this.mainSoundTrack.switchPanningModelToEqualPower();
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToEqualPower();
-            }
         };
         // Statics
         Scene._FOGMODE_NONE = 0;

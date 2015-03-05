@@ -2958,9 +2958,10 @@
     }
 
     export class Path2 {
-        private _points: Vector2[] = [];
-        private _length: number = 0;
-        closed: boolean = false;
+        private _points = new Array<Vector2>();
+        private _length = 0;
+
+        public closed = false;
 
         constructor(x: number, y: number) {
             this._points.push(new Vector2(x, y));
@@ -3062,25 +3063,25 @@
     }
 
     export class Path3D {
-        private _curve: Vector3[] = [];
-        private _distances: number[] = [];
-        private _tangents: Vector3[] = [];
-        private _normals: Vector3[] = [];
-        private _binormals: Vector3[] = [];
+        private _curve = new Array<Vector3>();
+        private _distances = new Array<number>();
+        private _tangents = new Array<Vector3>();
+        private _normals = new Array<Vector3>();
+        private _binormals = new Array<Vector3>();
 
         constructor(public path: Vector3[]) {
             this._curve = path.slice();   // copy array         
-            var l: number = this._curve.length;
+            var l = this._curve.length;
 
             // first and last tangents
             this._tangents[0] = this._curve[1].subtract(this._curve[0]);
             this._tangents[0].normalize();
-            this._tangents[l-1] = this._curve[l-1].subtract(this._curve[l-2]);
+            this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
-            
+
             // normals and binormals at first point : arbitrary vector with _normalVector()
-            var tg0: Vector3 = this._tangents[0];
-            var pp0: Vector3 = this._normalVector(this._curve[0], tg0);
+            var tg0 = this._tangents[0];
+            var pp0 = this._normalVector(this._curve[0], tg0);
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
@@ -3094,21 +3095,21 @@
             var prevNorm: Vector3;    // previous normal
             var prevBinor: Vector3;   // previous binormal
 
-            for(var i: number = 1; i < l; i++) {
+            for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i-1]);
-                if (i < l-1) {
-                    cur = this._curve[i+1].subtract(this._curve[i]);
+                prev = this._curve[i].subtract(this._curve[i - 1]);
+                if (i < l - 1) {
+                    cur = this._curve[i + 1].subtract(this._curve[i]);
                     this._tangents[i] = prev.add(cur);
-                    this._tangents[i].normalize();               
+                    this._tangents[i].normalize();
                 }
-                this._distances[i] = this._distances[i - 1] + prev.length();   
-                      
+                this._distances[i] = this._distances[i - 1] + prev.length();
+
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i-1];
-                prevBinor = this._binormals[i-1];
+                prevNorm = this._normals[i - 1];
+                prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
                 this._normals[i].normalize();
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
@@ -3139,22 +3140,65 @@
         // private function normalVector(v0, vt) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         private _normalVector(v0: Vector3, vt: Vector3): Vector3 {
-            var point: Vector3; 
+            var point: Vector3;
 
             if (vt.x !== 1) {     // search for a point in the plane
-                point = new Vector3(1, 0, 0);   
+                point = new Vector3(1, 0, 0);
             }
             else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);  
+                point = new Vector3(0, 1, 0);
             }
             else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);  
+                point = new Vector3(0, 0, 1);
             }
             var normal0: Vector3 = Vector3.Cross(vt, point);
             normal0.normalize();
-            return normal0;        
+            return normal0;
         }
     }
+
+    export class Curve3 {
+        private _points: Vector3[];
+
+        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        public static QuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 2 ? nbPoints : 3;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number) => {
+                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        public static CubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 3 ? nbPoints : 4;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        constructor(points: Vector3[]) {
+            this._points = points;
+        }
+
+        public getPoints() {
+            return this._points;
+        }
+    }
+<<<<<<< HEAD
 
     // SIMD
     if (window.SIMD !== undefined) {
@@ -3162,3 +3206,6 @@
         Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
     }
 }
+=======
+}
+>>>>>>> a2f7b504bf990ef8502cd0b9faa3102e21a0d510

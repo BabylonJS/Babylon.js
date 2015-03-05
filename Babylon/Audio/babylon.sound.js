@@ -18,7 +18,7 @@ var BABYLON;
             this.rolloffFactor = 1;
             this.maxDistance = 100;
             this.distanceModel = "linear";
-            this.panningModel = "HRTF";
+            this._panningModel = "equalpower";
             this._playbackRate = 1;
             this._startTime = 0;
             this._startOffset = 0;
@@ -60,7 +60,6 @@ var BABYLON;
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
-                this.panningModel = options.panningModel || "HRTF";
                 this._playbackRate = options.playbackRate || 1;
             }
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -160,12 +159,14 @@ var BABYLON;
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
-                this.panningModel = options.panningModel || this.panningModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
             }
         };
         Sound.prototype._createSpatialParameters = function () {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (this._scene.headphone) {
+                    this._panningModel = "HRTF";
+                }
                 this._soundPanner = BABYLON.Engine.audioEngine.audioContext.createPanner();
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
@@ -173,28 +174,30 @@ var BABYLON;
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = "HRTF";
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this.panningModel;
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 this._soundPanner.connect(this._ouputAudioNode);
                 this._inputAudioNode = this._soundPanner;
             }
         };
         Sound.prototype.switchPanningModelToHRTF = function () {
-            this._switchPanningModel("HRTF");
+            this._panningModel = "HRTF";
+            this._switchPanningModel();
         };
         Sound.prototype.switchPanningModelToEqualPower = function () {
-            this._switchPanningModel("equalpower");
+            this._panningModel = "equalpower";
+            this._switchPanningModel();
         };
-        Sound.prototype._switchPanningModel = function (newModel) {
+        Sound.prototype._switchPanningModel = function () {
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this.spatialSound) {
-                this._soundPanner.panningModel = newModel;
+                this._soundPanner.panningModel = this._panningModel;
             }
         };
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
