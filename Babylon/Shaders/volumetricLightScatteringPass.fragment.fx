@@ -26,11 +26,11 @@ void main(void)
 #endif
 
 #ifdef BASIC_RENDER
-	#ifdef OPACITY
-		gl_FragColor = diffuseColor * texture2D(opacitySampler, vUV);
-	#else
-		gl_FragColor = diffuseColor;
-	#endif
+#ifdef OPACITY
+	gl_FragColor = diffuseColor * texture2D(opacitySampler, vUV);
+#else
+	gl_FragColor = diffuseColor;
+#endif
 #else
 	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 #endif
