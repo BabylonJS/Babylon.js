@@ -22,6 +22,7 @@
 
         private _syncPositions: () => void;
         private _syncData: () => void;
+        private _syncUI: () => void;
         private _onCanvasClick: (evt: MouseEvent) => void;
 
         private _clickPosition: any;
@@ -102,7 +103,7 @@
                 };
             }
 
-            this._syncData = (): void => {
+            this._syncUI = (): void => {
                 if (this._showUI) {
                     if (this._displayStatistics) {
                         this._displayStats();
@@ -130,7 +131,9 @@
                         this._treeDiv.style.display = "none";
                     }
                 }
+            }
 
+            this._syncData = (): void => {
                 if (this._labelsEnabled || !this._showUI) {
 
                     this._camera.getViewMatrix().multiplyToRef(this._camera.getProjectionMatrix(), this._transformationMatrix);
@@ -336,6 +339,7 @@
             var engine = this._scene.getEngine();
 
             this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
@@ -391,6 +395,7 @@
 
             this._syncPositions();
             this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         }
 
         private _clearLabels(): void {
@@ -477,8 +482,10 @@
         private _generateButton(root: HTMLDivElement, title: string, task: (element, tag) => void, tag: any = null): void {
             var button = document.createElement("button");
             button.innerHTML = title;
-            button.style.height = "20px";
-            button.style.color = "#222222";
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white"; 
+            button.className = "debugLayerButton";
 
             button.addEventListener("click",(evt: Event) => {
                 task(evt.target, tag);
@@ -683,7 +690,7 @@
                 }
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
-                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets",(element) => { this._scene.dumpNextRenderTargets = true; });
+                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
   
                 this._globalDiv.appendChild(this._statsDiv);

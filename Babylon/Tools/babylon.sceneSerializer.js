@@ -56,21 +56,89 @@ var BABYLON;
         if (camera.parent) {
             serializationObject.parentId = camera.parent.id;
         }
-        // Target
-        serializationObject.rotation = camera.rotation.asArray();
-        // Locked target
-        if (camera.lockedTarget && camera.lockedTarget.id) {
-            serializationObject.lockedTargetId = camera.lockedTarget.id;
-        }
         serializationObject.fov = camera.fov;
         serializationObject.minZ = camera.minZ;
         serializationObject.maxZ = camera.maxZ;
-        serializationObject.speed = camera.speed;
         serializationObject.inertia = camera.inertia;
-        serializationObject.checkCollisions = camera.checkCollisions;
-        serializationObject.applyGravity = camera.applyGravity;
-        if (camera.ellipsoid) {
-            serializationObject.ellipsoid = camera.ellipsoid.asArray();
+        //setting the type
+        if (camera instanceof BABYLON.FreeCamera) {
+            serializationObject.type = "FreeCamera";
+        }
+        else if (camera instanceof BABYLON.ArcRotateCamera) {
+            serializationObject.type = "ArcRotateCamera";
+        }
+        else if (camera instanceof BABYLON.AnaglyphArcRotateCamera) {
+            serializationObject.type = "AnaglyphArcRotateCamera";
+        }
+        else if (camera instanceof BABYLON.GamepadCamera) {
+            serializationObject.type = "GamepadCamera";
+        }
+        else if (camera instanceof BABYLON.AnaglyphFreeCamera) {
+            serializationObject.type = "AnaglyphFreeCamera";
+        }
+        else if (camera instanceof BABYLON.DeviceOrientationCamera) {
+            serializationObject.type = "DeviceOrientationCamera";
+        }
+        else if (camera instanceof BABYLON.FollowCamera) {
+            serializationObject.type = "FollowCamera";
+        }
+        else if (camera instanceof BABYLON.OculusCamera) {
+            serializationObject.type = "OculusCamera";
+        }
+        else if (camera instanceof BABYLON.OculusGamepadCamera) {
+            serializationObject.type = "OculusGamepadCamera";
+        }
+        else if (camera instanceof BABYLON.TouchCamera) {
+            serializationObject.type = "TouchCamera";
+        }
+        else if (camera instanceof BABYLON.VirtualJoysticksCamera) {
+            serializationObject.type = "VirtualJoysticksCamera";
+        }
+        else if (camera instanceof BABYLON.WebVRCamera) {
+            serializationObject.type = "WebVRCamera";
+        }
+        else if (camera instanceof BABYLON.VRDeviceOrientationCamera) {
+            serializationObject.type = "VRDeviceOrientationCamera";
+        }
+        //special properties of specific cameras
+        if (camera instanceof BABYLON.ArcRotateCamera || camera instanceof BABYLON.AnaglyphArcRotateCamera) {
+            var arcCamera = camera;
+            serializationObject.alpha = arcCamera.alpha;
+            serializationObject.beta = arcCamera.beta;
+            serializationObject.radius = arcCamera.radius;
+        }
+        else if (camera instanceof BABYLON.FollowCamera) {
+            var followCam = camera;
+            serializationObject.radius = followCam.radius;
+            serializationObject.heightOffset = followCam.heightOffset;
+            serializationObject.rotationOffset = followCam.rotationOffset;
+        }
+        else if (camera instanceof BABYLON.AnaglyphFreeCamera || camera instanceof BABYLON.AnaglyphArcRotateCamera) {
+            //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
+            if (camera['_eyeSpace'] !== undefined) {
+                serializationObject.eye_space = BABYLON.Tools.ToDegrees(camera['_eyeSpace']);
+            }
+        }
+        //general properties that not all cameras have. The [] is due to typescript's type safety
+        if (camera['speed'] !== undefined) {
+            serializationObject.speed = camera['speed'];
+        }
+        // Target
+        if (camera['rotation'] && camera['rotation'] instanceof BABYLON.Vector3) {
+            serializationObject.rotation = camera['rotation'].asArray();
+        }
+        // Locked target
+        if (camera['lockedTarget'] && camera['lockedTarget'].id) {
+            serializationObject.lockedTargetId = camera['lockedTarget'].id;
+        }
+        if (camera['checkCollisions'] !== undefined) {
+            serializationObject.checkCollisions = camera['checkCollisions'];
+        }
+        if (camera['applyGravity'] !== undefined) {
+            serializationObject.applyGravity = camera['applyGravity'];
+        }
+        if (camera['ellipsoid']) {
+            serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
         // Animations
         appendAnimations(camera, serializationObject);
@@ -551,9 +619,7 @@ var BABYLON;
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-                if (camera instanceof BABYLON.FreeCamera) {
-                    serializationObject.cameras.push(serializeCamera(camera));
-                }
+                serializationObject.cameras.push(serializeCamera(camera));
             }
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;

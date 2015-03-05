@@ -1450,6 +1450,23 @@ var BABYLON;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
             return this;
         };
+        Matrix.prototype.multiplyToArraySIMD = function (other, result, offset) {
+            if (offset === void 0) { offset = 0; }
+            var tm = this.m;
+            var om = other.m;
+            var om0 = SIMD.float32x4.load(om, 0);
+            var om1 = SIMD.float32x4.load(om, 4);
+            var om2 = SIMD.float32x4.load(om, 8);
+            var om3 = SIMD.float32x4.load(om, 12);
+            var tm0 = SIMD.float32x4.load(tm, 0);
+            SIMD.float32x4.store(result, offset + 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 3, 3, 3, 3), om3)))));
+            var tm1 = SIMD.float32x4.load(tm, 4);
+            SIMD.float32x4.store(result, offset + 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 3, 3, 3, 3), om3)))));
+            var tm2 = SIMD.float32x4.load(tm, 8);
+            SIMD.float32x4.store(result, offset + 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 3, 3, 3, 3), om3)))));
+            var tm3 = SIMD.float32x4.load(tm, 12);
+            SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
+        };
         Matrix.prototype.equals = function (value) {
             return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] && this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] && this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] && this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         };
@@ -2490,5 +2507,10 @@ var BABYLON;
         return Path3D;
     })();
     BABYLON.Path3D = Path3D;
+    // SIMD
+    if (window.SIMD !== undefined) {
+        // Replace functions
+        Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
+    }
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map
