@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+
+    declare var SIMD;
+
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -1734,7 +1737,6 @@
         }
 
         public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
-
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -1790,6 +1792,51 @@
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
 
             return this;
+        }
+
+        public multiplyToArraySIMD(other: Matrix, result: Matrix, offset = 0): void {
+            var tm = this.m;
+            var om = other.m;
+            var om0 = SIMD.float32x4.load(om, 0);
+            var om1 = SIMD.float32x4.load(om, 4);
+            var om2 = SIMD.float32x4.load(om, 8);
+            var om3 = SIMD.float32x4.load(om, 12);
+
+            var tm0 = SIMD.float32x4.load(tm, 0);
+            SIMD.float32x4.store(result, offset + 0, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 3, 3, 3, 3), om3)))));
+
+            var tm1 = SIMD.float32x4.load(tm, 4);
+            SIMD.float32x4.store(result, offset + 4, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 3, 3, 3, 3), om3)))));
+
+            var tm2 = SIMD.float32x4.load(tm, 8);
+            SIMD.float32x4.store(result, offset + 8, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 3, 3, 3, 3), om3)))));
+
+            var tm3 = SIMD.float32x4.load(tm, 12);
+            SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
         }
 
         public equals(value: Matrix): boolean {
@@ -3107,5 +3154,11 @@
             normal0.normalize();
             return normal0;        
         }
+    }
+
+    // SIMD
+    if (window.SIMD !== undefined) {
+        // Replace functions
+        Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
     }
 }

@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    declare var CANNON;
-
     export interface IPhysicsEnginePlugin {
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;

@@ -35,15 +35,15 @@ void main(void)
 	if (texture2D(diffuseSampler, vUV).a < 0.4)
 		discard;
 #endif
+	float depth = vPosition.z / vPosition.w;
+	depth = depth * 0.5 + 0.5;
 
 #ifdef VSM
-	float depth = vPosition.z / vPosition.w;
-
 	float moment1 = depth;
 	float moment2 = moment1 * moment1;
 
 	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
 #else
-	gl_FragColor = pack(vPosition.z / vPosition.w);
+	gl_FragColor = pack(depth);
 #endif
 }

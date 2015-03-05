@@ -951,6 +951,53 @@ var BABYLON;
             vertexData.applyToMesh(lines, updatable);
             return lines;
         };
+        // Extrusion
+        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            scale = scale || 1;
+            rotation = rotation || 0;
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            return extruded;
+        };
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            ribbonCloseArray = ribbonCloseArray || false;
+            ribbonClosePath = ribbonClosePath || false;
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            return extrudedCustom;
+        };
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
+            var path3D = new BABYLON.Path3D(curve);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var binormals = path3D.getBinormals();
+            var distances = path3D.getDistances();
+            var shapePaths = new Array();
+            var angle = 0;
+            var returnScale = function (i, distance) {
+                return scale;
+            };
+            var returnRotation = function (i, distance) {
+                return rotation;
+            };
+            var rotate = custom ? rotateFunction : returnRotation;
+            var scl = custom ? scaleFunction : returnScale;
+            for (var i = 0; i < curve.length; i++) {
+                var shapePath = new Array();
+                var angleStep = rotate(i, distances[i]);
+                var scaleRatio = scl(i, distances[i]);
+                var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                for (var p = 0; p < shape.length; p++) {
+                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                    var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                    shapePath.push(rotated);
+                }
+                shapePaths.push(shapePath);
+                angle += angleStep;
+            }
+            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
+            return extrudedGeneric;
+        };
         // Plane & ground
         Mesh.CreatePlane = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }

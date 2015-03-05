@@ -26,7 +26,15 @@
         public filter = ShadowGenerator.FILTER_NONE;
         public blurScale = 2;
         private _blurBoxOffset = 0;
+        private _bias = 0.00005;
 
+        public get bias(): number {
+            return this._bias;
+        }
+
+        public set bias(bias: number) {
+            this._bias = bias;
+        }
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
@@ -78,7 +86,6 @@
         private _shadowMap: RenderTargetTexture;
         private _shadowMap2: RenderTargetTexture;
         private _darkness = 0;
-        private _bias = 0.00005;
         private _transparencyShadow = false;
         private _effect: Effect;
 
@@ -314,14 +321,6 @@
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
-        }
-
-        public getBias(): number {
-            return this._bias;
-        }
-
-        public setBias(bias: number): void {
-            this._bias = bias;
         }
 
         public setTransparencyShadow(hasShadow: boolean): void {

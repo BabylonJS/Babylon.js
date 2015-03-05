@@ -276,7 +276,7 @@
         }
 
         if (parsedShadowGenerator.bias) {
-            shadowGenerator.setBias(parsedShadowGenerator.bias);
+            shadowGenerator.bias = parsedShadowGenerator.bias;
         }
 
         return shadowGenerator;
@@ -945,8 +945,7 @@
                 }
             }
             else {
-                if (combineArray !== null)
-                    combineArray.push(newAction);
+                combineArray.push(newAction);
             }
 
             for (var i = 0; i < parsedAction.children.length; i++)
