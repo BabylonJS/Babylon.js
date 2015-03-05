@@ -64,7 +64,7 @@ Will be generated :
 
 Be aware that all js files content will be overwrite.
 
-### Build Babylon.js when you save a javascript file:
+### Build Babylon.js when you save a typescript file:
 ```
 gulp watch-typescript
 ```
