@@ -105,6 +105,9 @@
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
+            if (arcCamera.target && camera.target.id) {
+                serializationObject.lockedTargetId = camera.target.id;
+            }
         } else if (camera instanceof FollowCamera) {
             var followCam = <FollowCamera> camera;
             serializationObject.radius = followCam.radius;

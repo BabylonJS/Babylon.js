@@ -106,6 +106,9 @@ var BABYLON;
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
+            if (arcCamera.target && camera.target.id) {
+                serializationObject.lockedTargetId = camera.target.id;
+            }
         }
         else if (camera instanceof BABYLON.FollowCamera) {
             var followCam = camera;
