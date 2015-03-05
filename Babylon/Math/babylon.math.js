@@ -2340,7 +2340,7 @@ var BABYLON;
     BABYLON.PathCursor = PathCursor;
     var Path2 = (function () {
         function Path2(x, y) {
-            this._points = [];
+            this._points = new Array();
             this._length = 0;
             this.closed = false;
             this._points.push(new Vector2(x, y));
@@ -2426,11 +2426,11 @@ var BABYLON;
     var Path3D = (function () {
         function Path3D(path) {
             this.path = path;
-            this._curve = [];
-            this._distances = [];
-            this._tangents = [];
-            this._normals = [];
-            this._binormals = [];
+            this._curve = new Array();
+            this._distances = new Array();
+            this._tangents = new Array();
+            this._normals = new Array();
+            this._binormals = new Array();
             this._curve = path.slice(); // copy array         
             var l = this._curve.length;
             // first and last tangents
@@ -2507,10 +2507,51 @@ var BABYLON;
         return Path3D;
     })();
     BABYLON.Path3D = Path3D;
+<<<<<<< HEAD
     // SIMD
     if (window.SIMD !== undefined) {
         // Replace functions
         Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
     }
+=======
+    var Curve3 = (function () {
+        function Curve3(points) {
+            this._points = points;
+        }
+        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        Curve3.QuadraticBezier = function (v0, v1, v2, nbPoints) {
+            nbPoints = nbPoints > 2 ? nbPoints : 3;
+            var bez = new Array();
+            var step = 1 / nbPoints;
+            var equation = function (t, val0, val1, val2) {
+                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                return res;
+            };
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            }
+            return new Curve3(bez);
+        };
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        Curve3.CubicBezier = function (v0, v1, v2, v3, nbPoints) {
+            nbPoints = nbPoints > 3 ? nbPoints : 4;
+            var bez = new Array();
+            var step = 1 / nbPoints;
+            var equation = function (t, val0, val1, val2, val3) {
+                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                return res;
+            };
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            }
+            return new Curve3(bez);
+        };
+        Curve3.prototype.getPoints = function () {
+            return this._points;
+        };
+        return Curve3;
+    })();
+    BABYLON.Curve3 = Curve3;
+>>>>>>> a2f7b504bf990ef8502cd0b9faa3102e21a0d510
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map
