@@ -10,7 +10,7 @@
         public rolloffFactor: number = 1;
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
-        private _panningModel: string = "equalpower";
+        public panningModel: string = "HRTF";
         public onended: () => any;
         private _playbackRate: number = 1;
         private _startTime: number = 0;
@@ -73,6 +73,7 @@
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
+                this.panningModel = options.panningModel || "HRTF";
                 this._playbackRate = options.playbackRate || 1;
             }
 
@@ -169,15 +170,13 @@
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
+                this.panningModel = options.panningModel || this.panningModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
             }
         }
 
         private _createSpatialParameters() {
             if (Engine.audioEngine.canUseWebAudio) {
-                if (this._scene.headphone) {
-                    this._panningModel = "HRTF";
-                }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
 
                 if (this.useCustomAttenuation) {
@@ -186,14 +185,14 @@
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = this._panningModel;
+                    this._soundPanner.panningModel = "HRTF";
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this._panningModel;
+                    this._soundPanner.panningModel = this.panningModel;
                 }
                 this._soundPanner.connect(this._ouputAudioNode);
                 this._inputAudioNode = this._soundPanner;
@@ -201,18 +200,16 @@
         }
 
         public switchPanningModelToHRTF() {
-            this._panningModel = "HRTF";
-            this._switchPanningModel();    
+            this._switchPanningModel("HRTF");    
         }
 
         public switchPanningModelToEqualPower() {
-            this._panningModel = "equalpower";
-            this._switchPanningModel();
+            this._switchPanningModel("equalpower");
         }
 
-        private _switchPanningModel() {
+        private _switchPanningModel(newModel: string) {
             if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
-                this._soundPanner.panningModel = this._panningModel;
+                this._soundPanner.panningModel = newModel;
             }
         }
 

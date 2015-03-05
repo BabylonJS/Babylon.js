@@ -191,7 +191,6 @@
         public mainSoundTrack: SoundTrack;
         public soundTracks = new Array<SoundTrack>();
         private _audioEnabled = true;
-        private _headphone = false;
 
         //Simplification Queue
         public simplificationQueue: SimplificationQueue;
@@ -1529,7 +1528,6 @@
             }
         }
 
-        // Audio
         public get audioEnabled(): boolean {
             return this._audioEnabled;
         }
@@ -1567,36 +1565,6 @@
                         this.soundTracks[i].soundCollection[j].play();
                     }
                 }
-            }
-        }
-
-        public get headphone(): boolean {
-            return this._headphone;
-        }
-
-        public set headphone(value: boolean) {
-            this._headphone = value;
-            if (this._headphone) {
-                this._switchAudioModeForHeadphones();
-            }
-            else {
-                this._switchAudioModeForNormalSpeakers();
-            }
-        }
-
-        private _switchAudioModeForHeadphones() {
-            this.mainSoundTrack.switchPanningModelToHRTF();
-
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToHRTF();
-            }
-        }
-
-        private _switchAudioModeForNormalSpeakers() {
-            this.mainSoundTrack.switchPanningModelToEqualPower();
-
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToEqualPower();
             }
         }
 
@@ -2029,6 +1997,23 @@
 
         public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        }
+
+        // Audio
+        public switchAudioModeForHeadphones() {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        }
+
+        public switchAudioModeForNormalSpeakers() {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
+            }
         }
     }
 } 

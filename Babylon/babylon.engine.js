@@ -1636,13 +1636,9 @@ var BABYLON;
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
-            var value = texture.anisotropicFilteringLevel;
-            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                value = 1;
-            }
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = value;
+            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
+                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
+                texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
             }
         };
         Engine.prototype.readPixels = function (x, y, width, height) {

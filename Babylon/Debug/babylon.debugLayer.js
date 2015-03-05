@@ -582,14 +582,14 @@ var BABYLON;
                 if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                     this._optionsSubsetDiv.appendChild(document.createElement("br"));
                     this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
-                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, function (element) {
+                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", true, function (element) {
                         if (element.checked) {
-                            _this._scene.headphone = true;
+                            _this._scene.switchAudioModeForHeadphones();
                         }
                     });
-                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", !this._scene.headphone, function (element) {
+                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", false, function (element) {
                         if (element.checked) {
-                            _this._scene.headphone = false;
+                            _this._scene.switchAudioModeForNormalSpeakers();
                         }
                     });
                     this._generateCheckBox(this._optionsSubsetDiv, "Disable audio", !this._scene.audioEnabled, function (element) {
