@@ -49,7 +49,7 @@ var BABYLON;
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = BABYLON.Tags.GetTags(camera);
+        serializationObject.tags = BABYLON.Tags.GetTags(camera) || [];
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
         // Parent
@@ -126,6 +126,9 @@ var BABYLON;
         if (camera['speed'] !== undefined) {
             serializationObject.speed = camera['speed'];
         }
+        if (camera['target'] && camera['target'] instanceof BABYLON.Vector3) {
+            serializationObject.target = camera['target'].asArray();
+        }
         // Target
         if (camera['rotation'] && camera['rotation'] instanceof BABYLON.Vector3) {
             serializationObject.rotation = camera['rotation'].asArray();
@@ -134,12 +137,8 @@ var BABYLON;
         if (camera['lockedTarget'] && camera['lockedTarget'].id) {
             serializationObject.lockedTargetId = camera['lockedTarget'].id;
         }
-        if (camera['checkCollisions'] !== undefined) {
-            serializationObject.checkCollisions = camera['checkCollisions'];
-        }
-        if (camera['applyGravity'] !== undefined) {
-            serializationObject.applyGravity = camera['applyGravity'];
-        }
+        serializationObject.checkCollisions = camera['checkCollisions'] || false;
+        serializationObject.applyGravity = camera['applyGravity'] || false;
         if (camera['ellipsoid']) {
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
