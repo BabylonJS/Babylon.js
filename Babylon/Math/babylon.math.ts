@@ -3193,7 +3193,7 @@
         private _points: Vector3[];
 
         // QuadraticBezier(origin_V3, control_V3, destination_V3 )
-        public static QuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
+        public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
             var step = 1 / nbPoints;
@@ -3208,7 +3208,7 @@
         }
 
         // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
-        public static CubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
+        public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
             var step = 1 / nbPoints;
