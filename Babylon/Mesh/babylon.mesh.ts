@@ -1090,6 +1090,43 @@
             });
         }
 
+        //The function doesn't delete unused vertex data, it simply restructure the indices to ignore them.
+        public optimize(successCallback?: (mesh?: Mesh) => void) {
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
+            
+            //optimize each submesh individually.
+            this.subMeshes.forEach(subMesh => {
+                var total = subMesh.indexStart + subMesh.indexCount;
+                var i;
+                var subMeshPositions: Array<Vector3> = []
+                for (i = subMesh.indexStart; i < total; ++i) {
+                    subMeshPositions[indices[i]] = subMeshPositions[indices[i]] || (BABYLON.Vector3.FromArray(positions, indices[i]));
+                }
+                var dupes = [];
+                //find duplicates
+                for (i = subMeshPositions.length - 1; i >= 1; --i) {
+                    var testedPosition = subMeshPositions[i];
+                    for (var j = 0; j < i; ++j) {
+                        var againstPosition = subMeshPositions[j];
+                        if (testedPosition.equals(againstPosition)) {
+                            dupes[i] = j;
+                            break;
+                        }
+                    }
+                }
+
+                
+                for (i = subMesh.indexStart; i < total; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
+            });
+            //indices are now reordered
+            var originalSubMeshes = this.subMeshes.slice(0);
+            this.setIndices(indices);
+            this.subMeshes = originalSubMeshes;
+        }
+
         // Statics
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var ribbon = new Mesh(name, scene);
