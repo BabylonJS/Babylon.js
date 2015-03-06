@@ -1175,42 +1175,18 @@
             return extruded;
         }
 
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotateFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            ribbonCloseArray = ribbonCloseArray || false;
-            ribbonClosePath = ribbonClosePath || false;
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
             return extrudedCustom;
         }
 
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction, rotationFunction, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
             var path3D = new Path3D(curve);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var binormals = path3D.getBinormals();
-            var distances = path3D.getDistances();
-            var shapePaths = new Array<Array<Vector3>>();
-            var angle = 0;
-            var returnScale: { (i: number, distance: number): number; } = function (i, distance) { return scale; };
-            var returnRotation: { (i: number, distance: number): number; } = function (i, distance) { return rotation; };
-            var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
-            var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
 
-            for (var i: number = 0; i < curve.length; i++) {
-                var shapePath = new Array<Vector3>();
-                var angleStep = rotate(i, distances[i]);
-                var scaleRatio = scl(i, distances[i]);
-                var rotationMatrix = Matrix.RotationAxis(tangents[i], angle);
-                for (var p = 0; p < shape.length; p++) {
-                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                    var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                    shapePath.push(rotated);
-                }
-                shapePaths.push(shapePath);
-                angle += angleStep;
-            }
-
+            var shapePaths: Vector3[][] = [];
             var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
             return extrudedGeneric;
+
         }
 
         // Plane & ground
@@ -1285,26 +1261,26 @@
         }
 
         public static CreateTube(name: string, path: Vector3[], radius: number, tesselation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            var path3D: Path3D = new Path3D(path);
-            var tangents: Vector3[] = path3D.getTangents();
-            var normals: Vector3[] = path3D.getNormals();
-            var distances: number[] = path3D.getDistances();
-            var pi2: number = Math.PI * 2;
-            var step: number = pi2 / tesselation;
+            var path3D = new Path3D(path);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var distances = path3D.getDistances();
+            var pi2 = Math.PI * 2;
+            var step = pi2 / tesselation;
             var returnRadius: { (i: number, distance: number): number; } = (i, distance) => radius;
             var radiusFunctionFinal: { (i: number, distance: number): number; } = radiusFunction || returnRadius;
 
-            var circlePaths: Vector3[][] = [];
+            var circlePaths = new Array<Array<Vector3>>();
             var circlePath: Vector3[];
             var rad: number;
             var normal: Vector3;
             var rotated: Vector3;
             var rotationMatrix: Matrix;
-            for (var i: number = 0; i < path.length; i++) {
-                rad = radiusFunctionFinal(i, distances[i]);      // current radius
-                circlePath = [];                            // current circle array
+            for (var i = 0; i < path.length; i++) {
+                rad = radiusFunctionFinal(i, distances[i]); // current radius
+                circlePath = Array<Vector3>();              // current circle array
                 normal = normals[i];                        // current normal  
-                for (var ang: number = 0; ang < pi2; ang += step) {
+                for (var ang = 0; ang < pi2; ang += step) {
                     rotationMatrix = Matrix.RotationAxis(tangents[i], ang);
                     rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                     circlePath.push(rotated);
