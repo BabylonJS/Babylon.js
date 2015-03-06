@@ -46,6 +46,15 @@ var BABYLON;
         serializationObject.power = fresnelParameter.power;
         return serializationObject;
     };
+    var appendAnimations = function (source, destination) {
+        if (source.animations) {
+            destination.animations = [];
+            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                var animation = source.animations[animationIndex];
+                destination.animations.push(serializeAnimation(animation));
+            }
+        }
+    };
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
@@ -147,15 +156,6 @@ var BABYLON;
         // Layer mask
         serializationObject.layerMask = camera.layerMask;
         return serializationObject;
-    };
-    var appendAnimations = function (source, destination) {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
     };
     var serializeAnimation = function (animation) {
         var serializationObject = {};
@@ -655,7 +655,7 @@ var BABYLON;
             serializationObject.geometries.vertexData = [];
             serializedGeometries = [];
             var geometries = scene.getGeometries();
-            for (var index = 0; index < geometries.length; index++) {
+            for (index = 0; index < geometries.length; index++) {
                 var geometry = geometries[index];
                 if (geometry.isReady()) {
                     serializeGeometry(geometry, serializationObject.geometries);

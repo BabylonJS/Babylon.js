@@ -794,7 +794,6 @@ var BABYLON;
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
-                panningModel: parsedSound.panningModel,
                 playbackRate: parsedSound.playbackRate
             };
             var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {

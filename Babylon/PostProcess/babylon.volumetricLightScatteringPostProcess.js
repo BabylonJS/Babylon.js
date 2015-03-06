@@ -65,16 +65,22 @@ var BABYLON;
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var material = subMesh.getMaterial();
+            var needUV = false;
             // Render this.mesh as default
             if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+                defines.push("#define NEED_UV");
+                needUV = true;
             }
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
-                if (material.opacityTexture !== undefined)
+                if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
+                    if (!needUV)
+                        defines.push("#define NEED_UV");
+                }
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                     defines.push("#define UV1");
@@ -103,7 +109,7 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "far"], ["diffuseSampler", "opacitySampler"], join);
+                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix"], ["diffuseSampler", "opacitySampler"], join);
             }
             return this._volumetricLightScatteringPass.isReady();
         };
@@ -180,8 +186,9 @@ var BABYLON;
                     if (material && (mesh === _this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
                         _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
-                        if (_this.mesh.material && alphaTexture)
+                        if (alphaTexture) {
                             _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                         if (material.opacityTexture !== undefined)
                             _this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
                     }

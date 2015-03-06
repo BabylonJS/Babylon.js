@@ -71,17 +71,17 @@
                         delete this._buffer;
                     }
                 } else {
-                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
         }
 
         public delayLoad(): void {
-            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
@@ -90,6 +90,14 @@
                     delete this._buffer;
                 }
             }
+        }
+
+        public updateSamplingMode(samplingMode: number): void {
+            if (!this._texture) {
+                return;
+            }
+
+            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
@@ -128,14 +136,14 @@
             this._cachedWAng = this.wAng;
 
             if (!this._cachedTextureMatrix) {
-                this._cachedTextureMatrix = BABYLON.Matrix.Zero();
-                this._rowGenerationMatrix = new BABYLON.Matrix();
-                this._t0 = BABYLON.Vector3.Zero();
-                this._t1 = BABYLON.Vector3.Zero();
-                this._t2 = BABYLON.Vector3.Zero();
+                this._cachedTextureMatrix = Matrix.Zero();
+                this._rowGenerationMatrix = new Matrix();
+                this._t0 = Vector3.Zero();
+                this._t1 = Vector3.Zero();
+                this._t2 = Vector3.Zero();
             }
 
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix);
+            Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix);
 
             this._prepareRowForTextureGeneration(0, 0, 0, this._t0);
             this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1);
@@ -144,7 +152,7 @@
             this._t1.subtractInPlace(this._t0);
             this._t2.subtractInPlace(this._t0);
 
-            BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
+            Matrix.IdentityToRef(this._cachedTextureMatrix);
             this._cachedTextureMatrix.m[0] = this._t1.x; this._cachedTextureMatrix.m[1] = this._t1.y; this._cachedTextureMatrix.m[2] = this._t1.z;
             this._cachedTextureMatrix.m[4] = this._t2.x; this._cachedTextureMatrix.m[5] = this._t2.y; this._cachedTextureMatrix.m[6] = this._t2.z;
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
@@ -163,29 +171,29 @@
             }
 
             if (!this._cachedTextureMatrix) {
-                this._cachedTextureMatrix = BABYLON.Matrix.Zero();
-                this._projectionModeMatrix = BABYLON.Matrix.Zero();
+                this._cachedTextureMatrix = Matrix.Zero();
+                this._projectionModeMatrix = Matrix.Zero();
             }
 
             this._cachedCoordinatesMode = this.coordinatesMode;
 
             switch (this.coordinatesMode) {
-                case BABYLON.Texture.SPHERICAL_MODE:
-                    BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
+                case Texture.SPHERICAL_MODE:
+                    Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = -0.5 * this.uScale;
                     this._cachedTextureMatrix[5] = -0.5 * this.vScale;
                     this._cachedTextureMatrix[12] = 0.5 + this.uOffset;
                     this._cachedTextureMatrix[13] = 0.5 + this.vOffset;
                     break;
-                case BABYLON.Texture.PLANAR_MODE:
-                    BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
+                case Texture.PLANAR_MODE:
+                    Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = this.uScale;
                     this._cachedTextureMatrix[5] = this.vScale;
                     this._cachedTextureMatrix[12] = this.uOffset;
                     this._cachedTextureMatrix[13] = this.vOffset;
                     break;
-                case BABYLON.Texture.PROJECTION_MODE:
-                    BABYLON.Matrix.IdentityToRef(this._projectionModeMatrix);
+                case Texture.PROJECTION_MODE:
+                    Matrix.IdentityToRef(this._projectionModeMatrix);
 
                     this._projectionModeMatrix.m[0] = 0.5;
                     this._projectionModeMatrix.m[5] = -0.5;
@@ -198,14 +206,14 @@
                     this.getScene().getProjectionMatrix().multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                     break;
                 default:
-                    BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
+                    Matrix.IdentityToRef(this._cachedTextureMatrix);
                     break;
             }
             return this._cachedTextureMatrix;
         }
 
         public clone(): Texture {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
+            var newTexture = new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

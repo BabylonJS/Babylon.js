@@ -52,6 +52,17 @@
         return serializationObject;
     }
 
+    var appendAnimations = (source: IAnimatable, destination: any): any => {
+        if (source.animations) {
+            destination.animations = [];
+            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                var animation = source.animations[animationIndex];
+
+                destination.animations.push(serializeAnimation(animation));
+            }
+        }
+    };
+
     var serializeCamera = (camera: Camera): any => {
         var serializationObject: any = {};
         serializationObject.name = camera.name;
@@ -153,17 +164,6 @@
         serializationObject.layerMask = camera.layerMask;
 
         return serializationObject;
-    };
-
-    var appendAnimations = (source: IAnimatable, destination: any): any => {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
     };
 
     var serializeAnimation = (animation: Animation): any => {
@@ -801,7 +801,7 @@
 
             serializedGeometries = [];
             var geometries = scene.getGeometries();
-            for (var index = 0; index < geometries.length; index++) {
+            for (index = 0; index < geometries.length; index++) {
                 var geometry = geometries[index];
 
                 if (geometry.isReady()) {
