@@ -2539,7 +2539,7 @@ var __extends = this.__extends || function (d, b) {
             this._points = points;
         }
         // QuadraticBezier(origin_V3, control_V3, destination_V3 )
-        Curve3.QuadraticBezier = function (v0, v1, v2, nbPoints) {
+        Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
             var step = 1 / nbPoints;
@@ -2553,7 +2553,7 @@ var __extends = this.__extends || function (d, b) {
             return new Curve3(bez);
         };
         // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
-        Curve3.CubicBezier = function (v0, v1, v2, v3, nbPoints) {
+        Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
             var step = 1 / nbPoints;
