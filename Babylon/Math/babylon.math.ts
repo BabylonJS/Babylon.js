@@ -780,6 +780,38 @@
             result.z = rz / rw;
         }
 
+        public static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void {
+            var v = SIMD.float32x4.loadXYZ(vector, 0);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+
+            var r = SIMD.float32x4.add(
+                SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0),
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)),
+                SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ(result, 0, r);
+        }
+
+        public static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+            var v0 = SIMD.float32x4.splat(x);
+            var v1 = SIMD.float32x4.splat(y);
+            var v2 = SIMD.float32x4.splat(z);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+
+            var r = SIMD.float32x4.add(
+                SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0),
+                    SIMD.float32x4.mul(v1, m1)),
+                SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ(result, 0, r);
+        }
+
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
 
@@ -1583,7 +1615,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -1842,9 +1874,9 @@
         public equals(value: Matrix): boolean {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
 
         public clone(): Matrix {
@@ -3101,7 +3133,7 @@
                 if (i < l - 1) {
                     cur = this._curve[i + 1].subtract(this._curve[i]);
                     this._tangents[i] = prev.add(cur);
-                    this._tangents[i].normalize();               
+                    this._tangents[i].normalize();
                 }
                 this._distances[i] = this._distances[i - 1] + prev.length();   
                       
@@ -3140,20 +3172,20 @@
         // private function normalVector(v0, vt) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         private _normalVector(v0: Vector3, vt: Vector3): Vector3 {
-            var point: Vector3; 
+            var point: Vector3;
 
             if (vt.x !== 1) {     // search for a point in the plane
-                point = new Vector3(1, 0, 0);   
+                point = new Vector3(1, 0, 0);
             }
             else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);  
+                point = new Vector3(0, 1, 0);
             }
             else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);  
+                point = new Vector3(0, 0, 1);
             }
             var normal0: Vector3 = Vector3.Cross(vt, point);
             normal0.normalize();
-            return normal0;        
+            return normal0;
         }
     }
 
@@ -3203,5 +3235,7 @@
     if (window.SIMD !== undefined) {
         // Replace functions
         Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
+        Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
+        Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
     }
 }

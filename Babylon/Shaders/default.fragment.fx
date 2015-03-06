@@ -262,20 +262,19 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 }
 
 // Thanks to http://devmaster.net/
-float ChebychevInequality(vec2 moments, float t, float bias)
+float ChebychevInequality(vec2 moments, float t)
 {
-	bias = 0.02 + bias;
 	if (t <= moments.x)
 	{
 		return 0.0;
 	}
 
 	float variance = moments.y - (moments.x * moments.x);
-	variance = max(variance, bias);
+	variance = max(variance, 0.02);
 
 	float d = t - moments.x;
 
-	return clamp(variance / (variance + d * d) - 0.05 - bias, 0.0, 1.0);
+	return clamp(variance / (variance + d * d) - 0.05, 0.0, 1.0);
 }
 
 float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias)
@@ -292,7 +291,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 	vec4 texel = texture2D(shadowSampler, uv);
 
 	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-	return 1.0 - ChebychevInequality(moments, depth.z, bias);
+	return 1.0 - ChebychevInequality(moments, depth.z - bias);
 }
 #endif
 

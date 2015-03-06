@@ -76,10 +76,13 @@
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material: any = subMesh.getMaterial();
+            var needUV: boolean = false;
 
             // Render this.mesh as default
             if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+                defines.push("#define NEED_UV");
+                needUV = true;
             }
 
             // Alpha test
@@ -87,8 +90,11 @@
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
 
-                if (material.opacityTexture !== undefined)
+                if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
+                    if (!needUV)
+                        defines.push("#define NEED_UV");
+                }
 
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     attribs.push(VertexBuffer.UVKind);
@@ -124,7 +130,7 @@
                 this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
                     ["diffuseSampler", "opacitySampler"], join);
             }
 
@@ -220,8 +226,10 @@
                     if (material && (mesh === this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
                         this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
-                        if (this.mesh.material && alphaTexture)
+
+                        if (alphaTexture) {
                             this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
 
                         if (material.opacityTexture !== undefined)
                             this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
