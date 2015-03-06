@@ -968,8 +968,10 @@
             else
                 triggerParams = BABYLON.ActionManager[trigger.name];
 
-            for (var j = 0; j < trigger.children.length; j++)
-                traverse(trigger.children[j], triggerParams, null, null);
+            for (var j = 0; j < trigger.children.length; j++) {
+                if (!trigger.detached)
+                    traverse(trigger.children[j], triggerParams, null, null);
+            }
         }
 
     };
