@@ -46,10 +46,19 @@ var BABYLON;
         serializationObject.power = fresnelParameter.power;
         return serializationObject;
     };
+    var appendAnimations = function (source, destination) {
+        if (source.animations) {
+            destination.animations = [];
+            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                var animation = source.animations[animationIndex];
+                destination.animations.push(serializeAnimation(animation));
+            }
+        }
+    };
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = BABYLON.Tags.GetTags(camera);
+        serializationObject.tags = BABYLON.Tags.GetTags(camera) || [];
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
         // Parent
@@ -106,6 +115,9 @@ var BABYLON;
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
+            if (arcCamera.target && arcCamera.target.id) {
+                serializationObject.lockedTargetId = arcCamera.target.id;
+            }
         }
         else if (camera instanceof BABYLON.FollowCamera) {
             var followCam = camera;
@@ -123,6 +135,9 @@ var BABYLON;
         if (camera['speed'] !== undefined) {
             serializationObject.speed = camera['speed'];
         }
+        if (camera['target'] && camera['target'] instanceof BABYLON.Vector3) {
+            serializationObject.target = camera['target'].asArray();
+        }
         // Target
         if (camera['rotation'] && camera['rotation'] instanceof BABYLON.Vector3) {
             serializationObject.rotation = camera['rotation'].asArray();
@@ -131,12 +146,8 @@ var BABYLON;
         if (camera['lockedTarget'] && camera['lockedTarget'].id) {
             serializationObject.lockedTargetId = camera['lockedTarget'].id;
         }
-        if (camera['checkCollisions'] !== undefined) {
-            serializationObject.checkCollisions = camera['checkCollisions'];
-        }
-        if (camera['applyGravity'] !== undefined) {
-            serializationObject.applyGravity = camera['applyGravity'];
-        }
+        serializationObject.checkCollisions = camera['checkCollisions'] || false;
+        serializationObject.applyGravity = camera['applyGravity'] || false;
         if (camera['ellipsoid']) {
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
@@ -145,15 +156,6 @@ var BABYLON;
         // Layer mask
         serializationObject.layerMask = camera.layerMask;
         return serializationObject;
-    };
-    var appendAnimations = function (source, destination) {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
     };
     var serializeAnimation = function (animation) {
         var serializationObject = {};
@@ -653,7 +655,7 @@ var BABYLON;
             serializationObject.geometries.vertexData = [];
             serializedGeometries = [];
             var geometries = scene.getGeometries();
-            for (var index = 0; index < geometries.length; index++) {
+            for (index = 0; index < geometries.length; index++) {
                 var geometry = geometries[index];
                 if (geometry.isReady()) {
                     serializeGeometry(geometry, serializationObject.geometries);

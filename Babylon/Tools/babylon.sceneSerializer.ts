@@ -52,10 +52,21 @@
         return serializationObject;
     }
 
+    var appendAnimations = (source: IAnimatable, destination: any): any => {
+        if (source.animations) {
+            destination.animations = [];
+            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                var animation = source.animations[animationIndex];
+
+                destination.animations.push(serializeAnimation(animation));
+            }
+        }
+    };
+
     var serializeCamera = (camera: Camera): any => {
         var serializationObject: any = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = Tags.GetTags(camera);
+        serializationObject.tags = Tags.GetTags(camera) || [];
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
 
@@ -105,6 +116,9 @@
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
+            if (arcCamera.target && arcCamera.target.id) {
+                serializationObject.lockedTargetId = arcCamera.target.id;
+            }
         } else if (camera instanceof FollowCamera) {
             var followCam = <FollowCamera> camera;
             serializationObject.radius = followCam.radius;
@@ -122,6 +136,10 @@
             serializationObject.speed = camera['speed'];
         }
 
+        if (camera['target'] && camera['target'] instanceof Vector3) {
+            serializationObject.target = camera['target'].asArray();
+        }
+
         // Target
         if (camera['rotation'] && camera['rotation'] instanceof Vector3) {
             serializationObject.rotation = camera['rotation'].asArray();
@@ -132,12 +150,8 @@
             serializationObject.lockedTargetId = camera['lockedTarget'].id;
         }
 
-        if (camera['checkCollisions'] !== undefined) {
-            serializationObject.checkCollisions = camera['checkCollisions'];
-        }
-        if (camera['applyGravity'] !== undefined) {
-            serializationObject.applyGravity = camera['applyGravity'];
-        }
+        serializationObject.checkCollisions = camera['checkCollisions'] || false;
+        serializationObject.applyGravity = camera['applyGravity'] || false;
 
         if (camera['ellipsoid']) {
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
@@ -150,17 +164,6 @@
         serializationObject.layerMask = camera.layerMask;
 
         return serializationObject;
-    };
-
-    var appendAnimations = (source: IAnimatable, destination: any): any => {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
     };
 
     var serializeAnimation = (animation: Animation): any => {
@@ -798,7 +801,7 @@
 
             serializedGeometries = [];
             var geometries = scene.getGeometries();
-            for (var index = 0; index < geometries.length; index++) {
+            for (index = 0; index < geometries.length; index++) {
                 var geometry = geometries[index];
 
                 if (geometry.isReady()) {
