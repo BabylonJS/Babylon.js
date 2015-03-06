@@ -882,7 +882,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
+            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -890,6 +890,40 @@ var BABYLON;
                 simplificationType: simplificationType,
                 successCallback: successCallback
             });
+        };
+        //The function doesn't delete unused vertex data, it simply restructure the indices to ignore them.
+        Mesh.prototype.optimize = function (successCallback) {
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            //optimize each submesh individually.
+            this.subMeshes.forEach(function (subMesh) {
+                var total = subMesh.indexStart + subMesh.indexCount;
+                var i;
+                var subMeshPositions = [];
+                for (i = subMesh.indexStart; i < total; ++i) {
+                    subMeshPositions[indices[i]] = subMeshPositions[indices[i]] || (BABYLON.Vector3.FromArray(positions, indices[i]));
+                }
+                var dupes = [];
+                for (i = subMeshPositions.length - 1; i >= 1; --i) {
+                    var testedPosition = subMeshPositions[i];
+					if(!testedPosition) continue;
+                    for (var j = 0; j < i; ++j) {
+                        var againstPosition = subMeshPositions[j];
+						if(!againstPosition) continue; 
+                        if (testedPosition.equals(againstPosition)) {
+                            dupes[i] = j;
+                            break;
+                        }
+                    }
+                }
+                for (i = subMesh.indexStart; i < total; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
+            });
+            //indices are now reordered
+            var originalSubMeshes = this.subMeshes.slice(0);
+            this.setIndices(indices);
+            this.subMeshes = originalSubMeshes;
         };
         // Statics
         Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
