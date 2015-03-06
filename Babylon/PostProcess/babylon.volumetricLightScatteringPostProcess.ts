@@ -92,6 +92,8 @@
 
                 if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
+                    if (material.opacityTexture.getAlphaFromRGB)
+                        defines.push("#define OPACITYRGB");
                     if (!needUV)
                         defines.push("#define NEED_UV");
                 }
@@ -130,7 +132,7 @@
                 this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel"],
                     ["diffuseSampler", "opacitySampler"], join);
             }
 
@@ -231,8 +233,10 @@
                             this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                         }
 
-                        if (material.opacityTexture !== undefined)
+                        if (material.opacityTexture !== undefined) {
                             this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
+                            this._volumetricLightScatteringPass.setFloat("opacityLevel", material.opacityTexture.level);
+                        }
                     }
 
                     // Bones
@@ -247,8 +251,8 @@
             };
 
             // Render target texture callbacks
-            var savedSceneClearColor: Color3;
-            var sceneClearColor = new Color3(0.0, 0.0, 0.0);
+            var savedSceneClearColor: Color4;
+            var sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
 
             this._volumetricLightScatteringRTT.onBeforeRender = (): void => {
                 savedSceneClearColor = scene.clearColor;
@@ -260,18 +264,54 @@
             };
 
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
-                var index;
+                var engine = scene.getEngine();
+                var index: number;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
+                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
+                engine.setAlphaTesting(false);
 
-                for (index = 0; index < transparentSubMeshes.length; index++) {
-                    renderSubMesh(transparentSubMeshes.data[index]);
+                if (transparentSubMeshes.length) {
+                    // Sort sub meshes
+                    for (index = 0; index < transparentSubMeshes.length; index++) {
+                        var submesh = transparentSubMeshes.data[index];
+                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                    }
+
+                    var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
+                    sortedArray.sort((a, b) => {
+                        // Alpha index first
+                        if (a._alphaIndex > b._alphaIndex) {
+                            return 1;
+                        }
+                        if (a._alphaIndex < b._alphaIndex) {
+                            return -1;
+                        }
+
+                        // Then distance to camera
+                        if (a._distanceToCamera < b._distanceToCamera) {
+                            return 1;
+                        }
+                        if (a._distanceToCamera > b._distanceToCamera) {
+                            return -1;
+                        }
+
+                        return 0;
+                    });
+
+                    // Render sub meshes
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    for (index = 0; index < sortedArray.length; index++) {
+                        renderSubMesh(sortedArray[index]);
+                    }
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                 }
             };
         }
