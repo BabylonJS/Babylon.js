@@ -28,14 +28,13 @@ var BABYLON;
         };
         SimplificationQueue.prototype.runSimplification = function (task) {
             var _this = this;
-            function setLODLevel(distance, mesh) {
-            }
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach(function (setting) {
                     var simplifier = _this.getSimplifier(task);
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //check if it is the last
                         if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
                             //all done, run the success callback.
@@ -51,6 +50,7 @@ var BABYLON;
                 var runDecimation = function (setting, callback) {
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //run the next quality level
                         callback();
                     });
@@ -190,7 +190,6 @@ var BABYLON;
                 });
             }, function () {
                 setTimeout(function () {
-                    _this._reconstructedMesh.isVisible = true;
                     successCallback(_this._reconstructedMesh);
                 }, 0);
             });

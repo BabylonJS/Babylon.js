@@ -61,17 +61,13 @@
         }
 
         public runSimplification(task: ISimplificationTask) {
-
-            function setLODLevel(distance: number, mesh: Mesh) {
-
-            }
-
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach((setting) => {
                     var simplifier = this.getSimplifier(task);
                     simplifier.simplify(setting,(newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //check if it is the last
                         if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
                             //all done, run the success callback.
@@ -87,6 +83,7 @@
                 var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                     simplifier.simplify(setting,(newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //run the next quality level
                         callback();
                     });
@@ -254,7 +251,6 @@
                 });
             },() => {
                     setTimeout(() => {
-                        this._reconstructedMesh.isVisible = true;
                         successCallback(this._reconstructedMesh);
                     }, 0);
                 });
