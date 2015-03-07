@@ -530,6 +530,24 @@ var BABYLON;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         };
         // Methods
+        Scene.prototype.addMesh = function (newMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        };
+        Scene.prototype.addLight = function (newLight) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        };
+        Scene.prototype.addCamera = function (newCamera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
         /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
