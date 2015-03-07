@@ -12,6 +12,7 @@ uniform sampler2D diffuseSampler;
 
 #if defined(OPACITY)
 uniform sampler2D opacitySampler;
+uniform float opacityLevel;
 #endif
 
 void main(void)
@@ -27,15 +28,22 @@ void main(void)
 
 #ifdef OPACITY
 	vec4 opacityColor = texture2D(opacitySampler, vUV);
+	float alpha = 1.0;
+
+	#ifdef OPACITYRGB
+	opacityColor.rgb = opacityColor.rgb * vec3(0.3, 0.59, 0.11);
+	alpha *= (opacityColor.x + opacityColor.y + opacityColor.z) * opacityLevel;
+	#else
+	alpha *= opacityColor.a * opacityLevel;
+	#endif
 
 	#if defined(BASIC_RENDER)
-	gl_FragColor = diffuseColor * opacityColor;
+	gl_FragColor = vec4(diffuseColor.rgb, alpha);
 	#else
-	if (opacityColor.r == 0.0)
-		discard;
-
-	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
 	#endif
+
+	gl_FragColor.a = alpha;
 #else
 	#ifndef BASIC_RENDER
 	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
