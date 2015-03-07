@@ -18,7 +18,7 @@ var BABYLON;
             this.excludedMeshes = new Array();
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
-            scene.lights.push(this);
+            scene.addLight(this);
         }
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;

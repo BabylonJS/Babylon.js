@@ -32,7 +32,7 @@ var BABYLON;
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
             this._activeMeshes = new BABYLON.SmartArray(256);
-            scene.cameras.push(this);
+            scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }

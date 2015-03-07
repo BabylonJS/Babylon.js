@@ -113,7 +113,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.meshes.push(this);
+            scene.addMesh(this);
         }
 
         // Methods

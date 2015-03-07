@@ -33,7 +33,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.lights.push(this);
+            scene.addLight(this);
         }
 
         public getShadowGenerator(): ShadowGenerator {

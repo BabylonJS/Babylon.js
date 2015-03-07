@@ -51,7 +51,7 @@
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.cameras.push(this);
+            scene.addCamera(this);
 
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
