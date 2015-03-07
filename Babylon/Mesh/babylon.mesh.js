@@ -878,7 +878,7 @@ var BABYLON;
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
-         * successCallback optional success callback to be called after the simplification finished processing all settings.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
@@ -891,7 +891,12 @@ var BABYLON;
                 successCallback: successCallback
             });
         };
-        //The function doesn't delete unused vertex data, it simply restructure the indices to ignore them.
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
         Mesh.prototype.optimize = function (successCallback) {
             var _this = this;
             var indices = this.getIndices();
@@ -923,40 +928,6 @@ var BABYLON;
                     successCallback(_this);
                 }
             });
-            //for (var i = vectorPositions.length - 1; i >= 1; --i) {
-            //    var testedPosition = vectorPositions[i];
-            //    for (var j = 0; j < i; ++j) {
-            //        var againstPosition = vectorPositions[j];
-            //        if (testedPosition.equals(againstPosition)) {
-            //            dupes[i] = j;
-            //            break;
-            //        }
-            //    }
-            //}
-            //optimize each submesh individually.
-            //this.subMeshes.forEach(subMesh => {
-            //    var total = subMesh.indexStart + subMesh.indexCount;
-            //    var i;
-            //    var subMeshPositions: Array<Vector3> = []
-            //    for (i = subMesh.indexStart; i < total; ++i) {
-            //        subMeshPositions[indices[i]] = subMeshPositions[indices[i]] || (BABYLON.Vector3.FromArray(positions, indices[i]));
-            //    }
-            //    var dupes = [];
-            //    //find duplicates
-            //    for (i = subMeshPositions.length - 1; i >= 1; --i) {
-            //        var testedPosition = subMeshPositions[i];
-            //        for (var j = 0; j < i; ++j) {
-            //            var againstPosition = subMeshPositions[j];
-            //            if (testedPosition.equals(againstPosition)) {
-            //                dupes[i] = j;
-            //                break;
-            //            }
-            //        }
-            //    }
-            //    for (i = subMesh.indexStart; i < total; ++i) {
-            //        indices[i] = dupes[indices[i]] || indices[i];
-            //    }
-            //});
         };
         // Statics
         Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
