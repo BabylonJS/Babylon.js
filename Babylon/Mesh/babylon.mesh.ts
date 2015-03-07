@@ -1094,37 +1094,75 @@
         public optimize(successCallback?: (mesh?: Mesh) => void) {
             var indices = this.getIndices();
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            
-            //optimize each submesh individually.
-            this.subMeshes.forEach(subMesh => {
-                var total = subMesh.indexStart + subMesh.indexCount;
-                var i;
-                var subMeshPositions: Array<Vector3> = []
-                for (i = subMesh.indexStart; i < total; ++i) {
-                    subMeshPositions[indices[i]] = subMeshPositions[indices[i]] || (BABYLON.Vector3.FromArray(positions, indices[i]));
-                }
-                var dupes = [];
-                //find duplicates
-                for (i = subMeshPositions.length - 1; i >= 1; --i) {
-                    var testedPosition = subMeshPositions[i];
-                    for (var j = 0; j < i; ++j) {
-                        var againstPosition = subMeshPositions[j];
-                        if (testedPosition.equals(againstPosition)) {
-                            dupes[i] = j;
-                            break;
-                        }
+            var vectorPositions = [];
+            for (var pos = 0; pos < positions.length; pos = pos + 3) {
+                vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
+            }
+            var dupes = [];
+
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
+                var realPos = vectorPositions.length - 1 - iteration;
+                var testedPosition = vectorPositions[realPos];
+                for (var j = 0; j < realPos; ++j) {
+                    var againstPosition = vectorPositions[j];
+                    if (testedPosition.equals(againstPosition)) {
+                        dupes[realPos] = j;
+                        break;
                     }
                 }
-
-                
-                for (i = subMesh.indexStart; i < total; ++i) {
+            },  () => {
+                for (var i = 0; i < indices.length; ++i) {
                     indices[i] = dupes[indices[i]] || indices[i];
                 }
+
+                //indices are now reordered
+                var originalSubMeshes = this.subMeshes.slice(0);
+                this.setIndices(indices);
+                this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(this);
+                }
             });
-            //indices are now reordered
-            var originalSubMeshes = this.subMeshes.slice(0);
-            this.setIndices(indices);
-            this.subMeshes = originalSubMeshes;
+
+            //for (var i = vectorPositions.length - 1; i >= 1; --i) {
+            //    var testedPosition = vectorPositions[i];
+            //    for (var j = 0; j < i; ++j) {
+            //        var againstPosition = vectorPositions[j];
+            //        if (testedPosition.equals(againstPosition)) {
+            //            dupes[i] = j;
+            //            break;
+            //        }
+            //    }
+            //}
+            
+            //optimize each submesh individually.
+            //this.subMeshes.forEach(subMesh => {
+            //    var total = subMesh.indexStart + subMesh.indexCount;
+            //    var i;
+            //    var subMeshPositions: Array<Vector3> = []
+            //    for (i = subMesh.indexStart; i < total; ++i) {
+            //        subMeshPositions[indices[i]] = subMeshPositions[indices[i]] || (BABYLON.Vector3.FromArray(positions, indices[i]));
+            //    }
+            //    var dupes = [];
+            //    //find duplicates
+            //    for (i = subMeshPositions.length - 1; i >= 1; --i) {
+            //        var testedPosition = subMeshPositions[i];
+            //        for (var j = 0; j < i; ++j) {
+            //            var againstPosition = subMeshPositions[j];
+            //            if (testedPosition.equals(againstPosition)) {
+            //                dupes[i] = j;
+            //                break;
+            //            }
+            //        }
+            //    }
+
+                
+            //    for (i = subMesh.indexStart; i < total; ++i) {
+            //        indices[i] = dupes[indices[i]] || indices[i];
+            //    }
+            //});
+
+            
         }
 
         // Statics
