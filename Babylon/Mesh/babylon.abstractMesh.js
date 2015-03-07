@@ -752,11 +752,7 @@ var BABYLON;
             // SubMeshes
             this.releaseSubMeshes();
             // Remove from scene
-            var index = this.getScene().meshes.indexOf(this);
-            if (index != -1) {
-                // Remove from the scene if mesh found 
-                this.getScene().meshes.splice(index, 1);
-            }
+            var index = this.getScene().removeMesh(this);
             if (!doNotRecurse) {
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter == this) {

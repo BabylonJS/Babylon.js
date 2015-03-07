@@ -261,8 +261,7 @@ var BABYLON;
         };
         Camera.prototype.dispose = function () {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            var index = this.getScene().removeCamera(this);
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }

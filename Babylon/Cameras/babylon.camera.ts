@@ -333,8 +333,7 @@
 
         public dispose(): void {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            var index = this.getScene().removeCamera(this);
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
