@@ -102,6 +102,7 @@
         * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
+        public onNewLightAdded: (newLight?: Light, positionInArray?: number, scene?: Scene) => void;
 
         // Cameras
         /**
@@ -110,6 +111,7 @@
         * @type {BABYLON.Camera[]}
         */
         public cameras = new Array<Camera>();
+        public onNewCameraAdded: (newCamera?: Camera, positionInArray?: number, scene?: Scene) => void;
         public activeCameras = new Array<Camera>();
         public activeCamera: Camera;
 
@@ -120,6 +122,7 @@
         * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
+        public onNewMeshAdded: (newMesh?: AbstractMesh, positionInArray?: number, scene?: Scene) => void;
 
         // Geometries
         private _geometries = new Array<Geometry>();
@@ -714,6 +717,27 @@
         }
 
         // Methods
+
+        public addMesh(newMesh: AbstractMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        }
+
+        public addLight(newLight: Light) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        }
+
+        public addCamera(newCamera: Camera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        }
 
         /**
          * sets the active camera of the scene using its ID
