@@ -5257,6 +5257,7 @@ var __extends = this.__extends || function (d, b) {
             this._isEnabled = true;
             this._isReady = true;
             this._currentRenderId = -1;
+            this._parentRenderId = -1;
             this.name = name;
             this.id = name;
             this._scene = scene;
@@ -5293,7 +5294,14 @@ var __extends = this.__extends || function (d, b) {
             return true;
         };
         Node.prototype.isSynchronizedWithParent = function () {
-            return this.parent ? this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized() : true;
+            if (!this.parent) {
+                return true;
+            }
+            if (this._parentRenderId !== this.parent._currentRenderId) {
+                return false;
+            }
+            this._parentRenderId = this.parent._currentRenderId;
+            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
         };
         Node.prototype.isSynchronized = function (updateCache) {
             var check = this.hasNewParent();
