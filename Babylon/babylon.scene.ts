@@ -728,9 +728,9 @@
             }
         }
 
-        public removeMesh(toRemove: AbstractMesh) : number {
+        public removeMesh(toRemove: AbstractMesh): number {
             var index = this.meshes.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
@@ -740,9 +740,9 @@
             return index;
         }
 
-        public removeLight(toRemove: Light) : number {
+        public removeLight(toRemove: Light): number {
             var index = this.lights.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
             }
@@ -752,9 +752,9 @@
             return index;
         }
 
-        public removeCamera(toRemove: Camera) : number {
+        public removeCamera(toRemove: Camera): number {
             var index = this.cameras.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.cameras.splice(index, 1);
             }

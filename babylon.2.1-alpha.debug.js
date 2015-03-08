@@ -5293,7 +5293,7 @@ var __extends = this.__extends || function (d, b) {
             return true;
         };
         Node.prototype.isSynchronizedWithParent = function () {
-            return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
+            return this.parent ? this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized() : true;
         };
         Node.prototype.isSynchronized = function (updateCache) {
             var check = this.hasNewParent();
@@ -5698,7 +5698,7 @@ var BABYLON;
             this.excludedMeshes = new Array();
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
-            scene.lights.push(this);
+            scene.addLight(this);
         }
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
@@ -5741,8 +5741,7 @@ var BABYLON;
                 this._shadowGenerator = null;
             }
             // Remove from scene
-            var index = this.getScene().lights.indexOf(this);
-            this.getScene().lights.splice(index, 1);
+            this.getScene().removeLight(this);
         };
         return Light;
     })(BABYLON.Node);
@@ -6603,7 +6602,7 @@ var BABYLON;
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
             this._activeMeshes = new BABYLON.SmartArray(256);
-            scene.cameras.push(this);
+            scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
@@ -6832,8 +6831,7 @@ var BABYLON;
         };
         Camera.prototype.dispose = function () {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            this.getScene().removeCamera(this);
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }
@@ -8418,6 +8416,57 @@ var BABYLON;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         };
         // Methods
+        Scene.prototype.addMesh = function (newMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        };
+        Scene.prototype.removeMesh = function (toRemove) {
+            var index = this.meshes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeLight = function (toRemove) {
+            var index = this.lights.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeCamera = function (toRemove) {
+            var index = this.cameras.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.addLight = function (newLight) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        };
+        Scene.prototype.addCamera = function (newCamera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
         /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
@@ -9717,7 +9766,7 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
-            scene.meshes.push(this);
+            scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
             get: function () {
@@ -9826,7 +9875,7 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
-            if (!space || space == 0 /* LOCAL */) {
+            if (!space || space === 0 /* LOCAL */) {
                 var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
@@ -9842,7 +9891,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
-            if (!space || space == 0 /* LOCAL */) {
+            if (!space || space === 0 /* LOCAL */) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -10000,7 +10049,7 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
-            if (!force && (this._currentRenderId == this.getScene().getRenderId() || this.isSynchronized(true))) {
+            if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
@@ -10044,11 +10093,11 @@ var BABYLON;
                     zero = this.getScene().activeCamera.position;
                 }
                 else {
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_X)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Y)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
                         zero.y = localPosition.y + 0.001;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Z)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
                         zero.z = localPosition.z + 0.001;
                 }
                 BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
@@ -10060,7 +10109,7 @@ var BABYLON;
             // Local world
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             // Parent
-            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.AbstractMesh.BILLBOARDMODE_NONE) {
+            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             }
             else {
@@ -10104,7 +10153,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="BABYLON.Vector3">The position (must be in same space as current mesh) to look at</param>
+            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
@@ -10387,8 +10436,9 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
+            var index;
             // Physics
-            if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
+            if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
@@ -10400,14 +10450,10 @@ var BABYLON;
             // SubMeshes
             this.releaseSubMeshes();
             // Remove from scene
-            var index = this.getScene().meshes.indexOf(this);
-            if (index != -1) {
-                // Remove from the scene if mesh found 
-                this.getScene().meshes.splice(index, 1);
-            }
+            this.getScene().removeMesh(this);
             if (!doNotRecurse) {
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                    if (this.getScene().particleSystems[index].emitter == this) {
+                    if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;
                     }
@@ -10415,7 +10461,7 @@ var BABYLON;
                 // Children
                 var objects = this.getScene().meshes.slice(0);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent == this) {
+                    if (objects[index].parent === this) {
                         objects[index].dispose();
                     }
                 }
@@ -11321,7 +11367,7 @@ var BABYLON;
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
-         * successCallback optional success callback to be called after the simplification finished processing all settings.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
@@ -11332,6 +11378,44 @@ var BABYLON;
                 mesh: this,
                 simplificationType: simplificationType,
                 successCallback: successCallback
+            });
+        };
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
+        Mesh.prototype.optimizeIndices = function (successCallback) {
+            var _this = this;
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var vectorPositions = [];
+            for (var pos = 0; pos < positions.length; pos = pos + 3) {
+                vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
+            }
+            var dupes = [];
+            BABYLON.AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
+                var realPos = vectorPositions.length - 1 - iteration;
+                var testedPosition = vectorPositions[realPos];
+                for (var j = 0; j < realPos; ++j) {
+                    var againstPosition = vectorPositions[j];
+                    if (testedPosition.equals(againstPosition)) {
+                        dupes[realPos] = j;
+                        break;
+                    }
+                }
+            }, function () {
+                for (var i = 0; i < indices.length; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
+                //indices are now reordered
+                var originalSubMeshes = _this.subMeshes.slice(0);
+                _this.setIndices(indices);
+                _this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(_this);
+                }
             });
         };
         // Statics
@@ -15968,8 +16052,14 @@ var BABYLON;
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }
             this.currentFrame = currentFrame;
-            for (var key = 0; key < this._keys.length; key++) {
-                // for each frame, we need the key just before the frame superior
+            // Try to get a hash to find the right key
+            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            if (this._keys[startKey].frame >= currentFrame) {
+                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
+                    startKey--;
+                }
+            }
+            for (var key = startKey; key < this._keys.length; key++) {
                 if (this._keys[key + 1].frame >= currentFrame) {
                     var startValue = this._getKeyValue(this._keys[key].value);
                     var endValue = this._getKeyValue(this._keys[key + 1].value);
@@ -18086,7 +18176,7 @@ var BABYLON;
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = BABYLON.Tags.GetTags(camera) || [];
+        serializationObject.tags = BABYLON.Tags.GetTags(camera);
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
         // Parent
@@ -19100,8 +19190,14 @@ var BABYLON;
             }
             else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurVarianceShadowMap = true;
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
             }
-            if (parsedShadowGenerator.bias) {
+            if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
             return shadowGenerator;
@@ -24652,6 +24748,10 @@ var BABYLON;
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }
@@ -27877,14 +27977,13 @@ var BABYLON;
         };
         SimplificationQueue.prototype.runSimplification = function (task) {
             var _this = this;
-            function setLODLevel(distance, mesh) {
-            }
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach(function (setting) {
                     var simplifier = _this.getSimplifier(task);
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //check if it is the last
                         if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
                             //all done, run the success callback.
@@ -27900,6 +27999,7 @@ var BABYLON;
                 var runDecimation = function (setting, callback) {
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //run the next quality level
                         callback();
                     });
@@ -27941,6 +28041,7 @@ var BABYLON;
             this.error = new Array(4);
             this.deleted = false;
             this.isDirty = false;
+            this.deletePending = false;
             this.borderFactor = 0;
         }
         return DecimationTriangle;
@@ -28038,7 +28139,6 @@ var BABYLON;
                 });
             }, function () {
                 setTimeout(function () {
-                    _this._reconstructedMesh.isVisible = true;
                     successCallback(_this._reconstructedMesh);
                 }, 0);
             });
@@ -28108,7 +28208,16 @@ var BABYLON;
                                     continue;
                                 if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
                                     continue;
-                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                    continue;
+                                var uniqueArray = [];
+                                delTr.forEach(function (deletedT) {
+                                    if (uniqueArray.indexOf(deletedT) === -1) {
+                                        deletedT.deletePending = true;
+                                        uniqueArray.push(deletedT);
+                                    }
+                                });
+                                if (uniqueArray.length % 2 != 0) {
                                     continue;
                                 }
                                 v0.normal = n;
@@ -28117,10 +28226,6 @@ var BABYLON;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
-                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
-                                    continue;
-                                if (p.equals(v0.position))
-                                    continue;
                                 v0.position = p;
                                 var tStart = _this.references.length;
                                 deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
@@ -28254,7 +28359,7 @@ var BABYLON;
                     this.vertices[dst].normal = this.vertices[i].normal;
                     this.vertices[dst].uv = this.vertices[i].uv;
                     this.vertices[dst].color = this.vertices[i].color;
-                    newVerticesOrder.push(i);
+                    newVerticesOrder.push(dst);
                     dst++;
                 }
             }
@@ -28354,7 +28459,7 @@ var BABYLON;
                 var t = this.triangles[ref.triangleId];
                 if (t.deleted)
                     continue;
-                if (deletedArray[i]) {
+                if (deletedArray[i] && t.deletePending) {
                     t.deleted = true;
                     newDeleted++;
                     continue;

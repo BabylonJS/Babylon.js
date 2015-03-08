@@ -58,7 +58,7 @@ var BABYLON;
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = BABYLON.Tags.GetTags(camera) || [];
+        serializationObject.tags = BABYLON.Tags.GetTags(camera);
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
         // Parent

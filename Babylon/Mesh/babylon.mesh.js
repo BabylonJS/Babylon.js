@@ -882,7 +882,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
+            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -897,7 +897,7 @@ var BABYLON;
          * This should be used together with the simplification to avoid disappearing triangles.
          * @param successCallback an optional success callback to be called after the optimization finished.
          */
-        Mesh.prototype.optimize = function (successCallback) {
+        Mesh.prototype.optimizeIndices = function (successCallback) {
             var _this = this;
             var indices = this.getIndices();
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);

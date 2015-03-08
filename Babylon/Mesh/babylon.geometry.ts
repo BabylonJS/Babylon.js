@@ -122,6 +122,12 @@
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }

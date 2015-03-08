@@ -538,7 +538,7 @@ var BABYLON;
         };
         Scene.prototype.removeMesh = function (toRemove) {
             var index = this.meshes.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
@@ -549,7 +549,7 @@ var BABYLON;
         };
         Scene.prototype.removeLight = function (toRemove) {
             var index = this.lights.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
             }
@@ -560,7 +560,7 @@ var BABYLON;
         };
         Scene.prototype.removeCamera = function (toRemove) {
             var index = this.cameras.indexOf(toRemove);
-            if (index != -1) {
+            if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.cameras.splice(index, 1);
             }
