@@ -102,6 +102,8 @@
         * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
+        public onNewLightAdded: (newLight?: Light, positionInArray?: number, scene?: Scene) => void;
+        public onLightRemoved: (removedLight?: Light) => void;
 
         // Cameras
         /**
@@ -110,6 +112,8 @@
         * @type {BABYLON.Camera[]}
         */
         public cameras = new Array<Camera>();
+        public onNewCameraAdded: (newCamera?: Camera, positionInArray?: number, scene?: Scene) => void;
+        public onCameraRemoved: (removedCamera?: Camera) => void;
         public activeCameras = new Array<Camera>();
         public activeCamera: Camera;
 
@@ -120,6 +124,8 @@
         * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
+        public onNewMeshAdded: (newMesh?: AbstractMesh, positionInArray?: number, scene?: Scene) => void;
+        public onMeshRemoved: (removedMesh?: AbstractMesh) => void;
 
         // Geometries
         private _geometries = new Array<Geometry>();
@@ -714,6 +720,63 @@
         }
 
         // Methods
+
+        public addMesh(newMesh: AbstractMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        }
+
+        public removeMesh(toRemove: AbstractMesh) : number {
+            var index = this.meshes.indexOf(toRemove);
+            if (index != -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public removeLight(toRemove: Light) : number {
+            var index = this.lights.indexOf(toRemove);
+            if (index != -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public removeCamera(toRemove: Camera) : number {
+            var index = this.cameras.indexOf(toRemove);
+            if (index != -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public addLight(newLight: Light) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        }
+
+        public addCamera(newCamera: Camera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        }
 
         /**
          * sets the active camera of the scene using its ID
