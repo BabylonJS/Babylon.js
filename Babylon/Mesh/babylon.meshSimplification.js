@@ -28,14 +28,13 @@ var BABYLON;
         };
         SimplificationQueue.prototype.runSimplification = function (task) {
             var _this = this;
-            function setLODLevel(distance, mesh) {
-            }
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach(function (setting) {
                     var simplifier = _this.getSimplifier(task);
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //check if it is the last
                         if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
                             //all done, run the success callback.
@@ -51,6 +50,7 @@ var BABYLON;
                 var runDecimation = function (setting, callback) {
                     simplifier.simplify(setting, function (newMesh) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //run the next quality level
                         callback();
                     });
@@ -92,6 +92,7 @@ var BABYLON;
             this.error = new Array(4);
             this.deleted = false;
             this.isDirty = false;
+            this.deletePending = false;
             this.borderFactor = 0;
         }
         return DecimationTriangle;
@@ -189,7 +190,6 @@ var BABYLON;
                 });
             }, function () {
                 setTimeout(function () {
-                    _this._reconstructedMesh.isVisible = true;
                     successCallback(_this._reconstructedMesh);
                 }, 0);
             });
@@ -259,7 +259,16 @@ var BABYLON;
                                     continue;
                                 if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
                                     continue;
-                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                    continue;
+                                var uniqueArray = [];
+                                delTr.forEach(function (deletedT) {
+                                    if (uniqueArray.indexOf(deletedT) === -1) {
+                                        deletedT.deletePending = true;
+                                        uniqueArray.push(deletedT);
+                                    }
+                                });
+                                if (uniqueArray.length % 2 != 0) {
                                     continue;
                                 }
                                 v0.normal = n;
@@ -268,10 +277,6 @@ var BABYLON;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
-                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
-                                    continue;
-                                if (p.equals(v0.position))
-                                    continue;
                                 v0.position = p;
                                 var tStart = _this.references.length;
                                 deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
@@ -405,7 +410,7 @@ var BABYLON;
                     this.vertices[dst].normal = this.vertices[i].normal;
                     this.vertices[dst].uv = this.vertices[i].uv;
                     this.vertices[dst].color = this.vertices[i].color;
-                    newVerticesOrder.push(i);
+                    newVerticesOrder.push(dst);
                     dst++;
                 }
             }
@@ -505,7 +510,7 @@ var BABYLON;
                 var t = this.triangles[ref.triangleId];
                 if (t.deleted)
                     continue;
-                if (deletedArray[i]) {
+                if (deletedArray[i] && t.deletePending) {
                     t.deleted = true;
                     newDeleted++;
                     continue;
