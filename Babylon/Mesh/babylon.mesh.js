@@ -878,17 +878,55 @@ var BABYLON;
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
-         * successCallback optional success callback to be called after the simplification finished processing all settings.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
+            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
                 mesh: this,
                 simplificationType: simplificationType,
                 successCallback: successCallback
+            });
+        };
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
+        Mesh.prototype.optimize = function (successCallback) {
+            var _this = this;
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var vectorPositions = [];
+            for (var pos = 0; pos < positions.length; pos = pos + 3) {
+                vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
+            }
+            var dupes = [];
+            BABYLON.AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
+                var realPos = vectorPositions.length - 1 - iteration;
+                var testedPosition = vectorPositions[realPos];
+                for (var j = 0; j < realPos; ++j) {
+                    var againstPosition = vectorPositions[j];
+                    if (testedPosition.equals(againstPosition)) {
+                        dupes[realPos] = j;
+                        break;
+                    }
+                }
+            }, function () {
+                for (var i = 0; i < indices.length; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
+                //indices are now reordered
+                var originalSubMeshes = _this.subMeshes.slice(0);
+                _this.setIndices(indices);
+                _this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(_this);
+                }
             });
         };
         // Statics
