@@ -92,7 +92,7 @@
             }
 
             // Remove from scene
-            var index = this.getScene().removeLight(this);
+            this.getScene().removeLight(this);
         }
     }
 } 

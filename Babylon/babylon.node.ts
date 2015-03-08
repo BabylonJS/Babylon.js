@@ -75,7 +75,7 @@
         }
 
         public isSynchronizedWithParent(): boolean {
-            return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
+            return this.parent ? this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized() : true;
         }
 
         public isSynchronized(updateCache?: boolean): boolean {

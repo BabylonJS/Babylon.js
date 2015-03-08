@@ -61,7 +61,7 @@ var BABYLON;
                 this._shadowGenerator = null;
             }
             // Remove from scene
-            var index = this.getScene().removeLight(this);
+            this.getScene().removeLight(this);
         };
         return Light;
     })(BABYLON.Node);

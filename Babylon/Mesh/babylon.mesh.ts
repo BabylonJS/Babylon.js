@@ -1096,16 +1096,16 @@
          * This should be used together with the simplification to avoid disappearing triangles.
          * @param successCallback an optional success callback to be called after the optimization finished.
          */
-        public optimize(successCallback?: (mesh?: Mesh) => void) {
+        public optimizeIndices(successCallback?: (mesh?: Mesh) => void) {
             var indices = this.getIndices();
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var vectorPositions = [];
             for (var pos = 0; pos < positions.length; pos = pos + 3) {
-                vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
+                vectorPositions.push(Vector3.FromArray(positions, pos));
             }
             var dupes = [];
 
-            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
                 for (var j = 0; j < realPos; ++j) {

@@ -50,10 +50,10 @@
         public receiveShadows = false;
         public actionManager: ActionManager;
         public renderOutline = false;
-        public outlineColor = BABYLON.Color3.Red();
+        public outlineColor = Color3.Red();
         public outlineWidth = 0.02;
         public renderOverlay = false;
-        public overlayColor = BABYLON.Color3.Red();
+        public overlayColor = Color3.Red();
         public overlayAlpha = 0.5;
         public hasVertexAlpha = false;
         public useVertexColors = true;
@@ -72,32 +72,32 @@
         public _physicRestitution: number;
 
         // Collisions
-        public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
-        public ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
+        public ellipsoid = new Vector3(0.5, 1, 0.5);
+        public ellipsoidOffset = new Vector3(0, 0, 0);
         private _collider = new Collider();
-        private _oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
-        private _diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
-        private _newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+        private _oldPositionForCollisions = new Vector3(0, 0, 0);
+        private _diffPositionForCollisions = new Vector3(0, 0, 0);
+        private _newPositionForCollisions = new Vector3(0, 0, 0);
 
         // Cache
-        private _localScaling = BABYLON.Matrix.Zero();
-        private _localRotation = BABYLON.Matrix.Zero();
-        private _localTranslation = BABYLON.Matrix.Zero();
-        private _localBillboard = BABYLON.Matrix.Zero();
-        private _localPivotScaling = BABYLON.Matrix.Zero();
-        private _localPivotScalingRotation = BABYLON.Matrix.Zero();
-        private _localWorld = BABYLON.Matrix.Zero();
-        public _worldMatrix = BABYLON.Matrix.Zero();
-        private _rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
-        private _absolutePosition = BABYLON.Vector3.Zero();
-        private _collisionsTransformMatrix = BABYLON.Matrix.Zero();
-        private _collisionsScalingMatrix = BABYLON.Matrix.Zero();
+        private _localScaling = Matrix.Zero();
+        private _localRotation = Matrix.Zero();
+        private _localTranslation = Matrix.Zero();
+        private _localBillboard = Matrix.Zero();
+        private _localPivotScaling = Matrix.Zero();
+        private _localPivotScalingRotation = Matrix.Zero();
+        private _localWorld = Matrix.Zero();
+        public _worldMatrix = Matrix.Zero();
+        private _rotateYByPI = Matrix.RotationY(Math.PI);
+        private _absolutePosition = Vector3.Zero();
+        private _collisionsTransformMatrix = Matrix.Zero();
+        private _collisionsScalingMatrix = Matrix.Zero();
         public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
 
         public _boundingInfo: BoundingInfo;
-        private _pivotMatrix = BABYLON.Matrix.Identity();
+        private _pivotMatrix = Matrix.Identity();
         public _isDisposed = false;
         public _renderId = 0;
 
@@ -105,7 +105,7 @@
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
-        private _onAfterWorldMatrixUpdate = new Array<(mesh: BABYLON.AbstractMesh) => void>();
+        private _onAfterWorldMatrixUpdate = new Array<(mesh: AbstractMesh) => void>();
 
         // Loading properties
         public _waitingActions: any;
@@ -184,12 +184,12 @@
 
         public rotate(axis: Vector3, amount: number, space: Space): void {
             if (!this.rotationQuaternion) {
-                this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation = BABYLON.Vector3.Zero();
+                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+                this.rotation = Vector3.Zero();
             }
 
-            if (!space || space == BABYLON.Space.LOCAL) {
-                var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+            if (!space || space === Space.LOCAL) {
+                var rotationQuaternion = Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -197,9 +197,9 @@
                     var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
                     invertParentWorldMatrix.invert();
 
-                    axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
+                    axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
-                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
             }
         }
@@ -207,7 +207,7 @@
         public translate(axis: Vector3, distance: number, space: Space): void {
             var displacementVector = axis.scale(distance);
 
-            if (!space || space == BABYLON.Space.LOCAL) {
+            if (!space || space === Space.LOCAL) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -248,9 +248,9 @@
                 var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
                 invertParentWorldMatrix.invert();
 
-                var worldPosition = new BABYLON.Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
+                var worldPosition = new Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
 
-                this.position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
+                this.position = Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
             } else {
                 this.position.x = absolutePositionX;
                 this.position.y = absolutePositionY;
@@ -278,14 +278,14 @@
          * @param {number} amountUp
          * @param {number} amountForward
          */
-        public calcMovePOV(amountRight : number, amountUp : number, amountForward : number) : BABYLON.Vector3 {
-            var rotMatrix = new BABYLON.Matrix();
-            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
+        public calcMovePOV(amountRight : number, amountUp : number, amountForward : number) : Vector3 {
+            var rotMatrix = new Matrix();
+            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
             rotQuaternion.toRotationMatrix(rotMatrix);
             
-            var translationDelta = BABYLON.Vector3.Zero();
+            var translationDelta = Vector3.Zero();
             var defForwardMult = this.definedFacingForward ? -1 : 1;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
+            Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
             return translationDelta;
         }
         // ================================== Point of View Rotation =================================
@@ -307,9 +307,9 @@
          * @param {number} twirlClockwise
          * @param {number} tiltRight
          */
-        public calcRotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : BABYLON.Vector3 {
+        public calcRotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : Vector3 {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
-            return new BABYLON.Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
+            return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         }
         
         public setPivotMatrix(matrix: Matrix): void {
@@ -358,10 +358,10 @@
             super._initCache();
 
             this._cache.localMatrixUpdated = false;
-            this._cache.position = BABYLON.Vector3.Zero();
-            this._cache.scaling = BABYLON.Vector3.Zero();
-            this._cache.rotation = BABYLON.Vector3.Zero();
-            this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+            this._cache.position = Vector3.Zero();
+            this._cache.scaling = Vector3.Zero();
+            this._cache.rotation = Vector3.Zero();
+            this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         }
 
         public markAsDirty(property: string): void {
@@ -373,7 +373,7 @@
         }
 
         public _updateBoundingInfo(): void {
-            this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this.absolutePosition, this.absolutePosition);
+            this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
 
             this._boundingInfo._update(this.worldMatrixFromCache);
 
@@ -393,7 +393,7 @@
         }
 
         public computeWorldMatrix(force?: boolean): Matrix {
-            if (!force && (this._currentRenderId == this.getScene().getRenderId() || this.isSynchronized(true))) {
+            if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
 
@@ -404,14 +404,14 @@
             this._isDirty = false;
 
             // Scaling
-            BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+            Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
 
             // Rotation
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._localRotation);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
-                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
                 this._cache.rotation.copyFrom(this.rotation);
             }
 
@@ -420,12 +420,12 @@
                 var camera = this.getScene().activeCamera;
                 var cameraWorldMatrix = camera.getWorldMatrix();
 
-                var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
+                Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
                     this.position.z + cameraGlobalPosition.z, this._localTranslation);
             } else {
-                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
             }
 
             // Composing transformations
@@ -439,21 +439,21 @@
 
                 if (this.parent && (<any>this.parent).position) {
                     localPosition.addInPlace((<any>this.parent).position);
-                    BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
+                    Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
 
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) === AbstractMesh.BILLBOARDMODE_ALL) {
                     zero = this.getScene().activeCamera.position;
                 } else {
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_X)
-                        zero.x = localPosition.x + BABYLON.Engine.Epsilon;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Y)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
+                        zero.x = localPosition.x + Engine.Epsilon;
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
                         zero.y = localPosition.y + 0.001;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Z)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
                         zero.z = localPosition.z + 0.001;
                 }
 
-                BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
+                Matrix.LookAtLHToRef(localPosition, zero, Vector3.Up(), this._localBillboard);
                 this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
 
                 this._localBillboard.invert();
@@ -466,7 +466,7 @@
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
 
             // Parent
-            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.AbstractMesh.BILLBOARDMODE_NONE) {
+            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             } else {
                 this._worldMatrix.copyFrom(this._localWorld);
@@ -490,11 +490,11 @@
         * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
         * @param func: callback function to add
         */
-        public registerAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
             this._onAfterWorldMatrixUpdate.push(func);
         }
 
-        public unregisterAfterWorldMatrixUpdate(func: (mesh: BABYLON.AbstractMesh) => void): void {
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
             var index = this._onAfterWorldMatrixUpdate.indexOf(func);
 
             if (index > -1) {
@@ -505,7 +505,7 @@
         public setPositionWithLocalVector(vector3: Vector3): void {
             this.computeWorldMatrix();
 
-            this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
+            this.position = Vector3.TransformNormal(vector3, this._localWorld);
         }
 
         public getPositionExpressedInLocalSpace(): Vector3 {
@@ -513,18 +513,18 @@
             var invLocalWorldMatrix = this._localWorld.clone();
             invLocalWorldMatrix.invert();
 
-            return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
+            return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         }
 
         public locallyTranslate(vector3: Vector3): void {
             this.computeWorldMatrix();
 
-            this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
+            this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
         }
 
         public lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="BABYLON.Vector3">The position (must be in same space as current mesh) to look at</param>
+            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
@@ -538,7 +538,7 @@
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+            this.rotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
@@ -556,7 +556,7 @@
 
             var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
 
-            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
+            if (!this._boundingInfo.isCompletelyInFrustum(Frustum.GetPlanes(transformMatrix))) {
                 return false;
             }
 
@@ -595,7 +595,7 @@
                 impostor = impostor.impostor;
             }
 
-            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
+            if (impostor === PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
                 return;
             }
@@ -619,7 +619,7 @@
 
         public getPhysicsImpostor(): number {
             if (!this._physicImpostor) {
-                return BABYLON.PhysicsEngine.NoImpostor;
+                return PhysicsEngine.NoImpostor;
             }
 
             return this._physicImpostor;
@@ -713,7 +713,7 @@
         */
         public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
             if (!this._submeshesOctree) {
-                this._submeshesOctree = new BABYLON.Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
+                this._submeshesOctree = new Octree<SubMesh>(Octree.CreationFuncForSubMeshes, maxCapacity, maxDepth);
             }
 
             this.computeWorldMatrix(true);
@@ -736,7 +736,7 @@
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
                 for (var i = start; i < end; i++) {
-                    subMesh._lastColliderWorldVertices.push(BABYLON.Vector3.TransformCoordinates(this._positions[i], transformMatrix));
+                    subMesh._lastColliderWorldVertices.push(Vector3.TransformCoordinates(this._positions[i], transformMatrix));
                 }
             }
             // Collide
@@ -776,7 +776,7 @@
                 return;
 
             // Transformation matrix
-            BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+            Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
 
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
@@ -788,7 +788,7 @@
         }
 
         public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
-            var pickingInfo = new BABYLON.PickingInfo();
+            var pickingInfo = new PickingInfo();
 
             if (!this.subMeshes || !this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
                 return pickingInfo;
@@ -876,8 +876,10 @@
         }
 
         public dispose(doNotRecurse?: boolean): void {
+            var index: number;
+
             // Physics
-            if (this.getPhysicsImpostor() != PhysicsEngine.NoImpostor) {
+            if (this.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(PhysicsEngine.NoImpostor);
             }
 
@@ -895,12 +897,12 @@
             this.releaseSubMeshes();
 
             // Remove from scene
-            var index = this.getScene().removeMesh(this);
+            this.getScene().removeMesh(this);
 
             if (!doNotRecurse) {
                 // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                    if (this.getScene().particleSystems[index].emitter == this) {
+                    if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;
                     }
@@ -909,7 +911,7 @@
                 // Children
                 var objects = this.getScene().meshes.slice(0);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent == this) {
+                    if (objects[index].parent === this) {
                         objects[index].dispose();
                     }
                 }
