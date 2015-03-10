@@ -1002,9 +1002,35 @@ var BABYLON;
             var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
             return extrudedCustom;
         };
-        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotationFunction, rbCA, rbCP, custom, scene, updtbl, side) {
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
             var path3D = new BABYLON.Path3D(curve);
-            var shapePaths = [];
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var binormals = path3D.getBinormals();
+            var distances = path3D.getDistances();
+            var shapePaths = new Array();
+            var angle = 0;
+            var returnScale = function (i, distance) {
+                return scale;
+            };
+            var returnRotation = function (i, distance) {
+                return rotation;
+            };
+            var rotate = custom ? rotateFunction : returnRotation;
+            var scl = custom ? scaleFunction : returnScale;
+            for (var i = 0; i < curve.length; i++) {
+                var shapePath = new Array();
+                var angleStep = rotate(i, distances[i]);
+                var scaleRatio = scl(i, distances[i]);
+                for (var p = 0; p < shape.length; p++) {
+                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                    var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                    shapePath.push(rotated);
+                }
+                shapePaths.push(shapePath);
+                angle += angleStep;
+            }
             var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
             return extrudedGeneric;
         };

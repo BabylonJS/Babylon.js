@@ -766,7 +766,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                },() => { }, scene.database, getBinaryData);
             }
         }
 
@@ -923,7 +923,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -944,7 +944,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1025,8 +1025,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
-                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
+                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
+                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1105,7 +1105,7 @@
             }
             var dupes = [];
 
-            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40,(iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
                 for (var j = 0; j < realPos; ++j) {
@@ -1115,19 +1115,19 @@
                         break;
                     }
                 }
-            },  () => {
-                for (var i = 0; i < indices.length; ++i) {
-                    indices[i] = dupes[indices[i]] || indices[i];
-                }
+            },() => {
+                    for (var i = 0; i < indices.length; ++i) {
+                        indices[i] = dupes[indices[i]] || indices[i];
+                    }
 
-                //indices are now reordered
-                var originalSubMeshes = this.subMeshes.slice(0);
-                this.setIndices(indices);
-                this.subMeshes = originalSubMeshes;
-                if (successCallback) {
-                    successCallback(this);
-                }
-            });
+                    //indices are now reordered
+                    var originalSubMeshes = this.subMeshes.slice(0);
+                    this.setIndices(indices);
+                    this.subMeshes = originalSubMeshes;
+                    if (successCallback) {
+                        successCallback(this);
+                    }
+                });
         }
 
         // Statics
@@ -1220,13 +1220,35 @@
             return extrudedCustom;
         }
 
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction, rotationFunction, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
             var path3D = new Path3D(curve);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var binormals = path3D.getBinormals();
+            var distances = path3D.getDistances();
+            var shapePaths = new Array<Array<Vector3>>();
+            var angle = 0;
+            var returnScale: { (i: number, distance: number): number; } = (i, distance) => { return scale; };
+            var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
+            var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
+            var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
 
-            var shapePaths: Vector3[][] = [];
+            for (var i = 0; i < curve.length; i++) {
+                var shapePath = new Array<Vector3>();
+                var angleStep = rotate(i, distances[i]);
+                var scaleRatio = scl(i, distances[i]);
+                for (var p = 0; p < shape.length; p++) {
+                    var rotationMatrix = Matrix.RotationAxis(tangents[i], angle);
+                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                    var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                    shapePath.push(rotated);
+                }
+                shapePaths.push(shapePath);
+                angle += angleStep;
+            }
+
             var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
             return extrudedGeneric;
-
         }
 
         // Plane & ground
@@ -1295,7 +1317,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
 
             return ground;
         }
