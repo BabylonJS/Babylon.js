@@ -9,6 +9,11 @@
         computeTransformedPosition(): boolean;
         getScene(): Scene;
 
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+
         _shadowGenerator: ShadowGenerator;
     }
 
@@ -28,7 +33,7 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.lights.push(this);
+            scene.addLight(this);
         }
 
         public getShadowGenerator(): ShadowGenerator {
@@ -38,7 +43,7 @@
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
-
+       
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
         }
 
@@ -87,8 +92,7 @@
             }
 
             // Remove from scene
-            var index = this.getScene().lights.indexOf(this);
-            this.getScene().lights.splice(index, 1);
+            this.getScene().removeLight(this);
         }
     }
 } 

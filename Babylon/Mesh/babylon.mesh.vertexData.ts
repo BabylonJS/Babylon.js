@@ -20,25 +20,25 @@
 
         public set(data: number[], kind: string) {
             switch (kind) {
-                case BABYLON.VertexBuffer.PositionKind:
+                case VertexBuffer.PositionKind:
                     this.positions = data;
                     break;
-                case BABYLON.VertexBuffer.NormalKind:
+                case VertexBuffer.NormalKind:
                     this.normals = data;
                     break;
-                case BABYLON.VertexBuffer.UVKind:
+                case VertexBuffer.UVKind:
                     this.uvs = data;
                     break;
-                case BABYLON.VertexBuffer.UV2Kind:
+                case VertexBuffer.UV2Kind:
                     this.uv2s = data;
                     break;
-                case BABYLON.VertexBuffer.ColorKind:
+                case VertexBuffer.ColorKind:
                     this.colors = data;
                     break;
-                case BABYLON.VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesKind:
                     this.matricesIndices = data;
                     break;
-                case BABYLON.VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsKind:
                     this.matricesWeights = data;
                     break;
             }
@@ -62,31 +62,31 @@
 
         private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean) {
             if (this.positions) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
             }
 
             if (this.normals) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
             }
 
             if (this.uvs) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
             }
 
             if (this.uv2s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uv2s, updatable);
             }
 
             if (this.colors) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
             }
 
             if (this.matricesIndices) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
             }
 
             if (this.matricesWeights) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
             }
 
             if (this.indices) {
@@ -96,31 +96,31 @@
 
         private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean) {
             if (this.positions) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
             }
 
             if (this.normals) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.NormalKind, this.normals, updateExtends, makeItUnique);
             }
 
             if (this.uvs) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
             }
 
             if (this.uv2s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
             }
 
             if (this.colors) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
             }
 
             if (this.matricesIndices) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updateExtends, makeItUnique);
             }
 
             if (this.matricesWeights) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
             }
 
             if (this.indices) {
@@ -129,15 +129,15 @@
         }
 
         public transform(matrix: Matrix): void {
-            var transformed = BABYLON.Vector3.Zero();
+            var transformed = Vector3.Zero();
 
             if (this.positions) {
-                var position = BABYLON.Vector3.Zero();
+                var position = Vector3.Zero();
 
                 for (var index = 0; index < this.positions.length; index += 3) {
-                    BABYLON.Vector3.FromArrayToRef(this.positions, index, position);
+                    Vector3.FromArrayToRef(this.positions, index, position);
 
-                    BABYLON.Vector3.TransformCoordinatesToRef(position, matrix, transformed);
+                    Vector3.TransformCoordinatesToRef(position, matrix, transformed);
                     this.positions[index] = transformed.x;
                     this.positions[index + 1] = transformed.y;
                     this.positions[index + 2] = transformed.z;
@@ -145,12 +145,12 @@
             }
 
             if (this.normals) {
-                var normal = BABYLON.Vector3.Zero();
+                var normal = Vector3.Zero();
 
                 for (index = 0; index < this.normals.length; index += 3) {
-                    BABYLON.Vector3.FromArrayToRef(this.normals, index, normal);
+                    Vector3.FromArrayToRef(this.normals, index, normal);
 
-                    BABYLON.Vector3.TransformNormalToRef(normal, matrix, transformed);
+                    Vector3.TransformNormalToRef(normal, matrix, transformed);
                     this.normals[index] = transformed.x;
                     this.normals[index + 1] = transformed.y;
                     this.normals[index + 2] = transformed.z;
@@ -245,34 +245,34 @@
         }
 
         private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData): VertexData {
-            var result = new BABYLON.VertexData();
+            var result = new VertexData();
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                result.uv2s = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind);
             }
 
-            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind);
             }
 
             result.indices = meshOrGeometry.getIndices();
@@ -280,14 +280,178 @@
             return result;
         }
 
-        public static CreateBox(size: number): VertexData {
+        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+            closeArray = closeArray || false;
+            closePath = closePath || false;
+            var defaultOffset = Math.floor(pathArray[0].length / 2);
+            offset = offset || defaultOffset;
+            offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
+
+            var positions: number[] = [];
+            var indices: number[] = [];
+            var normals: number[] = [];
+            var uvs: number[] = [];
+
+            var us: number[][] = [];        		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
+            var vs: number[][] = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
+            var uTotalDistance: number[] = []; 		// uTotalDistance[p] : total distance of path p
+            var vTotalDistance: number[] = []; 		//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
+            var minlg: number;          	        // minimal length among all paths from pathArray
+            var lg: number[] = [];        		    // array of path lengths : nb of vertex per path
+            var idx: number[] = [];       		    // array of path indexes : index of each path (first vertex) in positions array
+
+            var p: number;							// path iterator
+            var i: number;							// point iterator
+            var j: number;							// point iterator
+
+            // if single path in pathArray
+            if (pathArray.length < 2) {
+                var ar1: Vector3[] = [];
+                var ar2: Vector3[] = [];
+                for (i = 0; i < pathArray[0].length - offset; i++) {
+                    ar1.push(pathArray[0][i]);
+                    ar2.push(pathArray[0][i + offset]);
+                }
+                pathArray = [ar1, ar2];
+            }
+
+            // positions and horizontal distances (u)
+            var idc: number = 0;
+            minlg = pathArray[0].length;
+            for (p = 0; p < pathArray.length; p++) {
+                uTotalDistance[p] = 0;
+                us[p] = [0];
+                var path: Vector3[] = pathArray[p];
+                var l: number = path.length;
+                minlg = (minlg < l) ? minlg : l;
+                lg[p] = l;
+                idx[p] = idc;
+                j = 0;
+                while (j < l) {
+                    positions.push(path[j].x, path[j].y, path[j].z);
+                    if (j > 0) {
+                        var vectlg: number = path[j].subtract(path[j - 1]).length();
+                        var dist: number = vectlg + uTotalDistance[p];
+                        us[p].push(dist);
+                        uTotalDistance[p] = dist;
+                    }
+                    j++;
+                }
+                if (closePath) {
+                    vectlg = path[0].subtract(path[j - 1]).length();
+                    dist = vectlg + uTotalDistance[p];
+                    uTotalDistance[p] = dist;
+                }
+                idc += l;
+            }
+
+            // vertical distances (v)
+            for (i = 0; i < minlg; i++) {
+                vTotalDistance[i] = 0;
+                vs[i] = [0];
+                var path1: Vector3[];
+                var path2: Vector3[];
+                for (p = 0; p < pathArray.length - 1; p++) {
+                    path1 = pathArray[p];
+                    path2 = pathArray[p + 1];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+                    vs[i].push(dist);
+                    vTotalDistance[i] = dist;
+                }
+                if (closeArray) {
+                    path1 = pathArray[p];
+                    path2 = pathArray[0];
+                    vectlg = path2[i].subtract(path1[i]).length();
+                    dist = vectlg + vTotalDistance[i];
+                    vTotalDistance[i] = dist;
+                }
+            }
+
+
+            // uvs
+            var u: number;
+            var v: number;
+            for (p = 0; p < pathArray.length; p++) {
+                for (i = 0; i < minlg; i++) {
+                    u = us[p][i] / uTotalDistance[p];
+                    v = vs[i][p] / vTotalDistance[i];
+                    uvs.push(u, v);
+                }
+            }
+
+            // indices
+            p = 0;                    					// path index
+            var pi: number = 0;                    		// positions array index
+            var l1: number = lg[p] - 1;           		// path1 length
+            var l2: number = lg[p + 1] - 1;         	// path2 length
+            var min: number = (l1 < l2) ? l1 : l2;   	// current path stop index
+            var shft: number = idx[1] - idx[0];         // shift 
+            var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	
+            var t1: number;								// two consecutive triangles, so 4 points : point1
+            var t2: number;								// point2
+            var t3: number;								// point3
+            var t4: number;								// point4
+
+            while (pi <= min && p < path1nb) {       	//  stay under min and don't go over next to last path
+                // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
+                t1 = pi;
+                t2 = pi + shft;
+                t3 = pi + 1;
+                t4 = pi + shft + 1;
+
+                indices.push(pi, pi + shft, pi + 1);
+                indices.push(pi + shft + 1, pi + 1, pi + shft);
+                pi += 1;
+                if (pi === min) {                   			// if end of one of two consecutive paths reached, go next existing path
+                    if (closePath) {                          	// if closePath, add last triangles between start and end of the paths
+                        indices.push(pi, pi + shft, idx[p]);
+                        indices.push(idx[p] + shft, idx[p], pi + shft);
+                        t3 = idx[p];
+                        t4 = idx[p] + shft;
+                    }
+                    p++;
+                    if (p === lg.length - 1) {                 // last path of pathArray reached <=> closeArray == true
+                        shft = idx[0] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[0] - 1;
+                    }
+                    else {
+                        shft = idx[p + 1] - idx[p];
+                        l1 = lg[p] - 1;
+                        l2 = lg[p + 1] - 1;
+                    }
+
+                    pi = idx[p];
+                    min = (l1 < l2) ? l1 + pi : l2 + pi;
+                }
+            }
+
+            // normals
+            VertexData.ComputeNormals(positions, indices, normals);
+
+            // sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
+            // Result
+            var vertexData = new VertexData();
+
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+
+            return vertexData;
+        }
+
+        public static CreateBox(size: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var normalsSource = [
-                new BABYLON.Vector3(0, 0, 1),
-                new BABYLON.Vector3(0, 0, -1),
-                new BABYLON.Vector3(1, 0, 0),
-                new BABYLON.Vector3(-1, 0, 0),
-                new BABYLON.Vector3(0, 1, 0),
-                new BABYLON.Vector3(0, -1, 0)
+                new Vector3(0, 0, 1),
+                new Vector3(0, 0, -1),
+                new Vector3(1, 0, 0),
+                new Vector3(-1, 0, 0),
+                new Vector3(0, 1, 0),
+                new Vector3(0, -1, 0)
             ];
 
             var indices = [];
@@ -302,8 +466,8 @@
                 var normal = normalsSource[index];
 
                 // Get two vectors perpendicular to the face normal and to each other.
-                var side1 = new BABYLON.Vector3(normal.y, normal.z, normal.x);
-                var side2 = BABYLON.Vector3.Cross(normal, side1);
+                var side1 = new Vector3(normal.y, normal.z, normal.x);
+                var side2 = Vector3.Cross(normal, side1);
 
                 // Six indices (two triangles) per face.
                 var verticesLength = positions.length / 3;
@@ -337,8 +501,11 @@
                 uvs.push(1.0, 0.0);
             }
 
+            // sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -348,7 +515,7 @@
             return vertexData;
         }
 
-        public static CreateSphere(segments: number, diameter: number): VertexData {
+        public static CreateSphere(segments: number, diameter: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
 
             segments = segments || 32;
             diameter = diameter || 1;
@@ -372,13 +539,13 @@
 
                     var angleY = normalizedY * Math.PI * 2;
 
-                    var rotationZ = BABYLON.Matrix.RotationZ(-angleZ);
-                    var rotationY = BABYLON.Matrix.RotationY(angleY);
-                    var afterRotZ = BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.Up(), rotationZ);
-                    var complete = BABYLON.Vector3.TransformCoordinates(afterRotZ, rotationY);
+                    var rotationZ = Matrix.RotationZ(-angleZ);
+                    var rotationY = Matrix.RotationY(angleY);
+                    var afterRotZ = Vector3.TransformCoordinates(Vector3.Up(), rotationZ);
+                    var complete = Vector3.TransformCoordinates(afterRotZ, rotationY);
 
                     var vertex = complete.scale(radius);
-                    var normal = BABYLON.Vector3.Normalize(vertex);
+                    var normal = Vector3.Normalize(vertex);
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -399,8 +566,11 @@
                 }
             }
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -410,7 +580,7 @@
             return vertexData;
         }
 
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1): VertexData {
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var radiusTop = diameterTop / 2;
             var radiusBottom = diameterBottom / 2;
             var indices = [];
@@ -430,19 +600,19 @@
                 var dx = Math.cos(angle);
                 var dz = Math.sin(angle);
 
-                return new BABYLON.Vector3(dx, 0, dz);
+                return new Vector3(dx, 0, dz);
             };
 
             var createCylinderCap = isTop => {
                 var radius = isTop ? radiusTop : radiusBottom;
 
-                if (radius == 0) {
+                if (radius === 0) {
                     return;
                 }
                 var vbase = positions.length / 3;
 
-                var offset = new BABYLON.Vector3(0, height / 2, 0);
-                var textureScale = new BABYLON.Vector2(0.5, 0.5);
+                var offset = new Vector3(0, height / 2, 0);
+                var textureScale = new Vector2(0.5, 0.5);
 
                 if (!isTop) {
                     offset.scaleInPlace(-1);
@@ -450,10 +620,10 @@
                 }
 
                 // Positions, normals & uvs
-                for (i = 0; i < tessellation; i++) {
+                for (var i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new BABYLON.Vector2(
+                    var textureCoordinate = new Vector2(
                         circleVector.x * textureScale.x + 0.5,
                         circleVector.z * textureScale.y + 0.5
                         );
@@ -463,7 +633,7 @@
                 }
 
                 // Indices
-                for (var i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         indices.push(vbase);
                         indices.push(vbase + (i + 2) % tessellation);
@@ -476,15 +646,15 @@
                 }
             };
 
-            var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
-            var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
+            var base = new Vector3(0, -1, 0).scale(height / 2);
+            var offset = new Vector3(0, 1, 0).scale(height / subdivisions);
             var stride = tessellation + 1;
 
             // Positions, normals & uvs
             for (var i = 0; i <= tessellation; i++) {
                 var circleVector = getCircleVector(i);
-                var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
-                var position, radius = radiusBottom;
+                var textureCoordinate = new Vector2(i / tessellation, 0);
+                var position: Vector3, radius = radiusBottom;
 
                 for (var s = 0; s <= subdivisions; s++) {
                     // Update variables
@@ -501,8 +671,8 @@
 
             subdivisions += 1;
             // Indices
-            for (var s = 0; s < subdivisions - 1; s++) {
-                for (var i = 0; i <= tessellation; i++) {
+            for (s = 0; s < subdivisions - 1; s++) {
+                for (i = 0; i <= tessellation; i++) {
                     indices.push(i * subdivisions + s);
                     indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
                     indices.push(i * subdivisions + (s + 1));
@@ -518,10 +688,13 @@
             createCylinderCap(false);
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
+
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -531,7 +704,7 @@
             return vertexData;
         }
 
-        public static CreateTorus(diameter, thickness, tessellation) {
+        public static CreateTorus(diameter, thickness, tessellation, sideOrientation: number = Mesh.DEFAULTSIDE) {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -548,7 +721,7 @@
 
                 var outerAngle = i * Math.PI * 2.0 / tessellation - Math.PI / 2.0;
 
-                var transform = BABYLON.Matrix.Translation(diameter / 2.0, 0, 0).multiply(BABYLON.Matrix.RotationY(outerAngle));
+                var transform = Matrix.Translation(diameter / 2.0, 0, 0).multiply(Matrix.RotationY(outerAngle));
 
                 for (var j = 0; j <= tessellation; j++) {
                     var v = 1 - j / tessellation;
@@ -558,12 +731,12 @@
                     var dy = Math.sin(innerAngle);
 
                     // Create a vertex.
-                    var normal = new BABYLON.Vector3(dx, dy, 0);
+                    var normal = new Vector3(dx, dy, 0);
                     var position = normal.scale(thickness / 2);
-                    var textureCoordinate = new BABYLON.Vector2(u, v);
+                    var textureCoordinate = new Vector2(u, v);
 
-                    position = BABYLON.Vector3.TransformCoordinates(position, transform);
-                    normal = BABYLON.Vector3.TransformNormal(normal, transform);
+                    position = Vector3.TransformCoordinates(position, transform);
+                    normal = Vector3.TransformNormal(normal, transform);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -583,8 +756,12 @@
                 }
             }
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
+
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -608,7 +785,7 @@
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -621,7 +798,7 @@
             var positions = [];
             var normals = [];
             var uvs = [];
-            var row, col;
+            var row: number, col: number;
 
             width = width || 1;
             height = height || 1;
@@ -629,8 +806,8 @@
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
-                    var normal = new BABYLON.Vector3(0, 1.0, 0);
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -651,7 +828,7 @@
             }
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -666,7 +843,7 @@
             var positions = [];
             var normals = [];
             var uvs = [];
-            var row, col, tileRow, tileCol;
+            var row: number, col: number, tileRow: number, tileCol: number;
 
             subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
@@ -677,17 +854,6 @@
                 'w': (xmax - xmin) / subdivisions.w,
                 'h': (zmax - zmin) / subdivisions.h
             };
-
-            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
-                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
-                    applyTile(
-                        xmin + tileCol * tileSize.w,
-                        zmin + tileRow * tileSize.h,
-                        xmin + (tileCol + 1) * tileSize.w,
-                        zmin + (tileRow + 1) * tileSize.h
-                        );
-                }
-            }
 
             function applyTile(xTileMin: number, zTileMin: number, xTileMax: number, zTileMax: number) {
                 // Indices
@@ -712,8 +878,8 @@
                 }
 
                 // Position, normals and uvs
-                var position = BABYLON.Vector3.Zero();
-                var normal = new BABYLON.Vector3(0, 1.0, 0);
+                var position = Vector3.Zero();
+                var normal = new Vector3(0, 1.0, 0);
                 for (row = 0; row <= precision.h; row++) {
                     position.z = (row * (zTileMax - zTileMin)) / precision.h + zTileMin;
                     for (col = 0; col <= precision.w; col++) {
@@ -727,8 +893,19 @@
                 }
             }
 
+            for (tileRow = 0; tileRow < subdivisions.h; tileRow++) {
+                for (tileCol = 0; tileCol < subdivisions.w; tileCol++) {
+                    applyTile(
+                        xmin + tileCol * tileSize.w,
+                        zmin + tileRow * tileSize.h,
+                        xmin + (tileCol + 1) * tileSize.w,
+                        zmin + (tileRow + 1) * tileSize.h
+                        );
+                }
+            }
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -748,7 +925,7 @@
             // Vertices
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
 
                     // Compute height
                     var heightMapX = (((position.x + width / 2) / width) * (bufferWidth - 1)) | 0;
@@ -784,10 +961,10 @@
             }
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -797,7 +974,7 @@
             return vertexData;
         }
 
-        public static CreatePlane(size: number): VertexData {
+        public static CreatePlane(size: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -832,8 +1009,11 @@
             indices.push(2);
             indices.push(3);
 
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -844,7 +1024,7 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number): VertexData {
+        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -869,7 +1049,7 @@
                 var ty = radius * (2 + cs) * su * 0.5;
                 var tz = radius * Math.sin(quOverP) * 0.5;
 
-                return new BABYLON.Vector3(tx, ty, tz);
+                return new Vector3(tx, ty, tz);
             };
 
             // Vertices
@@ -881,8 +1061,8 @@
                 var tang = p2.subtract(p1);
                 var n = p2.add(p1);
 
-                var bitan = BABYLON.Vector3.Cross(tang, n);
-                n = BABYLON.Vector3.Cross(bitan, tang);
+                var bitan = Vector3.Cross(tang, n);
+                n = Vector3.Cross(bitan, tang);
 
                 bitan.normalize();
                 n.normalize();
@@ -916,10 +1096,13 @@
             }
 
             // Normals
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            VertexData.ComputeNormals(positions, indices, normals);
+
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -936,7 +1119,7 @@
             var index;
 
             for (index = 0; index < positions.length; index += 3) {
-                var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
+                var vector3 = new Vector3(positions[index], positions[index + 1], positions[index + 2]);
                 positionVectors.push(vector3);
                 facesOfVertices.push([]);
             }
@@ -954,7 +1137,7 @@
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
 
-                facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+                facesNormals[index] = Vector3.Normalize(Vector3.Cross(p1p2, p3p2));
                 facesOfVertices[i1].push(index);
                 facesOfVertices[i2].push(index);
                 facesOfVertices[i3].push(index);
@@ -963,16 +1146,70 @@
             for (index = 0; index < positionVectors.length; index++) {
                 var faces = facesOfVertices[index];
 
-                var normal = BABYLON.Vector3.Zero();
+                var normal = Vector3.Zero();
                 for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
                     normal.addInPlace(facesNormals[faces[faceIndex]]);
                 }
 
-                normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
+                normal = Vector3.Normalize(normal.scale(1.0 / faces.length));
 
                 normals[index * 3] = normal.x;
                 normals[index * 3 + 1] = normal.y;
                 normals[index * 3 + 2] = normal.z;
+            }
+        }
+
+        private static _ComputeSides(sideOrientation: number, positions: number[], indices: number[], normals: number[], uvs: number[]) {
+            var li: number = indices.length;
+            var ln: number = normals.length;
+            var i: number;
+            var n: number;
+            sideOrientation = sideOrientation || Mesh.DEFAULTSIDE;
+
+            switch (sideOrientation) {
+
+                case Mesh.FRONTSIDE:
+                    // nothing changed
+                    break;
+
+                case Mesh.BACKSIDE:
+                    var tmp: number;
+                    // indices
+                    for (i = 0; i < li; i += 3) {
+                        tmp = indices[i];
+                        indices[i] = indices[i + 2];
+                        indices[i + 2] = tmp;
+                    }
+                    // normals
+                    for (n = 0; n < ln; n++) {
+                        normals[n] = -normals[n];
+                    }
+                    break;
+
+                case Mesh.DOUBLESIDE:
+                    // positions 
+                    var lp: number = positions.length;
+                    var l: number = lp / 3;
+                    for (var p = 0; p < lp; p++) {
+                        positions[lp + p] = positions[p];
+                    }
+                    // indices
+                    for (i = 0; i < li; i += 3) {
+                        indices[i + li] = indices[i + 2] + l;
+                        indices[i + 1 + li] = indices[i + 1] + l;
+                        indices[i + 2 + li] = indices[i] + l;
+                    }
+                    // normals
+                    for (n = 0; n < ln; n++) {
+                        normals[ln + n] = -normals[n];
+                    }
+
+                    // uvs
+                    var lu: number = uvs.length;
+                    for (var u: number = 0; u < lu; u++) {
+                        uvs[u + lu] = uvs[u];
+                    }
+                    break;
             }
         }
     }

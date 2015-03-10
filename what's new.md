@@ -1,5 +1,61 @@
 Changes list
 ============
+- 2.0.0:
+ - **Major updates**
+ - Support for WebAudio. More info [here](http://doc.babylonjs.com/page.php?p=24824) ([davrous](http://www.github.com/davrous))
+ - Support for Procedural Texture with standard usable samples and custom support. More info [here](http://doc.babylonjs.com/page.php?p=22601) ([meulta](http://www.github.com/meulta))
+ - Support for OES_element_index_uint extension in order to support 32 bits indices and then meshes with more than 65536 vertices ([deltakosh](http://www.github.com/deltakosh))
+ - Support for levels of detail (LOD) for meshes. More info [here](http://doc.babylonjs.com/page.php?p=22591) ([deltakosh](http://www.github.com/deltakosh))
+ - New Scene Optimizer tool. More [here](http://doc.babylonjs.com/page.php?p=22581) ([deltakosh](http://www.github.com/deltakosh))
+ - Support for [user marks](http://blogs.msdn.com/b/eternalcoding/archive/2015/02/02/using-user-mark-to-analyze-performance-of-your-javascript-code.aspx) ([deltakosh](http://www.github.com/deltakosh))
+ - Using High Resolution Time for performance and FPS measurement ([deltakosh](http://www.github.com/deltakosh))
+ - Easing functions for animations. More info [here](http://doc.babylonjs.com/page.php?p=22081) ([mimetis](https://github.com/mimetis)) 
+ - New debug layer than can be used to display debug informations. More info [here](http://doc.babylonjs.com/page.php?p=22611) ([deltakosh](http://www.github.com/deltakosh))
+ - New ```PolygonMeshBuilder``` object used to create mesh from [polygons](http://www.babylonjs-playground.com/#10IOII%231) ([ElemarJR](https://github.com/ElemarJR))
+ - New ```Mesh.simplify()``` function to automatically simplify meshes. More info [here](http://doc.babylonjs.com/page.php?p=24822) ([raananw](http://www.github.com/raananw))
+ - New ```scene.enableDepthRenderer()``` to register depth texture rendering. More info [here](http://doc.babylonjs.com/page.php?p=24825) ([deltakosh](http://www.github.com/deltakosh))
+ - New ```SSAORenderingPipeline``` to apply screen space ambient occlusion. More info [here](http://doc.babylonjs.com/page.php?p=24837) ([julien-moreau](http://www.github.com/julien-moreau)) 
+ - New ```VolumetricLightScatteringPostProcess``` to simulate volumetric light scattering. More info [here](http://doc.babylonjs.com/page.php?p=24840) ([julien-moreau](http://www.github.com/julien-moreau)) 
+ - 3dsMax exporter can now generate binary format files ([deltakosh](http://www.github.com/deltakosh)) 
+ - **Updates**
+ - Moving of cloning into Mesh constructor ([Palmer-JC](http://www.github.com/Palmer-JC)) 
+ - Camera types support in 3dsmax exporter ([deltakosh](http://www.github.com/deltakosh))
+ - Babylon.Math is now a fluid API ([deltakosh](http://www.github.com/deltakosh))
+ - Added FOV mode setting to cameras ([jahow](http://www.github.com/jahow))
+ - You can now define if OnIntersectionEnterTrigger and OnIntersectionExitTrigger may use precise intersections. More info [here](http://doc.babylonjs.com/page.php?p=22531) ([deltakosh](http://www.github.com/deltakosh))
+ - New ```scene.createDefaultCameraOrLight()``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Added POV movement & rotation ([Palmer-JC](http://www.github.com/Palmer-JC))
+ - Starting documenting public API ([raananw](http://www.github.com/raananw)) 
+ - Added render target type (unsigned or floating point) ([julien-moreau](http://www.github.com/julien-moreau))  
+ - Decomposition and interpolation methods for matrices ([kpko](http://www.github.com/kpko)) 
+ - Spot lights can now cast [shadows](http://www.babylonjs-playground.com/?15) ([deltakosh](http://www.github.com/deltakosh))
+ - Adding ```clear()``` function to DynamicTexture ([deltakosh](http://www.github.com/deltakosh))
+ - New ```RawTexture``` object to create texture from arraybuffer with specific format (luminance, luminance and alpha, alpha, rgb, rgba) ([deltakosh](http://www.github.com/deltakosh)) 
+ - Animation's key can now be functions ([deltakosh](http://www.github.com/deltakosh)) 
+ - Bones and instances can be used together ([deltakosh](http://www.github.com/deltakosh)) 
+ - Engine can now accept more than one render loop ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```ParticleSystem.updateFunction``` to define custom behavior for particles ([deltakosh](http://www.github.com/deltakosh)) 
+ - New ```mesh.renderOverlay``` and ```mesh.overlayColor``` ([deltakosh](http://www.github.com/deltakosh))
+ - New "Automatically launch animations" option for Blender 3D ([deltakosh](http://www.github.com/deltakosh))
+ - Support for vertex color and vertex alpha function ([deltakosh](http://www.github.com/deltakosh))
+ - Adding stride size attributes to ```Mesh.setVerticesData``` function ([deltakosh](http://www.github.com/deltakosh))
+ - New ```Texture.CreateFromBase64String``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Extending the Ray class functionality to support ray's length ([raananw](http://www.github.com/raananw))
+ - New ```Effect.onBind``` callback ([deltakosh](http://www.github.com/deltakosh))
+ - Added support for point rendering ([FreeFrags](http://www.github.com/freefrags) [deltakosh](http://www.github.com/deltakosh))
+ - Robust Euler->Quaternion->Euler conversions ([MavenRain](https://github.com/MavenRain))
+ - new ```mesh.isCompletelyInFrustum(camera)``` function ([deltakosh](http://www.github.com/deltakosh))
+ - Added the possibility to disable fog for a specific material ([demonixis](https://github.com/demonixis))
+ - Added the possibility to disable fog for a specific sprite manager ([deltakosh](http://www.github.com/deltakosh))
+ - Added a property to ArcRotateCamera that moves the screen position of the target ([daner](https://github.com/daner))
+ - **Breaking changes**
+ - ```Tools.GetFps()``` and ```Tools.GetDeltaTime()``` are now functions hosted by the engine: ```engine.getFps()``` and ```engine.getDeltaTime()``` [deltakosh](http://www.github.com/deltakosh))
+ - **Bugs**
+ - Insane amount of fixes for 3dsmax and blender exporters ([deltakosh](http://www.github.com/deltakosh)) 
+ - Fixed nearest texture filters ([deltakosh](http://www.github.com/deltakosh)) 
+ - Fixed mesh loading when url has a query string ([dlajarretie](https://github.com/dlajarretie))
+ - Fixed a bug with pause/restart on animations ([deltakosh](http://www.github.com/deltakosh)) 
+ - Fixed a bug with CSG and transformations ([deltakosh](http://www.github.com/deltakosh)) 
 - 1.14.0:
  - **Major updates**
  - New VRDeviceOrientionCamera for cardboard like systems ([demonixis](http://www.github.com/demonixis))
@@ -13,6 +69,7 @@ Changes list
  - TypeScript declaration file is now available ([deltakosh](http://www.github.com/deltakosh))
  - Binary file format supported. You can use online converter [here](http://www.babylonjs.com/binary) ([r2d2Proton](https://github.com/r2d2Proton))
  - **Updates**
+ - 
  - New ```mesh.updateVerticesDataDirectly(kind, float32array)``` to update mesh data directly ([deltakosh](http://www.github.com/deltakosh))
  - Sandbox & IndexedDB layer are now supporting TGA & DDS textures  ([davrous](http://www.github.com/davrous))
  - Integrating lights animations, cameras type and animations for Blender exporter ([Palmer-JC](http://www.github.com/Palmer-JC)) 
@@ -32,7 +89,7 @@ Changes list
  - Added multiply and divide functions to Vector2 ([daner](http://www.github.com/daner)) 
  - New feature demo for [custom render target texture](http://www.babylonjs.com/?CUSTOMRENDERTARGET) ([deltakosh](http://www.github.com/deltakosh)) 
  - RenderTargetTexture can now specify a camera to use ([deltakosh](http://www.github.com/deltakosh)) 
- - **Updates**
+ - **Bugs**
  - Fixing tons of bugs with PostProcessRenderPipeline. Wiki updated. ([deltakosh](http://www.github.com/deltakosh)) 
 - 1.13.0:
  - **Major updates**

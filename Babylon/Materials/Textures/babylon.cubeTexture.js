@@ -32,7 +32,7 @@ var BABYLON;
             this._textureMatrix = BABYLON.Matrix.Identity();
         }
         CubeTexture.prototype.clone = function () {
-            var newTexture = new BABYLON.CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
+            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
             // Base texture
             newTexture.level = this.level;
             newTexture.wrapU = this.wrapU;
@@ -43,7 +43,7 @@ var BABYLON;
         };
         // Methods
         CubeTexture.prototype.delayLoad = function () {
-            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;

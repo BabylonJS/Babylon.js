@@ -39,9 +39,10 @@ var BABYLON;
             }
             this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
             this._isDirty = false;
+            this._scene._activeBones += this.bones.length;
         };
         Skeleton.prototype.getAnimatables = function () {
-            if (!this._animatables || this._animatables.length != this.bones.length) {
+            if (!this._animatables || this._animatables.length !== this.bones.length) {
                 this._animatables = [];
                 for (var index = 0; index < this.bones.length; index++) {
                     this._animatables.push(this.bones[index]);
@@ -50,7 +51,7 @@ var BABYLON;
             return this._animatables;
         };
         Skeleton.prototype.clone = function (name, id) {
-            var result = new BABYLON.Skeleton(name, id || name, this._scene);
+            var result = new Skeleton(name, id || name, this._scene);
             for (var index = 0; index < this.bones.length; index++) {
                 var source = this.bones[index];
                 var parentBone = null;

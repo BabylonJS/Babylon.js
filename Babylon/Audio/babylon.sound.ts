@@ -10,7 +10,7 @@
         public rolloffFactor: number = 1;
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
-        public panningModel: string = "HRTF";
+        private _panningModel: string = "equalpower";
         public onended: () => any;
         private _playbackRate: number = 1;
         private _startTime: number = 0;
@@ -20,7 +20,8 @@
         private _volume: number = 1;
         private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
-        private _isPlaying: boolean = false;
+        public isPlaying: boolean = false;
+        public isPaused: boolean = false;
         private _isDirectional: boolean = false;
         private _readyToPlayCallback: () => any;
         private _audioBuffer: AudioBuffer;
@@ -72,7 +73,6 @@
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
-                this.panningModel = options.panningModel || "HRTF";
                 this._playbackRate = options.playbackRate || 1;
             }
 
@@ -113,7 +113,7 @@
 
         public dispose() {
             if (Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
-                if (this._isPlaying) {
+                if (this.isPlaying) {
                     this.stop();
                 }
                 this._isReadyToPlay = false;
@@ -123,15 +123,20 @@
                 else {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
-                this._soundGain.disconnect();
-                this._soundSource.disconnect();
+                if (this._soundGain) {
+                    this._soundGain.disconnect();
+                    this._soundGain = null;
+                }
                 if (this._soundPanner) {
                     this._soundPanner.disconnect();
                     this._soundPanner = null;
                 }
+                if (this._soundSource) {
+                    this._soundSource.disconnect();
+                    this._soundSource = null;
+                }
                 this._audioBuffer = null;
-                this._soundGain = null;
-                this._soundSource = null;
+
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
@@ -164,13 +169,15 @@
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
-                this.panningModel = options.panningModel || this.panningModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
             }
         }
 
         private _createSpatialParameters() {
             if (Engine.audioEngine.canUseWebAudio) {
+                if (this._scene.headphone) {
+                    this._panningModel = "HRTF";
+                }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
 
                 if (this.useCustomAttenuation) {
@@ -179,17 +186,33 @@
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = "HRTF";
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this.panningModel;
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 this._soundPanner.connect(this._ouputAudioNode);
                 this._inputAudioNode = this._soundPanner;
+            }
+        }
+
+        public switchPanningModelToHRTF() {
+            this._panningModel = "HRTF";
+            this._switchPanningModel();    
+        }
+
+        public switchPanningModelToEqualPower() {
+            this._panningModel = "equalpower";
+            this._switchPanningModel();
+        }
+
+        private _switchPanningModel() {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
+                this._soundPanner.panningModel = this._panningModel;
             }
         }
 
@@ -216,7 +239,7 @@
             this._coneOuterGain = coneOuterGain;
             this._isDirectional = true;
 
-            if (this._isPlaying && this.loop) {
+            if (this.isPlaying && this.loop) {
                 this.stop();
                 this.play();
             }
@@ -225,7 +248,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this._isPlaying && this.spatialSound) {
+            if (this.isPlaying && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -233,7 +256,7 @@
         public setLocalDirectionToMesh(newLocalDirection: Vector3) {
             this._localDirection = newLocalDirection;
 
-            if (this._connectedMesh && this._isPlaying) {
+            if (this._connectedMesh && this.isPlaying) {
                 this._updateDirection();
             }
         }
@@ -261,9 +284,9 @@
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
         */
         public play(time?: number) {
-            if (this._isReadyToPlay) {
+            if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
-                    var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
+                    var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
@@ -286,15 +309,21 @@
                     this._soundSource.loop = this.loop;
                     this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
-                    if (this.onended) {
-                        this._soundSource.onended = this.onended;
-                    }
-                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
-                    this._isPlaying = true;
+                    this._soundSource.onended = () => { this._onended(); };
+                    this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                    this.isPlaying = true;
+                    this.isPaused = false;
                 }
                 catch (ex) {
                     Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
+            }
+        }
+
+        private _onended() {
+            this.isPlaying = false;
+            if (this.onended) {
+                this.onended();
             }
         }
 
@@ -303,17 +332,18 @@
         * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
         */
         public stop(time?: number) {
-            if (this._isPlaying) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : 0;
+            if (this.isPlaying) {
+                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._isPlaying = false;
+                this.isPlaying = false;
             }
         }
 
         public pause() {
-            if (this._isPlaying) {
-                this._soundSource.stop(0);
+            if (this.isPlaying) {
+                this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this.isPaused = true;
             }
         }
 
@@ -332,7 +362,7 @@
 
         public setPlaybackRate(newPlaybackRate: number) {
             this._playbackRate = newPlaybackRate;
-            if (this._isPlaying) {
+            if (this.isPlaying) {
                 this._soundSource.playbackRate.value = this._playbackRate;
             }
         }
@@ -346,7 +376,7 @@
             if (!this.spatialSound) {
                 this._createSpatialParameters();
                 this.spatialSound = true;
-                if (this._isPlaying && this.loop) {
+                if (this.isPlaying && this.loop) {
                     this.stop();
                     this.play();
                 }
@@ -358,7 +388,7 @@
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
-            if (this._isDirectional && this._isPlaying) {
+            if (this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }

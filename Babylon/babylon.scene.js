@@ -74,6 +74,7 @@ var BABYLON;
             this.particlesEnabled = true;
             this.particleSystems = new Array();
             // Sprites
+            this.spritesEnabled = true;
             this.spriteManagers = new Array();
             // Layers
             this.layers = new Array();
@@ -90,6 +91,7 @@ var BABYLON;
             this.postProcessesEnabled = true;
             // Customs render targets
             this.renderTargetsEnabled = true;
+            this.dumpNextRenderTargets = false;
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
@@ -99,6 +101,8 @@ var BABYLON;
             this.proceduralTexturesEnabled = true;
             this._proceduralTextures = new Array();
             this.soundTracks = new Array();
+            this._audioEnabled = true;
+            this._headphone = false;
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -136,6 +140,8 @@ var BABYLON;
             this.attachControl();
             this._debugLayer = new BABYLON.DebugLayer(this);
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            //simplification queue
+            this.simplificationQueue = new BABYLON.SimplificationQueue();
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
@@ -524,6 +530,57 @@ var BABYLON;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         };
         // Methods
+        Scene.prototype.addMesh = function (newMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        };
+        Scene.prototype.removeMesh = function (toRemove) {
+            var index = this.meshes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeLight = function (toRemove) {
+            var index = this.lights.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeCamera = function (toRemove) {
+            var index = this.cameras.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.addLight = function (newLight) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        };
+        Scene.prototype.addCamera = function (newCamera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
         /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
@@ -785,6 +842,7 @@ var BABYLON;
             }
         };
         Scene.prototype._evaluateActiveMeshes = function () {
+            this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
             this._processedMaterials.reset();
@@ -831,6 +889,7 @@ var BABYLON;
                 mesh._preActivate();
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
+                    this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
                     this._activeMesh(meshLOD);
                 }
@@ -905,7 +964,6 @@ var BABYLON;
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
                 skeleton.prepare();
-                this._activeBones += skeleton.bones.length;
             }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
@@ -915,7 +973,7 @@ var BABYLON;
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -1040,6 +1098,10 @@ var BABYLON;
             if (this.actionManager) {
                 this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
             }
+            //Simplification Queue
+            if (!this.simplificationQueue.running) {
+                this.simplificationQueue.executeNext();
+            }
             // Before render
             if (this.beforeRender) {
                 this.beforeRender();
@@ -1074,7 +1136,7 @@ var BABYLON;
                         engine.setViewport(this.activeCamera.viewport);
                         // Camera
                         this.updateTransformMatrix();
-                        renderTarget.render();
+                        renderTarget.render(false, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -1144,10 +1206,16 @@ var BABYLON;
                 this._toBeDisposed[index] = null;
             }
             this._toBeDisposed.reset();
+            if (this.dumpNextRenderTargets) {
+                this.dumpNextRenderTargets = false;
+            }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
         Scene.prototype._updateAudioParameters = function () {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
+                return;
+            }
             var listeningCamera;
             var audioEngine = BABYLON.Engine.audioEngine;
             if (this.activeCameras.length > 0) {
@@ -1176,6 +1244,75 @@ var BABYLON;
                         }
                     }
                 }
+            }
+        };
+        Object.defineProperty(Scene.prototype, "audioEnabled", {
+            // Audio
+            get: function () {
+                return this._audioEnabled;
+            },
+            set: function (value) {
+                this._audioEnabled = value;
+                if (this._audioEnabled) {
+                    this._enableAudio();
+                }
+                else {
+                    this._disableAudio();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype._disableAudio = function () {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                this.mainSoundTrack.soundCollection[i].pause();
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    this.soundTracks[i].soundCollection[j].pause();
+                }
+            }
+        };
+        Scene.prototype._enableAudio = function () {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                if (this.mainSoundTrack.soundCollection[i].isPaused) {
+                    this.mainSoundTrack.soundCollection[i].play();
+                }
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    if (this.soundTracks[i].soundCollection[j].isPaused) {
+                        this.soundTracks[i].soundCollection[j].play();
+                    }
+                }
+            }
+        };
+        Object.defineProperty(Scene.prototype, "headphone", {
+            get: function () {
+                return this._headphone;
+            },
+            set: function (value) {
+                this._headphone = value;
+                if (this._headphone) {
+                    this._switchAudioModeForHeadphones();
+                }
+                else {
+                    this._switchAudioModeForNormalSpeakers();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype._switchAudioModeForHeadphones = function () {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        };
+        Scene.prototype._switchAudioModeForNormalSpeakers = function () {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
             }
         };
         Scene.prototype.enableDepthRenderer = function () {
@@ -1210,10 +1347,7 @@ var BABYLON;
             this._onAfterRenderCallbacks = [];
             this.detachControl();
             // Release sounds & sounds tracks
-            this.mainSoundTrack.dispose();
-            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
-                this.soundTracks[scIndex].dispose();
-            }
+            this.disposeSounds();
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -1256,6 +1390,13 @@ var BABYLON;
                 this._engine.scenes.splice(index, 1);
             }
             this._engine.wipeCaches();
+        };
+        // Release sounds & sounds tracks
+        Scene.prototype.disposeSounds = function () {
+            this.mainSoundTrack.dispose();
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
         };
         // Collisions
         Scene.prototype._getNewPosition = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {

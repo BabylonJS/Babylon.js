@@ -15,7 +15,7 @@ module BABYLON {
 
         static isUASupportingBlobStorage: boolean = true;
 
-        constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {          
+        constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {
             this.callbackManifestChecked = callbackManifestChecked;
             this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
@@ -30,8 +30,8 @@ module BABYLON {
         static parseURL = (url: string) => {
             var a = document.createElement('a');
             a.href = url;
-            var urlWithoutHash = url.substring(0, url.lastIndexOf("#")); 
-            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length); 
+            var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
+            var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
             var absLocation = url.substring(0, url.indexOf(fileName, 0));
             return absLocation;
         }
@@ -47,7 +47,7 @@ module BABYLON {
 
         public checkManifestFile() {
             function noManifestFile() {
-                BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
+                //BABYLON.Tools.Log("Valid manifest file not found. Scene & textures will be loaded directly from the web server.");
                 that.enableSceneOffline = false;
                 that.enableTexturesOffline = false;
                 that.callbackManifestChecked(false);
@@ -61,8 +61,8 @@ module BABYLON {
             var manifestURLTimeStamped = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
             xhr.open("GET", manifestURLTimeStamped, true);
 
-            xhr.addEventListener("load", () => {
-                if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
+            xhr.addEventListener("load",() => {
+                if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
                         this.enableSceneOffline = manifestFile.enableSceneOffline;
@@ -91,7 +91,7 @@ module BABYLON {
                 xhr.send();
             }
             catch (ex) {
-                BABYLON.Tools.Error("Error on XHR send request.");
+                Tools.Error("Error on XHR send request.");
                 that.callbackManifestChecked(false);
             }
         }
@@ -123,7 +123,7 @@ module BABYLON {
 
                     // executes when a version change transaction cannot complete due to other active transactions
                     request.onblocked = event => {
-                        BABYLON.Tools.Error("IDB request blocked. Please reload the page.");
+                        Tools.Error("IDB request blocked. Please reload the page.");
                         handleError();
                     };
                     
@@ -136,13 +136,13 @@ module BABYLON {
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
                         this.db = (<any>(event.target)).result;
-                        try {                            
+                        try {
                             var scenesStore = this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
                             var versionsStore = this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
                             var texturesStore = this.db.createObjectStore("textures", { keyPath: "textureUrl" });
                         }
                         catch (ex) {
-                            BABYLON.Tools.Error("Error while creating object stores. Exception: " + ex.message);
+                            Tools.Error("Error while creating object stores. Exception: " + ex.message);
                             handleError();
                         }
                     };
@@ -155,7 +155,7 @@ module BABYLON {
         }
 
         public loadImageFromDB(url: string, image: HTMLImageElement) {
-            var completeURL = BABYLON.Database.ReturnFullUrlLocation(url);
+            var completeURL = Database.ReturnFullUrlLocation(url);
 
             var saveAndLoadImage = () => {
                 if (!this.hasReachedQuota && this.db !== null) {
@@ -192,9 +192,9 @@ module BABYLON {
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
                         blobTextureURL = URL.createObjectURL(texture.data, { oneTimeOnly: true });
-                       
+
                         image.onerror = () => {
-                            BABYLON.Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
+                            Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
                             image.src = url;
                         };
                         image.src = blobTextureURL;
@@ -210,12 +210,12 @@ module BABYLON {
                     texture = (<any>(event.target)).result;
                 };
                 getRequest.onerror = event => {
-                    BABYLON.Tools.Error("Error loading texture " + url + " from DB.");
+                    Tools.Error("Error loading texture " + url + " from DB.");
                     image.src = url;
                 };
             }
             else {
-                BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 image.src = url;
             }
         }
@@ -240,14 +240,14 @@ module BABYLON {
                     image.src = blobTextureURL;
                 };
 
-                if (BABYLON.Database.isUASupportingBlobStorage) { // Create XHR
+                if (Database.isUASupportingBlobStorage) { // Create XHR
                     var xhr = new XMLHttpRequest(),
                         blob: Blob;
 
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load", () => {
+                    xhr.addEventListener("load",() => {
                         if (xhr.status === 200) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
@@ -257,7 +257,8 @@ module BABYLON {
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -283,7 +284,7 @@ module BABYLON {
                             catch (ex) {
                                 // "DataCloneError" generated by Chrome when you try to inject blob into IndexedDB
                                 if (ex.code === 25) {
-                                    BABYLON.Database.isUASupportingBlobStorage = false;
+                                    Database.isUASupportingBlobStorage = false;
                                 }
                                 image.src = url;
                             }
@@ -294,7 +295,7 @@ module BABYLON {
                     }, false);
 
                     xhr.addEventListener("error", event => {
-                        BABYLON.Tools.Error("Error in XHR request in BABYLON.Database.");
+                        Tools.Error("Error in XHR request in BABYLON.Database.");
                         image.src = url;
                     }, false);
 
@@ -305,7 +306,7 @@ module BABYLON {
                 }
             }
             else {
-                BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 image.src = url;
             }
         }
@@ -352,17 +353,17 @@ module BABYLON {
                         version = (<any>(event.target)).result;
                     };
                     getRequest.onerror = event => {
-                        BABYLON.Tools.Error("Error loading version for scene " + url + " from DB.");
+                        Tools.Error("Error loading version for scene " + url + " from DB.");
                         callback(-1);
                     };
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
+                    Tools.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
                     callback(-1);
                 }
             }
             else {
-                BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 callback(-1);
             }
         }
@@ -375,8 +376,8 @@ module BABYLON {
 
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = event => {
-                        try {
-                            if (event.srcElement.error.name === "QuotaExceededError") {
+                        try {//backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                 this.hasReachedQuota = true;
                             }
                         }
@@ -395,11 +396,11 @@ module BABYLON {
                     addRequest.onsuccess = event => {
                     };
                     addRequest.onerror = event => {
-                        BABYLON.Tools.Error("Error in DB add version request in BABYLON.Database.");
+                        Tools.Error("Error in DB add version request in BABYLON.Database.");
                     };
                 }
                 catch (ex) {
-                    BABYLON.Tools.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
+                    Tools.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
                     callback(-1);
                 }
             }
@@ -409,7 +410,7 @@ module BABYLON {
         }
 
         private loadFileFromDB(url: string, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer?: boolean) {
-            var completeUrl = BABYLON.Database.ReturnFullUrlLocation(url);
+            var completeUrl = Database.ReturnFullUrlLocation(url);
 
             var saveAndLoadFile = event => {
                 // the scene is not yet in the DB, let's try to save it
@@ -464,12 +465,12 @@ module BABYLON {
                     file = (<any>(event.target)).result;
                 };
                 getRequest.onerror = event => {
-                    BABYLON.Tools.Error("Error loading file " + url + " from DB.");
+                    Tools.Error("Error loading file " + url + " from DB.");
                     notInDBCallback();
                 };
             }
             else {
-                BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 callback();
             }
         }
@@ -494,11 +495,11 @@ module BABYLON {
 
                 xhr.onprogress = progressCallback;
 
-                xhr.addEventListener("load", () => {
-                    if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
+                xhr.addEventListener("load",() => {
+                    if (xhr.status === 200 || Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;
-                        fileData = !useArrayBuffer ? xhr.responseText : xhr.response
+                        fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
                         if (!this.hasReachedQuota) {
                             // Open a transaction to the database
@@ -507,7 +508,8 @@ module BABYLON {
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = function (event) {
                                 try {
-                                    if (event.srcElement.error.name === "QuotaExceededError") {
+                                    //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
+                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -533,7 +535,7 @@ module BABYLON {
                                 addRequest.onsuccess = event => {
                                 };
                                 addRequest.onerror = event => {
-                                    BABYLON.Tools.Error("Error in DB add file request in BABYLON.Database.");
+                                    Tools.Error("Error in DB add file request in BABYLON.Database.");
                                 };
                             }
                             catch (ex) {
@@ -550,14 +552,14 @@ module BABYLON {
                 }, false);
 
                 xhr.addEventListener("error", event => {
-                    BABYLON.Tools.Error("error on XHR request.");
+                    Tools.Error("error on XHR request.");
                     callback();
                 }, false);
 
                 xhr.send();
             }
             else {
-                BABYLON.Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 callback();
             }
         }

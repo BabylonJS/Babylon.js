@@ -46,14 +46,24 @@
         public _postProcesses = new Array<PostProcess>();
         public _postProcessesTakenIndices = [];
 
+        public _activeMeshes = new SmartArray<Mesh>(256);
+
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.cameras.push(this);
+            scene.addCamera(this);
 
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+        }
+
+        public getActiveMeshes(): SmartArray<Mesh> {
+            return this._activeMeshes;
+        }
+
+        public isActiveMesh(mesh: Mesh): boolean {
+            return (this._activeMeshes.indexOf(mesh) !== -1);
         }
 
         //Cache
@@ -323,8 +333,7 @@
 
         public dispose(): void {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            this.getScene().removeCamera(this);
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {

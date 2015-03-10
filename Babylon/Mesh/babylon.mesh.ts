@@ -6,6 +6,29 @@
     }
 
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
+        // Consts
+        public static _FRONTSIDE: number = 0;
+        public static _BACKSIDE: number = 1;
+        public static _DOUBLESIDE: number = 2;
+        public static _DEFAULTSIDE: number = 0;
+
+        public static get FRONTSIDE(): number {
+            return Mesh._FRONTSIDE;
+        }
+
+        public static get BACKSIDE(): number {
+            return Mesh._BACKSIDE;
+        }
+
+        public static get DOUBLESIDE(): number {
+            return Mesh._DOUBLESIDE;
+        }
+
+        public static get DEFAULTSIDE(): number {
+            return Mesh._DEFAULTSIDE;
+        }
+
+
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
@@ -15,8 +38,8 @@
 
         // Private
         public _geometry: Geometry;
-        private _onBeforeRenderCallbacks = new Array<() => void>();
-        private _onAfterRenderCallbacks = new Array<() => void>();
+        private _onBeforeRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
+        private _onAfterRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any, Mesh) => void;
         public _visibleInstances: any = {};
@@ -123,6 +146,17 @@
             this._sortLODLevels();
 
             return this;
+        }
+
+        public getLODLevelAtDistance(distance: number): Mesh {
+            for (var index = 0; index < this._LODLevels.length; index++) {
+                var level = this._LODLevels[index];
+
+                if (level.distance === distance) {
+                    return level.mesh;
+                }
+            }
+            return null;
         }
 
         /**
@@ -253,7 +287,7 @@
         // Methods  
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
-            if (this._preActivateId == sceneRenderId) {
+            if (this._preActivateId === sceneRenderId) {
                 return;
             }
 
@@ -312,7 +346,7 @@
             var offset = 0;
 
             // Ensure that subdivisionSize is a multiple of 3
-            while (subdivisionSize % 3 != 0) {
+            while (subdivisionSize % 3 !== 0) {
                 subdivisionSize++;
             }
 
@@ -444,11 +478,11 @@
             }
         }
 
-        public registerBeforeRender(func: () => void): void {
+        public registerBeforeRender(func: (mesh: AbstractMesh) => void): void {
             this._onBeforeRenderCallbacks.push(func);
         }
 
-        public unregisterBeforeRender(func: () => void): void {
+        public unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void {
             var index = this._onBeforeRenderCallbacks.indexOf(func);
 
             if (index > -1) {
@@ -604,7 +638,7 @@
             }
 
             for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
+                this._onBeforeRenderCallbacks[callbackIndex](this);
             }
 
             var engine = scene.getEngine();
@@ -664,7 +698,7 @@
             }
 
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
+                this._onAfterRenderCallbacks[callbackIndex](this);
             }
         }
 
@@ -719,7 +753,7 @@
 
                 scene._addPendingData(that);
 
-                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1) ? true : false;
+                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
                 Tools.LoadFile(this.delayLoadingFile, data => {
 
@@ -732,7 +766,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                },() => { }, scene.database, getBinaryData);
+                }, () => { }, scene.database, getBinaryData);
             }
         }
 
@@ -879,7 +913,8 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+                //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -888,7 +923,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -909,7 +944,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -990,8 +1025,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
-                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
+                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
+                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1043,69 +1078,80 @@
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
-         * successCallback optional success callback to be called after the simplification finished processing all settings.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, type: SimplificationType = SimplificationType.QUADRATIC, successCallback?: () => void) {
+        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void) {
+            this.getScene().simplificationQueue.addTask({
+                settings: settings,
+                parallelProcessing: parallelProcessing,
+                mesh: this,
+                simplificationType: simplificationType,
+                successCallback: successCallback
+            });
+        }
 
-            var getSimplifier = (): ISimplifier => {
-                switch (type) {
-                    case SimplificationType.QUADRATIC:
-                    default:
-                        return new QuadraticErrorSimplification(this);
-                }
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
+        public optimizeIndices(successCallback?: (mesh?: Mesh) => void) {
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
+            var vectorPositions = [];
+            for (var pos = 0; pos < positions.length; pos = pos + 3) {
+                vectorPositions.push(Vector3.FromArray(positions, pos));
             }
+            var dupes = [];
 
-            if (parallelProcessing) {
-                //parallel simplifier
-                settings.forEach((setting) => {
-                    var simplifier = getSimplifier();
-                    simplifier.simplify(setting,(newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //check if it is the last
-                        if (setting.quality === settings[settings.length - 1].quality && successCallback) {
-                            //all done, run the success callback.
-                            successCallback();
-                        }
-                    });
-                });
-            } else {
-                //single simplifier.
-                var simplifier = getSimplifier();
-
-                var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting,(newMesh) => {
-                        this.addLODLevel(setting.distance, newMesh);
-                        //run the next quality level
-                        callback();
-                    });
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
+                var realPos = vectorPositions.length - 1 - iteration;
+                var testedPosition = vectorPositions[realPos];
+                for (var j = 0; j < realPos; ++j) {
+                    var againstPosition = vectorPositions[j];
+                    if (testedPosition.equals(againstPosition)) {
+                        dupes[realPos] = j;
+                        break;
+                    }
+                }
+            },  () => {
+                for (var i = 0; i < indices.length; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
                 }
 
-                AsyncLoop.Run(settings.length,(loop: AsyncLoop) => {
-                    runDecimation(settings[loop.index],() => {
-                        loop.executeNext();
-                    });
-                },() => {
-                        //execution ended, run the success callback.
-                        if (successCallback) {
-                            successCallback();
-                        }
-                    });
-            }
+                //indices are now reordered
+                var originalSubMeshes = this.subMeshes.slice(0);
+                this.setIndices(indices);
+                this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(this);
+                }
+            });
         }
 
         // Statics
-        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var ribbon = new Mesh(name, scene);
+            var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+
+            vertexData.applyToMesh(ribbon, updatable);
+
+            return ribbon;
+        }
+
+        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var box = new Mesh(name, scene);
-            var vertexData = VertexData.CreateBox(size);
+            var vertexData = VertexData.CreateBox(size, sideOrientation);
 
             vertexData.applyToMesh(box, updatable);
 
             return box;
         }
 
-        public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var sphere = new Mesh(name, scene);
-            var vertexData = VertexData.CreateSphere(segments, diameter);
+            var vertexData = VertexData.CreateSphere(segments, diameter, sideOrientation);
 
             vertexData.applyToMesh(sphere, updatable);
 
@@ -1113,7 +1159,7 @@
         }
 
         // Cylinder and cone (Code inspired by SharpDX.org)
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any): Mesh {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // subdivisions is a new parameter, we need to support old signature
             if (scene === undefined || !(scene instanceof Scene)) {
                 if (scene !== undefined) {
@@ -1132,18 +1178,18 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var torus = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation);
+            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
 
             vertexData.applyToMesh(torus, updatable);
 
             return torus;
         }
 
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var torusKnot = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q);
+            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
 
             vertexData.applyToMesh(torusKnot, updatable);
 
@@ -1161,10 +1207,32 @@
             return lines;
         }
 
+        // Extrusion
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            scale = scale || 1;
+            rotation = rotation || 0;
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            return extruded;
+        }
+
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            return extrudedCustom;
+        }
+
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction, rotationFunction, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
+            var path3D = new Path3D(curve);
+
+            var shapePaths: Vector3[][] = [];
+            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
+            return extrudedGeneric;
+
+        }
+
         // Plane & ground
-        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
-            var vertexData = VertexData.CreatePlane(size);
+            var vertexData = VertexData.CreatePlane(size, sideOrientation);
 
             vertexData.applyToMesh(plane, updatable);
 
@@ -1213,7 +1281,8 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
+                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
+                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
                 vertexData.applyToMesh(ground, updatable);
@@ -1226,15 +1295,46 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
 
             return ground;
         }
 
+        public static CreateTube(name: string, path: Vector3[], radius: number, tesselation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var path3D = new Path3D(path);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var distances = path3D.getDistances();
+            var pi2 = Math.PI * 2;
+            var step = pi2 / tesselation;
+            var returnRadius: { (i: number, distance: number): number; } = (i, distance) => radius;
+            var radiusFunctionFinal: { (i: number, distance: number): number; } = radiusFunction || returnRadius;
+
+            var circlePaths = new Array<Array<Vector3>>();
+            var circlePath: Vector3[];
+            var rad: number;
+            var normal: Vector3;
+            var rotated: Vector3;
+            var rotationMatrix: Matrix;
+            for (var i = 0; i < path.length; i++) {
+                rad = radiusFunctionFinal(i, distances[i]); // current radius
+                circlePath = Array<Vector3>();              // current circle array
+                normal = normals[i];                        // current normal  
+                for (var ang = 0; ang < pi2; ang += step) {
+                    rotationMatrix = Matrix.RotationAxis(tangents[i], ang);
+                    rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                    circlePath.push(rotated);
+                }
+                circlePaths.push(circlePath);
+            }
+            var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            return tube;
+        }
+
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
-            var minVector = null;
-            var maxVector = null;
+            var minVector: Vector3 = null;
+            var maxVector: Vector3 = null;
             for (var i in meshes) {
                 var mesh = meshes[i];
                 var boundingBox = mesh.getBoundingInfo().boundingBox;

@@ -1,7 +1,8 @@
 var BABYLON;
 (function (BABYLON) {
     var SpriteManager = (function () {
-        function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon) {
+        function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon, samplingMode) {
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             this.name = name;
             this.cellSize = cellSize;
             this.sprites = new Array();
@@ -10,7 +11,7 @@ var BABYLON;
             this._vertexDeclaration = [3, 4, 4, 4];
             this._vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
             this._capacity = capacity;
-            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
+            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
@@ -39,13 +40,13 @@ var BABYLON;
         }
         SpriteManager.prototype._appendSpriteVertex = function (index, sprite, offsetX, offsetY, rowSize) {
             var arrayOffset = index * 15;
-            if (offsetX == 0)
+            if (offsetX === 0)
                 offsetX = this._epsilon;
-            else if (offsetX == 1)
+            else if (offsetX === 1)
                 offsetX = 1 - this._epsilon;
-            if (offsetY == 0)
+            if (offsetY === 0)
                 offsetY = this._epsilon;
-            else if (offsetY == 1)
+            else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
             this._vertices[arrayOffset] = sprite.position.x;
             this._vertices[arrayOffset + 1] = sprite.position.y;

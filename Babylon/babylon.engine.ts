@@ -431,7 +431,7 @@
         }
 
         public static get Version(): string {
-            return "2.0.0";
+            return "2.1.0 alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -1617,14 +1617,6 @@
             width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
             height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
 
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
-
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-
             this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
@@ -1635,9 +1627,21 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
 
+            this.updateTextureSamplingMode(samplingMode, texture);
+
             this._loadedTexturesCache.push(texture);
 
             return texture;
+        }
+
+        public updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void {
+            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
         }
 
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void {
@@ -1976,10 +1980,15 @@
 
         public _setAnisotropicLevel(key: number, texture: BaseTexture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
+            var value = texture.anisotropicFilteringLevel;
 
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            if (texture.getInternalTexture().samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                value = 1;
+            }
+
+            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                texture._cachedAnisotropicFilteringLevel = value;
             }
         }
 

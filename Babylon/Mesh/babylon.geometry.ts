@@ -122,6 +122,12 @@
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }
@@ -394,7 +400,8 @@
             var stopChecking = false;
 
             for (var kind in this._vertexBuffers) {
-                vertexData.set(this.getVerticesData(kind), kind);
+                // using slice() to make a copy of the array and not just reference it
+                vertexData.set(this.getVerticesData(kind).slice(0), kind);
 
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
@@ -500,22 +507,51 @@
             }
         }
 
-        export class Box extends _Primitive {
+        export class Ribbon extends _Primitive {
             // Members
-            public size: number;
+            public pathArray: Vector3[][];
+            public closeArray: boolean;
+            public closePath: boolean;
+            public offset: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
-                this.size = size;
+            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.pathArray = pathArray;
+                this.closeArray = closeArray;
+                this.closePath = closePath;
+                this.offset = offset;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox(this.size);
+                return VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
+            }
+        }
+
+        export class Box extends _Primitive {
+            // Members
+            public size: number;
+            public side: number;
+
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.size = size;
+                this.side = side;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateBox(this.size, this.side);
+            }
+
+            public copy(id: string): Geometry {
+                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -523,20 +559,22 @@
             // Members
             public segments: number;
             public diameter: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.segments = segments;
                 this.diameter = diameter;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere(this.segments, this.diameter);
+                return VertexData.CreateSphere(this.segments, this.diameter, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null);
+                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -547,23 +585,25 @@
             public diameterBottom: number;
             public tessellation: number;
             public subdivisions: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.height = height;
                 this.diameterTop = diameterTop;
                 this.diameterBottom = diameterBottom;
                 this.tessellation = tessellation;
                 this.subdivisions = subdivisions;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions);
+                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null);
+                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -572,21 +612,23 @@
             public diameter: number;
             public thickness: number;
             public tessellation: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.diameter = diameter;
                 this.thickness = thickness;
                 this.tessellation = tessellation;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation);
+                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
+                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -645,19 +687,21 @@
         export class Plane extends _Primitive {
             // Members
             public size: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.size = size;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane(this.size);
+                return VertexData.CreatePlane(this.size, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -669,25 +713,28 @@
             public tubularSegments: number;
             public p: number;
             public q: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.radius = radius;
                 this.tube = tube;
                 this.radialSegments = radialSegments;
                 this.tubularSegments = tubularSegments;
                 this.p = p;
                 this.q = q;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q);
+                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
+                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
             }
         }
     }
 } 
+

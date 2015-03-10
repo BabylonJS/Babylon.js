@@ -6,6 +6,7 @@ var BABYLON;
             this.bv = bv;
             this.distance = distance;
             this.faceId = 0;
+            this.subMeshId = 0;
         }
         return IntersectionInfo;
     })();
@@ -19,6 +20,7 @@ var BABYLON;
             this.bu = 0;
             this.bv = 0;
             this.faceId = -1;
+            this.subMeshId = 0;
         }
         // Methods
         PickingInfo.prototype.getNormal = function () {

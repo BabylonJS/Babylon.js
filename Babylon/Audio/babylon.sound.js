@@ -18,7 +18,7 @@ var BABYLON;
             this.rolloffFactor = 1;
             this.maxDistance = 100;
             this.distanceModel = "linear";
-            this.panningModel = "HRTF";
+            this._panningModel = "equalpower";
             this._playbackRate = 1;
             this._startTime = 0;
             this._startOffset = 0;
@@ -27,7 +27,8 @@ var BABYLON;
             this._volume = 1;
             this._isLoaded = false;
             this._isReadyToPlay = false;
-            this._isPlaying = false;
+            this.isPlaying = false;
+            this.isPaused = false;
             this._isDirectional = false;
             // Used if you'd like to create a directional sound.
             // If not set, the sound will be omnidirectional
@@ -59,7 +60,6 @@ var BABYLON;
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
-                this.panningModel = options.panningModel || "HRTF";
                 this._playbackRate = options.playbackRate || 1;
             }
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -100,7 +100,7 @@ var BABYLON;
         }
         Sound.prototype.dispose = function () {
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
-                if (this._isPlaying) {
+                if (this.isPlaying) {
                     this.stop();
                 }
                 this._isReadyToPlay = false;
@@ -110,15 +110,19 @@ var BABYLON;
                 else {
                     this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
                 }
-                this._soundGain.disconnect();
-                this._soundSource.disconnect();
+                if (this._soundGain) {
+                    this._soundGain.disconnect();
+                    this._soundGain = null;
+                }
                 if (this._soundPanner) {
                     this._soundPanner.disconnect();
                     this._soundPanner = null;
                 }
+                if (this._soundSource) {
+                    this._soundSource.disconnect();
+                    this._soundSource = null;
+                }
                 this._audioBuffer = null;
-                this._soundGain = null;
-                this._soundSource = null;
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
@@ -155,12 +159,14 @@ var BABYLON;
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
-                this.panningModel = options.panningModel || this.panningModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
             }
         };
         Sound.prototype._createSpatialParameters = function () {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (this._scene.headphone) {
+                    this._panningModel = "HRTF";
+                }
                 this._soundPanner = BABYLON.Engine.audioEngine.audioContext.createPanner();
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
@@ -168,17 +174,30 @@ var BABYLON;
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = "HRTF";
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this.panningModel;
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 this._soundPanner.connect(this._ouputAudioNode);
                 this._inputAudioNode = this._soundPanner;
+            }
+        };
+        Sound.prototype.switchPanningModelToHRTF = function () {
+            this._panningModel = "HRTF";
+            this._switchPanningModel();
+        };
+        Sound.prototype.switchPanningModelToEqualPower = function () {
+            this._panningModel = "equalpower";
+            this._switchPanningModel();
+        };
+        Sound.prototype._switchPanningModel = function () {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio && this.spatialSound) {
+                this._soundPanner.panningModel = this._panningModel;
             }
         };
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
@@ -202,20 +221,20 @@ var BABYLON;
             this._coneOuterAngle = coneOuterAngle;
             this._coneOuterGain = coneOuterGain;
             this._isDirectional = true;
-            if (this._isPlaying && this.loop) {
+            if (this.isPlaying && this.loop) {
                 this.stop();
                 this.play();
             }
         };
         Sound.prototype.setPosition = function (newPosition) {
             this._position = newPosition;
-            if (this._isPlaying && this.spatialSound) {
+            if (this.isPlaying && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         };
         Sound.prototype.setLocalDirectionToMesh = function (newLocalDirection) {
             this._localDirection = newLocalDirection;
-            if (this._connectedMesh && this._isPlaying) {
+            if (this._connectedMesh && this.isPlaying) {
                 this._updateDirection();
             }
         };
@@ -239,9 +258,10 @@ var BABYLON;
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
         */
         Sound.prototype.play = function (time) {
-            if (this._isReadyToPlay) {
+            var _this = this;
+            if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
-                    var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : 0;
+                    var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
@@ -264,15 +284,22 @@ var BABYLON;
                     this._soundSource.loop = this.loop;
                     this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
-                    if (this.onended) {
-                        this._soundSource.onended = this.onended;
-                    }
-                    this._soundSource.start(startTime, this._startOffset % this._soundSource.buffer.duration);
-                    this._isPlaying = true;
+                    this._soundSource.onended = function () {
+                        _this._onended();
+                    };
+                    this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                    this.isPlaying = true;
+                    this.isPaused = false;
                 }
                 catch (ex) {
                     BABYLON.Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
+            }
+        };
+        Sound.prototype._onended = function () {
+            this.isPlaying = false;
+            if (this.onended) {
+                this.onended();
             }
         };
         /**
@@ -280,16 +307,17 @@ var BABYLON;
         * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
         */
         Sound.prototype.stop = function (time) {
-            if (this._isPlaying) {
-                var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : 0;
+            if (this.isPlaying) {
+                var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._isPlaying = false;
+                this.isPlaying = false;
             }
         };
         Sound.prototype.pause = function () {
-            if (this._isPlaying) {
-                this._soundSource.stop(0);
+            if (this.isPlaying) {
+                this.stop(0);
                 this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this.isPaused = true;
             }
         };
         Sound.prototype.setVolume = function (newVolume, time) {
@@ -306,7 +334,7 @@ var BABYLON;
         };
         Sound.prototype.setPlaybackRate = function (newPlaybackRate) {
             this._playbackRate = newPlaybackRate;
-            if (this._isPlaying) {
+            if (this.isPlaying) {
                 this._soundSource.playbackRate.value = this._playbackRate;
             }
         };
@@ -319,7 +347,7 @@ var BABYLON;
             if (!this.spatialSound) {
                 this._createSpatialParameters();
                 this.spatialSound = true;
-                if (this._isPlaying && this.loop) {
+                if (this.isPlaying && this.loop) {
                     this.stop();
                     this.play();
                 }
@@ -330,7 +358,7 @@ var BABYLON;
         };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
-            if (this._isDirectional && this._isPlaying) {
+            if (this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         };

@@ -6,6 +6,8 @@
         public transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
+        public shadowOrthoScale = 0.1;
+
         constructor(name: string, public direction: Vector3, scene: Scene) {
             super(name, scene);
 
@@ -19,6 +21,63 @@
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;
+        }
+
+        public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            var orthoLeft = Number.MAX_VALUE;
+            var orthoRight = Number.MIN_VALUE;
+            var orthoTop = Number.MIN_VALUE;
+            var orthoBottom = Number.MAX_VALUE;
+
+            var tempVector3 = Vector3.Zero();
+
+            var activeCamera = this.getScene().activeCamera;
+
+            // Check extends
+            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                var mesh = renderList[meshIndex];
+
+                if (!mesh) {
+                    continue;
+                }
+
+                var boundingInfo = mesh.getBoundingInfo();
+
+                if (!boundingInfo) {
+                    continue;
+                }
+
+                var boundingBox = boundingInfo.boundingBox;
+
+                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                    Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+
+                    if (tempVector3.x < orthoLeft)
+                        orthoLeft = tempVector3.x;
+                    if (tempVector3.y < orthoBottom)
+                        orthoBottom = tempVector3.y;
+
+                    if (tempVector3.x > orthoRight)
+                        orthoRight = tempVector3.x;
+                    if (tempVector3.y > orthoTop)
+                        orthoTop = tempVector3.y;
+                }
+            }
+
+            var xOffset = orthoRight - orthoLeft;
+            var yOffset = orthoTop - orthoBottom;
+
+            Matrix.OrthoOffCenterLHToRef(   orthoLeft - xOffset * this.shadowOrthoScale, orthoRight + xOffset * this.shadowOrthoScale,
+                                            orthoBottom - yOffset * this.shadowOrthoScale, orthoTop + yOffset * this.shadowOrthoScale,
+                                            -activeCamera.maxZ, activeCamera.maxZ, matrix);
+        }
+        
+        public supportsVSM(): boolean {
+            return true;
+        }
+
+        public needRefreshPerFrame(): boolean {
+            return true;
         }
 
         public computeTransformedPosition(): boolean {

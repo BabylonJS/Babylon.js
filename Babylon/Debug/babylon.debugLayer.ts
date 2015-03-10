@@ -1,6 +1,8 @@
 ﻿module BABYLON {
     export class DebugLayer {
         private _scene: Scene;
+        private _camera: Camera;
+        private _transformationMatrix = Matrix.Identity();
         private _enabled: boolean = false;
         private _labelsEnabled: boolean = false;
         private _displayStatistics = true;
@@ -20,6 +22,7 @@
 
         private _syncPositions: () => void;
         private _syncData: () => void;
+        private _syncUI: () => void;
         private _onCanvasClick: (evt: MouseEvent) => void;
 
         private _clickPosition: any;
@@ -100,7 +103,7 @@
                 };
             }
 
-            this._syncData = (): void => {
+            this._syncUI = (): void => {
                 if (this._showUI) {
                     if (this._displayStatistics) {
                         this._displayStats();
@@ -128,22 +131,27 @@
                         this._treeDiv.style.display = "none";
                     }
                 }
+            }
 
+            this._syncData = (): void => {
                 if (this._labelsEnabled || !this._showUI) {
+
+                    this._camera.getViewMatrix().multiplyToRef(this._camera.getProjectionMatrix(), this._transformationMatrix);
+
                     this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
 
                     var engine = this._scene.getEngine();
-                    var viewport = this._scene.activeCamera.viewport;
+                    var viewport = this._camera.viewport;
                     var globalViewport = viewport.toGlobal(engine);
 
                     // Meshes
-                    var meshes = this._scene.getActiveMeshes();
+                    var meshes = this._camera.getActiveMeshes();
                     for (var index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
 
                         var position = mesh.getBoundingInfo().boundingSphere.center;
 
-                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._scene.getTransformMatrix(), globalViewport);
+                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
 
                         if (mesh.renderOverlay || this.shouldDisplayAxis && this.shouldDisplayAxis(mesh)) {
                             this._renderAxis(projectedPosition, mesh, globalViewport);
@@ -161,18 +169,18 @@
                     for (index = 0; index < cameras.length; index++) {
                         var camera = cameras[index];
 
-                        if (camera === this._scene.activeCamera) {
+                        if (camera === this._camera) {
                             continue;
                         }
 
-                        projectedPosition = Vector3.Project(Vector3.Zero(), camera.getWorldMatrix(), this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = Vector3.Project(Vector3.Zero(), camera.getWorldMatrix(), this._transformationMatrix, globalViewport);
 
                         if (!this.shouldDisplayLabel || this.shouldDisplayLabel(camera)) {
                             this._renderLabel(camera.name, projectedPosition, 12,
                                 () => {
-                                    this._scene.activeCamera.detachControl(engine.getRenderingCanvas());
-                                    this._scene.activeCamera = camera;
-                                    this._scene.activeCamera.attachControl(engine.getRenderingCanvas());
+                                    this._camera.detachControl(engine.getRenderingCanvas());
+                                    this._camera = camera;
+                                    this._camera.attachControl(engine.getRenderingCanvas());
                                 },
                                 () => { return "purple"; });
                         }
@@ -185,7 +193,7 @@
 
                         if (light.position) {
 
-                            projectedPosition = Vector3.Project(light.getAbsolutePosition(), this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = Vector3.Project(light.getAbsolutePosition(), this._identityMatrix, this._transformationMatrix, globalViewport);
 
                             if (!this.shouldDisplayLabel || this.shouldDisplayLabel(light)) {
                                 this._renderLabel(light.name, projectedPosition, -20,
@@ -250,21 +258,21 @@
             var position = mesh.getBoundingInfo().boundingSphere.center;
             var worldMatrix = mesh.getWorldMatrix();
 
-            var unprojectedVector = Vector3.UnprojectFromTransform(projectedPosition.add(new Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._scene.getTransformMatrix());
+            var unprojectedVector = Vector3.UnprojectFromTransform(projectedPosition.add(new Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._transformationMatrix);
             var unit = (unprojectedVector.subtract(position)).length();
 
-            var xAxis = Vector3.Project(position.add(new Vector3(unit, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var xAxisText = Vector3.Project(position.add(new Vector3(unit * 1.5, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var xAxis = Vector3.Project(position.add(new Vector3(unit, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var xAxisText = Vector3.Project(position.add(new Vector3(unit * 1.5, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, xAxis, xAxisText, "x", "#FF0000");
 
-            var yAxis = Vector3.Project(position.add(new Vector3(0, unit, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var yAxisText = Vector3.Project(position.add(new Vector3(0, unit * 1.5, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var yAxis = Vector3.Project(position.add(new Vector3(0, unit, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var yAxisText = Vector3.Project(position.add(new Vector3(0, unit * 1.5, 0)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, yAxis, yAxisText, "y", "#00FF00");
 
-            var zAxis = Vector3.Project(position.add(new Vector3(0, 0, unit)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var zAxisText = Vector3.Project(position.add(new Vector3(0, 0, unit * 1.5)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var zAxis = Vector3.Project(position.add(new Vector3(0, 0, unit)), worldMatrix, this._transformationMatrix, globalViewport);
+            var zAxisText = Vector3.Project(position.add(new Vector3(0, 0, unit * 1.5)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, zAxis, zAxisText, "z", "#0000FF");
         }
@@ -275,8 +283,9 @@
                 var textMetrics = this._drawingContext.measureText(text);
                 var centerX = projectedPosition.x - textMetrics.width / 2;
                 var centerY = projectedPosition.y;
+                var clientRect = this._drawingCanvas.getBoundingClientRect();
 
-                if (this._isClickInsideRect(centerX - 5, centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
+                if (this._showUI && this._isClickInsideRect(clientRect.left * this._ratio + centerX - 5, clientRect.top * this._ratio + centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
                     onClick();
                 }
 
@@ -329,7 +338,8 @@
 
             var engine = this._scene.getEngine();
 
-            this._scene.unregisterAfterRender(this._syncData);
+            this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
@@ -358,9 +368,15 @@
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         }
 
-        public show(showUI: boolean = true) {
+        public show(showUI: boolean = true, camera: Camera = null) {
             if (this._enabled) {
                 return;
+            }
+
+            if (camera) {
+                this._camera = camera;
+            } else {
+                this._camera = this._scene.activeCamera;
             }
 
             this._enabled = true;
@@ -378,7 +394,8 @@
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
-            this._scene.registerAfterRender(this._syncData);
+            this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         }
 
         private _clearLabels(): void {
@@ -448,17 +465,33 @@
         private _generateCheckBox(root: HTMLDivElement, title: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
 
-            var boundingBoxesCheckbox = document.createElement("input");
-            boundingBoxesCheckbox.type = "checkbox";
-            boundingBoxesCheckbox.checked = initialState;
+            var checkBox = document.createElement("input");
+            checkBox.type = "checkbox";
+            checkBox.checked = initialState;
 
-            boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
+            checkBox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
             });
 
-            label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(checkBox);
             label.appendChild(document.createTextNode(title));
             root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        }
+
+        private _generateButton(root: HTMLDivElement, title: string, task: (element, tag) => void, tag: any = null): void {
+            var button = document.createElement("button");
+            button.innerHTML = title;
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white"; 
+            button.className = "debugLayerButton";
+
+            button.addEventListener("click",(evt: Event) => {
+                task(evt.target, tag);
+            });
+
+            root.appendChild(button);
             root.appendChild(document.createElement("br"));
         }
 
@@ -636,8 +669,30 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, (element) => { this._scene.renderTargetsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, (element) => { this._scene.shadowsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, (element) => { this._scene.spritesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
-
+                if (Engine.audioEngine.canUseWebAudio) {
+                    this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                    this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
+                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, (element) => {
+                        if (element.checked) {
+                            this._scene.headphone = true;
+                        }
+                    });
+                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", !this._scene.headphone, (element) => {
+                        if (element.checked) {
+                            this._scene.headphone = false;
+                        }
+                    });
+                    this._generateCheckBox(this._optionsSubsetDiv, "Disable audio", !this._scene.audioEnabled, (element) => {
+                        this._scene.audioEnabled = !element.checked;
+                    });
+                }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
+                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+  
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);

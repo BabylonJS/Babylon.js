@@ -31,7 +31,8 @@ var BABYLON;
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
-            scene.cameras.push(this);
+            this._activeMeshes = new BABYLON.SmartArray(256);
+            scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
@@ -64,6 +65,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Camera.prototype.getActiveMeshes = function () {
+            return this._activeMeshes;
+        };
+        Camera.prototype.isActiveMesh = function (mesh) {
+            return (this._activeMeshes.indexOf(mesh) !== -1);
+        };
         //Cache
         Camera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -254,8 +261,7 @@ var BABYLON;
         };
         Camera.prototype.dispose = function () {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            this.getScene().removeCamera(this);
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }

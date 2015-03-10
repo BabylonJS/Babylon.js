@@ -38,15 +38,16 @@
         /**
          * @constructor
          * @param {string} name - The post-process name
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the post-process and/or internal pass (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera} camera - The camera that the post-process will be attached to
          * @param {BABYLON.Mesh} mesh - The mesh used to create the light scattering
+         * @param {number} samples - The post-process quality, default 100
          * @param {number} samplingMode - The post-process filtering mode
          * @param {BABYLON.Engine} engine - The babylon engine
          * @param {boolean} reusable - If the post-process is reusable
          */
-        constructor(name: string, ratio: number, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
-            super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
+        constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
+            super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             var scene = camera.getScene();
 
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
@@ -55,7 +56,7 @@
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
 
             // Configure
-            this._createPass(scene, 0.5);
+            this._createPass(scene, ratio.passRatio || ratio);
 
             this.onApply = (effect: Effect) => {
                 this._updateMeshScreenCoordinates(scene);
@@ -75,10 +76,13 @@
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material: any = subMesh.getMaterial();
+            var needUV: boolean = false;
 
             // Render this.mesh as default
             if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+                defines.push("#define NEED_UV");
+                needUV = true;
             }
 
             // Alpha test
@@ -86,8 +90,13 @@
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
 
-                if (material.opacityTexture !== undefined)
+                if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
+                    if (material.opacityTexture.getAlphaFromRGB)
+                        defines.push("#define OPACITYRGB");
+                    if (!needUV)
+                        defines.push("#define NEED_UV");
+                }
 
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     attribs.push(VertexBuffer.UVKind);
@@ -123,7 +132,7 @@
                 this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "far"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel"],
                     ["diffuseSampler", "opacitySampler"], join);
             }
 
@@ -219,11 +228,15 @@
                     if (material && (mesh === this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
                         this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
-                        if (this.mesh.material && alphaTexture)
-                            this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
 
-                        if (material.opacityTexture !== undefined)
+                        if (alphaTexture) {
+                            this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
+
+                        if (material.opacityTexture !== undefined) {
                             this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
+                            this._volumetricLightScatteringPass.setFloat("opacityLevel", material.opacityTexture.level);
+                        }
                     }
 
                     // Bones
@@ -238,8 +251,8 @@
             };
 
             // Render target texture callbacks
-            var savedSceneClearColor: Color3;
-            var sceneClearColor = new Color3(0.0, 0.0, 0.0);
+            var savedSceneClearColor: Color4;
+            var sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
 
             this._volumetricLightScatteringRTT.onBeforeRender = (): void => {
                 savedSceneClearColor = scene.clearColor;
@@ -251,18 +264,54 @@
             };
 
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
-                var index;
+                var engine = scene.getEngine();
+                var index: number;
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
+                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
+                engine.setAlphaTesting(false);
 
-                for (index = 0; index < transparentSubMeshes.length; index++) {
-                    renderSubMesh(transparentSubMeshes.data[index]);
+                if (transparentSubMeshes.length) {
+                    // Sort sub meshes
+                    for (index = 0; index < transparentSubMeshes.length; index++) {
+                        var submesh = transparentSubMeshes.data[index];
+                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                    }
+
+                    var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
+                    sortedArray.sort((a, b) => {
+                        // Alpha index first
+                        if (a._alphaIndex > b._alphaIndex) {
+                            return 1;
+                        }
+                        if (a._alphaIndex < b._alphaIndex) {
+                            return -1;
+                        }
+
+                        // Then distance to camera
+                        if (a._distanceToCamera < b._distanceToCamera) {
+                            return 1;
+                        }
+                        if (a._distanceToCamera > b._distanceToCamera) {
+                            return -1;
+                        }
+
+                        return 0;
+                    });
+
+                    // Render sub meshes
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    for (index = 0; index < sortedArray.length; index++) {
+                        renderSubMesh(sortedArray[index]);
+                    }
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                 }
             };
         }

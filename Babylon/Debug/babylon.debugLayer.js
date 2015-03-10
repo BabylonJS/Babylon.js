@@ -3,6 +3,7 @@ var BABYLON;
     var DebugLayer = (function () {
         function DebugLayer(scene) {
             var _this = this;
+            this._transformationMatrix = BABYLON.Matrix.Identity();
             this._enabled = false;
             this._labelsEnabled = false;
             this._displayStatistics = true;
@@ -55,7 +56,7 @@ var BABYLON;
                     y: evt.clientY * _this._ratio
                 };
             };
-            this._syncData = function () {
+            this._syncUI = function () {
                 if (_this._showUI) {
                     if (_this._displayStatistics) {
                         _this._displayStats();
@@ -81,17 +82,20 @@ var BABYLON;
                         _this._treeDiv.style.display = "none";
                     }
                 }
+            };
+            this._syncData = function () {
                 if (_this._labelsEnabled || !_this._showUI) {
+                    _this._camera.getViewMatrix().multiplyToRef(_this._camera.getProjectionMatrix(), _this._transformationMatrix);
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
                     var engine = _this._scene.getEngine();
-                    var viewport = _this._scene.activeCamera.viewport;
+                    var viewport = _this._camera.viewport;
                     var globalViewport = viewport.toGlobal(engine);
                     // Meshes
-                    var meshes = _this._scene.getActiveMeshes();
+                    var meshes = _this._camera.getActiveMeshes();
                     for (var index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
                         var position = mesh.getBoundingInfo().boundingSphere.center;
-                        var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
+                        var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._transformationMatrix, globalViewport);
                         if (mesh.renderOverlay || _this.shouldDisplayAxis && _this.shouldDisplayAxis(mesh)) {
                             _this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
@@ -107,15 +111,15 @@ var BABYLON;
                     var cameras = _this._scene.cameras;
                     for (index = 0; index < cameras.length; index++) {
                         var camera = cameras[index];
-                        if (camera === _this._scene.activeCamera) {
+                        if (camera === _this._camera) {
                             continue;
                         }
-                        projectedPosition = BABYLON.Vector3.Project(BABYLON.Vector3.Zero(), camera.getWorldMatrix(), _this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(BABYLON.Vector3.Zero(), camera.getWorldMatrix(), _this._transformationMatrix, globalViewport);
                         if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(camera)) {
                             _this._renderLabel(camera.name, projectedPosition, 12, function () {
-                                _this._scene.activeCamera.detachControl(engine.getRenderingCanvas());
-                                _this._scene.activeCamera = camera;
-                                _this._scene.activeCamera.attachControl(engine.getRenderingCanvas());
+                                _this._camera.detachControl(engine.getRenderingCanvas());
+                                _this._camera = camera;
+                                _this._camera.attachControl(engine.getRenderingCanvas());
                             }, function () {
                                 return "purple";
                             });
@@ -126,7 +130,7 @@ var BABYLON;
                     for (index = 0; index < lights.length; index++) {
                         var light = lights[index];
                         if (light.position) {
-                            projectedPosition = BABYLON.Vector3.Project(light.getAbsolutePosition(), _this._identityMatrix, _this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = BABYLON.Vector3.Project(light.getAbsolutePosition(), _this._identityMatrix, _this._transformationMatrix, globalViewport);
                             if (!_this.shouldDisplayLabel || _this.shouldDisplayLabel(light)) {
                                 _this._renderLabel(light.name, projectedPosition, -20, function () {
                                     light.setEnabled(!light.isEnabled());
@@ -176,16 +180,16 @@ var BABYLON;
         DebugLayer.prototype._renderAxis = function (projectedPosition, mesh, globalViewport) {
             var position = mesh.getBoundingInfo().boundingSphere.center;
             var worldMatrix = mesh.getWorldMatrix();
-            var unprojectedVector = BABYLON.Vector3.UnprojectFromTransform(projectedPosition.add(new BABYLON.Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._scene.getTransformMatrix());
+            var unprojectedVector = BABYLON.Vector3.UnprojectFromTransform(projectedPosition.add(new BABYLON.Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._transformationMatrix);
             var unit = (unprojectedVector.subtract(position)).length();
-            var xAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(unit, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var xAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(unit * 1.5, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var xAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(unit, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var xAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(unit * 1.5, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
             this._renderSingleAxis(projectedPosition, xAxis, xAxisText, "x", "#FF0000");
-            var yAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, unit, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var yAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, unit * 1.5, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var yAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, unit, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var yAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, unit * 1.5, 0)), worldMatrix, this._transformationMatrix, globalViewport);
             this._renderSingleAxis(projectedPosition, yAxis, yAxisText, "y", "#00FF00");
-            var zAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, 0, unit)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var zAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, 0, unit * 1.5)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var zAxis = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, 0, unit)), worldMatrix, this._transformationMatrix, globalViewport);
+            var zAxisText = BABYLON.Vector3.Project(position.add(new BABYLON.Vector3(0, 0, unit * 1.5)), worldMatrix, this._transformationMatrix, globalViewport);
             this._renderSingleAxis(projectedPosition, zAxis, zAxisText, "z", "#0000FF");
         };
         DebugLayer.prototype._renderLabel = function (text, projectedPosition, labelOffset, onClick, getFillStyle) {
@@ -194,7 +198,8 @@ var BABYLON;
                 var textMetrics = this._drawingContext.measureText(text);
                 var centerX = projectedPosition.x - textMetrics.width / 2;
                 var centerY = projectedPosition.y;
-                if (this._isClickInsideRect(centerX - 5, centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
+                var clientRect = this._drawingCanvas.getBoundingClientRect();
+                if (this._showUI && this._isClickInsideRect(clientRect.left * this._ratio + centerX - 5, clientRect.top * this._ratio + centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
                     onClick();
                 }
                 this._drawingContext.beginPath();
@@ -234,7 +239,8 @@ var BABYLON;
             }
             this._enabled = false;
             var engine = this._scene.getEngine();
-            this._scene.unregisterAfterRender(this._syncData);
+            this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
             window.removeEventListener("resize", this._syncPositions);
             this._scene.forceShowBoundingBoxes = false;
@@ -257,10 +263,17 @@ var BABYLON;
             this._scene.renderTargetsEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         };
-        DebugLayer.prototype.show = function (showUI) {
+        DebugLayer.prototype.show = function (showUI, camera) {
             if (showUI === void 0) { showUI = true; }
+            if (camera === void 0) { camera = null; }
             if (this._enabled) {
                 return;
+            }
+            if (camera) {
+                this._camera = camera;
+            }
+            else {
+                this._camera = this._scene.activeCamera;
             }
             this._enabled = true;
             this._showUI = showUI;
@@ -271,7 +284,8 @@ var BABYLON;
             window.addEventListener("resize", this._syncPositions);
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
             this._syncPositions();
-            this._scene.registerAfterRender(this._syncData);
+            this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         };
         DebugLayer.prototype._clearLabels = function () {
             this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
@@ -326,15 +340,29 @@ var BABYLON;
         DebugLayer.prototype._generateCheckBox = function (root, title, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
-            var boundingBoxesCheckbox = document.createElement("input");
-            boundingBoxesCheckbox.type = "checkbox";
-            boundingBoxesCheckbox.checked = initialState;
-            boundingBoxesCheckbox.addEventListener("change", function (evt) {
+            var checkBox = document.createElement("input");
+            checkBox.type = "checkbox";
+            checkBox.checked = initialState;
+            checkBox.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
-            label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(checkBox);
             label.appendChild(document.createTextNode(title));
             root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        };
+        DebugLayer.prototype._generateButton = function (root, title, task, tag) {
+            if (tag === void 0) { tag = null; }
+            var button = document.createElement("button");
+            button.innerHTML = title;
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white";
+            button.className = "debugLayerButton";
+            button.addEventListener("click", function (evt) {
+                task(evt.target, tag);
+            });
+            root.appendChild(button);
             root.appendChild(document.createElement("br"));
         };
         DebugLayer.prototype._generateRadio = function (root, title, name, initialState, task, tag) {
@@ -545,9 +573,35 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, function (element) {
                     _this._scene.skeletonsEnabled = element.checked;
                 });
+                this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, function (element) {
+                    _this._scene.spritesEnabled = element.checked;
+                });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) {
                     _this._scene.texturesEnabled = element.checked;
                 });
+                if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                    this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                    this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
+                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, function (element) {
+                        if (element.checked) {
+                            _this._scene.headphone = true;
+                        }
+                    });
+                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", !this._scene.headphone, function (element) {
+                        if (element.checked) {
+                            _this._scene.headphone = false;
+                        }
+                    });
+                    this._generateCheckBox(this._optionsSubsetDiv, "Disable audio", !this._scene.audioEnabled, function (element) {
+                        _this._scene.audioEnabled = !element.checked;
+                    });
+                }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
+                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", function (element) {
+                    _this._scene.dumpNextRenderTargets = true;
+                });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);

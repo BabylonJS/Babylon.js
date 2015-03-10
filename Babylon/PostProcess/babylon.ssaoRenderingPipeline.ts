@@ -44,10 +44,10 @@
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
-        constructor(name: string, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
+        constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
             super(scene.getEngine(), name);
 
             this._scene = scene;
@@ -56,11 +56,14 @@
             this._createRandomTexture();
             this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
 
-            this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOPostProcess(ratio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 1.3, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 1.3, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._createSSAOCombinePostProcess();
+            var ssaoRatio = ratio.ssaoRatio || ratio;
+            var combineRatio = ratio.combineRatio || ratio;
+
+            this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOPostProcess(ssaoRatio);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 1.3, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 1.3, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, () => { return this._originalColorPostProcess; }, true));
@@ -150,9 +153,9 @@
             };
         }
 
-        private _createSSAOCombinePostProcess(): void {
+        private _createSSAOCombinePostProcess(ratio: number): void {
             this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"],
-                                                           1.0, null, Texture.BILINEAR_SAMPLINGMODE,
+                                                           ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                            this._scene.getEngine(), false);
 
             this._ssaoCombinePostProcess.onApply = (effect: Effect) => {

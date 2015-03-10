@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class CubeTexture extends BaseTexture {
         public url: string;
-        public coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+        public coordinatesMode = Texture.CUBIC_MODE;
 
         private _noMipmap: boolean;
         private _extensions: string[];
@@ -27,17 +27,17 @@
                 if (!scene.useDelayedTextureLoading) {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions, noMipmap);
                 } else {
-                    this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
 
             this.isCube = true;
 
-            this._textureMatrix = BABYLON.Matrix.Identity();
+            this._textureMatrix = Matrix.Identity();
         }
 
         public clone(): CubeTexture {
-            var newTexture = new BABYLON.CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
+            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
 
             // Base texture
             newTexture.level = this.level;
@@ -51,11 +51,11 @@
 
         // Methods
         public delayLoad(): void {
-            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {

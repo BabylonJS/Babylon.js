@@ -28,7 +28,7 @@
                     OURBABYLON.currentScene = scene;
                     if (!OURBABYLON.currentScene.activeCamera) {
                         OURBABYLON.currentScene.activeCamera = new BABYLON.ArcRotateCamera("DefaultCamera", Math.PI / 2, 0, 10, new BABYLON.Vector3.Zero(), OURBABYLON.currentScene);
-                        OURBABYLON.currentScene.activeCamera.zoomOn();
+                        //OURBABYLON.currentScene.activeCamera.zoomOn();
                         if (attachControlToCamera) {
                             OURBABYLON.currentScene.activeCamera.attachControl(OURBABYLON.canvas);
                         }

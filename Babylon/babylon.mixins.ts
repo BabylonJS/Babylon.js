@@ -15,6 +15,8 @@ interface Window {
     oRequestAnimationFrame(func: any): any;
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
+    CANNON: any;
+    SIMD: any;
 }
 
 interface HTMLURL {
