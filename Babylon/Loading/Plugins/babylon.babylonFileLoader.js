@@ -220,8 +220,14 @@ var BABYLON;
             }
             else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurVarianceShadowMap = true;
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
             }
-            if (parsedShadowGenerator.bias) {
+            if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
             return shadowGenerator;

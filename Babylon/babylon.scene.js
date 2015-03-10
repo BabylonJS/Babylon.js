@@ -530,6 +530,57 @@ var BABYLON;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         };
         // Methods
+        Scene.prototype.addMesh = function (newMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        };
+        Scene.prototype.removeMesh = function (toRemove) {
+            var index = this.meshes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeLight = function (toRemove) {
+            var index = this.lights.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeCamera = function (toRemove) {
+            var index = this.cameras.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.addLight = function (newLight) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        };
+        Scene.prototype.addCamera = function (newCamera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
         /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
