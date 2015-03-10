@@ -24,6 +24,7 @@
 
             if (createBoundingBox) {
                 this.refreshBoundingInfo();
+                mesh.computeWorldMatrix(true);
             }
         }
 
