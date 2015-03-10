@@ -66,7 +66,7 @@
     var serializeCamera = (camera: Camera): any => {
         var serializationObject: any = {};
         serializationObject.name = camera.name;
-        serializationObject.tags = Tags.GetTags(camera) || [];
+        serializationObject.tags = Tags.GetTags(camera);
         serializationObject.id = camera.id;
         serializationObject.position = camera.position.asArray();
 

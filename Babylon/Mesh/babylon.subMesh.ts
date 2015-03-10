@@ -67,9 +67,9 @@
             var extend;
 
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                extend = Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
             } else {
-                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
+                extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
             }
             this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
         }

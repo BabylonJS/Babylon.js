@@ -17,6 +17,7 @@
         private _isEnabled = true;
         private _isReady = true;
         public _currentRenderId = -1;
+        private _parentRenderId = -1;
 
         public _waitingParentId: string;
 
@@ -75,7 +76,17 @@
         }
 
         public isSynchronizedWithParent(): boolean {
-            return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
+            if (!this.parent) {
+                return true;
+            }
+
+            if (this._parentRenderId !== this.parent._currentRenderId) {
+                return false;
+            }
+
+            this._parentRenderId = this.parent._currentRenderId;
+
+            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
         }
 
         public isSynchronized(updateCache?: boolean): boolean {

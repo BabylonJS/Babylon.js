@@ -61,17 +61,13 @@
         }
 
         public runSimplification(task: ISimplificationTask) {
-
-            function setLODLevel(distance: number, mesh: Mesh) {
-
-            }
-
             if (task.parallelProcessing) {
                 //parallel simplifier
                 task.settings.forEach((setting) => {
                     var simplifier = this.getSimplifier(task);
                     simplifier.simplify(setting,(newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //check if it is the last
                         if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
                             //all done, run the success callback.
@@ -87,6 +83,7 @@
                 var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                     simplifier.simplify(setting,(newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
+                        newMesh.isVisible = true;
                         //run the next quality level
                         callback();
                     });
@@ -129,11 +126,13 @@
         public deleted: boolean;
         public isDirty: boolean;
         public borderFactor: number;
+        public deletePending: boolean;
 
         constructor(public vertices: Array<number>) {
             this.error = new Array<number>(4);
             this.deleted = false;
             this.isDirty = false;
+            this.deletePending = false;
             this.borderFactor = 0;
         }
     }
@@ -252,7 +251,6 @@
                 });
             },() => {
                     setTimeout(() => {
-                        this._reconstructedMesh.isVisible = true;
                         successCallback(this._reconstructedMesh);
                     }, 0);
                 });
@@ -332,7 +330,18 @@
                                 if (this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr)) continue;
                                 if (this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr)) continue;
 
-                                if (delTr.length == 2 || delTr[0] === delTr[1]) {
+                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
+                                    continue;
+
+                                var uniqueArray = [];
+                                delTr.forEach(function (deletedT) {
+                                    if (uniqueArray.indexOf(deletedT) === -1) {
+                                        deletedT.deletePending = true;
+                                        uniqueArray.push(deletedT);
+                                    }
+                                });
+
+                                if (uniqueArray.length % 2 != 0) {
                                     continue;
                                 }
 
@@ -343,9 +352,6 @@
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
 
-                                if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0) continue;
-
-                                if (p.equals(v0.position)) continue;
                                 v0.position = p;
 
                                 var tStart = this.references.length;
@@ -488,7 +494,7 @@
                     this.vertices[dst].normal = this.vertices[i].normal;
                     this.vertices[dst].uv = this.vertices[i].uv;
                     this.vertices[dst].color = this.vertices[i].color;
-                    newVerticesOrder.push(i);
+                    newVerticesOrder.push(dst);
                     dst++;
                 }
             }
@@ -601,7 +607,7 @@
                 var ref = this.references[vertex.triangleStart + i];
                 var t = this.triangles[ref.triangleId];
                 if (t.deleted) continue;
-                if (deletedArray[i]) {
+                if (deletedArray[i] && t.deletePending) {
                     t.deleted = true;
                     newDeleted++;
                     continue;

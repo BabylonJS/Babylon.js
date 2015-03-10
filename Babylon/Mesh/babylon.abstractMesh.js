@@ -69,7 +69,7 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
-            scene.meshes.push(this);
+            scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
             get: function () {
@@ -178,7 +178,7 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
-            if (!space || space == 0 /* LOCAL */) {
+            if (!space || space === 0 /* LOCAL */) {
                 var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
@@ -194,7 +194,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
-            if (!space || space == 0 /* LOCAL */) {
+            if (!space || space === 0 /* LOCAL */) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -352,7 +352,7 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
-            if (!force && (this._currentRenderId == this.getScene().getRenderId() || this.isSynchronized(true))) {
+            if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
@@ -396,11 +396,11 @@ var BABYLON;
                     zero = this.getScene().activeCamera.position;
                 }
                 else {
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_X)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Y)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
                         zero.y = localPosition.y + 0.001;
-                    if (this.billboardMode & BABYLON.AbstractMesh.BILLBOARDMODE_Z)
+                    if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
                         zero.z = localPosition.z + 0.001;
                 }
                 BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
@@ -412,7 +412,7 @@ var BABYLON;
             // Local world
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             // Parent
-            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === BABYLON.AbstractMesh.BILLBOARDMODE_NONE) {
+            if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             }
             else {
@@ -456,7 +456,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="BABYLON.Vector3">The position (must be in same space as current mesh) to look at</param>
+            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
@@ -739,8 +739,9 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
+            var index;
             // Physics
-            if (this.getPhysicsImpostor() != BABYLON.PhysicsEngine.NoImpostor) {
+            if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
@@ -752,14 +753,10 @@ var BABYLON;
             // SubMeshes
             this.releaseSubMeshes();
             // Remove from scene
-            var index = this.getScene().meshes.indexOf(this);
-            if (index != -1) {
-                // Remove from the scene if mesh found 
-                this.getScene().meshes.splice(index, 1);
-            }
+            this.getScene().removeMesh(this);
             if (!doNotRecurse) {
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                    if (this.getScene().particleSystems[index].emitter == this) {
+                    if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();
                         index--;
                     }
@@ -767,7 +764,7 @@ var BABYLON;
                 // Children
                 var objects = this.getScene().meshes.slice(0);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent == this) {
+                    if (objects[index].parent === this) {
                         objects[index].dispose();
                     }
                 }
