@@ -61,6 +61,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Tools/babylon.tools.tga.js',
       '../../Babylon/Tools/babylon.tools.dds.js',
       '../../Babylon/Tools/babylon.smartArray.js',
+      '../../Babylon/Tools/babylon.smartCollection.js',
       '../../Babylon/Tools/babylon.tools.js',
       '../../Babylon/babylon.engine.js',
       '../../Babylon/babylon.node.js',
