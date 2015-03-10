@@ -122,6 +122,7 @@
   <script src="Babylon/babylon.engine.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/Tools/babylon.smartArray.js"></script>
+  <script src="Babylon/Tools/babylon.smartCollection.js"></script>
   <script src="Babylon/Tools/babylon.tools.dds.js"></script>
   <script src="Babylon/Tools/babylon.tools.tga.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>
