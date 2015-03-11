@@ -5,7 +5,6 @@ namespace BabylonExport.Entities
     [DataContract]
     public class BabylonMesh : BabylonAbstractMesh
     {
-
         [DataMember]
         public string id { get; set; }
 
@@ -58,11 +57,11 @@ namespace BabylonExport.Entities
         public bool checkCollisions { get; set; }
 
         [DataMember]
-        public bool receiveShadows { get; set; }
-
+        public bool receiveShadows { get; set; }    
+    
         [DataMember]
         public bool infiniteDistance { get; set; }
-
+        
         [DataMember]
         public int billboardMode { get; set; }
 
@@ -77,18 +76,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public int skeletonId { get; set; }
-
-        [DataMember]
-        public bool autoAnimate { get; set; }
-
-        [DataMember]
-        public int autoAnimateFrom { get; set; }
-
-        [DataMember]
-        public int autoAnimateTo { get; set; }
-
-        [DataMember]
-        public bool autoAnimateLoop { get; set; }
 
         [DataMember]
         public bool showBoundingBox { get; set; }

@@ -154,11 +154,11 @@ namespace Max2Babylon
 
             var babylonAnimation = new BabylonAnimation
             {
-                dataType = dataType,
+                dataType = (int)dataType,
                 name = property + " animation",
                 keys = keys.ToArray(),
                 framePerSecond = Loader.Global.FrameRate,
-                loopBehavior = loopBehavior,
+                loopBehavior = (int)loopBehavior,
                 property = property
             };
 
@@ -283,11 +283,11 @@ namespace Max2Babylon
 
                     var babylonAnimation = new BabylonAnimation
                     {
-                        dataType = dataType,
+                        dataType = (int)dataType,
                         name = property + " animation",
                         keys = keys.ToArray(),
                         framePerSecond = Loader.Global.FrameRate,
-                        loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
+                        loopBehavior = (int)BabylonAnimation.LoopBehavior.Cycle,
                         property = property
                     };
 

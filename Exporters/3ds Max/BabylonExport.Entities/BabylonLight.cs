@@ -3,7 +3,7 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonLight
+    public class BabylonLight : BabylonIAnimatable
     {
         [DataMember]
         public string name { get; set; }

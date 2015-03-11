@@ -786,11 +786,7 @@
             var m1 = SIMD.float32x4.load(transformation.m, 4);
             var m2 = SIMD.float32x4.load(transformation.m, 8);
             var m3 = SIMD.float32x4.load(transformation.m, 12);
-
-            var r = SIMD.float32x4.add(
-                SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0),
-                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)),
-                SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0), SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
             r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
             SIMD.float32x4.storeXYZ(result, 0, r);
         }
@@ -803,11 +799,7 @@
             var m1 = SIMD.float32x4.load(transformation.m, 4);
             var m2 = SIMD.float32x4.load(transformation.m, 8);
             var m3 = SIMD.float32x4.load(transformation.m, 12);
-
-            var r = SIMD.float32x4.add(
-                SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0),
-                    SIMD.float32x4.mul(v1, m1)),
-                SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0), SIMD.float32x4.mul(v1, m1)), SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
             r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
             SIMD.float32x4.storeXYZ(result, 0, r);
         }
@@ -2387,18 +2379,14 @@
             tmp = SIMD.float32x4.mul(up, up);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
             up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrt(tmp));
-
             // cc.kmVec3Cross(s, f, up);
-            var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)),
-                SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
+            var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
             // cc.kmVec3Normalize(s, s);
             tmp = SIMD.float32x4.mul(s, s);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
             s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrt(tmp));
-
             // cc.kmVec3Cross(u, s, f);
-            var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)),
-                SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
+            var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
             // cc.kmVec3Normalize(s, s);
             tmp = SIMD.float32x4.mul(s, s);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
@@ -2414,58 +2402,28 @@
             //pOut.mat[2] = -f.x;
             //pOut.mat[6] = -f.y;
             //pOut.mat[10] = -f.z;
+
             var zero = SIMD.float32x4.splat(0.0);
             s = SIMD.float32x4.neg(s);
             var tmp01 = SIMD.float32x4.shuffle(s, u, 0, 1, 4, 5);
             var tmp23 = SIMD.float32x4.shuffle(f, zero, 0, 1, 4, 5);
             var a0 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
             var a1 = SIMD.float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-
-            var tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
-            var tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
+            tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
+            tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
             var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
             var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
-
             // cc.kmMat4Translation(translate, -pEye.x, -pEye.y, -pEye.z);
             var b0 = SIMD.float32x4(1.0, 0.0, 0.0, 0.0);
             var b1 = SIMD.float32x4(0.0, 1.0, 0.0, 0.0);
             var b2 = SIMD.float32x4(0.0, 0.0, 1.0, 0.0);
             var b3 = SIMD.float32x4.neg(eye);
             b3 = SIMD.float32x4.withW(b3, 1.0);
-
             // cc.kmMat4Multiply(pOut, pOut, translate);
-            SIMD.float32x4.store(out, 0, SIMD.float32x4.add(
-                SIMD.float32x4.mul(
-                    SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0),
-                SIMD.float32x4.add(
-                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1),
-                    SIMD.float32x4.add(
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2),
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 4, SIMD.float32x4.add(
-                SIMD.float32x4.mul(
-                    SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0),
-                SIMD.float32x4.add(
-                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1),
-                    SIMD.float32x4.add(
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2),
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 8, SIMD.float32x4.add(
-                SIMD.float32x4.mul(
-                    SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0),
-                SIMD.float32x4.add(
-                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1),
-                    SIMD.float32x4.add(
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2),
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 12, SIMD.float32x4.add(
-                SIMD.float32x4.mul(
-                    SIMD.float32x4.swizzle(b3, 0, 0, 0, 0), a0),
-                SIMD.float32x4.add(
-                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 1, 1, 1, 1), a1),
-                    SIMD.float32x4.add(
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 2, 2, 2, 2), a2),
-                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 3, 3, 3, 3), a3)))));
         }
 
 
@@ -3464,5 +3422,29 @@
         Matrix.LookAtLHToRef = <any>Matrix.LookAtLHToRefSIMD;
         Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
         Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+            get: function () { return this._data[0]; },
+            set: function (value: number) {
+                if (!this._data) {
+                    this._data = new Float32Array(3);
+                }
+                this._data[0] = value;
+            }
+        });
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+            get: function () { return this._data[1]; },
+            set: function (value: number) {
+                this._data[1] = value;
+            }
+        });
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+            get: function () { return this._data[2]; },
+            set: function (value: number) {
+                this._data[2] = value;
+            }
+        });
     }
 }
