@@ -21,8 +21,6 @@ namespace Max2Babylon
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, int> OnError;
 
-        readonly List<string> alreadyExportedTextures = new List<string>();
-
         public bool AutoSave3dsMaxFile { get; set; }
         public bool ExportHiddenObjects { get; set; }
         public bool IsCancelled { get; set; }
@@ -95,7 +93,6 @@ namespace Max2Babylon
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
             var rawScene = Loader.Core.RootNode;
-            alreadyExportedTextures.Clear();
 
             if (!Directory.Exists(babylonScene.OutputPath))
             {
@@ -127,6 +124,31 @@ namespace Max2Babylon
 
             babylonScene.gravity = rawScene.GetVector3Property("babylonjs_gravity");
             ExportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
+
+            // Sounds
+            var soundName = rawScene.GetStringProperty("babylonjs_sound_filename", "");
+
+            if (!string.IsNullOrEmpty(soundName))
+            {
+                var filename = Path.GetFileName(soundName);
+
+                var globalSound = new BabylonSound
+                {
+                    autoplay = rawScene.GetBoolProperty("babylonjs_sound_autoplay", 1),
+                    loop = rawScene.GetBoolProperty("babylonjs_sound_loop", 1),
+                    name = filename
+                };
+
+                babylonScene.SoundsList.Add(globalSound);
+
+                try
+                {
+                    File.Copy(soundName, Path.Combine(babylonScene.OutputPath, filename), true);
+                }
+                catch
+                {
+                }
+            }
 
             // Cameras
             BabylonCamera mainCamera = null;

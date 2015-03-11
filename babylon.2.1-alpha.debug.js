@@ -1902,8 +1902,8 @@ var __extends = this.__extends || function (d, b) {
             var tmp23 = SIMD.float32x4.shuffle(f, zero, 0, 1, 4, 5);
             var a0 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
             var a1 = SIMD.float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-            var tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
-            var tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
+            tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
+            tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
             var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
             var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
             // cc.kmMat4Translation(translate, -pEye.x, -pEye.y, -pEye.z);
@@ -2746,6 +2746,33 @@ var __extends = this.__extends || function (d, b) {
         Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
         Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
         Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+            get: function () {
+                return this._data[0];
+            },
+            set: function (value) {
+                if (!this._data) {
+                    this._data = new Float32Array(3);
+                }
+                this._data[0] = value;
+            }
+        });
+        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+            get: function () {
+                return this._data[1];
+            },
+            set: function (value) {
+                this._data[1] = value;
+            }
+        });
+        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+            get: function () {
+                return this._data[2];
+            },
+            set: function (value) {
+                this._data[2] = value;
+            }
+        });
     }
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.mapvar BABYLON;

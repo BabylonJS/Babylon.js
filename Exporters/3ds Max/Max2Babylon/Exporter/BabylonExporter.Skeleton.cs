@@ -83,8 +83,8 @@ namespace Max2Babylon
                 {
                     name = gameBone.Name + "Animation",
                     property = "_matrix",
-                    dataType = BabylonAnimation.DataType.Matrix,
-                    loopBehavior = BabylonAnimation.LoopBehavior.Cycle,
+                    dataType = (int)BabylonAnimation.DataType.Matrix,
+                    loopBehavior = (int)BabylonAnimation.LoopBehavior.Cycle,
                     framePerSecond = Loader.Global.FrameRate
                 };
 

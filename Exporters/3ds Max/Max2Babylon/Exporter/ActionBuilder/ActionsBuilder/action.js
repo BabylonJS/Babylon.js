@@ -7,13 +7,21 @@ var AB;
 
     var Node = (function () {
         function Node() {
+            // Members
             this.rect = null;
             this.text = null;
             this.line = null;
 
             this.action = null;
+
+            this.detached = false;
+            this.minimized = false;
         }
 
+        // Get node's object attribute
+        // element: The element to get the attribute
+        // attribute: the attribute name "text, "width", etc.
+        // value: optional, if not reading mode but writing mode
         Node.prototype.attr = function(element, attribute, value) {
             if (value)
                 element.attr(attribute, value);
@@ -21,6 +29,9 @@ var AB;
                 return element.attr(attribute);
         }
 
+        // Returns the point at (x, y) is inside the node
+        // x: the x position of the point
+        // y: the y position of the point
         Node.prototype.isPointInside = function (x, y) {
             return this.rect.isPointInside(x, y) || this.text.isPointInside(x, y);
         }
@@ -35,12 +46,20 @@ var AB;
             this.children = new Array();
             this.node = node;
 
-            this.name = '';
+            // Action
+            this.name = "";
             this.type = AB.ActionsBuilder.Type.OBJECT;
             this.propertiesResults = new Array();
             this.properties = new Array();
+
+            // Extra
+            this.combine = false;
+            this.combineArray = new Array();
+            this.hub = null;
         }
 
+        // Adds a child to the action
+        // object: the child
         Action.prototype.addChild = function (object) {
             if (object == null)
                 return false;
@@ -51,10 +70,12 @@ var AB;
             return true;
         }
 
+        // Removes a child from the action
+        // object: the child to remove
         Action.prototype.removeChild = function (object) {
             var indice = this.children.indexOf(object);
 
-            if (indice != 1) {
+            if (indice != -1) {
                 this.children.splice(indice, 1);
                 return true;
             }
@@ -62,6 +83,7 @@ var AB;
             return false;
         }
 
+        // Clears all the children of the action
         Action.prototype.clearChildren = function () {
             this.children = new Array();
         }

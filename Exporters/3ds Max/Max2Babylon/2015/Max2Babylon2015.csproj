@@ -17,7 +17,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <NuGetPackageImportStamp>847376a2</NuGetPackageImportStamp>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,25 +38,19 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Max, Version=17.0.630.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Refs\2015\Autodesk.Max.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\..\..\..\Repos\Babylon.js\Exporters\3ds Max\Max2Babylon\2015\Refs\Autodesk.Max.dll</HintPath>
     </Reference>
-    <Reference Include="BabylonFileConverter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Refs\BabylonFileConverter.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
+      <HintPath>..\..\BabylonExport.Core\Refs\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -81,6 +75,12 @@
     </Compile>
     <Compile Include="..\Descriptor.cs">
       <Link>Descriptor.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\ActionBuilder\BabylonActionsBuilderActionItem.cs">
+      <Link>Exporter\ActionBuilder\BabylonActionsBuilderActionItem.cs</Link>
+    </Compile>
+    <Compile Include="..\Exporter\ActionBuilder\BabylonExporter.Action.cs">
+      <Link>Exporter\ActionBuilder\BabylonExporter.Action.cs</Link>
     </Compile>
     <Compile Include="..\Exporter\BabylonExporter.Animation.cs">
       <Link>Exporter\BabylonExporter.Animation.cs</Link>
@@ -111,6 +111,14 @@
     </Compile>
     <Compile Include="..\Exporter\GlobalVertex.cs">
       <Link>Exporter\GlobalVertex.cs</Link>
+    </Compile>
+    <Compile Include="..\Forms\ActionsBuilderForm.cs">
+      <Link>Forms\ActionsBuilderForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\Forms\ActionsBuilderForm.designer.cs">
+      <Link>Forms\ActionsBuilderForm.designer.cs</Link>
+      <DependentUpon>ActionsBuilderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="..\Forms\CameraPropertiesForm.cs">
       <Link>Forms\CameraPropertiesForm.cs</Link>
@@ -186,9 +194,49 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\action.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\action.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\actionkinds.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\actionkinds.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\contextmenu.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\contextmenu.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\fonts.css">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\fonts.css</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\index.css">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\index.css</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\index.html">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\index.html</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\list.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\list.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\parametersManager.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\parametersManager.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\raphael.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\raphael.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\utils.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\utils.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\viewer.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\viewer.js</Link>
+    </Content>
+    <Content Include="..\Exporter\ActionBuilder\ActionsBuilder\viewsertoolbar.js">
+      <Link>Exporter\ActionBuilder\ActionsBuilder\viewsertoolbar.js</Link>
+    </Content>
     <Content Include="Refs\Autodesk.Max.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\Forms\ActionsBuilderForm.resx">
+      <Link>Forms\ActionsBuilderForm.resx</Link>
+      <DependentUpon>ActionsBuilderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\Forms\CameraPropertiesForm.resx">
       <Link>Forms\CameraPropertiesForm.resx</Link>
       <DependentUpon>CameraPropertiesForm.cs</DependentUpon>
@@ -219,22 +267,40 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Babylon.csproj">
+      <Project>{ba85b096-ddb8-4324-bb47-5f4ec2c5db6a}</Project>
+      <Name>Babylon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\BabylonExport.Entities\BabylonExport.Entities.csproj">
       <Project>{6150965a-658c-4263-89ad-4f980eb0675d}</Project>
       <Name>BabylonExport.Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BabylonFileConverter\BabylonFileConverter.csproj">
+      <Project>{a6b76356-1d1c-4c82-8199-a6406da85a95}</Project>
+      <Name>BabylonFileConverter</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>mkdir "$(OutDir)BabylonActionsBuilder"
+mkdir "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans"
+copy "$(SolutionDir)Max2Babylon\Exporter\ActionBuilder\ActionsBuilder\" "$(OutDir)BabylonActionsBuilder\"
+copy "$(SolutionDir)Max2Babylon\Exporter\ActionBuilder\ActionsBuilder\fonts\SinkinSans" "$(OutDir)BabylonActionsBuilder\fonts\SinkinSans"
+copy "$(SolutionDir)babylon.max.js" "$(OutDir)BabylonActionsBuilder\babylon.max.js"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
