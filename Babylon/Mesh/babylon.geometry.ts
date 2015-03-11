@@ -12,7 +12,7 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
-        public _isDisposed = false;
+        private _isDisposed = false;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
