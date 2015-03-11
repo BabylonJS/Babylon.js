@@ -12,6 +12,7 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
+        public _isDisposed = false;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
@@ -384,6 +385,7 @@
             if (index > -1) {
                 geometries.splice(index, 1);
             }
+            this._isDisposed = true;
         }
 
         public copy(id: string): Geometry {
