@@ -351,6 +351,10 @@
             }, () => { }, scene.database);
         }
 
+        public isDisposed(): boolean {
+            return this._isDisposed;
+        }
+
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
