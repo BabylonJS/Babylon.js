@@ -1,3 +1,4 @@
+/// <reference path="../../references/waa.d.ts" />
 module BABYLON {
     export class Analyser {
         public SMOOTHING = 0.75;

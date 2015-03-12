@@ -1,4 +1,5 @@
-﻿module BABYLON {
+﻿/// <reference path="babylon.targetcamera.ts" />
+module BABYLON {
     export class FreeCamera extends TargetCamera {
         public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
         public keysUp = [38];

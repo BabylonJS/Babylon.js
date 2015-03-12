@@ -1,3 +1,4 @@
+/// <reference path="../../references/waa.d.ts" />
 var BABYLON;
 (function (BABYLON) {
     var Analyser = (function () {
@@ -21,11 +22,11 @@ var BABYLON;
         Analyser.prototype.getFrequencyBinCount = function () {
             if (this._audioEngine.canUseWebAudio) {
                 return this._webAudioAnalyser.frequencyBinCount;
-            }
-            else {
+            } else {
                 return 0;
             }
         };
+
         Analyser.prototype.getByteFrequencyData = function () {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
@@ -34,6 +35,7 @@ var BABYLON;
             }
             return this._byteFreqs;
         };
+
         Analyser.prototype.getByteTimeDomainData = function () {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
@@ -42,6 +44,7 @@ var BABYLON;
             }
             return this._byteTime;
         };
+
         Analyser.prototype.getFloatFrequencyData = function () {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
@@ -50,6 +53,7 @@ var BABYLON;
             }
             return this._floatFreqs;
         };
+
         Analyser.prototype.drawDebugCanvas = function () {
             var _this = this;
             if (this._audioEngine.canUseWebAudio) {
@@ -69,8 +73,10 @@ var BABYLON;
                 }
                 if (this._registerFunc) {
                     var workingArray = this.getByteFrequencyData();
+
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
                     this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
+
                     for (var i = 0; i < this.getFrequencyBinCount(); i++) {
                         var value = workingArray[i];
                         var percent = value / this.BARGRAPHAMPLITUDE;
@@ -84,6 +90,7 @@ var BABYLON;
                 }
             }
         };
+
         Analyser.prototype.stopDebugCanvas = function () {
             if (this._debugCanvas) {
                 this._scene.unregisterBeforeRender(this._registerFunc);
@@ -93,12 +100,14 @@ var BABYLON;
                 this._debugCanvasContext = null;
             }
         };
+
         Analyser.prototype.connectAudioNodes = function (inputAudioNode, outputAudioNode) {
             if (this._audioEngine.canUseWebAudio) {
                 inputAudioNode.connect(this._webAudioAnalyser);
                 this._webAudioAnalyser.connect(outputAudioNode);
             }
         };
+
         Analyser.prototype.dispose = function () {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.disconnect();
