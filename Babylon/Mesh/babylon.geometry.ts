@@ -12,6 +12,7 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
+        private _isDisposed = false;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
@@ -350,6 +351,10 @@
             }, () => { }, scene.database);
         }
 
+        public isDisposed(): boolean {
+            return this._isDisposed;
+        }
+
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -384,6 +389,7 @@
             if (index > -1) {
                 geometries.splice(index, 1);
             }
+            this._isDisposed = true;
         }
 
         public copy(id: string): Geometry {
