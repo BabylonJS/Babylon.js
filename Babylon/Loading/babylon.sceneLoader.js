@@ -26,6 +26,9 @@ var BABYLON;
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
+            if (queryStringPosition === -1) {
+                queryStringPosition = sceneFilename.length;
+            }
             var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
             for (var index = 0; index < this._registeredPlugins.length; index++) {
                 var plugin = this._registeredPlugins[index];

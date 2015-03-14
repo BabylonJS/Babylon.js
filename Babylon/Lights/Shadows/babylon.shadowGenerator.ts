@@ -69,7 +69,7 @@
 
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 this._shadowMap.anisotropicFilteringLevel = 16;
-                this._shadowMap.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+                this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             } else {
                 this._shadowMap.anisotropicFilteringLevel = 1;
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
@@ -132,6 +132,7 @@
             this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
@@ -144,10 +145,9 @@
                     this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
-                    this._shadowMap2.anisotropicFilteringLevel = 16;
                     this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
 
-                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.NEAREST_SAMPLINGMODE, this._scene.getEngine());
+                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                     this._downSamplePostprocess.onApply = effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
                     };

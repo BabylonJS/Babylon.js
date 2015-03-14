@@ -22,6 +22,7 @@ var BABYLON;
             this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
             this._shadowMap.onAfterUnbind = function () {
@@ -32,9 +33,8 @@ var BABYLON;
                     _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    _this._shadowMap2.anisotropicFilteringLevel = 16;
                     _this._shadowMap2.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
-                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.NEAREST_SAMPLINGMODE, _this._scene.getEngine());
+                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, _this._scene.getEngine());
                     _this._downSamplePostprocess.onApply = function (effect) {
                         effect.setTexture("textureSampler", _this._shadowMap);
                     };
@@ -172,7 +172,7 @@ var BABYLON;
                 this._filter = value;
                 if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                     this._shadowMap.anisotropicFilteringLevel = 16;
-                    this._shadowMap.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                    this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 }
                 else {
                     this._shadowMap.anisotropicFilteringLevel = 1;

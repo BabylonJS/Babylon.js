@@ -89,7 +89,7 @@
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        Tools.LoadFile(urlOrArrayBuffer,(data) => { this._soundLoaded(data); }, null, null, true);
+                        Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -107,6 +107,9 @@
                 if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     Engine.audioEngine.WarnedWebAudioUnsupported = true;
+                }
+                if (this._readyToPlayCallback) {
+                    this._readyToPlayCallback();
                 }
             }
         }
@@ -248,7 +251,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this.isPlaying && this.spatialSound) {
+            if (this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -321,9 +324,11 @@
         }
 
         private _onended() {
-            this.isPlaying = false;
-            if (this.onended) {
-                this.onended();
+            if (!this.loop) {
+                this.isPlaying = false;
+                if (this.onended) {
+                    this.onended();
+                }
             }
         }
 

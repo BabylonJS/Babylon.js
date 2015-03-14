@@ -781,14 +781,14 @@
         }
 
         public static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            var v = SIMD.float32x4(vector.x, vector.y, vector.z, 0);
+            var v = SIMD.float32x4.loadXYZ((<any>vector)._data, 0);
             var m0 = SIMD.float32x4.load(transformation.m, 0);
             var m1 = SIMD.float32x4.load(transformation.m, 4);
             var m2 = SIMD.float32x4.load(transformation.m, 8);
             var m3 = SIMD.float32x4.load(transformation.m, 12);
             var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0), SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
             r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
-            SIMD.float32x4.storeXYZ(result, 0, r);
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
         }
 
         public static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
@@ -801,7 +801,7 @@
             var m3 = SIMD.float32x4.load(transformation.m, 12);
             var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0), SIMD.float32x4.mul(v1, m1)), SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
             r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
-            SIMD.float32x4.storeXYZ(result, 0, r);
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
         }
 
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
