@@ -508,10 +508,7 @@ var BABYLON;
             var now = BABYLON.Tools.Now;
             var delay = now - this._animationStartDate;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
-                if (!this._activeAnimatables[index]._animate(delay)) {
-                    this._activeAnimatables.splice(index, 1);
-                    index--;
-                }
+                this._activeAnimatables[index]._animate(delay);
             }
         };
         // Matrix
