@@ -3,7 +3,7 @@ precision highp float;
 #endif
 
 // Attributes
-attribute vec3 position;
+attribute vec4 position;
 attribute vec4 options;
 attribute vec4 cellInfo;
 attribute vec4 color;
@@ -22,15 +22,15 @@ varying float fFogDistance;
 #endif
 
 void main(void) {	
-	vec3 viewPos = (view * vec4(position, 1.0)).xyz; 
-	vec3 cornerPos;
+	vec3 viewPos = (view * vec4(position.xyz, 1.0)).xyz; 
+	vec2 cornerPos;
 	
-	float angle = options.x;
-	float size = options.y;
+	float angle = position.w;
+	vec2 size = vec2(options.x, options.y);
 	vec2 offset = options.zw;
 	vec2 uvScale = textureInfos.xy;
 
-	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;
+	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
 
 	// Rotate
 	vec3 rotatedCorner;
