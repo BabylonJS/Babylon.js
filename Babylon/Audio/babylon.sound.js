@@ -326,7 +326,7 @@ var BABYLON;
             }
         };
         Sound.prototype.setVolume = function (newVolume, time) {
-            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
