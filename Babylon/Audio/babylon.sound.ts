@@ -353,7 +353,7 @@
         }
 
         public setVolume(newVolume: number, time?: number) {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
