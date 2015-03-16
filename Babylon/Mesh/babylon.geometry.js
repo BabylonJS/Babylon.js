@@ -11,6 +11,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._totalVertices = 0;
             this._indices = [];
+            this._isDisposed = false;
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
@@ -271,6 +272,9 @@ var BABYLON;
             }, function () {
             }, scene.database);
         };
+        Geometry.prototype.isDisposed = function () {
+            return this._isDisposed;
+        };
         Geometry.prototype.dispose = function () {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -299,6 +303,7 @@ var BABYLON;
             if (index > -1) {
                 geometries.splice(index, 1);
             }
+            this._isDisposed = true;
         };
         Geometry.prototype.copy = function (id) {
             var vertexData = new BABYLON.VertexData();

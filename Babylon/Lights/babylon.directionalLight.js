@@ -11,7 +11,7 @@ var BABYLON;
         function DirectionalLight(name, direction, scene) {
             _super.call(this, name, scene);
             this.direction = direction;
-            this.shadowOrthoScale = 0.1;
+            this.shadowOrthoScale = 0.5;
             this.position = direction.scale(-1);
         }
         DirectionalLight.prototype.getAbsolutePosition = function () {

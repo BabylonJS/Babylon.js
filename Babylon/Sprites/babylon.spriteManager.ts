@@ -11,8 +11,8 @@
 
         private _scene: Scene;
 
-        private _vertexDeclaration = [3, 4, 4, 4];
-        private _vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
+        private _vertexDeclaration = [4, 4, 4, 4];
+        private _vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
         private _vertexBuffer: WebGLBuffer;
         private _indexBuffer: WebGLBuffer;
         private _vertices: Float32Array;
@@ -31,8 +31,6 @@
             this._scene.spriteManagers.push(this);
 
             // VBO
-            this._vertexDeclaration = [3, 4, 4, 4];
-            this._vertexStrideSize = 15 * 4;
             this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
 
             var indices = [];
@@ -63,7 +61,7 @@
         }
 
         private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, rowSize: number): void {
-            var arrayOffset = index * 15;
+            var arrayOffset = index * 16;
 
             if (offsetX === 0)
                 offsetX = this._epsilon;
@@ -79,19 +77,20 @@
             this._vertices[arrayOffset + 1] = sprite.position.y;
             this._vertices[arrayOffset + 2] = sprite.position.z;
             this._vertices[arrayOffset + 3] = sprite.angle;
-            this._vertices[arrayOffset + 4] = sprite.size;
-            this._vertices[arrayOffset + 5] = offsetX;
-            this._vertices[arrayOffset + 6] = offsetY;
-            this._vertices[arrayOffset + 7] = sprite.invertU ? 1 : 0;
-            this._vertices[arrayOffset + 8] = sprite.invertV ? 1 : 0;
+            this._vertices[arrayOffset + 4] = sprite.width;
+            this._vertices[arrayOffset + 5] = sprite.height;
+            this._vertices[arrayOffset + 6] = offsetX;
+            this._vertices[arrayOffset + 7] = offsetY;
+            this._vertices[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+            this._vertices[arrayOffset + 9] = sprite.invertV ? 1 : 0;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertices[arrayOffset + 9] = sprite.cellIndex - offset * rowSize;
-            this._vertices[arrayOffset + 10] = offset;
+            this._vertices[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
+            this._vertices[arrayOffset + 11] = offset;
             // Color
-            this._vertices[arrayOffset + 11] = sprite.color.r;
-            this._vertices[arrayOffset + 12] = sprite.color.g;
-            this._vertices[arrayOffset + 13] = sprite.color.b;
-            this._vertices[arrayOffset + 14] = sprite.color.a;
+            this._vertices[arrayOffset + 12] = sprite.color.r;
+            this._vertices[arrayOffset + 13] = sprite.color.g;
+            this._vertices[arrayOffset + 14] = sprite.color.b;
+            this._vertices[arrayOffset + 15] = sprite.color.a;
         }
 
         public render(): void {

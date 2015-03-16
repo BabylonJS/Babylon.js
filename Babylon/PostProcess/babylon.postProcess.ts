@@ -7,6 +7,7 @@
         public width = -1;
         public height = -1;
         public renderTargetSamplingMode: number;
+        public clearColor: Color4;
 
         private _camera: Camera;
         private _scene: Scene;
@@ -74,7 +75,6 @@
                 if (this.onSizeChanged) {
                     this.onSizeChanged();
                 }
-
             }
 
             this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
@@ -84,7 +84,11 @@
             }
 
             // Clear
-            this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true);
+            if (this.clearColor) {
+                this._engine.clear(this.clearColor, true, true);
+            } else {
+                this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true);
+            }
 
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;

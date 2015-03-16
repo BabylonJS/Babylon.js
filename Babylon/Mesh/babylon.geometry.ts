@@ -348,7 +348,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            },() => { }, scene.database);
         }
 
         public isDisposed(): boolean {
@@ -743,4 +743,3 @@
         }
     }
 } 
-

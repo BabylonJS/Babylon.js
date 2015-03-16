@@ -96,6 +96,9 @@ var BABYLON;
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported = true;
                 }
+                if (this._readyToPlayCallback) {
+                    this._readyToPlayCallback();
+                }
             }
         }
         Sound.prototype.dispose = function () {
@@ -228,7 +231,7 @@ var BABYLON;
         };
         Sound.prototype.setPosition = function (newPosition) {
             this._position = newPosition;
-            if (this.isPlaying && this.spatialSound) {
+            if (this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         };
@@ -297,9 +300,11 @@ var BABYLON;
             }
         };
         Sound.prototype._onended = function () {
-            this.isPlaying = false;
-            if (this.onended) {
-                this.onended();
+            if (!this.loop) {
+                this.isPlaying = false;
+                if (this.onended) {
+                    this.onended();
+                }
             }
         };
         /**
