@@ -63,7 +63,7 @@
         public useOctreeForPicking = true;
         public useOctreeForCollisions = true;
 
-        public layerMask: number = 0xFFFFFFFF;
+        public layerMask: number = 0x0FFFFFFF;
 
         // Physics
         public _physicImpostor = PhysicsEngine.NoImpostor;
