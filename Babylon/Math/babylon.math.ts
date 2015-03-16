@@ -3412,6 +3412,16 @@
         public getPoints() {
             return this._points;
         }
+
+        public continue(curve: Curve3) {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        }
     }
 
     // SIMD
