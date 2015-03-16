@@ -11,6 +11,9 @@ uniform float randTextureTiles;
 uniform float samplesFactor;
 uniform vec3 sampleSphere[16];
 
+uniform float totalStrength;
+uniform float radius;
+
 varying vec2 vUV;
 
 const vec2 offset1 = vec2(0.0, 0.01);
@@ -31,11 +34,9 @@ vec3 normalFromDepth(const float depth, const vec2 coords) {
 
 void main(void)
 {
-	const float totalStrength = 1.0;
 	const float base = 0.2;
 	const float area = 0.0075;
 	const float fallOff = 0.000001;
-	const float radius = 0.0005;
 
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
 	float depth = texture2D(textureSampler, vUV).r;
@@ -52,7 +53,7 @@ void main(void)
 	for (int i = 0; i < SAMPLES; i++)
 	{
 		ray = radiusDepth * reflect(sampleSphere[i], random);
-		hemiRay = position + dot(ray, normal) * ray;
+		hemiRay = position + sign(dot(ray, normal)) * ray;
 
 		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;
 		difference = depth - occlusionDepth;

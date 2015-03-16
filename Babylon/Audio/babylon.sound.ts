@@ -251,7 +251,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this.spatialSound) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -259,7 +259,7 @@
         public setLocalDirectionToMesh(newLocalDirection: Vector3) {
             this._localDirection = newLocalDirection;
 
-            if (this._connectedMesh && this.isPlaying) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.isPlaying) {
                 this._updateDirection();
             }
         }
@@ -272,7 +272,7 @@
         }
 
         public updateDistanceFromListener() {
-            if (this._connectedMesh && this.useCustomAttenuation) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
                 this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
@@ -324,11 +324,9 @@
         }
 
         private _onended() {
-            if (!this.loop) {
-                this.isPlaying = false;
-                if (this.onended) {
-                    this.onended();
-                }
+            this.isPlaying = false;
+            if (this.onended) {
+                this.onended();
             }
         }
 
@@ -353,7 +351,7 @@
         }
 
         public setVolume(newVolume: number, time?: number) {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
@@ -393,7 +391,7 @@
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
-            if (this._isDirectional && this.isPlaying) {
+            if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }
