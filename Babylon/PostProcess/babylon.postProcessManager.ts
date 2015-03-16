@@ -85,7 +85,6 @@
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
-
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcessesTakenIndices.length; index++) {

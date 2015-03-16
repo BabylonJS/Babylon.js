@@ -283,7 +283,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 	depth = 0.5 * depth + vec3(0.5);
 	vec2 uv = depth.xy;
 
-	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0 || depth.z > 1.0)
+	if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0 || depth.z >= 1.0)
 	{
 		return 1.0;
 	}
