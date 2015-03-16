@@ -2730,6 +2730,15 @@ var BABYLON;
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        Curve3.prototype.continue = function (curve) {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        };
         return Curve3;
     })();
     BABYLON.Curve3 = Curve3;
