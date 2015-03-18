@@ -431,7 +431,7 @@
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit,() => {
+            AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations / 2, vertexInit,() => {
 
                 var indicesInit = (i) => {
                     var offset = (submesh.indexStart / 3) + i;
