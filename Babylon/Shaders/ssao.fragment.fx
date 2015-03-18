@@ -13,6 +13,8 @@ uniform vec3 sampleSphere[16];
 
 uniform float totalStrength;
 uniform float radius;
+uniform float area;
+uniform float fallOff;
 
 varying vec2 vUV;
 
@@ -35,8 +37,6 @@ vec3 normalFromDepth(const float depth, const vec2 coords) {
 void main(void)
 {
 	const float base = 0.2;
-	const float area = 0.0075;
-	const float fallOff = 0.000001;
 
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
 	float depth = texture2D(textureSampler, vUV).r;
