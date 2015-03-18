@@ -229,7 +229,7 @@
         private vertices: Array<DecimationVertex>;
         private references: Array<Reference>;
 
-        private initialised: boolean = false;
+        private initialized: boolean = false;
 
         private _reconstructedMesh: Mesh;
 
@@ -405,7 +405,6 @@
             this.triangles = [];
 
             this._mesh = mesh;
-            //It is assumed that a mesh has positions, normals and either uvs or colors.
             var positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
             
             var indices = mesh.getIndices();
@@ -453,7 +452,7 @@
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
                 AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit2,() => {
-                    this.initialised = true;
+                    this.initialized = true;
                     callback();
                 });
             });

@@ -178,7 +178,7 @@ var BABYLON;
     var QuadraticErrorSimplification = (function () {
         function QuadraticErrorSimplification(_mesh) {
             this._mesh = _mesh;
-            this.initialised = false;
+            this.initialized = false;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
             this.decimationIterations = 100;
@@ -326,7 +326,6 @@ var BABYLON;
             this.vertices = [];
             this.triangles = [];
             this._mesh = mesh;
-            //It is assumed that a mesh has positions, normals and either uvs or colors.
             var positionData = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = mesh.getIndices();
             var submesh = mesh.subMeshes[submeshIndex];
@@ -370,7 +369,7 @@ var BABYLON;
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
                 BABYLON.AsyncLoop.SyncAsyncForLoop(_this.triangles.length, _this.syncIterations, triangleInit2, function () {
-                    _this.initialised = true;
+                    _this.initialized = true;
                     callback();
                 });
             });
