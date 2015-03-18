@@ -14,6 +14,7 @@ var BABYLON;
             this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.intensity = 1.0;
             this.range = Number.MAX_VALUE;
+            this.includeOnlyWithLayerMask = 0;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this._excludedMeshesIds = new Array();
@@ -39,6 +40,9 @@ var BABYLON;
                 return false;
             }
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return false;
+            }
+            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
                 return false;
             }
             return true;
