@@ -144,14 +144,27 @@
         public triangleStart: number;
         public triangleCount: number;
 
+        public uv: Vector2
         //if color is present instead of uvs.
         public color: Color4;
 
-        constructor(public position: Vector3, public normal: Vector3, public uv: Vector2, public id) {
+        public referenceVertices: Array<DecimationVertex>;
+
+        
+
+        constructor(public position: Vector3, public normal: Vector3, public id) {
             this.isBorder = true;
             this.q = new QuadraticMatrix();
             this.triangleCount = 0;
             this.triangleStart = 0;
+            this.referenceVertices = [];
+        }
+
+        public updatePosition(newPosition: Vector3) {
+            this.position.copyFrom(newPosition);
+            this.referenceVertices.forEach(function (vertex) {
+                vertex.position.copyFrom(newPosition);
+            });
         }
     }
 
@@ -352,7 +365,7 @@
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
 
-                                v0.position = p;
+                                v0.updatePosition(p);
 
                                 var tStart = this.references.length;
 
@@ -413,7 +426,7 @@
 
             var vertexInit = (i) => {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), null, i);
+                var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), Vector3.FromArray(normalData, offset * 3), i);
                 if (this._mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     vertex.uv = Vector2.FromArray(uvs, offset * 2);
                 } else if (this._mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {

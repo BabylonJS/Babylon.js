@@ -99,16 +99,22 @@ var BABYLON;
     })();
     BABYLON.DecimationTriangle = DecimationTriangle;
     var DecimationVertex = (function () {
-        function DecimationVertex(position, normal, uv, id) {
+        function DecimationVertex(position, normal, id) {
             this.position = position;
             this.normal = normal;
-            this.uv = uv;
             this.id = id;
             this.isBorder = true;
             this.q = new QuadraticMatrix();
             this.triangleCount = 0;
             this.triangleStart = 0;
+            this.referenceVertices = [];
         }
+        DecimationVertex.prototype.updatePosition = function (newPosition) {
+            this.position.copyFrom(newPosition);
+            this.referenceVertices.forEach(function (vertex) {
+                vertex.position.copyFrom(newPosition);
+            });
+        };
         return DecimationVertex;
     })();
     BABYLON.DecimationVertex = DecimationVertex;
@@ -277,7 +283,7 @@ var BABYLON;
                                 else if (v0.color)
                                     v0.color = color;
                                 v0.q = v1.q.add(v0.q);
-                                v0.position = p;
+                                v0.updatePosition(p);
                                 var tStart = _this.references.length;
                                 deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
                                 deletedTriangles = _this.updateTriangles(v0.id, v1, deleted1, deletedTriangles);
@@ -334,7 +340,7 @@ var BABYLON;
             var submesh = mesh.subMeshes[submeshIndex];
             var vertexInit = function (i) {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), BABYLON.Vector3.FromArray(normalData, offset * 3), null, i);
+                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), BABYLON.Vector3.FromArray(normalData, offset * 3), i);
                 if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     vertex.uv = BABYLON.Vector2.FromArray(uvs, offset * 2);
                 }
