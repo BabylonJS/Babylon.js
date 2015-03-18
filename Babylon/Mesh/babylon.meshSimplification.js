@@ -443,15 +443,13 @@ var BABYLON;
             for (i = 0; i < newTriangles.length; ++i) {
                 var t = newTriangles[i];
                 //now get the new referencing point for each vertex
-                var v0Id = originalIndices[t.originalOffset];
-                var v0Offset = t.vertices[0].originalOffsets.indexOf(v0Id);
-                var v1Id = originalIndices[t.originalOffset + 1];
-                var v1Offset = t.vertices[1].originalOffsets.indexOf(v1Id);
-                var v2Id = originalIndices[t.originalOffset + 2];
-                var v2Offset = t.vertices[2].originalOffsets.indexOf(v2Id);
-                newIndicesArray.push(t.vertices[0].id + v0Offset + startingVertex);
-                newIndicesArray.push(t.vertices[1].id + v1Offset + startingVertex);
-                newIndicesArray.push(t.vertices[2].id + v2Offset + startingVertex);
+                [0, 1, 2].forEach(function (idx) {
+                    var id = originalIndices[t.originalOffset + idx];
+                    var offset = t.vertices[idx].originalOffsets.indexOf(id);
+                    if (offset < 0)
+                        offset = 0;
+                    newIndicesArray.push(t.vertices[idx].id + offset + startingVertex);
+                });
             }
             //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
