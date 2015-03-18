@@ -189,7 +189,7 @@ var BABYLON;
             this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
             BABYLON.AsyncLoop.Run(this._mesh.subMeshes.length, function (loop) {
-                _this.initWithMesh(_this._mesh, loop.index, function () {
+                _this.initWithMesh(loop.index, function () {
                     _this.runDecimation(settings, loop.index, function () {
                         loop.executeNext();
                     });
@@ -319,16 +319,13 @@ var BABYLON;
                 }, 0);
             });
         };
-        QuadraticErrorSimplification.prototype.initWithMesh = function (mesh, submeshIndex, callback) {
+        QuadraticErrorSimplification.prototype.initWithMesh = function (submeshIndex, callback) {
             var _this = this;
-            if (!mesh)
-                return;
             this.vertices = [];
             this.triangles = [];
-            this._mesh = mesh;
             var positionData = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var indices = mesh.getIndices();
-            var submesh = mesh.subMeshes[submeshIndex];
+            var indices = this._mesh.getIndices();
+            var submesh = this._mesh.subMeshes[submeshIndex];
             var vertexInit = function (i) {
                 var offset = i + submesh.verticesStart;
                 var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), offset, i);

@@ -251,7 +251,7 @@
             this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
             AsyncLoop.Run(this._mesh.subMeshes.length,(loop: AsyncLoop) => {
-                this.initWithMesh(this._mesh, loop.index,() => {
+                this.initWithMesh(loop.index,() => {
                     this.runDecimation(settings, loop.index,() => {
                         loop.executeNext();
                     });
@@ -398,17 +398,15 @@
                 });
         }
 
-        private initWithMesh(mesh: Mesh, submeshIndex: number, callback: Function) {
-            if (!mesh) return;
+        private initWithMesh(submeshIndex: number, callback: Function) {
 
             this.vertices = [];
             this.triangles = [];
 
-            this._mesh = mesh;
             var positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
             
-            var indices = mesh.getIndices();
-            var submesh = mesh.subMeshes[submeshIndex];
+            var indices = this._mesh.getIndices();
+            var submesh = this._mesh.subMeshes[submeshIndex];
 
             var vertexInit = (i) => {
                 var offset = i + submesh.verticesStart;
