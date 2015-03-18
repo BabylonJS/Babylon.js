@@ -99,21 +99,17 @@ var BABYLON;
     })();
     BABYLON.DecimationTriangle = DecimationTriangle;
     var DecimationVertex = (function () {
-        function DecimationVertex(position, originalPosition, id) {
+        function DecimationVertex(position, id) {
             this.position = position;
-            this.originalPosition = originalPosition;
             this.id = id;
             this.isBorder = true;
             this.q = new QuadraticMatrix();
             this.triangleCount = 0;
             this.triangleStart = 0;
-            this.referenceVertices = [];
+            this.originalOffsets = [];
         }
         DecimationVertex.prototype.updatePosition = function (newPosition) {
             this.position.copyFrom(newPosition);
-            this.referenceVertices.forEach(function (vertex) {
-                vertex.position.copyFrom(newPosition);
-            });
         };
         return DecimationVertex;
     })();
@@ -203,9 +199,9 @@ var BABYLON;
         QuadraticErrorSimplification.prototype.isTriangleOnBoundingBox = function (triangle) {
             var _this = this;
             var gCount = 0;
-            triangle.vertices.forEach(function (vId) {
+            triangle.vertices.forEach(function (vertex) {
                 var count = 0;
-                var vPos = _this.vertices[vId].position;
+                var vPos = vertex.position;
                 var bbox = _this._mesh.getBoundingInfo().boundingBox;
                 if (bbox.maximum.x - vPos.x < _this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > _this.boundingBoxEpsilon)
                     ++count;
@@ -249,10 +245,8 @@ var BABYLON;
                             if (t.error[j] < threshold) {
                                 var deleted0 = [];
                                 var deleted1 = [];
-                                var i0 = t.vertices[j];
-                                var i1 = t.vertices[(j + 1) % 3];
-                                var v0 = _this.vertices[i0];
-                                var v1 = _this.vertices[i1];
+                                var v0 = t.vertices[j];
+                                var v1 = t.vertices[(j + 1) % 3];
                                 if (v0.isBorder !== v1.isBorder)
                                     continue;
                                 var p = BABYLON.Vector3.Zero();
@@ -261,9 +255,9 @@ var BABYLON;
                                 var color = new BABYLON.Color4(0, 0, 0, 1);
                                 _this.calculateError(v0, v1, p, n, uv, color);
                                 var delTr = [];
-                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr))
+                                if (_this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr))
                                     continue;
-                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
+                                if (_this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr))
                                     continue;
                                 if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
                                     continue;
@@ -280,8 +274,8 @@ var BABYLON;
                                 v0.q = v1.q.add(v0.q);
                                 v0.updatePosition(p);
                                 var tStart = _this.references.length;
-                                deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
-                                deletedTriangles = _this.updateTriangles(v0.id, v1, deleted1, deletedTriangles);
+                                deletedTriangles = _this.updateTriangles(v0, v0, deleted0, deletedTriangles);
+                                deletedTriangles = _this.updateTriangles(v0, v1, deleted1, deletedTriangles);
                                 var tCount = _this.references.length - tStart;
                                 if (tCount <= v0.triangleCount) {
                                     if (tCount) {
@@ -326,10 +320,24 @@ var BABYLON;
             var positionData = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this._mesh.getIndices();
             var submesh = this._mesh.subMeshes[submeshIndex];
+            var findInVertices = function (positionToSearch) {
+                for (var ii = 0; ii < _this.vertices.length; ++ii) {
+                    if (_this.vertices[ii].position.equals(positionToSearch)) {
+                        return _this.vertices[ii];
+                    }
+                }
+                return null;
+            };
+            var vertexReferences = [];
             var vertexInit = function (i) {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), offset, i);
-                _this.vertices.push(vertex);
+                var position = BABYLON.Vector3.FromArray(positionData, offset * 3);
+                var vertex = findInVertices(position) || new DecimationVertex(position, _this.vertices.length);
+                vertex.originalOffsets.push(offset);
+                if (vertex.id == _this.vertices.length) {
+                    _this.vertices.push(vertex);
+                }
+                vertexReferences.push(vertex.id);
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
@@ -337,10 +345,15 @@ var BABYLON;
                 var indicesInit = function (i) {
                     var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
-                    var i0 = indices[pos + 0] - submesh.verticesStart;
-                    var i1 = indices[pos + 1] - submesh.verticesStart;
-                    var i2 = indices[pos + 2] - submesh.verticesStart;
-                    var triangle = new DecimationTriangle([_this.vertices[i0].id, _this.vertices[i1].id, _this.vertices[i2].id]);
+                    var i0 = indices[pos + 0];
+                    var i1 = indices[pos + 1];
+                    var i2 = indices[pos + 2];
+                    var v0 = _this.vertices[vertexReferences[i0 - submesh.verticesStart]];
+                    var v1 = _this.vertices[vertexReferences[i1 - submesh.verticesStart]];
+                    var v2 = _this.vertices[vertexReferences[i2 - submesh.verticesStart]];
+                    var triangle = new DecimationTriangle([v0, v1, v2]);
+                    triangle.originalOffset = pos;
+                    triangle.positionInOffsets = [v0.originalOffsets.indexOf(i0), v1.originalOffsets.indexOf(i1), v2.originalOffsets.indexOf(i2)];
                     _this.triangles.push(triangle);
                 };
                 BABYLON.AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, _this.syncIterations, indicesInit, function () {
@@ -352,16 +365,16 @@ var BABYLON;
             var _this = this;
             var triangleInit1 = function (i) {
                 var t = _this.triangles[i];
-                t.normal = BABYLON.Vector3.Cross(_this.vertices[t.vertices[1]].position.subtract(_this.vertices[t.vertices[0]].position), _this.vertices[t.vertices[2]].position.subtract(_this.vertices[t.vertices[0]].position)).normalize();
+                t.normal = BABYLON.Vector3.Cross(t.vertices[1].position.subtract(t.vertices[0].position), t.vertices[2].position.subtract(t.vertices[0].position)).normalize();
                 for (var j = 0; j < 3; j++) {
-                    _this.vertices[t.vertices[j]].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(BABYLON.Vector3.Dot(t.normal, _this.vertices[t.vertices[0]].position))));
+                    t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(BABYLON.Vector3.Dot(t.normal, t.vertices[0].position))));
                 }
             };
             BABYLON.AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1, function () {
                 var triangleInit2 = function (i) {
                     var t = _this.triangles[i];
                     for (var j = 0; j < 3; ++j) {
-                        t.error[j] = _this.calculateError(_this.vertices[t.vertices[j]], _this.vertices[t.vertices[(j + 1) % 3]]);
+                        t.error[j] = _this.calculateError(t.vertices[j], t.vertices[(j + 1) % 3]);
                     }
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
@@ -383,29 +396,11 @@ var BABYLON;
                 if (!this.triangles[i].deleted) {
                     t = this.triangles[i];
                     for (j = 0; j < 3; ++j) {
-                        this.vertices[t.vertices[j]].triangleCount = 1;
+                        t.vertices[j].triangleCount = 1;
                     }
                     newTriangles.push(t);
                 }
             }
-            var newVerticesOrder = [];
-            //compact vertices, get the IDs of the vertices used.
-            var dst = 0;
-            for (i = 0; i < this.vertices.length; ++i) {
-                if (this.vertices[i].triangleCount) {
-                    this.vertices[i].triangleStart = dst;
-                    this.vertices[dst].position = this.vertices[i].position;
-                    newVerticesOrder.push(dst);
-                    dst++;
-                }
-            }
-            for (i = 0; i < newTriangles.length; ++i) {
-                t = newTriangles[i];
-                for (j = 0; j < 3; ++j) {
-                    t.vertices[j] = this.vertices[t.vertices[j]].triangleStart;
-                }
-            }
-            this.vertices = this.vertices.slice(0, dst);
             var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind) || [];
             var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || [];
             var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || [];
@@ -413,22 +408,30 @@ var BABYLON;
             var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
-            for (i = 0; i < newVerticesOrder.length; ++i) {
-                newPositionData.push(this.vertices[i].position.x);
-                newPositionData.push(this.vertices[i].position.y);
-                newPositionData.push(this.vertices[i].position.z);
-                newNormalData.push(normalData[this.vertices[i].originalPosition * 3]);
-                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 1]);
-                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 2]);
-                if (uvs.length) {
-                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2)]);
-                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2) + 1]);
-                }
-                else if (colorsData.length) {
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4)]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 1]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 2]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 3]);
+            var vertexCount = 0;
+            for (i = 0; i < this.vertices.length; ++i) {
+                var vertex = this.vertices[i];
+                vertex.id = vertexCount;
+                if (vertex.triangleCount) {
+                    vertex.originalOffsets.forEach(function (originalOffset) {
+                        newPositionData.push(vertex.position.x);
+                        newPositionData.push(vertex.position.y);
+                        newPositionData.push(vertex.position.z);
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                        if (uvs.length) {
+                            newUVsData.push(uvs[(originalOffset * 2)]);
+                            newUVsData.push(uvs[(originalOffset * 2) + 1]);
+                        }
+                        else if (colorsData.length) {
+                            newColorsData.push(colorsData[(originalOffset * 4)]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 1]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 2]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 3]);
+                        }
+                        ++vertexCount;
+                    });
                 }
             }
             var startingIndex = this._reconstructedMesh.getTotalIndices();
@@ -436,10 +439,19 @@ var BABYLON;
             var submeshesArray = this._reconstructedMesh.subMeshes;
             this._reconstructedMesh.subMeshes = [];
             var newIndicesArray = this._reconstructedMesh.getIndices(); //[];
+            var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
+                var t = newTriangles[i];
+                //now get the new referencing point for each vertex
+                var v0Id = originalIndices[t.originalOffset];
+                var v0Offset = t.vertices[0].originalOffsets.indexOf(v0Id);
+                var v1Id = originalIndices[t.originalOffset + 1];
+                var v1Offset = t.vertices[1].originalOffsets.indexOf(v1Id);
+                var v2Id = originalIndices[t.originalOffset + 2];
+                var v2Offset = t.vertices[2].originalOffsets.indexOf(v2Id);
+                newIndicesArray.push(t.vertices[0].id + v0Offset + startingVertex);
+                newIndicesArray.push(t.vertices[1].id + v1Offset + startingVertex);
+                newIndicesArray.push(t.vertices[2].id + v2Offset + startingVertex);
             }
             //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
@@ -456,7 +468,7 @@ var BABYLON;
                 submeshesArray.forEach(function (submesh) {
                     new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
@@ -465,22 +477,22 @@ var BABYLON;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
         };
-        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
+        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, vertex2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
                 if (t.deleted)
                     continue;
                 var s = this.references[vertex1.triangleStart + i].vertexId;
-                var id1 = t.vertices[(s + 1) % 3];
-                var id2 = t.vertices[(s + 2) % 3];
-                if ((id1 === index2 || id2 === index2)) {
+                var v1 = t.vertices[(s + 1) % 3];
+                var v2 = t.vertices[(s + 2) % 3];
+                if ((v1 === vertex2 || v2 === vertex2)) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
                 }
-                var d1 = this.vertices[id1].position.subtract(point);
+                var d1 = v1.position.subtract(point);
                 d1 = d1.normalize();
-                var d2 = this.vertices[id2].position.subtract(point);
+                var d2 = v2.position.subtract(point);
                 d2 = d2.normalize();
                 if (Math.abs(BABYLON.Vector3.Dot(d1, d2)) > 0.999)
                     return true;
@@ -491,7 +503,7 @@ var BABYLON;
             }
             return false;
         };
-        QuadraticErrorSimplification.prototype.updateTriangles = function (vertexId, vertex, deletedArray, deletedTriangles) {
+        QuadraticErrorSimplification.prototype.updateTriangles = function (origVertex, vertex, deletedArray, deletedTriangles) {
             var newDeleted = deletedTriangles;
             for (var i = 0; i < vertex.triangleCount; ++i) {
                 var ref = this.references[vertex.triangleStart + i];
@@ -503,11 +515,11 @@ var BABYLON;
                     newDeleted++;
                     continue;
                 }
-                t.vertices[ref.vertexId] = vertexId;
+                t.vertices[ref.vertexId] = origVertex;
                 t.isDirty = true;
-                t.error[0] = this.calculateError(this.vertices[t.vertices[0]], this.vertices[t.vertices[1]]) + (t.borderFactor / 2);
-                t.error[1] = this.calculateError(this.vertices[t.vertices[1]], this.vertices[t.vertices[2]]) + (t.borderFactor / 2);
-                t.error[2] = this.calculateError(this.vertices[t.vertices[2]], this.vertices[t.vertices[0]]) + (t.borderFactor / 2);
+                t.error[0] = this.calculateError(t.vertices[0], t.vertices[1]) + (t.borderFactor / 2);
+                t.error[1] = this.calculateError(t.vertices[1], t.vertices[2]) + (t.borderFactor / 2);
+                t.error[2] = this.calculateError(t.vertices[2], t.vertices[0]) + (t.borderFactor / 2);
                 t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 this.references.push(ref);
             }
@@ -523,15 +535,15 @@ var BABYLON;
                     var triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
                     for (var ii = 0; ii < 3; ii++) {
                         var ofs = 0;
-                        var id = triangle.vertices[ii];
+                        var vv = triangle.vertices[ii];
                         while (ofs < vCount.length) {
-                            if (vId[ofs] === id)
+                            if (vId[ofs] === vv.id)
                                 break;
                             ++ofs;
                         }
                         if (ofs === vCount.length) {
                             vCount.push(1);
-                            vId.push(id);
+                            vId.push(vv.id);
                         }
                         else {
                             vCount[ofs]++;
@@ -570,7 +582,7 @@ var BABYLON;
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     v.triangleCount++;
                 }
             }
@@ -584,7 +596,7 @@ var BABYLON;
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     newReferences[v.triangleStart + v.triangleCount] = new Reference(j, i);
                     v.triangleCount++;
                 }

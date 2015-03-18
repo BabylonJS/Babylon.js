@@ -128,7 +128,11 @@
         public borderFactor: number;
         public deletePending: boolean;
 
-        constructor(public vertices: Array<number>) {
+        public positionInOffsets: Array<number>;
+
+        public originalOffset: number;
+
+        constructor(public vertices: Array<DecimationVertex>) {
             this.error = new Array<number>(4);
             this.deleted = false;
             this.isDirty = false;
@@ -144,21 +148,18 @@
         public triangleStart: number;
         public triangleCount: number;
 
-        public referenceVertices: Array<DecimationVertex>;
+        public originalOffsets: Array<number>;
 
-        constructor(public position: Vector3, public originalPosition: number, public id) {
+        constructor(public position: Vector3, public id) {
             this.isBorder = true;
             this.q = new QuadraticMatrix();
             this.triangleCount = 0;
             this.triangleStart = 0;
-            this.referenceVertices = [];
+            this.originalOffsets = [];
         }
 
         public updatePosition(newPosition: Vector3) {
             this.position.copyFrom(newPosition);
-            this.referenceVertices.forEach(function (vertex) {
-                vertex.position.copyFrom(newPosition);
-            });
         }
     }
 
@@ -265,9 +266,9 @@
 
         private isTriangleOnBoundingBox(triangle: DecimationTriangle): boolean {
             var gCount = 0;
-            triangle.vertices.forEach((vId) => {
+            triangle.vertices.forEach((vertex) => {
                 var count = 0;
-                var vPos = this.vertices[vId].position;
+                var vPos = vertex.position;
                 var bbox = this._mesh.getBoundingInfo().boundingBox;
 
                 if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
@@ -318,10 +319,8 @@
                                 var deleted0: Array<boolean> = [];
                                 var deleted1: Array<boolean> = [];
 
-                                var i0 = t.vertices[j];
-                                var i1 = t.vertices[(j + 1) % 3];
-                                var v0 = this.vertices[i0];
-                                var v1 = this.vertices[i1];
+                                var v0 = t.vertices[j];
+                                var v1 = t.vertices[(j + 1) % 3];
 
                                 if (v0.isBorder !== v1.isBorder) continue;
 
@@ -334,8 +333,8 @@
 
                                 var delTr = [];
 
-                                if (this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr)) continue;
-                                if (this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr)) continue;
+                                if (this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr)) continue;
+                                if (this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr)) continue;
 
                                 if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
                                     continue;
@@ -358,8 +357,8 @@
 
                                 var tStart = this.references.length;
 
-                                deletedTriangles = this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
-                                deletedTriangles = this.updateTriangles(v0.id, v1, deleted1, deletedTriangles);
+                                deletedTriangles = this.updateTriangles(v0, v0, deleted0, deletedTriangles);
+                                deletedTriangles = this.updateTriangles(v0, v1, deleted1, deletedTriangles);
 
                                 var tCount = this.references.length - tStart;
 
@@ -408,10 +407,27 @@
             var indices = this._mesh.getIndices();
             var submesh = this._mesh.subMeshes[submeshIndex];
 
+            var findInVertices = (positionToSearch: Vector3) => {
+                for (var ii = 0; ii < this.vertices.length; ++ii) {
+                    if (this.vertices[ii].position.equals(positionToSearch)) {
+                        return this.vertices[ii];
+                    }
+                }
+                return null;
+            }
+
+            var vertexReferences: Array<number> = [];
+
             var vertexInit = (i) => {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(Vector3.FromArray(positionData, offset * 3), offset, i);
-                this.vertices.push(vertex);
+                var position = Vector3.FromArray(positionData, offset * 3);
+
+                var vertex = findInVertices(position) || new DecimationVertex(position, this.vertices.length);
+                vertex.originalOffsets.push(offset);
+                if (vertex.id == this.vertices.length) {
+                    this.vertices.push(vertex);
+                }
+                vertexReferences.push(vertex.id);
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
@@ -420,10 +436,15 @@
                 var indicesInit = (i) => {
                     var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
-                    var i0 = indices[pos + 0] - submesh.verticesStart;
-                    var i1 = indices[pos + 1] - submesh.verticesStart;
-                    var i2 = indices[pos + 2] - submesh.verticesStart;
-                    var triangle = new DecimationTriangle([this.vertices[i0].id, this.vertices[i1].id, this.vertices[i2].id]);
+                    var i0 = indices[pos + 0];
+                    var i1 = indices[pos + 1];
+                    var i2 = indices[pos + 2];
+                    var v0: DecimationVertex = this.vertices[vertexReferences[i0 - submesh.verticesStart]];
+                    var v1: DecimationVertex = this.vertices[vertexReferences[i1 - submesh.verticesStart]];
+                    var v2: DecimationVertex = this.vertices[vertexReferences[i2 - submesh.verticesStart]];
+                    var triangle = new DecimationTriangle([v0, v1, v2]);
+                    triangle.originalOffset = pos;
+                    triangle.positionInOffsets = [v0.originalOffsets.indexOf(i0), v1.originalOffsets.indexOf(i1), v2.originalOffsets.indexOf(i2)]
                     this.triangles.push(triangle);
                 };
                 AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit,() => {
@@ -435,9 +456,9 @@
         private init(callback: Function) {
             var triangleInit1 = (i) => {
                 var t = this.triangles[i];
-                t.normal = Vector3.Cross(this.vertices[t.vertices[1]].position.subtract(this.vertices[t.vertices[0]].position), this.vertices[t.vertices[2]].position.subtract(this.vertices[t.vertices[0]].position)).normalize();
+                t.normal = Vector3.Cross(t.vertices[1].position.subtract(t.vertices[0].position), t.vertices[2].position.subtract(t.vertices[0].position)).normalize();
                 for (var j = 0; j < 3; j++) {
-                    this.vertices[t.vertices[j]].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(Vector3.Dot(t.normal, this.vertices[t.vertices[0]].position))));
+                    t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(Vector3.Dot(t.normal, t.vertices[0].position))));
                 }
             };
             AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1,() => {
@@ -445,7 +466,7 @@
                 var triangleInit2 = (i) => {
                     var t = this.triangles[i];
                     for (var j = 0; j < 3; ++j) {
-                        t.error[j] = this.calculateError(this.vertices[t.vertices[j]], this.vertices[t.vertices[(j + 1) % 3]]);
+                        t.error[j] = this.calculateError(t.vertices[j], t.vertices[(j + 1) % 3]);
                     }
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
@@ -469,33 +490,12 @@
                 if (!this.triangles[i].deleted) {
                     t = this.triangles[i];
                     for (j = 0; j < 3; ++j) {
-                        this.vertices[t.vertices[j]].triangleCount = 1;
+                        t.vertices[j].triangleCount = 1;
                     }
                     newTriangles.push(t);
                 }
             }
-
-            var newVerticesOrder = [];
-
-            //compact vertices, get the IDs of the vertices used.
-            var dst = 0;
-            for (i = 0; i < this.vertices.length; ++i) {
-                if (this.vertices[i].triangleCount) {
-                    this.vertices[i].triangleStart = dst;
-                    this.vertices[dst].position = this.vertices[i].position;
-                    newVerticesOrder.push(dst);
-                    dst++;
-                }
-            }
-
-            for (i = 0; i < newTriangles.length; ++i) {
-                t = newTriangles[i];
-                for (j = 0; j < 3; ++j) {
-                    t.vertices[j] = this.vertices[t.vertices[j]].triangleStart;
-                }
-            }
-            this.vertices = this.vertices.slice(0, dst);
-
+            
             var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || [];
             var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || [];
             var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
@@ -505,21 +505,29 @@
             var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
 
-            for (i = 0; i < newVerticesOrder.length; ++i) {
-                newPositionData.push(this.vertices[i].position.x);
-                newPositionData.push(this.vertices[i].position.y);
-                newPositionData.push(this.vertices[i].position.z);
-                newNormalData.push(normalData[this.vertices[i].originalPosition * 3]);
-                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 1]);
-                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 2]);
-                if (uvs.length) {
-                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2)]);
-                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2) + 1]);
-                } else if (colorsData.length) {
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4)]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 1]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 2]);
-                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 3]);
+            var vertexCount = 0;
+            for (i = 0; i < this.vertices.length; ++i) {
+                var vertex = this.vertices[i];
+                vertex.id = vertexCount;
+                if (vertex.triangleCount) {
+                    vertex.originalOffsets.forEach(function (originalOffset) {
+                        newPositionData.push(vertex.position.x);
+                        newPositionData.push(vertex.position.y);
+                        newPositionData.push(vertex.position.z);
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                        if (uvs.length) {
+                            newUVsData.push(uvs[(originalOffset * 2)]);
+                            newUVsData.push(uvs[(originalOffset * 2) + 1]);
+                        } else if (colorsData.length) {
+                            newColorsData.push(colorsData[(originalOffset * 4)]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 1]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 2]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 3]);
+                        }
+                        ++vertexCount;
+                    });
                 }
             }
 
@@ -530,10 +538,20 @@
             this._reconstructedMesh.subMeshes = [];
 
             var newIndicesArray: Array<number> = this._reconstructedMesh.getIndices(); //[];
+            var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
+                var t = newTriangles[i];
+                //now get the new referencing point for each vertex
+                var v0Id = originalIndices[t.originalOffset];
+                var v0Offset = t.vertices[0].originalOffsets.indexOf(v0Id);
+                var v1Id = originalIndices[t.originalOffset + 1];
+                var v1Offset = t.vertices[1].originalOffsets.indexOf(v1Id);
+                var v2Id = originalIndices[t.originalOffset + 2];
+                var v2Offset = t.vertices[2].originalOffsets.indexOf(v2Id);
+
+                newIndicesArray.push(t.vertices[0].id + v0Offset + startingVertex);
+                newIndicesArray.push(t.vertices[1].id + v1Offset + startingVertex);
+                newIndicesArray.push(t.vertices[2].id + v2Offset + startingVertex);
             }
 
             //overwriting the old vertex buffers and indices.
@@ -553,7 +571,7 @@
                 submeshesArray.forEach(function (submesh) {
                     new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         }
 
@@ -564,7 +582,7 @@
             this._reconstructedMesh.isVisible = false;
         }
 
-        private isFlipped(vertex1: DecimationVertex, index2: number, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
+        private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {
 
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
@@ -572,18 +590,18 @@
 
                 var s = this.references[vertex1.triangleStart + i].vertexId;
 
-                var id1 = t.vertices[(s + 1) % 3];
-                var id2 = t.vertices[(s + 2) % 3];
+                var v1 = t.vertices[(s + 1) % 3];
+                var v2 = t.vertices[(s + 2) % 3];
 
-                if ((id1 === index2 || id2 === index2)/* && !this.isTriangleOnBoundingBox(t)*/) {
+                if ((v1 === vertex2 || v2 === vertex2)/* && !this.isTriangleOnBoundingBox(t)*/) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
                 }
 
-                var d1 = this.vertices[id1].position.subtract(point);
+                var d1 = v1.position.subtract(point);
                 d1 = d1.normalize();
-                var d2 = this.vertices[id2].position.subtract(point);
+                var d2 = v2.position.subtract(point);
                 d2 = d2.normalize();
                 if (Math.abs(Vector3.Dot(d1, d2)) > 0.999) return true;
                 var normal = Vector3.Cross(d1, d2).normalize();
@@ -594,7 +612,7 @@
             return false;
         }
 
-        private updateTriangles(vertexId: number, vertex: DecimationVertex, deletedArray: Array<boolean>, deletedTriangles: number): number {
+        private updateTriangles(origVertex: DecimationVertex, vertex: DecimationVertex, deletedArray: Array<boolean>, deletedTriangles: number): number {
             var newDeleted = deletedTriangles;
             for (var i = 0; i < vertex.triangleCount; ++i) {
                 var ref = this.references[vertex.triangleStart + i];
@@ -605,11 +623,11 @@
                     newDeleted++;
                     continue;
                 }
-                t.vertices[ref.vertexId] = vertexId;
+                t.vertices[ref.vertexId] = origVertex;
                 t.isDirty = true;
-                t.error[0] = this.calculateError(this.vertices[t.vertices[0]], this.vertices[t.vertices[1]]) + (t.borderFactor / 2);
-                t.error[1] = this.calculateError(this.vertices[t.vertices[1]], this.vertices[t.vertices[2]]) + (t.borderFactor / 2);
-                t.error[2] = this.calculateError(this.vertices[t.vertices[2]], this.vertices[t.vertices[0]]) + (t.borderFactor / 2);
+                t.error[0] = this.calculateError(t.vertices[0], t.vertices[1]) + (t.borderFactor / 2);
+                t.error[1] = this.calculateError(t.vertices[1], t.vertices[2]) + (t.borderFactor / 2);
+                t.error[2] = this.calculateError(t.vertices[2], t.vertices[0]) + (t.borderFactor / 2);
                 t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 this.references.push(ref);
             }
@@ -627,14 +645,14 @@
                     var triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
                     for (var ii = 0; ii < 3; ii++) {
                         var ofs = 0;
-                        var id = triangle.vertices[ii];
+                        var vv = triangle.vertices[ii];
                         while (ofs < vCount.length) {
-                            if (vId[ofs] === id) break;
+                            if (vId[ofs] === vv.id) break;
                             ++ofs;
                         }
                         if (ofs === vCount.length) {
                             vCount.push(1);
-                            vId.push(id);
+                            vId.push(vv.id);
                         } else {
                             vCount[ofs]++;
                         }
@@ -674,7 +692,7 @@
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     v.triangleCount++;
                 }
             }
@@ -691,7 +709,7 @@
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     newReferences[v.triangleStart + v.triangleCount] = new Reference(j, i);
                     v.triangleCount++;
                 }
