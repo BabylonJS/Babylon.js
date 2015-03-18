@@ -431,7 +431,7 @@
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations / 2, vertexInit,() => {
+            AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit,() => {
 
                 var indicesInit = (i) => {
                     var offset = (submesh.indexStart / 3) + i;
@@ -517,10 +517,10 @@
                         newNormalData.push(normalData[originalOffset * 3]);
                         newNormalData.push(normalData[(originalOffset * 3) + 1]);
                         newNormalData.push(normalData[(originalOffset * 3) + 2]);
-                        if (uvs.length) {
+                        if (uvs && uvs.length) {
                             newUVsData.push(uvs[(originalOffset * 2)]);
                             newUVsData.push(uvs[(originalOffset * 2) + 1]);
-                        } else if (colorsData.length) {
+                        } else if (colorsData && colorsData.length) {
                             newColorsData.push(colorsData[(originalOffset * 4)]);
                             newColorsData.push(colorsData[(originalOffset * 4) + 1]);
                             newColorsData.push(colorsData[(originalOffset * 4) + 2]);
