@@ -1,9 +1,10 @@
 var BABYLON;
 (function (BABYLON) {
     var SimplificationSettings = (function () {
-        function SimplificationSettings(quality, distance) {
+        function SimplificationSettings(quality, distance, optimizeMesh) {
             this.quality = quality;
             this.distance = distance;
+            this.optimizeMesh = optimizeMesh;
         }
         return SimplificationSettings;
     })();
@@ -189,7 +190,7 @@ var BABYLON;
                     _this.runDecimation(settings, loop.index, function () {
                         loop.executeNext();
                     });
-                });
+                }, settings.optimizeMesh);
             }, function () {
                 setTimeout(function () {
                     successCallback(_this._reconstructedMesh);
@@ -313,7 +314,7 @@ var BABYLON;
                 }, 0);
             });
         };
-        QuadraticErrorSimplification.prototype.initWithMesh = function (submeshIndex, callback) {
+        QuadraticErrorSimplification.prototype.initWithMesh = function (submeshIndex, callback, optimizeMesh) {
             var _this = this;
             this.vertices = [];
             this.triangles = [];
@@ -321,9 +322,11 @@ var BABYLON;
             var indices = this._mesh.getIndices();
             var submesh = this._mesh.subMeshes[submeshIndex];
             var findInVertices = function (positionToSearch) {
-                for (var ii = 0; ii < _this.vertices.length; ++ii) {
-                    if (_this.vertices[ii].position.equals(positionToSearch)) {
-                        return _this.vertices[ii];
+                if (optimizeMesh) {
+                    for (var ii = 0; ii < _this.vertices.length; ++ii) {
+                        if (_this.vertices[ii].position.equals(positionToSearch)) {
+                            return _this.vertices[ii];
+                        }
                     }
                 }
                 return null;
@@ -353,7 +356,6 @@ var BABYLON;
                     var v2 = _this.vertices[vertexReferences[i2 - submesh.verticesStart]];
                     var triangle = new DecimationTriangle([v0, v1, v2]);
                     triangle.originalOffset = pos;
-                    triangle.positionInOffsets = [v0.originalOffsets.indexOf(i0), v1.originalOffsets.indexOf(i1), v2.originalOffsets.indexOf(i2)];
                     _this.triangles.push(triangle);
                 };
                 BABYLON.AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, _this.syncIterations, indicesInit, function () {
