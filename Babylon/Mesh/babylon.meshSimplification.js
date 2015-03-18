@@ -341,7 +341,7 @@ var BABYLON;
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit, function () {
+            BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations / 2, vertexInit, function () {
                 var indicesInit = function (i) {
                     var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
