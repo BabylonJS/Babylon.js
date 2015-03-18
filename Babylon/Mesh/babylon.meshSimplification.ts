@@ -22,10 +22,11 @@
     export interface ISimplificationSettings {
         quality: number;
         distance: number;
+        optimizeMesh?: boolean;
     }
 
     export class SimplificationSettings implements ISimplificationSettings {
-        constructor(public quality: number, public distance: number) {
+        constructor(public quality: number, public distance: number, public optimizeMesh?: boolean) {
         }
     }
 
@@ -127,8 +128,6 @@
         public isDirty: boolean;
         public borderFactor: number;
         public deletePending: boolean;
-
-        public positionInOffsets: Array<number>;
 
         public originalOffset: number;
 
@@ -245,7 +244,6 @@
             this.aggressiveness = 7;
             this.decimationIterations = 100;
             this.boundingBoxEpsilon = Engine.Epsilon;
-
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
@@ -256,7 +254,7 @@
                     this.runDecimation(settings, loop.index,() => {
                         loop.executeNext();
                     });
-                });
+                }, settings.optimizeMesh);
             },() => {
                     setTimeout(() => {
                         successCallback(this._reconstructedMesh);
@@ -397,7 +395,7 @@
                 });
         }
 
-        private initWithMesh(submeshIndex: number, callback: Function) {
+        private initWithMesh(submeshIndex: number, callback: Function, optimizeMesh?: boolean) {
 
             this.vertices = [];
             this.triangles = [];
@@ -408,9 +406,11 @@
             var submesh = this._mesh.subMeshes[submeshIndex];
 
             var findInVertices = (positionToSearch: Vector3) => {
-                for (var ii = 0; ii < this.vertices.length; ++ii) {
-                    if (this.vertices[ii].position.equals(positionToSearch)) {
-                        return this.vertices[ii];
+                if (optimizeMesh) {
+                    for (var ii = 0; ii < this.vertices.length; ++ii) {
+                        if (this.vertices[ii].position.equals(positionToSearch)) {
+                            return this.vertices[ii];
+                        }
                     }
                 }
                 return null;
@@ -444,7 +444,6 @@
                     var v2: DecimationVertex = this.vertices[vertexReferences[i2 - submesh.verticesStart]];
                     var triangle = new DecimationTriangle([v0, v1, v2]);
                     triangle.originalOffset = pos;
-                    triangle.positionInOffsets = [v0.originalOffsets.indexOf(i0), v1.originalOffsets.indexOf(i1), v2.originalOffsets.indexOf(i2)]
                     this.triangles.push(triangle);
                 };
                 AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit,() => {
