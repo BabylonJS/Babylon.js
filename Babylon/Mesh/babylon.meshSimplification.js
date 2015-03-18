@@ -99,9 +99,9 @@ var BABYLON;
     })();
     BABYLON.DecimationTriangle = DecimationTriangle;
     var DecimationVertex = (function () {
-        function DecimationVertex(position, normal, id) {
+        function DecimationVertex(position, originalPosition, id) {
             this.position = position;
-            this.normal = normal;
+            this.originalPosition = originalPosition;
             this.id = id;
             this.isBorder = true;
             this.q = new QuadraticMatrix();
@@ -277,11 +277,6 @@ var BABYLON;
                                 if (uniqueArray.length % 2 != 0) {
                                     continue;
                                 }
-                                v0.normal = n;
-                                if (v0.uv)
-                                    v0.uv = uv;
-                                else if (v0.color)
-                                    v0.color = color;
                                 v0.q = v1.q.add(v0.q);
                                 v0.updatePosition(p);
                                 var tStart = _this.references.length;
@@ -333,20 +328,11 @@ var BABYLON;
             this._mesh = mesh;
             //It is assumed that a mesh has positions, normals and either uvs or colors.
             var positionData = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
-            var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
             var indices = mesh.getIndices();
             var submesh = mesh.subMeshes[submeshIndex];
             var vertexInit = function (i) {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), BABYLON.Vector3.FromArray(normalData, offset * 3), i);
-                if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    vertex.uv = BABYLON.Vector2.FromArray(uvs, offset * 2);
-                }
-                else if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                    vertex.color = BABYLON.Color4.FromArray(colorsData, offset * 4);
-                }
+                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), offset, i);
                 _this.vertices.push(vertex);
             };
             //var totalVertices = mesh.getTotalVertices();
@@ -413,9 +399,6 @@ var BABYLON;
                 if (this.vertices[i].triangleCount) {
                     this.vertices[i].triangleStart = dst;
                     this.vertices[dst].position = this.vertices[i].position;
-                    this.vertices[dst].normal = this.vertices[i].normal;
-                    this.vertices[dst].uv = this.vertices[i].uv;
-                    this.vertices[dst].color = this.vertices[i].color;
                     newVerticesOrder.push(dst);
                     dst++;
                 }
@@ -431,22 +414,25 @@ var BABYLON;
             var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || [];
             var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || [];
             var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind) || [];
+            var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
             for (i = 0; i < newVerticesOrder.length; ++i) {
                 newPositionData.push(this.vertices[i].position.x);
                 newPositionData.push(this.vertices[i].position.y);
                 newPositionData.push(this.vertices[i].position.z);
-                newNormalData.push(this.vertices[i].normal.x);
-                newNormalData.push(this.vertices[i].normal.y);
-                newNormalData.push(this.vertices[i].normal.z);
-                if (this.vertices[i].uv) {
-                    newUVsData.push(this.vertices[i].uv.x);
-                    newUVsData.push(this.vertices[i].uv.y);
+                newNormalData.push(normalData[this.vertices[i].originalPosition * 3]);
+                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 1]);
+                newNormalData.push(normalData[(this.vertices[i].originalPosition * 3) + 2]);
+                if (uvs.length) {
+                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2)]);
+                    newUVsData.push(uvs[(this.vertices[i].originalPosition * 2) + 1]);
                 }
-                else if (this.vertices[i].color) {
-                    newColorsData.push(this.vertices[i].color.r);
-                    newColorsData.push(this.vertices[i].color.g);
-                    newColorsData.push(this.vertices[i].color.b);
-                    newColorsData.push(this.vertices[i].color.a);
+                else if (colorsData.length) {
+                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4)]);
+                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 1]);
+                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 2]);
+                    newColorsData.push(colorsData[(this.vertices[i].originalPosition * 4) + 3]);
                 }
             }
             var startingIndex = this._reconstructedMesh.getTotalIndices();
@@ -631,14 +617,6 @@ var BABYLON;
                 pointResult.y = 1 / qDet * (q.det(0, 2, 3, 1, 5, 6, 2, 7, 8));
                 pointResult.z = -1 / qDet * (q.det(0, 1, 3, 1, 4, 6, 2, 5, 8));
                 error = this.vertexError(q, pointResult);
-                //TODO this should be correctly calculated
-                if (normalResult) {
-                    normalResult.copyFrom(vertex1.normal);
-                    if (vertex1.uv)
-                        uvResult.copyFrom(vertex1.uv);
-                    else if (vertex1.color)
-                        colorResult.copyFrom(vertex1.color);
-                }
             }
             else {
                 var p3 = (vertex1.position.add(vertex2.position)).divide(new BABYLON.Vector3(2, 2, 2));
@@ -650,31 +628,16 @@ var BABYLON;
                 if (error === error1) {
                     if (pointResult) {
                         pointResult.copyFrom(vertex1.position);
-                        normalResult.copyFrom(vertex1.normal);
-                        if (vertex1.uv)
-                            uvResult.copyFrom(vertex1.uv);
-                        else if (vertex1.color)
-                            colorResult.copyFrom(vertex1.color);
                     }
                 }
                 else if (error === error2) {
                     if (pointResult) {
                         pointResult.copyFrom(vertex2.position);
-                        normalResult.copyFrom(vertex2.normal);
-                        if (vertex2.uv)
-                            uvResult.copyFrom(vertex2.uv);
-                        else if (vertex2.color)
-                            colorResult.copyFrom(vertex2.color);
                     }
                 }
                 else {
                     if (pointResult) {
                         pointResult.copyFrom(p3);
-                        normalResult.copyFrom(vertex1.normal);
-                        if (vertex1.uv)
-                            uvResult.copyFrom(vertex1.uv);
-                        else if (vertex1.color)
-                            colorResult.copyFrom(vertex1.color);
                     }
                 }
             }
