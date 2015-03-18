@@ -54,6 +54,10 @@
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, BABYLON.Vector3.Zero(), scene);
 
+	    if(!this.target) {
+            	this.target = Vector3.Zero();
+            }
+
             this.getViewMatrix();
         }
 
