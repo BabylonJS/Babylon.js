@@ -971,7 +971,9 @@
             var trigger = parsedActions.children[i];
 
             if (trigger.properties.length > 0) {
-                triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: scene.getMeshByName(trigger.properties[0].value) };
+                var param = trigger.properties[0].value;
+                var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
             }
             else
                 triggerParams = BABYLON.ActionManager[trigger.name];

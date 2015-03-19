@@ -6818,6 +6818,7 @@ var BABYLON;
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
             this._activeMeshes = new BABYLON.SmartArray(256);
+            this._globalPosition = BABYLON.Vector3.Zero();
             scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -6847,6 +6848,13 @@ var BABYLON;
         Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
             get: function () {
                 return Camera._FOVMODE_HORIZONTAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "globalPosition", {
+            get: function () {
+                return this._globalPosition;
             },
             enumerable: true,
             configurable: true
@@ -7007,6 +7015,7 @@ var BABYLON;
         Camera.prototype.getViewMatrix = function () {
             this._computedViewMatrix = this._computeViewMatrix();
             if (!this.parent || !this.parent.getWorldMatrix || this.isSynchronized()) {
+                this._globalPosition.copyFrom(this.position);
                 return this._computedViewMatrix;
             }
             if (!this._worldMatrix) {
@@ -7016,6 +7025,7 @@ var BABYLON;
             this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
             this._computedViewMatrix.invert();
             this._currentRenderId = this.getScene().getRenderId();
+            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
@@ -14221,7 +14231,7 @@ shadowMapPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvec4 pack(
 shadowMapVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attribute\nattribute vec3 position;\n#ifdef BONES\nattribute vec4 matricesIndices;\nattribute vec4 matricesWeights;\n#endif\n\n// Uniform\n#ifdef INSTANCES\nattribute vec4 world0;\nattribute vec4 world1;\nattribute vec4 world2;\nattribute vec4 world3;\n#else\nuniform mat4 world;\n#endif\n\nuniform mat4 viewProjection;\n#ifdef BONES\nuniform mat4 mBones[BonesPerMesh];\n#endif\n\nvarying vec4 vPosition;\n\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\n\nvoid main(void)\n{\n#ifdef INSTANCES\n	mat4 finalWorld = mat4(world0, world1, world2, world3);\n#else\n	mat4 finalWorld = world;\n#endif\n\n#ifdef BONES\n	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\n	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\n	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\n	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\n	finalWorld = finalWorld * (m0 + m1 + m2 + m3);\n#endif\n\n	vPosition = viewProjection * finalWorld * vec4(position, 1.0);\n	gl_Position = vPosition;\n\n#ifdef ALPHATEST\n#ifdef UV1\n	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));\n#endif\n#ifdef UV2\n	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));\n#endif\n#endif\n}",
 spritesPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform bool alphaTest;\n\nvarying vec4 vColor;\n\n// Samplers\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n// Fog\n#ifdef FOG\n\n#define FOGMODE_NONE    0.\n#define FOGMODE_EXP     1.\n#define FOGMODE_EXP2    2.\n#define FOGMODE_LINEAR  3.\n#define E 2.71828\n\nuniform vec4 vFogInfos;\nuniform vec3 vFogColor;\nvarying float fFogDistance;\n\nfloat CalcFogFactor()\n{\n	float fogCoeff = 1.0;\n	float fogStart = vFogInfos.y;\n	float fogEnd = vFogInfos.z;\n	float fogDensity = vFogInfos.w;\n\n	if (FOGMODE_LINEAR == vFogInfos.x)\n	{\n		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\n	}\n	else if (FOGMODE_EXP == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\n	}\n	else if (FOGMODE_EXP2 == vFogInfos.x)\n	{\n		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\n	}\n\n	return min(1., max(0., fogCoeff));\n}\n#endif\n\n\nvoid main(void) {\n	vec4 baseColor = texture2D(diffuseSampler, vUV);\n\n	if (alphaTest) \n	{\n		if (baseColor.a < 0.95)\n			discard;\n	}\n\n	baseColor *= vColor;\n\n#ifdef FOG\n	float fog = CalcFogFactor();\n	baseColor.rgb = fog * baseColor.rgb + (1.0 - fog) * vFogColor;\n#endif\n\n	gl_FragColor = baseColor;\n}",
 spritesVertexShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n// Attributes\nattribute vec4 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\n// Uniforms\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Output\nvarying vec2 vUV;\nvarying vec4 vColor;\n\n#ifdef FOG\nvarying float fFogDistance;\n#endif\n\nvoid main(void) {	\n	vec3 viewPos = (view * vec4(position.xyz, 1.0)).xyz; \n	vec2 cornerPos;\n	\n	float angle = position.w;\n	vec2 size = vec2(options.x, options.y);\n	vec2 offset = options.zw;\n	vec2 uvScale = textureInfos.xy;\n\n	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;\n\n	// Rotate\n	vec3 rotatedCorner;\n	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);\n	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);\n	rotatedCorner.z = 0.;\n\n	// Position\n	viewPos += rotatedCorner;\n	gl_Position = projection * vec4(viewPos, 1.0);   \n\n	// Color\n	vColor = color;\n	\n	// Texture\n	vec2 uvOffset = vec2(abs(offset.x - cellInfo.x), 1.0 - abs(offset.y - cellInfo.y));\n\n	vUV = (uvOffset + cellInfo.zw) * uvScale;\n\n	// Fog\n#ifdef FOG\n	fFogDistance = viewPos.z;\n#endif\n}",
-ssaoPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define SAMPLES 16\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[16];\n\nuniform float totalStrength;\nuniform float radius;\nuniform float area;\nuniform float fallOff;\n\nvarying vec2 vUV;\n\nconst vec2 offset1 = vec2(0.0, 0.01);\nconst vec2 offset2 = vec2(0.01, 0.0);\n\nvec3 normalFromDepth(const float depth, const vec2 coords) {\n	float depth1 = texture2D(textureSampler, coords + offset1).r;\n	float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void)\n{\n	const float base = 0.2;\n\n	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;\n	float depth = texture2D(textureSampler, vUV).r;\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	vec3 ray;\n	vec3 hemiRay;\n	float occlusionDepth;\n	float difference;\n\n	for (int i = 0; i < SAMPLES; i++)\n	{\n		ray = radiusDepth * reflect(sampleSphere[i], random);\n		hemiRay = position + sign(dot(ray, normal)) * ray;\n\n		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * samplesFactor;\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = 1.0;\n}",
+ssaoPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define SAMPLES 16\n\nuniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\n\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[16];\n\nuniform float totalStrength;\nuniform float radius;\nuniform float area;\nuniform float fallOff;\n\nvarying vec2 vUV;\n\nconst vec2 offset1 = vec2(0.0, 0.001);\nconst vec2 offset2 = vec2(0.001, 0.0);\n\nvec3 normalFromDepth(const float depth, const vec2 coords) {\n	float depth1 = texture2D(textureSampler, coords + offset1).r;\n	float depth2 = texture2D(textureSampler, coords + offset2).r;\n\n    vec3 p1 = vec3(offset1, depth1 - depth);\n    vec3 p2 = vec3(offset2, depth2 - depth);\n\n    vec3 normal = cross(p1, p2);\n    normal.z = -normal.z;\n\n    return normalize(normal);\n}\n\nvoid main(void)\n{\n	const float base = 0.2;\n\n	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;\n	float depth = texture2D(textureSampler, vUV).r;\n	vec3 position = vec3(vUV, depth);\n	vec3 normal = normalFromDepth(depth, vUV);\n	float radiusDepth = radius / depth;\n	float occlusion = 0.0;\n\n	vec3 ray;\n	vec3 hemiRay;\n	float occlusionDepth;\n	float difference;\n\n	for (int i = 0; i < SAMPLES; i++)\n	{\n		ray = radiusDepth * reflect(sampleSphere[i], random);\n		hemiRay = position + sign(dot(ray, normal)) * ray;\n\n		occlusionDepth = texture2D(textureSampler, clamp(hemiRay.xy, 0.0, 1.0)).r;\n		difference = depth - occlusionDepth;\n\n		occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference));\n	}\n\n	float ao = 1.0 - totalStrength * occlusion * samplesFactor;\n\n	float result = clamp(ao + base, 0.0, 1.0);\n	gl_FragColor.r = result;\n	gl_FragColor.g = result;\n	gl_FragColor.b = result;\n	gl_FragColor.a = 1.0;\n}",
 ssaoCombinePixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D originalColor;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n	gl_FragColor = texture2D(originalColor, vUV) * texture2D(textureSampler, vUV);\n}",
 volumetricLightScatteringPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D textureSampler;\nuniform sampler2D lightScatteringSampler;\n\nuniform float decay;\nuniform float exposure;\nuniform float weight;\nuniform float density;\nuniform vec2 meshPositionOnScreen;\n\nvarying vec2 vUV;\n\nvoid main(void) {\n    vec2 tc = vUV;\n	vec2 deltaTexCoord = (tc - meshPositionOnScreen.xy);\n    deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;\n\n    float illuminationDecay = 1.0;\n\n	vec4 color = texture2D(lightScatteringSampler, tc) * 0.4;\n\n    for(int i=0; i < NUM_SAMPLES; i++) {\n        tc -= deltaTexCoord;\n		vec4 sample = texture2D(lightScatteringSampler, tc) * 0.4;\n        sample *= illuminationDecay * weight;\n        color += sample;\n        illuminationDecay *= decay;\n    }\n\n    vec4 realColor = texture2D(textureSampler, vUV);\n    gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));\n}",
 volumetricLightScatteringPassPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER) || defined(OPACITY)\nvarying vec2 vUV;\n#endif\n\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nuniform sampler2D diffuseSampler;\n#endif\n\n#if defined(OPACITY)\nuniform sampler2D opacitySampler;\nuniform float opacityLevel;\n#endif\n\nvoid main(void)\n{\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\n	vec4 diffuseColor = texture2D(diffuseSampler, vUV);\n#endif\n\n#ifdef ALPHATEST\n	if (diffuseColor.a < 0.4)\n		discard;\n#endif\n\n#ifdef OPACITY\n	vec4 opacityColor = texture2D(opacitySampler, vUV);\n	float alpha = 1.0;\n\n	#ifdef OPACITYRGB\n	opacityColor.rgb = opacityColor.rgb * vec3(0.3, 0.59, 0.11);\n	alpha *= (opacityColor.x + opacityColor.y + opacityColor.z) * opacityLevel;\n	#else\n	alpha *= opacityColor.a * opacityLevel;\n	#endif\n\n	#if defined(BASIC_RENDER)\n	gl_FragColor = vec4(diffuseColor.rgb, alpha);\n	#else\n	gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n	#endif\n\n	gl_FragColor.a = alpha;\n#else\n	#ifndef BASIC_RENDER\n	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n	#else\n	gl_FragColor = diffuseColor;\n	#endif\n#endif\n\n}",
@@ -19958,7 +19968,9 @@ var BABYLON;
                 var triggerParams;
                 var trigger = parsedActions.children[i];
                 if (trigger.properties.length > 0) {
-                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: scene.getMeshByName(trigger.properties[0].value) };
+                    var param = trigger.properties[0].value;
+                    var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
                     triggerParams = BABYLON.ActionManager[trigger.name];
@@ -28166,9 +28178,10 @@ var BABYLON;
 //# sourceMappingURL=babylon.polygonMesh.js.mapvar BABYLON;
 (function (BABYLON) {
     var SimplificationSettings = (function () {
-        function SimplificationSettings(quality, distance) {
+        function SimplificationSettings(quality, distance, optimizeMesh) {
             this.quality = quality;
             this.distance = distance;
+            this.optimizeMesh = optimizeMesh;
         }
         return SimplificationSettings;
     })();
@@ -28264,16 +28277,18 @@ var BABYLON;
     })();
     BABYLON.DecimationTriangle = DecimationTriangle;
     var DecimationVertex = (function () {
-        function DecimationVertex(position, normal, uv, id) {
+        function DecimationVertex(position, id) {
             this.position = position;
-            this.normal = normal;
-            this.uv = uv;
             this.id = id;
             this.isBorder = true;
             this.q = new QuadraticMatrix();
             this.triangleCount = 0;
             this.triangleStart = 0;
+            this.originalOffsets = [];
         }
+        DecimationVertex.prototype.updatePosition = function (newPosition) {
+            this.position.copyFrom(newPosition);
+        };
         return DecimationVertex;
     })();
     BABYLON.DecimationVertex = DecimationVertex;
@@ -28337,7 +28352,7 @@ var BABYLON;
     var QuadraticErrorSimplification = (function () {
         function QuadraticErrorSimplification(_mesh) {
             this._mesh = _mesh;
-            this.initialised = false;
+            this.initialized = false;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
             this.decimationIterations = 100;
@@ -28348,11 +28363,11 @@ var BABYLON;
             this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
             BABYLON.AsyncLoop.Run(this._mesh.subMeshes.length, function (loop) {
-                _this.initWithMesh(_this._mesh, loop.index, function () {
+                _this.initWithMesh(loop.index, function () {
                     _this.runDecimation(settings, loop.index, function () {
                         loop.executeNext();
                     });
-                });
+                }, settings.optimizeMesh);
             }, function () {
                 setTimeout(function () {
                     successCallback(_this._reconstructedMesh);
@@ -28362,9 +28377,9 @@ var BABYLON;
         QuadraticErrorSimplification.prototype.isTriangleOnBoundingBox = function (triangle) {
             var _this = this;
             var gCount = 0;
-            triangle.vertices.forEach(function (vId) {
+            triangle.vertices.forEach(function (vertex) {
                 var count = 0;
-                var vPos = _this.vertices[vId].position;
+                var vPos = vertex.position;
                 var bbox = _this._mesh.getBoundingInfo().boundingBox;
                 if (bbox.maximum.x - vPos.x < _this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > _this.boundingBoxEpsilon)
                     ++count;
@@ -28408,10 +28423,8 @@ var BABYLON;
                             if (t.error[j] < threshold) {
                                 var deleted0 = [];
                                 var deleted1 = [];
-                                var i0 = t.vertices[j];
-                                var i1 = t.vertices[(j + 1) % 3];
-                                var v0 = _this.vertices[i0];
-                                var v1 = _this.vertices[i1];
+                                var v0 = t.vertices[j];
+                                var v1 = t.vertices[(j + 1) % 3];
                                 if (v0.isBorder !== v1.isBorder)
                                     continue;
                                 var p = BABYLON.Vector3.Zero();
@@ -28420,9 +28433,9 @@ var BABYLON;
                                 var color = new BABYLON.Color4(0, 0, 0, 1);
                                 _this.calculateError(v0, v1, p, n, uv, color);
                                 var delTr = [];
-                                if (_this.isFlipped(v0, i1, p, deleted0, t.borderFactor, delTr))
+                                if (_this.isFlipped(v0, v1, p, deleted0, t.borderFactor, delTr))
                                     continue;
-                                if (_this.isFlipped(v1, i0, p, deleted1, t.borderFactor, delTr))
+                                if (_this.isFlipped(v1, v0, p, deleted1, t.borderFactor, delTr))
                                     continue;
                                 if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0)
                                     continue;
@@ -28436,16 +28449,11 @@ var BABYLON;
                                 if (uniqueArray.length % 2 != 0) {
                                     continue;
                                 }
-                                v0.normal = n;
-                                if (v0.uv)
-                                    v0.uv = uv;
-                                else if (v0.color)
-                                    v0.color = color;
                                 v0.q = v1.q.add(v0.q);
-                                v0.position = p;
+                                v0.updatePosition(p);
                                 var tStart = _this.references.length;
-                                deletedTriangles = _this.updateTriangles(v0.id, v0, deleted0, deletedTriangles);
-                                deletedTriangles = _this.updateTriangles(v0.id, v1, deleted1, deletedTriangles);
+                                deletedTriangles = _this.updateTriangles(v0, v0, deleted0, deletedTriangles);
+                                deletedTriangles = _this.updateTriangles(v0, v1, deleted1, deletedTriangles);
                                 var tCount = _this.references.length - tStart;
                                 if (tCount <= v0.triangleCount) {
                                     if (tCount) {
@@ -28483,41 +28491,48 @@ var BABYLON;
                 }, 0);
             });
         };
-        QuadraticErrorSimplification.prototype.initWithMesh = function (mesh, submeshIndex, callback) {
+        QuadraticErrorSimplification.prototype.initWithMesh = function (submeshIndex, callback, optimizeMesh) {
             var _this = this;
-            if (!mesh)
-                return;
             this.vertices = [];
             this.triangles = [];
-            this._mesh = mesh;
-            //It is assumed that a mesh has positions, normals and either uvs or colors.
             var positionData = this._mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
-            var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
-            var indices = mesh.getIndices();
-            var submesh = mesh.subMeshes[submeshIndex];
+            var indices = this._mesh.getIndices();
+            var submesh = this._mesh.subMeshes[submeshIndex];
+            var findInVertices = function (positionToSearch) {
+                if (optimizeMesh) {
+                    for (var ii = 0; ii < _this.vertices.length; ++ii) {
+                        if (_this.vertices[ii].position.equals(positionToSearch)) {
+                            return _this.vertices[ii];
+                        }
+                    }
+                }
+                return null;
+            };
+            var vertexReferences = [];
             var vertexInit = function (i) {
                 var offset = i + submesh.verticesStart;
-                var vertex = new DecimationVertex(BABYLON.Vector3.FromArray(positionData, offset * 3), BABYLON.Vector3.FromArray(normalData, offset * 3), null, i);
-                if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    vertex.uv = BABYLON.Vector2.FromArray(uvs, offset * 2);
+                var position = BABYLON.Vector3.FromArray(positionData, offset * 3);
+                var vertex = findInVertices(position) || new DecimationVertex(position, _this.vertices.length);
+                vertex.originalOffsets.push(offset);
+                if (vertex.id == _this.vertices.length) {
+                    _this.vertices.push(vertex);
                 }
-                else if (_this._mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                    vertex.color = BABYLON.Color4.FromArray(colorsData, offset * 4);
-                }
-                _this.vertices.push(vertex);
+                vertexReferences.push(vertex.id);
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, this.syncIterations, vertexInit, function () {
+            BABYLON.AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit, function () {
                 var indicesInit = function (i) {
                     var offset = (submesh.indexStart / 3) + i;
                     var pos = (offset * 3);
-                    var i0 = indices[pos + 0] - submesh.verticesStart;
-                    var i1 = indices[pos + 1] - submesh.verticesStart;
-                    var i2 = indices[pos + 2] - submesh.verticesStart;
-                    var triangle = new DecimationTriangle([_this.vertices[i0].id, _this.vertices[i1].id, _this.vertices[i2].id]);
+                    var i0 = indices[pos + 0];
+                    var i1 = indices[pos + 1];
+                    var i2 = indices[pos + 2];
+                    var v0 = _this.vertices[vertexReferences[i0 - submesh.verticesStart]];
+                    var v1 = _this.vertices[vertexReferences[i1 - submesh.verticesStart]];
+                    var v2 = _this.vertices[vertexReferences[i2 - submesh.verticesStart]];
+                    var triangle = new DecimationTriangle([v0, v1, v2]);
+                    triangle.originalOffset = pos;
                     _this.triangles.push(triangle);
                 };
                 BABYLON.AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, _this.syncIterations, indicesInit, function () {
@@ -28529,21 +28544,21 @@ var BABYLON;
             var _this = this;
             var triangleInit1 = function (i) {
                 var t = _this.triangles[i];
-                t.normal = BABYLON.Vector3.Cross(_this.vertices[t.vertices[1]].position.subtract(_this.vertices[t.vertices[0]].position), _this.vertices[t.vertices[2]].position.subtract(_this.vertices[t.vertices[0]].position)).normalize();
+                t.normal = BABYLON.Vector3.Cross(t.vertices[1].position.subtract(t.vertices[0].position), t.vertices[2].position.subtract(t.vertices[0].position)).normalize();
                 for (var j = 0; j < 3; j++) {
-                    _this.vertices[t.vertices[j]].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(BABYLON.Vector3.Dot(t.normal, _this.vertices[t.vertices[0]].position))));
+                    t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(BABYLON.Vector3.Dot(t.normal, t.vertices[0].position))));
                 }
             };
             BABYLON.AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1, function () {
                 var triangleInit2 = function (i) {
                     var t = _this.triangles[i];
                     for (var j = 0; j < 3; ++j) {
-                        t.error[j] = _this.calculateError(_this.vertices[t.vertices[j]], _this.vertices[t.vertices[(j + 1) % 3]]);
+                        t.error[j] = _this.calculateError(t.vertices[j], t.vertices[(j + 1) % 3]);
                     }
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
                 BABYLON.AsyncLoop.SyncAsyncForLoop(_this.triangles.length, _this.syncIterations, triangleInit2, function () {
-                    _this.initialised = true;
+                    _this.initialized = true;
                     callback();
                 });
             });
@@ -28560,52 +28575,42 @@ var BABYLON;
                 if (!this.triangles[i].deleted) {
                     t = this.triangles[i];
                     for (j = 0; j < 3; ++j) {
-                        this.vertices[t.vertices[j]].triangleCount = 1;
+                        t.vertices[j].triangleCount = 1;
                     }
                     newTriangles.push(t);
                 }
             }
-            var newVerticesOrder = [];
-            //compact vertices, get the IDs of the vertices used.
-            var dst = 0;
-            for (i = 0; i < this.vertices.length; ++i) {
-                if (this.vertices[i].triangleCount) {
-                    this.vertices[i].triangleStart = dst;
-                    this.vertices[dst].position = this.vertices[i].position;
-                    this.vertices[dst].normal = this.vertices[i].normal;
-                    this.vertices[dst].uv = this.vertices[i].uv;
-                    this.vertices[dst].color = this.vertices[i].color;
-                    newVerticesOrder.push(dst);
-                    dst++;
-                }
-            }
-            for (i = 0; i < newTriangles.length; ++i) {
-                t = newTriangles[i];
-                for (j = 0; j < 3; ++j) {
-                    t.vertices[j] = this.vertices[t.vertices[j]].triangleStart;
-                }
-            }
-            this.vertices = this.vertices.slice(0, dst);
             var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind) || [];
             var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || [];
             var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || [];
             var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind) || [];
-            for (i = 0; i < newVerticesOrder.length; ++i) {
-                newPositionData.push(this.vertices[i].position.x);
-                newPositionData.push(this.vertices[i].position.y);
-                newPositionData.push(this.vertices[i].position.z);
-                newNormalData.push(this.vertices[i].normal.x);
-                newNormalData.push(this.vertices[i].normal.y);
-                newNormalData.push(this.vertices[i].normal.z);
-                if (this.vertices[i].uv) {
-                    newUVsData.push(this.vertices[i].uv.x);
-                    newUVsData.push(this.vertices[i].uv.y);
-                }
-                else if (this.vertices[i].color) {
-                    newColorsData.push(this.vertices[i].color.r);
-                    newColorsData.push(this.vertices[i].color.g);
-                    newColorsData.push(this.vertices[i].color.b);
-                    newColorsData.push(this.vertices[i].color.a);
+            var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            var vertexCount = 0;
+            for (i = 0; i < this.vertices.length; ++i) {
+                var vertex = this.vertices[i];
+                vertex.id = vertexCount;
+                if (vertex.triangleCount) {
+                    vertex.originalOffsets.forEach(function (originalOffset) {
+                        newPositionData.push(vertex.position.x);
+                        newPositionData.push(vertex.position.y);
+                        newPositionData.push(vertex.position.z);
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                        if (uvs && uvs.length) {
+                            newUVsData.push(uvs[(originalOffset * 2)]);
+                            newUVsData.push(uvs[(originalOffset * 2) + 1]);
+                        }
+                        else if (colorsData && colorsData.length) {
+                            newColorsData.push(colorsData[(originalOffset * 4)]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 1]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 2]);
+                            newColorsData.push(colorsData[(originalOffset * 4) + 3]);
+                        }
+                        ++vertexCount;
+                    });
                 }
             }
             var startingIndex = this._reconstructedMesh.getTotalIndices();
@@ -28613,10 +28618,17 @@ var BABYLON;
             var submeshesArray = this._reconstructedMesh.subMeshes;
             this._reconstructedMesh.subMeshes = [];
             var newIndicesArray = this._reconstructedMesh.getIndices(); //[];
+            var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
-                newIndicesArray.push(newTriangles[i].vertices[0] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[1] + startingVertex);
-                newIndicesArray.push(newTriangles[i].vertices[2] + startingVertex);
+                var t = newTriangles[i];
+                //now get the new referencing point for each vertex
+                [0, 1, 2].forEach(function (idx) {
+                    var id = originalIndices[t.originalOffset + idx];
+                    var offset = t.vertices[idx].originalOffsets.indexOf(id);
+                    if (offset < 0)
+                        offset = 0;
+                    newIndicesArray.push(t.vertices[idx].id + offset + startingVertex);
+                });
             }
             //overwriting the old vertex buffers and indices.
             this._reconstructedMesh.setIndices(newIndicesArray);
@@ -28633,7 +28645,7 @@ var BABYLON;
                 submeshesArray.forEach(function (submesh) {
                     new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, newVerticesOrder.length, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
@@ -28642,22 +28654,22 @@ var BABYLON;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
         };
-        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, index2, point, deletedArray, borderFactor, delTr) {
+        QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, vertex2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
                 var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
                 if (t.deleted)
                     continue;
                 var s = this.references[vertex1.triangleStart + i].vertexId;
-                var id1 = t.vertices[(s + 1) % 3];
-                var id2 = t.vertices[(s + 2) % 3];
-                if ((id1 === index2 || id2 === index2)) {
+                var v1 = t.vertices[(s + 1) % 3];
+                var v2 = t.vertices[(s + 2) % 3];
+                if ((v1 === vertex2 || v2 === vertex2)) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
                 }
-                var d1 = this.vertices[id1].position.subtract(point);
+                var d1 = v1.position.subtract(point);
                 d1 = d1.normalize();
-                var d2 = this.vertices[id2].position.subtract(point);
+                var d2 = v2.position.subtract(point);
                 d2 = d2.normalize();
                 if (Math.abs(BABYLON.Vector3.Dot(d1, d2)) > 0.999)
                     return true;
@@ -28668,7 +28680,7 @@ var BABYLON;
             }
             return false;
         };
-        QuadraticErrorSimplification.prototype.updateTriangles = function (vertexId, vertex, deletedArray, deletedTriangles) {
+        QuadraticErrorSimplification.prototype.updateTriangles = function (origVertex, vertex, deletedArray, deletedTriangles) {
             var newDeleted = deletedTriangles;
             for (var i = 0; i < vertex.triangleCount; ++i) {
                 var ref = this.references[vertex.triangleStart + i];
@@ -28680,11 +28692,11 @@ var BABYLON;
                     newDeleted++;
                     continue;
                 }
-                t.vertices[ref.vertexId] = vertexId;
+                t.vertices[ref.vertexId] = origVertex;
                 t.isDirty = true;
-                t.error[0] = this.calculateError(this.vertices[t.vertices[0]], this.vertices[t.vertices[1]]) + (t.borderFactor / 2);
-                t.error[1] = this.calculateError(this.vertices[t.vertices[1]], this.vertices[t.vertices[2]]) + (t.borderFactor / 2);
-                t.error[2] = this.calculateError(this.vertices[t.vertices[2]], this.vertices[t.vertices[0]]) + (t.borderFactor / 2);
+                t.error[0] = this.calculateError(t.vertices[0], t.vertices[1]) + (t.borderFactor / 2);
+                t.error[1] = this.calculateError(t.vertices[1], t.vertices[2]) + (t.borderFactor / 2);
+                t.error[2] = this.calculateError(t.vertices[2], t.vertices[0]) + (t.borderFactor / 2);
                 t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 this.references.push(ref);
             }
@@ -28700,15 +28712,15 @@ var BABYLON;
                     var triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
                     for (var ii = 0; ii < 3; ii++) {
                         var ofs = 0;
-                        var id = triangle.vertices[ii];
+                        var vv = triangle.vertices[ii];
                         while (ofs < vCount.length) {
-                            if (vId[ofs] === id)
+                            if (vId[ofs] === vv.id)
                                 break;
                             ++ofs;
                         }
                         if (ofs === vCount.length) {
                             vCount.push(1);
-                            vId.push(id);
+                            vId.push(vv.id);
                         }
                         else {
                             vCount[ofs]++;
@@ -28747,7 +28759,7 @@ var BABYLON;
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     v.triangleCount++;
                 }
             }
@@ -28761,7 +28773,7 @@ var BABYLON;
             for (i = 0; i < this.triangles.length; ++i) {
                 t = this.triangles[i];
                 for (j = 0; j < 3; ++j) {
-                    v = this.vertices[t.vertices[j]];
+                    v = t.vertices[j];
                     newReferences[v.triangleStart + v.triangleCount] = new Reference(j, i);
                     v.triangleCount++;
                 }
@@ -28790,14 +28802,6 @@ var BABYLON;
                 pointResult.y = 1 / qDet * (q.det(0, 2, 3, 1, 5, 6, 2, 7, 8));
                 pointResult.z = -1 / qDet * (q.det(0, 1, 3, 1, 4, 6, 2, 5, 8));
                 error = this.vertexError(q, pointResult);
-                //TODO this should be correctly calculated
-                if (normalResult) {
-                    normalResult.copyFrom(vertex1.normal);
-                    if (vertex1.uv)
-                        uvResult.copyFrom(vertex1.uv);
-                    else if (vertex1.color)
-                        colorResult.copyFrom(vertex1.color);
-                }
             }
             else {
                 var p3 = (vertex1.position.add(vertex2.position)).divide(new BABYLON.Vector3(2, 2, 2));
@@ -28809,31 +28813,16 @@ var BABYLON;
                 if (error === error1) {
                     if (pointResult) {
                         pointResult.copyFrom(vertex1.position);
-                        normalResult.copyFrom(vertex1.normal);
-                        if (vertex1.uv)
-                            uvResult.copyFrom(vertex1.uv);
-                        else if (vertex1.color)
-                            colorResult.copyFrom(vertex1.color);
                     }
                 }
                 else if (error === error2) {
                     if (pointResult) {
                         pointResult.copyFrom(vertex2.position);
-                        normalResult.copyFrom(vertex2.normal);
-                        if (vertex2.uv)
-                            uvResult.copyFrom(vertex2.uv);
-                        else if (vertex2.color)
-                            colorResult.copyFrom(vertex2.color);
                     }
                 }
                 else {
                     if (pointResult) {
                         pointResult.copyFrom(p3);
-                        normalResult.copyFrom(vertex1.normal);
-                        if (vertex1.uv)
-                            uvResult.copyFrom(vertex1.uv);
-                        else if (vertex1.color)
-                            colorResult.copyFrom(vertex1.color);
                     }
                 }
             }
@@ -29114,7 +29103,7 @@ var BABYLON;
             */
             this.totalStrength = 1.0;
             /**
-            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.002
+            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
             * @type {number}
             */
             this.radius = 0.0002;
@@ -29128,10 +29117,10 @@ var BABYLON;
             /**
             * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
             * Must not be equal to area and inferior to area.
-            * Default value is 0.0003
+            * Default value is 0.0002
             * @type {number}
             */
-            this.fallOff = 0.0003;
+            this.fallOff = 0.0002;
             this._firstUpdate = true;
             this._scene = scene;
             // Set up assets
@@ -29141,8 +29130,8 @@ var BABYLON;
             var combineRatio = ratio.combineRatio || ratio;
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(1.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 1.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -29284,9 +29273,9 @@ var BABYLON;
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
                     var randVector = BABYLON.Vector3.Zero();
-                    randVector.x = randVector.y = randVector.z = Math.floor(rand(0.0, 1.0) * 255);
-                    //randVector.y = Math.floor(rand(0.0, 1.0) * 255);
-                    //randVector.z = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.x = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.y = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.z = Math.floor(rand(0.0, 1.0) * 255);
                     context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
                     context.fillRect(x, y, 1, 1);
                 }
