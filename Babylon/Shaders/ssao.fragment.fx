@@ -18,8 +18,8 @@ uniform float fallOff;
 
 varying vec2 vUV;
 
-const vec2 offset1 = vec2(0.0, 0.01);
-const vec2 offset2 = vec2(0.01, 0.0);
+const vec2 offset1 = vec2(0.0, 0.001);
+const vec2 offset2 = vec2(0.001, 0.0);
 
 vec3 normalFromDepth(const float depth, const vec2 coords) {
 	float depth1 = texture2D(textureSampler, coords + offset1).r;

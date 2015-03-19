@@ -50,7 +50,7 @@ var BABYLON;
             */
             this.totalStrength = 1.0;
             /**
-            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.002
+            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
             * @type {number}
             */
             this.radius = 0.0002;
@@ -64,10 +64,10 @@ var BABYLON;
             /**
             * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
             * Must not be equal to area and inferior to area.
-            * Default value is 0.0003
+            * Default value is 0.0002
             * @type {number}
             */
-            this.fallOff = 0.0003;
+            this.fallOff = 0.0002;
             this._firstUpdate = true;
             this._scene = scene;
             // Set up assets
@@ -77,8 +77,8 @@ var BABYLON;
             var combineRatio = ratio.combineRatio || ratio;
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(1.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 1.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -220,9 +220,9 @@ var BABYLON;
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
                     var randVector = BABYLON.Vector3.Zero();
-                    randVector.x = randVector.y = randVector.z = Math.floor(rand(0.0, 1.0) * 255);
-                    //randVector.y = Math.floor(rand(0.0, 1.0) * 255);
-                    //randVector.z = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.x = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.y = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.z = Math.floor(rand(0.0, 1.0) * 255);
                     context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
                     context.fillRect(x, y, 1, 1);
                 }

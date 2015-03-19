@@ -32,6 +32,7 @@ var BABYLON;
             this._postProcesses = new Array();
             this._postProcessesTakenIndices = [];
             this._activeMeshes = new BABYLON.SmartArray(256);
+            this._globalPosition = BABYLON.Vector3.Zero();
             scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -61,6 +62,13 @@ var BABYLON;
         Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
             get: function () {
                 return Camera._FOVMODE_HORIZONTAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "globalPosition", {
+            get: function () {
+                return this._globalPosition;
             },
             enumerable: true,
             configurable: true
@@ -221,6 +229,7 @@ var BABYLON;
         Camera.prototype.getViewMatrix = function () {
             this._computedViewMatrix = this._computeViewMatrix();
             if (!this.parent || !this.parent.getWorldMatrix || this.isSynchronized()) {
+                this._globalPosition.copyFrom(this.position);
                 return this._computedViewMatrix;
             }
             if (!this._worldMatrix) {
@@ -230,6 +239,7 @@ var BABYLON;
             this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
             this._computedViewMatrix.invert();
             this._currentRenderId = this.getScene().getRenderId();
+            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {

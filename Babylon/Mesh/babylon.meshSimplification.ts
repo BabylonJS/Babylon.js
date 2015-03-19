@@ -401,7 +401,7 @@
             this.triangles = [];
 
             var positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
-            
+
             var indices = this._mesh.getIndices();
             var submesh = this._mesh.subMeshes[submeshIndex];
 
@@ -431,7 +431,7 @@
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit,() => {
+            AsyncLoop.SyncAsyncForLoop(totalVertices,(this.syncIterations / 4) >> 0, vertexInit,() => {
 
                 var indicesInit = (i) => {
                     var offset = (submesh.indexStart / 3) + i;
@@ -494,7 +494,7 @@
                     newTriangles.push(t);
                 }
             }
-            
+
             var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || [];
             var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || [];
             var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
