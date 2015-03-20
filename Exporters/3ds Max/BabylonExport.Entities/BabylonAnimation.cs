@@ -12,10 +12,10 @@ namespace BabylonExport.Entities
         public string property { get; set; }
 
         [DataMember]
-        public DataType dataType { get; set; }
+        public int dataType { get; set; }
 
         [DataMember]
-        public LoopBehavior loopBehavior { get; set; }
+        public int loopBehavior { get; set; }
 
         [DataMember]
         public int framePerSecond { get; set; }

@@ -2,7 +2,8 @@
     export class Sprite {
         public position: Vector3;
         public color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-        public size = 1.0;
+        public width = 1.0;
+        public height = 1.0;
         public angle = 0;
         public cellIndex = 0;
         public invertU = 0;
@@ -19,6 +20,15 @@
         private _frameCount = 0;
         private _manager: SpriteManager;
         private _time = 0;
+
+        public get size(): number {
+            return this.width;
+        }
+
+        public set size(value: number) {
+            this.width = value;
+            this.height = value;
+        }
 
         constructor(public name: string, manager: SpriteManager) {
             this._manager = manager;

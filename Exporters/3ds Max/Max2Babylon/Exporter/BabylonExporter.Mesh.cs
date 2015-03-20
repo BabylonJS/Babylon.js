@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Max;
 using BabylonExport.Entities;
@@ -110,6 +111,49 @@ namespace Max2Babylon
             if (meshNode.NodeParent != null)
             {
                 babylonMesh.parentId = GetParentID(meshNode.NodeParent, babylonScene, scene);
+            }
+
+            // Sounds
+            var soundName = meshNode.MaxNode.GetStringProperty("babylonjs_sound_filename", "");
+            if (!string.IsNullOrEmpty(soundName))
+            {
+                var filename = Path.GetFileName(soundName);
+
+                var meshSound = new BabylonSound
+                {
+                    name = filename,
+                    autoplay = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_autoplay", 1),
+                    loop = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_loop", 1),
+                    volume = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_volume", 1.0f),
+                    playbackRate = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_playbackrate", 1.0f),
+                    connectedMeshId = babylonMesh.id,
+                    isDirectional = false,
+                    spatialSound = false,
+                    distanceModel = meshNode.MaxNode.GetStringProperty("babylonjs_sound_distancemodel", "linear"),
+                    maxDistance = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_maxdistance", 100f),
+                    rolloffFactor = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_rolloff", 1.0f),
+                    refDistance = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_refdistance", 1.0f),
+                };
+
+                var isDirectional = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_directional", 0);
+                
+                if (isDirectional)
+                {
+                    meshSound.isDirectional = true;
+                    meshSound.coneInnerAngle = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneinnerangle", 360f);
+                    meshSound.coneOuterAngle = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneouterangle", 360f);
+                    meshSound.coneOuterGain = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneoutergain", 1.0f);
+                }
+
+                babylonScene.SoundsList.Add(meshSound);
+
+                try
+                {
+                    File.Copy(soundName, Path.Combine(babylonScene.OutputPath, filename), true);
+                }
+                catch
+                {
+                }
             }
 
             // Misc.

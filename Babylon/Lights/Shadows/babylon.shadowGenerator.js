@@ -4,11 +4,11 @@ var BABYLON;
         function ShadowGenerator(mapSize, light) {
             var _this = this;
             // Members
-            this.filter = ShadowGenerator.FILTER_NONE;
+            this._filter = ShadowGenerator.FILTER_NONE;
             this.blurScale = 2;
             this._blurBoxOffset = 0;
-            this._darkness = 0;
             this._bias = 0.00005;
+            this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
             this._projectionMatrix = BABYLON.Matrix.Zero();
@@ -22,6 +22,8 @@ var BABYLON;
             this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap.anisotropicFilteringLevel = 1;
+            this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
             this._shadowMap.onAfterUnbind = function () {
                 if (!_this.useBlurVarianceShadowMap) {
@@ -31,7 +33,8 @@ var BABYLON;
                     _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.NEAREST_SAMPLINGMODE, _this._scene.getEngine());
+                    _this._shadowMap2.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                    _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, _this._scene.getEngine());
                     _this._downSamplePostprocess.onApply = function (effect) {
                         effect.setTexture("textureSampler", _this._shadowMap);
                     };
@@ -127,6 +130,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ShadowGenerator.prototype, "bias", {
+            get: function () {
+                return this._bias;
+            },
+            set: function (bias) {
+                this._bias = bias;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ShadowGenerator.prototype, "blurBoxOffset", {
             get: function () {
                 return this._blurBoxOffset;
@@ -144,6 +157,27 @@ var BABYLON;
                 this._boxBlurPostprocess.onApply = function (effect) {
                     effect.setFloat2("screenSize", _this._mapSize / _this.blurScale, _this._mapSize / _this.blurScale);
                 };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ShadowGenerator.prototype, "filter", {
+            get: function () {
+                return this._filter;
+            },
+            set: function (value) {
+                if (this._filter === value) {
+                    return;
+                }
+                this._filter = value;
+                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+                    this._shadowMap.anisotropicFilteringLevel = 16;
+                    this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+                }
+                else {
+                    this._shadowMap.anisotropicFilteringLevel = 1;
+                    this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                }
             },
             enumerable: true,
             configurable: true
@@ -264,12 +298,6 @@ var BABYLON;
                 this._darkness = 0.0;
             else
                 this._darkness = darkness;
-        };
-        ShadowGenerator.prototype.getBias = function () {
-            return this._bias;
-        };
-        ShadowGenerator.prototype.setBias = function (bias) {
-            this._bias = bias;
         };
         ShadowGenerator.prototype.setTransparencyShadow = function (hasShadow) {
             this._transparencyShadow = hasShadow;

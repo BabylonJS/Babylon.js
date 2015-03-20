@@ -147,7 +147,7 @@ var BABYLON;
         TargetCamera.prototype._getViewMatrix = function () {
             if (!this.lockedTarget) {
                 // Compute
-                if (this.upVector.x != 0 || this.upVector.y != 1.0 || this.upVector.z != 0) {
+                if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
                     BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
                     BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
                     this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);

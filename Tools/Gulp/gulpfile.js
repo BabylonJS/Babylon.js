@@ -61,6 +61,7 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Tools/babylon.tools.tga.js',
       '../../Babylon/Tools/babylon.tools.dds.js',
       '../../Babylon/Tools/babylon.smartArray.js',
+      '../../Babylon/Tools/babylon.smartCollection.js',
       '../../Babylon/Tools/babylon.tools.js',
       '../../Babylon/babylon.engine.js',
       '../../Babylon/babylon.node.js',
@@ -183,7 +184,8 @@ gulp.task('scripts', ['shaders'] ,function() {
       '../../Babylon/Rendering/babylon.depthRenderer.js',
       '../../Babylon/PostProcess/babylon.ssaoRenderingPipeline.js',
       '../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js',
-      '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js'
+      '../../Babylon/PostProcess/babylon.lensRenderingPipeline.js',
+	  '../../Babylon/PostProcess/babylon.colorCorrectionPostProcess.js'
     ])
     .pipe(concat('babylon.js'))
     .pipe(gulp.dest('build/'))

@@ -4,7 +4,8 @@ var BABYLON;
         function Sprite(name, manager) {
             this.name = name;
             this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            this.size = 1.0;
+            this.width = 1.0;
+            this.height = 1.0;
             this.angle = 0;
             this.cellIndex = 0;
             this.invertU = 0;
@@ -22,6 +23,17 @@ var BABYLON;
             this._manager.sprites.push(this);
             this.position = BABYLON.Vector3.Zero();
         }
+        Object.defineProperty(Sprite.prototype, "size", {
+            get: function () {
+                return this.width;
+            },
+            set: function (value) {
+                this.width = value;
+                this.height = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Sprite.prototype.playAnimation = function (from, to, loop, delay) {
             this._fromIndex = from;
             this._toIndex = to;

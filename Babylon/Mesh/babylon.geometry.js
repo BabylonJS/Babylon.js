@@ -11,6 +11,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._totalVertices = 0;
             this._indices = [];
+            this._isDisposed = false;
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
@@ -89,6 +90,10 @@ var BABYLON;
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }
@@ -267,6 +272,9 @@ var BABYLON;
             }, function () {
             }, scene.database);
         };
+        Geometry.prototype.isDisposed = function () {
+            return this._isDisposed;
+        };
         Geometry.prototype.dispose = function () {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -295,6 +303,7 @@ var BABYLON;
             if (index > -1) {
                 geometries.splice(index, 1);
             }
+            this._isDisposed = true;
         };
         Geometry.prototype.copy = function (id) {
             var vertexData = new BABYLON.VertexData();
@@ -306,7 +315,8 @@ var BABYLON;
             var updatable = false;
             var stopChecking = false;
             for (var kind in this._vertexBuffers) {
-                vertexData.set(this.getVerticesData(kind), kind);
+                // using slice() to make a copy of the array and not just reference it
+                vertexData.set(this.getVerticesData(kind).slice(0), kind);
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
                     stopChecking = !updatable;

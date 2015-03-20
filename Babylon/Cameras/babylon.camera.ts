@@ -48,14 +48,20 @@
 
         public _activeMeshes = new SmartArray<Mesh>(256);
 
+        private _globalPosition = Vector3.Zero();
+
         constructor(name: string, public position: Vector3, scene: Scene) {
             super(name, scene);
 
-            scene.cameras.push(this);
+            scene.addCamera(this);
 
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+        }
+
+        public get globalPosition(): Vector3 {
+            return this._globalPosition;
         }
 
         public getActiveMeshes(): SmartArray<Mesh> {
@@ -281,6 +287,9 @@
             if (!this.parent
                 || !this.parent.getWorldMatrix
                 || this.isSynchronized()) {
+
+                this._globalPosition.copyFrom(this.position);
+
                 return this._computedViewMatrix;
             }
 
@@ -295,6 +304,8 @@
             this._computedViewMatrix.invert();
 
             this._currentRenderId = this.getScene().getRenderId();
+            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
+
             return this._computedViewMatrix;
         }
 
@@ -333,8 +344,7 @@
 
         public dispose(): void {
             // Remove from scene
-            var index = this.getScene().cameras.indexOf(this);
-            this.getScene().cameras.splice(index, 1);
+            this.getScene().removeCamera(this);
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {

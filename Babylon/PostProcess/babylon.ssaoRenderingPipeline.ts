@@ -28,6 +28,34 @@
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
 
+        /**
+        * The output strength of the SSAO post-process. Default value is 1.0.
+        * @type {number}
+        */
+        public totalStrength: number = 1.0;
+
+        /**
+        * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
+        * @type {number}
+        */
+        public radius: number = 0.0002;
+
+        /**
+        * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
+        * Must not be equal to fallOff and superior to fallOff.
+        * Default value is 0.0075
+        * @type {number}
+        */
+        public area: number = 0.0075;
+
+        /**
+        * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
+        * Must not be equal to area and inferior to area.
+        * Default value is 0.0002
+        * @type {number}
+        */
+        public fallOff: number = 0.0002;
+
         private _scene: Scene;
         private _depthTexture: RenderTargetTexture;
         private _randomTexture: DynamicTexture;
@@ -44,7 +72,7 @@
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, combineRatio: 1.0 }
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
@@ -61,8 +89,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 1.3, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 1.3, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
@@ -135,7 +163,7 @@
             ];
             var samplesFactor = 1.0 / 16.0;
 
-            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles"],
+            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius", "area", "fallOff"],
                                                     ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false);
@@ -147,6 +175,11 @@
                     effect.setFloat("randTextureTiles", 4.0 / ratio);
                     this._firstUpdate = false;
                 }
+
+                effect.setFloat("totalStrength", this.totalStrength);
+                effect.setFloat("radius", this.radius);
+                effect.setFloat("area", this.area);
+                effect.setFloat("fallOff", this.fallOff);
 
                 effect.setTexture("textureSampler", this._depthTexture);
                 effect.setTexture("randomSampler", this._randomTexture);

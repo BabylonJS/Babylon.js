@@ -102,6 +102,7 @@ var BABYLON;
             this._proceduralTextures = new Array();
             this.soundTracks = new Array();
             this._audioEnabled = true;
+            this._headphone = false;
             this._totalVertices = 0;
             this._activeVertices = 0;
             this._activeParticles = 0;
@@ -507,10 +508,7 @@ var BABYLON;
             var now = BABYLON.Tools.Now;
             var delay = now - this._animationStartDate;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
-                if (!this._activeAnimatables[index]._animate(delay)) {
-                    this._activeAnimatables.splice(index, 1);
-                    index--;
-                }
+                this._activeAnimatables[index]._animate(delay);
             }
         };
         // Matrix
@@ -529,6 +527,57 @@ var BABYLON;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         };
         // Methods
+        Scene.prototype.addMesh = function (newMesh) {
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        };
+        Scene.prototype.removeMesh = function (toRemove) {
+            var index = this.meshes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeLight = function (toRemove) {
+            var index = this.lights.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeCamera = function (toRemove) {
+            var index = this.cameras.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.addLight = function (newLight) {
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        };
+        Scene.prototype.addCamera = function (newCamera) {
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
         /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
@@ -921,7 +970,8 @@ var BABYLON;
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
-                        renderTarget.render(false, this.dumpNextRenderTargets);
+                        var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                        renderTarget.render(hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -1084,7 +1134,7 @@ var BABYLON;
                         engine.setViewport(this.activeCamera.viewport);
                         // Camera
                         this.updateTransformMatrix();
-                        renderTarget.render(false, this.dumpNextRenderTargets);
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -1195,6 +1245,7 @@ var BABYLON;
             }
         };
         Object.defineProperty(Scene.prototype, "audioEnabled", {
+            // Audio
             get: function () {
                 return this._audioEnabled;
             },
@@ -1232,6 +1283,34 @@ var BABYLON;
                         this.soundTracks[i].soundCollection[j].play();
                     }
                 }
+            }
+        };
+        Object.defineProperty(Scene.prototype, "headphone", {
+            get: function () {
+                return this._headphone;
+            },
+            set: function (value) {
+                this._headphone = value;
+                if (this._headphone) {
+                    this._switchAudioModeForHeadphones();
+                }
+                else {
+                    this._switchAudioModeForNormalSpeakers();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype._switchAudioModeForHeadphones = function () {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        };
+        Scene.prototype._switchAudioModeForNormalSpeakers = function () {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
             }
         };
         Scene.prototype.enableDepthRenderer = function () {
@@ -1564,19 +1643,6 @@ var BABYLON;
         };
         Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
-        };
-        // Audio
-        Scene.prototype.switchAudioModeForHeadphones = function () {
-            this.mainSoundTrack.switchPanningModelToHRTF();
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToHRTF();
-            }
-        };
-        Scene.prototype.switchAudioModeForNormalSpeakers = function () {
-            this.mainSoundTrack.switchPanningModelToEqualPower();
-            for (var i = 0; i < this.soundTracks.length; i++) {
-                this.soundTracks[i].switchPanningModelToEqualPower();
-            }
         };
         // Statics
         Scene._FOGMODE_NONE = 0;

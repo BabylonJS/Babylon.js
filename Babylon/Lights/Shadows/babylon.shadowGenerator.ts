@@ -23,15 +23,23 @@
         }
 
         // Members
-        public filter = ShadowGenerator.FILTER_NONE;
+        private _filter = ShadowGenerator.FILTER_NONE;
         public blurScale = 2;
         private _blurBoxOffset = 0;
+        private _bias = 0.00005;
 
+        public get bias(): number {
+            return this._bias;
+        }
+
+        public set bias(bias: number) {
+            this._bias = bias;
+        }
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
 
-        public set blurBoxOffset(value:number) {
+        public set blurBoxOffset(value: number) {
             if (this._blurBoxOffset === value) {
                 return;
             }
@@ -48,6 +56,26 @@
             };
         }
 
+        public get filter(): number {
+            return this._filter;
+        }
+
+        public set filter(value: number) {
+            if (this._filter === value) {
+                return;
+            }
+
+            this._filter = value;
+
+            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+                this._shadowMap.anisotropicFilteringLevel = 16;
+                this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+            } else {
+                this._shadowMap.anisotropicFilteringLevel = 1;
+                this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+            }
+        }
+
         public get useVarianceShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP && this._light.supportsVSM();
         }
@@ -60,7 +88,7 @@
                 (!this._light.supportsVSM() && (
                     this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
                     this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP
-                ));
+                    ));
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -78,7 +106,6 @@
         private _shadowMap: RenderTargetTexture;
         private _shadowMap2: RenderTargetTexture;
         private _darkness = 0;
-        private _bias = 0.00005;
         private _transparencyShadow = false;
         private _effect: Effect;
 
@@ -105,6 +132,8 @@
             this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap.anisotropicFilteringLevel = 1;
+            this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
             this._shadowMap.onAfterUnbind = () => {
@@ -116,8 +145,9 @@
                     this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
-                    
-                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.NEAREST_SAMPLINGMODE, this._scene.getEngine());
+                    this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+
+                    this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                     this._downSamplePostprocess.onApply = effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
                     };
@@ -316,19 +346,11 @@
                 this._darkness = darkness;
         }
 
-        public getBias(): number {
-            return this._bias;
-        }
-
-        public setBias(bias: number): void {
-            this._bias = bias;
-        }
-
         public setTransparencyShadow(hasShadow: boolean): void {
             this._transparencyShadow = hasShadow;
         }
 
-        private _packHalf(depth: number): Vector2 { 
+        private _packHalf(depth: number): Vector2 {
             var scale = depth * 255.0;
             var fract = scale - Math.floor(scale);
 

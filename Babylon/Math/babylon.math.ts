@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+
+    declare var SIMD;
+
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -775,6 +778,30 @@
             result.x = rx / rw;
             result.y = ry / rw;
             result.z = rz / rw;
+        }
+
+        public static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void {
+            var v = SIMD.float32x4.loadXYZ((<any>vector)._data, 0);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0), SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
+        }
+
+        public static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+            var v0 = SIMD.float32x4.splat(x);
+            var v1 = SIMD.float32x4.splat(y);
+            var v2 = SIMD.float32x4.splat(z);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0), SIMD.float32x4.mul(v1, m1)), SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
         }
 
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
@@ -1580,7 +1607,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -1695,6 +1722,131 @@
             return this;
         }
 
+        public invertToRefSIMD(other: Matrix): Matrix {
+            var src = this.m;
+            var dest = other.m;
+            var row0, row1, row2, row3;
+            var tmp1;
+            var minor0, minor1, minor2, minor3;
+            var det;
+
+            // Load the 4 rows
+            var src0 = SIMD.float32x4.load(src, 0);
+            var src1 = SIMD.float32x4.load(src, 4);
+            var src2 = SIMD.float32x4.load(src, 8);
+            var src3 = SIMD.float32x4.load(src, 12);
+
+            // Transpose the source matrix.  Sort of.  Not a true transpose operation
+
+            tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
+            row1 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
+            row0 = SIMD.float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
+            row1 = SIMD.float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
+
+            tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
+            row3 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
+            row2 = SIMD.float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
+            row3 = SIMD.float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
+
+            // This is a true transposition, but it will lead to an incorrect result
+
+            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
+            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
+            //row0  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
+            //row1  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
+
+            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
+            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
+            //row2  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
+            //row3  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row2, row3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor0 = SIMD.float32x4.mul(row1, tmp1);
+            minor1 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(SIMD.float32x4.mul(row1, tmp1), minor0);
+            minor1 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor1);
+            minor1 = SIMD.float32x4.swizzle(minor1, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row1, row2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor0);
+            minor3 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row3, tmp1));
+            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor3);
+            minor3 = SIMD.float32x4.swizzle(minor3, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(SIMD.float32x4.swizzle(row1, 2, 3, 0, 1), row3); // 0x4E = 01001110
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            row2 = SIMD.float32x4.swizzle(row2, 2, 3, 0, 1);  // 0x4E = 01001110
+            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor0);
+            minor2 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row2, tmp1));
+            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor2);
+            minor2 = SIMD.float32x4.swizzle(minor2, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor2);
+            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row2, tmp1), minor3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row3, tmp1), minor2);
+            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row2, tmp1));
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row2, tmp1));
+            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor1);
+            minor2 = SIMD.float32x4.sub(minor2, SIMD.float32x4.mul(row1, tmp1));
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor1);
+            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row1, tmp1));
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row3, tmp1));
+            minor3 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor3);
+
+            // Compute determinant
+            det = SIMD.float32x4.mul(row0, minor0);
+            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
+            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
+            tmp1 = SIMD.float32x4.reciprocal(det);
+            det = SIMD.float32x4.sub(SIMD.float32x4.add(tmp1, tmp1), SIMD.float32x4.mul(det, SIMD.float32x4.mul(tmp1, tmp1)));
+            det = SIMD.float32x4.swizzle(det, 0, 0, 0, 0);
+
+            // These shuffles aren't necessary if the faulty transposition is done
+            // up at the top of this function.
+            //minor0 = SIMD.float32x4.swizzle(minor0, 2, 1, 0, 3);
+            //minor1 = SIMD.float32x4.swizzle(minor1, 2, 1, 0, 3);
+            //minor2 = SIMD.float32x4.swizzle(minor2, 2, 1, 0, 3);
+            //minor3 = SIMD.float32x4.swizzle(minor3, 2, 1, 0, 3);
+
+            // Compute final values by multiplying with 1/det
+            minor0 = SIMD.float32x4.mul(det, minor0);
+            minor1 = SIMD.float32x4.mul(det, minor1);
+            minor2 = SIMD.float32x4.mul(det, minor2);
+            minor3 = SIMD.float32x4.mul(det, minor3);
+
+            SIMD.float32x4.store(dest, 0, minor0);
+            SIMD.float32x4.store(dest, 4, minor1);
+            SIMD.float32x4.store(dest, 8, minor2);
+            SIMD.float32x4.store(dest, 12, minor3);
+
+            return this;
+        }
+
         public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
@@ -1734,7 +1886,6 @@
         }
 
         public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
-
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -1792,12 +1943,57 @@
             return this;
         }
 
+        public multiplyToArraySIMD(other: Matrix, result: Matrix, offset = 0): void {
+            var tm = this.m;
+            var om = other.m;
+            var om0 = SIMD.float32x4.load(om, 0);
+            var om1 = SIMD.float32x4.load(om, 4);
+            var om2 = SIMD.float32x4.load(om, 8);
+            var om3 = SIMD.float32x4.load(om, 12);
+
+            var tm0 = SIMD.float32x4.load(tm, 0);
+            SIMD.float32x4.store(result, offset + 0, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 3, 3, 3, 3), om3)))));
+
+            var tm1 = SIMD.float32x4.load(tm, 4);
+            SIMD.float32x4.store(result, offset + 4, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 3, 3, 3, 3), om3)))));
+
+            var tm2 = SIMD.float32x4.load(tm, 8);
+            SIMD.float32x4.store(result, offset + 8, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 3, 3, 3, 3), om3)))));
+
+            var tm3 = SIMD.float32x4.load(tm, 12);
+            SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
+        }
+
         public equals(value: Matrix): boolean {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
 
         public clone(): Matrix {
@@ -2164,6 +2360,72 @@
                 this._xAxis.z, this._yAxis.z, this._zAxis.z, 0,
                 ex, ey, ez, 1, result);
         }
+
+        public static LookAtLHToRefSIMD(eyeRef: Vector3, targetRef: Vector3, upRef: Vector3, result: Matrix): void {
+            var out = result.m;
+            var center = SIMD.float32x4(targetRef.x, targetRef.y, targetRef.z, 0);
+            var eye = SIMD.float32x4(eyeRef.x, eyeRef.y, eyeRef.z, 0);
+            var up = SIMD.float32x4(upRef.x, upRef.y, upRef.z, 0);
+
+            // cc.kmVec3Subtract(f, pCenter, pEye);
+            var f = SIMD.float32x4.sub(center, eye);
+            // cc.kmVec3Normalize(f, f);    
+            var tmp = SIMD.float32x4.mul(f, f);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            f = SIMD.float32x4.mul(f, SIMD.float32x4.reciprocalSqrt(tmp));
+
+            // cc.kmVec3Assign(up, pUp);
+            // cc.kmVec3Normalize(up, up);
+            tmp = SIMD.float32x4.mul(up, up);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrt(tmp));
+            // cc.kmVec3Cross(s, f, up);
+            var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
+            // cc.kmVec3Normalize(s, s);
+            tmp = SIMD.float32x4.mul(s, s);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrt(tmp));
+            // cc.kmVec3Cross(u, s, f);
+            var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
+            // cc.kmVec3Normalize(s, s);
+            tmp = SIMD.float32x4.mul(s, s);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrt(tmp));
+
+            //cc.kmMat4Identity(pOut);
+            //pOut.mat[0] = s.x;
+            //pOut.mat[4] = s.y;
+            //pOut.mat[8] = s.z;
+            //pOut.mat[1] = u.x;
+            //pOut.mat[5] = u.y;
+            //pOut.mat[9] = u.z;
+            //pOut.mat[2] = -f.x;
+            //pOut.mat[6] = -f.y;
+            //pOut.mat[10] = -f.z;
+
+            var zero = SIMD.float32x4.splat(0.0);
+            s = SIMD.float32x4.neg(s);
+            var tmp01 = SIMD.float32x4.shuffle(s, u, 0, 1, 4, 5);
+            var tmp23 = SIMD.float32x4.shuffle(f, zero, 0, 1, 4, 5);
+            var a0 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+            var a1 = SIMD.float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
+            tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
+            tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
+            var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+            var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
+            // cc.kmMat4Translation(translate, -pEye.x, -pEye.y, -pEye.z);
+            var b0 = SIMD.float32x4(1.0, 0.0, 0.0, 0.0);
+            var b1 = SIMD.float32x4(0.0, 1.0, 0.0, 0.0);
+            var b2 = SIMD.float32x4(0.0, 0.0, 1.0, 0.0);
+            var b3 = SIMD.float32x4.neg(eye);
+            b3 = SIMD.float32x4.withW(b3, 1.0);
+            // cc.kmMat4Multiply(pOut, pOut, translate);
+            SIMD.float32x4.store(out, 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 3, 3, 3, 3), a3)))));
+        }
+
 
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
@@ -2911,9 +3173,10 @@
     }
 
     export class Path2 {
-        private _points: Vector2[] = [];
-        private _length: number = 0;
-        closed: boolean = false;
+        private _points = new Array<Vector2>();
+        private _length = 0;
+
+        public closed = false;
 
         constructor(x: number, y: number) {
             this._points.push(new Vector2(x, y));
@@ -3015,25 +3278,25 @@
     }
 
     export class Path3D {
-        private _curve: Vector3[] = [];
-        private _distances: number[] = [];
-        private _tangents: Vector3[] = [];
-        private _normals: Vector3[] = [];
-        private _binormals: Vector3[] = [];
+        private _curve = new Array<Vector3>();
+        private _distances = new Array<number>();
+        private _tangents = new Array<Vector3>();
+        private _normals = new Array<Vector3>();
+        private _binormals = new Array<Vector3>();
 
         constructor(public path: Vector3[]) {
             this._curve = path.slice();   // copy array         
-            var l: number = this._curve.length;
+            var l = this._curve.length;
 
             // first and last tangents
             this._tangents[0] = this._curve[1].subtract(this._curve[0]);
             this._tangents[0].normalize();
-            this._tangents[l-1] = this._curve[l-1].subtract(this._curve[l-2]);
+            this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
             
             // normals and binormals at first point : arbitrary vector with _normalVector()
-            var tg0: Vector3 = this._tangents[0];
-            var pp0: Vector3 = this._normalVector(this._curve[0], tg0);
+            var tg0 = this._tangents[0];
+            var pp0 = this._normalVector(this._curve[0], tg0);
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
@@ -3047,21 +3310,21 @@
             var prevNorm: Vector3;    // previous normal
             var prevBinor: Vector3;   // previous binormal
 
-            for(var i: number = 1; i < l; i++) {
+            for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i-1]);
-                if (i < l-1) {
-                    cur = this._curve[i+1].subtract(this._curve[i]);
+                prev = this._curve[i].subtract(this._curve[i - 1]);
+                if (i < l - 1) {
+                    cur = this._curve[i + 1].subtract(this._curve[i]);
                     this._tangents[i] = prev.add(cur);
-                    this._tangents[i].normalize();               
+                    this._tangents[i].normalize();
                 }
                 this._distances[i] = this._distances[i - 1] + prev.length();   
                       
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i-1];
-                prevBinor = this._binormals[i-1];
+                prevNorm = this._normals[i - 1];
+                prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
                 this._normals[i].normalize();
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
@@ -3092,20 +3355,106 @@
         // private function normalVector(v0, vt) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         private _normalVector(v0: Vector3, vt: Vector3): Vector3 {
-            var point: Vector3; 
+            var point: Vector3;
 
             if (vt.x !== 1) {     // search for a point in the plane
-                point = new Vector3(1, 0, 0);   
+                point = new Vector3(1, 0, 0);
             }
             else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);  
+                point = new Vector3(0, 1, 0);
             }
             else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);  
+                point = new Vector3(0, 0, 1);
             }
             var normal0: Vector3 = Vector3.Cross(vt, point);
             normal0.normalize();
-            return normal0;        
+            return normal0;
         }
+    }
+
+    export class Curve3 {
+        private _points: Vector3[];
+
+        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 2 ? nbPoints : 3;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number) => {
+                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 3 ? nbPoints : 4;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        constructor(points: Vector3[]) {
+            this._points = points;
+        }
+
+        public getPoints() {
+            return this._points;
+        }
+
+        public continue(curve: Curve3): Curve3 {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        }
+    }
+
+    // SIMD
+    if (window.SIMD !== undefined) {
+        // Replace functions
+        Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
+        Matrix.prototype.invertToRef = <any>Matrix.prototype.invertToRefSIMD;
+        Matrix.LookAtLHToRef = <any>Matrix.LookAtLHToRefSIMD;
+        Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
+        Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+            get: function () { return this._data[0]; },
+            set: function (value: number) {
+                if (!this._data) {
+                    this._data = new Float32Array(3);
+                }
+                this._data[0] = value;
+            }
+        });
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+            get: function () { return this._data[1]; },
+            set: function (value: number) {
+                this._data[1] = value;
+            }
+        });
+
+        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+            get: function () { return this._data[2]; },
+            set: function (value: number) {
+                this._data[2] = value;
+            }
+        });
     }
 }

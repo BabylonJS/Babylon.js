@@ -35,6 +35,7 @@
             // 
             // ActionsBuilderWebView
             // 
+            this.ActionsBuilderWebView.AccessibleRole = System.Windows.Forms.AccessibleRole.Window;
             this.ActionsBuilderWebView.AllowNavigation = false;
             this.ActionsBuilderWebView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
@@ -57,6 +58,7 @@
             this.butCancel.TabIndex = 1;
             this.butCancel.Text = "Cancel";
             this.butCancel.UseVisualStyleBackColor = true;
+            this.butCancel.Click += new System.EventHandler(this.butCancel_Click);
             // 
             // butOK
             // 
@@ -79,7 +81,11 @@
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.ActionsBuilderWebView);
             this.Name = "ActionsBuilderForm";
-            this.Text = "Actions Builder";
+            this.Text = "Babylon.js Actions Builder";
+            this.TopMost = true;
+            this.Activated += new System.EventHandler(this.ActionsBuilderForm_Activated);
+            this.Deactivate += new System.EventHandler(this.ActionsBuilderForm_Deactivate);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ActionsBuilderForm_FormClosed);
             this.Load += new System.EventHandler(this.ActionsBuilderForm_Load);
             this.ResumeLayout(false);
 

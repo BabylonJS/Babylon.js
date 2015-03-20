@@ -878,7 +878,7 @@ var BABYLON;
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
-         * successCallback optional success callback to be called after the simplification finished processing all settings.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
@@ -889,6 +889,44 @@ var BABYLON;
                 mesh: this,
                 simplificationType: simplificationType,
                 successCallback: successCallback
+            });
+        };
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
+        Mesh.prototype.optimizeIndices = function (successCallback) {
+            var _this = this;
+            var indices = this.getIndices();
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var vectorPositions = [];
+            for (var pos = 0; pos < positions.length; pos = pos + 3) {
+                vectorPositions.push(BABYLON.Vector3.FromArray(positions, pos));
+            }
+            var dupes = [];
+            BABYLON.AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, function (iteration) {
+                var realPos = vectorPositions.length - 1 - iteration;
+                var testedPosition = vectorPositions[realPos];
+                for (var j = 0; j < realPos; ++j) {
+                    var againstPosition = vectorPositions[j];
+                    if (testedPosition.equals(againstPosition)) {
+                        dupes[realPos] = j;
+                        break;
+                    }
+                }
+            }, function () {
+                for (var i = 0; i < indices.length; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
+                //indices are now reordered
+                var originalSubMeshes = _this.subMeshes.slice(0);
+                _this.setIndices(indices);
+                _this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(_this);
+                }
             });
         };
         // Statics
@@ -959,11 +997,9 @@ var BABYLON;
             var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
             return extruded;
         };
-        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            ribbonCloseArray = ribbonCloseArray || false;
-            ribbonClosePath = ribbonClosePath || false;
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotateFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
             return extrudedCustom;
         };
         Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
@@ -986,8 +1022,8 @@ var BABYLON;
                 var shapePath = new Array();
                 var angleStep = rotate(i, distances[i]);
                 var scaleRatio = scl(i, distances[i]);
-                var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
                 for (var p = 0; p < shape.length; p++) {
+                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
                     var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
                     var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
                     shapePath.push(rotated);
@@ -1059,7 +1095,7 @@ var BABYLON;
             var step = pi2 / tesselation;
             var returnRadius = function (i, distance) { return radius; };
             var radiusFunctionFinal = radiusFunction || returnRadius;
-            var circlePaths = [];
+            var circlePaths = new Array();
             var circlePath;
             var rad;
             var normal;
@@ -1067,7 +1103,7 @@ var BABYLON;
             var rotationMatrix;
             for (var i = 0; i < path.length; i++) {
                 rad = radiusFunctionFinal(i, distances[i]); // current radius
-                circlePath = []; // current circle array
+                circlePath = Array(); // current circle array
                 normal = normals[i]; // current normal  
                 for (var ang = 0; ang < pi2; ang += step) {
                     rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);

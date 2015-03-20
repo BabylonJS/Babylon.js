@@ -675,6 +675,12 @@ namespace Max2Babylon
             }
         }
 
+        public static void PrepareTextBox(TextBox textBox, IINode node, string propertyName, string defaultValue = "")
+        {
+            var state = node.GetStringProperty(propertyName, defaultValue);
+            textBox.Text = state;
+        }
+
         public static void PrepareComboBox(ComboBox comboBox, IINode node, string propertyName, string defaultValue)
         {
             comboBox.SelectedItem = node.GetStringProperty(propertyName, defaultValue);
@@ -697,6 +703,19 @@ namespace Max2Babylon
             foreach (var node in nodes)
             {
                 UpdateCheckBox(checkBox, node, propertyName);
+            }
+        }
+
+        public static void UpdateTextBox(TextBox textBox, List<IINode> nodes, string propertyName)
+        {
+            foreach (var node in nodes)
+            {
+                var value = textBox.Text;
+#if MAX2015
+                node.SetUserPropString(propertyName, value);
+#else
+                node.SetUserPropString(ref propertyName, ref value);
+#endif
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+<files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">  
+  <script src="Babylon/PostProcess/babylon.colorCorrectionPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.lensRenderingPipeline.js"></script>
   <script src="Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js"></script>
   <script src="Babylon/PostProcess/babylon.ssaoRenderingPipeline.js"></script>
@@ -121,6 +122,7 @@
   <script src="Babylon/babylon.engine.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/Tools/babylon.smartArray.js"></script>
+  <script src="Babylon/Tools/babylon.smartCollection.js"></script>
   <script src="Babylon/Tools/babylon.tools.dds.js"></script>
   <script src="Babylon/Tools/babylon.tools.tga.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>

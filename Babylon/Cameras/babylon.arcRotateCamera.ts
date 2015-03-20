@@ -13,16 +13,17 @@
         public upperRadiusLimit = null;
         public angularSensibility = 1000.0;
         public wheelPrecision = 3.0;
+        public pinchPrecision = 2.0;
         public keysUp = [38];
         public keysDown = [40];
         public keysLeft = [37];
         public keysRight = [39];
         public zoomOnFactor = 1;
-		public targetScreenOffset = Vector2.Zero();
-		
-		
+        public targetScreenOffset = Vector2.Zero();
+
+
         private _keys = [];
-        private _viewMatrix = new BABYLON.Matrix();
+        private _viewMatrix = new Matrix();
         private _attachedElement: HTMLElement;
 
         private _onPointerDown: (e: PointerEvent) => void;
@@ -50,21 +51,12 @@
         private _previousBeta: number;
         private _previousRadius: number;
 
-        // Pinch
-        // value for pinch step scaling
-        // set to 20 by default
-        public pinchPrecision = 20;
-        // Event for pinch
-        private _touchStart: (e: any) => void;
-        private _touchMove: (e: any) => void;
-        private _touchEnd: (e: any) => void;
-        // Method for pinch
-        private _pinchStart: (e: any) => void;
-        private _pinchMove: (e: any) => void;
-        private _pinchEnd: (e: any) => void;
-
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
-            super(name, BABYLON.Vector3.Zero(), scene);
+            super(name, Vector3.Zero(), scene);
+
+            if (!this.target) {
+                this.target = Vector3.Zero();
+            }
 
             this.getViewMatrix();
         }
@@ -76,11 +68,11 @@
         // Cache
         public _initCache(): void {
             super._initCache();
-            this._cache.target = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache.target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-			this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = undefined;
         }
 
         public _updateCache(ignoreParentClass?: boolean): void {
@@ -92,7 +84,7 @@
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-			this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
         }
 
         // Synchronized
@@ -104,18 +96,14 @@
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
-				&& this._cache.targetScreenOffset.equals(this.targetScreenOffset);
+                && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         }
 
         // Methods
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-            var previousPosition;
-            var pointerId;
-            // to know if pinch started
-            var pinchStarted = false;
-            // two pinch point on X
-            // that will use for find if user action is pinch open or pinch close
-            var pinchPointX1, pinchPointX2;
+            var cacheSoloPointer; // cache pointer object for better perf on camera rotation
+            var previousPinchDistance = 0;
+            var pointers = new SmartCollection();
 
             if (this._attachedElement) {
                 return;
@@ -126,69 +114,74 @@
 
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
-
-                    if (pointerId) {
-                        return;
-                    }
-
-                    pointerId = evt.pointerId;
-
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-
+                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+                    cacheSoloPointer = pointers.item(evt.pointerId);
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
 
                 this._onPointerUp = evt => {
-                    previousPosition = null;
-                    pointerId = null;
+                    cacheSoloPointer = null;
+                    previousPinchDistance = 0;
+                    pointers.remove(evt.pointerId);
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
 
-
                 this._onPointerMove = evt => {
-                    if (!previousPosition) {
-                        return;
-                    }
-
-                    if (pointerId !== evt.pointerId) {
-                        return;
-                    }
-
-                    // return pinch is started
-                    if (pinchStarted) {
-                        return;
-                    }
-
-                    var offsetX = evt.clientX - previousPosition.x;
-                    var offsetY = evt.clientY - previousPosition.y;
-
-                    this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                    this.inertialBetaOffset -= offsetY / this.angularSensibility;
-
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-
                     if (!noPreventDefault) {
                         evt.preventDefault();
+                    }
+
+                    switch (pointers.count) {
+
+                        case 1: //normal camera rotation
+                            //var offsetX = evt.clientX - pointers.item(evt.pointerId).x;
+                            //var offsetY = evt.clientY - pointers.item(evt.pointerId).y;
+                            var offsetX = evt.clientX - cacheSoloPointer.x;
+                            var offsetY = evt.clientY - cacheSoloPointer.y;
+                            this.inertialAlphaOffset -= offsetX / this.angularSensibility;
+                            this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                            //pointers.item(evt.pointerId).x = evt.clientX;
+                            //pointers.item(evt.pointerId).y = evt.clientY;
+                            cacheSoloPointer.x = evt.clientX;
+                            cacheSoloPointer.y = evt.clientY;
+                            break;
+
+                        case 2: //pinch
+                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                            pointers.item(evt.pointerId).x = evt.clientX;
+                            pointers.item(evt.pointerId).y = evt.clientY;
+                            var direction = 1;
+                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
+                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                            if (previousPinchDistance === 0) {
+                                previousPinchDistance = pinchSquaredDistance;
+                                return;
+                            }
+
+                            if (pinchSquaredDistance !== previousPinchDistance) {
+                                if (pinchSquaredDistance > previousPinchDistance) {
+                                    direction = -1;
+                                }
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility);
+                                previousPinchDistance = pinchSquaredDistance;
+                            }
+                            break;
+
+                        default:
+                            if (pointers.item(evt.pointerId)) {
+                                pointers.item(evt.pointerId).x = evt.clientX;
+                                pointers.item(evt.pointerId).y = evt.clientY;
+                            }
                     }
                 };
 
                 this._onMouseMove = evt => {
                     if (!engine.isPointerLock) {
-                        return;
-                    }
-
-                    // return pinch is started
-                    if (pinchStarted) {
                         return;
                     }
 
@@ -261,7 +254,9 @@
 
                 this._onLostFocus = () => {
                     this._keys = [];
-                    pointerId = null;
+                    pointers.empty();
+                    previousPinchDistance = 0;
+                    cacheSoloPointer = null;
                 };
 
                 this._onGestureStart = e => {
@@ -294,67 +289,12 @@
                     this.inertialAlphaOffset = 0;
                     this.inertialBetaOffset = 0;
                     this.inertialRadiusOffset = 0;
-                    previousPosition = null;
-                    pointerId = null;
+                    pointers.empty();
+                    previousPinchDistance = 0;
+                    cacheSoloPointer = null;
                 };
 
-                this._touchStart = event => {
-                    if (event.touches.length === 2) {
-                        //-- start pinch if two fingers on the screen
-                        pinchStarted = true;
-                        this._pinchStart(event);
-                    }
-                };
-                this._touchMove = event => {
-                    if (pinchStarted) {
-                        //-- make scaling
-                        this._pinchMove(event);
-                    }
-                };
-                this._touchEnd = event => {
-                    if (pinchStarted) {
-                        //-- end of pinch
-                        this._pinchEnd(event);
-                    }
-                };
 
-                this._pinchStart = event => {
-                    // save origin touch point
-                    pinchPointX1 = event.touches[0].clientX;
-                    pinchPointX2 = event.touches[1].clientX;
-                    // block the camera 
-                    // if not it rotate around target during pinch
-                    pinchStarted = true;
-                };
-                this._pinchMove = event => {
-                    // variable for new camera's radius
-                    var delta = 0;
-                    // variables to know if pinch open or pinch close
-                    var direction = 1;
-                    var distanceXOrigine, distanceXNow;
-
-                    if (event.touches.length !== 2)
-                        return;
-                    // calculate absolute distances of the two fingers
-                    distanceXOrigine = Math.abs(pinchPointX1 - pinchPointX2);
-                    distanceXNow = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
-
-                    // if distanceXNow < distanceXOrigine -> pinch close so direction = -1
-                    if (distanceXNow < distanceXOrigine) {
-                        direction = -1;
-                    }
-                    // calculate new radius
-                    delta = (this.pinchPrecision / (this.wheelPrecision * 40)) * direction;
-                    // set new radius
-                    this.inertialRadiusOffset -= delta;
-                    // save origin touch point
-                    pinchPointX1 = event.touches[0].clientX;
-                    pinchPointX2 = event.touches[1].clientX;
-                };
-                this._pinchEnd = event => {
-                    // cancel pinch and deblock camera rotation
-                    pinchStarted = false;
-                };
             }
 
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
@@ -366,10 +306,6 @@
             element.addEventListener("MSGestureChange", this._onGesture, false);
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
-            // pinch
-            element.addEventListener('touchstart', this._touchStart, false);
-            element.addEventListener('touchmove', this._touchMove, false);
-            element.addEventListener('touchend', this._touchEnd, false);
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -379,7 +315,7 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
 
@@ -392,10 +328,6 @@
             element.removeEventListener("MSGestureChange", this._onGesture);
             element.removeEventListener('mousewheel', this._wheel);
             element.removeEventListener('DOMMouseScroll', this._wheel);
-            // pinch
-            element.removeEventListener('touchstart', this._touchStart);
-            element.removeEventListener('touchmove', this._touchMove);
-            element.removeEventListener('touchend', this._touchEnd);
 
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -428,7 +360,7 @@
             }
 
             // Inertia
-            if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
 
                 this.alpha += this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
@@ -438,13 +370,13 @@
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
 
-                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < Engine.Epsilon)
                     this.inertialAlphaOffset = 0;
 
-                if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < Engine.Epsilon)
                     this.inertialBetaOffset = 0;
 
-                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 
@@ -493,7 +425,7 @@
 
             var target = this._getTargetPosition();
 
-            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
 
             if (this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
@@ -521,17 +453,17 @@
             this._previousRadius = this.radius;
             this._previousPosition.copyFrom(this.position);
 
-			this._viewMatrix.m[12] += this.targetScreenOffset.x;
-			this._viewMatrix.m[13] += this.targetScreenOffset.y;
-						
+            this._viewMatrix.m[12] += this.targetScreenOffset.x;
+            this._viewMatrix.m[13] += this.targetScreenOffset.y;
+
             return this._viewMatrix;
         }
 
         public zoomOn(meshes?: AbstractMesh[]): void {
             meshes = meshes || this.getScene().meshes;
 
-            var minMaxVector = BABYLON.Mesh.MinMax(meshes);
-            var distance = BABYLON.Vector3.Distance(minMaxVector.min, minMaxVector.max);
+            var minMaxVector = Mesh.MinMax(meshes);
+            var distance = Vector3.Distance(minMaxVector.min, minMaxVector.max);
 
             this.radius = distance * this.zoomOnFactor;
 
@@ -544,8 +476,8 @@
 
             if (meshesOrMinMaxVectorAndDistance.min === undefined) { // meshes
                 meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
-                meshesOrMinMaxVector = BABYLON.Mesh.MinMax(meshesOrMinMaxVector);
-                distance = BABYLON.Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
+                meshesOrMinMaxVector = Mesh.MinMax(meshesOrMinMaxVector);
+                distance = Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
             }
             else { //minMaxVector and distance
                 meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
