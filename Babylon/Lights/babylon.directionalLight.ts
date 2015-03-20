@@ -6,7 +6,7 @@
         public transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
-        public shadowOrthoScale = 0.1;
+        public shadowOrthoScale = 0.5;
 
         constructor(name: string, public direction: Vector3, scene: Scene) {
             super(name, scene);

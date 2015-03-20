@@ -12,6 +12,7 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
+        private _isDisposed = false;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
@@ -122,6 +123,12 @@
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }
@@ -341,7 +348,11 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            },() => { }, scene.database);
+        }
+
+        public isDisposed(): boolean {
+            return this._isDisposed;
         }
 
         public dispose(): void {
@@ -378,6 +389,7 @@
             if (index > -1) {
                 geometries.splice(index, 1);
             }
+            this._isDisposed = true;
         }
 
         public copy(id: string): Geometry {
@@ -394,7 +406,8 @@
             var stopChecking = false;
 
             for (var kind in this._vertexBuffers) {
-                vertexData.set(this.getVerticesData(kind), kind);
+                // using slice() to make a copy of the array and not just reference it
+                vertexData.set(this.getVerticesData(kind).slice(0), kind);
 
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();

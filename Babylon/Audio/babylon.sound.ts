@@ -10,7 +10,7 @@
         public rolloffFactor: number = 1;
         public maxDistance: number = 100;
         public distanceModel: string = "linear";
-        public panningModel: string = "HRTF";
+        private _panningModel: string = "equalpower";
         public onended: () => any;
         private _playbackRate: number = 1;
         private _startTime: number = 0;
@@ -73,7 +73,6 @@
                 this.rolloffFactor = options.rolloffFactor || 1;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
-                this.panningModel = options.panningModel || "HRTF";
                 this._playbackRate = options.playbackRate || 1;
             }
 
@@ -90,7 +89,7 @@
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        Tools.LoadFile(urlOrArrayBuffer,(data) => { this._soundLoaded(data); }, null, null, true);
+                        Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -108,6 +107,9 @@
                 if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     Engine.audioEngine.WarnedWebAudioUnsupported = true;
+                }
+                if (this._readyToPlayCallback) {
+                    this._readyToPlayCallback();
                 }
             }
         }
@@ -170,13 +172,15 @@
                 this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
-                this.panningModel = options.panningModel || this.panningModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
             }
         }
 
         private _createSpatialParameters() {
             if (Engine.audioEngine.canUseWebAudio) {
+                if (this._scene.headphone) {
+                    this._panningModel = "HRTF";
+                }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
 
                 if (this.useCustomAttenuation) {
@@ -185,14 +189,14 @@
                     this._soundPanner.maxDistance = Number.MAX_VALUE;
                     this._soundPanner.refDistance = 1;
                     this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = "HRTF";
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 else {
                     this._soundPanner.distanceModel = this.distanceModel;
                     this._soundPanner.maxDistance = this.maxDistance;
                     this._soundPanner.refDistance = this.refDistance;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this.panningModel;
+                    this._soundPanner.panningModel = this._panningModel;
                 }
                 this._soundPanner.connect(this._ouputAudioNode);
                 this._inputAudioNode = this._soundPanner;
@@ -200,16 +204,18 @@
         }
 
         public switchPanningModelToHRTF() {
-            this._switchPanningModel("HRTF");    
+            this._panningModel = "HRTF";
+            this._switchPanningModel();    
         }
 
         public switchPanningModelToEqualPower() {
-            this._switchPanningModel("equalpower");
+            this._panningModel = "equalpower";
+            this._switchPanningModel();
         }
 
-        private _switchPanningModel(newModel: string) {
+        private _switchPanningModel() {
             if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
-                this._soundPanner.panningModel = newModel;
+                this._soundPanner.panningModel = this._panningModel;
             }
         }
 
@@ -245,7 +251,7 @@
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (this.isPlaying && this.spatialSound) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -253,7 +259,7 @@
         public setLocalDirectionToMesh(newLocalDirection: Vector3) {
             this._localDirection = newLocalDirection;
 
-            if (this._connectedMesh && this.isPlaying) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.isPlaying) {
                 this._updateDirection();
             }
         }
@@ -266,7 +272,7 @@
         }
 
         public updateDistanceFromListener() {
-            if (this._connectedMesh && this.useCustomAttenuation) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
                 this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
@@ -345,7 +351,7 @@
         }
 
         public setVolume(newVolume: number, time?: number) {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
@@ -385,7 +391,7 @@
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
-            if (this._isDirectional && this.isPlaying) {
+            if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }

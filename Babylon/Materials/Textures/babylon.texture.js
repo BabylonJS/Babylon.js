@@ -46,7 +46,7 @@ var BABYLON;
             }
         }
         Texture.prototype.delayLoad = function () {
-            if (this.delayLoadState != BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+            if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
@@ -57,6 +57,12 @@ var BABYLON;
                     delete this._buffer;
                 }
             }
+        };
+        Texture.prototype.updateSamplingMode = function (samplingMode) {
+            if (!this._texture) {
+                return;
+            }
+            this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
             x -= this.uOffset + 0.5;
@@ -115,21 +121,21 @@ var BABYLON;
             }
             this._cachedCoordinatesMode = this.coordinatesMode;
             switch (this.coordinatesMode) {
-                case BABYLON.Texture.SPHERICAL_MODE:
+                case Texture.SPHERICAL_MODE:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = -0.5 * this.uScale;
                     this._cachedTextureMatrix[5] = -0.5 * this.vScale;
                     this._cachedTextureMatrix[12] = 0.5 + this.uOffset;
                     this._cachedTextureMatrix[13] = 0.5 + this.vOffset;
                     break;
-                case BABYLON.Texture.PLANAR_MODE:
+                case Texture.PLANAR_MODE:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = this.uScale;
                     this._cachedTextureMatrix[5] = this.vScale;
                     this._cachedTextureMatrix[12] = this.uOffset;
                     this._cachedTextureMatrix[13] = this.vOffset;
                     break;
-                case BABYLON.Texture.PROJECTION_MODE:
+                case Texture.PROJECTION_MODE:
                     BABYLON.Matrix.IdentityToRef(this._projectionModeMatrix);
                     this._projectionModeMatrix.m[0] = 0.5;
                     this._projectionModeMatrix.m[5] = -0.5;
@@ -147,7 +153,7 @@ var BABYLON;
             return this._cachedTextureMatrix;
         };
         Texture.prototype.clone = function () {
-            var newTexture = new BABYLON.Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
+            var newTexture = new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
             newTexture.level = this.level;

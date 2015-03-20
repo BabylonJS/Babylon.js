@@ -1,7 +1,7 @@
 ﻿module BABYLON {
 
     var serializeLight = (light: Light): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
         serializationObject.name = light.name;
         serializationObject.id = light.id;
         serializationObject.tags = Tags.GetTags(light);
@@ -52,8 +52,19 @@
         return serializationObject;
     }
 
+    var appendAnimations = (source: IAnimatable, destination: any): any => {
+        if (source.animations) {
+            destination.animations = [];
+            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                var animation = source.animations[animationIndex];
+
+                destination.animations.push(serializeAnimation(animation));
+            }
+        }
+    };
+
     var serializeCamera = (camera: Camera): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
         serializationObject.name = camera.name;
         serializationObject.tags = Tags.GetTags(camera);
         serializationObject.id = camera.id;
@@ -105,6 +116,9 @@
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
+            if (arcCamera.target && arcCamera.target.id) {
+                serializationObject.lockedTargetId = arcCamera.target.id;
+            }
         } else if (camera instanceof FollowCamera) {
             var followCam = <FollowCamera> camera;
             serializationObject.radius = followCam.radius;
@@ -122,6 +136,10 @@
             serializationObject.speed = camera['speed'];
         }
 
+        if (camera['target'] && camera['target'] instanceof Vector3) {
+            serializationObject.target = camera['target'].asArray();
+        }
+
         // Target
         if (camera['rotation'] && camera['rotation'] instanceof Vector3) {
             serializationObject.rotation = camera['rotation'].asArray();
@@ -132,12 +150,8 @@
             serializationObject.lockedTargetId = camera['lockedTarget'].id;
         }
 
-        if (camera['checkCollisions'] !== undefined) {
-            serializationObject.checkCollisions = camera['checkCollisions'];
-        }
-        if (camera['applyGravity'] !== undefined) {
-            serializationObject.applyGravity = camera['applyGravity'];
-        }
+        serializationObject.checkCollisions = camera['checkCollisions'] || false;
+        serializationObject.applyGravity = camera['applyGravity'] || false;
 
         if (camera['ellipsoid']) {
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
@@ -152,19 +166,8 @@
         return serializationObject;
     };
 
-    var appendAnimations = (source: IAnimatable, destination: any): any => {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
-    };
-
     var serializeAnimation = (animation: Animation): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
 
         serializationObject.name = animation.name;
         serializationObject.property = animation.targetProperty;
@@ -178,18 +181,18 @@
         for (var index = 0; index < keys.length; index++) {
             var animationKey = keys[index];
 
-            var key:any = {};
+            var key: any = {};
             key.frame = animationKey.frame;
 
             switch (dataType) {
-            case Animation.ANIMATIONTYPE_FLOAT:
-                key.values = [animationKey.value];
-                break;
-            case Animation.ANIMATIONTYPE_QUATERNION:
-            case Animation.ANIMATIONTYPE_MATRIX:
-            case Animation.ANIMATIONTYPE_VECTOR3:
-                key.values = animationKey.value.asArray();
-                break;
+                case Animation.ANIMATIONTYPE_FLOAT:
+                    key.values = [animationKey.value];
+                    break;
+                case Animation.ANIMATIONTYPE_QUATERNION:
+                case Animation.ANIMATIONTYPE_MATRIX:
+                case Animation.ANIMATIONTYPE_VECTOR3:
+                    key.values = animationKey.value.asArray();
+                    break;
             }
 
             serializationObject.keys.push(key);
@@ -199,7 +202,7 @@
     };
 
     var serializeMultiMaterial = (material: MultiMaterial): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
 
         serializationObject.name = material.name;
         serializationObject.id = material.id;
@@ -221,7 +224,7 @@
     };
 
     var serializeMaterial = (material: StandardMaterial): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
 
         serializationObject.name = material.name;
 
@@ -285,7 +288,7 @@
     };
 
     var serializeTexture = (texture: BaseTexture): any => {
-        var serializationObject:any = {};
+        var serializationObject: any = {};
 
         if (!texture.name) {
             return null;
@@ -345,8 +348,8 @@
         return serializationObject;
     };
 
-    var serializeSkeleton = (skeleton:Skeleton): any => {
-        var serializationObject:any = {};
+    var serializeSkeleton = (skeleton: Skeleton): any => {
+        var serializationObject: any = {};
 
         serializationObject.name = skeleton.name;
         serializationObject.id = skeleton.id;
@@ -356,7 +359,7 @@
         for (var index = 0; index < skeleton.bones.length; index++) {
             var bone = skeleton.bones[index];
 
-            var serializedBone:any = {
+            var serializedBone: any = {
                 parentBoneIndex: bone.getParent() ? skeleton.bones.indexOf(bone.getParent()) : -1,
                 name: bone.name,
                 matrix: bone.getLocalMatrix().toArray()
@@ -371,8 +374,8 @@
         return serializationObject;
     };
 
-    var serializeParticleSystem = (particleSystem:ParticleSystem): any => {
-        var serializationObject:any = {};
+    var serializeParticleSystem = (particleSystem: ParticleSystem): any => {
+        var serializationObject: any = {};
 
         serializationObject.emitterId = particleSystem.emitter.id;
         serializationObject.capacity = particleSystem.getCapacity();
@@ -404,8 +407,8 @@
         return serializationObject;
     };
 
-    var serializeLensFlareSystem = (lensFlareSystem:LensFlareSystem):any => {
-        var serializationObject:any = {};
+    var serializeLensFlareSystem = (lensFlareSystem: LensFlareSystem): any => {
+        var serializationObject: any = {};
 
         serializationObject.emitterId = lensFlareSystem.getEmitter().id;
         serializationObject.borderLimit = lensFlareSystem.borderLimit;
@@ -426,8 +429,8 @@
         return serializationObject;
     };
 
-    var serializeShadowGenerator = (light: Light):any => {
-        var serializationObject:any = {};
+    var serializeShadowGenerator = (light: Light): any => {
+        var serializationObject: any = {};
         var shadowGenerator = light.getShadowGenerator();
 
         serializationObject.lightId = light.id;
@@ -607,8 +610,8 @@
         return serializationObject;
     };
 
-    var serializeMesh = (mesh: Mesh, serializationScene: any):any => {
-        var serializationObject:any = {};
+    var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
+        var serializationObject: any = {};
 
         serializationObject.name = mesh.name;
         serializationObject.id = mesh.id;
@@ -690,12 +693,12 @@
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
 
             switch (mesh.getPhysicsImpostor()) {
-            case PhysicsEngine.BoxImpostor:
-                serializationObject.physicsImpostor = 1;
-                break;
-            case PhysicsEngine.SphereImpostor:
-                serializationObject.physicsImpostor = 2;
-                break;
+                case PhysicsEngine.BoxImpostor:
+                    serializationObject.physicsImpostor = 1;
+                    break;
+                case PhysicsEngine.SphereImpostor:
+                    serializationObject.physicsImpostor = 2;
+                    break;
             }
         }
 
@@ -728,7 +731,7 @@
 
     export class SceneSerializer {
         public static Serialize(scene: Scene): any {
-            var serializationObject:any = {};
+            var serializationObject: any = {};
 
             // Scene
             serializationObject.useDelayedTextureLoading = scene.useDelayedTextureLoading;
@@ -798,7 +801,7 @@
 
             serializedGeometries = [];
             var geometries = scene.getGeometries();
-            for (var index = 0; index < geometries.length; index++) {
+            for (index = 0; index < geometries.length; index++) {
                 var geometry = geometries[index];
 
                 if (geometry.isReady()) {

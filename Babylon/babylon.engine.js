@@ -546,7 +546,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.0.0";
+                return "2.1.0 alpha";
             },
             enumerable: true,
             configurable: true
@@ -1337,11 +1337,6 @@ var BABYLON;
             var texture = this._gl.createTexture();
             width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
             height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
@@ -1351,8 +1346,16 @@ var BABYLON;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            this.updateTextureSamplingMode(samplingMode, texture);
             this._loadedTexturesCache.push(texture);
             return texture;
+        };
+        Engine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
+            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
         };
         Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -1636,9 +1639,13 @@ var BABYLON;
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            var value = texture.anisotropicFilteringLevel;
+            if (texture.getInternalTexture().samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                value = 1;
+            }
+            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                texture._cachedAnisotropicFilteringLevel = value;
             }
         };
         Engine.prototype.readPixels = function (x, y, width, height) {

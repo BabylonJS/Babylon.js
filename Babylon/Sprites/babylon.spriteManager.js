@@ -1,24 +1,23 @@
 var BABYLON;
 (function (BABYLON) {
     var SpriteManager = (function () {
-        function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon) {
+        function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon, samplingMode) {
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             this.name = name;
             this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
             this.fogEnabled = true;
-            this._vertexDeclaration = [3, 4, 4, 4];
-            this._vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
+            this._vertexDeclaration = [4, 4, 4, 4];
+            this._vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
             this._capacity = capacity;
-            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
+            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
             this._scene = scene;
             this._scene.spriteManagers.push(this);
             // VBO
-            this._vertexDeclaration = [3, 4, 4, 4];
-            this._vertexStrideSize = 15 * 4;
             this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
             var indices = [];
             var index = 0;
@@ -38,32 +37,33 @@ var BABYLON;
             this._effectFog = this._scene.getEngine().createEffect("sprites", ["position", "options", "cellInfo", "color"], ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"], ["diffuseSampler"], "#define FOG");
         }
         SpriteManager.prototype._appendSpriteVertex = function (index, sprite, offsetX, offsetY, rowSize) {
-            var arrayOffset = index * 15;
-            if (offsetX == 0)
+            var arrayOffset = index * 16;
+            if (offsetX === 0)
                 offsetX = this._epsilon;
-            else if (offsetX == 1)
+            else if (offsetX === 1)
                 offsetX = 1 - this._epsilon;
-            if (offsetY == 0)
+            if (offsetY === 0)
                 offsetY = this._epsilon;
-            else if (offsetY == 1)
+            else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
             this._vertices[arrayOffset] = sprite.position.x;
             this._vertices[arrayOffset + 1] = sprite.position.y;
             this._vertices[arrayOffset + 2] = sprite.position.z;
             this._vertices[arrayOffset + 3] = sprite.angle;
-            this._vertices[arrayOffset + 4] = sprite.size;
-            this._vertices[arrayOffset + 5] = offsetX;
-            this._vertices[arrayOffset + 6] = offsetY;
-            this._vertices[arrayOffset + 7] = sprite.invertU ? 1 : 0;
-            this._vertices[arrayOffset + 8] = sprite.invertV ? 1 : 0;
+            this._vertices[arrayOffset + 4] = sprite.width;
+            this._vertices[arrayOffset + 5] = sprite.height;
+            this._vertices[arrayOffset + 6] = offsetX;
+            this._vertices[arrayOffset + 7] = offsetY;
+            this._vertices[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+            this._vertices[arrayOffset + 9] = sprite.invertV ? 1 : 0;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertices[arrayOffset + 9] = sprite.cellIndex - offset * rowSize;
-            this._vertices[arrayOffset + 10] = offset;
+            this._vertices[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
+            this._vertices[arrayOffset + 11] = offset;
             // Color
-            this._vertices[arrayOffset + 11] = sprite.color.r;
-            this._vertices[arrayOffset + 12] = sprite.color.g;
-            this._vertices[arrayOffset + 13] = sprite.color.b;
-            this._vertices[arrayOffset + 14] = sprite.color.a;
+            this._vertices[arrayOffset + 12] = sprite.color.r;
+            this._vertices[arrayOffset + 13] = sprite.color.g;
+            this._vertices[arrayOffset + 14] = sprite.color.b;
+            this._vertices[arrayOffset + 15] = sprite.color.a;
         };
         SpriteManager.prototype.render = function () {
             // Check

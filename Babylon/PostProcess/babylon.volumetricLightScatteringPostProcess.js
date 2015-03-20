@@ -65,16 +65,24 @@ var BABYLON;
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var material = subMesh.getMaterial();
+            var needUV = false;
             // Render this.mesh as default
             if (mesh === this.mesh) {
                 defines.push("#define BASIC_RENDER");
+                defines.push("#define NEED_UV");
+                needUV = true;
             }
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting() || mesh === this.mesh)
                     defines.push("#define ALPHATEST");
-                if (material.opacityTexture !== undefined)
+                if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
+                    if (material.opacityTexture.getAlphaFromRGB)
+                        defines.push("#define OPACITYRGB");
+                    if (!needUV)
+                        defines.push("#define NEED_UV");
+                }
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                     defines.push("#define UV1");
@@ -103,7 +111,7 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "far"], ["diffuseSampler", "opacitySampler"], join);
+                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel"], ["diffuseSampler", "opacitySampler"], join);
             }
             return this._volumetricLightScatteringPass.isReady();
         };
@@ -180,10 +188,13 @@ var BABYLON;
                     if (material && (mesh === _this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
                         _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
-                        if (_this.mesh.material && alphaTexture)
+                        if (alphaTexture) {
                             _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
-                        if (material.opacityTexture !== undefined)
+                        }
+                        if (material.opacityTexture !== undefined) {
                             _this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
+                            _this._volumetricLightScatteringPass.setFloat("opacityLevel", material.opacityTexture.level);
+                        }
                     }
                     // Bones
                     if (mesh.useBones) {
@@ -195,7 +206,7 @@ var BABYLON;
             };
             // Render target texture callbacks
             var savedSceneClearColor;
-            var sceneClearColor = new BABYLON.Color3(0.0, 0.0, 0.0);
+            var sceneClearColor = new BABYLON.Color4(0.0, 0.0, 0.0, 1.0);
             this._volumetricLightScatteringRTT.onBeforeRender = function () {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;
@@ -204,15 +215,46 @@ var BABYLON;
                 scene.clearColor = savedSceneClearColor;
             };
             this._volumetricLightScatteringRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
+                var engine = scene.getEngine();
                 var index;
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
+                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                for (index = 0; index < transparentSubMeshes.length; index++) {
-                    renderSubMesh(transparentSubMeshes.data[index]);
+                engine.setAlphaTesting(false);
+                if (transparentSubMeshes.length) {
+                    for (index = 0; index < transparentSubMeshes.length; index++) {
+                        var submesh = transparentSubMeshes.data[index];
+                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                    }
+                    var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
+                    sortedArray.sort(function (a, b) {
+                        // Alpha index first
+                        if (a._alphaIndex > b._alphaIndex) {
+                            return 1;
+                        }
+                        if (a._alphaIndex < b._alphaIndex) {
+                            return -1;
+                        }
+                        // Then distance to camera
+                        if (a._distanceToCamera < b._distanceToCamera) {
+                            return 1;
+                        }
+                        if (a._distanceToCamera > b._distanceToCamera) {
+                            return -1;
+                        }
+                        return 0;
+                    });
+                    // Render sub meshes
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    for (index = 0; index < sortedArray.length; index++) {
+                        renderSubMesh(sortedArray[index]);
+                    }
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                 }
             };
         };

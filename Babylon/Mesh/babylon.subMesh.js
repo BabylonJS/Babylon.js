@@ -15,6 +15,7 @@ var BABYLON;
             this._id = mesh.subMeshes.length - 1;
             if (createBoundingBox) {
                 this.refreshBoundingInfo();
+                mesh.computeWorldMatrix(true);
             }
         }
         SubMesh.prototype.getBoundingInfo = function () {

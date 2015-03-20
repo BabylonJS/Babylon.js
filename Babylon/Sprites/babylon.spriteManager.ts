@@ -11,27 +11,26 @@
 
         private _scene: Scene;
 
-        private _vertexDeclaration = [3, 4, 4, 4];
-        private _vertexStrideSize = 15 * 4; // 15 floats per sprite (x, y, z, angle, size, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
-        private _vertexBuffer: WebGLBuffer
+        private _vertexDeclaration = [4, 4, 4, 4];
+        private _vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
+        private _vertexBuffer: WebGLBuffer;
         private _indexBuffer: WebGLBuffer;
         private _vertices: Float32Array;
         private _effectBase: Effect;
         private _effectFog: Effect;
 
-        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number) {
+        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
-            this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false);
-            this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
+            this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
 
             this._scene = scene;
             this._scene.spriteManagers.push(this);
 
             // VBO
-            this._vertexDeclaration = [3, 4, 4, 4];
-            this._vertexStrideSize = 15 * 4;
             this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
 
             var indices = [];
@@ -62,35 +61,36 @@
         }
 
         private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, rowSize: number): void {
-            var arrayOffset = index * 15;
+            var arrayOffset = index * 16;
 
-            if (offsetX == 0)
+            if (offsetX === 0)
                 offsetX = this._epsilon;
-            else if (offsetX == 1)
+            else if (offsetX === 1)
                 offsetX = 1 - this._epsilon;
 
-            if (offsetY == 0)
+            if (offsetY === 0)
                 offsetY = this._epsilon;
-            else if (offsetY == 1)
+            else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
 
             this._vertices[arrayOffset] = sprite.position.x;
             this._vertices[arrayOffset + 1] = sprite.position.y;
             this._vertices[arrayOffset + 2] = sprite.position.z;
             this._vertices[arrayOffset + 3] = sprite.angle;
-            this._vertices[arrayOffset + 4] = sprite.size;
-            this._vertices[arrayOffset + 5] = offsetX;
-            this._vertices[arrayOffset + 6] = offsetY;
-            this._vertices[arrayOffset + 7] = sprite.invertU ? 1 : 0;
-            this._vertices[arrayOffset + 8] = sprite.invertV ? 1 : 0;
+            this._vertices[arrayOffset + 4] = sprite.width;
+            this._vertices[arrayOffset + 5] = sprite.height;
+            this._vertices[arrayOffset + 6] = offsetX;
+            this._vertices[arrayOffset + 7] = offsetY;
+            this._vertices[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+            this._vertices[arrayOffset + 9] = sprite.invertV ? 1 : 0;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertices[arrayOffset + 9] = sprite.cellIndex - offset * rowSize;
-            this._vertices[arrayOffset + 10] = offset;
+            this._vertices[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
+            this._vertices[arrayOffset + 11] = offset;
             // Color
-            this._vertices[arrayOffset + 11] = sprite.color.r;
-            this._vertices[arrayOffset + 12] = sprite.color.g;
-            this._vertices[arrayOffset + 13] = sprite.color.b;
-            this._vertices[arrayOffset + 14] = sprite.color.a;
+            this._vertices[arrayOffset + 12] = sprite.color.r;
+            this._vertices[arrayOffset + 13] = sprite.color.g;
+            this._vertices[arrayOffset + 14] = sprite.color.b;
+            this._vertices[arrayOffset + 15] = sprite.color.a;
         }
 
         public render(): void {
@@ -154,9 +154,9 @@
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(Engine.ALPHA_COMBINE);
             engine.draw(true, 0, max * 6);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {

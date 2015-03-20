@@ -27,7 +27,7 @@ namespace Max2Babylon
                 int height = intArray[3];
                 int mipmapsCount = intArray[7];
 
-                if ((width >> (mipmapsCount -1)) > 1)
+                if ((width >> (mipmapsCount - 1)) > 1)
                 {
                     var expected = 1;
                     var currentSize = Math.Max(width, height);
@@ -124,7 +124,7 @@ namespace Max2Babylon
             if (forceAlpha)
             {
                 babylonTexture.hasAlpha = true;
-                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);                
+                babylonTexture.getAlphaFromRGB = (texture.AlphaSource == 2) || (texture.AlphaSource == 3);
             }
             else
             {
@@ -190,7 +190,7 @@ namespace Max2Babylon
             {
                 babylonTexture.wrapV = 2;
             }
-            
+
             babylonTexture.name = Path.GetFileName(texture.MapName);
 
             // Animations
@@ -208,21 +208,19 @@ namespace Max2Babylon
             // Copy texture to output
             try
             {
-               
-                   
-                    if (File.Exists(absolutePath))
+                if (File.Exists(absolutePath))
+                {
+                    babylonTexture.isCube = IsTextureCube(absolutePath);
+                    if (CopyTexturesToOutput)
                     {
-                        babylonTexture.isCube = IsTextureCube(absolutePath);
-                        if (CopyTexturesToOutput)
-                        {
-                            File.Copy(absolutePath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
-                        }
+                        File.Copy(absolutePath, Path.Combine(babylonScene.OutputPath, babylonTexture.name), true);
                     }
-                    else
-                    {
-                        RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
-                    }
-                
+                }
+                else
+                {
+                    RaiseWarning(string.Format("Texture {0} not found.", babylonTexture.name), 2);
+                }
+
             }
             catch
             {

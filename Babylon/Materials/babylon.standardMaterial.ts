@@ -74,7 +74,7 @@
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
-                    return true;
+                 //   return true;
                 }
             }
 
@@ -82,7 +82,7 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+                  //  return true;
                 }
             }
 
@@ -585,7 +585,7 @@
                         if (mesh.receiveShadows && shadowGenerator) {
                             this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.getBias());
+                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
                     }
 

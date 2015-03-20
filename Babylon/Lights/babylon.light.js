@@ -14,11 +14,12 @@ var BABYLON;
             this.specular = new BABYLON.Color3(1.0, 1.0, 1.0);
             this.intensity = 1.0;
             this.range = Number.MAX_VALUE;
+            this.includeOnlyWithLayerMask = 0;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
-            scene.lights.push(this);
+            scene.addLight(this);
         }
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
@@ -41,6 +42,9 @@ var BABYLON;
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
+            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+                return false;
+            }
             return true;
         };
         Light.prototype.getWorldMatrix = function () {
@@ -61,8 +65,7 @@ var BABYLON;
                 this._shadowGenerator = null;
             }
             // Remove from scene
-            var index = this.getScene().lights.indexOf(this);
-            this.getScene().lights.splice(index, 1);
+            this.getScene().removeLight(this);
         };
         return Light;
     })(BABYLON.Node);

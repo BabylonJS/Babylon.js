@@ -321,10 +321,6 @@ var BABYLON;
             get: function () {
                 return this._numberOfBricksHeight;
             },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BrickProceduralTexture.prototype, "cloudColor", {
             set: function (value) {
                 this._numberOfBricksHeight = value;
                 this.updateShaderUniforms();

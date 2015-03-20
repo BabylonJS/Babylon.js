@@ -12,7 +12,7 @@ var BABYLON;
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
+         * @param {any} ratio - The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, combineRatio: 1.0 }
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
         function SSAORenderingPipeline(name, scene, ratio, cameras) {
@@ -44,6 +44,30 @@ var BABYLON;
             * @type {string}
             */
             this.SSAOCombineRenderEffect = "SSAOCombineRenderEffect";
+            /**
+            * The output strength of the SSAO post-process. Default value is 1.0.
+            * @type {number}
+            */
+            this.totalStrength = 1.0;
+            /**
+            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
+            * @type {number}
+            */
+            this.radius = 0.0002;
+            /**
+            * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
+            * Must not be equal to fallOff and superior to fallOff.
+            * Default value is 0.0075
+            * @type {number}
+            */
+            this.area = 0.0075;
+            /**
+            * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
+            * Must not be equal to area and inferior to area.
+            * Default value is 0.0002
+            * @type {number}
+            */
+            this.fallOff = 0.0002;
             this._firstUpdate = true;
             this._scene = scene;
             // Set up assets
@@ -53,8 +77,8 @@ var BABYLON;
             var combineRatio = ratio.combineRatio || ratio;
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 1.3, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
@@ -161,7 +185,7 @@ var BABYLON;
                 -0.0271
             ];
             var samplesFactor = 1.0 / 16.0;
-            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius", "area", "fallOff"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._ssaoPostProcess.onApply = function (effect) {
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
@@ -169,6 +193,10 @@ var BABYLON;
                     effect.setFloat("randTextureTiles", 4.0 / ratio);
                     _this._firstUpdate = false;
                 }
+                effect.setFloat("totalStrength", _this.totalStrength);
+                effect.setFloat("radius", _this.radius);
+                effect.setFloat("area", _this.area);
+                effect.setFloat("fallOff", _this.fallOff);
                 effect.setTexture("textureSampler", _this._depthTexture);
                 effect.setTexture("randomSampler", _this._randomTexture);
             };

@@ -106,8 +106,14 @@ var BABYLON;
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }
             this.currentFrame = currentFrame;
-            for (var key = 0; key < this._keys.length; key++) {
-                // for each frame, we need the key just before the frame superior
+            // Try to get a hash to find the right key
+            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+            if (this._keys[startKey].frame >= currentFrame) {
+                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
+                    startKey--;
+                }
+            }
+            for (var key = startKey; key < this._keys.length; key++) {
                 if (this._keys[key + 1].frame >= currentFrame) {
                     var startValue = this._getKeyValue(this._keys[key].value);
                     var endValue = this._getKeyValue(this._keys[key + 1].value);

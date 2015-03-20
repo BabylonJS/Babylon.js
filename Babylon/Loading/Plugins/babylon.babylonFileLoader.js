@@ -220,9 +220,15 @@ var BABYLON;
             }
             else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
                 shadowGenerator.useBlurVarianceShadowMap = true;
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
             }
-            if (parsedShadowGenerator.bias) {
-                shadowGenerator.setBias(parsedShadowGenerator.bias);
+            if (parsedShadowGenerator.bias !== undefined) {
+                shadowGenerator.bias = parsedShadowGenerator.bias;
             }
             return shadowGenerator;
         };
@@ -373,7 +379,13 @@ var BABYLON;
             }
             // Target
             if (parsedCamera.target) {
-                camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+                if (camera.setTarget) {
+                    camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+                }
+                else {
+                    //For ArcRotate
+                    camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
+                }
             }
             else {
                 camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
@@ -768,12 +780,16 @@ var BABYLON;
                 var triggerParams;
                 var trigger = parsedActions.children[i];
                 if (trigger.properties.length > 0) {
-                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: scene.getMeshByName(trigger.properties[0].value) };
+                    var param = trigger.properties[0].value;
+                    var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
                     triggerParams = BABYLON.ActionManager[trigger.name];
-                for (var j = 0; j < trigger.children.length; j++)
-                    traverse(trigger.children[j], triggerParams, null, null);
+                for (var j = 0; j < trigger.children.length; j++) {
+                    if (!trigger.detached)
+                        traverse(trigger.children[j], triggerParams, null, null);
+                }
             }
         };
         var parseSound = function (parsedSound, scene, rootUrl) {
@@ -788,7 +804,6 @@ var BABYLON;
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
-                panningModel: parsedSound.panningModel,
                 playbackRate: parsedSound.playbackRate
             };
             var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
