@@ -31,9 +31,9 @@ void main(void)
 
 	if(chromatic_aberration > 0.0) {
 		//index of refraction of each color channel, causing chromatic dispersion
-		vec3 ref_indices = vec3(0.6, 0.3, 0.0);
-		float ref_shiftX = chromatic_aberration * radius * 12.0 / screen_width;
-		float ref_shiftY = chromatic_aberration * radius * 12.0 / screen_height;
+		vec3 ref_indices = vec3(-0.3, 0.0, 0.3);
+		float ref_shiftX = chromatic_aberration * radius * 17.0 / screen_width;
+		float ref_shiftY = chromatic_aberration * radius * 17.0 / screen_height;
 
 		// shifts for red, green & blue
 		vec2 ref_coords_r = vec2(vUV.x + ref_indices.r*ref_shiftX, vUV.y + ref_indices.r*ref_shiftY*0.5);
