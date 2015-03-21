@@ -7,7 +7,12 @@ var BABYLON;
             this.showBackLines = true;
             this.renderList = new BABYLON.SmartArray(32);
             this._scene = scene;
-            this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
+        }
+        BoundingBoxRenderer.prototype._prepareRessources = function () {
+            if (this._colorShader) {
+                return;
+            }
+            this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"]
             });
@@ -15,12 +20,16 @@ var BABYLON;
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
             this._vb = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
             this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
-        }
+        };
         BoundingBoxRenderer.prototype.reset = function () {
             this.renderList.reset();
         };
         BoundingBoxRenderer.prototype.render = function () {
-            if (this.renderList.length === 0 || !this._colorShader.isReady()) {
+            if (this.renderList.length === 0) {
+                return;
+            }
+            this._prepareRessources();
+            if (!this._colorShader.isReady()) {
                 return;
             }
             var engine = this._scene.getEngine();
@@ -57,6 +66,9 @@ var BABYLON;
             engine.setDepthWrite(true);
         };
         BoundingBoxRenderer.prototype.dispose = function () {
+            if (!this._colorShader) {
+                return;
+            }
             this._colorShader.dispose();
             this._vb.dispose();
             this._scene.getEngine()._releaseBuffer(this._ib);

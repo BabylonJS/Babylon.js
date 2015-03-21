@@ -22,6 +22,7 @@
         public specular = new Color3(1.0, 1.0, 1.0);
         public intensity = 1.0;
         public range = Number.MAX_VALUE;
+        public includeOnlyWithLayerMask = 0;
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
 
@@ -43,7 +44,7 @@
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
-       
+
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
         }
 
@@ -61,6 +62,10 @@
             }
 
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return false;
+            }
+
+            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
                 return false;
             }
 

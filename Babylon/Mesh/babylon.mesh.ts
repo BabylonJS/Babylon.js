@@ -766,7 +766,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                },() => { }, scene.database, getBinaryData);
+                }, () => { }, scene.database, getBinaryData);
             }
         }
 
@@ -923,7 +923,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -944,7 +944,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1025,8 +1025,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
-                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
+                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
+                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1105,7 +1105,7 @@
             }
             var dupes = [];
 
-            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40,(iteration) => {
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
                 for (var j = 0; j < realPos; ++j) {
@@ -1115,7 +1115,7 @@
                         break;
                     }
                 }
-            },() => {
+            }, () => {
                     for (var i = 0; i < indices.length; ++i) {
                         indices[i] = dupes[indices[i]] || indices[i];
                     }
@@ -1317,7 +1317,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
 
             return ground;
         }
@@ -1351,6 +1351,209 @@
             }
             var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
             return tube;
+        }
+
+        // Decals
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number = 0) {
+            var indices = sourceMesh.getIndices();
+            var positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
+            var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
+
+            // Getting correct rotation
+            if (!normal) {
+                var target = new Vector3(0, 0, 1);
+                var camera = sourceMesh.getScene().activeCamera;
+                var cameraWorldTarget = Vector3.TransformCoordinates(target, camera.getWorldMatrix());
+
+                normal = camera.globalPosition.subtract(cameraWorldTarget);
+            }
+
+            var yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
+            var len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
+            var pitch = Math.atan2(normal.y, len);
+
+            // Matrix
+            var decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(position.x, position.y, position.z));
+            var inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
+            var meshWorldMatrix = sourceMesh.getWorldMatrix();
+            var transformMatrix = meshWorldMatrix.multiply(inverseDecalWorldMatrix);
+
+            var vertexData = new VertexData();
+            vertexData.indices = [];
+            vertexData.positions = [];
+            vertexData.normals = [];
+            vertexData.uvs = [];
+
+            var currentVertexDataIndex = 0;
+
+            var extractDecalVector3 = (indexId: number): PositionNormalVertex => {
+                var vertexId = indices[indexId];
+                var result = new PositionNormalVertex();
+                result.position = new Vector3(positions[vertexId * 3], positions[vertexId * 3 + 1], positions[vertexId * 3 + 2]);
+
+                // Send vector to decal local world
+                result.position = Vector3.TransformCoordinates(result.position, transformMatrix);
+
+                // Get normal
+                result.normal = new Vector3(normals[vertexId * 3], normals[vertexId * 3 + 1], normals[vertexId * 3 + 2]);
+
+                return result;
+            }
+
+            
+            // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
+            var clip = (vertices: PositionNormalVertex[], axis: Vector3): PositionNormalVertex[]=> {
+                if (vertices.length === 0) {
+                    return vertices;
+                }
+
+                var clipSize = 0.5 * Math.abs(Vector3.Dot(size, axis));
+
+                var clipVertices = (v0: PositionNormalVertex, v1: PositionNormalVertex): PositionNormalVertex => {
+                    var clipFactor = Vector3.GetClipFactor(v0.position, v1.position, axis, clipSize);
+
+                    return new PositionNormalVertex(
+                        Vector3.Lerp(v0.position, v1.position, clipFactor),
+                        Vector3.Lerp(v0.normal, v1.normal, clipFactor)
+                    );
+                }
+
+                var result = new Array<PositionNormalVertex>();
+
+                for (var index = 0; index < vertices.length; index += 3) {
+                    var v1Out: boolean;
+                    var v2Out: boolean;
+                    var v3Out: boolean;
+                    var total = 0;
+                    var nV1: PositionNormalVertex, nV2: PositionNormalVertex, nV3: PositionNormalVertex, nV4: PositionNormalVertex;
+
+                    var d1 = Vector3.Dot(vertices[index].position, axis) - clipSize;
+                    var d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
+                    var d3 = Vector3.Dot(vertices[index + 2].position, axis) - clipSize;
+
+                    v1Out = d1 > 0;
+                    v2Out = d2 > 0;
+                    v3Out = d3 > 0;
+
+                    total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
+
+                    switch (total) {
+                        case 0:
+                            result.push(vertices[index]);
+                            result.push(vertices[index + 1]);
+                            result.push(vertices[index + 2]);
+                            break;
+                        case 1:
+
+                            if (v1Out) {
+                                nV1 = vertices[index + 1];
+                                nV2 = vertices[index + 2];
+                                nV3 = clipVertices(vertices[index], nV1);
+                                nV4 = clipVertices(vertices[index], nV2);
+                            }
+
+                            if (v2Out) {
+                                nV1 = vertices[index];
+                                nV2 = vertices[index + 2];
+                                nV3 = clipVertices(vertices[index + 1], nV1);
+                                nV4 = clipVertices(vertices[index + 1], nV2);
+
+                                result.push(nV3);
+                                result.push(nV2.clone());
+                                result.push(nV1.clone());
+
+                                result.push(nV2.clone());
+                                result.push(nV3.clone());
+                                result.push(nV4);
+                                break;
+                            }
+                            if (v3Out) {
+                                nV1 = vertices[index];
+                                nV2 = vertices[index + 1];
+                                nV3 = clipVertices(vertices[index + 2], nV1);
+                                nV4 = clipVertices(vertices[index + 2], nV2);
+                            }
+
+                            result.push(nV1.clone());
+                            result.push(nV2.clone());
+                            result.push(nV3);
+
+                            result.push(nV4);
+                            result.push(nV3.clone());
+                            result.push(nV2.clone());
+                            break;
+                        case 2:
+                            if (!v1Out) {
+                                nV1 = vertices[index].clone();
+                                nV2 = clipVertices(nV1, vertices[index + 1]);
+                                nV3 = clipVertices(nV1, vertices[index + 2]);
+                                result.push(nV1);
+                                result.push(nV2);
+                                result.push(nV3);
+                            }
+                            if (!v2Out) {
+                                nV1 = vertices[index + 1].clone();
+                                nV2 = clipVertices(nV1, vertices[index + 2]);
+                                nV3 = clipVertices(nV1, vertices[index]);
+                                result.push(nV1);
+                                result.push(nV2);
+                                result.push(nV3);
+                            }
+                            if (!v3Out) {
+                                nV1 = vertices[index + 2].clone();
+                                nV2 = clipVertices(nV1, vertices[index]);
+                                nV3 = clipVertices(nV1, vertices[index + 1]);
+                                result.push(nV1);
+                                result.push(nV2);
+                                result.push(nV3);
+                            }
+                            break;
+                        case 3:
+                            break;
+                    }
+                }
+
+                return result;
+            }
+
+            for (var index = 0; index < indices.length; index += 3) {
+                var faceVertices = new Array<PositionNormalVertex>();
+
+                faceVertices.push(extractDecalVector3(index));
+                faceVertices.push(extractDecalVector3(index + 1));
+                faceVertices.push(extractDecalVector3(index + 2));
+
+                // Clip
+                faceVertices = clip(faceVertices, new Vector3(1, 0, 0));
+                faceVertices = clip(faceVertices, new Vector3(-1, 0, 0));
+                faceVertices = clip(faceVertices, new Vector3(0, 1, 0));
+                faceVertices = clip(faceVertices, new Vector3(0, -1, 0));
+                faceVertices = clip(faceVertices, new Vector3(0, 0, 1));
+                faceVertices = clip(faceVertices, new Vector3(0, 0, -1));
+
+                if (faceVertices.length === 0) {
+                    continue;
+                }
+                
+                // Add UVs and get back to world
+                for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
+                    var vertex = faceVertices[vIndex];
+
+                    vertexData.indices.push(currentVertexDataIndex);
+                    Vector3.TransformCoordinates(vertex.position, decalWorldMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
+                    vertexData.uvs.push(0.5 + vertex.position.x / size.x);
+                    vertexData.uvs.push(0.5 + vertex.position.y / size.y);
+
+                    currentVertexDataIndex++;
+                }
+            }
+
+            // Return mesh
+            var decal = new Mesh(name, sourceMesh.getScene());
+            vertexData.applyToMesh(decal);
+
+            return decal;
         }
 
         // Tools

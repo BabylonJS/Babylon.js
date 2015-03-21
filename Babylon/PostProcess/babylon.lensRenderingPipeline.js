@@ -10,28 +10,28 @@ var BABYLON;
         __extends(LensRenderingPipeline, _super);
         /**
          * @constructor
+         *
+         * Effect parameters are as follow:
+         * {
+         *      chromatic_aberration: number;       // from 0 to x (1 for realism)
+         *      edge_blur: number;                  // from 0 to x (1 for realism)
+         *      distortion: number;                 // from 0 to x (1 for realism)
+         *      grain_amount: number;               // from 0 to 1
+         *      grain_texture: BABYLON.Texture;     // texture to use for grain effect; if unset, use random B&W noise
+         *      dof_focus_depth: number;            // depth-of-field: focus depth; unset to disable (disabled by default)
+         *      dof_aperture: number;               // depth-of-field: focus blur bias (default: 1)
+         *      dof_pentagon: boolean;              // depth-of-field: makes a pentagon-like "bokeh" effect
+         *      dof_gain: number;                   // depth-of-field: depthOfField gain; unset to disable (disabled by default)
+         *      dof_threshold: number;              // depth-of-field: depthOfField threshold (default: 1)
+         *      blur_noise: boolean;                // add a little bit of noise to the blur (default: true)
+         * }
+         * Note: if an effect parameter is unset, effect is disabled
+         *
          * @param {string} name - The rendering pipeline name
-         * @param {object} parameters - An object containing all parameters (see below)
+         * @param {object} parameters - An object containing all parameters (see above)
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
          * @param {number} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
-
-            Effect parameters are as follow:
-            {
-                chromatic_aberration: number;		// from 0 to x (1 for realism)
-                edge_blur: number;					// from 0 to x (1 for realism)
-                distortion: number;					// from 0 to x (1 for realism)
-                grain_amount: number;				// from 0 to 1
-                grain_texture: BABYLON.Texture;		// texture to use for grain effect; if unset, use random B&W noise
-                dof_focus_depth: number;			// depth-of-field: focus depth; unset to disable
-                dof_aperture: number;				// depth-of-field: focus blur bias (default: 1)
-                dof_pentagon: boolean;				// depth-of-field: makes a pentagon-like "bokeh" effect
-                dof_gain: boolean;					// depth-of-field: depthOfField gain (default: 1)
-                dof_threshold: boolean;				// depth-of-field: depthOfField threshold (default: 1)
-                blur_noise: boolean;				// add a little bit of noise to the blur (default: true)
-            }
-
-            Note: if an effect parameter is unset, effect is disabled
          */
         function LensRenderingPipeline(name, parameters, scene, ratio, cameras) {
             var _this = this;
@@ -41,8 +41,9 @@ var BABYLON;
             // - chromatic aberration (slight shift of RGB colors)
             // - blur on the edge of the lens
             // - lens distortion
-            // - depth-of-field 'bokeh' effect (shapes appearing in blured areas, stronger highlights)
-            // - grain/dust-on-lens effect
+            // - depth-of-field blur & highlights enhancing
+            // - depth-of-field 'bokeh' effect (shapes appearing in blurred areas)
+            // - grain effect (noise or custom texture)
             // Two additional texture samplers are needed:
             // - depth map (for depth-of-field)
             // - grain texture
@@ -51,6 +52,11 @@ var BABYLON;
             * @type {string}
             */
             this.LensChromaticAberrationEffect = "LensChromaticAberrationEffect";
+            /**
+            * The highlights enhancing PostProcess id in the pipeline
+            * @type {string}
+            */
+            this.HighlightsEnhancingEffect = "HighlightsEnhancingEffect";
             /**
             * The depth-of-field PostProcess id in the pipeline
             * @type {string}
@@ -70,7 +76,7 @@ var BABYLON;
             this._grainAmount = parameters.grain_amount ? parameters.grain_amount : 0;
             this._chromaticAberration = parameters.chromatic_aberration ? parameters.chromatic_aberration : 0;
             this._distortion = parameters.distortion ? parameters.distortion : 0;
-            this._highlightsGain = parameters.dof_gain ? parameters.dof_gain : 1;
+            this._highlightsGain = parameters.dof_gain !== undefined ? parameters.dof_gain : -1;
             this._highlightsThreshold = parameters.dof_threshold ? parameters.dof_threshold : 1;
             this._dofDepth = parameters.dof_focus_depth !== undefined ? parameters.dof_focus_depth : -1;
             this._dofAperture = parameters.dof_aperture ? parameters.dof_aperture : 1;
@@ -78,21 +84,28 @@ var BABYLON;
             this._blurNoise = parameters.blur_noise !== undefined ? parameters.blur_noise : true;
             // Create effects
             this._createChromaticAberrationPostProcess(ratio);
+            this._createHighlightsPostProcess(ratio);
             this._createDepthOfFieldPostProcess(ratio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () {
                 return _this._chromaticAberrationPostProcess;
             }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () {
+                return _this._highlightsPostProcess;
+            }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () {
                 return _this._depthOfFieldPostProcess;
             }, true));
+            if (this._highlightsGain == -1) {
+                this._disableEffect(this.HighlightsEnhancingEffect, null);
+            }
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
             if (cameras) {
                 scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
             }
         }
-        // public methods
+        // public methods (self explanatory)
         LensRenderingPipeline.prototype.setEdgeBlur = function (amount) {
             this._edgeBlur = amount;
         };
@@ -117,12 +130,6 @@ var BABYLON;
         LensRenderingPipeline.prototype.disableEdgeDistortion = function () {
             this._distortion = 0;
         };
-        LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
-            this._highlightsGain = amount;
-        };
-        LensRenderingPipeline.prototype.setHighlightsThreshold = function (amount) {
-            this._highlightsThreshold = amount;
-        };
         LensRenderingPipeline.prototype.setFocusDepth = function (amount) {
             this._dofDepth = amount;
         };
@@ -144,6 +151,18 @@ var BABYLON;
         LensRenderingPipeline.prototype.disableNoiseBlur = function () {
             this._blurNoise = false;
         };
+        LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
+            this._highlightsGain = amount;
+        };
+        LensRenderingPipeline.prototype.setHighlightsThreshold = function (amount) {
+            if (this._highlightsGain == -1) {
+                this._highlightsGain = 1.0;
+            }
+            this._highlightsThreshold = amount;
+        };
+        LensRenderingPipeline.prototype.disableHighlights = function () {
+            this._highlightsGain = -1;
+        };
         /**
          * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
          */
@@ -151,6 +170,7 @@ var BABYLON;
             if (disableDepthRender === void 0) { disableDepthRender = false; }
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
             this._chromaticAberrationPostProcess = undefined;
+            this._highlightsPostProcess = undefined;
             this._depthOfFieldPostProcess = undefined;
             this._grainTexture.dispose();
             if (disableDepthRender)
@@ -162,16 +182,27 @@ var BABYLON;
             this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._chromaticAberrationPostProcess.onApply = function (effect) {
                 effect.setFloat('chromatic_aberration', _this._chromaticAberration);
-                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
-                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
+            };
+        };
+        // highlights enhancing
+        LensRenderingPipeline.prototype._createHighlightsPostProcess = function (ratio) {
+            var _this = this;
+            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._highlightsPostProcess.onApply = function (effect) {
+                effect.setFloat('gain', _this._highlightsGain);
+                effect.setFloat('threshold', _this._highlightsThreshold);
+                effect.setBool('pentagon', _this._dofPentagon);
+                effect.setTextureFromPostProcess("textureSampler", _this._chromaticAberrationPostProcess);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
             };
         };
         // colors shifting and distortion
         LensRenderingPipeline.prototype._createDepthOfFieldPostProcess = function (ratio) {
             var _this = this;
             this._depthOfFieldPostProcess = new BABYLON.PostProcess("LensDepthOfField", "depthOfField", [
-                "gain",
-                "threshold",
                 "focus_depth",
                 "aperture",
                 "pentagon",
@@ -182,23 +213,24 @@ var BABYLON;
                 "blur_noise",
                 "grain_amount",
                 "screen_width",
-                "screen_height"
-            ], ["depthSampler", "grainSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+                "screen_height",
+                "highlights"
+            ], ["depthSampler", "grainSampler", "highlightsSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._depthOfFieldPostProcess.onApply = function (effect) {
-                effect.setBool('pentagon', _this._dofPentagon);
                 effect.setBool('blur_noise', _this._blurNoise);
                 effect.setFloat('maxZ', _this._scene.activeCamera.maxZ);
                 effect.setFloat('grain_amount', _this._grainAmount);
                 effect.setTexture("depthSampler", _this._depthTexture);
                 effect.setTexture("grainSampler", _this._grainTexture);
-                effect.setFloat('screen_width', _this._scene.getEngine().getRenderWidth());
-                effect.setFloat('screen_height', _this._scene.getEngine().getRenderHeight());
+                effect.setTextureFromPostProcess("textureSampler", _this._highlightsPostProcess);
+                effect.setTextureFromPostProcess("highlightsSampler", _this._depthOfFieldPostProcess);
+                effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
+                effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
                 effect.setFloat('distortion', _this._distortion);
                 effect.setFloat('focus_depth', _this._dofDepth);
                 effect.setFloat('aperture', _this._dofAperture);
-                effect.setFloat('gain', _this._highlightsGain);
-                effect.setFloat('threshold', _this._highlightsThreshold);
                 effect.setFloat('edge_blur', _this._edgeBlur);
+                effect.setBool('highlights', (_this._highlightsGain != -1));
             };
         };
         // creates a black and white random noise texture, 512x512

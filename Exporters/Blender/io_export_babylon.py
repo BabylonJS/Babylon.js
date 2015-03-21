@@ -139,10 +139,32 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         default = False,
         )
     
+    attachedSound = bpy.props.StringProperty(
+        name='Music', 
+        description='',
+        default = ''
+    )
+    loopSound = bpy.props.BoolProperty(
+        name='Loop sound', 
+        description='',
+        default = True
+    )
+    autoPlaySound = bpy.props.BoolProperty(
+        name='Auto play sound', 
+        description='',
+        default = True
+    )
+
     def draw(self, context):
         layout = self.layout
 
         layout.prop(self, 'export_onlyCurrentLayer') 
+
+        layout.separator()
+
+        layout.prop(self, 'attachedSound') 
+        layout.prop(self, 'autoPlaySound') 
+        layout.prop(self, 'loopSound') 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     nWarnings = 0      
@@ -217,6 +239,16 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             skeletonId = 0
             self.meshesAndNodes = []
             self.multiMaterials = []
+            self.meshesWithSound = []
+
+            # Music
+            if self.attachedSound != '':
+                music = type('', (), {})()  #Fake mesh object 
+                music.data = type('', (), {})() 
+                music.data.attachedSound = self.attachedSound
+                music.data.loopSound = self.loopSound
+                music.data.autoPlaySound = self.autoPlaySound
+                self.meshesWithSound.append(music)
             
             # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
@@ -241,6 +273,10 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     while True and self.isInSelectedLayer(object, scene):
                         mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID)
                         self.meshesAndNodes.append(mesh)
+
+                        if object.data.attachedSound != '':
+                            self.meshesWithSound.append(object)
+
                         nextStartFace = mesh.offsetFace
                         if nextStartFace == 0:
                             break
@@ -251,6 +287,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                             BabylonExporter.warn('WARNING: The following mesh has exceeded the maximum # of vertex elements & will be broken into multiple Babylon meshes: ' + object.name)
 
                         nameID = nameID + 1
+
                 elif object.type == 'EMPTY':
                     self.meshesAndNodes.append(Node(object))
                     
@@ -393,6 +430,26 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             first = False
             shadowGen.to_scene_file(file_handler)
         file_handler.write(']')
+
+        # Sounds
+        if len(self.meshesWithSound) > 0:
+            file_handler.write('\n,"sounds":[')
+            first = True
+            for mesh in self.meshesWithSound:
+                if first == False:
+                    file_handler.write(',')
+                file_handler.write('{')        
+                write_string(file_handler, 'name', mesh.data.attachedSound, True)        
+                write_bool(file_handler, 'autoplay', mesh.data.autoPlaySound)
+                write_bool(file_handler, 'loop', mesh.data.loopSound) 
+
+                if hasattr(mesh, 'name'):
+                    write_string(file_handler, 'connectedMeshId', mesh.name) 
+                    write_float(file_handler, 'maxDistance', mesh.data.maxSoundDistance) 
+                
+                file_handler.write('}')   
+
+            file_handler.write(']')
         
         # Closing
         file_handler.write('}')
@@ -434,6 +491,7 @@ class World:
             write_float(file_handler, 'fogStart', self.fogStart)
             write_float(file_handler, 'fogEnd', self.fogEnd)
             write_float(file_handler, 'fogDensity', self.fogDensity)
+
 #===============================================================================
 class FCurveAnimatable:
     def __init__(self, object, supportsRotation, supportsPosition, supportsScaling, xOffsetForRotation = 0):  
@@ -564,7 +622,7 @@ class Mesh(FCurveAnimatable):
         
         world = object.matrix_world
         if object.parent and not hasSkeleton:
-            world = object.matrix_local
+            world *= object.parent.matrix_world.inverted()
             
         # use defaults when not None
         if forcedParent is None:
@@ -1370,10 +1428,6 @@ class Material:
                         # Specular
                         BabylonExporter.log('Specular texture found');
                         self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, filepath))
-                    else:
-                        BabylonExporter.warn('WARNING image texture type not recognized:  ' + str(mtex) + ', ignored.')
-
-                        
             else:
                  BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
@@ -1641,6 +1695,26 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     description='',
     default = False
 )
+bpy.types.Mesh.attachedSound = bpy.props.StringProperty(
+    name='Sound', 
+    description='',
+    default = ''
+)
+bpy.types.Mesh.loopSound = bpy.props.BoolProperty(
+    name='Loop sound', 
+    description='',
+    default = True
+)
+bpy.types.Mesh.autoPlaySound = bpy.props.BoolProperty(
+    name='Auto play sound', 
+    description='',
+    default = True
+)
+bpy.types.Mesh.maxSoundDistance = bpy.props.FloatProperty(
+    name='Max sound distance', 
+    description='',
+    default = 100
+)
 #===============================================================================
 bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
     name='Automatically launch animations', 
@@ -1730,6 +1804,13 @@ class ObjectPanel(bpy.types.Panel):
             layout.separator()
 
             layout.prop(ob.data, 'autoAnimate')   
+
+            layout.separator()
+
+            layout.prop(ob.data, 'attachedSound') 
+            layout.prop(ob.data, 'autoPlaySound') 
+            layout.prop(ob.data, 'loopSound') 
+            layout.prop(ob.data, 'maxSoundDistance') 
             
         elif isCamera:
             layout.prop(ob.data, 'CameraType')

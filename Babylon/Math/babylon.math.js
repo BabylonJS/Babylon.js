@@ -580,6 +580,12 @@ var BABYLON;
             return this;
         };
         // Statics
+        Vector3.GetClipFactor = function (vector0, vector1, axis, size) {
+            var d0 = Vector3.Dot(vector0, axis) - size;
+            var d1 = Vector3.Dot(vector1, axis) - size;
+            var s = d0 / (d0 - d1);
+            return s;
+        };
         Vector3.FromArray = function (array, offset) {
             if (!offset) {
                 offset = 0;
@@ -2730,9 +2736,47 @@ var BABYLON;
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        Curve3.prototype.continue = function (curve) {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        };
         return Curve3;
     })();
     BABYLON.Curve3 = Curve3;
+    // Vertex formats
+    var PositionNormalVertex = (function () {
+        function PositionNormalVertex(position, normal) {
+            if (position === void 0) { position = Vector3.Zero(); }
+            if (normal === void 0) { normal = Vector3.Up(); }
+            this.position = position;
+            this.normal = normal;
+        }
+        PositionNormalVertex.prototype.clone = function () {
+            return new PositionNormalVertex(this.position.clone(), this.normal.clone());
+        };
+        return PositionNormalVertex;
+    })();
+    BABYLON.PositionNormalVertex = PositionNormalVertex;
+    var PositionNormalTextureVertex = (function () {
+        function PositionNormalTextureVertex(position, normal, uv) {
+            if (position === void 0) { position = Vector3.Zero(); }
+            if (normal === void 0) { normal = Vector3.Up(); }
+            if (uv === void 0) { uv = Vector2.Zero(); }
+            this.position = position;
+            this.normal = normal;
+            this.uv = uv;
+        }
+        PositionNormalTextureVertex.prototype.clone = function () {
+            return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
+        };
+        return PositionNormalTextureVertex;
+    })();
+    BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // SIMD
     if (window.SIMD !== undefined) {
         // Replace functions

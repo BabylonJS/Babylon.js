@@ -18,7 +18,7 @@
         public subMeshId = 0;
 
         // Methods
-        public getNormal(): Vector3 {
+        public getNormal(useWorldCoordinates = false): Vector3 {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return null;
             }
@@ -34,7 +34,11 @@
             normal1 = normal1.scale(this.bv);
             normal2 = normal2.scale(1.0 - this.bu - this.bv);
 
-            return new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+            var result = new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+            if (useWorldCoordinates) {
+                result = Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
+            }
+            return result;
         }
 
         public getTextureCoordinates(): Vector2 {

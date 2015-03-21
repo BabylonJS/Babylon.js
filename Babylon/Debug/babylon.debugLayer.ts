@@ -373,13 +373,14 @@
                 return;
             }
 
+            this._enabled = true;
+
             if (camera) {
                 this._camera = camera;
             } else {
                 this._camera = this._scene.activeCamera;
             }
 
-            this._enabled = true;
             this._showUI = showUI;
 
             var engine = this._scene.getEngine();
