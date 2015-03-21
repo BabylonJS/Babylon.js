@@ -28,13 +28,13 @@
             return Mesh._DEFAULTSIDE;
         }
 
-
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
         private _LODLevels = new Array<Internals.MeshLODLevel>();
+        public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
         // Private
         public _geometry: Geometry;
@@ -187,6 +187,9 @@
             var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
 
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+                if (this.onLODLevelSelection) {
+                    this.onLODLevelSelection(distanceToCamera, this, this._LODLevels[this._LODLevels.length - 1].mesh);
+                }
                 return this;
             }
 
@@ -194,15 +197,21 @@
                 var level = this._LODLevels[index];
 
                 if (level.distance < distanceToCamera) {
-
                     if (level.mesh) {
                         level.mesh._preActivate();
                         level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+                    }
+
+                    if (this.onLODLevelSelection) {
+                        this.onLODLevelSelection(distanceToCamera, this, level.mesh);
                     }
                     return level.mesh;
                 }
             }
 
+            if (this.onLODLevelSelection) {
+                this.onLODLevelSelection(distanceToCamera, this, this);
+            }
             return this;
         }
 
