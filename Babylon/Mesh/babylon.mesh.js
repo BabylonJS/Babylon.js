@@ -169,6 +169,9 @@ var BABYLON;
             }
             var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+                if (this.onLODLevelSelection) {
+                    this.onLODLevelSelection(distanceToCamera, this, this._LODLevels[this._LODLevels.length - 1].mesh);
+                }
                 return this;
             }
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -178,8 +181,14 @@ var BABYLON;
                         level.mesh._preActivate();
                         level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                     }
+                    if (this.onLODLevelSelection) {
+                        this.onLODLevelSelection(distanceToCamera, this, level.mesh);
+                    }
                     return level.mesh;
                 }
+            }
+            if (this.onLODLevelSelection) {
+                this.onLODLevelSelection(distanceToCamera, this, this);
             }
             return this;
         };
@@ -1116,7 +1125,6 @@ var BABYLON;
             return tube;
         };
         // Decals
-        // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
         Mesh.CreateDecal = function (name, sourceMesh, position, normal, size, angle) {
             if (angle === void 0) { angle = 0; }
             var indices = sourceMesh.getIndices();
@@ -1153,6 +1161,7 @@ var BABYLON;
                 result.normal = new BABYLON.Vector3(normals[vertexId * 3], normals[vertexId * 3 + 1], normals[vertexId * 3 + 2]);
                 return result;
             };
+            // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
             var clip = function (vertices, axis) {
                 if (vertices.length === 0) {
                     return vertices;
