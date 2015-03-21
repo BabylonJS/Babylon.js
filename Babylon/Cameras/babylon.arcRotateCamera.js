@@ -41,6 +41,9 @@ var BABYLON;
             this._previousPosition = BABYLON.Vector3.Zero();
             this._collisionVelocity = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+            if (!this.target) {
+                this.target = BABYLON.Vector3.Zero();
+            }
             this.getViewMatrix();
         }
         ArcRotateCamera.prototype._getTargetPosition = function () {
@@ -127,7 +130,7 @@ var BABYLON;
                                 previousPinchDistance = pinchSquaredDistance;
                                 return;
                             }
-                            if (pinchSquaredDistance != previousPinchDistance) {
+                            if (pinchSquaredDistance !== previousPinchDistance) {
                                 if (pinchSquaredDistance > previousPinchDistance) {
                                     direction = -1;
                                 }
@@ -247,7 +250,7 @@ var BABYLON;
             ]);
         };
         ArcRotateCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener(eventPrefix + "down", this._onPointerDown);
@@ -287,7 +290,7 @@ var BABYLON;
                 }
             }
             // Inertia
-            if (this.inertialAlphaOffset != 0 || this.inertialBetaOffset != 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
                 this.alpha += this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;

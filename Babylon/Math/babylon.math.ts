@@ -716,6 +716,15 @@
         }
 
         // Statics
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+            var d0 = Vector3.Dot(vector0, axis) - size;
+            var d1 = Vector3.Dot(vector1, axis) - size;
+
+            var s = d0 / (d0 - d1);
+
+            return s;
+        }
+
         public static FromArray(array: number[], offset?: number): Vector3 {
             if (!offset) {
                 offset = 0;
@@ -3411,6 +3420,37 @@
 
         public getPoints() {
             return this._points;
+        }
+
+        public continue(curve: Curve3): Curve3 {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        }
+    }
+
+    // Vertex formats
+    export class PositionNormalVertex {
+        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up()) {
+            
+        }
+
+        public clone(): PositionNormalVertex {
+            return new PositionNormalVertex(this.position.clone(), this.normal.clone());
+        }
+    }
+
+    export class PositionNormalTextureVertex {
+        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up(), public uv: Vector2 = Vector2.Zero()) {
+
+        }
+
+        public clone(): PositionNormalTextureVertex {
+            return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         }
     }
 

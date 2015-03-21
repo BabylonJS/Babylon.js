@@ -285,7 +285,7 @@
             return this._numberOfBricksHeight;
         }
 
-        public set cloudColor(value: number) {
+        public set numberOfBricksHeight(value: number) {
             this._numberOfBricksHeight = value;
             this.updateShaderUniforms();
         }

@@ -40,7 +40,7 @@ var BABYLON;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
-            this.layerMask = 0xFFFFFFFF;
+            this.layerMask = 0x0FFFFFFF;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions

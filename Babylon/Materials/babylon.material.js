@@ -11,6 +11,7 @@ var BABYLON;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
+            this.zOffset = 0;
             this.id = name;
             this._scene = scene;
             if (!doNotAdd) {
@@ -91,7 +92,7 @@ var BABYLON;
         Material.prototype._preBind = function () {
             var engine = this._scene.getEngine();
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling);
+            engine.setState(this.backFaceCulling, this.zOffset);
         };
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
