@@ -425,7 +425,7 @@
             this._effect.setMatrix("world", world);
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
             var scene = this.getScene();
 
             // Matrices        
@@ -433,7 +433,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh.useBones) {
+            if (mesh && mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 

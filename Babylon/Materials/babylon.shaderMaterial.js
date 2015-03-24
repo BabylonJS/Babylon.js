@@ -80,7 +80,7 @@ var BABYLON;
             this._matrices[name] = value;
             return this;
         };
-        ShaderMaterial.prototype.isReady = function () {
+        ShaderMaterial.prototype.isReady = function (mesh, useInstances) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             if (!this.checkReadyOnEveryCall) {
@@ -88,8 +88,26 @@ var BABYLON;
                     return true;
                 }
             }
+            // Instances
+            var defines = [];
+            var fallbacks = new BABYLON.EffectFallbacks();
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+            }
+            // Bones
+            if (mesh && mesh.useBones) {
+                defines.push("#define BONES");
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BONES4");
+                fallbacks.addFallback(0, "BONES4");
+            }
+            // Alpha test
+            if (engine.getAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+            }
             var previousEffect = this._effect;
-            this._effect = engine.createEffect(this._shaderPath, this._options.attributes, this._options.uniforms, this._options.samplers, "", null, this.onCompiled, this.onError);
+            var join = defines.join("\n");
+            this._effect = engine.createEffect(this._shaderPath, this._options.attributes, this._options.uniforms, this._options.samplers, join, fallbacks, this.onCompiled, this.onError);
             if (!this._effect.isReady()) {
                 return false;
             }
@@ -112,7 +130,7 @@ var BABYLON;
                 this._effect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
             }
         };
-        ShaderMaterial.prototype.bind = function (world) {
+        ShaderMaterial.prototype.bind = function (world, mesh) {
             // Std values
             this.bindOnlyWorldMatrix(world);
             if (this.getScene().getCachedMaterial() !== this) {
@@ -124,6 +142,10 @@ var BABYLON;
                 }
                 if (this._options.uniforms.indexOf("viewProjection") !== -1) {
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                }
+                // Bones
+                if (mesh.useBones) {
+                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
                 for (var name in this._textures) {
                     this._effect.setTexture(name, this._textures[name]);
