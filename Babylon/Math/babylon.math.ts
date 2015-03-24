@@ -3294,7 +3294,40 @@
         private _binormals = new Array<Vector3>();
 
         constructor(public path: Vector3[]) {
-            this._curve = path.slice();   // copy array         
+            this._curve = path.slice();   // copy array  
+            this._compute();       
+        }
+
+        public getCurve(): Vector3[] {
+            return this._curve;
+        }
+
+        public getTangents(): Vector3[] {
+            return this._tangents;
+        }
+
+        public getNormals(): Vector3[] {
+            return this._normals;
+        }
+
+        public getBinormals(): Vector3[] {
+            return this._binormals;
+        }
+
+        public getDistances(): number[] {
+            return this._distances;
+        }
+
+        public update(path: Vector3[]): Path3D {
+            for(var i = 0; i < path.length; i++) {
+                this._curve[i] = path[i];
+            }
+            this._compute();
+            return this;
+        }
+
+        // private function compute() : computes tangents, normals and binormals
+        private _compute() {
             var l = this._curve.length;
 
             // first and last tangents
@@ -3339,26 +3372,6 @@
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
                 this._binormals[i].normalize();
             }
-        }
-
-        public getCurve(): Vector3[] {
-            return this._curve;
-        }
-
-        public getTangents(): Vector3[] {
-            return this._tangents;
-        }
-
-        public getNormals(): Vector3[] {
-            return this._normals;
-        }
-
-        public getBinormals(): Vector3[] {
-            return this._binormals;
-        }
-
-        public getDistances(): number[] {
-            return this._distances;
         }
 
         // private function normalVector(v0, vt) :
