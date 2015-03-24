@@ -98,7 +98,7 @@
             return this;
         }
 
-        public isReady(): boolean {
+        public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -108,12 +108,34 @@
                 }
             }
 
+            // Instances
+            var defines = [];
+            var fallbacks = new EffectFallbacks();
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+            }
+
+            // Bones
+            if (mesh && mesh.useBones) {
+                defines.push("#define BONES");
+                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BONES4");
+                fallbacks.addFallback(0, "BONES4");
+            }
+
+            // Alpha test
+            if (engine.getAlphaTesting()) {
+                defines.push("#define ALPHATEST");
+            }
+
             var previousEffect = this._effect;
+            var join = defines.join("\n");
+
             this._effect = engine.createEffect(this._shaderPath,
                 this._options.attributes,
                 this._options.uniforms,
                 this._options.samplers,
-                "", null, this.onCompiled, this.onError);
+                join, fallbacks, this.onCompiled, this.onError);
 
             if (!this._effect.isReady()) {
                 return false;
@@ -145,7 +167,7 @@
             }
         }
 
-        public bind(world: Matrix): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
             // Std values
             this.bindOnlyWorldMatrix(world);
 
@@ -160,6 +182,11 @@
 
                 if (this._options.uniforms.indexOf("viewProjection") !== -1) {
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                }
+
+                // Bones
+                if (mesh.useBones) {
+                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
 
                 // Texture

@@ -105,7 +105,7 @@
             engine.setState(this.backFaceCulling, this.zOffset);
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
             this._scene._cachedMaterial = this;
 
             if (this.onBind) {
