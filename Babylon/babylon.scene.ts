@@ -261,6 +261,8 @@
 
         private _depthRenderer: DepthRenderer;
 
+        private _uniqueIdCounter = 0;
+
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
@@ -719,6 +721,7 @@
         // Methods
 
         public addMesh(newMesh: AbstractMesh) {
+            newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
@@ -762,6 +765,7 @@
         }
 
         public addLight(newLight: Light) {
+            newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
             if (this.onNewLightAdded) {
                 this.onNewLightAdded(newLight, position, this);
@@ -769,6 +773,7 @@
         }
 
         public addCamera(newCamera: Camera) {
+            newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
             if (this.onNewCameraAdded) {
                 this.onNewCameraAdded(newCamera, position, this);
@@ -849,6 +854,16 @@
             return null;
         }
 
+        public getCameraByUniqueID(uniqueId: number): Camera {
+            for (var index = 0; index < this.cameras.length; index++) {
+                if (this.cameras[index].uniqueId === uniqueId) {
+                    return this.cameras[index];
+                }
+            }
+
+            return null;
+        }
+
         /**
          * get a camera using its name
          * @param {string} the camera's name
@@ -895,6 +910,21 @@
         }
 
         /**
+         * get a light node using its scene-generated unique ID
+         * @param {number} the light's unique id
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
+        public getLightByUniqueID(uniqueId: number): Light {
+            for (var index = 0; index < this.lights.length; index++) {
+                if (this.lights[index].uniqueId === uniqueId) {
+                    return this.lights[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * get a geometry using its ID
          * @param {string} the geometry's id
          * @return {BABYLON.Geometry|null} the geometry or null if none found.
@@ -930,13 +960,28 @@
         }
 
         /**
-         * Get a the first added mesh found of a given ID
+         * Get the first added mesh found of a given ID
          * @param {string} id - the id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
          */
         public getMeshByID(id: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
+                    return this.meshes[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Get a mesh with its auto-generated unique id
+         * @param {number} uniqueId - the unique id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
+        public getMeshByUniqueID(uniqueId: number): AbstractMesh {
+            for (var index = 0; index < this.meshes.length; index++) {
+                if (this.meshes[index].uniqueId === uniqueId) {
                     return this.meshes[index];
                 }
             }
