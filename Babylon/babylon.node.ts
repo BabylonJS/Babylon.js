@@ -7,6 +7,7 @@
         public parent: Node;
         public name: string;
         public id: string;
+        public uniqueId: number;
         public state = "";
 
         public animations = new Array<Animation>();

@@ -130,6 +130,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._scaledPosition = BABYLON.Vector3.Zero();
             this._scaledVelocity = BABYLON.Vector3.Zero();
+            this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
             this._renderingManager = new BABYLON.RenderingManager(this);
@@ -528,6 +529,7 @@ var BABYLON;
         };
         // Methods
         Scene.prototype.addMesh = function (newMesh) {
+            newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
@@ -567,12 +569,14 @@ var BABYLON;
             return index;
         };
         Scene.prototype.addLight = function (newLight) {
+            newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
             if (this.onNewLightAdded) {
                 this.onNewLightAdded(newLight, position, this);
             }
         };
         Scene.prototype.addCamera = function (newCamera) {
+            newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
             if (this.onNewCameraAdded) {
                 this.onNewCameraAdded(newCamera, position, this);
@@ -640,6 +644,14 @@ var BABYLON;
             }
             return null;
         };
+        Scene.prototype.getCameraByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.cameras.length; index++) {
+                if (this.cameras[index].uniqueId === uniqueId) {
+                    return this.cameras[index];
+                }
+            }
+            return null;
+        };
         /**
          * get a camera using its name
          * @param {string} the camera's name
@@ -680,6 +692,19 @@ var BABYLON;
             return null;
         };
         /**
+         * get a light node using its scene-generated unique ID
+         * @param {number} the light's unique id
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
+        Scene.prototype.getLightByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.lights.length; index++) {
+                if (this.lights[index].uniqueId === uniqueId) {
+                    return this.lights[index];
+                }
+            }
+            return null;
+        };
+        /**
          * get a geometry using its ID
          * @param {string} the geometry's id
          * @return {BABYLON.Geometry|null} the geometry or null if none found.
@@ -709,13 +734,26 @@ var BABYLON;
             return this._geometries;
         };
         /**
-         * Get a the first added mesh found of a given ID
+         * Get the first added mesh found of a given ID
          * @param {string} id - the id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
          */
         Scene.prototype.getMeshByID = function (id) {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
+                    return this.meshes[index];
+                }
+            }
+            return null;
+        };
+        /**
+         * Get a mesh with its auto-generated unique id
+         * @param {number} uniqueId - the unique id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
+        Scene.prototype.getMeshByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.meshes.length; index++) {
+                if (this.meshes[index].uniqueId === uniqueId) {
                     return this.meshes[index];
                 }
             }
