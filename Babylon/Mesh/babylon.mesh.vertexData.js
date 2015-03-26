@@ -884,6 +884,11 @@ var BABYLON;
             return vertexData;
         };
         // Tools
+        /**
+         * @param {any} - positions (number[] or Float32Array)
+         * @param {any} - indices   (number[] or Uint16Array)
+         * @param {any} - normals   (number[] or Float32Array)
+         */
         VertexData.ComputeNormals = function (positions, indices, normals) {
             var positionVectors = [];
             var facesOfVertices = [];
@@ -968,4 +973,5 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
+
+//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map
