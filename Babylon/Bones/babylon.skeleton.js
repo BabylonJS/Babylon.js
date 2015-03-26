@@ -10,6 +10,9 @@ var BABYLON;
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
+            this.prepare():
+            //make sure it will recalculate the matrix next time prepare is called.
+            this._isDirty = true;
         }
         // Members
         Skeleton.prototype.getTransformMatrices = function () {
