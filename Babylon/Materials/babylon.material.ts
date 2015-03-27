@@ -25,7 +25,7 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
-        public onBind: (material: Material) => void;
+        public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
         public _effect: Effect;
@@ -109,7 +109,7 @@
             this._scene._cachedMaterial = this;
 
             if (this.onBind) {
-                this.onBind(this);
+                this.onBind(this, mesh);
             }
         }
 
