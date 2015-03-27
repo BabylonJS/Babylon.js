@@ -973,5 +973,4 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.mesh.vertexData.js.map
+//# sourceMappingURL=babylon.mesh.vertexData.js.map

@@ -36,7 +36,6 @@
     export class FireProceduralTexture extends ProceduralTexture {
         private _time: number = 0.0;
         private _speed = new Vector2(0.5, 0.3);
-        private _shift: number = 1.6;
         private _autoGenerateTime: boolean = true;
         private _fireColors: Color3[];
         private _alphaThreshold: number = 0.5;
@@ -51,7 +50,6 @@
         public updateShaderUniforms() {
             this.setFloat("time", this._time);
             this.setVector2("speed", this._speed);
-            this.setFloat("shift", this._shift);
             this.setColor3("c1", this._fireColors[0]);
             this.setColor3("c2", this._fireColors[1]);
             this.setColor3("c3", this._fireColors[2]);
@@ -137,15 +135,6 @@
 
         public set speed(value: Vector2) {
             this._speed = value;
-            this.updateShaderUniforms();
-        }
-
-        public get shift(): number {
-            return this._shift;
-        }
-
-        public set shift(value: number) {
-            this._shift = value;
             this.updateShaderUniforms();
         }
 

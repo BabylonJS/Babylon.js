@@ -8274,6 +8274,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._scaledPosition = BABYLON.Vector3.Zero();
             this._scaledVelocity = BABYLON.Vector3.Zero();
+            this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
             this._renderingManager = new BABYLON.RenderingManager(this);
@@ -8672,6 +8673,7 @@ var BABYLON;
         };
         // Methods
         Scene.prototype.addMesh = function (newMesh) {
+            newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
@@ -8711,12 +8713,14 @@ var BABYLON;
             return index;
         };
         Scene.prototype.addLight = function (newLight) {
+            newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
             if (this.onNewLightAdded) {
                 this.onNewLightAdded(newLight, position, this);
             }
         };
         Scene.prototype.addCamera = function (newCamera) {
+            newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
             if (this.onNewCameraAdded) {
                 this.onNewCameraAdded(newCamera, position, this);
@@ -8784,6 +8788,14 @@ var BABYLON;
             }
             return null;
         };
+        Scene.prototype.getCameraByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.cameras.length; index++) {
+                if (this.cameras[index].uniqueId === uniqueId) {
+                    return this.cameras[index];
+                }
+            }
+            return null;
+        };
         /**
          * get a camera using its name
          * @param {string} the camera's name
@@ -8824,6 +8836,19 @@ var BABYLON;
             return null;
         };
         /**
+         * get a light node using its scene-generated unique ID
+         * @param {number} the light's unique id
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
+        Scene.prototype.getLightByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.lights.length; index++) {
+                if (this.lights[index].uniqueId === uniqueId) {
+                    return this.lights[index];
+                }
+            }
+            return null;
+        };
+        /**
          * get a geometry using its ID
          * @param {string} the geometry's id
          * @return {BABYLON.Geometry|null} the geometry or null if none found.
@@ -8853,13 +8878,26 @@ var BABYLON;
             return this._geometries;
         };
         /**
-         * Get a the first added mesh found of a given ID
+         * Get the first added mesh found of a given ID
          * @param {string} id - the id to search for
          * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
          */
         Scene.prototype.getMeshByID = function (id) {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
+                    return this.meshes[index];
+                }
+            }
+            return null;
+        };
+        /**
+         * Get a mesh with its auto-generated unique id
+         * @param {number} uniqueId - the unique id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
+        Scene.prototype.getMeshByUniqueID = function (uniqueId) {
+            for (var index = 0; index < this.meshes.length; index++) {
+                if (this.meshes[index].uniqueId === uniqueId) {
                     return this.meshes[index];
                 }
             }
@@ -13424,7 +13462,6 @@ var BABYLON;
             _super.call(this, name, size, "fire", scene, fallbackTexture, generateMipMaps);
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
-            this._shift = 1.6;
             this._autoGenerateTime = true;
             this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
@@ -13434,7 +13471,6 @@ var BABYLON;
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("time", this._time);
             this.setVector2("speed", this._speed);
-            this.setFloat("shift", this._shift);
             this.setColor3("c1", this._fireColors[0]);
             this.setColor3("c2", this._fireColors[1]);
             this.setColor3("c3", this._fireColors[2]);
@@ -13534,17 +13570,6 @@ var BABYLON;
             },
             set: function (value) {
                 this._speed = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FireProceduralTexture.prototype, "shift", {
-            get: function () {
-                return this._shift;
-            },
-            set: function (value) {
-                this._shift = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -14595,7 +14620,7 @@ woodPixelShader:"#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vP
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
             if (this.onBind) {
-                this.onBind(this);
+                this.onBind(this, mesh);
             }
         };
         Material.prototype.bindOnlyWorldMatrix = function (world) {
@@ -17399,6 +17424,9 @@ var BABYLON;
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
+            this.prepare();
+            //make sure it will recalculate the matrix next time prepare is called.
+            this._isDirty = true;
         }
         // Members
         Skeleton.prototype.getTransformMatrices = function () {
@@ -21943,10 +21971,7 @@ var BABYLON;
                 defines.push("#define BONES4");
                 fallbacks.addFallback(0, "BONES4");
             }
-            // Clip plane and alpha test
-            if (scene.clipPlane) {
-                defines.push("#define CLIPPLANE");
-            }
+            // Alpha test
             if (engine.getAlphaTesting()) {
                 defines.push("#define ALPHATEST");
             }
@@ -22018,7 +22043,7 @@ var BABYLON;
                     this._effect.setMatrix(name, this._matrices[name]);
                 }
             }
-            _super.prototype.bind.call(this, world, null);
+            _super.prototype.bind.call(this, world, mesh);
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
             for (var name in this._textures) {
@@ -22917,6 +22942,11 @@ var BABYLON;
             return vertexData;
         };
         // Tools
+        /**
+         * @param {any} - positions (number[] or Float32Array)
+         * @param {any} - indices   (number[] or Uint16Array)
+         * @param {any} - normals   (number[] or Float32Array)
+         */
         VertexData.ComputeNormals = function (positions, indices, normals) {
             var positionVectors = [];
             var facesOfVertices = [];
