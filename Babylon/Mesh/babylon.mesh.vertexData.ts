@@ -1113,13 +1113,18 @@
         }
 
         // Tools
-        public static ComputeNormals(positions: number[], indices: number[], normals: number[]) {
+        /**
+         * @param {any} - positions (number[] or Float32Array)
+         * @param {any} - indices   (number[] or Uint16Array)
+         * @param {any} - normals   (number[] or Float32Array)
+         */
+        public static ComputeNormals(positions: any, indices: any, normals: any) {
             var positionVectors = [];
             var facesOfVertices = [];
             var index;
 
             for (index = 0; index < positions.length; index += 3) {
-                var vector3 = new Vector3(positions[index], positions[index + 1], positions[index + 2]);
+                var vector3 = new Vector3(<number> positions[index], <number> positions[index + 1], <number> positions[index + 2]);
                 positionVectors.push(vector3);
                 facesOfVertices.push([]);
             }

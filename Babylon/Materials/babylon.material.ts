@@ -35,6 +35,8 @@
 
         public pointSize = 1.0;
 
+        public zOffset = 0;
+
         public get wireframe(): boolean {
             return this._fillMode === Material.WireFrameFillMode;
         }
@@ -100,10 +102,10 @@
             var engine = this._scene.getEngine();
 
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling);
+            engine.setState(this.backFaceCulling, this.zOffset);
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
             this._scene._cachedMaterial = this;
 
             if (this.onBind) {

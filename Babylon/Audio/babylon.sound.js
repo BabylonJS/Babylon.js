@@ -96,8 +96,11 @@ var BABYLON;
                     BABYLON.Tools.Error("Web Audio is not supported by your browser.");
                     BABYLON.Engine.audioEngine.WarnedWebAudioUnsupported = true;
                 }
+                // Simulating a ready to play event to avoid breaking code for non web audio browsers
                 if (this._readyToPlayCallback) {
-                    this._readyToPlayCallback();
+                    window.setTimeout(function () {
+                        _this._readyToPlayCallback();
+                    }, 1000);
                 }
             }
         }

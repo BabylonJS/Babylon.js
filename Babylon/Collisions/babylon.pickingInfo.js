@@ -23,7 +23,8 @@ var BABYLON;
             this.subMeshId = 0;
         }
         // Methods
-        PickingInfo.prototype.getNormal = function () {
+        PickingInfo.prototype.getNormal = function (useWorldCoordinates) {
+            if (useWorldCoordinates === void 0) { useWorldCoordinates = false; }
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
                 return null;
             }
@@ -35,7 +36,11 @@ var BABYLON;
             normal0 = normal0.scale(this.bu);
             normal1 = normal1.scale(this.bv);
             normal2 = normal2.scale(1.0 - this.bu - this.bv);
-            return new BABYLON.Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+            var result = new BABYLON.Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+            if (useWorldCoordinates) {
+                result = BABYLON.Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
+            }
+            return result;
         };
         PickingInfo.prototype.getTextureCoordinates = function () {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {

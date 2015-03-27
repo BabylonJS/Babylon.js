@@ -5,13 +5,18 @@ var BABYLON;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this._scene = scene;
+        }
+        PostProcessManager.prototype._prepareBuffers = function () {
+            if (this._vertexBuffer) {
+                return;
+            }
             // VBO
             var vertices = [];
             vertices.push(1, 1);
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
             // Indices
             var indices = [];
             indices.push(0);
@@ -20,8 +25,8 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
-        }
+            this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
+        };
         // Methods
         PostProcessManager.prototype._prepareFrame = function (sourceTexture) {
             var postProcesses = this._scene.activeCamera._postProcesses;
@@ -53,6 +58,7 @@ var BABYLON;
                         pp.onBeforeRender(effect);
                     }
                     // VBOs
+                    this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
@@ -91,6 +97,7 @@ var BABYLON;
                         pp.onBeforeRender(effect);
                     }
                     // VBOs
+                    this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);

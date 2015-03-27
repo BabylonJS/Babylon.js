@@ -11,9 +11,15 @@
         private _ib: WebGLBuffer;
 
         constructor(scene: Scene) {
-
             this._scene = scene;
-            this._colorShader = new ShaderMaterial("colorShader", scene, "color",
+        }
+
+        private _prepareRessources(): void {
+            if (this._colorShader) {
+                return;
+            }
+
+            this._colorShader = new ShaderMaterial("colorShader", this._scene, "color",
                 {
                     attributes: ["position"],
                     uniforms: ["worldViewProjection", "color"]
@@ -31,7 +37,13 @@
         }
 
         public render(): void {
-            if (this.renderList.length === 0 || !this._colorShader.isReady()) {
+            if (this.renderList.length === 0) {
+                return;
+            }
+
+            this._prepareRessources();
+
+            if (!this._colorShader.isReady()) {
                 return;
             }
 
@@ -78,6 +90,10 @@
         }
 
         public dispose(): void {
+            if (!this._colorShader) {
+                return;
+            }
+
             this._colorShader.dispose();
             this._vb.dispose();
             this._scene.getEngine()._releaseBuffer(this._ib);
