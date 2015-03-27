@@ -33,7 +33,7 @@
         public needAlphaTesting(): boolean {
             return this._options.needAlphaTesting;
         }
-   
+
         private _checkUniform(uniformName): void {
             if (this._options.uniforms.indexOf(uniformName) === -1) {
                 this._options.uniforms.push(uniformName);

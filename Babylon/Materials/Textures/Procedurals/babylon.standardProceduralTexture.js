@@ -50,7 +50,6 @@ var BABYLON;
             _super.call(this, name, size, "fire", scene, fallbackTexture, generateMipMaps);
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
-            this._shift = 1.6;
             this._autoGenerateTime = true;
             this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
@@ -60,7 +59,6 @@ var BABYLON;
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("time", this._time);
             this.setVector2("speed", this._speed);
-            this.setFloat("shift", this._shift);
             this.setColor3("c1", this._fireColors[0]);
             this.setColor3("c2", this._fireColors[1]);
             this.setColor3("c3", this._fireColors[2]);
@@ -160,17 +158,6 @@ var BABYLON;
             },
             set: function (value) {
                 this._speed = value;
-                this.updateShaderUniforms();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FireProceduralTexture.prototype, "shift", {
-            get: function () {
-                return this._shift;
-            },
-            set: function (value) {
-                this._shift = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

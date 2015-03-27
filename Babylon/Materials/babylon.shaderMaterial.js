@@ -173,7 +173,7 @@ var BABYLON;
                     this._effect.setMatrix(name, this._matrices[name]);
                 }
             }
-            _super.prototype.bind.call(this, world, null);
+            _super.prototype.bind.call(this, world, mesh);
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
             for (var name in this._textures) {

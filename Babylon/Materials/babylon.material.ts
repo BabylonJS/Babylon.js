@@ -41,7 +41,7 @@
             return this._fillMode === Material.WireFrameFillMode;
         }
 
-        public set wireframe(value:boolean) {
+        public set wireframe(value: boolean) {
             this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
         }
 
