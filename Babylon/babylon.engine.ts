@@ -5,15 +5,30 @@
         private _isDepthFuncDirty = false;
         private _isCullFaceDirty = false;
         private _isCullDirty = false;
+        private _isZOffsetDirty = false;
 
         private _depthTest: boolean;
         private _depthMask: boolean;
         private _depthFunc: number;
         private _cull: boolean;
         private _cullFace: number;
+        private _zOffset: number;
 
         public get isDirty(): boolean {
-            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+        }
+
+        public get zOffset(): number {
+            return this._zOffset;
+        }
+
+        public set zOffset(value: number) {
+            if (this._zOffset === value) {
+                return;
+            }
+
+            this._zOffset = value;
+            this._isZOffsetDirty = true;
         }
 
         public get cullFace(): number {
@@ -87,12 +102,14 @@
             this._depthFunc = null;
             this._cull = null;
             this._cullFace = null;
+            this._zOffset = 0;
 
             this._isDepthTestDirty = true;
             this._isDepthMaskDirty = true;
             this._isDepthFuncDirty = false;
             this._isCullFaceDirty = false;
             this._isCullDirty = false;
+            this._isZOffsetDirty = false;
         }
 
         public apply(gl: WebGLRenderingContext) {
@@ -138,6 +155,18 @@
             if (this._isDepthFuncDirty) {
                 gl.depthFunc(this.depthFunc);
                 this._isDepthFuncDirty = false;
+            }
+
+            // zOffset
+            if (this._isZOffsetDirty) {
+                if (this.zOffset) {
+                    gl.enable(gl.POLYGON_OFFSET_FILL);
+                    gl.polygonOffset(this.zOffset, 0);
+                } else {
+                    gl.disable(gl.POLYGON_OFFSET_FILL);
+                }
+
+                this._isZOffsetDirty = false;
             }
         }
     }
@@ -540,11 +569,6 @@
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
 
-
-            // Textures
-            this._workingCanvas = document.createElement("canvas");
-            this._workingContext = this._workingCanvas.getContext("2d");
-
             // Viewport
             this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
             this.resize();
@@ -636,6 +660,15 @@
             }
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+        }
+
+        private _prepareWorkingCanvas(): void {
+            if (this._workingCanvas) {
+                return;
+            }
+
+            this._workingCanvas = document.createElement("canvas");
+            this._workingContext = this._workingCanvas.getContext("2d");
         }
 
         public getGlInfo() {
@@ -1335,7 +1368,7 @@
         }
 
         // States
-        public setState(culling: boolean, force?: boolean): void {
+        public setState(culling: boolean, zOffset: number = 0, force?: boolean): void {
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
@@ -1345,6 +1378,9 @@
                     this._depthCullingState.cull = false;
                 }
             }
+
+            // Z offset
+            this._depthCullingState.zOffset = zOffset;
         }
 
         public setDepthBuffer(enable: boolean): void {
@@ -1517,6 +1553,7 @@
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
+                            this._prepareWorkingCanvas();
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
 
@@ -1808,6 +1845,7 @@
                     var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
+                    this._prepareWorkingCanvas();
                     this._workingCanvas.width = width;
                     this._workingCanvas.height = height;
 

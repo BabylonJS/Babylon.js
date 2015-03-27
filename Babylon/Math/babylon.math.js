@@ -580,6 +580,12 @@ var BABYLON;
             return this;
         };
         // Statics
+        Vector3.GetClipFactor = function (vector0, vector1, axis, size) {
+            var d0 = Vector3.Dot(vector0, axis) - size;
+            var d1 = Vector3.Dot(vector1, axis) - size;
+            var s = d0 / (d0 - d1);
+            return s;
+        };
         Vector3.FromArray = function (array, offset) {
             if (!offset) {
                 offset = 0;
@@ -2619,7 +2625,33 @@ var BABYLON;
             this._tangents = new Array();
             this._normals = new Array();
             this._binormals = new Array();
-            this._curve = path.slice(); // copy array         
+            this._curve = path.slice(); // copy array  
+            this._compute();
+        }
+        Path3D.prototype.getCurve = function () {
+            return this._curve;
+        };
+        Path3D.prototype.getTangents = function () {
+            return this._tangents;
+        };
+        Path3D.prototype.getNormals = function () {
+            return this._normals;
+        };
+        Path3D.prototype.getBinormals = function () {
+            return this._binormals;
+        };
+        Path3D.prototype.getDistances = function () {
+            return this._distances;
+        };
+        Path3D.prototype.update = function (path) {
+            for (var i = 0; i < path.length; i++) {
+                this._curve[i] = path[i];
+            }
+            this._compute();
+            return this;
+        };
+        // private function compute() : computes tangents, normals and binormals
+        Path3D.prototype._compute = function () {
             var l = this._curve.length;
             // first and last tangents
             this._tangents[0] = this._curve[1].subtract(this._curve[0]);
@@ -2659,21 +2691,6 @@ var BABYLON;
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
                 this._binormals[i].normalize();
             }
-        }
-        Path3D.prototype.getCurve = function () {
-            return this._curve;
-        };
-        Path3D.prototype.getTangents = function () {
-            return this._tangents;
-        };
-        Path3D.prototype.getNormals = function () {
-            return this._normals;
-        };
-        Path3D.prototype.getBinormals = function () {
-            return this._binormals;
-        };
-        Path3D.prototype.getDistances = function () {
-            return this._distances;
         };
         // private function normalVector(v0, vt) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
@@ -2742,6 +2759,35 @@ var BABYLON;
         return Curve3;
     })();
     BABYLON.Curve3 = Curve3;
+    // Vertex formats
+    var PositionNormalVertex = (function () {
+        function PositionNormalVertex(position, normal) {
+            if (position === void 0) { position = Vector3.Zero(); }
+            if (normal === void 0) { normal = Vector3.Up(); }
+            this.position = position;
+            this.normal = normal;
+        }
+        PositionNormalVertex.prototype.clone = function () {
+            return new PositionNormalVertex(this.position.clone(), this.normal.clone());
+        };
+        return PositionNormalVertex;
+    })();
+    BABYLON.PositionNormalVertex = PositionNormalVertex;
+    var PositionNormalTextureVertex = (function () {
+        function PositionNormalTextureVertex(position, normal, uv) {
+            if (position === void 0) { position = Vector3.Zero(); }
+            if (normal === void 0) { normal = Vector3.Up(); }
+            if (uv === void 0) { uv = Vector2.Zero(); }
+            this.position = position;
+            this.normal = normal;
+            this.uv = uv;
+        }
+        PositionNormalTextureVertex.prototype.clone = function () {
+            return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
+        };
+        return PositionNormalTextureVertex;
+    })();
+    BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // SIMD
     if (window.SIMD !== undefined) {
         // Replace functions

@@ -7,10 +7,25 @@ var BABYLON;
             this._isDepthFuncDirty = false;
             this._isCullFaceDirty = false;
             this._isCullDirty = false;
+            this._isZOffsetDirty = false;
         }
         Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
             get: function () {
-                return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+                return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(_DepthCullingState.prototype, "zOffset", {
+            get: function () {
+                return this._zOffset;
+            },
+            set: function (value) {
+                if (this._zOffset === value) {
+                    return;
+                }
+                this._zOffset = value;
+                this._isZOffsetDirty = true;
             },
             enumerable: true,
             configurable: true
@@ -91,11 +106,13 @@ var BABYLON;
             this._depthFunc = null;
             this._cull = null;
             this._cullFace = null;
+            this._zOffset = 0;
             this._isDepthTestDirty = true;
             this._isDepthMaskDirty = true;
             this._isDepthFuncDirty = false;
             this._isCullFaceDirty = false;
             this._isCullDirty = false;
+            this._isZOffsetDirty = false;
         };
         _DepthCullingState.prototype.apply = function (gl) {
             if (!this.isDirty) {
@@ -135,6 +152,17 @@ var BABYLON;
             if (this._isDepthFuncDirty) {
                 gl.depthFunc(this.depthFunc);
                 this._isDepthFuncDirty = false;
+            }
+            // zOffset
+            if (this._isZOffsetDirty) {
+                if (this.zOffset) {
+                    gl.enable(gl.POLYGON_OFFSET_FILL);
+                    gl.polygonOffset(this.zOffset, 0);
+                }
+                else {
+                    gl.disable(gl.POLYGON_OFFSET_FILL);
+                }
+                this._isZOffsetDirty = false;
             }
         };
         return _DepthCullingState;
@@ -370,9 +398,6 @@ var BABYLON;
             };
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
-            // Textures
-            this._workingCanvas = document.createElement("canvas");
-            this._workingContext = this._workingCanvas.getContext("2d");
             // Viewport
             this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
             this.resize();
@@ -551,6 +576,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Engine.prototype._prepareWorkingCanvas = function () {
+            if (this._workingCanvas) {
+                return;
+            }
+            this._workingCanvas = document.createElement("canvas");
+            this._workingContext = this._workingCanvas.getContext("2d");
+        };
         Engine.prototype.getGlInfo = function () {
             return {
                 vendor: this._glVendor,
@@ -1105,7 +1137,8 @@ var BABYLON;
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         };
         // States
-        Engine.prototype.setState = function (culling, force) {
+        Engine.prototype.setState = function (culling, zOffset, force) {
+            if (zOffset === void 0) { zOffset = 0; }
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
@@ -1116,6 +1149,8 @@ var BABYLON;
                     this._depthCullingState.cull = false;
                 }
             }
+            // Z offset
+            this._depthCullingState.zOffset = zOffset;
         };
         Engine.prototype.setDepthBuffer = function (enable) {
             this._depthCullingState.depthTest = enable;
@@ -1259,6 +1294,7 @@ var BABYLON;
                     prepareWebGLTexture(texture, _this._gl, scene, img.width, img.height, invertY, noMipmap, false, function (potWidth, potHeight) {
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
+                            _this._prepareWorkingCanvas();
                             _this._workingCanvas.width = potWidth;
                             _this._workingCanvas.height = potHeight;
                             if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
@@ -1494,6 +1530,7 @@ var BABYLON;
                 cascadeLoad(rootUrl, scene, function (imgs) {
                     var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
+                    _this._prepareWorkingCanvas();
                     _this._workingCanvas.width = width;
                     _this._workingCanvas.height = height;
                     var faces = [
