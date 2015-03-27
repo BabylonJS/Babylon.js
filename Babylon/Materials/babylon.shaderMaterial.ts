@@ -231,7 +231,7 @@
                 }
             }
 
-            super.bind(world, null);
+            super.bind(world, mesh);
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
