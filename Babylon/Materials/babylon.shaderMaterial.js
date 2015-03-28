@@ -144,7 +144,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh.useBones) {
+                if (mesh && mesh.useBones) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
                 for (var name in this._textures) {

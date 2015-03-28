@@ -891,7 +891,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
+            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -1271,10 +1271,12 @@ var BABYLON;
                 if (faceVertices.length === 0) {
                     continue;
                 }
+                // Add UVs and get back to world
+                var localRotationMatrix = BABYLON.Matrix.RotationYawPitchRoll(yaw, pitch, angle);
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
                     vertexData.indices.push(currentVertexDataIndex);
-                    BABYLON.Vector3.TransformCoordinates(vertex.position, decalWorldMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
                     vertexData.uvs.push(0.5 + vertex.position.x / size.x);
                     vertexData.uvs.push(0.5 + vertex.position.y / size.y);
@@ -1284,6 +1286,8 @@ var BABYLON;
             // Return mesh
             var decal = new Mesh(name, sourceMesh.getScene());
             vertexData.applyToMesh(decal);
+            decal.position = position.clone();
+            decal.rotation = new BABYLON.Vector3(pitch, yaw, angle);
             return decal;
         };
         // Tools

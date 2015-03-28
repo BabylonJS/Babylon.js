@@ -12054,10 +12054,13 @@ var BABYLON;
                 if (faceVertices.length === 0) {
                     continue;
                 }
+                // Add UVs and get back to world
+                var localRotationMatrix = BABYLON.Matrix.RotationYawPitchRoll(yaw, pitch, angle);
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
                     vertexData.indices.push(currentVertexDataIndex);
-                    BABYLON.Vector3.TransformCoordinates(vertex.position, decalWorldMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    //Vector3.TransformCoordinates(vertex.position, localRotationMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
                     vertexData.uvs.push(0.5 + vertex.position.x / size.x);
                     vertexData.uvs.push(0.5 + vertex.position.y / size.y);
@@ -12067,6 +12070,8 @@ var BABYLON;
             // Return mesh
             var decal = new Mesh(name, sourceMesh.getScene());
             vertexData.applyToMesh(decal);
+            decal.position = position.clone();
+            decal.rotation = new BABYLON.Vector3(pitch, yaw, angle);
             return decal;
         };
         // Tools
@@ -22014,7 +22019,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh.useBones) {
+                if (mesh && mesh.useBones) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
                 for (var name in this._textures) {
