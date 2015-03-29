@@ -4,6 +4,7 @@
         public id: string;
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public delayLoadingFile: string;
+        public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
         // Private
         private _scene: Scene;
@@ -54,6 +55,7 @@
 
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         }
 
         public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void {
@@ -83,6 +85,7 @@
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -93,6 +96,7 @@
             }
 
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
@@ -132,6 +136,7 @@
                     }
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public getTotalVertices(): number {
@@ -209,6 +214,7 @@
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         }
 
         public getTotalIndices(): number {
@@ -316,6 +322,12 @@
             }
         }
 
+        private notifyUpdate(kind?: string) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
+            }
+        }
+
         public load(scene: Scene, onLoaded?: () => void): void {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return;
@@ -383,12 +395,7 @@
 
             this._boundingInfo = null; // todo: .dispose()
 
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
             this._isDisposed = true;
         }
 
