@@ -50,6 +50,7 @@
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
+        private _sideOrientation: number = Mesh._DEFAULTSIDE;
 
         /**
          * @constructor
@@ -293,6 +294,14 @@
             return this._isDisposed;
         }
 
+        public get sideOrientation(): number {
+            return this._sideOrientation;
+        }
+
+        public set sideOrientation(sideO : number) {
+            this._sideOrientation = sideO;
+        }
+
         // Methods  
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
@@ -420,6 +429,21 @@
                 this.updateVerticesDataDirectly(kind, data, offset, false);
             }
         }
+
+        // Mesh positions update function :
+        // updates the mesh positions according to the positionFunction returned values.
+        // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
+        // This dedicated positionFunction computes new mesh positions according to the given mesh type.
+        public updateMeshPositions(positionFunction): void {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            positionFunction(positions);
+            var indices = this.getIndices();
+            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+        }
+
 
         public makeGeometryUnique() {
             if (!this._geometry) {
@@ -1140,13 +1164,53 @@
         }
 
         // Statics
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            var ribbon = new Mesh(name, scene);
-            var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, ribbonInstance: Mesh = null): Mesh {
+            
+            if (ribbonInstance) {   // existing ribbon instance update
 
-            vertexData.applyToMesh(ribbon, updatable);
+                // positionFunction : ribbon case
+                // only pathArray and sideOrientation parameters are taken into account for positions update
+                var positionsOfRibbon = function(pathArray, sideOrientation) {
+                        var positionFunction = function(positions) {
+                        var minlg = pathArray[0].length;
+                        var i = 0;
+                        var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                        for (var si = 1; si <= ns; si++) {
+                            for (var p = 0; p < pathArray.length; p++) {
+                                var path = pathArray[p];
+                                var l = path.length;
+                                minlg = (minlg < l) ? minlg : l;
+                                var j = 0;
+                                while (j < minlg) {
+                                    positions[i] = path[j].x;
+                                    positions[i + 1] = path[j].y;
+                                    positions[i + 2] = path[j].z;
+                                    j ++;
+                                    i += 3;
+                                }
+                            }
+                        }
+                    };
+                    return positionFunction;
+                };
+                var sideOrientation = ribbonInstance.sideOrientation;
+                var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
+                ribbonInstance.updateMeshPositions(positionFunction);
 
-            return ribbon;
+                return ribbonInstance;
+
+            }
+            else {  // new ribbon creation
+
+                var ribbon = new Mesh(name, scene);
+                ribbon.sideOrientation = sideOrientation;
+
+                var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+
+                vertexData.applyToMesh(ribbon, updatable);
+
+                return ribbon;
+            }
         }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
