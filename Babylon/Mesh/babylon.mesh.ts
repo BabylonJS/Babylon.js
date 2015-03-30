@@ -298,7 +298,7 @@
             return this._sideOrientation;
         }
 
-        public set sideOrientation(sideO : number) {
+        public set sideOrientation(sideO: number) {
             this._sideOrientation = sideO;
         }
 
@@ -799,7 +799,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                },() => { }, scene.database, getBinaryData);
             }
         }
 
@@ -956,7 +956,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -977,7 +977,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1058,8 +1058,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
-                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
+                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
+                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1138,7 +1138,7 @@
             }
             var dupes = [];
 
-            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40,(iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
                 for (var j = 0; j < realPos; ++j) {
@@ -1148,7 +1148,7 @@
                         break;
                     }
                 }
-            }, () => {
+            },() => {
                     for (var i = 0; i < indices.length; ++i) {
                         indices[i] = dupes[indices[i]] || indices[i];
                     }
@@ -1165,13 +1165,13 @@
 
         // Statics
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, ribbonInstance: Mesh = null): Mesh {
-            
+
             if (ribbonInstance) {   // existing ribbon instance update
 
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
-                var positionsOfRibbon = function(pathArray, sideOrientation) {
-                        var positionFunction = function(positions) {
+                var positionsOfRibbon = function (pathArray, sideOrientation) {
+                    var positionFunction = function (positions) {
                         var minlg = pathArray[0].length;
                         var i = 0;
                         var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
@@ -1185,7 +1185,7 @@
                                     positions[i] = path[j].x;
                                     positions[i + 1] = path[j].y;
                                     positions[i + 2] = path[j].z;
-                                    j ++;
+                                    j++;
                                     i += 3;
                                 }
                             }
@@ -1390,7 +1390,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload, () => { }, scene.database);
+            Tools.LoadImage(url, onload,() => { }, scene.database);
 
             return ground;
         }
@@ -1488,7 +1488,7 @@
                     return new PositionNormalVertex(
                         Vector3.Lerp(v0.position, v1.position, clipFactor),
                         Vector3.Lerp(v0.normal, v1.normal, clipFactor)
-                    );
+                        );
                 }
 
                 var result = new Array<PositionNormalVertex>();

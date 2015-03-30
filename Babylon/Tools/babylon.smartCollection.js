@@ -85,6 +85,14 @@ var BABYLON;
                 this._keys = new Array(this._initialCapacity);
             }
         };
+        SmartCollection.prototype.forEach = function (block) {
+            var key;
+            for (key in this.items) {
+                if (this.items.hasOwnProperty(key)) {
+                    block(this.items[key]);
+                }
+            }
+        };
         return SmartCollection;
     })();
     BABYLON.SmartCollection = SmartCollection;

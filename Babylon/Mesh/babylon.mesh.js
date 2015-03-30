@@ -40,6 +40,7 @@ var BABYLON;
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+            this._sideOrientation = Mesh._DEFAULTSIDE;
             if (source) {
                 // Geometry
                 if (source._geometry) {
@@ -266,6 +267,16 @@ var BABYLON;
         Mesh.prototype.isDisposed = function () {
             return this._isDisposed;
         };
+        Object.defineProperty(Mesh.prototype, "sideOrientation", {
+            get: function () {
+                return this._sideOrientation;
+            },
+            set: function (sideO) {
+                this._sideOrientation = sideO;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods  
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
@@ -367,6 +378,19 @@ var BABYLON;
                 this.makeGeometryUnique();
                 this.updateVerticesDataDirectly(kind, data, offset, false);
             }
+        };
+        // Mesh positions update function :
+        // updates the mesh positions according to the positionFunction returned values.
+        // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
+        // This dedicated positionFunction computes new mesh positions according to the given mesh type.
+        Mesh.prototype.updateMeshPositions = function (positionFunction) {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            positionFunction(positions);
+            var indices = this.getIndices();
+            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
         };
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
@@ -891,7 +915,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
+            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -939,12 +963,47 @@ var BABYLON;
             });
         };
         // Statics
-        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
+        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation, ribbonInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var ribbon = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
-            vertexData.applyToMesh(ribbon, updatable);
-            return ribbon;
+            if (ribbonInstance === void 0) { ribbonInstance = null; }
+            if (ribbonInstance) {
+                // positionFunction : ribbon case
+                // only pathArray and sideOrientation parameters are taken into account for positions update
+                var positionsOfRibbon = function (pathArray, sideOrientation) {
+                    var positionFunction = function (positions) {
+                        var minlg = pathArray[0].length;
+                        var i = 0;
+                        var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                        for (var si = 1; si <= ns; si++) {
+                            for (var p = 0; p < pathArray.length; p++) {
+                                var path = pathArray[p];
+                                var l = path.length;
+                                minlg = (minlg < l) ? minlg : l;
+                                var j = 0;
+                                while (j < minlg) {
+                                    positions[i] = path[j].x;
+                                    positions[i + 1] = path[j].y;
+                                    positions[i + 2] = path[j].z;
+                                    j++;
+                                    i += 3;
+                                }
+                            }
+                        }
+                    };
+                    return positionFunction;
+                };
+                var sideOrientation = ribbonInstance.sideOrientation;
+                var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
+                ribbonInstance.updateMeshPositions(positionFunction);
+                return ribbonInstance;
+            }
+            else {
+                var ribbon = new Mesh(name, scene);
+                ribbon.sideOrientation = sideOrientation;
+                var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                vertexData.applyToMesh(ribbon, updatable);
+                return ribbon;
+            }
         };
         Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }

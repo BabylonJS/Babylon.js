@@ -8872,7 +8872,26 @@ var BABYLON;
                 return false;
             }
             this._geometries.push(geometry);
+            if (this.onGeometryAdded) {
+                this.onGeometryAdded(geometry);
+            }
             return true;
+        };
+        /**
+         * Removes an existing geometry
+         * @param {BABYLON.Geometry} geometry - the geometry to be removed from the scene.
+         * @return {boolean} was the geometry removed or not
+         */
+        Scene.prototype.removeGeometry = function (geometry) {
+            var index = this._geometries.indexOf(geometry);
+            if (index > -1) {
+                this._geometries.splice(index, 1);
+                if (this.onGeometryRemoved) {
+                    this.onGeometryRemoved(geometry);
+                }
+                return true;
+            }
+            return false;
         };
         Scene.prototype.getGeometries = function () {
             return this._geometries;
@@ -10823,6 +10842,7 @@ var BABYLON;
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+            this._sideOrientation = Mesh._DEFAULTSIDE;
             if (source) {
                 // Geometry
                 if (source._geometry) {
@@ -11049,6 +11069,16 @@ var BABYLON;
         Mesh.prototype.isDisposed = function () {
             return this._isDisposed;
         };
+        Object.defineProperty(Mesh.prototype, "sideOrientation", {
+            get: function () {
+                return this._sideOrientation;
+            },
+            set: function (sideO) {
+                this._sideOrientation = sideO;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods  
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
@@ -11150,6 +11180,19 @@ var BABYLON;
                 this.makeGeometryUnique();
                 this.updateVerticesDataDirectly(kind, data, offset, false);
             }
+        };
+        // Mesh positions update function :
+        // updates the mesh positions according to the positionFunction returned values.
+        // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
+        // This dedicated positionFunction computes new mesh positions according to the given mesh type.
+        Mesh.prototype.updateMeshPositions = function (positionFunction) {
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            positionFunction(positions);
+            var indices = this.getIndices();
+            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
         };
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
@@ -11722,12 +11765,47 @@ var BABYLON;
             });
         };
         // Statics
-        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
+        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation, ribbonInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var ribbon = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
-            vertexData.applyToMesh(ribbon, updatable);
-            return ribbon;
+            if (ribbonInstance === void 0) { ribbonInstance = null; }
+            if (ribbonInstance) {
+                // positionFunction : ribbon case
+                // only pathArray and sideOrientation parameters are taken into account for positions update
+                var positionsOfRibbon = function (pathArray, sideOrientation) {
+                    var positionFunction = function (positions) {
+                        var minlg = pathArray[0].length;
+                        var i = 0;
+                        var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                        for (var si = 1; si <= ns; si++) {
+                            for (var p = 0; p < pathArray.length; p++) {
+                                var path = pathArray[p];
+                                var l = path.length;
+                                minlg = (minlg < l) ? minlg : l;
+                                var j = 0;
+                                while (j < minlg) {
+                                    positions[i] = path[j].x;
+                                    positions[i + 1] = path[j].y;
+                                    positions[i + 2] = path[j].z;
+                                    j++;
+                                    i += 3;
+                                }
+                            }
+                        }
+                    };
+                    return positionFunction;
+                };
+                var sideOrientation = ribbonInstance.sideOrientation;
+                var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
+                ribbonInstance.updateMeshPositions(positionFunction);
+                return ribbonInstance;
+            }
+            else {
+                var ribbon = new Mesh(name, scene);
+                ribbon.sideOrientation = sideOrientation;
+                var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                vertexData.applyToMesh(ribbon, updatable);
+                return ribbon;
+            }
         };
         Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
@@ -12059,7 +12137,6 @@ var BABYLON;
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
                     vertexData.indices.push(currentVertexDataIndex);
-                    //Vector3.TransformCoordinates(vertex.position, localRotationMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
                     vertexData.uvs.push(0.5 + vertex.position.x / size.x);
@@ -21309,7 +21386,7 @@ var BABYLON;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection();
+            this._touches = new BABYLON.SmartCollection();
             this.deltaPosition = BABYLON.Vector3.Zero();
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -21549,48 +21626,6 @@ var BABYLON;
         return VirtualJoystick;
     })();
     BABYLON.VirtualJoystick = VirtualJoystick;
-})(BABYLON || (BABYLON = {}));
-var BABYLON;
-(function (BABYLON) {
-    var VirtualJoystick;
-    (function (VirtualJoystick) {
-        var Collection = (function () {
-            function Collection() {
-                this._count = 0;
-                this._collection = new Array();
-            }
-            Collection.prototype.Count = function () {
-                return this._count;
-            };
-            Collection.prototype.add = function (key, item) {
-                if (this._collection[key] != undefined) {
-                    return undefined;
-                }
-                this._collection[key] = item;
-                return ++this._count;
-            };
-            Collection.prototype.remove = function (key) {
-                if (this._collection[key] == undefined) {
-                    return undefined;
-                }
-                delete this._collection[key];
-                return --this._count;
-            };
-            Collection.prototype.item = function (key) {
-                return this._collection[key];
-            };
-            Collection.prototype.forEach = function (block) {
-                var key;
-                for (key in this._collection) {
-                    if (this._collection.hasOwnProperty(key)) {
-                        block(this._collection[key]);
-                    }
-                }
-            };
-            return Collection;
-        })();
-        VirtualJoystick.Collection = Collection;
-    })(VirtualJoystick = BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoystick.js.map
 var BABYLON;
@@ -25260,6 +25295,7 @@ var BABYLON;
         };
         Geometry.prototype.setAllVerticesData = function (vertexData, updatable) {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         };
         Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
             this._vertexBuffers = this._vertexBuffers || {};
@@ -25281,6 +25317,7 @@ var BABYLON;
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesDataDirectly = function (kind, data, offset) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -25288,6 +25325,7 @@ var BABYLON;
                 return;
             }
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -25316,6 +25354,7 @@ var BABYLON;
                     }
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.getTotalVertices = function () {
             if (!this.isReady()) {
@@ -25381,6 +25420,7 @@ var BABYLON;
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         };
         Geometry.prototype.getTotalIndices = function () {
             if (!this.isReady()) {
@@ -25462,6 +25502,11 @@ var BABYLON;
                 this._indexBuffer.references = numOfMeshes;
             }
         };
+        Geometry.prototype.notifyUpdate = function (kind) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
+            }
+        };
         Geometry.prototype.load = function (scene, onLoaded) {
             var _this = this;
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
@@ -25517,11 +25562,7 @@ var BABYLON;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
             this._boundingInfo = null; // todo: .dispose()
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
             this._isDisposed = true;
         };
         Geometry.prototype.copy = function (id) {
@@ -30281,6 +30322,14 @@ var BABYLON;
                 this.count = 0;
                 this.items = {};
                 this._keys = new Array(this._initialCapacity);
+            }
+        };
+        SmartCollection.prototype.forEach = function (block) {
+            var key;
+            for (key in this.items) {
+                if (this.items.hasOwnProperty(key)) {
+                    block(this.items[key]);
+                }
             }
         };
         return SmartCollection;
