@@ -728,7 +728,26 @@ var BABYLON;
                 return false;
             }
             this._geometries.push(geometry);
+            if (this.onGeometryAdded) {
+                this.onGeometryAdded(geometry);
+            }
             return true;
+        };
+        /**
+         * Removes an existing geometry
+         * @param {BABYLON.Geometry} geometry - the geometry to be removed from the scene.
+         * @return {boolean} was the geometry removed or not
+         */
+        Scene.prototype.removeGeometry = function (geometry) {
+            var index = this._geometries.indexOf(geometry);
+            if (index > -1) {
+                this._geometries.splice(index, 1);
+                if (this.onGeometryRemoved) {
+                    this.onGeometryRemoved(geometry);
+                }
+                return true;
+            }
+            return false;
         };
         Scene.prototype.getGeometries = function () {
             return this._geometries;

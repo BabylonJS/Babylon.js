@@ -41,6 +41,7 @@ var BABYLON;
         };
         Geometry.prototype.setAllVerticesData = function (vertexData, updatable) {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         };
         Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
             this._vertexBuffers = this._vertexBuffers || {};
@@ -62,6 +63,7 @@ var BABYLON;
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesDataDirectly = function (kind, data, offset) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -69,6 +71,7 @@ var BABYLON;
                 return;
             }
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -97,6 +100,7 @@ var BABYLON;
                     }
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.getTotalVertices = function () {
             if (!this.isReady()) {
@@ -162,6 +166,7 @@ var BABYLON;
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         };
         Geometry.prototype.getTotalIndices = function () {
             if (!this.isReady()) {
@@ -243,6 +248,11 @@ var BABYLON;
                 this._indexBuffer.references = numOfMeshes;
             }
         };
+        Geometry.prototype.notifyUpdate = function (kind) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
+            }
+        };
         Geometry.prototype.load = function (scene, onLoaded) {
             var _this = this;
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
@@ -298,11 +308,7 @@ var BABYLON;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
             this._boundingInfo = null; // todo: .dispose()
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
             this._isDisposed = true;
         };
         Geometry.prototype.copy = function (id) {
