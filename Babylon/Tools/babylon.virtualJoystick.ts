@@ -39,7 +39,7 @@ module BABYLON {
         private _deltaJoystickVector: Vector2;
         private _leftJoystick: boolean;
         private _joystickIndex: number;
-        private _touches: BABYLON.VirtualJoystick.Collection<PointerEvent>;
+        private _touches: SmartCollection;
 
         constructor(leftJoystick?: boolean) {
             if (leftJoystick) {
@@ -61,7 +61,7 @@ module BABYLON {
             this.reverseUpDown = false;
 
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection<PointerEvent>();
+            this._touches = new SmartCollection();
             this.deltaPosition = BABYLON.Vector3.Zero();
 
             this._joystickSensibility = 25;
@@ -308,51 +308,6 @@ module BABYLON {
             if (VirtualJoystick.vjCanvas) {
                 document.body.removeChild(VirtualJoystick.vjCanvas);
                 VirtualJoystick.vjCanvas = null;
-            }
-        }
-    }
-}
-
-module BABYLON.VirtualJoystick {
-    export class Collection<T> {
-        private _count: number;
-        private _collection: Array<T>;
-
-        constructor() {
-            this._count = 0;
-            this._collection = new Array<T>();
-        }
-
-        public Count(): number {
-            return this._count;
-        }
-
-        public add<T>(key: string, item: T): number {
-            if (this._collection[key] != undefined) {
-                return undefined;
-            }
-            this._collection[key] = item;
-            return ++this._count;
-        }
-
-        public remove(key: string): number {
-            if (this._collection[key] == undefined) {
-                return undefined;
-            }
-            delete this._collection[key];
-            return --this._count;
-        }
-
-        public item(key: string) {
-            return this._collection[key];
-        }
-
-        public forEach<T>(block: (item: T) => void) {
-            var key: string;
-            for (key in this._collection) {
-                if (this._collection.hasOwnProperty(key)) {
-                    block(this._collection[key]);
-                }
             }
         }
     }
