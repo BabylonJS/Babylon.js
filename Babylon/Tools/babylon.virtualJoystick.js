@@ -27,7 +27,7 @@ var BABYLON;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection();
+            this._touches = new BABYLON.SmartCollection();
             this.deltaPosition = BABYLON.Vector3.Zero();
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -267,47 +267,5 @@ var BABYLON;
         return VirtualJoystick;
     })();
     BABYLON.VirtualJoystick = VirtualJoystick;
-})(BABYLON || (BABYLON = {}));
-var BABYLON;
-(function (BABYLON) {
-    var VirtualJoystick;
-    (function (VirtualJoystick) {
-        var Collection = (function () {
-            function Collection() {
-                this._count = 0;
-                this._collection = new Array();
-            }
-            Collection.prototype.Count = function () {
-                return this._count;
-            };
-            Collection.prototype.add = function (key, item) {
-                if (this._collection[key] != undefined) {
-                    return undefined;
-                }
-                this._collection[key] = item;
-                return ++this._count;
-            };
-            Collection.prototype.remove = function (key) {
-                if (this._collection[key] == undefined) {
-                    return undefined;
-                }
-                delete this._collection[key];
-                return --this._count;
-            };
-            Collection.prototype.item = function (key) {
-                return this._collection[key];
-            };
-            Collection.prototype.forEach = function (block) {
-                var key;
-                for (key in this._collection) {
-                    if (this._collection.hasOwnProperty(key)) {
-                        block(this._collection[key]);
-                    }
-                }
-            };
-            return Collection;
-        })();
-        VirtualJoystick.Collection = Collection;
-    })(VirtualJoystick = BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoystick.js.map
