@@ -434,14 +434,16 @@
         // updates the mesh positions according to the positionFunction returned values.
         // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
         // This dedicated positionFunction computes new mesh positions according to the given mesh type.
-        public updateMeshPositions(positionFunction): void {
+        public updateMeshPositions(positionFunction, computeNormals: boolean = true): void {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             positionFunction(positions);
-            var indices = this.getIndices();
-            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            if (computeNormals) {
+                var indices = this.getIndices();
+                var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+                this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            }
         }
 
 
@@ -1195,7 +1197,7 @@
                 };
                 var sideOrientation = ribbonInstance.sideOrientation;
                 var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
-                ribbonInstance.updateMeshPositions(positionFunction);
+                ribbonInstance.updateMeshPositions(positionFunction, true);
 
                 return ribbonInstance;
 
@@ -1270,14 +1272,36 @@
         }
 
         // Lines
-        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean): LinesMesh {
-            var lines = new LinesMesh(name, scene, updatable);
+        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
+            if (linesInstance) { // lines update
+                var positionsOfLines = function(points) {
+                    var positionFunction = function(positions) {
+                        var i = 0;
+                        for(var p = 0; p < points.length; p++) {
+                            positions[i] = points[p].x;
+                            positions[i + 1] = points[p].y;
+                            positions[i + 2] = points[p].z;
+                            i += 3;
+                        }
+                    };
+                    return positionFunction;
+                };
+                var positionFunction = positionsOfLines(points);
+                linesInstance.updateMeshPositions(positionFunction, false);
 
-            var vertexData = VertexData.CreateLines(points);
+                return linesInstance;
 
-            vertexData.applyToMesh(lines, updatable);
+            }
+            else { // lines creation
 
-            return lines;
+                var lines = new LinesMesh(name, scene, updatable);
+
+                var vertexData = VertexData.CreateLines(points);
+
+                vertexData.applyToMesh(lines, updatable);
+
+                return lines;
+            }
         }
 
         // Extrusion
