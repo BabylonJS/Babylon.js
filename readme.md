@@ -4,7 +4,7 @@ Babylon.js
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
 ## Documentation
-- [Documentation](https://doc.babylonjs.com)
+- [Documentation](http://doc.babylonjs.com)
 - [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
 - [Roadmap](http://doc.babylonjs.com/page.php?p=22681)
 - [Samples](https://github.com/BabylonJS/Samples)
