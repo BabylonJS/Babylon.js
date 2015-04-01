@@ -1274,10 +1274,10 @@
         // Lines
         public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
             if (linesInstance) { // lines update
-                var positionsOfLines = function(points) {
-                    var positionFunction = function(positions) {
+                var positionsOfLines = function (points) {
+                    var positionFunction = function (positions) {
                         var i = 0;
-                        for(var p = 0; p < points.length; p++) {
+                        for (var p = 0; p < points.length; p++) {
                             positions[i] = points[p].x;
                             positions[i + 1] = points[p].y;
                             positions[i + 2] = points[p].z;
@@ -1292,16 +1292,15 @@
                 return linesInstance;
 
             }
-            else { // lines creation
+            // lines creation
 
-                var lines = new LinesMesh(name, scene, updatable);
+            var lines = new LinesMesh(name, scene, updatable);
 
-                var vertexData = VertexData.CreateLines(points);
+            var vertexData = VertexData.CreateLines(points);
 
-                vertexData.applyToMesh(lines, updatable);
+            vertexData.applyToMesh(lines, updatable);
 
-                return lines;
-            }
+            return lines;
         }
 
         // Extrusion
@@ -1320,12 +1319,12 @@
         private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
             
             // extrusion geometry
-            var extrusionPathArray = function(shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
                 var distances = path3D.getDistances();
-                
+
                 var angle = 0;
                 var returnScale: { (i: number, distance: number): number; } = (i, distance) => { return scale; };
                 var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
@@ -1353,24 +1352,22 @@
             if (instance) { // instance update
                 
                 var path3D = ((<any>instance).path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
                 return instance;
             }
-            else { // extruded shape creation
+            // extruded shape creation
 
-                var path3D = <any>new Path3D(curve);
-                var newShapePaths = new Array<Array<Vector3>>();
-                var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+            var path3D = <any>new Path3D(curve);
+            var newShapePaths = new Array<Array<Vector3>>();
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
 
-                var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
-                (<any>extrudedGeneric).pathArray = pathArray;
-                (<any>extrudedGeneric).path3D = path3D;
+            var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
+            (<any>extrudedGeneric).pathArray = pathArray;
+            (<any>extrudedGeneric).path3D = path3D;
 
-                return extrudedGeneric;
-            }
-
+            return extrudedGeneric;
         }
 
         // Plane & ground
@@ -1447,7 +1444,7 @@
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
             
             // tube geometry
-            var tubePathArray = function(path, path3D, circlePaths, radius, tessellation, radiusFunction) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -1479,24 +1476,23 @@
 
             if (tubeInstance) { // tube update
                 var path3D = ((<any>tubeInstance).path3D).update(path);
-                var pathArray = tubePathArray(path, path3D, (<any>tubeInstance).pathArray, radius, (<any>tubeInstance).tessellation, radiusFunction);
+                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
-                return tubeInstance;        
-            
-            }
-            else { // tube creation
+                return tubeInstance;
 
-                var path3D = <any>new Path3D(path);
-                var newPathArray = new Array<Array<Vector3>>();
-                var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
-                var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
-                (<any>tube).pathArray = pathArray;
-                (<any>tube).path3D = path3D;
-                (<any>tube).tessellation = tessellation;
-
-                return tube;
             }
+            // tube creation
+
+            var path3D = <any>new Path3D(path);
+            var newPathArray = new Array<Array<Vector3>>();
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
+            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            (<any>tube).pathArray = pathArray;
+            (<any>tube).path3D = path3D;
+            (<any>tube).tessellation = tessellation;
+
+            return tube;
         }
 
         // Decals
