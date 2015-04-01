@@ -1419,7 +1419,7 @@
             return ground;
         }
 
-        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: TubularMesh = null): TubularMesh {
+        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
             
             // tube geometry
             var tubePathArray = function(path, path3D, circlePaths, radius, tessellation, radiusFunction) {
@@ -1453,22 +1453,22 @@
             };
 
             if (tubeInstance) { // tube update
-                var path3D = (tubeInstance.path3D).update(path);
-                var pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction);
-                tubeInstance = <TubularMesh>Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
+                var path3D = ((<any>tubeInstance).path3D).update(path);
+                var pathArray = tubePathArray(path, path3D, (<any>tubeInstance).pathArray, radius, (<any>tubeInstance).tessellation, radiusFunction);
+                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
                 return tubeInstance;        
             
             }
             else { // tube creation
 
-                var path3D = new Path3D(path);
+                var path3D = <any>new Path3D(path);
                 var newPathArray = new Array<Array<Vector3>>();
                 var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
-                var tube = <TubularMesh>Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
-                tube.pathArray = pathArray;
-                tube.path3D = path3D;
-                tube.tessellation = tessellation;
+                var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+                (<any>tube).pathArray = pathArray;
+                (<any>tube).path3D = path3D;
+                (<any>tube).tessellation = tessellation;
 
                 return tube;
             }
