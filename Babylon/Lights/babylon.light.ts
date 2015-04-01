@@ -71,7 +71,7 @@
             }
 
 
-            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask === mesh.layerMask) {
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
 
