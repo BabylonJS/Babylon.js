@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 7, 0),
+    'version': (1, 8, 0),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -53,7 +53,6 @@ MAX_VERTEX_ELEMENTS = 65535
 VERTEX_OUTPUT_PER_LINE = 1000
 MAX_FLOAT_PRECISION = '%.4f'
 MAX_INFLUENCERS_PER_VERTEX = 4
-MATERIALS_PATH_VAR = 'materialsRootDir'
 
 # used in World constructor, defined in BABYLON.Scene
 #FOGMODE_NONE = 0
@@ -139,6 +138,12 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         default = False,
         )
     
+    export_noVertexOpt = bpy.props.BoolProperty(
+        name="No vertex sharing",
+        description="Turns off an optimization which reduces vertices",
+        default = False,
+        )
+    
     attachedSound = bpy.props.StringProperty(
         name='Music', 
         description='',
@@ -159,6 +164,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         layout = self.layout
 
         layout.prop(self, 'export_onlyCurrentLayer') 
+        layout.prop(self, "export_noVertexOpt")
 
         layout.separator()
 
@@ -271,7 +277,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     nextStartFace = 0
 
                     while True and self.isInSelectedLayer(object, scene):
-                        mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID)
+                        mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID, self.export_noVertexOpt)
                         self.meshesAndNodes.append(mesh)
 
                         if object.data.attachedSound != '':
@@ -547,7 +553,7 @@ class FCurveAnimatable:
                 write_bool(file_handler, 'autoAnimateLoop', self.autoAnimateLoop)
 #===============================================================================
 class Mesh(FCurveAnimatable):
-    def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID):
+    def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID, noVertexOpt):
         super().__init__(object, True, True, True)  #Should animations be done when foredParent
         
         self.name = object.name + str(nameID)
@@ -751,7 +757,7 @@ class Mesh(FCurveAnimatable):
                             vertex_Color = Colormap[face.index].color3
                         
                     # Check if the current vertex is already saved                  
-                    alreadySaved = alreadySavedVertices[vertex_index] and not hasSkeleton
+                    alreadySaved = alreadySavedVertices[vertex_index] and not (hasSkeleton or noVertexOpt)
                     if alreadySaved:
                         alreadySaved = False                      
                     
