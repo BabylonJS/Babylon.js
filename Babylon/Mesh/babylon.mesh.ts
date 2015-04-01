@@ -1305,47 +1305,72 @@
         }
 
         // Extrusion
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         }
 
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         }
 
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number): Mesh {
-            var path3D = new Path3D(curve);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var binormals = path3D.getBinormals();
-            var distances = path3D.getDistances();
-            var shapePaths = new Array<Array<Vector3>>();
-            var angle = 0;
-            var returnScale: { (i: number, distance: number): number; } = (i, distance) => { return scale; };
-            var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
-            var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
-            var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
+            
+            // extrusion geometry
+            var extrusionPathArray = function(shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+                var tangents = path3D.getTangents();
+                var normals = path3D.getNormals();
+                var binormals = path3D.getBinormals();
+                var distances = path3D.getDistances();
+                
+                var angle = 0;
+                var returnScale: { (i: number, distance: number): number; } = (i, distance) => { return scale; };
+                var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
+                var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
+                var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
+                var index = 0;
 
-            for (var i = 0; i < curve.length; i++) {
-                var shapePath = new Array<Vector3>();
-                var angleStep = rotate(i, distances[i]);
-                var scaleRatio = scl(i, distances[i]);
-                for (var p = 0; p < shape.length; p++) {
-                    var rotationMatrix = Matrix.RotationAxis(tangents[i], angle);
-                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                    var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                    shapePath.push(rotated);
+                for (var i = 0; i < curve.length; i++) {
+                    var shapePath = new Array<Vector3>();
+                    var angleStep = rotate(i, distances[i]);
+                    var scaleRatio = scl(i, distances[i]);
+                    for (var p = 0; p < shape.length; p++) {
+                        var rotationMatrix = Matrix.RotationAxis(tangents[i], angle);
+                        var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                        var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                        shapePath.push(rotated);
+                    }
+                    shapePaths[index] = shapePath;
+                    angle += angleStep;
+                    index++;
                 }
-                shapePaths.push(shapePath);
-                angle += angleStep;
+                return shapePaths;
+            };
+
+            if (instance) { // instance update
+                
+                var path3D = ((<any>instance).path3D).update(curve);
+                var pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+
+                return instance;
+            }
+            else { // extruded shape creation
+
+                var path3D = <any>new Path3D(curve);
+                var newShapePaths = new Array<Array<Vector3>>();
+                var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+
+                var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
+                (<any>extrudedGeneric).pathArray = pathArray;
+                (<any>extrudedGeneric).path3D = path3D;
+
+                return extrudedGeneric;
             }
 
-            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
-            return extrudedGeneric;
         }
 
         // Plane & ground
