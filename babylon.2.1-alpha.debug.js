@@ -2794,40 +2794,75 @@ var __extends = this.__extends || function (d, b) {
     })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // SIMD
-    if (window.SIMD !== undefined) {
-        // Replace functions
-        Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
-        Matrix.prototype.invertToRef = Matrix.prototype.invertToRefSIMD;
-        Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
-        Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
-        Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
-        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+    var previousMultiplyToArray = Matrix.prototype.multiplyToArray;
+    var previousInvertToRef = Matrix.prototype.invertToRef;
+    var previousLookAtLHToRef = Matrix.LookAtLHToRef;
+    var previousTransformCoordinatesToRef = Vector3.TransformCoordinatesToRef;
+    var previousTransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRef;
+    var SIMDHelper = (function () {
+        function SIMDHelper() {
+        }
+        Object.defineProperty(SIMDHelper, "IsEnabled", {
             get: function () {
-                return this._data[0];
+                return SIMDHelper._isEnabled;
             },
-            set: function (value) {
-                if (!this._data) {
-                    this._data = new Float32Array(3);
+            enumerable: true,
+            configurable: true
+        });
+        SIMDHelper.DisableSIMD = function () {
+            // Replace functions
+            Matrix.prototype.multiplyToArray = previousMultiplyToArray;
+            Matrix.prototype.invertToRef = previousInvertToRef;
+            Matrix.LookAtLHToRef = previousLookAtLHToRef;
+            Vector3.TransformCoordinatesToRef = previousTransformCoordinatesToRef;
+            Vector3.TransformCoordinatesFromFloatsToRef = previousTransformCoordinatesFromFloatsToRef;
+            SIMDHelper._isEnabled = false;
+        };
+        SIMDHelper.EnableSIMD = function () {
+            if (window.SIMD === undefined) {
+                return;
+            }
+            // Replace functions
+            Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
+            Matrix.prototype.invertToRef = Matrix.prototype.invertToRefSIMD;
+            Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
+            Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
+            Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+            Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+                get: function () {
+                    return this._data[0];
+                },
+                set: function (value) {
+                    if (!this._data) {
+                        this._data = new Float32Array(3);
+                    }
+                    this._data[0] = value;
                 }
-                this._data[0] = value;
-            }
-        });
-        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
-            get: function () {
-                return this._data[1];
-            },
-            set: function (value) {
-                this._data[1] = value;
-            }
-        });
-        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
-            get: function () {
-                return this._data[2];
-            },
-            set: function (value) {
-                this._data[2] = value;
-            }
-        });
+            });
+            Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+                get: function () {
+                    return this._data[1];
+                },
+                set: function (value) {
+                    this._data[1] = value;
+                }
+            });
+            Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+                get: function () {
+                    return this._data[2];
+                },
+                set: function (value) {
+                    this._data[2] = value;
+                }
+            });
+            SIMDHelper._isEnabled = true;
+        };
+        SIMDHelper._isEnabled = false;
+        return SIMDHelper;
+    })();
+    BABYLON.SIMDHelper = SIMDHelper;
+    if (window.SIMD !== undefined) {
+        SIMDHelper.EnableSIMD();
     }
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.mapvar BABYLON;
@@ -5992,6 +6027,7 @@ var BABYLON;
             this.includeOnlyWithLayerMask = 0;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
+            this.excludeWithLayerMask = 0;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
@@ -6017,7 +6053,10 @@ var BABYLON;
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
-            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
+                return false;
+            }
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
             return true;
@@ -11185,14 +11224,17 @@ var BABYLON;
         // updates the mesh positions according to the positionFunction returned values.
         // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
         // This dedicated positionFunction computes new mesh positions according to the given mesh type.
-        Mesh.prototype.updateMeshPositions = function (positionFunction) {
+        Mesh.prototype.updateMeshPositions = function (positionFunction, computeNormals) {
+            if (computeNormals === void 0) { computeNormals = true; }
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             positionFunction(positions);
-            var indices = this.getIndices();
-            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            if (computeNormals) {
+                var indices = this.getIndices();
+                var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+                this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            }
         };
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
@@ -11796,7 +11838,7 @@ var BABYLON;
                 };
                 var sideOrientation = ribbonInstance.sideOrientation;
                 var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
-                ribbonInstance.updateMeshPositions(positionFunction);
+                ribbonInstance.updateMeshPositions(positionFunction, true);
                 return ribbonInstance;
             }
             else {
@@ -11853,55 +11895,92 @@ var BABYLON;
             return torusKnot;
         };
         // Lines
-        Mesh.CreateLines = function (name, points, scene, updatable) {
+        Mesh.CreateLines = function (name, points, scene, updatable, linesInstance) {
+            if (linesInstance === void 0) { linesInstance = null; }
+            if (linesInstance) {
+                var positionsOfLines = function (points) {
+                    var positionFunction = function (positions) {
+                        var i = 0;
+                        for (var p = 0; p < points.length; p++) {
+                            positions[i] = points[p].x;
+                            positions[i + 1] = points[p].y;
+                            positions[i + 2] = points[p].z;
+                            i += 3;
+                        }
+                    };
+                    return positionFunction;
+                };
+                var positionFunction = positionsOfLines(points);
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // lines creation
             var lines = new BABYLON.LinesMesh(name, scene, updatable);
             var vertexData = BABYLON.VertexData.CreateLines(points);
             vertexData.applyToMesh(lines, updatable);
             return lines;
         };
         // Extrusion
-        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation) {
+        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            if (extrudedInstance === void 0) { extrudedInstance = null; }
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         };
-        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            if (extrudedInstance === void 0) { extrudedInstance = null; }
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         };
-        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
-            var path3D = new BABYLON.Path3D(curve);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var binormals = path3D.getBinormals();
-            var distances = path3D.getDistances();
-            var shapePaths = new Array();
-            var angle = 0;
-            var returnScale = function (i, distance) {
-                return scale;
-            };
-            var returnRotation = function (i, distance) {
-                return rotation;
-            };
-            var rotate = custom ? rotateFunction : returnRotation;
-            var scl = custom ? scaleFunction : returnScale;
-            for (var i = 0; i < curve.length; i++) {
-                var shapePath = new Array();
-                var angleStep = rotate(i, distances[i]);
-                var scaleRatio = scl(i, distances[i]);
-                for (var p = 0; p < shape.length; p++) {
-                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
-                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                    var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                    shapePath.push(rotated);
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side, instance) {
+            // extrusion geometry
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+                var tangents = path3D.getTangents();
+                var normals = path3D.getNormals();
+                var binormals = path3D.getBinormals();
+                var distances = path3D.getDistances();
+                var angle = 0;
+                var returnScale = function (i, distance) {
+                    return scale;
+                };
+                var returnRotation = function (i, distance) {
+                    return rotation;
+                };
+                var rotate = custom ? rotateFunction : returnRotation;
+                var scl = custom ? scaleFunction : returnScale;
+                var index = 0;
+                for (var i = 0; i < curve.length; i++) {
+                    var shapePath = new Array();
+                    var angleStep = rotate(i, distances[i]);
+                    var scaleRatio = scl(i, distances[i]);
+                    for (var p = 0; p < shape.length; p++) {
+                        var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                        var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                        var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                        shapePath.push(rotated);
+                    }
+                    shapePaths[index] = shapePath;
+                    angle += angleStep;
+                    index++;
                 }
-                shapePaths.push(shapePath);
-                angle += angleStep;
+                return shapePaths;
+            };
+            if (instance) {
+                var path3D = (instance.path3D).update(curve);
+                var pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                return instance;
             }
-            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
+            // extruded shape creation
+            var path3D = new BABYLON.Path3D(curve);
+            var newShapePaths = new Array();
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+            var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
+            extrudedGeneric.pathArray = pathArray;
+            extrudedGeneric.path3D = path3D;
             return extrudedGeneric;
         };
         // Plane & ground
@@ -11955,34 +12034,52 @@ var BABYLON;
             }, scene.database);
             return ground;
         };
-        Mesh.CreateTube = function (name, path, radius, tesselation, radiusFunction, scene, updatable, sideOrientation) {
+        Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, scene, updatable, sideOrientation, tubeInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var path3D = new BABYLON.Path3D(path);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var distances = path3D.getDistances();
-            var pi2 = Math.PI * 2;
-            var step = pi2 / tesselation;
-            var returnRadius = function (i, distance) { return radius; };
-            var radiusFunctionFinal = radiusFunction || returnRadius;
-            var circlePaths = new Array();
-            var circlePath;
-            var rad;
-            var normal;
-            var rotated;
-            var rotationMatrix;
-            for (var i = 0; i < path.length; i++) {
-                rad = radiusFunctionFinal(i, distances[i]); // current radius
-                circlePath = Array(); // current circle array
-                normal = normals[i]; // current normal  
-                for (var ang = 0; ang < pi2; ang += step) {
-                    rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
-                    rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
-                    circlePath.push(rotated);
+            if (tubeInstance === void 0) { tubeInstance = null; }
+            // tube geometry
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction) {
+                var tangents = path3D.getTangents();
+                var normals = path3D.getNormals();
+                var distances = path3D.getDistances();
+                var pi2 = Math.PI * 2;
+                var step = pi2 / tessellation;
+                var returnRadius = function (i, distance) { return radius; };
+                var radiusFunctionFinal = radiusFunction || returnRadius;
+                var circlePath;
+                var rad;
+                var normal;
+                var rotated;
+                var rotationMatrix;
+                var index = 0;
+                for (var i = 0; i < path.length; i++) {
+                    rad = radiusFunctionFinal(i, distances[i]); // current radius
+                    circlePath = Array(); // current circle array
+                    normal = normals[i]; // current normal  
+                    for (var ang = 0; ang < pi2; ang += step) {
+                        rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
+                        rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                        circlePath.push(rotated);
+                    }
+                    circlePaths[index] = circlePath;
+                    index++;
                 }
-                circlePaths.push(circlePath);
+                return circlePaths;
+            };
+            if (tubeInstance) {
+                var path3D = (tubeInstance.path3D).update(path);
+                var pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction);
+                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
+                return tubeInstance;
             }
-            var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            // tube creation
+            var path3D = new BABYLON.Path3D(path);
+            var newPathArray = new Array();
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
+            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            tube.pathArray = pathArray;
+            tube.path3D = path3D;
+            tube.tessellation = tessellation;
             return tube;
         };
         // Decals
@@ -27214,37 +27311,48 @@ var BABYLON;
 (function (BABYLON) {
     var AudioEngine = (function () {
         function AudioEngine() {
-            this.audioContext = null;
+            this._audioContext = null;
+            this._audioContextInitialized = false;
             this.canUseWebAudio = false;
             this.WarnedWebAudioUnsupported = false;
-            try {
-                if (typeof AudioContext !== 'undefined') {
-                    this.audioContext = new AudioContext();
-                    this.canUseWebAudio = true;
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.canUseWebAudio = true;
+            }
+        }
+        Object.defineProperty(AudioEngine.prototype, "audioContext", {
+            get: function () {
+                if (!this._audioContextInitialized) {
+                    this._initializeAudioContext();
                 }
-                else if (typeof webkitAudioContext !== 'undefined') {
-                    this.audioContext = new webkitAudioContext();
-                    this.canUseWebAudio = true;
+                return this._audioContext;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        AudioEngine.prototype._initializeAudioContext = function () {
+            try {
+                if (this.canUseWebAudio) {
+                    this._audioContext = new AudioContext();
+                    // create a global volume gain node 
+                    this.masterGain = this._audioContext.createGain();
+                    this.masterGain.gain.value = 1;
+                    this.masterGain.connect(this._audioContext.destination);
+                    this._audioContextInitialized = true;
                 }
             }
             catch (e) {
                 this.canUseWebAudio = false;
                 BABYLON.Tools.Error("Web Audio: " + e.message);
             }
-            // create a global volume gain node 
-            if (this.canUseWebAudio) {
-                this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.value = 1;
-                this.masterGain.connect(this.audioContext.destination);
-            }
-        }
+        };
         AudioEngine.prototype.dispose = function () {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
-                    this.masterGain.connect(this.audioContext.destination);
+                    this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
                 this.masterGain.gain.value = 1;
@@ -27252,7 +27360,7 @@ var BABYLON;
             this.WarnedWebAudioUnsupported = false;
         };
         AudioEngine.prototype.getGlobalVolume = function () {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 return this.masterGain.gain.value;
             }
             else {
@@ -27260,7 +27368,7 @@ var BABYLON;
             }
         };
         AudioEngine.prototype.setGlobalVolume = function (newVolume) {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 this.masterGain.gain.value = newVolume;
             }
         };
@@ -27268,10 +27376,10 @@ var BABYLON;
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
-            this._connectedAnalyser = analyser;
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
+                this._connectedAnalyser = analyser;
                 this.masterGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                this._connectedAnalyser.connectAudioNodes(this.masterGain, this._audioContext.destination);
             }
         };
         return AudioEngine;

@@ -66,7 +66,7 @@
                 return false;
             }
 
-            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
                 return false;
             }
 

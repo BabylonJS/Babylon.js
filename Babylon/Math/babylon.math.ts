@@ -3295,7 +3295,7 @@
 
         constructor(public path: Vector3[]) {
             this._curve = path.slice();   // copy array  
-            this._compute();       
+            this._compute();
         }
 
         public getCurve(): Vector3[] {
@@ -3319,7 +3319,7 @@
         }
 
         public update(path: Vector3[]): Path3D {
-            for(var i = 0; i < path.length; i++) {
+            for (var i = 0; i < path.length; i++) {
                 this._curve[i] = path[i];
             }
             this._compute();
@@ -3449,7 +3449,7 @@
     // Vertex formats
     export class PositionNormalVertex {
         constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up()) {
-            
+
         }
 
         public clone(): PositionNormalVertex {
@@ -3468,36 +3468,71 @@
     }
 
     // SIMD
-    if (window.SIMD !== undefined) {
-        // Replace functions
-        Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
-        Matrix.prototype.invertToRef = <any>Matrix.prototype.invertToRefSIMD;
-        Matrix.LookAtLHToRef = <any>Matrix.LookAtLHToRefSIMD;
-        Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
-        Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+    var previousMultiplyToArray = Matrix.prototype.multiplyToArray;
+    var previousInvertToRef = Matrix.prototype.invertToRef;
+    var previousLookAtLHToRef = Matrix.LookAtLHToRef;
+    var previousTransformCoordinatesToRef = Vector3.TransformCoordinatesToRef;
+    var previousTransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRef;
 
-        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
-            get: function () { return this._data[0]; },
-            set: function (value: number) {
-                if (!this._data) {
-                    this._data = new Float32Array(3);
+    export class SIMDHelper {
+        private static _isEnabled = false;
+
+        public static get IsEnabled(): boolean {
+            return SIMDHelper._isEnabled;
+        }
+
+        public static DisableSIMD(): void {
+            // Replace functions
+            Matrix.prototype.multiplyToArray = <any>previousMultiplyToArray;
+            Matrix.prototype.invertToRef = <any>previousInvertToRef;
+            Matrix.LookAtLHToRef = <any>previousLookAtLHToRef;
+            Vector3.TransformCoordinatesToRef = <any>previousTransformCoordinatesToRef;
+            Vector3.TransformCoordinatesFromFloatsToRef = <any>previousTransformCoordinatesFromFloatsToRef;
+
+            SIMDHelper._isEnabled = false;
+        }
+
+        public static EnableSIMD(): void {
+            if (window.SIMD === undefined) {
+                return;
+            }
+
+            // Replace functions
+            Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
+            Matrix.prototype.invertToRef = <any>Matrix.prototype.invertToRefSIMD;
+            Matrix.LookAtLHToRef = <any>Matrix.LookAtLHToRefSIMD;
+            Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
+            Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+
+            Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+                get: function () { return this._data[0]; },
+                set: function (value: number) {
+                    if (!this._data) {
+                        this._data = new Float32Array(3);
+                    }
+                    this._data[0] = value;
                 }
-                this._data[0] = value;
-            }
-        });
+            });
 
-        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
-            get: function () { return this._data[1]; },
-            set: function (value: number) {
-                this._data[1] = value;
-            }
-        });
+            Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+                get: function () { return this._data[1]; },
+                set: function (value: number) {
+                    this._data[1] = value;
+                }
+            });
 
-        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
-            get: function () { return this._data[2]; },
-            set: function (value: number) {
-                this._data[2] = value;
-            }
-        });
+            Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+                get: function () { return this._data[2]; },
+                set: function (value: number) {
+                    this._data[2] = value;
+                }
+            });
+
+            SIMDHelper._isEnabled = true;
+        }
+    }
+    
+    if (window.SIMD !== undefined) {
+        SIMDHelper.EnableSIMD();
     }
 }

@@ -2789,40 +2789,75 @@ var BABYLON;
     })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // SIMD
-    if (window.SIMD !== undefined) {
-        // Replace functions
-        Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
-        Matrix.prototype.invertToRef = Matrix.prototype.invertToRefSIMD;
-        Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
-        Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
-        Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
-        Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+    var previousMultiplyToArray = Matrix.prototype.multiplyToArray;
+    var previousInvertToRef = Matrix.prototype.invertToRef;
+    var previousLookAtLHToRef = Matrix.LookAtLHToRef;
+    var previousTransformCoordinatesToRef = Vector3.TransformCoordinatesToRef;
+    var previousTransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRef;
+    var SIMDHelper = (function () {
+        function SIMDHelper() {
+        }
+        Object.defineProperty(SIMDHelper, "IsEnabled", {
             get: function () {
-                return this._data[0];
+                return SIMDHelper._isEnabled;
             },
-            set: function (value) {
-                if (!this._data) {
-                    this._data = new Float32Array(3);
+            enumerable: true,
+            configurable: true
+        });
+        SIMDHelper.DisableSIMD = function () {
+            // Replace functions
+            Matrix.prototype.multiplyToArray = previousMultiplyToArray;
+            Matrix.prototype.invertToRef = previousInvertToRef;
+            Matrix.LookAtLHToRef = previousLookAtLHToRef;
+            Vector3.TransformCoordinatesToRef = previousTransformCoordinatesToRef;
+            Vector3.TransformCoordinatesFromFloatsToRef = previousTransformCoordinatesFromFloatsToRef;
+            SIMDHelper._isEnabled = false;
+        };
+        SIMDHelper.EnableSIMD = function () {
+            if (window.SIMD === undefined) {
+                return;
+            }
+            // Replace functions
+            Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
+            Matrix.prototype.invertToRef = Matrix.prototype.invertToRefSIMD;
+            Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
+            Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
+            Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+            Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+                get: function () {
+                    return this._data[0];
+                },
+                set: function (value) {
+                    if (!this._data) {
+                        this._data = new Float32Array(3);
+                    }
+                    this._data[0] = value;
                 }
-                this._data[0] = value;
-            }
-        });
-        Object.defineProperty(BABYLON.Vector3.prototype, "y", {
-            get: function () {
-                return this._data[1];
-            },
-            set: function (value) {
-                this._data[1] = value;
-            }
-        });
-        Object.defineProperty(BABYLON.Vector3.prototype, "z", {
-            get: function () {
-                return this._data[2];
-            },
-            set: function (value) {
-                this._data[2] = value;
-            }
-        });
+            });
+            Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+                get: function () {
+                    return this._data[1];
+                },
+                set: function (value) {
+                    this._data[1] = value;
+                }
+            });
+            Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+                get: function () {
+                    return this._data[2];
+                },
+                set: function (value) {
+                    this._data[2] = value;
+                }
+            });
+            SIMDHelper._isEnabled = true;
+        };
+        SIMDHelper._isEnabled = false;
+        return SIMDHelper;
+    })();
+    BABYLON.SIMDHelper = SIMDHelper;
+    if (window.SIMD !== undefined) {
+        SIMDHelper.EnableSIMD();
     }
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.math.js.map

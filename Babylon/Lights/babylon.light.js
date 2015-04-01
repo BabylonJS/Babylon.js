@@ -17,6 +17,7 @@ var BABYLON;
             this.includeOnlyWithLayerMask = 0;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
+            this.excludeWithLayerMask = 0;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
@@ -42,7 +43,10 @@ var BABYLON;
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
-            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
+                return false;
+            }
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
             return true;

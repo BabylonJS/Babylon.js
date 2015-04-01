@@ -17,6 +17,8 @@ interface Window {
     MSGesture: MSGesture;
     CANNON: any;
     SIMD: any;
+    AudioContext: AudioContext;
+    webkitAudioContext: AudioContext;
 }
 
 interface HTMLURL {
