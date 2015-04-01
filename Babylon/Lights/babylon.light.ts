@@ -25,6 +25,7 @@
         public includeOnlyWithLayerMask = 0;
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
+        public excludeWithLayerMask = 0;
 
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
@@ -66,6 +67,11 @@
             }
 
             if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+                return false;
+            }
+
+
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
 
