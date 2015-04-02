@@ -1334,6 +1334,15 @@
             return plane;
         }
 
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var disc = new Mesh(name, scene);
+            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+
+            vertexData.applyToMesh(disc, updatable);
+
+            return disc;
+        }
+
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
