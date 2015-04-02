@@ -2825,4 +2825,5 @@ var BABYLON;
         });
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map
+
+//# sourceMappingURL=../Math/babylon.math.js.map
