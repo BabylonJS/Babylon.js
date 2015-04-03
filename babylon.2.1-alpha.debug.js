@@ -1874,34 +1874,24 @@ var __extends = this.__extends || function (d, b) {
             // cc.kmVec3Normalize(f, f);    
             var tmp = SIMD.float32x4.mul(f, f);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            f = SIMD.float32x4.mul(f, SIMD.float32x4.reciprocalSqrt(tmp));
+            f = SIMD.float32x4.mul(f, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
             // cc.kmVec3Assign(up, pUp);
             // cc.kmVec3Normalize(up, up);
             tmp = SIMD.float32x4.mul(up, up);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrt(tmp));
+            up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
             // cc.kmVec3Cross(s, f, up);
             var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
             // cc.kmVec3Normalize(s, s);
             tmp = SIMD.float32x4.mul(s, s);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrt(tmp));
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
             // cc.kmVec3Cross(u, s, f);
             var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
             // cc.kmVec3Normalize(s, s);
             tmp = SIMD.float32x4.mul(s, s);
             tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrt(tmp));
-            //cc.kmMat4Identity(pOut);
-            //pOut.mat[0] = s.x;
-            //pOut.mat[4] = s.y;
-            //pOut.mat[8] = s.z;
-            //pOut.mat[1] = u.x;
-            //pOut.mat[5] = u.y;
-            //pOut.mat[9] = u.z;
-            //pOut.mat[2] = -f.x;
-            //pOut.mat[6] = -f.y;
-            //pOut.mat[10] = -f.z;
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
             var zero = SIMD.float32x4.splat(0.0);
             s = SIMD.float32x4.neg(s);
             var tmp01 = SIMD.float32x4.shuffle(s, u, 0, 1, 4, 5);
@@ -1912,13 +1902,11 @@ var __extends = this.__extends || function (d, b) {
             tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
             var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
             var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
-            // cc.kmMat4Translation(translate, -pEye.x, -pEye.y, -pEye.z);
             var b0 = SIMD.float32x4(1.0, 0.0, 0.0, 0.0);
             var b1 = SIMD.float32x4(0.0, 1.0, 0.0, 0.0);
             var b2 = SIMD.float32x4(0.0, 0.0, 1.0, 0.0);
             var b3 = SIMD.float32x4.neg(eye);
             b3 = SIMD.float32x4.withW(b3, 1.0);
-            // cc.kmMat4Multiply(pOut, pOut, translate);
             SIMD.float32x4.store(out, 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
             SIMD.float32x4.store(out, 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
             SIMD.float32x4.store(out, 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
@@ -11848,6 +11836,13 @@ var BABYLON;
                 vertexData.applyToMesh(ribbon, updatable);
                 return ribbon;
             }
+        };
+        Mesh.CreateDisc = function (name, radius, tessellation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var disc = new Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            vertexData.applyToMesh(disc, updatable);
+            return disc;
         };
         Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
@@ -22997,6 +22992,41 @@ var BABYLON;
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+        };
+        VertexData.CreateDisc = function (radius, tessellation, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+            var positions = [];
+            var indices = [];
+            var normals = [];
+            var uvs = [];
+            // positions and uvs
+            positions.push(0, 0, 0); // disc center first
+            uvs.push(0.5, 0.5);
+            var step = Math.PI * 2 / tessellation;
+            for (var a = 0; a < Math.PI * 2; a += step) {
+                var x = Math.cos(a);
+                var y = Math.sin(a);
+                var u = (x + 1) / 2;
+                var v = (1 - y) / 2;
+                positions.push(radius * x, radius * y, 0);
+                uvs.push(u, v);
+            }
+            positions.push(positions[3], positions[4], positions[5]); // close the circle
+            uvs.push(uvs[2], uvs[3]);
+            //indices
+            var vertexNb = positions.length / 3;
+            for (var i = 1; i < vertexNb - 1; i++) {
+                indices.push(i + 1, 0, i);
+            }
+            // result
+            VertexData.ComputeNormals(positions, indices, normals);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;

@@ -1008,6 +1008,13 @@ var BABYLON;
                 return ribbon;
             }
         };
+        Mesh.CreateDisc = function (name, radius, tessellation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var disc = new Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            vertexData.applyToMesh(disc, updatable);
+            return disc;
+        };
         Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var box = new Mesh(name, scene);

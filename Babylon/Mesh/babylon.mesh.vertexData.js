@@ -809,6 +809,41 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        VertexData.CreateDisc = function (radius, tessellation, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+            var positions = [];
+            var indices = [];
+            var normals = [];
+            var uvs = [];
+            // positions and uvs
+            positions.push(0, 0, 0); // disc center first
+            uvs.push(0.5, 0.5);
+            var step = Math.PI * 2 / tessellation;
+            for (var a = 0; a < Math.PI * 2; a += step) {
+                var x = Math.cos(a);
+                var y = Math.sin(a);
+                var u = (x + 1) / 2;
+                var v = (1 - y) / 2;
+                positions.push(radius * x, radius * y, 0);
+                uvs.push(u, v);
+            }
+            positions.push(positions[3], positions[4], positions[5]); // close the circle
+            uvs.push(uvs[2], uvs[3]);
+            //indices
+            var vertexNb = positions.length / 3;
+            for (var i = 1; i < vertexNb - 1; i++) {
+                indices.push(i + 1, 0, i);
+            }
+            // result
+            VertexData.ComputeNormals(positions, indices, normals);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+        };
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
         VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }

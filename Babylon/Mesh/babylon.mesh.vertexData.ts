@@ -806,7 +806,7 @@
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0,((subdivisions - row) * height) / subdivisions - (height / 2.0));
                     var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
@@ -925,7 +925,7 @@
             // Vertices
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0,((subdivisions - row) * height) / subdivisions - (height / 2.0));
 
                     // Compute height
                     var heightMapX = (((position.x + width / 2) / width) * (bufferWidth - 1)) | 0;
@@ -1013,6 +1013,48 @@
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             // Result
+            var vertexData = new VertexData();
+
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+
+            return vertexData;
+        }
+
+        public static CreateDisc(radius: number, tessellation: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+            var positions = [];
+            var indices = [];
+            var normals = [];
+            var uvs = [];
+
+            // positions and uvs
+            positions.push(0, 0, 0);    // disc center first
+            uvs.push(0.5, 0.5);
+
+            var step = Math.PI * 2 / tessellation;
+            for (var a = 0; a < Math.PI * 2; a += step) {
+                var x = Math.cos(a);
+                var y = Math.sin(a);
+                var u = (x + 1) / 2;
+                var v = (1 - y) / 2;
+                positions.push(radius * x, radius * y, 0);
+                uvs.push(u, v);
+            }
+            positions.push(positions[3], positions[4], positions[5]); // close the circle
+            uvs.push(uvs[2], uvs[3]);
+
+            //indices
+            var vertexNb = positions.length / 3;
+            for (var i = 1; i < vertexNb - 1; i++) {
+                indices.push(i + 1, 0, i);
+            }
+
+            // result
+            VertexData.ComputeNormals(positions, indices, normals);
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
             var vertexData = new VertexData();
 
             vertexData.indices = indices;
