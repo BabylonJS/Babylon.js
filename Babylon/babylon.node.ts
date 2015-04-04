@@ -82,10 +82,9 @@
             }
 
             if (this._parentRenderId !== this.parent._currentRenderId) {
+                this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
-
-            this._parentRenderId = this.parent._currentRenderId;
 
             return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
         }
