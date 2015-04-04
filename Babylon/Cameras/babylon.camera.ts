@@ -125,6 +125,10 @@
         }
 
         // Synchronized
+        public isSynchronizedWithParent(): boolean {
+            return false;
+        }
+
         public _isSynchronized(): boolean {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         }

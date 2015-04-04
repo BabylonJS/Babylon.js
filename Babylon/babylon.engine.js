@@ -428,6 +428,11 @@ var BABYLON;
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.highPrecisionShaderSupported = true;
+            if (this._gl.getShaderPrecisionFormat) {
+                var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+            }
             // Depth buffer
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();

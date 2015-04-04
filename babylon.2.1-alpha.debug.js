@@ -1490,7 +1490,7 @@ var __extends = this.__extends || function (d, b) {
             det = SIMD.float32x4.mul(row0, minor0);
             det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
             det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
-            tmp1 = SIMD.float32x4.reciprocal(det);
+            tmp1 = SIMD.float32x4.reciprocalApproximation(det);
             det = SIMD.float32x4.sub(SIMD.float32x4.add(tmp1, tmp1), SIMD.float32x4.mul(det, SIMD.float32x4.mul(tmp1, tmp1)));
             det = SIMD.float32x4.swizzle(det, 0, 0, 0, 0);
             // These shuffles aren't necessary if the faulty transposition is done
@@ -4087,6 +4087,11 @@ var __extends = this.__extends || function (d, b) {
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.highPrecisionShaderSupported = true;
+            if (this._gl.getShaderPrecisionFormat) {
+                var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+            }
             // Depth buffer
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
@@ -5608,9 +5613,9 @@ var __extends = this.__extends || function (d, b) {
                 return true;
             }
             if (this._parentRenderId !== this.parent._currentRenderId) {
+                this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
-            this._parentRenderId = this.parent._currentRenderId;
             return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
         };
         Node.prototype.isSynchronized = function (updateCache) {
@@ -7016,6 +7021,9 @@ var BABYLON;
             this._update();
         };
         // Synchronized
+        Camera.prototype.isSynchronizedWithParent = function () {
+            return false;
+        };
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         };
@@ -14467,6 +14475,10 @@ var BABYLON;
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
+                if (!engine.getCaps().highPrecisionShaderSupported) {
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+                }
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);

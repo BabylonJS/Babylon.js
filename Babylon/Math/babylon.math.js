@@ -1485,7 +1485,7 @@ var BABYLON;
             det = SIMD.float32x4.mul(row0, minor0);
             det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
             det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
-            tmp1 = SIMD.float32x4.reciprocal(det);
+            tmp1 = SIMD.float32x4.reciprocalApproximation(det);
             det = SIMD.float32x4.sub(SIMD.float32x4.add(tmp1, tmp1), SIMD.float32x4.mul(det, SIMD.float32x4.mul(tmp1, tmp1)));
             det = SIMD.float32x4.swizzle(det, 0, 0, 0, 0);
             // These shuffles aren't necessary if the faulty transposition is done

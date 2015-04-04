@@ -205,6 +205,11 @@
             try {
                 var engine = this._engine;
 
+                if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+                }
+
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);

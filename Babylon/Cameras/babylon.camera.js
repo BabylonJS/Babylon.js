@@ -120,6 +120,9 @@ var BABYLON;
             this._update();
         };
         // Synchronized
+        Camera.prototype.isSynchronizedWithParent = function () {
+            return false;
+        };
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         };
