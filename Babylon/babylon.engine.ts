@@ -310,6 +310,12 @@
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
+        texture._baseWidth = width;
+        texture._baseHeight = height;
+        texture._width = potWidth;
+        texture._height = potHeight;
+        texture.isReady = true;
+        
         processFunction(potWidth, potHeight);
 
         var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
@@ -324,11 +330,6 @@
         gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
-        texture._baseWidth = width;
-        texture._baseHeight = height;
-        texture._width = potWidth;
-        texture._height = potHeight;
-        texture.isReady = true;
         texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
