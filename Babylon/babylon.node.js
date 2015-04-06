@@ -60,7 +60,7 @@ var BABYLON;
                 this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
-            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
+            return this.parent.isSynchronized();
         };
         Node.prototype.isSynchronized = function (updateCache) {
             var check = this.hasNewParent();

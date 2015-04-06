@@ -5616,7 +5616,7 @@ var __extends = this.__extends || function (d, b) {
                 this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
-            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
+            return this.parent.isSynchronized();
         };
         Node.prototype.isSynchronized = function (updateCache) {
             var check = this.hasNewParent();
@@ -16061,6 +16061,7 @@ var BABYLON;
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
             // Draw order
+            engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
             engine.draw(true, 0, max * 6);

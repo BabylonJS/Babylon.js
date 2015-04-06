@@ -86,7 +86,7 @@
                 return false;
             }
 
-            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
+            return this.parent.isSynchronized();
         }
 
         public isSynchronized(updateCache?: boolean): boolean {
