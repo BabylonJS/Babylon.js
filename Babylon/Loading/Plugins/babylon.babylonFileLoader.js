@@ -687,9 +687,9 @@ var BABYLON;
                     target = target[effectiveTarget[i]];
                 }
                 // Return appropriate value with its type
-                if (target instanceof Boolean)
+                if (typeof (target) === "boolean")
                     return values[0] === "true";
-                if (target instanceof String)
+                if (typeof (target) === "string")
                     return values[0];
                 // Parameters with multiple values such as Vector3 etc.
                 var split = new Array();
@@ -730,8 +730,12 @@ var BABYLON;
                     for (var i = 0; i < parsedAction.properties.length; i++) {
                         var value = parsedAction.properties[i].value;
                         var name = parsedAction.properties[i].name;
+                        var targetType = parsedAction.properties[i].targetType;
                         if (name === "target")
-                            value = target = scene.getNodeByName(value);
+                            if (targetType != null && targetType === "SceneProperties")
+                                value = target = scene;
+                            else
+                                value = target = scene.getNodeByName(value);
                         else if (name === "parent")
                             value = scene.getNodeByName(value);
                         else if (name === "sound")
@@ -748,7 +752,12 @@ var BABYLON;
                         parameters.push(value);
                     }
                 }
-                parameters.push(condition);
+                if (combineArray === null) {
+                    parameters.push(condition);
+                }
+                else {
+                    parameters.push(null);
+                }
                 // If interpolate value action
                 if (parsedAction.name === "InterpolateValueAction") {
                     var param = parameters[parameters.length - 2];
@@ -781,7 +790,7 @@ var BABYLON;
                 var trigger = parsedActions.children[i];
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
-                    var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                    var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else

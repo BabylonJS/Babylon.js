@@ -3954,6 +3954,11 @@ var __extends = this.__extends || function (d, b) {
         var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+        texture._baseWidth = width;
+        texture._baseHeight = height;
+        texture._width = potWidth;
+        texture._height = potHeight;
+        texture.isReady = true;
         processFunction(potWidth, potHeight);
         var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -3963,11 +3968,6 @@ var __extends = this.__extends || function (d, b) {
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
         engine._activeTexturesCache = [];
-        texture._baseWidth = width;
-        texture._baseHeight = height;
-        texture._width = potWidth;
-        texture._height = potHeight;
-        texture.isReady = true;
         texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
@@ -7141,9 +7141,9 @@ var BABYLON;
             }
             this._computedViewMatrix.invertToRef(this._worldMatrix);
             this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             this._computedViewMatrix.invert();
             this._currentRenderId = this.getScene().getRenderId();
-            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
@@ -7151,9 +7151,9 @@ var BABYLON;
                 return this._computedViewMatrix;
             }
             this._computedViewMatrix = this._getViewMatrix();
-            if (!this.parent || !this.parent.getWorldMatrix) {
-                this._currentRenderId = this.getScene().getRenderId();
-            }
+            // if (!this.parent || !this.parent.getWorldMatrix) {
+            this._currentRenderId = this.getScene().getRenderId();
+            //}
             return this._computedViewMatrix;
         };
         Camera.prototype.getProjectionMatrix = function (force) {
@@ -8741,6 +8741,21 @@ var BABYLON;
             if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.cameras.splice(index, 1);
+            }
+            // Remove from activeCameras
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
+            // Reset the activeCamera
+            if (this.activeCamera === toRemove) {
+                if (this.cameras.length > 0) {
+                    this.activeCamera = this.cameras[0];
+                }
+                else {
+                    this.activeCamera = null;
+                }
             }
             if (this.onCameraRemoved) {
                 this.onCameraRemoved(toRemove);
@@ -10432,15 +10447,12 @@ var BABYLON;
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
-                var zero = this.getScene().activeCamera.position.clone();
+                var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
                     BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) === AbstractMesh.BILLBOARDMODE_ALL) {
-                    zero = this.getScene().activeCamera.position;
-                }
-                else {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -20358,9 +20370,9 @@ var BABYLON;
                     target = target[effectiveTarget[i]];
                 }
                 // Return appropriate value with its type
-                if (target instanceof Boolean)
+                if (typeof (target) === "boolean")
                     return values[0] === "true";
-                if (target instanceof String)
+                if (typeof (target) === "string")
                     return values[0];
                 // Parameters with multiple values such as Vector3 etc.
                 var split = new Array();
@@ -20401,8 +20413,12 @@ var BABYLON;
                     for (var i = 0; i < parsedAction.properties.length; i++) {
                         var value = parsedAction.properties[i].value;
                         var name = parsedAction.properties[i].name;
+                        var targetType = parsedAction.properties[i].targetType;
                         if (name === "target")
-                            value = target = scene.getNodeByName(value);
+                            if (targetType != null && targetType === "SceneProperties")
+                                value = target = scene;
+                            else
+                                value = target = scene.getNodeByName(value);
                         else if (name === "parent")
                             value = scene.getNodeByName(value);
                         else if (name === "sound")
@@ -20419,7 +20435,12 @@ var BABYLON;
                         parameters.push(value);
                     }
                 }
-                parameters.push(condition);
+                if (combineArray === null) {
+                    parameters.push(condition);
+                }
+                else {
+                    parameters.push(null);
+                }
                 // If interpolate value action
                 if (parsedAction.name === "InterpolateValueAction") {
                     var param = parameters[parameters.length - 2];
@@ -20452,7 +20473,7 @@ var BABYLON;
                 var trigger = parsedActions.children[i];
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
-                    var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                    var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
