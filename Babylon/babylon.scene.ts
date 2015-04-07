@@ -207,7 +207,7 @@
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
-        public _activeVertices = 0;
+        public _activeIndices = 0;
         public _activeParticles = 0;
         private _lastFrameDuration = 0;
         private _evaluateActiveMeshesDuration = 0;
@@ -341,8 +341,8 @@
             return this._totalVertices;
         }
 
-        public getActiveVertices(): number {
-            return this._activeVertices;
+        public getActiveIndices(): number {
+            return this._activeIndices;
         }
 
         public getActiveParticles(): number {
@@ -1165,7 +1165,7 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeIndices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -1479,7 +1479,7 @@
             this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();

@@ -7151,9 +7151,7 @@ var BABYLON;
                 return this._computedViewMatrix;
             }
             this._computedViewMatrix = this._getViewMatrix();
-            // if (!this.parent || !this.parent.getWorldMatrix) {
             this._currentRenderId = this.getScene().getRenderId();
-            //}
             return this._computedViewMatrix;
         };
         Camera.prototype.getProjectionMatrix = function (force) {
@@ -8283,7 +8281,7 @@ var BABYLON;
             this._audioEnabled = true;
             this._headphone = false;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeParticles = 0;
             this._lastFrameDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
@@ -8407,8 +8405,8 @@ var BABYLON;
         Scene.prototype.getTotalVertices = function () {
             return this._totalVertices;
         };
-        Scene.prototype.getActiveVertices = function () {
-            return this._activeVertices;
+        Scene.prototype.getActiveIndices = function () {
+            return this._activeIndices;
         };
         Scene.prototype.getActiveParticles = function () {
             return this._activeParticles;
@@ -9084,7 +9082,7 @@ var BABYLON;
                         }
                     }
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeIndices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -9337,7 +9335,7 @@ var BABYLON;
             this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
@@ -13318,7 +13316,7 @@ var BABYLON;
                         mesh._activate(scene.getRenderId());
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeVertices += subMesh.indexCount;
+                            scene._activeIndices += subMesh.indexCount;
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
@@ -28530,7 +28528,7 @@ var BABYLON;
             var scene = this._scene;
             var engine = scene.getEngine();
             var glInfo = engine.getGlInfo();
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(engine.getFps(), 0) + " fps</b><br><br>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Count</b><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Total materials: " + scene.materials.length + "<br>" + "Total textures: " + scene.textures.length + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active vertices: " + scene.getActiveVertices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<b>Duration</b><br>" + "Meshes selection:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "Render Targets: " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "Particles: " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "Sprites: " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br><br>" + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>" + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>" + "</div>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Extensions</b><br>" + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>" + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>" + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>" + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>" + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>" + "<b>Caps.</b><br>" + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>" + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>" + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>" + "</div><br>" + "<b>Info</b><br>" + glInfo.version + "<br>" + glInfo.renderer + "<br>";
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + " - <b>" + BABYLON.Tools.Format(engine.getFps(), 0) + " fps</b><br><br>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Count</b><br>" + "Total meshes: " + scene.meshes.length + "<br>" + "Total vertices: " + scene.getTotalVertices() + "<br>" + "Total materials: " + scene.materials.length + "<br>" + "Total textures: " + scene.textures.length + "<br>" + "Active meshes: " + scene.getActiveMeshes().length + "<br>" + "Active indices: " + scene.getActiveIndices() + "<br>" + "Active bones: " + scene.getActiveBones() + "<br>" + "Active particles: " + scene.getActiveParticles() + "<br>" + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>" + "<b>Duration</b><br>" + "Meshes selection:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>" + "Render Targets: " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>" + "Particles: " + BABYLON.Tools.Format(scene.getParticlesDuration()) + " ms<br>" + "Sprites: " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br><br>" + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>" + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>" + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>" + "</div>" + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>" + "<b>Extensions</b><br>" + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>" + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>" + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>" + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>" + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>" + "<b>Caps.</b><br>" + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>" + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>" + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>" + "</div><br>" + "<b>Info</b><br>" + glInfo.version + "<br>" + glInfo.renderer + "<br>";
             if (this.customStatsFunction) {
                 this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
             }

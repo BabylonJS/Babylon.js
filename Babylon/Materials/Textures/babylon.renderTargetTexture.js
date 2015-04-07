@@ -110,7 +110,7 @@ var BABYLON;
                         mesh._activate(scene.getRenderId());
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeVertices += subMesh.indexCount;
+                            scene._activeIndices += subMesh.indexCount;
                             this._renderingManager.dispatch(subMesh);
                         }
                     }

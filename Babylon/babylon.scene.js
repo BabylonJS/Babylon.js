@@ -104,7 +104,7 @@ var BABYLON;
             this._audioEnabled = true;
             this._headphone = false;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeParticles = 0;
             this._lastFrameDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
@@ -228,8 +228,8 @@ var BABYLON;
         Scene.prototype.getTotalVertices = function () {
             return this._totalVertices;
         };
-        Scene.prototype.getActiveVertices = function () {
-            return this._activeVertices;
+        Scene.prototype.getActiveIndices = function () {
+            return this._activeIndices;
         };
         Scene.prototype.getActiveParticles = function () {
             return this._activeParticles;
@@ -905,7 +905,7 @@ var BABYLON;
                         }
                     }
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeIndices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -1158,7 +1158,7 @@ var BABYLON;
             this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
