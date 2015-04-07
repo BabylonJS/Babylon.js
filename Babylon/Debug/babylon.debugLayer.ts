@@ -714,7 +714,7 @@
                 + "Total materials: " + scene.materials.length + "<br>"
                 + "Total textures: " + scene.textures.length + "<br>"
                 + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
-                + "Active vertices: " + scene.getActiveVertices() + "<br>"
+                + "Active indices: " + scene.getActiveIndices() + "<br>"
                 + "Active bones: " + scene.getActiveBones() + "<br>"
                 + "Active particles: " + scene.getActiveParticles() + "<br>"
                 + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
