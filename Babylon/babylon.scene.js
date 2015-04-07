@@ -563,6 +563,21 @@ var BABYLON;
                 // Remove from the scene if mesh found 
                 this.cameras.splice(index, 1);
             }
+            // Remove from activeCameras
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
+            // Reset the activeCamera
+            if (this.activeCamera === toRemove) {
+                if (this.cameras.length > 0) {
+                    this.activeCamera = this.cameras[0];
+                }
+                else {
+                    this.activeCamera = null;
+                }
+            }
             if (this.onCameraRemoved) {
                 this.onCameraRemoved(toRemove);
             }

@@ -768,7 +768,11 @@
             }
             // Reset the activeCamera
             if (this.activeCamera === toRemove) {
-                this.activeCamera = null;
+                if (this.cameras.length > 0) {
+                    this.activeCamera = this.cameras[0];
+                } else {
+                    this.activeCamera = null;
+                }
             }
             if (this.onCameraRemoved) {
                 this.onCameraRemoved(toRemove);

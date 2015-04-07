@@ -10,7 +10,7 @@
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
         }
-        
+
         public static get ORTHOGRAPHIC_CAMERA(): number {
             return Camera._ORTHOGRAPHIC_CAMERA;
         }
@@ -304,11 +304,11 @@
             this._computedViewMatrix.invertToRef(this._worldMatrix);
 
             this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
 
             this._computedViewMatrix.invert();
 
             this._currentRenderId = this.getScene().getRenderId();
-            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
 
             return this._computedViewMatrix;
         }
@@ -319,9 +319,8 @@
             }
 
             this._computedViewMatrix = this._getViewMatrix();
-            if (!this.parent || !this.parent.getWorldMatrix) {
-                this._currentRenderId = this.getScene().getRenderId();
-            }
+            this._currentRenderId = this.getScene().getRenderId();
+
             return this._computedViewMatrix;
         }
 

@@ -387,15 +387,12 @@ var BABYLON;
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
-                var zero = this.getScene().activeCamera.position.clone();
+                var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
                     BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) === AbstractMesh.BILLBOARDMODE_ALL) {
-                    zero = this.getScene().activeCamera.position;
-                }
-                else {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
