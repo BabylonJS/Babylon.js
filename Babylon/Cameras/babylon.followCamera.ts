@@ -19,8 +19,16 @@
         private follow(cameraTarget:AbstractMesh) {
             if (!cameraTarget)
                 return;
-
-            var radians = this.getRadians(this.rotationOffset) + cameraTarget.rotation.y;
+            
+            var yRotation;
+            if (cameraTarget.rotationQuaternion) {
+                var rotMatrix = new Matrix();
+                cameraTarget.rotationQuaternion.toRotationMatrix(rotMatrix);
+                yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
+            } else {
+                yRotation = cameraTarget.rotation.y;
+            }
+            var radians = this.getRadians(this.rotationOffset) + yRotation;
             var targetX:number = cameraTarget.position.x + Math.sin(radians) * this.radius;
 
             var targetZ:number = cameraTarget.position.z + Math.cos(radians) * this.radius;
