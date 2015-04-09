@@ -1,4 +1,4 @@
-var gulp = require('gulp'),
+var gulp = require('gulp-param')(require('gulp'), process.argv),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
@@ -231,4 +231,17 @@ gulp.task('watch', function() {
  */
 gulp.task('watch-typescript', function() {
   gulp.watch('src/**/*.ts', ['typescript']);
+});
+
+/**
+ * task to uglify a file passed as an argument
+ */
+gulp.task('makeUgly' ,function(path, fileIn) {
+  if (path.lastIndexOf('/') + 1 !== path.length) { path  += '/'; }
+
+  return gulp.src([path + fileIn])
+    .pipe(rename({suffix: '.min'}))
+    .pipe(uglify())
+    .pipe(gulp.dest(path))
+
 });
