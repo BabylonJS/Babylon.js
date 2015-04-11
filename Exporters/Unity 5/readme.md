@@ -29,7 +29,7 @@ The current version can export the following features:
  * Gravity
  * Ellipsoid
  * Animations (position)
- * **Lights**
+* **Lights**
  * Type (Point, directional, Spot)
  * Name
  * Position
