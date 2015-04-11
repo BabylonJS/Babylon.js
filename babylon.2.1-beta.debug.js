@@ -7374,7 +7374,16 @@ var BABYLON;
         FollowCamera.prototype.follow = function (cameraTarget) {
             if (!cameraTarget)
                 return;
-            var radians = this.getRadians(this.rotationOffset) + cameraTarget.rotation.y;
+            var yRotation;
+            if (cameraTarget.rotationQuaternion) {
+                var rotMatrix = new BABYLON.Matrix();
+                cameraTarget.rotationQuaternion.toRotationMatrix(rotMatrix);
+                yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
+            }
+            else {
+                yRotation = cameraTarget.rotation.y;
+            }
+            var radians = this.getRadians(this.rotationOffset) + yRotation;
             var targetX = cameraTarget.position.x + Math.sin(radians) * this.radius;
             var targetZ = cameraTarget.position.z + Math.cos(radians) * this.radius;
             var dx = targetX - this.position.x;
