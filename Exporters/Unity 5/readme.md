@@ -2,12 +2,21 @@ Unity 5 to Babylon.js exporter
 ==============================
 
 ## Installation
-You just need to copy/paste the plugin folder inside your scene folder. Unity 5 will then detect the plugin, compile it and add a "BabylonJS" menu.
+You just need to copy/paste the plugin folder inside the **assets** folder of your project folder. Unity 5 will then detect the plugin, compile it and add a "BabylonJS" menu.
 Using this menu you will be able to export the current scene to a .babylon file format.
 
 ## Usage
 Just click on the "BabylonJS/Export to .babylon" menu to display the exportation window.
 
+The exportation window allows you to specify:
+* Default reflection level applied to reflection textures
+* Collisions properties (on/off, ellipsoid used for the camera and scene's gravity)
+
+You can launch the exportation process by clicking on the "Export" button
+
+
+## Exported features
+The current version can export the following features:
 
 * **Cameras**
  * Name
