@@ -74,7 +74,7 @@
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
-                    return true;
+                 //   return true;
                 }
             }
 
@@ -82,13 +82,15 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+                  //  return true;
                 }
             }
 
             var engine = scene.getEngine();
             var defines = [];
             var fallbacks = new EffectFallbacks();
+            var needNormals = false;
+            var needUVs = false;
 
             // Textures
             if (scene.texturesEnabled) {
@@ -96,6 +98,7 @@
                     if (!this.diffuseTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define DIFFUSE");
                     }
                 }
@@ -104,6 +107,7 @@
                     if (!this.ambientTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define AMBIENT");
                     }
                 }
@@ -112,6 +116,7 @@
                     if (!this.opacityTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define OPACITY");
 
                         if (this.opacityTexture.getAlphaFromRGB) {
@@ -124,6 +129,8 @@
                     if (!this.reflectionTexture.isReady()) {
                         return false;
                     } else {
+                        needNormals = true;
+                        needUVs = true;
                         defines.push("#define REFLECTION");
                         fallbacks.addFallback(0, "REFLECTION");
                     }
@@ -133,6 +140,7 @@
                     if (!this.emissiveTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define EMISSIVE");
                     }
                 }
@@ -141,6 +149,7 @@
                     if (!this.specularTexture.isReady()) {
                         return false;
                     } else {
+                        needUVs = true;
                         defines.push("#define SPECULAR");
                         fallbacks.addFallback(0, "SPECULAR");
                     }
@@ -151,6 +160,7 @@
                 if (!this.bumpTexture.isReady()) {
                     return false;
                 } else {
+                    needUVs = true;
                     defines.push("#define BUMP");
                     fallbacks.addFallback(0, "BUMP");
                 }
@@ -224,7 +234,7 @@
                     if (!light.canAffectMesh(mesh)) {
                         continue;
                     }
-
+                    needNormals = true;
                     defines.push("#define LIGHT" + lightIndex);
 
                     if (lightIndex > 0) {
@@ -257,7 +267,7 @@
                                 shadowsActivated = true;
                             }
 
-                            if (shadowGenerator.useVarianceShadowMap) {
+                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
                                 defines.push("#define SHADOWVSM" + lightIndex);
                                 if (lightIndex > 0) {
                                     fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
@@ -312,6 +322,7 @@
                         fresnelRank++;
                     }
 
+                    needNormals = true;
                     defines.push("#define FRESNEL");
                     fallbacks.addFallback(fresnelRank - 1, "FRESNEL");
                 }
@@ -319,15 +330,21 @@
 
 
             // Attribs
-            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+            var attribs = [VertexBuffer.PositionKind];
             if (mesh) {
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
+                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                    attribs.push(VertexBuffer.NormalKind);
+                    defines.push("#define NORMAL");
                 }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                if (needUVs) {
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
                 if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                     attribs.push(VertexBuffer.ColorKind);
@@ -337,7 +354,7 @@
                         defines.push("#define VERTEXALPHA");
                     }
                 }
-                if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                if (mesh.useBones) {
                     attribs.push(VertexBuffer.MatricesIndicesKind);
                     attribs.push(VertexBuffer.MatricesWeightsKind);
                     defines.push("#define BONES");
@@ -380,7 +397,7 @@
                         "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
-                        "darkness0", "darkness1", "darkness2", "darkness3",
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
                         "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
@@ -408,7 +425,7 @@
             this._effect.setMatrix("world", world);
         }
 
-        public bind(world: Matrix, mesh: Mesh): void {
+        public bind(world: Matrix, mesh?: Mesh): void {
             var scene = this.getScene();
 
             // Matrices        
@@ -416,7 +433,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+            if (mesh && mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
@@ -567,8 +584,8 @@
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
                             this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMap());
-                            this._effect.setFloat("darkness" + lightIndex, shadowGenerator.getDarkness());
+                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
+                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
                     }
 

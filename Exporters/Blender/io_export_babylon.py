@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 3, 1),
+    'version': (1, 8, 0),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -11,6 +11,7 @@ bl_info = {
     
 import bpy
 import bpy_extras.io_utils
+import io
 import math
 import mathutils
 import os
@@ -52,7 +53,6 @@ MAX_VERTEX_ELEMENTS = 65535
 VERTEX_OUTPUT_PER_LINE = 1000
 MAX_FLOAT_PRECISION = '%.4f'
 MAX_INFLUENCERS_PER_VERTEX = 4
-MATERIALS_PATH_VAR = 'materialsRootDir'
 
 # used in World constructor, defined in BABYLON.Scene
 #FOGMODE_NONE = 0
@@ -88,6 +88,9 @@ GAMEPAD_CAM = 'GamepadCamera'
 OCULUS_CAM = 'OculusCamera'
 TOUCH_CAM = 'TouchCamera'
 V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
+OCULUS_GAMEPAD_CAM = 'OculusGamepadCamera'
+VR_DEV_ORIENT_CAM ='VRDeviceOrientationCamera'
+WEB_VR_CAM = 'WebVRCamera'
 
 # used in Light constructor, never formally defined in Babylon, but used in babylonFileLoader
 POINT_LIGHT = 0
@@ -135,10 +138,39 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         default = False,
         )
     
+    export_noVertexOpt = bpy.props.BoolProperty(
+        name="No vertex sharing",
+        description="Turns off an optimization which reduces vertices",
+        default = False,
+        )
+    
+    attachedSound = bpy.props.StringProperty(
+        name='Music', 
+        description='',
+        default = ''
+    )
+    loopSound = bpy.props.BoolProperty(
+        name='Loop sound', 
+        description='',
+        default = True
+    )
+    autoPlaySound = bpy.props.BoolProperty(
+        name='Auto play sound', 
+        description='',
+        default = True
+    )
+
     def draw(self, context):
         layout = self.layout
 
         layout.prop(self, 'export_onlyCurrentLayer') 
+        layout.prop(self, "export_noVertexOpt")
+
+        layout.separator()
+
+        layout.prop(self, 'attachedSound') 
+        layout.prop(self, 'autoPlaySound') 
+        layout.prop(self, 'loopSound') 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     nWarnings = 0      
@@ -175,8 +207,11 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             else:
                 BabylonExporter.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('/')[2])
 
-            BabylonExporter.nWarnings = 0 # explicitly reset, in case there was an earlier export this session
-            BabylonExporter.log_handler = open(self.filepathMinusExtension + '.log', 'w')
+            # explicitly reset globals, in case there was an earlier export this session
+            BabylonExporter.nWarnings = 0
+            BabylonExporter.materials = []
+            
+            BabylonExporter.log_handler = io.open(self.filepathMinusExtension + '.log', 'w', encoding='utf8')
             BabylonExporter_version = bl_info['version']
             BabylonExporter.log('Babylon.js Exporter version: ' + str(BabylonExporter_version[0]) + '.' + str(BabylonExporter_version[1]) +  '.' + str(BabylonExporter_version[2]) + 
                              ', Blender version: ' + bpy.app.version_string)
@@ -210,24 +245,24 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             skeletonId = 0
             self.meshesAndNodes = []
             self.multiMaterials = []
+            self.meshesWithSound = []
+
+            # Music
+            if self.attachedSound != '':
+                music = type('', (), {})()  #Fake mesh object 
+                music.data = type('', (), {})() 
+                music.data.attachedSound = self.attachedSound
+                music.data.loopSound = self.loopSound
+                music.data.autoPlaySound = self.autoPlaySound
+                self.meshesWithSound.append(music)
+            
+            # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
                 if object.type == 'CAMERA':
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         self.cameras.append(Camera(object))
                     else:
                         BabylonExporter.warn('WARNING: The following camera not visible in scene thus ignored: ' + object.name)
-
-                elif object.type == 'LAMP':
-                    if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
-                        bulb = Light(object)
-                        self.lights.append(bulb)
-                        if object.data.shadowMap != 'NONE':
-                            if bulb.light_type == DIRECTIONAL_LIGHT:
-                                self.shadowGenerators.append(ShadowGenerator(object, scene))
-                            else:
-                                BabylonExporter.warn('WARNING: Only directional (sun) type of lamp is invalid for shadows thus ignored: ' + object.name)                                
-                    else:
-                        BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
 
                 elif object.type == 'ARMATURE':  #skeleton.pose.bones
                     if object.is_visible(scene):
@@ -242,8 +277,12 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     nextStartFace = 0
 
                     while True and self.isInSelectedLayer(object, scene):
-                        mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID)
+                        mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID, self.export_noVertexOpt)
                         self.meshesAndNodes.append(mesh)
+
+                        if object.data.attachedSound != '':
+                            self.meshesWithSound.append(object)
+
                         nextStartFace = mesh.offsetFace
                         if nextStartFace == 0:
                             break
@@ -254,12 +293,27 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                             BabylonExporter.warn('WARNING: The following mesh has exceeded the maximum # of vertex elements & will be broken into multiple Babylon meshes: ' + object.name)
 
                         nameID = nameID + 1
+
                 elif object.type == 'EMPTY':
                     self.meshesAndNodes.append(Node(object))
                     
-                else:
+                elif object.type != 'LAMP':
                     BabylonExporter.warn('WARNING: The following object is not currently exportable thus ignored: ' + object.name)
-
+            
+            # Lamp / shadow Generator pass; meshesAnNodes complete & forceParents included
+            for object in [object for object in scene.objects]:
+                if object.type == 'LAMP':
+                    if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
+                        bulb = Light(object)
+                        self.lights.append(bulb)
+                        if object.data.shadowMap != 'NONE':
+                            if bulb.light_type == DIRECTIONAL_LIGHT or bulb.light_type == SPOT_LIGHT:
+                                self.shadowGenerators.append(ShadowGenerator(object, self.meshesAndNodes, scene))
+                            else:
+                                BabylonExporter.warn('WARNING: Only directional (sun) and spot types of lamp are valid for shadows thus ignored: ' + object.name)                                
+                    else:
+                        BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
+                        
             bpy.context.scene.frame_set(currentFrame)
 
             # output file
@@ -287,7 +341,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     def to_scene_file(self):
         BabylonExporter.log('========= Writing of scene file started =========', 0)
         # Open file
-        file_handler = open(self.filepathMinusExtension + '.babylon', 'w')  
+        file_handler = io.open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
         self.world.to_scene_file(file_handler)
         
@@ -382,6 +436,26 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             first = False
             shadowGen.to_scene_file(file_handler)
         file_handler.write(']')
+
+        # Sounds
+        if len(self.meshesWithSound) > 0:
+            file_handler.write('\n,"sounds":[')
+            first = True
+            for mesh in self.meshesWithSound:
+                if first == False:
+                    file_handler.write(',')
+                file_handler.write('{')        
+                write_string(file_handler, 'name', mesh.data.attachedSound, True)        
+                write_bool(file_handler, 'autoplay', mesh.data.autoPlaySound)
+                write_bool(file_handler, 'loop', mesh.data.loopSound) 
+
+                if hasattr(mesh, 'name'):
+                    write_string(file_handler, 'connectedMeshId', mesh.name) 
+                    write_float(file_handler, 'maxDistance', mesh.data.maxSoundDistance) 
+                
+                file_handler.write('}')   
+
+            file_handler.write(']')
         
         # Closing
         file_handler.write('}')
@@ -423,6 +497,7 @@ class World:
             write_float(file_handler, 'fogStart', self.fogStart)
             write_float(file_handler, 'fogEnd', self.fogEnd)
             write_float(file_handler, 'fogDensity', self.fogDensity)
+
 #===============================================================================
 class FCurveAnimatable:
     def __init__(self, object, supportsRotation, supportsPosition, supportsScaling, xOffsetForRotation = 0):  
@@ -478,7 +553,7 @@ class FCurveAnimatable:
                 write_bool(file_handler, 'autoAnimateLoop', self.autoAnimateLoop)
 #===============================================================================
 class Mesh(FCurveAnimatable):
-    def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID):
+    def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID, noVertexOpt):
         super().__init__(object, True, True, True)  #Should animations be done when foredParent
         
         self.name = object.name + str(nameID)
@@ -488,14 +563,14 @@ class Mesh(FCurveAnimatable):
         self.useFlatShading = object.data.useFlatShading
         self.checkCollisions = object.data.checkCollisions
         self.receiveShadows = object.data.receiveShadows
-        
-        # used to support shared vertex instances in later passed
-        self.dataName = object.data.name
-
+        self.castShadows = object.data.castShadows
+      
         if forcedParent is None:     
+            self.dataName = object.data.name # used to support shared vertex instances in later passed
             if object.parent and object.parent.type != 'ARMATURE':
                 self.parentId = object.parent.name
         else:
+            self.dataName = self.name
             self.parentId = forcedParent.name
 
         # Physics
@@ -682,7 +757,7 @@ class Mesh(FCurveAnimatable):
                             vertex_Color = Colormap[face.index].color3
                         
                     # Check if the current vertex is already saved                  
-                    alreadySaved = alreadySavedVertices[vertex_index] and not hasSkeleton
+                    alreadySaved = alreadySavedVertices[vertex_index] and not (hasSkeleton or noVertexOpt)
                     if alreadySaved:
                         alreadySaved = False                      
                     
@@ -887,8 +962,10 @@ class Node:
         self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
         self.scaling = scale
         self.isVisible = False
+        self.isEnabled = True
         self.checkCollisions = False
         self.billboardMode = BILLBOARDMODE_NONE
+        self.castShadows = False
         self.receiveShadows = False
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def get_proper_name(self):
@@ -904,6 +981,7 @@ class Node:
         write_vector(file_handler, 'rotation', self.rotation)
         write_vector(file_handler, 'scaling', self.scaling)
         write_bool(file_handler, 'isVisible', self.isVisible)
+        write_bool(file_handler, 'isEnabled', self.isEnabled)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_int(file_handler, 'billboardMode', self.billboardMode)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)      
@@ -1151,6 +1229,7 @@ class Light(FCurveAnimatable):
             matrix_world = light.matrix_world.copy()
             matrix_world.translation = mathutils.Vector((0, 0, 0))
             self.direction = (mathutils.Vector((0, 0, -1)) * matrix_world)
+            self.direction = scale_vector(self.direction, -1)
             self.groundColor = mathutils.Color((0, 0, 0))
             
         self.intensity = light.data.energy        
@@ -1181,16 +1260,16 @@ class Light(FCurveAnimatable):
         return (matrix.to_3x3() * mathutils.Vector((0.0, 0.0, -1.0))).normalized()
 #===============================================================================
 class ShadowGenerator:
-    def __init__(self, lamp, scene):       
+    def __init__(self, lamp, meshesAndNodes, scene):       
         BabylonExporter.log('processing begun of shadows for light:  ' + lamp.name)
         self.useVarianceShadowMap = lamp.data.shadowMap == 'VAR' if True else False
         self.mapSize = lamp.data.shadowMapSize  
         self.lightId = lamp.name     
         
         self.shadowCasters = []
-        for object in [object for object in scene.objects]:
-            if (object.type == 'MESH' and object.data.castShadows):
-                self.shadowCasters.append(object.name)
+        for mesh in meshesAndNodes:
+            if (mesh.castShadows):
+                self.shadowCasters.append(mesh.name)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
     def to_scene_file(self, file_handler):
         file_handler.write('{')
@@ -1351,7 +1430,10 @@ class Material:
                         # Bump
                         BabylonExporter.log('Bump texture found');
                         self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))  
-                        
+                    elif mtex.use_map_color_spec:
+                        # Specular
+                        BabylonExporter.log('Specular texture found');
+                        self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, filepath))
             else:
                  BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -                
@@ -1619,6 +1701,26 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     description='',
     default = False
 )
+bpy.types.Mesh.attachedSound = bpy.props.StringProperty(
+    name='Sound', 
+    description='',
+    default = ''
+)
+bpy.types.Mesh.loopSound = bpy.props.BoolProperty(
+    name='Loop sound', 
+    description='',
+    default = True
+)
+bpy.types.Mesh.autoPlaySound = bpy.props.BoolProperty(
+    name='Auto play sound', 
+    description='',
+    default = True
+)
+bpy.types.Mesh.maxSoundDistance = bpy.props.FloatProperty(
+    name='Max sound distance', 
+    description='',
+    default = 100
+)
 #===============================================================================
 bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
     name='Automatically launch animations', 
@@ -1628,17 +1730,21 @@ bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
 bpy.types.Camera.CameraType = bpy.props.EnumProperty(
     name='Camera Type', 
     description='',
+    # ONLY Append, or existing .blends will have their camera changed
     items = ( 
-             (V_JOYSTICKS_CAM  , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
-             (TOUCH_CAM        , 'Touch'              , 'Use Touch Camera'),
-             (OCULUS_CAM       , 'Oculus'             , 'Use Oculus Camera'),
-             (GAMEPAD_CAM      , 'Gamepad'            , 'Use Gamepad Camera'),
-             (FREE_CAM         , 'Free'               , 'Use Free Camera'),
-             (FOLLOW_CAM       , 'Follow'             , 'Use Follow Camera'),
-             (DEV_ORIENT_CAM   , 'Device Orientation' , 'Use Device Orientation Camera'),
-             (ARC_ROTATE_CAM   , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
-             (ANAGLYPH_FREE_CAM, 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
-             (ANAGLYPH_ARC_CAM , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera') 
+             (V_JOYSTICKS_CAM   , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
+             (TOUCH_CAM         , 'Touch'              , 'Use Touch Camera'),
+             (OCULUS_CAM        , 'Oculus'             , 'Use Oculus Camera'),
+             (GAMEPAD_CAM       , 'Gamepad'            , 'Use Gamepad Camera'),
+             (FREE_CAM          , 'Free'               , 'Use Free Camera'),
+             (FOLLOW_CAM        , 'Follow'             , 'Use Follow Camera'),
+             (DEV_ORIENT_CAM    , 'Device Orientation' , 'Use Device Orientation Camera'),
+             (ARC_ROTATE_CAM    , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
+             (ANAGLYPH_FREE_CAM , 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
+             (ANAGLYPH_ARC_CAM  , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera'),
+             (OCULUS_GAMEPAD_CAM, 'Oculus Gampad'      , 'Use Oculus Gamepad Camera'),
+             (VR_DEV_ORIENT_CAM , 'VR Dev Orientation' , 'Use VR Dev Orientation Camera'),
+             (WEB_VR_CAM        , 'Web VR'             , 'Use Web VR Camera')
             ),
     default = FREE_CAM
 )
@@ -1704,6 +1810,13 @@ class ObjectPanel(bpy.types.Panel):
             layout.separator()
 
             layout.prop(ob.data, 'autoAnimate')   
+
+            layout.separator()
+
+            layout.prop(ob.data, 'attachedSound') 
+            layout.prop(ob.data, 'autoPlaySound') 
+            layout.prop(ob.data, 'loopSound') 
+            layout.prop(ob.data, 'maxSoundDistance') 
             
         elif isCamera:
             layout.prop(ob.data, 'CameraType')

@@ -8,6 +8,12 @@
 
         constructor(scene: Scene) {
             this._scene = scene;
+        }
+
+        private _prepareBuffers(): void {
+            if (this._vertexBuffer) {
+                return;
+            }
 
             // VBO
             var vertices = [];
@@ -15,7 +21,7 @@
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
 
             // Indices
             var indices = [];
@@ -27,7 +33,7 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
 
         // Methods
@@ -44,13 +50,48 @@
             return true;
         }
 
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture): void {
-            var postProcesses = this._scene.activeCamera._postProcesses;
+        public directRender(postProcesses: PostProcess[], targetTexture?: WebGLTexture): void {
+            var engine = this._scene.getEngine();
+
+            for (var index = 0; index < postProcesses.length; index++) {
+                if (index < postProcesses.length - 1) {
+                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
+                } else {
+                    if (targetTexture) {
+                        engine.bindFramebuffer(targetTexture);
+                    } else {
+                        engine.restoreDefaultFramebuffer();
+                    }
+                }
+
+                var pp = postProcesses[index];
+                var effect = pp.apply();
+
+                if (effect) {
+                    if (pp.onBeforeRender) {
+                        pp.onBeforeRender(effect);
+                    }
+
+                    // VBOs
+                    this._prepareBuffers();
+                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+
+                    // Draw order
+                    engine.draw(true, 0, 6);
+                }
+            }
+
+            // Restore depth buffer
+            engine.setDepthBuffer(true);
+            engine.setDepthWrite(true);
+        }
+
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, postProcesses?: PostProcess[]): void {
+            postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
-
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcessesTakenIndices.length; index++) {
@@ -77,6 +118,7 @@
                     }
 
                     // VBOs
+                    this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
 
                     // Draw order

@@ -2,8 +2,9 @@
     export class Geometry implements IGetSetVerticesData {
         // Members
         public id: string;
-        public delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public delayLoadingFile: string;
+        public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
         // Private
         private _scene: Scene;
@@ -12,6 +13,7 @@
         private _totalVertices = 0;
         private _indices = [];
         private _vertexBuffers;
+        private _isDisposed = false;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
@@ -35,6 +37,7 @@
             // applyToMesh
             if (mesh) {
                 this.applyToMesh(mesh);
+                mesh.computeWorldMatrix(true);
             }
         }
 
@@ -47,11 +50,12 @@
         }
 
         public isReady(): boolean {
-            return this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE;
+            return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
         }
 
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         }
 
         public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void {
@@ -63,12 +67,12 @@
 
             this._vertexBuffers[kind] = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
-            if (kind === BABYLON.VertexBuffer.PositionKind) {
+            if (kind === VertexBuffer.PositionKind) {
                 stride = this._vertexBuffers[kind].getStrideSize();
 
                 this._totalVertices = data.length / stride;
 
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                var extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -76,11 +80,12 @@
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -91,6 +96,7 @@
             }
 
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
@@ -121,9 +127,16 @@
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
                         mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+
+                            subMesh.refreshBoundingInfo();
+                        }
                     }
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public getTotalVertices(): number {
@@ -201,6 +214,7 @@
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         }
 
         public getTotalIndices(): number {
@@ -244,7 +258,7 @@
 
             mesh._geometry = null;
 
-            if (meshes.length == 0 && shouldDispose) {
+            if (meshes.length === 0 && shouldDispose) {
                 this.dispose();
             }
         }
@@ -286,13 +300,16 @@
                 }
                 this._vertexBuffers[kind]._buffer.references = numOfMeshes;
 
-                if (kind === BABYLON.VertexBuffer.PositionKind) {
+                if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
 
-                    var extend = BABYLON.Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    var extend = Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
+                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
 
                     mesh._createGlobalSubMesh();
+
+                    //bounding info was just created again, world matrix should be applied again.
+                    mesh._updateBoundingInfo();
                 }
             }
 
@@ -305,8 +322,14 @@
             }
         }
 
+        private notifyUpdate(kind?: string) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
+            }
+        }
+
         public load(scene: Scene, onLoaded?: () => void): void {
-            if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
+            if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return;
             }
 
@@ -317,13 +340,13 @@
                 return;
             }
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
+            this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
             scene._addPendingData(this);
-            BABYLON.Tools.LoadFile(this.delayLoadingFile, data => {
+            Tools.LoadFile(this.delayLoadingFile, data => {
                 this._delayLoadingFunction(JSON.parse(data), this);
 
-                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
                 scene._removePendingData(this);
@@ -337,14 +360,18 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            },() => { }, scene.database);
+        }
+
+        public isDisposed(): boolean {
+            return this._isDisposed;
         }
 
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
-
-            for (var index = 0; index < numOfMeshes; index++) {
+            var index: number;
+            for (index = 0; index < numOfMeshes; index++) {
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
@@ -361,23 +388,19 @@
             this._indexBuffer = null;
             this._indices = [];
 
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
+            this.delayLoadState = Engine.DELAYLOADSTATE_NONE;
             this.delayLoadingFile = null;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
 
             this._boundingInfo = null; // todo: .dispose()
 
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
+            this._isDisposed = true;
         }
 
         public copy(id: string): Geometry {
-            var vertexData = new BABYLON.VertexData();
+            var vertexData = new VertexData();
 
             vertexData.indices = [];
 
@@ -390,7 +413,8 @@
             var stopChecking = false;
 
             for (var kind in this._vertexBuffers) {
-                vertexData.set(this.getVerticesData(kind), kind);
+                // using slice() to make a copy of the array and not just reference it
+                vertexData.set(this.getVerticesData(kind).slice(0), kind);
 
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
@@ -398,7 +422,7 @@
                 }
             }
 
-            var geometry = new BABYLON.Geometry(id, this._scene, vertexData, updatable, null);
+            var geometry = new Geometry(id, this._scene, vertexData, updatable, null);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -410,8 +434,8 @@
             }
 
             // Bounding info
-            var extend = BABYLON.Tools.ExtractMinAndMax(this.getVerticesData(BABYLON.VertexBuffer.PositionKind), 0, this.getTotalVertices());
-            geometry._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+            var extend = Tools.ExtractMinAndMax(this.getVerticesData(VertexBuffer.PositionKind), 0, this.getTotalVertices());
+            geometry._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
 
             return geometry;
         }
@@ -431,7 +455,7 @@
         // be aware Math.random() could cause collisions
         public static RandomId(): string {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
@@ -496,22 +520,51 @@
             }
         }
 
-        export class Box extends _Primitive {
+        export class Ribbon extends _Primitive {
             // Members
-            public size: number;
+            public pathArray: Vector3[][];
+            public closeArray: boolean;
+            public closePath: boolean;
+            public offset: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
-                this.size = size;
+            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.pathArray = pathArray;
+                this.closeArray = closeArray;
+                this.closePath = closePath;
+                this.offset = offset;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox(this.size);
+                return VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
+            }
+        }
+
+        export class Box extends _Primitive {
+            // Members
+            public size: number;
+            public side: number;
+
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.size = size;
+                this.side = side;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateBox(this.size, this.side);
+            }
+
+            public copy(id: string): Geometry {
+                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -519,20 +572,22 @@
             // Members
             public segments: number;
             public diameter: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.segments = segments;
                 this.diameter = diameter;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere(this.segments, this.diameter);
+                return VertexData.CreateSphere(this.segments, this.diameter, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null);
+                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -543,23 +598,25 @@
             public diameterBottom: number;
             public tessellation: number;
             public subdivisions: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.height = height;
                 this.diameterTop = diameterTop;
                 this.diameterBottom = diameterBottom;
                 this.tessellation = tessellation;
                 this.subdivisions = subdivisions;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions);
+                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null);
+                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -568,21 +625,23 @@
             public diameter: number;
             public thickness: number;
             public tessellation: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.diameter = diameter;
                 this.thickness = thickness;
                 this.tessellation = tessellation;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation);
+                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null);
+                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -641,19 +700,21 @@
         export class Plane extends _Primitive {
             // Members
             public size: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.size = size;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane(this.size);
+                return VertexData.CreatePlane(this.size, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null);
+                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
         }
 
@@ -665,24 +726,26 @@
             public tubularSegments: number;
             public p: number;
             public q: number;
+            public side: number;
 
-            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
                 this.radius = radius;
                 this.tube = tube;
                 this.radialSegments = radialSegments;
                 this.tubularSegments = tubularSegments;
                 this.p = p;
                 this.q = q;
+                this.side = side;
 
                 super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q);
+                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side);
             }
 
             public copy(id: string): Geometry {
-                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null);
+                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
             }
         }
     }

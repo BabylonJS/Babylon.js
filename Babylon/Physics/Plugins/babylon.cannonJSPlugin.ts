@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     declare var CANNON;
-    declare var window;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
         public checkWithEpsilon: (value: number) => number;

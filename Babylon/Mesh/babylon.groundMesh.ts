@@ -19,11 +19,11 @@
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {
-            var ray = new BABYLON.Ray(new BABYLON.Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
+            var ray = new Ray(new Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
 
             this.getWorldMatrix().invertToRef(this._worldInverse);
 
-            ray = BABYLON.Ray.Transform(ray, this._worldInverse);
+            ray = Ray.Transform(ray, this._worldInverse);
 
             var pickInfo = this.intersects(ray);
 

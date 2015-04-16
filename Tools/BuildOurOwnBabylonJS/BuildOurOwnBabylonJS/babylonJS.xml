@@ -1,9 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">
+<files xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="babylonJS.xsd">  
+  <script src="Babylon/PostProcess/babylon.colorCorrectionPostProcess.js"></script>
+  <script src="Babylon/PostProcess/babylon.lensRenderingPipeline.js"></script>
+  <script src="Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js"></script>
+  <script src="Babylon/PostProcess/babylon.ssaoRenderingPipeline.js"></script>
+  <script src="Babylon/Mesh/babylon.meshSimplification.js"></script>
+  <script src="Babylon/Rendering/babylon.depthRenderer.js"></script>
+  <script src="Babylon/Mesh/babylon.polygonMesh.js"></script>
+  <script src="Babylon/Materials/Textures/babylon.rawTexture.js"></script>
+  <script src="Babylon/Audio/babylon.analyser.js"></script>
+  <script src="Babylon/Audio/babylon.audioEngine.js"></script>
+  <script src="Babylon/Audio/babylon.sound.js"></script>
+  <script src="Babylon/Audio/babylon.soundtrack.js"></script>
+  <script src="Babylon/Debug/babylon.debugLayer.js"></script>
   <script src="Babylon/Mesh/babylon.meshLODLevel.js"></script>
   <script src="Babylon/Tools/babylon.sceneOptimizer.js"></script>
-  <script src="Babylon/Cameras/babylon.vrDeviceOrientationCamera.js"></script>
-  <script src="Babylon/Cameras/babylon.webVRCamera.js"></script>
+  <script src="Babylon/Cameras/VR/babylon.vrDeviceOrientationCamera.js"></script>
+  <script src="Babylon/Cameras/VR/babylon.webVRCamera.js"></script>
   <script src="Babylon/Tools/babylon.assetsManager.js"></script>
   <script src="Babylon/Rendering/babylon.outlineRenderer.js"></script>
   <script src="Babylon/Mesh/babylon.linesMesh.js"></script>
@@ -29,7 +42,8 @@
   <script src="Babylon/Mesh/babylon.mesh.vertexData.js"></script>
   <script src="Babylon/Materials/babylon.shaderMaterial.js"></script>
   <script src="Babylon/Cameras/babylon.virtualJoysticksCamera.js"></script>
-  <script src="Babylon/Cameras/babylon.oculusCamera.js"></script>
+  <script src="Babylon/Cameras/VR/babylon.oculusCamera.js"></script>
+  <script src="Babylon/Cameras/VR/babylon.oculusGamepadCamera.js"></script>
   <script src="Babylon/Tools/babylon.virtualJoystick.js"></script>
   <script src="Babylon/PostProcess/babylon.oculusDistortionCorrectionPostProcess.js"></script>
   <script src="Babylon/Mesh/babylon.csg.js"></script>
@@ -79,7 +93,7 @@
   <script src="Babylon/Materials/textures/babylon.standardProceduralTexture.js"></script>
   <script src="Babylon/Mesh/babylon.subMesh.js"></script>
   <script src="Babylon/Mesh/babylon.mesh.js"></script>
-  <script src="Babylon/Mesh/babylon.InstancedMesh.js"></script>
+  <script src="Babylon/Mesh/babylon.instancedMesh.js"></script>
   <script src="Babylon/Mesh/babylon.vertexBuffer.js"></script>
   <script src="Babylon/babylon.scene.js"></script>
   <script src="Babylon/Rendering/babylon.renderingGroup.js"></script>
@@ -108,6 +122,7 @@
   <script src="Babylon/babylon.engine.js"></script>
   <script src="Babylon/Tools/babylon.tools.js"></script>
   <script src="Babylon/Tools/babylon.smartArray.js"></script>
+  <script src="Babylon/Tools/babylon.smartCollection.js"></script>
   <script src="Babylon/Tools/babylon.tools.dds.js"></script>
   <script src="Babylon/Tools/babylon.tools.tga.js"></script>
   <script src="Babylon/Tools/babylon.database.js"></script>

@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+
+    declare var SIMD;
+
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -8,7 +11,7 @@
         }
 
         // Operators
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -16,6 +19,8 @@
             array[index] = this.r;
             array[index + 1] = this.g;
             array[index + 2] = this.b;
+
+            return this;
         }
 
         public toColor4(alpha = 1): Color4 {
@@ -38,10 +43,12 @@
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
-        public multiplyToRef(otherColor: Color3, result: Color3): void {
+        public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
+
+            return this;
         }
 
         public equals(otherColor: Color3): boolean {
@@ -52,51 +59,61 @@
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }
 
-        public scaleToRef(scale: number, result: Color3): void {
+        public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
+
+            return this;
         }
 
         public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
-        public addToRef(otherColor: Color3, result: Color3): void {
+        public addToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
+
+            return this;
         }
 
         public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
-        public subtractToRef(otherColor: Color3, result: Color3): void {
+        public subtractToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
+
+            return this;
         }
 
         public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
         }
 
-        public copyFrom(source: Color3): void {
+        public copyFrom(source: Color3): Color3 {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
+
+            return this;
         }
 
-        public copyFromFloats(r: number, g: number, b: number): void {
+        public copyFromFloats(r: number, g: number, b: number): Color3 {
             this.r = r;
             this.g = g;
             this.b = b;
+
+            return this;
         }
 
         // Statics
-        public static FromArray(array: number[]): Color3 {
-            return new Color3(array[0], array[1], array[2]);
+        public static FromArray(array: number[], offset: number = 0): Color3 {
+            return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
         public static FromInts(r: number, g: number, b: number): Color3 {
@@ -127,11 +144,13 @@
         }
 
         // Operators
-        public addInPlace(right) {
+        public addInPlace(right): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
             this.a += right.a;
+
+            return this;
         }
 
         public asArray(): number[] {
@@ -142,7 +161,7 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Color4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -150,6 +169,8 @@
             array[index + 1] = this.g;
             array[index + 2] = this.b;
             array[index + 3] = this.a;
+
+            return this;
         }
 
         public add(right: Color4): Color4 {
@@ -160,22 +181,26 @@
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
-        public subtractToRef(right: Color4, result: Color4): void {
+        public subtractToRef(right: Color4, result: Color4): Color4 {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
             result.b = this.b - right.b;
             result.a = this.a - right.a;
+
+            return this;
         }
 
         public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         }
 
-        public scaleToRef(scale: number, result: Color4): void {
+        public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+
+            return this;
         }
 
         public toString(): string {
@@ -186,11 +211,20 @@
             return new Color4(this.r, this.g, this.b, this.a);
         }
 
+        public copyFrom(source: Color4): Color4 {
+            this.r = source.r;
+            this.g = source.g;
+            this.b = source.b;
+            this.a = source.a;
+
+            return this;
+        }
+
         // Statics
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0, 0, 0, 0);
 
-            BABYLON.Color4.LerpToRef(left, right, amount, result);
+            Color4.LerpToRef(left, right, amount, result);
 
             return result;
         }
@@ -220,13 +254,11 @@
         }
 
         // Operators
-        public toArray(array: number[], index?: number): void {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: number[], index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
+
+            return this;
         }
 
         public asArray(): number[] {
@@ -237,14 +269,18 @@
             return result;
         }
 
-        public copyFrom(source: Vector2): void {
+        public copyFrom(source: Vector2): Vector2 {
             this.x = source.x;
             this.y = source.y;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number): void {
+        public copyFromFloats(x: number, y: number): Vector2 {
             this.x = x;
             this.y = y;
+
+            return this;
         }
 
         public add(otherVector: Vector2): Vector2 {
@@ -259,23 +295,29 @@
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
 
-        public subtractInPlace(otherVector: Vector2): void {
+        public subtractInPlace(otherVector: Vector2): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
+
+            return this;
         }
 
-        public multiplyInPlace(otherVector: Vector2): void {
+        public multiplyInPlace(otherVector: Vector2): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
+
+            return this;
         }
 
         public multiply(otherVector: Vector2): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
 
-        public multiplyToRef(otherVector: Vector2, result: Vector2): void {
+        public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number): Vector2 {
@@ -286,9 +328,11 @@
             return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
         }
 
-        public divideToRef(otherVector: Vector2, result: Vector2): void {
+        public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
+
+            return this;
         }
 
         public negate(): Vector2 {
@@ -342,11 +386,7 @@
             return new Vector2(0, 0);
         }
 
-        public static FromArray(array: number[], offset?: number): Vector2 {
-            if (!offset) {
-                offset = 0;
-            }
-
+        public static FromArray(array: number[], offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
 
@@ -445,7 +485,6 @@
 
             return (x * x) + (y * y);
         }
-
     }
 
     export class Vector3 {
@@ -466,56 +505,82 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
-            if (index === undefined) {
-                index = 0;
-            }
-
+        public toArray(array: number[], index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
+
+            return this;
         }
 
-        public addInPlace(otherVector: Vector3): void {
+        public toQuaternion(): Quaternion {
+            var result = new Quaternion(0, 0, 0, 1);
+
+            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
+            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
+            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
+            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
+            var cosy = Math.cos(this.y * 0.5);
+            var siny = Math.sin(this.y * 0.5);
+
+            result.x = coszMinusx * siny;
+            result.y = -sinzMinusx * siny;
+            result.z = sinxPlusz * cosy;
+            result.w = cosxPlusz * cosy;
+
+            return result;
+        }
+
+        public addInPlace(otherVector: Vector3): Vector3 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
+
+            return this;
         }
 
         public add(otherVector: Vector3): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
-        public addToRef(otherVector: Vector3, result: Vector3): void {
+        public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
+
+            return this;
         }
 
-        public subtractInPlace(otherVector: Vector3): void {
+        public subtractInPlace(otherVector: Vector3): Vector3 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
+
+            return this;
         }
 
         public subtract(otherVector: Vector3): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
         }
 
-        public subtractToRef(otherVector: Vector3, result: Vector3): void {
+        public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
+
+            return this;
         }
 
         public subtractFromFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x - x, this.y - y, this.z - z);
         }
 
-        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
+
+            return this;
         }
 
         public negate(): Vector3 {
@@ -553,20 +618,24 @@
             return this.x === x && this.y === y && this.z === z;
         }
 
-        public multiplyInPlace(otherVector: Vector3): void {
+        public multiplyInPlace(otherVector: Vector3): Vector3 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
+
+            return this;
         }
 
         public multiply(otherVector: Vector3): Vector3 {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
-        public multiplyToRef(otherVector: Vector3, result: Vector3): void {
+        public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number, z: number): Vector3 {
@@ -577,22 +646,28 @@
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
-        public divideToRef(otherVector: Vector3, result: Vector3): void {
+        public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
+
+            return this;
         }
 
-        public MinimizeInPlace(other: Vector3): void {
+        public MinimizeInPlace(other: Vector3): Vector3 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
+
+            return this;
         }
 
-        public MaximizeInPlace(other: Vector3): void {
+        public MaximizeInPlace(other: Vector3): Vector3 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
+
+            return this;
         }
 
         // Properties
@@ -624,19 +699,32 @@
             return new Vector3(this.x, this.y, this.z);
         }
 
-        public copyFrom(source: Vector3): void {
+        public copyFrom(source: Vector3): Vector3 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number): void {
+        public copyFromFloats(x: number, y: number, z: number): Vector3 {
             this.x = x;
             this.y = y;
             this.z = z;
+
+            return this;
         }
 
         // Statics
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+            var d0 = Vector3.Dot(vector0, axis) - size;
+            var d1 = Vector3.Dot(vector1, axis) - size;
+
+            var s = d0 / (d0 - d1);
+
+            return s;
+        }
+
         public static FromArray(array: number[], offset?: number): Vector3 {
             if (!offset) {
                 offset = 0;
@@ -699,6 +787,30 @@
             result.x = rx / rw;
             result.y = ry / rw;
             result.z = rz / rw;
+        }
+
+        public static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void {
+            var v = SIMD.float32x4.loadXYZ((<any>vector)._data, 0);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0), SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
+        }
+
+        public static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
+            var v0 = SIMD.float32x4.splat(x);
+            var v1 = SIMD.float32x4.splat(y);
+            var v2 = SIMD.float32x4.splat(z);
+            var m0 = SIMD.float32x4.load(transformation.m, 0);
+            var m1 = SIMD.float32x4.load(transformation.m, 4);
+            var m2 = SIMD.float32x4.load(transformation.m, 8);
+            var m3 = SIMD.float32x4.load(transformation.m, 12);
+            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0), SIMD.float32x4.mul(v1, m1)), SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
+            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
+            SIMD.float32x4.storeXYZ((<any>result)._data, 0, r);
         }
 
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
@@ -814,7 +926,7 @@
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = BABYLON.Matrix.FromValues(
+            var viewportMatrix = Matrix.FromValues(
                 cw / 2.0, 0, 0, 0,
                 0, -ch / 2.0, 0, 0,
                 0, 0, 1, 0,
@@ -830,10 +942,10 @@
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -845,10 +957,10 @@
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = BABYLON.Vector3.TransformCoordinates(source, matrix);
+            var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -904,7 +1016,7 @@
             return result;
         }
 
-        public toArray(array: number[], index?: number): void {
+        public toArray(array: number[], index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -913,53 +1025,65 @@
             array[index + 1] = this.y;
             array[index + 2] = this.z;
             array[index + 3] = this.w;
+
+            return this;
         }
 
-        public addInPlace(otherVector: Vector4): void {
+        public addInPlace(otherVector: Vector4): Vector4 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             this.z += otherVector.z;
             this.w += otherVector.w;
+
+            return this;
         }
 
         public add(otherVector: Vector4): Vector4 {
             return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
         }
 
-        public addToRef(otherVector: Vector4, result: Vector4): void {
+        public addToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             result.z = this.z + otherVector.z;
             result.w = this.w + otherVector.w;
+
+            return this;
         }
 
-        public subtractInPlace(otherVector: Vector4): void {
+        public subtractInPlace(otherVector: Vector4): Vector4 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             this.z -= otherVector.z;
             this.w -= otherVector.w;
+
+            return this;
         }
 
         public subtract(otherVector: Vector4): Vector4 {
             return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
         }
 
-        public subtractToRef(otherVector: Vector4, result: Vector4): void {
+        public subtractToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
             result.z = this.z - otherVector.z;
             result.w = this.w - otherVector.w;
+
+            return this;
         }
 
         public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
         }
 
-        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void {
+        public subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4 {
             result.x = this.x - x;
             result.y = this.y - y;
             result.z = this.z - z;
             result.w = this.w - w;
+
+            return this;
         }
 
         public negate(): Vector4 {
@@ -1000,22 +1124,26 @@
             return this.x === x && this.y === y && this.z === z && this.w === w;
         }
 
-        public multiplyInPlace(otherVector: Vector4): void {
+        public multiplyInPlace(otherVector: Vector4): Vector4 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             this.z *= otherVector.z;
             this.w *= otherVector.w;
+
+            return this;
         }
 
         public multiply(otherVector: Vector4): Vector4 {
             return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
         }
 
-        public multiplyToRef(otherVector: Vector4, result: Vector4): void {
+        public multiplyToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             result.z = this.z * otherVector.z;
             result.w = this.w * otherVector.w;
+
+            return this;
         }
 
         public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
@@ -1026,25 +1154,31 @@
             return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
         }
 
-        public divideToRef(otherVector: Vector4, result: Vector4): void {
+        public divideToRef(otherVector: Vector4, result: Vector4): Vector4 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
+
+            return this;
         }
 
-        public MinimizeInPlace(other: Vector4): void {
+        public MinimizeInPlace(other: Vector4): Vector4 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
             if (other.w < this.w) this.w = other.w;
+
+            return this;
         }
 
-        public MaximizeInPlace(other: Vector4): void {
+        public MaximizeInPlace(other: Vector4): Vector4 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
             if (other.w > this.w) this.w = other.w;
+
+            return this;
         }
 
         // Properties
@@ -1077,18 +1211,22 @@
             return new Vector4(this.x, this.y, this.z, this.w);
         }
 
-        public copyFrom(source: Vector4): void {
+        public copyFrom(source: Vector4): Vector4 {
             this.x = source.x;
             this.y = source.y;
             this.z = source.z;
             this.w = source.w;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number, w: number): void {
+        public copyFromFloats(x: number, y: number, z: number, w: number): Vector4 {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+
+            return this;
         }
 
         // Statics
@@ -1189,18 +1327,22 @@
             return new Quaternion(this.x, this.y, this.z, this.w);
         }
 
-        public copyFrom(other: Quaternion): void {
+        public copyFrom(other: Quaternion): Quaternion {
             this.x = other.x;
             this.y = other.y;
             this.z = other.z;
             this.w = other.w;
+
+            return this;
         }
 
-        public copyFromFloats(x: number, y: number, z: number, w: number): void {
+        public copyFromFloats(x: number, y: number, z: number, w: number): Quaternion {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+
+            return this;
         }
 
         public add(other: Quaternion): Quaternion {
@@ -1223,23 +1365,27 @@
             return result;
         }
 
-        public multiplyToRef(q1: Quaternion, result: Quaternion): void {
+        public multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion {
             result.x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
             result.y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
             result.z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
             result.w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+
+            return this;
         }
 
         public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         }
 
-        public normalize(): void {
+        public normalize(): Quaternion {
             var length = 1.0 / this.length();
             this.x *= length;
             this.y *= length;
             this.z *= length;
             this.w *= length;
+
+            return this;
         }
 
         public toEulerAngles(): Vector3 {
@@ -1250,7 +1396,7 @@
             return result;
         }
 
-        public toEulerAnglesToRef(result: Vector3): void {
+        public toEulerAnglesToRef(result: Vector3): Quaternion {
             //result is an EulerAngles in the in the z-x-z convention
             var qx = this.x;
             var qy = this.y;
@@ -1267,12 +1413,12 @@
 
             var determinant = sqx + sqy;
 
-            if (determinant != 0.000 && determinant != 1.000) {
+            if (determinant !== 0.000 && determinant !== 1.000) {
                 result.x = Math.atan2(qxz + qwy, qwx - qyz);
                 result.y = Math.acos(1 - 2 * determinant);
                 result.z = Math.atan2(qxz - qwy, qwx + qyz);
             } else {
-                if (determinant == 0.000) {
+                if (determinant === 0.0) {
                     result.x = 0.0;
                     result.y = 0.0;
                     result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
@@ -1283,9 +1429,11 @@
                     result.z = 0.0;
                 }
             }
+
+            return this;
         }
 
-        public toRotationMatrix(result: Matrix): void {
+        public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
             var zz = this.z * this.z;
@@ -1312,9 +1460,24 @@
             result.m[13] = 0;
             result.m[14] = 0;
             result.m[15] = 1.0;
+
+            return this;
         }
 
-        public fromRotationMatrix(matrix: Matrix): void {
+        public fromRotationMatrix(matrix: Matrix): Quaternion {
+            Quaternion.FromRotationMatrixToRef(matrix, this);
+            return this;
+        }
+
+        // Statics
+
+        public static FromRotationMatrix(matrix: Matrix): Quaternion {
+            var result = new Quaternion();
+            Quaternion.FromRotationMatrixToRef(matrix, result);
+            return result;
+        }
+
+        public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
             var data = matrix.m;
             var m11 = data[0], m12 = data[4], m13 = data[8];
             var m21 = data[1], m22 = data[5], m23 = data[9];
@@ -1323,52 +1486,46 @@
             var s;
 
             if (trace > 0) {
+
                 s = 0.5 / Math.sqrt(trace + 1.0);
 
-                this.w = 0.25 / s;
-                this.x = (m32 - m23) * s;
-                this.y = (m13 - m31) * s;
-                this.z = (m21 - m12) * s;
-
-                return;
-            }
-
-            if (m11 > m22 && m11 > m33) {
+                result.w = 0.25 / s;
+                result.x = (m32 - m23) * s;
+                result.y = (m13 - m31) * s;
+                result.z = (m21 - m12) * s;
+            } else if (m11 > m22 && m11 > m33) {
 
                 s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
-                this.w = (m32 - m23) / s;
-                this.x = 0.25 * s;
-                this.y = (m12 + m21) / s;
-                this.z = (m13 + m31) / s;
-
-                return;
-            }
-
-            if (m22 > m33) {
+                result.w = (m32 - m23) / s;
+                result.x = 0.25 * s;
+                result.y = (m12 + m21) / s;
+                result.z = (m13 + m31) / s;
+            } else if (m22 > m33) {
 
                 s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
-                this.w = (m13 - m31) / s;
-                this.x = (m12 + m21) / s;
-                this.y = 0.25 * s;
-                this.z = (m23 + m32) / s;
+                result.w = (m13 - m31) / s;
+                result.x = (m12 + m21) / s;
+                result.y = 0.25 * s;
+                result.z = (m23 + m32) / s;
+            } else {
 
-                return;
+                s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
+                result.w = (m21 - m12) / s;
+                result.x = (m13 + m31) / s;
+                result.y = (m23 + m32) / s;
+                result.z = 0.25 * s;
             }
-
-            s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
-
-            this.w = (m21 - m12) / s;
-            this.x = (m13 + m31) / s;
-            this.y = (m23 + m32) / s;
-            this.z = 0.25 * s;
         }
 
-        // Statics
         public static Inverse(q: Quaternion): Quaternion {
             return new Quaternion(-q.x, -q.y, -q.z, q.w);
+        }
+
+        public static Identity(): Quaternion {
+            return new Quaternion(0, 0, 0, 1);
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
@@ -1400,6 +1557,7 @@
         }
 
         public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
+            // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
             var halfYaw = yaw * 0.5;
@@ -1415,6 +1573,24 @@
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+        }
+
+        public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {
+            var result = new Quaternion();
+            Quaternion.RotationAlphaBetaGammaToRef(alpha, beta, gamma, result);
+            return result;
+        }
+
+        public static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void {
+            // Produces a quaternion from Euler angles in the z-x-z orientation
+            var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
+            var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
+            var halfBeta = beta * 0.5;
+
+            result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
+            result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
+            result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
@@ -1440,7 +1616,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -1454,13 +1630,13 @@
 
         // Properties
         public isIdentity(): boolean {
-            if (this.m[0] != 1.0 || this.m[5] != 1.0 || this.m[10] != 1.0 || this.m[15] != 1.0)
+            if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
                 return false;
 
-            if (this.m[1] != 0.0 || this.m[2] != 0.0 || this.m[3] != 0.0 ||
-                this.m[4] != 0.0 || this.m[6] != 0.0 || this.m[7] != 0.0 ||
-                this.m[8] != 0.0 || this.m[9] != 0.0 || this.m[11] != 0.0 ||
-                this.m[12] != 0.0 || this.m[13] != 0.0 || this.m[14] != 0.0)
+            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
+                this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
+                this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
+                this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
                 return false;
 
             return true;
@@ -1488,11 +1664,13 @@
             return this.toArray();
         }
 
-        public invert(): void {
+        public invert(): Matrix {
             this.invertToRef(this);
+
+            return this;
         }
 
-        public invertToRef(other: Matrix) {
+        public invertToRef(other: Matrix): Matrix {
             var l1 = this.m[0];
             var l2 = this.m[1];
             var l3 = this.m[2];
@@ -1549,12 +1727,141 @@
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
+
+            return this;
         }
 
-        public setTranslation(vector3: Vector3): void {
+        public invertToRefSIMD(other: Matrix): Matrix {
+            var src = this.m;
+            var dest = other.m;
+            var row0, row1, row2, row3;
+            var tmp1;
+            var minor0, minor1, minor2, minor3;
+            var det;
+
+            // Load the 4 rows
+            var src0 = SIMD.float32x4.load(src, 0);
+            var src1 = SIMD.float32x4.load(src, 4);
+            var src2 = SIMD.float32x4.load(src, 8);
+            var src3 = SIMD.float32x4.load(src, 12);
+
+            // Transpose the source matrix.  Sort of.  Not a true transpose operation
+
+            tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
+            row1 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
+            row0 = SIMD.float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
+            row1 = SIMD.float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
+
+            tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
+            row3 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
+            row2 = SIMD.float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
+            row3 = SIMD.float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
+
+            // This is a true transposition, but it will lead to an incorrect result
+
+            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
+            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
+            //row0  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
+            //row1  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
+
+            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
+            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
+            //row2  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
+            //row3  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row2, row3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor0 = SIMD.float32x4.mul(row1, tmp1);
+            minor1 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(SIMD.float32x4.mul(row1, tmp1), minor0);
+            minor1 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor1);
+            minor1 = SIMD.float32x4.swizzle(minor1, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row1, row2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor0);
+            minor3 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row3, tmp1));
+            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor3);
+            minor3 = SIMD.float32x4.swizzle(minor3, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(SIMD.float32x4.swizzle(row1, 2, 3, 0, 1), row3); // 0x4E = 01001110
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            row2 = SIMD.float32x4.swizzle(row2, 2, 3, 0, 1);  // 0x4E = 01001110
+            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor0);
+            minor2 = SIMD.float32x4.mul(row0, tmp1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row2, tmp1));
+            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor2);
+            minor2 = SIMD.float32x4.swizzle(minor2, 2, 3, 0, 1); // 0x4E = 01001110
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row1);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor2);
+            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row2, tmp1), minor3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row3, tmp1), minor2);
+            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row2, tmp1));
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row3);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row2, tmp1));
+            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor1);
+            minor2 = SIMD.float32x4.sub(minor2, SIMD.float32x4.mul(row1, tmp1));
+
+            // ----
+            tmp1 = SIMD.float32x4.mul(row0, row2);
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
+            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor1);
+            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row1, tmp1));
+            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
+            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row3, tmp1));
+            minor3 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor3);
+
+            // Compute determinant
+            det = SIMD.float32x4.mul(row0, minor0);
+            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
+            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
+            tmp1 = SIMD.float32x4.reciprocalApproximation(det);
+            det = SIMD.float32x4.sub(SIMD.float32x4.add(tmp1, tmp1), SIMD.float32x4.mul(det, SIMD.float32x4.mul(tmp1, tmp1)));
+            det = SIMD.float32x4.swizzle(det, 0, 0, 0, 0);
+
+            // These shuffles aren't necessary if the faulty transposition is done
+            // up at the top of this function.
+            //minor0 = SIMD.float32x4.swizzle(minor0, 2, 1, 0, 3);
+            //minor1 = SIMD.float32x4.swizzle(minor1, 2, 1, 0, 3);
+            //minor2 = SIMD.float32x4.swizzle(minor2, 2, 1, 0, 3);
+            //minor3 = SIMD.float32x4.swizzle(minor3, 2, 1, 0, 3);
+
+            // Compute final values by multiplying with 1/det
+            minor0 = SIMD.float32x4.mul(det, minor0);
+            minor1 = SIMD.float32x4.mul(det, minor1);
+            minor2 = SIMD.float32x4.mul(det, minor2);
+            minor3 = SIMD.float32x4.mul(det, minor3);
+
+            SIMD.float32x4.store(dest, 0, minor0);
+            SIMD.float32x4.store(dest, 4, minor1);
+            SIMD.float32x4.store(dest, 8, minor2);
+            SIMD.float32x4.store(dest, 12, minor3);
+
+            return this;
+        }
+
+        public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
             this.m[14] = vector3.z;
+
+            return this;
         }
 
         public multiply(other: Matrix): Matrix {
@@ -1565,24 +1872,29 @@
             return result;
         }
 
-        public copyFrom(other: Matrix): void {
+        public copyFrom(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
                 this.m[index] = other.m[index];
             }
+
+            return this;
         }
 
-        public copyToArray(array: Float32Array, offset: number = 0): void {
+        public copyToArray(array: Float32Array, offset: number = 0): Matrix {
             for (var index = 0; index < 16; index++) {
                 array[offset + index] = this.m[index];
             }
+
+            return this;
         }
 
-        public multiplyToRef(other: Matrix, result: Matrix): void {
+        public multiplyToRef(other: Matrix, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
+
+            return this;
         }
 
-        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): void {
-
+        public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
             var tm1 = this.m[1];
             var tm2 = this.m[2];
@@ -1636,14 +1948,61 @@
             result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
             result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+
+            return this;
+        }
+
+        public multiplyToArraySIMD(other: Matrix, result: Matrix, offset = 0): void {
+            var tm = this.m;
+            var om = other.m;
+            var om0 = SIMD.float32x4.load(om, 0);
+            var om1 = SIMD.float32x4.load(om, 4);
+            var om2 = SIMD.float32x4.load(om, 8);
+            var om3 = SIMD.float32x4.load(om, 12);
+
+            var tm0 = SIMD.float32x4.load(tm, 0);
+            SIMD.float32x4.store(result, offset + 0, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 3, 3, 3, 3), om3)))));
+
+            var tm1 = SIMD.float32x4.load(tm, 4);
+            SIMD.float32x4.store(result, offset + 4, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 3, 3, 3, 3), om3)))));
+
+            var tm2 = SIMD.float32x4.load(tm, 8);
+            SIMD.float32x4.store(result, offset + 8, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 3, 3, 3, 3), om3)))));
+
+            var tm3 = SIMD.float32x4.load(tm, 12);
+            SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(
+                SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0),
+                SIMD.float32x4.add(
+                    SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1),
+                    SIMD.float32x4.add(
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2),
+                        SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
         }
 
         public equals(value: Matrix): boolean {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
+                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
+                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
 
         public clone(): Matrix {
@@ -1651,6 +2010,38 @@
                 this.m[4], this.m[5], this.m[6], this.m[7],
                 this.m[8], this.m[9], this.m[10], this.m[11],
                 this.m[12], this.m[13], this.m[14], this.m[15]);
+        }
+
+        public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
+            translation.x = this.m[12];
+            translation.y = this.m[13];
+            translation.z = this.m[14];
+
+            var xs = Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+
+            scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
+            scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
+            scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
+
+            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
+                rotation.x = 0;
+                rotation.y = 0;
+                rotation.z = 0;
+                rotation.w = 1;
+                return false;
+            }
+
+            var rotationMatrix = Matrix.FromValues(
+                this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
+                this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
+                this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
+                0, 0, 0, 1);
+
+            Quaternion.FromRotationMatrixToRef(rotationMatrix, rotation);
+
+            return true;
         }
 
         // Statics
@@ -1719,6 +2110,21 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+
+            return result;
+        }
+
+        public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
+            var result = Matrix.FromValues(scale.x, 0, 0, 0,
+                0, scale.y, 0, 0,
+                0, 0, scale.z, 0,
+                0, 0, 0, 1);
+
+            var rotationMatrix = Matrix.Identity();
+            rotation.toRotationMatrix(rotationMatrix);
+            result = result.multiply(rotationMatrix);
+
+            result.setTranslation(translation);
 
             return result;
         }
@@ -1964,16 +2370,78 @@
                 ex, ey, ez, 1, result);
         }
 
+        public static LookAtLHToRefSIMD(eyeRef: Vector3, targetRef: Vector3, upRef: Vector3, result: Matrix): void {
+            var out = result.m;
+            var center = SIMD.float32x4(targetRef.x, targetRef.y, targetRef.z, 0);
+            var eye = SIMD.float32x4(eyeRef.x, eyeRef.y, eyeRef.z, 0);
+            var up = SIMD.float32x4(upRef.x, upRef.y, upRef.z, 0);
+
+            // cc.kmVec3Subtract(f, pCenter, pEye);
+            var f = SIMD.float32x4.sub(center, eye);
+            // cc.kmVec3Normalize(f, f);    
+            var tmp = SIMD.float32x4.mul(f, f);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            f = SIMD.float32x4.mul(f, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
+
+            // cc.kmVec3Assign(up, pUp);
+            // cc.kmVec3Normalize(up, up);
+            tmp = SIMD.float32x4.mul(up, up);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
+            // cc.kmVec3Cross(s, f, up);
+            var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
+            // cc.kmVec3Normalize(s, s);
+            tmp = SIMD.float32x4.mul(s, s);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
+            // cc.kmVec3Cross(u, s, f);
+            var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
+            // cc.kmVec3Normalize(s, s);
+            tmp = SIMD.float32x4.mul(s, s);
+            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
+            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
+
+            var zero = SIMD.float32x4.splat(0.0);
+            s = SIMD.float32x4.neg(s);
+            var tmp01 = SIMD.float32x4.shuffle(s, u, 0, 1, 4, 5);
+            var tmp23 = SIMD.float32x4.shuffle(f, zero, 0, 1, 4, 5);
+            var a0 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+            var a1 = SIMD.float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
+            tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
+            tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
+            var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
+            var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
+            var b0 = SIMD.float32x4(1.0, 0.0, 0.0, 0.0);
+            var b1 = SIMD.float32x4(0.0, 1.0, 0.0, 0.0);
+            var b2 = SIMD.float32x4(0.0, 0.0, 1.0, 0.0);
+            var b3 = SIMD.float32x4.neg(eye);
+            b3 = SIMD.float32x4.withW(b3, 1.0);
+
+            SIMD.float32x4.store(out, 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
+            SIMD.float32x4.store(out, 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 3, 3, 3, 3), a3)))));
+        }
+
+
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
+            var matrix = Matrix.Zero();
+
+            Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
+
+            return matrix;
+        }
+
+        public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
             var hw = 2.0 / width;
             var hh = 2.0 / height;
             var id = 1.0 / (zfar - znear);
             var nid = znear / (znear - zfar);
 
-            return Matrix.FromValues(hw, 0, 0, 0,
+            Matrix.FromValuesToRef(hw, 0, 0, 0,
                 0, hh, 0, 0,
                 0, 0, id, 0,
-                0, 0, nid, 1);
+                0, 0, nid, 1, result);
         }
 
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
@@ -2021,12 +2489,27 @@
             return matrix;
         }
 
-        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix): void {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode = Camera.FOVMODE_VERTICAL_FIXED): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
 
-            result.m[0] = tan / aspect;
+            var v_fixed = (fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+
+            if (v_fixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
+
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            result.m[5] = tan;
+
+            if (v_fixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
+
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
             result.m[10] = -zfar / (znear - zfar);
@@ -2128,11 +2611,11 @@
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
         }
 
-        public normalize(): void {
+        public normalize(): Plane {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
             var magnitude = 0;
 
-            if (norm != 0) {
+            if (norm !== 0) {
                 magnitude = 1.0 / norm;
             }
 
@@ -2141,10 +2624,12 @@
             this.normal.z *= magnitude;
 
             this.d *= magnitude;
+
+            return this;
         }
 
         public transform(transformation: Matrix): Plane {
-            var transposedMatrix = BABYLON.Matrix.Transpose(transformation);
+            var transposedMatrix = Matrix.Transpose(transformation);
             var x = this.normal.x;
             var y = this.normal.y;
             var z = this.normal.z;
@@ -2155,7 +2640,7 @@
             var normalZ = (((x * transposedMatrix.m[8]) + (y * transposedMatrix.m[9])) + (z * transposedMatrix.m[10])) + (d * transposedMatrix.m[11]);
             var finalD = (((x * transposedMatrix.m[12]) + (y * transposedMatrix.m[13])) + (z * transposedMatrix.m[14])) + (d * transposedMatrix.m[15]);
 
-            return new BABYLON.Plane(normalX, normalY, normalZ, finalD);
+            return new Plane(normalX, normalY, normalZ, finalD);
         }
 
 
@@ -2163,7 +2648,7 @@
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
-        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): void {
+        public copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var x1 = point2.x - point1.x;
             var y1 = point2.y - point1.y;
             var z1 = point2.z - point1.z;
@@ -2176,7 +2661,7 @@
             var pyth = (Math.sqrt((yz * yz) + (xz * xz) + (xy * xy)));
             var invPyth;
 
-            if (pyth != 0) {
+            if (pyth !== 0) {
                 invPyth = 1.0 / pyth;
             }
             else {
@@ -2187,6 +2672,8 @@
             this.normal.y = xz * invPyth;
             this.normal.z = xy * invPyth;
             this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
+
+            return this;
         }
 
         public isFrontFacingTo(direction: Vector3, epsilon: number): boolean {
@@ -2201,11 +2688,11 @@
 
         // Statics
         static FromArray(array: number[]): Plane {
-            return new BABYLON.Plane(array[0], array[1], array[2], array[3]);
+            return new Plane(array[0], array[1], array[2], array[3]);
         }
 
         static FromPoints(point1, point2, point3): Plane {
-            var result = new BABYLON.Plane(0, 0, 0, 0);
+            var result = new Plane(0, 0, 0, 0);
 
             result.copyFromPoints(point1, point2, point3);
 
@@ -2213,7 +2700,7 @@
         }
 
         static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane {
-            var result = new BABYLON.Plane(0, 0, 0, 0);
+            var result = new Plane(0, 0, 0, 0);
             normal.normalize();
 
             result.normal = normal;
@@ -2233,7 +2720,7 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(engine) {
+        public toGlobal(engine): Viewport {
             var width = engine.getRenderWidth();
             var height = engine.getRenderHeight();
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
@@ -2323,7 +2810,7 @@
                 var min = (minimum.x - this.origin.x) * inv;
                 var max = (maximum.x - this.origin.x) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2351,7 +2838,7 @@
                 min = (minimum.y - this.origin.y) * inv;
                 max = (maximum.y - this.origin.y) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2379,7 +2866,7 @@
                 min = (minimum.z - this.origin.z) * inv;
                 max = (maximum.z - this.origin.z) * inv;
 
-                if (max == -Infinity) {
+                if (max === -Infinity) {
                     max = Infinity;
                 }
 
@@ -2426,16 +2913,16 @@
 
         public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo {
             if (!this._edge1) {
-                this._edge1 = BABYLON.Vector3.Zero();
-                this._edge2 = BABYLON.Vector3.Zero();
-                this._pvec = BABYLON.Vector3.Zero();
-                this._tvec = BABYLON.Vector3.Zero();
-                this._qvec = BABYLON.Vector3.Zero();
+                this._edge1 = Vector3.Zero();
+                this._edge2 = Vector3.Zero();
+                this._pvec = Vector3.Zero();
+                this._tvec = Vector3.Zero();
+                this._qvec = Vector3.Zero();
             }
 
             vertex1.subtractToRef(vertex0, this._edge1);
             vertex2.subtractToRef(vertex0, this._edge2);
-            BABYLON.Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
+            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
             var det = Vector3.Dot(this._edge1, this._pvec);
 
             if (det === 0) {
@@ -2471,8 +2958,8 @@
 
         // Statics
         public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
-            var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
+            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
+            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
 
             var direction = end.subtract(start);
             direction.normalize();
@@ -2487,7 +2974,7 @@
         * @param end The end point
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         */
-        public static CreateNewFromTo(origin: BABYLON.Vector3, end: BABYLON.Vector3, world: Matrix = BABYLON.Matrix.Identity()): Ray {
+        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Matrix = Matrix.Identity()): Ray {
             var direction = end.subtract(origin);
             var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
             direction.normalize();
@@ -2496,8 +2983,8 @@
         }
 
         public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
+            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
+            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
 
             return new Ray(newOrigin, newDirection, ray.length);
         }
@@ -2509,13 +2996,12 @@
     }
 
     export class Axis {
-        public static X: Vector3 = new BABYLON.Vector3(1, 0, 0);
-        public static Y: Vector3 = new BABYLON.Vector3(0, 1, 0);
-        public static Z: Vector3 = new BABYLON.Vector3(0, 0, 1);
+        public static X: Vector3 = new Vector3(1, 0, 0);
+        public static Y: Vector3 = new Vector3(0, 1, 0);
+        public static Z: Vector3 = new Vector3(0, 0, 1);
     };
 
     export class BezierCurve {
-
         public static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
 
             // Extract X (which is equal to time here)
@@ -2541,5 +3027,500 @@
                 Math.pow(refinedT, 3);
 
         }
+    }
+
+    export enum Orientation {
+        CW = 0,
+        CCW = 1
+    }
+
+    export class Angle {
+        private _radians: number;
+
+        constructor(radians: number) {
+            this._radians = radians;
+            if (this._radians < 0) this._radians += (2 * Math.PI);
+        }
+
+        public degrees = () => this._radians * 180 / Math.PI;
+        public radians = () => this._radians;
+
+        public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
+            var delta = b.subtract(a);
+            var theta = Math.atan2(delta.y, delta.x);
+            return new Angle(theta);
+        }
+
+        public static FromRadians(radians: number): Angle {
+            return new Angle(radians);
+        }
+
+        public static FromDegrees(degrees: number): Angle {
+            return new Angle(degrees * Math.PI / 180);
+        }
+    }
+
+    export class Arc2 {
+        centerPoint: Vector2;
+        radius: number;
+        angle: Angle;
+        startAngle: Angle;
+        orientation: Orientation;
+
+        constructor(public startPoint: Vector2, public midPoint: Vector2, public endPoint: Vector2) {
+
+            var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
+            var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2.;
+            var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2.;
+            var det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
+
+            this.centerPoint = new Vector2(
+                (startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det,
+                ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det
+                );
+
+            this.radius = this.centerPoint.subtract(this.startPoint).length();
+
+            this.startAngle = Angle.BetweenTwoPoints(this.centerPoint, this.startPoint);
+
+            var a1 = this.startAngle.degrees();
+            var a2 = Angle.BetweenTwoPoints(this.centerPoint, this.midPoint).degrees();
+            var a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
+
+            // angles correction
+            if (a2 - a1 > +180.0) a2 -= 360.0;
+            if (a2 - a1 < -180.0) a2 += 360.0;
+            if (a3 - a2 > +180.0) a3 -= 360.0;
+            if (a3 - a2 < -180.0) a3 += 360.0;
+
+            this.orientation = (a2 - a1) < 0 ? Orientation.CW : Orientation.CCW;
+            this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
+        }
+    }
+
+    export class PathCursor {
+        private _onchange = new Array<(cursor: PathCursor) => void>();
+
+        value: number = 0;
+        animations = new Array<Animation>();
+
+        constructor(private path: Path2) {
+        }
+
+        public getPoint(): Vector3 {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        }
+
+        public moveAhead(step: number = 0.002): PathCursor {
+            this.move(step);
+
+            return this;
+        }
+
+        public moveBack(step: number = 0.002): PathCursor {
+            this.move(-step);
+
+            return this;
+        }
+
+        public move(step: number): PathCursor {
+
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private ensureLimits(): PathCursor {
+            while (this.value > 1) {
+                this.value -= 1;
+            }
+            while (this.value < 0) {
+                this.value += 1;
+            }
+
+            return this;
+        }
+
+        // used by animation engine
+        private markAsDirty(propertyName: string): PathCursor {
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private raiseOnChange(): PathCursor {
+            this._onchange.forEach(f => f(this));
+
+            return this;
+        }
+
+        public onchange(f: (cursor: PathCursor) => void): PathCursor {
+            this._onchange.push(f);
+
+            return this;
+        }
+    }
+
+    export class Path2 {
+        private _points = new Array<Vector2>();
+        private _length = 0;
+
+        public closed = false;
+
+        constructor(x: number, y: number) {
+            this._points.push(new Vector2(x, y));
+        }
+
+        public addLineTo(x: number, y: number): Path2 {
+            if (closed) {
+                Tools.Error("cannot add lines to closed paths");
+                return this;
+            }
+            var newPoint = new Vector2(x, y);
+            var previousPoint = this._points[this._points.length - 1];
+            this._points.push(newPoint);
+            this._length += newPoint.subtract(previousPoint).length();
+            return this;
+        }
+
+        public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+            if (closed) {
+                Tools.Error("cannot add arcs to closed paths");
+                return this;
+            }
+            var startPoint = this._points[this._points.length - 1];
+            var midPoint = new Vector2(midX, midY);
+            var endPoint = new Vector2(endX, endY);
+
+            var arc = new Arc2(startPoint, midPoint, endPoint);
+
+            var increment = arc.angle.radians() / numberOfSegments;
+            if (arc.orientation === Orientation.CW) increment *= -1;
+            var currentAngle = arc.startAngle.radians() + increment;
+
+            for (var i = 0; i < numberOfSegments; i++) {
+                var x = Math.cos(currentAngle) * arc.radius + arc.centerPoint.x;
+                var y = Math.sin(currentAngle) * arc.radius + arc.centerPoint.y;
+                this.addLineTo(x, y);
+                currentAngle += increment;
+            }
+            return this;
+        }
+
+        public close(): Path2 {
+            this.closed = true;
+            return this;
+        }
+
+        public length(): number {
+            var result = this._length;
+
+            if (!this.closed) {
+                var lastPoint = this._points[this._points.length - 1];
+                var firstPoint = this._points[0];
+                result += (firstPoint.subtract(lastPoint).length());
+            }
+
+            return result;
+        }
+
+        public getPoints(): Vector2[] {
+            return this._points;
+        }
+
+        public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
+            if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
+                Tools.Error("normalized length position should be between 0 and 1.");
+                return Vector2.Zero();
+            }
+
+            var lengthPosition = normalizedLengthPosition * this.length();
+
+            var previousOffset = 0;
+            for (var i = 0; i < this._points.length; i++) {
+                var j = (i + 1) % this._points.length;
+
+                var a = this._points[i];
+                var b = this._points[j];
+                var bToA = b.subtract(a);
+
+                var nextOffset = (bToA.length() + previousOffset);
+                if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
+                    var dir = bToA.normalize();
+                    var localOffset = lengthPosition - previousOffset;
+
+                    return new Vector2(
+                        a.x + (dir.x * localOffset),
+                        a.y + (dir.y * localOffset)
+                        );
+                }
+                previousOffset = nextOffset;
+            }
+
+            Tools.Error("internal error");
+            return Vector2.Zero();
+        }
+
+        public static StartingAt(x: number, y: number): Path2 {
+            return new Path2(x, y);
+        }
+    }
+
+    export class Path3D {
+        private _curve = new Array<Vector3>();
+        private _distances = new Array<number>();
+        private _tangents = new Array<Vector3>();
+        private _normals = new Array<Vector3>();
+        private _binormals = new Array<Vector3>();
+
+        constructor(public path: Vector3[]) {
+            this._curve = path.slice();   // copy array  
+            this._compute();
+        }
+
+        public getCurve(): Vector3[] {
+            return this._curve;
+        }
+
+        public getTangents(): Vector3[] {
+            return this._tangents;
+        }
+
+        public getNormals(): Vector3[] {
+            return this._normals;
+        }
+
+        public getBinormals(): Vector3[] {
+            return this._binormals;
+        }
+
+        public getDistances(): number[] {
+            return this._distances;
+        }
+
+        public update(path: Vector3[]): Path3D {
+            for (var i = 0; i < path.length; i++) {
+                this._curve[i] = path[i];
+            }
+            this._compute();
+            return this;
+        }
+
+        // private function compute() : computes tangents, normals and binormals
+        private _compute() {
+            var l = this._curve.length;
+
+            // first and last tangents
+            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0].normalize();
+            this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
+            this._tangents[l - 1].normalize();
+            
+            // normals and binormals at first point : arbitrary vector with _normalVector()
+            var tg0 = this._tangents[0];
+            var pp0 = this._normalVector(this._curve[0], tg0);
+            this._normals[0] = pp0;
+            this._normals[0].normalize();
+            this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
+            this._normals[0].normalize();
+            this._distances[0] = 0;
+
+            // normals and binormals : next points
+            var prev: Vector3;        // previous vector (segment)
+            var cur: Vector3;         // current vector (segment)
+            var curTang: Vector3;     // current tangent
+            var prevNorm: Vector3;    // previous normal
+            var prevBinor: Vector3;   // previous binormal
+
+            for (var i = 1; i < l; i++) {
+                // tangents
+                prev = this._curve[i].subtract(this._curve[i - 1]);
+                if (i < l - 1) {
+                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    this._tangents[i] = prev.add(cur);
+                    this._tangents[i].normalize();
+                }
+                this._distances[i] = this._distances[i - 1] + prev.length();   
+                      
+                // normals and binormals
+                // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
+                curTang = this._tangents[i];
+                prevNorm = this._normals[i - 1];
+                prevBinor = this._binormals[i - 1];
+                this._normals[i] = Vector3.Cross(prevBinor, curTang);
+                this._normals[i].normalize();
+                this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
+                this._binormals[i].normalize();
+            }
+        }
+
+        // private function normalVector(v0, vt) :
+        // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
+        private _normalVector(v0: Vector3, vt: Vector3): Vector3 {
+            var point: Vector3;
+
+            if (vt.x !== 1) {     // search for a point in the plane
+                point = new Vector3(1, 0, 0);
+            }
+            else if (vt.y !== 1) {
+                point = new Vector3(0, 1, 0);
+            }
+            else if (vt.z !== 1) {
+                point = new Vector3(0, 0, 1);
+            }
+            var normal0: Vector3 = Vector3.Cross(vt, point);
+            normal0.normalize();
+            return normal0;
+        }
+    }
+
+    export class Curve3 {
+        private _points: Vector3[];
+
+        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 2 ? nbPoints : 3;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number) => {
+                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
+            nbPoints = nbPoints > 3 ? nbPoints : 4;
+            var bez = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                return res;
+            }
+            for (var i = 0; i <= 1; i += step) {
+                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            }
+            return new Curve3(bez);
+        }
+
+        constructor(points: Vector3[]) {
+            this._points = points;
+        }
+
+        public getPoints() {
+            return this._points;
+        }
+
+        public continue(curve: Curve3): Curve3 {
+            var lastPoint = this._points[this._points.length - 1];
+            var continuedPoints = this._points.slice();
+            var curvePoints = curve.getPoints();
+            for (var i = 1; i < curvePoints.length; i++) {
+                continuedPoints.push(curvePoints[i].add(lastPoint));
+            }
+            return new Curve3(continuedPoints);
+        }
+    }
+
+    // Vertex formats
+    export class PositionNormalVertex {
+        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up()) {
+
+        }
+
+        public clone(): PositionNormalVertex {
+            return new PositionNormalVertex(this.position.clone(), this.normal.clone());
+        }
+    }
+
+    export class PositionNormalTextureVertex {
+        constructor(public position: Vector3 = Vector3.Zero(), public normal: Vector3 = Vector3.Up(), public uv: Vector2 = Vector2.Zero()) {
+
+        }
+
+        public clone(): PositionNormalTextureVertex {
+            return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
+        }
+    }
+
+    // SIMD
+    var previousMultiplyToArray = Matrix.prototype.multiplyToArray;
+    var previousInvertToRef = Matrix.prototype.invertToRef;
+    var previousLookAtLHToRef = Matrix.LookAtLHToRef;
+    var previousTransformCoordinatesToRef = Vector3.TransformCoordinatesToRef;
+    var previousTransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRef;
+
+    export class SIMDHelper {
+        private static _isEnabled = false;
+
+        public static get IsEnabled(): boolean {
+            return SIMDHelper._isEnabled;
+        }
+
+        public static DisableSIMD(): void {
+            // Replace functions
+            Matrix.prototype.multiplyToArray = <any>previousMultiplyToArray;
+            Matrix.prototype.invertToRef = <any>previousInvertToRef;
+            Matrix.LookAtLHToRef = <any>previousLookAtLHToRef;
+            Vector3.TransformCoordinatesToRef = <any>previousTransformCoordinatesToRef;
+            Vector3.TransformCoordinatesFromFloatsToRef = <any>previousTransformCoordinatesFromFloatsToRef;
+
+            SIMDHelper._isEnabled = false;
+        }
+
+        public static EnableSIMD(): void {
+            if (window.SIMD === undefined) {
+                return;
+            }
+
+            // Replace functions
+            Matrix.prototype.multiplyToArray = <any>Matrix.prototype.multiplyToArraySIMD;
+            Matrix.prototype.invertToRef = <any>Matrix.prototype.invertToRefSIMD;
+            Matrix.LookAtLHToRef = <any>Matrix.LookAtLHToRefSIMD;
+            Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
+            Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
+
+            Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+                get: function () { return this._data[0]; },
+                set: function (value: number) {
+                    if (!this._data) {
+                        this._data = new Float32Array(3);
+                    }
+                    this._data[0] = value;
+                }
+            });
+
+            Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+                get: function () { return this._data[1]; },
+                set: function (value: number) {
+                    this._data[1] = value;
+                }
+            });
+
+            Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+                get: function () { return this._data[2]; },
+                set: function (value: number) {
+                    this._data[2] = value;
+                }
+            });
+
+            SIMDHelper._isEnabled = true;
+        }
+    }
+    
+    if (window.SIMD !== undefined) {
+        SIMDHelper.EnableSIMD();
     }
 }

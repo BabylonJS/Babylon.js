@@ -24,6 +24,7 @@
 
             if (createBoundingBox) {
                 this.refreshBoundingInfo();
+                mesh.computeWorldMatrix(true);
             }
         }
 
@@ -67,9 +68,9 @@
             var extend;
 
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                extend = Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
             } else {
-                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
+                extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
             }
             this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
         }
@@ -125,6 +126,10 @@
                 var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
                 if (currentIntersectInfo) {
+                    if (currentIntersectInfo.distance < 0) {
+                        continue;
+                    }
+
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                         intersectInfo = currentIntersectInfo;
                         intersectInfo.faceId = index / 3;

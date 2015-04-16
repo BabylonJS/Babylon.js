@@ -637,19 +637,19 @@ declare enum DistanceModelType {
      * A linear distance model which calculates distanceGain according to:
      *     1 - rolloffFactor * (distance - refDistance) / (maxDistance - refDistance)
      */
-    linear,
+    'linear',
 
     /**
      * An inverse distance model which calculates distanceGain according to:
      *     refDistance / (refDistance + rolloffFactor * (distance - refDistance))
      */
-    inverse,
+    'inverse',
 
     /**
      * An exponential distance model which calculates distanceGain according to:
      *     pow(distance / refDistance, -rolloffFactor)
      */
-    exponential
+    'exponential'
 }
 
 /**
@@ -666,7 +666,7 @@ interface PannerNode extends AudioNode {
     /**
      * Determines which spatialization algorithm will be used to position the audio in 3D space. The default is "HRTF".
      */
-    panningModel: PanningModelType;
+    panningModel: string;
 
     /**
      * Sets the position of the audio source relative to the listener attribute. A 3D cartesian coordinate system is used.
@@ -704,7 +704,7 @@ interface PannerNode extends AudioNode {
     /**
      * Determines which algorithm will be used to reduce the volume of an audio source as it moves away from the listener. The default is "inverse".
      */
-    distanceModel: DistanceModelType;
+    distanceModel: string;
 
     /**
      * A reference distance for reducing volume as source move further from the listener. The default value is 1.

@@ -6,7 +6,7 @@
         public heightOffset:number = 4;
         public cameraAcceleration:number = 0.05;
         public maxCameraSpeed:number = 20;
-        public target:BABYLON.AbstractMesh;
+        public target:AbstractMesh;
 
         constructor(name:string, position:Vector3, scene:Scene) {
             super(name, position, scene);
@@ -16,11 +16,19 @@
             return degrees * Math.PI / 180;
         }
 
-        private follow(cameraTarget:BABYLON.AbstractMesh) {
+        private follow(cameraTarget:AbstractMesh) {
             if (!cameraTarget)
                 return;
-
-            var radians = this.getRadians(this.rotationOffset) + cameraTarget.rotation.y;
+            
+            var yRotation;
+            if (cameraTarget.rotationQuaternion) {
+                var rotMatrix = new Matrix();
+                cameraTarget.rotationQuaternion.toRotationMatrix(rotMatrix);
+                yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
+            } else {
+                yRotation = cameraTarget.rotation.y;
+            }
+            var radians = this.getRadians(this.rotationOffset) + yRotation;
             var targetX:number = cameraTarget.position.x + Math.sin(radians) * this.radius;
 
             var targetZ:number = cameraTarget.position.z + Math.cos(radians) * this.radius;
@@ -43,7 +51,7 @@
                 vz = vz < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
 
-            this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
+            this.position = new Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
             this.setTarget(cameraTarget.position);
         }
 

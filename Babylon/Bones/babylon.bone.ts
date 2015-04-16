@@ -6,9 +6,9 @@
         private _skeleton: Skeleton;
         private _matrix: Matrix;
         private _baseMatrix: Matrix;
-        private _worldTransform = new BABYLON.Matrix();
-        private _absoluteTransform = new BABYLON.Matrix();
-        private _invertedAbsoluteTransform = new BABYLON.Matrix();
+        private _worldTransform = new Matrix();
+        private _absoluteTransform = new Matrix();
+        private _invertedAbsoluteTransform = new Matrix();
         private _parent: Bone;
 
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix) {

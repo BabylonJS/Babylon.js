@@ -1,11 +1,31 @@
 ﻿module BABYLON {
+
+    export interface IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+
+        _shadowGenerator: ShadowGenerator;
+    }
+
     export class Light extends Node {
         public diffuse = new Color3(1.0, 1.0, 1.0);
         public specular = new Color3(1.0, 1.0, 1.0);
         public intensity = 1.0;
         public range = Number.MAX_VALUE;
+        public includeOnlyWithLayerMask = 0;
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
+        public excludeWithLayerMask = 0;
 
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
@@ -15,11 +35,15 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
-            scene.lights.push(this);
+            scene.addLight(this);
         }
 
         public getShadowGenerator(): ShadowGenerator {
             return this._shadowGenerator;
+        }
+
+        public getAbsolutePosition(): Vector3 {
+            return Vector3.Zero();
         }
 
         public transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void {
@@ -39,6 +63,15 @@
             }
 
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+                return false;
+            }
+
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
+                return false;
+            }
+
+
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
 
@@ -70,8 +103,7 @@
             }
 
             // Remove from scene
-            var index = this.getScene().lights.indexOf(this);
-            this.getScene().lights.splice(index, 1);
+            this.getScene().removeLight(this);
         }
     }
 } 

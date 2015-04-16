@@ -1,8 +1,13 @@
 ﻿module BABYLON {
+
+    /**
+     * Node is the basic class for all scene objects (Mesh, Light Camera).
+     */
     export class Node {
         public parent: Node;
         public name: string;
         public id: string;
+        public uniqueId: number;
         public state = "";
 
         public animations = new Array<Animation>();
@@ -13,13 +18,19 @@
         private _isEnabled = true;
         private _isReady = true;
         public _currentRenderId = -1;
+        private _parentRenderId = -1;
 
         public _waitingParentId: string;
 
         private _scene: Scene;
         public _cache;
 
-        constructor(name: string, scene) {
+        /**
+         * @constructor
+         * @param {string} name - the name and id to be given to this node
+         * @param {BABYLON.Scene} the scene this node will be added to
+         */
+        constructor(name: string, scene: Scene) {
             this.name = name;
             this.id = name;
             this._scene = scene;
@@ -66,7 +77,16 @@
         }
 
         public isSynchronizedWithParent(): boolean {
-            return this.parent ? this.parent._currentRenderId <= this._currentRenderId : true;
+            if (!this.parent) {
+                return true;
+            }
+
+            if (this._parentRenderId !== this.parent._currentRenderId) {
+                this._parentRenderId = this.parent._currentRenderId;
+                return false;
+            }
+
+            return this.parent.isSynchronized();
         }
 
         public isSynchronized(updateCache?: boolean): boolean {
@@ -92,10 +112,20 @@
             return true;
         }
 
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
         public isReady(): boolean {
             return this._isReady;
         }
 
+        /**
+         * Is this node enabled. 
+         * If the node has a parent and is enabled, the parent will be inspected as well.
+         * @return {boolean} whether this node (and its parent) is enabled.
+         * @see setEnabled
+         */
         public isEnabled(): boolean {
             if (!this._isEnabled) {
                 return false;
@@ -108,10 +138,21 @@
             return true;
         }
 
+        /**
+         * Set the enabled state of this node.
+         * @param {boolean} value - the new enabled state
+         * @see isEnabled
+         */
         public setEnabled(value: boolean): void {
             this._isEnabled = value;
         }
 
+        /**
+         * Is this node a descendant of the given node.
+         * The function will iterate up the hierarchy until the ancestor was found or no more parents defined.
+         * @param {BABYLON.Node} ancestor - The parent node to inspect
+         * @see parent
+         */
         public isDescendantOf(ancestor: Node): boolean {
             if (this.parent) {
                 if (this.parent === ancestor) {
@@ -133,6 +174,10 @@
             }
         }
 
+        /**
+         * Will return all nodes that have this node as parent.
+         * @return {BABYLON.Node[]} all children nodes of all types.
+         */
         public getDescendants(): Node[] {
             var results = [];
             this._getDescendants(this._scene.meshes, results);

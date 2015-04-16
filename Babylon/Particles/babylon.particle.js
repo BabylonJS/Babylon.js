@@ -1,4 +1,4 @@
-﻿var BABYLON;
+var BABYLON;
 (function (BABYLON) {
     var Particle = (function () {
         function Particle() {
@@ -12,6 +12,17 @@
             this.angle = 0;
             this.angularSpeed = 0;
         }
+        Particle.prototype.copyTo = function (other) {
+            other.position.copyFrom(this.position);
+            other.direction.copyFrom(this.direction);
+            other.color.copyFrom(this.color);
+            other.colorStep.copyFrom(this.colorStep);
+            other.lifeTime = this.lifeTime;
+            other.age = this.age;
+            other.size = this.size;
+            other.angle = this.angle;
+            other.angularSpeed = this.angularSpeed;
+        };
         return Particle;
     })();
     BABYLON.Particle = Particle;

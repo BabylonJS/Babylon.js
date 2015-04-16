@@ -30,23 +30,24 @@
         }
 
         public _executeCurrent(evt: ActionEvent): void {
-            if (this._condition) {
+            if (this._nextActiveAction._condition) {
+                var condition = this._nextActiveAction._condition;
                 var currentRenderId = this._actionManager.getScene().getRenderId();
 
                 // We cache the current evaluation for the current frame
-                if (this._condition._evaluationId === currentRenderId) {
-                    if (!this._condition._currentResult) {
+                if (condition._evaluationId === currentRenderId) {
+                    if (!condition._currentResult) {
                         return;
                     }
                 } else {
-                    this._condition._evaluationId = currentRenderId;
+                    condition._evaluationId = currentRenderId;
 
-                    if (!this._condition.isValid()) {
-                        this._condition._currentResult = false;
+                    if (!condition.isValid()) {
+                        condition._currentResult = false;
                         return;
                     }
 
-                    this._condition._currentResult = true;
+                    condition._currentResult = true;
                 }
             }
 

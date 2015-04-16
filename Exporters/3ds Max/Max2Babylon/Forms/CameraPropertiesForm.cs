@@ -35,6 +35,8 @@ namespace Max2Babylon
 
             Tools.PrepareVector3Control(ellipsoidControl, cameras[0], "babylonjs_ellipsoid", 0.5f, 1.0f, 0.5f);
 
+            Tools.PrepareComboBox(cbCameraType, cameras[0], "babylonjs_type", "FreeCamera");
+
             Tools.PrepareCheckBox(chkAutoAnimate, cameras, "babylonjs_autoanimate");
             Tools.PrepareCheckBox(chkLoop, cameras, "babylonjs_autoanimateloop");
             Tools.PrepareNumericUpDown(nupFrom, cameras, "babylonjs_autoanimate_from");
@@ -52,6 +54,8 @@ namespace Max2Babylon
 
             Tools.UpdateVector3Control(ellipsoidControl, cameras, "babylonjs_ellipsoid");
 
+            Tools.UpdateComboBox(cbCameraType, cameras, "babylonjs_type");
+
             Tools.UpdateCheckBox(chkAutoAnimate, cameras, "babylonjs_autoanimate");
             Tools.UpdateCheckBox(chkLoop, cameras, "babylonjs_autoanimateloop");
             Tools.UpdateNumericUpDown(nupFrom, cameras, "babylonjs_autoanimate_from");
@@ -62,5 +66,6 @@ namespace Max2Babylon
         {
             grpAutoAnimate.Enabled = chkAutoAnimate.Checked;
         }
+
     }
 }

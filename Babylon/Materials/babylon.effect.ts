@@ -205,6 +205,11 @@
             try {
                 var engine = this._engine;
 
+                if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+                }
+
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
@@ -308,6 +313,24 @@
 
         public setArray(uniformName: string, array: number[]): Effect {
             this._engine.setArray(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setArray2(uniformName: string, array: number[]): Effect {
+            this._engine.setArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setArray3(uniformName: string, array: number[]): Effect {
+            this._engine.setArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setArray4(uniformName: string, array: number[]): Effect {
+            this._engine.setArray4(this.getUniform(uniformName), array);
 
             return this;
         }

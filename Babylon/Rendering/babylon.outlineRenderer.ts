@@ -27,8 +27,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            var useBones = mesh.skeleton && scene.skeletonsEnabled && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
-            if (useBones) {
+            if (mesh.useBones) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
@@ -41,27 +40,8 @@
                 this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
 
-            if (hardwareInstancedRendering) {
-                mesh._renderWithInstances(subMesh, Material.TriangleFillMode, batch, this._effect, engine);
-            } else {
-                if (batch.renderSelf[subMesh._id]) {
-                    this._effect.setMatrix("world", mesh.getWorldMatrix());
-
-                    // Draw
-                    mesh._draw(subMesh, Material.TriangleFillMode);
-                }
-
-                if (batch.visibleInstances[subMesh._id]) {
-                    for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
-                        var instance = batch.visibleInstances[subMesh._id][instanceIndex];
-
-                        this._effect.setMatrix("world", instance.getWorldMatrix());
-
-                        // Draw
-                        mesh._draw(subMesh, Material.TriangleFillMode);
-                    }
-                }
-            }
+            mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => { this._effect.setMatrix("world", world)});
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -74,20 +54,20 @@
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    attribs.push(VertexBuffer.UVKind);
                     defines.push("#define UV1");
                 }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    attribs.push(VertexBuffer.UV2Kind);
                     defines.push("#define UV2");
                 }
             }
 
             // Bones
-            if (mesh.skeleton && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+            if (mesh.useBones) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
             }
@@ -103,7 +83,7 @@
 
             // Get correct effect      
             var join = defines.join("\n");
-            if (this._cachedDefines != join) {
+            if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("outline",
                     attribs,

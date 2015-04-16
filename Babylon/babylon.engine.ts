@@ -5,15 +5,30 @@
         private _isDepthFuncDirty = false;
         private _isCullFaceDirty = false;
         private _isCullDirty = false;
+        private _isZOffsetDirty = false;
 
         private _depthTest: boolean;
         private _depthMask: boolean;
         private _depthFunc: number;
         private _cull: boolean;
         private _cullFace: number;
+        private _zOffset: number;
 
         public get isDirty(): boolean {
-            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty;
+            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+        }
+
+        public get zOffset(): number {
+            return this._zOffset;
+        }
+
+        public set zOffset(value: number) {
+            if (this._zOffset === value) {
+                return;
+            }
+
+            this._zOffset = value;
+            this._isZOffsetDirty = true;
         }
 
         public get cullFace(): number {
@@ -87,12 +102,14 @@
             this._depthFunc = null;
             this._cull = null;
             this._cullFace = null;
+            this._zOffset = 0;
 
             this._isDepthTestDirty = true;
             this._isDepthMaskDirty = true;
             this._isDepthFuncDirty = false;
             this._isCullFaceDirty = false;
             this._isCullDirty = false;
+            this._isZOffsetDirty = false;
         }
 
         public apply(gl: WebGLRenderingContext) {
@@ -103,9 +120,9 @@
 
             // Cull
             if (this._isCullDirty) {
-                if (this.cull === true) {
+                if (this.cull) {
                     gl.enable(gl.CULL_FACE);
-                } else if (this.cull === false) {
+                } else {
                     gl.disable(gl.CULL_FACE);
                 }
 
@@ -126,9 +143,9 @@
 
             // Depth test
             if (this._isDepthTestDirty) {
-                if (this.depthTest === true) {
+                if (this.depthTest) {
                     gl.enable(gl.DEPTH_TEST);
-                } else if (this.depthTest === false) {
+                } else {
                     gl.disable(gl.DEPTH_TEST);
                 }
                 this._isDepthTestDirty = false;
@@ -138,6 +155,18 @@
             if (this._isDepthFuncDirty) {
                 gl.depthFunc(this.depthFunc);
                 this._isDepthFuncDirty = false;
+            }
+
+            // zOffset
+            if (this._isZOffsetDirty) {
+                if (this.zOffset) {
+                    gl.enable(gl.POLYGON_OFFSET_FILL);
+                    gl.polygonOffset(this.zOffset, 0);
+                } else {
+                    gl.disable(gl.POLYGON_OFFSET_FILL);
+                }
+
+                this._isZOffsetDirty = false;
             }
         }
     }
@@ -202,9 +231,9 @@
 
             // Alpha blend
             if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend === true) {
+                if (this._alphaBlend) {
                     gl.enable(gl.BLEND);
-                } else if (this._alphaBlend === false) {
+                } else {
                     gl.disable(gl.BLEND);
                 }
 
@@ -231,24 +260,33 @@
         return shader;
     };
 
+    var getWebGLTextureType = (gl: WebGLRenderingContext, type: number): number => {
+        var textureType = gl.UNSIGNED_BYTE;
+
+        if (type === Engine.TEXTURETYPE_FLOAT)
+            textureType = gl.FLOAT;
+
+        return textureType;
+    };
+
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
-        if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+        if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_NEAREST;
             } else {
                 minFilter = gl.LINEAR;
             }
-        } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+        } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
             } else {
                 minFilter = gl.LINEAR;
             }
-        } else if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+        } else if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -272,6 +310,12 @@
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
+        texture._baseWidth = width;
+        texture._baseHeight = height;
+        texture._width = potWidth;
+        texture._height = potHeight;
+        texture.isReady = true;
+        
         processFunction(potWidth, potHeight);
 
         var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
@@ -286,18 +330,12 @@
         gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
-        texture._baseWidth = width;
-        texture._baseHeight = height;
-        texture._width = potWidth;
-        texture._height = potHeight;
-        texture.isReady = true;
+        texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
         onfinish: (images: HTMLImageElement[]) => void) => {
-
-        var img: HTMLImageElement;
 
         var onload = () => {
             loadedImages[index] = img;
@@ -305,7 +343,7 @@
 
             scene._removePendingData(img);
 
-            if (loadedImages._internalCount == 6) {
+            if (loadedImages._internalCount === 6) {
                 onfinish(loadedImages);
             }
         };
@@ -314,14 +352,14 @@
             scene._removePendingData(img);
         };
 
-        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+        var img = Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     }
 
     var cascadeLoad = (rootUrl: string, scene,
         onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
 
-        var loadedImages:any = [];
+        var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
@@ -341,8 +379,12 @@
         public maxAnisotropy: number;
         public instancedArrays;
         public uintIndices: boolean;
+        public highPrecisionShaderSupported: boolean;
     }
 
+    /**
+     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
+     */
     export class Engine {
         // Const statics
         private static _ALPHA_DISABLE = 0;
@@ -353,6 +395,15 @@
         private static _DELAYLOADSTATE_LOADED = 1;
         private static _DELAYLOADSTATE_LOADING = 2;
         private static _DELAYLOADSTATE_NOTLOADED = 4;
+
+        private static _TEXTUREFORMAT_ALPHA = 0;
+        private static _TEXTUREFORMAT_LUMINANCE = 1;
+        private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
+        private static _TEXTUREFORMAT_RGB = 4;
+        private static _TEXTUREFORMAT_RGBA = 4;
+
+        private static _TEXTURETYPE_UNSIGNED_INT = 0;
+        private static _TEXTURETYPE_FLOAT = 1;
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
@@ -382,15 +433,42 @@
             return Engine._DELAYLOADSTATE_NOTLOADED;
         }
 
+        public static get TEXTUREFORMAT_ALPHA(): number {
+            return Engine._TEXTUREFORMAT_ALPHA;
+        }
+
+        public static get TEXTUREFORMAT_LUMINANCE(): number {
+            return Engine._TEXTUREFORMAT_LUMINANCE;
+        }
+
+        public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
+            return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
+        }
+
+        public static get TEXTUREFORMAT_RGB(): number {
+            return Engine._TEXTUREFORMAT_RGB;
+        }
+
+        public static get TEXTUREFORMAT_RGBA(): number {
+            return Engine._TEXTUREFORMAT_RGBA;
+        }
+
+        public static get TEXTURETYPE_UNSIGNED_INT(): number {
+            return Engine._TEXTURETYPE_UNSIGNED_INT;
+        }
+
+        public static get TEXTURETYPE_FLOAT(): number {
+            return Engine._TEXTURETYPE_FLOAT;
+        }
+
         public static get Version(): string {
-            return "2.0.0";
+            return "2.1.0 alpha";
         }
 
         // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
         public static ShadersRepository = "Babylon/Shaders/";
-
 
         // Public members
         public isFullscreen = false;
@@ -400,11 +478,11 @@
         public scenes = new Array<Scene>();
 
         // Private Members
-        private _gl: WebGLRenderingContext;
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
 
-        private _audioEngine: BABYLON.AudioEngine;
+        public static audioEngine: AudioEngine;
 
         private _onBlur: () => void;
         private _onFocus: () => void;
@@ -416,15 +494,25 @@
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
 
-        private _runningLoop = false;
-        private _renderFunction: () => void;
-
         private _resizeLoadingUI: () => void;
         private _loadingDiv: HTMLDivElement;
         private _loadingTextDiv: HTMLDivElement;
         private _loadingDivBackgroundColor = "black";
 
         private _drawCalls = 0;
+
+        private _glVersion: string;
+        private _glRenderer: string;
+        private _glVendor: string;
+
+        private _renderingQueueLaunched = false;
+        private _activeRenderLoops = [];
+
+        // FPS
+        private fpsRange = 60;
+        private previousFramesDuration = [];
+        private fps = 60;
+        private deltaTime = 0;
 
         // States
         private _depthCullingState = new _DepthCullingState();
@@ -448,6 +536,12 @@
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        /**
+         * @constructor
+         * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
+         * @param {boolean} [antialias] - enable antialias
+         * @param options - further options to be sent to the getContext function
+         */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?) {
             this._renderingCanvas = canvas;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
@@ -477,11 +571,6 @@
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
 
-
-            // Textures
-            this._workingCanvas = document.createElement("canvas");
-            this._workingContext = this._workingCanvas.getContext("2d");
-
             // Viewport
             this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
             this.resize();
@@ -493,6 +582,23 @@
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
 
+            // Infos
+            this._glVersion = this._gl.getParameter(this._gl.VERSION);
+
+            var rendererInfo: any = this._gl.getExtension("WEBGL_debug_renderer_info");
+            if (rendererInfo != null) {
+                this._glRenderer = this._gl.getParameter(rendererInfo.UNMASKED_RENDERER_WEBGL);
+                this._glVendor = this._gl.getParameter(rendererInfo.UNMASKED_VENDOR_WEBGL);
+            }
+
+            if (!this._glVendor) {
+                this._glVendor = "Unknown vendor";
+            }
+
+            if (!this._glRenderer) {
+                this._glRenderer = "Unknown renderer";
+            }
+
             // Extensions
             this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
             this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
@@ -501,6 +607,12 @@
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.highPrecisionShaderSupported = true;
+
+            if (this._gl.getShaderPrecisionFormat) {
+                var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+            }
 
             // Depth buffer
             this.setDepthBuffer(true);
@@ -551,13 +663,28 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            this._audioEngine = new BABYLON.AudioEngine();
+            if (!Engine.audioEngine) {
+                Engine.audioEngine = new AudioEngine();
+            }
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
 
-        public getAudioEngine(): AudioEngine {
-            return this._audioEngine;
+        private _prepareWorkingCanvas(): void {
+            if (this._workingCanvas) {
+                return;
+            }
+
+            this._workingCanvas = document.createElement("canvas");
+            this._workingContext = this._workingCanvas.getContext("2d");
+        }
+
+        public getGlInfo() {
+            return {
+                vendor: this._glVendor,
+                renderer: this._glRenderer,
+                version: this._glVersion
+            }
         }
 
         public getAspectRatio(camera: Camera): number {
@@ -631,9 +758,21 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
 
-        public stopRenderLoop(): void {
-            this._renderFunction = null;
-            this._runningLoop = false;
+        /**
+         * stop executing a render loop function and remove it from the execution array
+         * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
+         */
+        public stopRenderLoop(renderFunction?: () => void): void {
+            if (!renderFunction) {
+                this._activeRenderLoops = [];
+                return;
+            }
+
+            var index = this._activeRenderLoops.indexOf(renderFunction);
+
+            if (index >= 0) {
+                this._activeRenderLoops.splice(index, 1);
+            }
         }
 
         public _renderLoop(): void {
@@ -646,38 +785,59 @@
                 // Start new frame
                 this.beginFrame();
 
-                if (this._renderFunction) {
-                    this._renderFunction();
+                for (var index = 0; index < this._activeRenderLoops.length; index++) {
+                    var renderFunction = this._activeRenderLoops[index];
+
+                    renderFunction();
                 }
 
                 // Present
                 this.endFrame();
             }
 
-            if (this._runningLoop) {
+            if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(() => {
+                Tools.QueueNewFrame(() => {
+                    this._renderLoop();
+                });
+            } else {
+                this._renderingQueueLaunched = false;
+            }
+        }
+
+        /**
+         * Register and execute a render loop. The engine can have more than one render function.
+         * @param {Function} renderFunction - the function to continuesly execute starting the next render loop.
+         * @example
+         * engine.runRenderLoop(function () {
+         *      scene.render()
+         * })
+         */
+        public runRenderLoop(renderFunction: () => void): void {
+            if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
+                return;
+            }
+
+            this._activeRenderLoops.push(renderFunction);
+
+            if (!this._renderingQueueLaunched) {
+                this._renderingQueueLaunched = true;
+                Tools.QueueNewFrame(() => {
                     this._renderLoop();
                 });
             }
         }
 
-        public runRenderLoop(renderFunction: () => void): void {
-            this._runningLoop = true;
-
-            this._renderFunction = renderFunction;
-
-            BABYLON.Tools.QueueNewFrame(() => {
-                this._renderLoop();
-            });
-        }
-
+        /**
+         * Toggle full screen mode.
+         * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
-                BABYLON.Tools.ExitFullscreen();
+                Tools.ExitFullscreen();
             } else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                Tools.RequestFullscreen(this._renderingCanvas);
             }
         }
 
@@ -699,6 +859,12 @@
             this._gl.clear(mode);
         }
 
+        /**
+         * Set the WebGL's viewport
+         * @param {BABYLON.Viewport} viewport - the viewport element to be used.
+         * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
+         * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
+         */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
             var width = requiredWidth || this._renderingCanvas.width;
             var height = requiredHeight || this._renderingCanvas.height;
@@ -717,17 +883,29 @@
         }
 
         public beginFrame(): void {
-            BABYLON.Tools._MeasureFps();
+            this._measureFps();
         }
 
         public endFrame(): void {
-            this.flushFramebuffer();
+            //this.flushFramebuffer();
         }
 
+        /**
+         * resize the view according to the canvas' size.
+         * @example
+         *   window.addEventListener("resize", function () {
+         *      engine.resize();
+         *   });
+         */
         public resize(): void {
             this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
         }
 
+        /**
+         * force a specific size of the canvas
+         * @param {number} width - the new canvas' width
+         * @param {number} height - the new canvas' height
+         */
         public setSize(width: number, height: number): void {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
@@ -758,7 +936,7 @@
         }
 
         public flushFramebuffer(): void {
-         //   this._gl.flush();
+            this._gl.flush();
         }
 
         public restoreDefaultFramebuffer(): void {
@@ -824,7 +1002,7 @@
             var need32Bits = false;
 
             if (this._caps.uintIndices) {
-                
+
                 for (var index = 0; index < indices.length; index++) {
                     if (indices[index] > 65535) {
                         need32Bits = true;
@@ -891,7 +1069,7 @@
                 }
             }
 
-            if (indexBuffer!= null && this._cachedIndexBuffer !== indexBuffer) {
+            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
@@ -954,6 +1132,7 @@
             // Apply states
             this.applyStates();
 
+            this._drawCalls++;
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             if (instancesCount) {
@@ -962,13 +1141,12 @@
             }
 
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
-
-            this._drawCalls++;
         }
 
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
+            this._drawCalls++;
 
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
@@ -976,7 +1154,6 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
-            this._drawCalls++;
         }
 
         // Shaders
@@ -999,7 +1176,7 @@
                 return this._compiledEffects[name];
             }
 
-            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1114,6 +1291,27 @@
             this._gl.uniform1fv(uniform, array);
         }
 
+        public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2fv(uniform, array);
+        }
+
+        public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3fv(uniform, array);
+        }
+
+        public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4fv(uniform, array);
+        }
+
         public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
             if (!uniform)
                 return;
@@ -1178,7 +1376,7 @@
         }
 
         // States
-        public setState(culling: boolean, force?: boolean): void {
+        public setState(culling: boolean, zOffset: number = 0, force?: boolean): void {
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
@@ -1188,6 +1386,9 @@
                     this._depthCullingState.cull = false;
                 }
             }
+
+            // Z offset
+            this._depthCullingState.zOffset = zOffset;
         }
 
         public setDepthBuffer(enable: boolean): void {
@@ -1208,16 +1409,16 @@
 
         public setAlphaMode(mode: number): void {
             switch (mode) {
-                case BABYLON.Engine.ALPHA_DISABLE:
+                case Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
-                case BABYLON.Engine.ALPHA_COMBINE:
+                case Engine.ALPHA_COMBINE:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
-                case BABYLON.Engine.ALPHA_ADD:
+                case Engine.ALPHA_ADD:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
@@ -1260,10 +1461,10 @@
             var magFilter = gl.NEAREST;
             var minFilter = gl.NEAREST;
 
-            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
+            if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
                 magFilter = gl.LINEAR;
                 minFilter = gl.LINEAR;
-            } else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
+            } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
                 magFilter = gl.LINEAR;
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
             }
@@ -1272,10 +1473,11 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
 
             gl.bindTexture(gl.TEXTURE_2D, null);
+
+            texture.samplingMode = samplingMode;
         }
 
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
-
             var texture = this._gl.createTexture();
 
             var extension: string;
@@ -1314,7 +1516,7 @@
                 var callback = (arrayBuffer) => {
                     var data = new Uint8Array(arrayBuffer);
 
-                    var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
+                    var header = Internals.TGATools.GetTGAHeader(data);
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
@@ -1326,17 +1528,17 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, arrayBuffer => {
+                    Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
                     }, onerror, scene.database, true);
                 else
                     callback(buffer);
 
             } else if (isDDS) {
-                 callback = (data) => {
-                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
+                callback = (data) => {
+                    var info = Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) == 1);
+                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
@@ -1348,7 +1550,7 @@
                 };
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, data => {
+                    Tools.LoadFile(url, data => {
                         callback(data);
                     }, onerror, scene.database, true);
                 else
@@ -1357,12 +1559,29 @@
             } else {
                 var onload = (img) => {
                     prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
-                        var isPot = (img.width == potWidth && img.height == potHeight);
+                        var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
+                            this._prepareWorkingCanvas();
                             this._workingCanvas.width = potWidth;
                             this._workingCanvas.height = potHeight;
 
+                            if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                                this._workingContext.imageSmoothingEnabled = false;
+                                this._workingContext.mozImageSmoothingEnabled = false;
+                                this._workingContext.oImageSmoothingEnabled = false;
+                                this._workingContext.webkitImageSmoothingEnabled = false;
+                                this._workingContext.msImageSmoothingEnabled = false;
+                            }
+
                             this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+
+                            if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                                this._workingContext.imageSmoothingEnabled = true;
+                                this._workingContext.mozImageSmoothingEnabled = true;
+                                this._workingContext.oImageSmoothingEnabled = true;
+                                this._workingContext.webkitImageSmoothingEnabled = true;
+                                this._workingContext.msImageSmoothingEnabled = true;
+                            }
                         }
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
@@ -1375,22 +1594,48 @@
 
 
                 if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+                    Tools.LoadImage(url, onload, onerror, scene.database);
                 else
-                    BABYLON.Tools.LoadImage(buffer, onload, onerror, scene.database);
+                    Tools.LoadImage(buffer, onload, onerror, scene.database);
             }
 
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
+
             var texture = this._gl.createTexture();
-
-            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
+            // Format
+            var internalFormat = this._gl.RGBA;
+
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = this._gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = this._gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = this._gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                    internalFormat = this._gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                    internalFormat = this._gl.RGBA;
+                    break;
+            }
+
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+
+            // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -1402,13 +1647,46 @@
             texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
-            texture.isReady = false;
-            texture.generateMipMaps = generateMipMaps;
+            texture.isReady = true;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
 
             this._loadedTexturesCache.push(texture);
 
             return texture;
+        }
+
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
+            var texture = this._gl.createTexture();
+
+            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+
+            this._activeTexturesCache = [];
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = width;
+            texture._height = height;
+            texture.isReady = false;
+            texture.generateMipMaps = generateMipMaps;
+            texture.references = 1;
+            texture.samplingMode = samplingMode;
+
+            this.updateTextureSamplingMode(samplingMode, texture);
+
+            this._loadedTexturesCache.push(texture);
+
+            return texture;
+        }
+
+        public updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void {
+            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
         }
 
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void {
@@ -1458,12 +1736,18 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
-            var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            var type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
+                }
+                if (type === Engine.TEXTURETYPE_FLOAT) {
+                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -1476,11 +1760,16 @@
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
+            if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+                type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+            }
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer: WebGLRenderbuffer;
             // Create the depth buffer
@@ -1511,6 +1800,7 @@
             texture.isReady = true;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
             this._activeTexturesCache = [];
 
             this._loadedTexturesCache.push(texture);
@@ -1531,8 +1821,8 @@
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
             if (isDDS) {
-                BABYLON.Tools.LoadFile(rootUrl, data => {
-                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
+                Tools.LoadFile(rootUrl, data => {
+                    var info = Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
@@ -1541,7 +1831,7 @@
 
                     Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 6);
 
-                    if (!noMipmap && !info.isFourCC && info.mipmapCount == 1) {
+                    if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
@@ -1563,6 +1853,7 @@
                     var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
+                    this._prepareWorkingCanvas();
                     this._workingCanvas.width = width;
                     this._workingCanvas.height = height;
 
@@ -1666,16 +1957,16 @@
             }
 
             // Video
-            if (texture instanceof BABYLON.VideoTexture) {
+            if (texture instanceof VideoTexture) {
                 if ((<VideoTexture>texture).update()) {
                     this._activeTexturesCache[channel] = null;
                 }
-            } else if (texture.delayLoadState == BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+            } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
                 return;
             }
 
-            if (this._activeTexturesCache[channel] == texture) {
+            if (this._activeTexturesCache[channel] === texture) {
                 return;
             }
             this._activeTexturesCache[channel] = texture;
@@ -1689,7 +1980,7 @@
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
-                    var textureWrapMode = (texture.coordinatesMode !== BABYLON.Texture.CUBIC_MODE && texture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
                     this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode);
                     this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
@@ -1702,13 +1993,13 @@
                     internalTexture._cachedWrapU = texture.wrapU;
 
                     switch (texture.wrapU) {
-                        case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
                             break;
-                        case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        case Texture.CLAMP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
                             break;
-                        case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        case Texture.MIRROR_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
                             break;
                     }
@@ -1717,13 +2008,13 @@
                 if (internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
                     switch (texture.wrapV) {
-                        case BABYLON.Texture.WRAP_ADDRESSMODE:
+                        case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
                             break;
-                        case BABYLON.Texture.CLAMP_ADDRESSMODE:
+                        case Texture.CLAMP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
                             break;
-                        case BABYLON.Texture.MIRROR_ADDRESSMODE:
+                        case Texture.MIRROR_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
                             break;
                     }
@@ -1735,10 +2026,15 @@
 
         public _setAnisotropicLevel(key: number, texture: BaseTexture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
+            var value = texture.anisotropicFilteringLevel;
 
-            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== texture.anisotropicFilteringLevel) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy));
-                texture._cachedAnisotropicFilteringLevel = texture.anisotropicFilteringLevel;
+            if (texture.getInternalTexture().samplingMode === Texture.NEAREST_SAMPLINGMODE) {
+                value = 1;
+            }
+
+            if (anisotropicFilterExtension && texture._cachedAnisotropicFilteringLevel !== value) {
+                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                texture._cachedAnisotropicFilteringLevel = value;
             }
         }
 
@@ -1758,6 +2054,9 @@
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }
+
+            // Release audio engine
+            Engine.audioEngine.dispose();
 
             // Release effects
             for (var name in this._compiledEffects) {
@@ -1908,6 +2207,39 @@
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
+        }
+
+        // FPS
+        public getFps(): number {
+            return this.fps;
+        }
+
+        public getDeltaTime(): number {
+            return this.deltaTime;
+        }
+
+        private _measureFps(): void {
+            this.previousFramesDuration.push(Tools.Now);
+            var length = this.previousFramesDuration.length;
+
+            if (length >= 2) {
+                this.deltaTime = this.previousFramesDuration[length - 1] - this.previousFramesDuration[length - 2];
+            }
+
+            if (length >= this.fpsRange) {
+
+                if (length > this.fpsRange) {
+                    this.previousFramesDuration.splice(0, 1);
+                    length = this.previousFramesDuration.length;
+                }
+
+                var sum = 0;
+                for (var id = 0; id < length - 1; id++) {
+                    sum += this.previousFramesDuration[id + 1] - this.previousFramesDuration[id];
+                }
+
+                this.fps = 1000.0 / (sum / (length - 1));
+            }
         }
 
         // Statics

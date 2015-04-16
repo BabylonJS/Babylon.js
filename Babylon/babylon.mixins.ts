@@ -15,6 +15,10 @@ interface Window {
     oRequestAnimationFrame(func: any): any;
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
+    CANNON: any;
+    SIMD: any;
+    AudioContext: AudioContext;
+    webkitAudioContext: AudioContext;
 }
 
 interface HTMLURL {
@@ -43,11 +47,19 @@ interface HTMLCanvasElement {
     webkitRequestPointerLock(): void;
 }
 
+interface CanvasRenderingContext2D {
+    imageSmoothingEnabled: boolean;
+    mozImageSmoothingEnabled: boolean;
+    oImageSmoothingEnabled: boolean;
+    webkitImageSmoothingEnabled: boolean;
+}
+
 interface WebGLTexture {
     isReady: boolean;
     isCube:boolean;
     url: string;
     noMipmap: boolean;
+    samplingMode: number;
     references: number;
     generateMipMaps: boolean;
     _size: number;

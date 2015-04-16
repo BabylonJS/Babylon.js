@@ -46,6 +46,9 @@
       <HintPath>Refs\Autodesk.Max.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="BabylonFileConverter">
+      <HintPath>Refs\BabylonFileConverter.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -132,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
+    <Content Include="Refs\BabylonFileConverter.dll" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\LightPropertiesForm.resx">

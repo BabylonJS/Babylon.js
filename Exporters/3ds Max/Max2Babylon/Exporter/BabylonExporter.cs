@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,17 +21,15 @@ namespace Max2Babylon
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, int> OnError;
 
-        string maxSceneFileName;
-
-        readonly List<string> alreadyExportedTextures = new List<string>();
-
         public bool AutoSave3dsMaxFile { get; set; }
         public bool ExportHiddenObjects { get; set; }
         public bool IsCancelled { get; set; }
 
         public bool CopyTexturesToOutput { get; set; }
 
-        private bool exportQuaternionsInsteadOfEulers;
+        public string MaxSceneFileName { get; set; }
+
+        public bool ExportQuaternionsInsteadOfEulers { get; set; }
 
         void ReportProgressChanged(int progress)
         {
@@ -80,7 +77,7 @@ namespace Max2Babylon
             }
         }
 
-        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, Form callerForm)
+        public async Task ExportAsync(string outputFile, bool generateManifest, bool onlySelected, bool generateBinary, Form callerForm)
         {
             var gameConversionManger = Loader.Global.ConversionManager;
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
@@ -89,14 +86,13 @@ namespace Max2Babylon
             gameScene.InitialiseIGame(onlySelected);
             gameScene.SetStaticFrame(0);
 
-            maxSceneFileName = gameScene.SceneFileName;
+            MaxSceneFileName = gameScene.SceneFileName;
 
             IsCancelled = false;
             RaiseMessage("Exportation started", Color.Blue);
             ReportProgressChanged(0);
             var babylonScene = new BabylonScene(Path.GetDirectoryName(outputFile));
             var rawScene = Loader.Core.RootNode;
-            alreadyExportedTextures.Clear();
 
             if (!Directory.Exists(babylonScene.OutputPath))
             {
@@ -127,7 +123,32 @@ namespace Max2Babylon
             babylonScene.ambientColor = Loader.Core.GetAmbient(0, Tools.Forever).ToArray();
 
             babylonScene.gravity = rawScene.GetVector3Property("babylonjs_gravity");
-            exportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
+            ExportQuaternionsInsteadOfEulers = rawScene.GetBoolProperty("babylonjs_exportquaternions", 1);
+
+            // Sounds
+            var soundName = rawScene.GetStringProperty("babylonjs_sound_filename", "");
+
+            if (!string.IsNullOrEmpty(soundName))
+            {
+                var filename = Path.GetFileName(soundName);
+
+                var globalSound = new BabylonSound
+                {
+                    autoplay = rawScene.GetBoolProperty("babylonjs_sound_autoplay", 1),
+                    loop = rawScene.GetBoolProperty("babylonjs_sound_loop", 1),
+                    name = filename
+                };
+
+                babylonScene.SoundsList.Add(globalSound);
+
+                try
+                {
+                    File.Copy(soundName, Path.Combine(babylonScene.OutputPath, filename), true);
+                }
+                catch
+                {
+                }
+            }
 
             // Cameras
             BabylonCamera mainCamera = null;
@@ -140,7 +161,7 @@ namespace Max2Babylon
                 var indexer = new IntPtr(ix);
                 var cameraNode = camerasTab[indexer];
                 Marshal.FreeHGlobal(indexer);
-                ExportCamera(cameraNode, babylonScene);
+                ExportCamera(gameScene, cameraNode, babylonScene);
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
                 {
@@ -209,6 +230,8 @@ namespace Max2Babylon
 
                 ReportProgressChanged((int)progression);
 
+                progression += progressionStep;
+
                 CheckCancelled();
             }
 
@@ -228,7 +251,7 @@ namespace Max2Babylon
             var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
             for (var i = 0; i < lightNodes.Count; ++i)
             {
-                ExportLight(lightNodes[new IntPtr(i)], babylonScene);
+                ExportLight(gameScene, lightNodes[new IntPtr(i)], babylonScene);
                 CheckCancelled();
             }
 
@@ -254,6 +277,9 @@ namespace Max2Babylon
                 }
             }
 
+            // Actions
+            babylonScene.actions = ExportNodeAction(gameScene.GetIGameNode(rawScene));
+
             // Output
             RaiseMessage("Saving to output file");
             babylonScene.Prepare(false);
@@ -276,6 +302,15 @@ namespace Max2Babylon
                         "{\r\n\"version\" : 1,\r\n\"enableSceneOffline\" : true,\r\n\"enableTexturesOffline\" : true\r\n}");
                 }
             });
+
+            // Binary
+            if (generateBinary)
+            {
+                RaiseMessage("Generating binary files");
+                BabylonFileConverter.BinaryConverter.Convert(outputFile, Path.GetDirectoryName(outputFile) + "\\Binary",
+                    message => RaiseMessage(message, 1),
+                    error => RaiseError(error, 1));
+            }
 
             ReportProgressChanged(100);
             watch.Stop();

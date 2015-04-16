@@ -1,10 +1,9 @@
-﻿/**
-* Based on jsTGALoader - Javascript loader for TGA file
-* By Vincent Thibault
-* @blog http://blog.robrowser.com/javascript-tga-loader.html
-*/
-
-module BABYLON.Internals {
+﻿module BABYLON.Internals {
+    /*
+    * Based on jsTGALoader - Javascript loader for TGA file
+    * By Vincent Thibault
+    * @blog http://blog.robrowser.com/javascript-tga-loader.html
+    */
     export class TGATools {
 
         private static _TYPE_NO_DATA = 0;

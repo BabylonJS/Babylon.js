@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    declare var CANNON;
-
     export interface IPhysicsEnginePlugin {
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;
@@ -51,7 +49,7 @@
         }
 
         public _setGravity(gravity: Vector3): void {
-            this.gravity = gravity || new BABYLON.Vector3(0, -9.82, 0);
+            this.gravity = gravity || new Vector3(0, -9.82, 0);
             this._currentPlugin.setGravity(this.gravity);
         }
 

@@ -3,22 +3,54 @@
         dispose(): void;
     }
 
+    /**
+     * Represents a scene to be rendered by the engine.
+     * @see http://doc.babylonjs.com/page.php?p=21911
+     */
     export class Scene {
         // Statics
-        public static FOGMODE_NONE = 0;
-        public static FOGMODE_EXP = 1;
-        public static FOGMODE_EXP2 = 2;
-        public static FOGMODE_LINEAR = 3;
+        private static _FOGMODE_NONE = 0;
+        private static _FOGMODE_EXP = 1;
+        private static _FOGMODE_EXP2 = 2;
+        private static _FOGMODE_LINEAR = 3;
 
         public static MinDeltaTime = 1.0;
         public static MaxDeltaTime = 1000.0;
+
+        public static get FOGMODE_NONE(): number {
+            return Scene._FOGMODE_NONE;
+        }
+
+        public static get FOGMODE_EXP(): number {
+            return Scene._FOGMODE_EXP;
+        }
+
+        public static get FOGMODE_EXP2(): number {
+            return Scene._FOGMODE_EXP2;
+        }
+
+        public static get FOGMODE_LINEAR(): number {
+            return Scene._FOGMODE_LINEAR;
+        }
 
         // Members
         public autoClear = true;
         public clearColor: any = new Color3(0.2, 0.2, 0.3);
         public ambientColor = new Color3(0, 0, 0);
+        /**
+        * A function to be executed before rendering this scene
+        * @type {Function}
+        */
         public beforeRender: () => void;
+        /**
+        * A function to be executed after rendering this scene
+        * @type {Function}
+        */
         public afterRender: () => void;
+        /**
+        * A function to be executed when this scene is disposed.
+        * @type {Function}
+        */
         public onDispose: () => void;
         public beforeCameraRender: (camera: Camera) => void;
         public afterCameraRender: (camera: Camera) => void;
@@ -42,6 +74,10 @@
         private _onKeyUp: (evt: Event) => void;
 
         // Fog
+        /**
+        * is fog enabled on this scene.
+        * @type {boolean}
+        */
         public fogEnabled = true;
         public fogMode = Scene.FOGMODE_NONE;
         public fogColor = new Color3(0.2, 0.2, 0.3);
@@ -50,20 +86,51 @@
         public fogEnd = 1000.0;
 
         // Lights
+        /**
+        * is shadow enabled on this scene.
+        * @type {boolean}
+        */
         public shadowsEnabled = true;
+        /**
+        * is light enabled on this scene.
+        * @type {boolean}
+        */
         public lightsEnabled = true;
+        /**
+        * All of the lights added to this scene.
+        * @see BABYLON.Light
+        * @type {BABYLON.Light[]}
+        */
         public lights = new Array<Light>();
+        public onNewLightAdded: (newLight?: Light, positionInArray?: number, scene?: Scene) => void;
+        public onLightRemoved: (removedLight?: Light) => void;
 
         // Cameras
+        /**
+        * All of the cameras added to this scene.
+        * @see BABYLON.Camera
+        * @type {BABYLON.Camera[]}
+        */
         public cameras = new Array<Camera>();
+        public onNewCameraAdded: (newCamera?: Camera, positionInArray?: number, scene?: Scene) => void;
+        public onCameraRemoved: (removedCamera?: Camera) => void;
         public activeCameras = new Array<Camera>();
         public activeCamera: Camera;
 
         // Meshes
+        /**
+        * All of the (abstract) meshes added to this scene.
+        * @see BABYLON.AbstractMesh
+        * @type {BABYLON.AbstractMesh[]}
+        */
         public meshes = new Array<AbstractMesh>();
+        public onNewMeshAdded: (newMesh?: AbstractMesh, positionInArray?: number, scene?: Scene) => void;
+        public onMeshRemoved: (removedMesh?: AbstractMesh) => void;
 
         // Geometries
         private _geometries = new Array<Geometry>();
+        public onGeometryAdded: (newGeometry?: Geometry) => void;
+        public onGeometryRemoved: (removedGeometry?: Geometry) => void;
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
@@ -78,6 +145,7 @@
         public particleSystems = new Array<ParticleSystem>();
 
         // Sprites
+        public spritesEnabled = true;
         public spriteManagers = new Array<SpriteManager>();
 
         // Layers
@@ -102,6 +170,7 @@
 
         // Customs render targets
         public renderTargetsEnabled = true;
+        public dumpNextRenderTargets = false;
         public customRenderTargets = new Array<RenderTargetTexture>();
 
         // Delay loading
@@ -114,6 +183,10 @@
         public database; //ANY
 
         // Actions
+        /**
+         * This scene's action manager
+         * @type {BABYLON.ActionManager}
+         */
         public actionManager: ActionManager;
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
@@ -125,11 +198,16 @@
         // Sound Tracks
         public mainSoundTrack: SoundTrack;
         public soundTracks = new Array<SoundTrack>();
+        private _audioEnabled = true;
+        private _headphone = false;
+
+        //Simplification Queue
+        public simplificationQueue: SimplificationQueue;
 
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
-        public _activeVertices = 0;
+        public _activeIndices = 0;
         public _activeParticles = 0;
         private _lastFrameDuration = 0;
         private _evaluateActiveMeshesDuration = 0;
@@ -157,7 +235,7 @@
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
-        private _activeBones = 0;
+        public _activeBones = 0;
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
@@ -183,7 +261,14 @@
 
         private _debugLayer: DebugLayer;
 
-        // Constructor
+        private _depthRenderer: DepthRenderer;
+
+        private _uniqueIdCounter = 0;
+
+        /**
+         * @constructor
+         * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
+         */
         constructor(engine: Engine) {
             this._engine = engine;
 
@@ -202,6 +287,9 @@
 
             this._debugLayer = new DebugLayer(this);
             this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+
+            //simplification queue
+            this.simplificationQueue = new SimplificationQueue();
         }
 
         // Properties 
@@ -209,14 +297,26 @@
             return this._debugLayer;
         }
 
+        /**
+         * The mesh that is currently under the pointer.
+         * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
+         */
         public get meshUnderPointer(): AbstractMesh {
             return this._meshUnderPointer;
         }
 
+        /**
+         * Current on-screen X position of the pointer
+         * @return {number} X position of the pointer
+         */
         public get pointerX(): number {
             return this._pointerX;
         }
 
+        /**
+         * Current on-screen Y position of the pointer
+         * @return {number} Y position of the pointer
+         */
         public get pointerY(): number {
             return this._pointerY;
         }
@@ -241,8 +341,8 @@
             return this._totalVertices;
         }
 
-        public getActiveVertices(): number {
-            return this._activeVertices;
+        public getActiveIndices(): number {
+            return this._activeIndices;
         }
 
         public getActiveParticles(): number {
@@ -288,6 +388,10 @@
 
         public getRenderId(): number {
             return this._renderId;
+        }
+
+        public incrementRenderId(): void {
+            this._renderId++;
         }
 
         private _updatePointerPosition(evt: PointerEvent): void {
@@ -344,16 +448,16 @@
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                             case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh));
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
 
@@ -379,8 +483,10 @@
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
 
-            window.addEventListener("keydown", this._onKeyDown, false);
-            window.addEventListener("keyup", this._onKeyUp, false);
+            Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         }
 
         public detachControl() {
@@ -388,8 +494,10 @@
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
 
-            window.removeEventListener("keydown", this._onKeyDown);
-            window.removeEventListener("keyup", this._onKeyUp);
+            Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp }
+            ]);
         }
 
         // Ready
@@ -469,6 +577,10 @@
             return this._pendingData.length;
         }
 
+        /**
+         * Registers a function to be executed when the scene is ready.
+         * @param {Function} func - the function to be executed.
+         */
         public executeWhenReady(func: () => void): void {
             this._onReadyCallbacks.push(func);
 
@@ -498,6 +610,19 @@
         }
 
         // Animations
+        /**
+         * Will start the animation sequence of a given target
+         * @param target - the target 
+         * @param {number} from - from which frame should animation start
+         * @param {number} to - till which frame should animation run.
+         * @param {boolean} [loop] - should the animation loop
+         * @param {number} [speedRatio] - the speed in which to run the animation
+         * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
+         * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
+         * @return {BABYLON.Animatable} the animatable object created for this animation
+         * @see BABYLON.Animatable
+         * @see http://doc.babylonjs.com/page.php?p=22081
+         */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
@@ -545,6 +670,11 @@
             return null;
         }
 
+        /**
+         * Will stop the animation of the given target
+         * @param target - the target 
+         * @see beginAnimation 
+         */
         public stopAnimation(target: any): void {
             var animatable = this.getAnimatableByTarget(target);
 
@@ -566,10 +696,7 @@
             var delay = now - this._animationStartDate;
 
             for (var index = 0; index < this._activeAnimatables.length; index++) {
-                if (!this._activeAnimatables[index]._animate(delay)) {
-                    this._activeAnimatables.splice(index, 1);
-                    index--;
-                }
+                this._activeAnimatables[index]._animate(delay);
             }
         }
 
@@ -594,6 +721,87 @@
         }
 
         // Methods
+
+        public addMesh(newMesh: AbstractMesh) {
+            newMesh.uniqueId = this._uniqueIdCounter++;
+            var position = this.meshes.push(newMesh);
+            if (this.onNewMeshAdded) {
+                this.onNewMeshAdded(newMesh, position, this);
+            }
+        }
+
+        public removeMesh(toRemove: AbstractMesh): number {
+            var index = this.meshes.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.meshes.splice(index, 1);
+            }
+            if (this.onMeshRemoved) {
+                this.onMeshRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public removeLight(toRemove: Light): number {
+            var index = this.lights.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.lights.splice(index, 1);
+            }
+            if (this.onLightRemoved) {
+                this.onLightRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public removeCamera(toRemove: Camera): number {
+            var index = this.cameras.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.cameras.splice(index, 1);
+            }
+            // Remove from activeCameras
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
+            // Reset the activeCamera
+            if (this.activeCamera === toRemove) {
+                if (this.cameras.length > 0) {
+                    this.activeCamera = this.cameras[0];
+                } else {
+                    this.activeCamera = null;
+                }
+            }
+            if (this.onCameraRemoved) {
+                this.onCameraRemoved(toRemove);
+            }
+            return index;
+        }
+
+        public addLight(newLight: Light) {
+            newLight.uniqueId = this._uniqueIdCounter++;
+            var position = this.lights.push(newLight);
+            if (this.onNewLightAdded) {
+                this.onNewLightAdded(newLight, position, this);
+            }
+        }
+
+        public addCamera(newCamera: Camera) {
+            newCamera.uniqueId = this._uniqueIdCounter++;
+            var position = this.cameras.push(newCamera);
+            if (this.onNewCameraAdded) {
+                this.onNewCameraAdded(newCamera, position, this);
+            }
+        }
+
+        /**
+         * sets the active camera of the scene using its ID
+         * @param {string} id - the camera's ID
+         * @return {BABYLON.Camera|null} the new active camera or null if none found.
+         * @see activeCamera
+         */
         public setActiveCameraByID(id: string): Camera {
             var camera = this.getCameraByID(id);
 
@@ -605,6 +813,12 @@
             return null;
         }
 
+        /**
+         * sets the active camera of the scene using its name
+         * @param {string} name - the camera's name
+         * @return {BABYLON.Camera|null} the new active camera or null if none found.
+         * @see activeCamera
+         */
         public setActiveCameraByName(name: string): Camera {
             var camera = this.getCameraByName(name);
 
@@ -616,6 +830,11 @@
             return null;
         }
 
+        /**
+         * get a material using its id
+         * @param {string} the material's ID
+         * @return {BABYLON.Material|null} the material or null if none found.
+         */
         public getMaterialByID(id: string): Material {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].id === id) {
@@ -626,6 +845,11 @@
             return null;
         }
 
+        /**
+         * get a material using its name
+         * @param {string} the material's name
+         * @return {BABYLON.Material|null} the material or null if none found.
+         */
         public getMaterialByName(name: string): Material {
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].name === name) {
@@ -646,6 +870,21 @@
             return null;
         }
 
+        public getCameraByUniqueID(uniqueId: number): Camera {
+            for (var index = 0; index < this.cameras.length; index++) {
+                if (this.cameras[index].uniqueId === uniqueId) {
+                    return this.cameras[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * get a camera using its name
+         * @param {string} the camera's name
+         * @return {BABYLON.Camera|null} the camera or null if none found.
+         */
         public getCameraByName(name: string): Camera {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].name === name) {
@@ -656,6 +895,11 @@
             return null;
         }
 
+        /**
+         * get a light node using its name
+         * @param {string} the light's name
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
         public getLightByName(name: string): Light {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].name === name) {
@@ -666,6 +910,11 @@
             return null;
         }
 
+        /**
+         * get a light node using its ID
+         * @param {string} the light's id
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
         public getLightByID(id: string): Light {
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].id === id) {
@@ -676,6 +925,26 @@
             return null;
         }
 
+        /**
+         * get a light node using its scene-generated unique ID
+         * @param {number} the light's unique id
+         * @return {BABYLON.Light|null} the light or null if none found.
+         */
+        public getLightByUniqueID(uniqueId: number): Light {
+            for (var index = 0; index < this.lights.length; index++) {
+                if (this.lights[index].uniqueId === uniqueId) {
+                    return this.lights[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * get a geometry using its ID
+         * @param {string} the geometry's id
+         * @return {BABYLON.Geometry|null} the geometry or null if none found.
+         */
         public getGeometryByID(id: string): Geometry {
             for (var index = 0; index < this._geometries.length; index++) {
                 if (this._geometries[index].id === id) {
@@ -686,20 +955,52 @@
             return null;
         }
 
+        /**
+         * add a new geometry to this scene.
+         * @param {BABYLON.Geometry} geometry - the geometry to be added to the scene.
+         * @param {boolean} [force] - force addition, even if a geometry with this ID already exists
+         * @return {boolean} was the geometry added or not
+         */
         public pushGeometry(geometry: Geometry, force?: boolean): boolean {
             if (!force && this.getGeometryByID(geometry.id)) {
                 return false;
             }
 
             this._geometries.push(geometry);
+            if (this.onGeometryAdded) {
+                this.onGeometryAdded(geometry);
+            }
 
             return true;
+        }
+
+        /**
+         * Removes an existing geometry
+         * @param {BABYLON.Geometry} geometry - the geometry to be removed from the scene.
+         * @return {boolean} was the geometry removed or not
+         */
+        public removeGeometry(geometry: Geometry): boolean {
+            var index = this._geometries.indexOf(geometry);
+
+            if (index > -1) {
+                this._geometries.splice(index, 1);
+                if (this.onGeometryRemoved) {
+                    this.onGeometryRemoved(geometry);
+                }
+                return true;
+            }
+            return false;
         }
 
         public getGeometries(): Geometry[] {
             return this._geometries;
         }
 
+        /**
+         * Get the first added mesh found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
         public getMeshByID(id: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].id === id) {
@@ -710,6 +1011,26 @@
             return null;
         }
 
+        /**
+         * Get a mesh with its auto-generated unique id
+         * @param {number} uniqueId - the unique id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
+        public getMeshByUniqueID(uniqueId: number): AbstractMesh {
+            for (var index = 0; index < this.meshes.length; index++) {
+                if (this.meshes[index].uniqueId === uniqueId) {
+                    return this.meshes[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Get a the last added mesh found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.AbstractMesh|null} the mesh found or null if not found at all.
+         */
         public getLastMeshByID(id: string): AbstractMesh {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
@@ -720,6 +1041,11 @@
             return null;
         }
 
+        /**
+         * Get a the last added node (Mesh, Camera, Light) found of a given ID
+         * @param {string} id - the id to search for
+         * @return {BABYLON.Node|null} the node found or null if not found at all.
+         */
         public getLastEntryByID(id: string): Node {
             for (var index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
@@ -742,10 +1068,44 @@
             return null;
         }
 
+        public getNodeByName(name: string): Node {
+            var mesh = this.getMeshByName(name);
+
+            if (mesh) {
+                return mesh;
+            }
+
+            var light = this.getLightByName(name);
+
+            if (light) {
+                return light;
+            }
+
+            return this.getCameraByName(name);
+        }
+
         public getMeshByName(name: string): AbstractMesh {
             for (var index = 0; index < this.meshes.length; index++) {
                 if (this.meshes[index].name === name) {
                     return this.meshes[index];
+                }
+            }
+
+            return null;
+        }
+
+        public getSoundByName(name: string): Sound {
+            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                if (this.mainSoundTrack.soundCollection[index].name === name) {
+                    return this.mainSoundTrack.soundCollection[index];
+                }
+            }
+
+            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                        return this.soundTracks[sdIndex].soundCollection[index];
+                    }
                 }
             }
 
@@ -805,13 +1165,14 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeIndices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
         }
 
         private _evaluateActiveMeshes(): void {
+            this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
             this._renderingManager.reset();
             this._processedMaterials.reset();
@@ -869,6 +1230,7 @@
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
+                    this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
                     this._activeMesh(meshLOD);
@@ -903,7 +1265,7 @@
 
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
-            }            
+            }
 
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -965,8 +1327,6 @@
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
-
-                this._activeBones += skeleton.bones.length;
             }
 
             // Render targets
@@ -977,10 +1337,13 @@
                     var renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
-                        renderTarget.render();
+                        var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                        renderTarget.render(hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+
                 this._renderId++;
             }
 
@@ -1080,15 +1443,19 @@
                     var action = sourceMesh.actionManager.actions[actionIndex];
 
                     if (action.trigger === ActionManager.OnIntersectionEnterTrigger || action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                        var otherMesh = action.getTriggerParameter();
+                        var parameters = action.getTriggerParameter();
+                        var otherMesh = parameters instanceof AbstractMesh ? parameters : parameters.mesh;
 
-                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, false);
+                        var areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
-                        if (areIntersecting && currentIntersectionInProgress === -1 && action.trigger === ActionManager.OnIntersectionEnterTrigger) {
-                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
-                            sourceMesh._intersectionsInProgress.push(otherMesh);
-
+                        if (areIntersecting && currentIntersectionInProgress === -1) {
+                            if (action.trigger === ActionManager.OnIntersectionEnterTrigger) {
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.push(otherMesh);
+                            }
                         } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
 
@@ -1112,7 +1479,7 @@
             this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
@@ -1125,6 +1492,11 @@
                 this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger, null);
             }
 
+            //Simplification Queue
+            if (!this.simplificationQueue.running) {
+                this.simplificationQueue.executeNext();
+            }
+
             // Before render
             if (this.beforeRender) {
                 this.beforeRender();
@@ -1135,7 +1507,7 @@
             }
 
             // Animations
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(Tools.GetDeltaTime(), Scene.MaxDeltaTime));
+            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
@@ -1149,6 +1521,7 @@
             // Customs render targets
             var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
+            var currentActiveCamera = this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
                 for (var customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
@@ -1167,7 +1540,7 @@
                         // Camera
                         this.updateTransformMatrix();
 
-                        renderTarget.render();
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
                     }
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
@@ -1179,6 +1552,7 @@
                 engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
+            this.activeCamera = currentActiveCamera;
 
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
@@ -1205,6 +1579,11 @@
                         this._renderTargets.push(shadowGenerator.getShadowMap());
                     }
                 }
+            }
+
+            // Depth renderer
+            if (this._depthRenderer) {
+                this._renderTargets.push(this._depthRenderer.getDepthMap());
             }
 
             // RenderPipeline
@@ -1248,14 +1627,21 @@
 
             this._toBeDisposed.reset();
 
+            if (this.dumpNextRenderTargets) {
+                this.dumpNextRenderTargets = false;
+            }
 
             Tools.EndPerformanceCounter("Scene rendering");
             this._lastFrameDuration = Tools.Now - startDate;
         }
 
         private _updateAudioParameters() {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
+                return;
+            }
+
             var listeningCamera: Camera;
-            var audioEngine = this._engine.getAudioEngine();
+            var audioEngine = Engine.audioEngine;
 
             if (this.activeCameras.length > 0) {
                 listeningCamera = this.activeCameras[0];
@@ -1271,19 +1657,109 @@
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
                 for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
-                    if (sound.useBabylonJSAttenuation) {
+                    if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
                     }
                 }
-                for (var i = 0; i < this.soundTracks.length; i++) {
-                    for (var j = 0; i < this.soundTracks[i].soundCollection.length; j++) {
-                        var sound = this.soundTracks[i].soundCollection[j];
-                        if (sound.useBabylonJSAttenuation) {
+                for (i = 0; i < this.soundTracks.length; i++) {
+                    for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                        sound = this.soundTracks[i].soundCollection[j];
+                        if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
                     }
                 }
             }
+        }
+
+        // Audio
+        public get audioEnabled(): boolean {
+            return this._audioEnabled;
+        }
+
+        public set audioEnabled(value: boolean) {
+            this._audioEnabled = value;
+            if (this._audioEnabled) {
+                this._enableAudio();
+            }
+            else {
+                this._disableAudio();
+            }
+        }
+
+        private _disableAudio() {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                this.mainSoundTrack.soundCollection[i].pause();
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    this.soundTracks[i].soundCollection[j].pause();
+                }
+            }
+        }
+
+        private _enableAudio() {
+            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                if (this.mainSoundTrack.soundCollection[i].isPaused) {
+                    this.mainSoundTrack.soundCollection[i].play();
+                }
+            }
+            for (i = 0; i < this.soundTracks.length; i++) {
+                for (var j = 0; j < this.soundTracks[i].soundCollection.length; j++) {
+                    if (this.soundTracks[i].soundCollection[j].isPaused) {
+                        this.soundTracks[i].soundCollection[j].play();
+                    }
+                }
+            }
+        }
+
+        public get headphone(): boolean {
+            return this._headphone;
+        }
+
+        public set headphone(value: boolean) {
+            this._headphone = value;
+            if (this._headphone) {
+                this._switchAudioModeForHeadphones();
+            }
+            else {
+                this._switchAudioModeForNormalSpeakers();
+            }
+        }
+
+        private _switchAudioModeForHeadphones() {
+            this.mainSoundTrack.switchPanningModelToHRTF();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToHRTF();
+            }
+        }
+
+        private _switchAudioModeForNormalSpeakers() {
+            this.mainSoundTrack.switchPanningModelToEqualPower();
+
+            for (var i = 0; i < this.soundTracks.length; i++) {
+                this.soundTracks[i].switchPanningModelToEqualPower();
+            }
+        }
+
+        public enableDepthRenderer(): DepthRenderer {
+            if (this._depthRenderer) {
+                return this._depthRenderer;
+            }
+
+            this._depthRenderer = new DepthRenderer(this);
+
+            return this._depthRenderer;
+        }
+
+        public disableDepthRenderer(): void {
+            if (!this._depthRenderer) {
+                return;
+            }
+
+            this._depthRenderer.dispose();
+            this._depthRenderer = null;
         }
 
         public dispose(): void {
@@ -1293,6 +1769,10 @@
             this.skeletons = [];
 
             this._boundingBoxRenderer.dispose();
+
+            if (this._depthRenderer) {
+                this._depthRenderer.dispose();
+            }
 
             // Debug layer
             this.debugLayer.hide();
@@ -1306,6 +1786,9 @@
             this._onAfterRenderCallbacks = [];
 
             this.detachControl();
+
+            // Release sounds & sounds tracks
+            this.disposeSounds();
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
@@ -1372,6 +1855,15 @@
             this._engine.wipeCaches();
         }
 
+        // Release sounds & sounds tracks
+        public disposeSounds() {
+            this.mainSoundTrack.dispose();
+
+            for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
+                this.soundTracks[scIndex].dispose();
+            }
+        }
+
         // Collisions
         public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
             position.divideToRef(collider.radius, this._scaledPosition);
@@ -1422,11 +1914,7 @@
         }
 
         // Octrees
-        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
-            if (!this._selectionOctree) {
-                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
-            }
-
+        public getWorldExtends(): { min: Vector3; max: Vector3 } {
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = 0; index < this.meshes.length; index++) {
@@ -1440,8 +1928,21 @@
                 Tools.CheckExtends(maxBox, min, max);
             }
 
+            return {
+                min: min,
+                max: max
+            };
+        }
+
+        public createOrUpdateSelectionOctree(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
+            if (!this._selectionOctree) {
+                this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
+            }
+
+            var worldExtends = this.getWorldExtends();
+
             // Update octree
-            this._selectionOctree.update(min, max, this.meshes);
+            this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
 
             return this._selectionOctree;
         }
@@ -1605,7 +2106,6 @@
             return this._physicsEngine._registerMeshesAsCompound(parts, options);
         }
 
-        //ANY
         public deleteCompoundImpostor(compound: any): void {
             for (var index = 0; index < compound.parts.length; index++) {
                 var mesh = compound.parts[index].mesh;
@@ -1614,8 +2114,30 @@
             }
         }
 
+        // Misc.
+        public createDefaultCameraOrLight() {
+            // Light
+            if (this.lights.length === 0) {
+                new HemisphericLight("default light", Vector3.Up(), this);
+            }
+
+            // Camera
+            if (!this.activeCamera) {
+                var camera = new FreeCamera("default camera", Vector3.Zero(), this);
+
+                // Compute position
+                var worldExtends = this.getWorldExtends();
+                var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
+
+                camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
+                camera.setTarget(worldCenter);
+
+                this.activeCamera = camera;
+            }
+        }
+
         // Tags
-        private _getByTags(list: any[], tagsQuery: string): any[] {
+        private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
             if (tagsQuery === undefined) {
                 // returns the complete list (could be done with BABYLON.Tags.MatchesQuery but no need to have a for-loop here)
                 return list;
@@ -1623,30 +2145,33 @@
 
             var listByTags = [];
 
+            forEach = forEach || ((item: any) => { return; });
+
             for (var i in list) {
                 var item = list[i];
                 if (Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
+                    forEach(item);
                 }
             }
 
             return listByTags;
         }
 
-        public getMeshesByTags(tagsQuery: string): Mesh[] {
-            return this._getByTags(this.meshes, tagsQuery);
+        public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[] {
+            return this._getByTags(this.meshes, tagsQuery, forEach);
         }
 
-        public getCamerasByTags(tagsQuery: string): Camera[] {
-            return this._getByTags(this.cameras, tagsQuery);
+        public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[] {
+            return this._getByTags(this.cameras, tagsQuery, forEach);
         }
 
-        public getLightsByTags(tagsQuery: string): Light[] {
-            return this._getByTags(this.lights, tagsQuery);
+        public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => void): Light[] {
+            return this._getByTags(this.lights, tagsQuery, forEach);
         }
 
-        public getMaterialByTags(tagsQuery: string): Material[] {
-            return this._getByTags(this.materials, tagsQuery).concat(this._getByTags(this.multiMaterials, tagsQuery));
+        public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
+            return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         }
     }
 } 

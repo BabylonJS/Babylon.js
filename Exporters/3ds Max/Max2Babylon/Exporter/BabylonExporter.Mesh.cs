@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Max;
 using BabylonExport.Entities;
@@ -9,6 +10,80 @@ namespace Max2Babylon
 {
     partial class BabylonExporter
     {
+        readonly Dictionary<IIGameSkin, List<int>> skinSortedBones = new Dictionary<IIGameSkin, List<int>>();
+        List<int> SortBones(IIGameSkin skin)
+        {
+            var boneIds = new List<int>();
+            var boneIndex = new Dictionary<int, IIGameNode>();
+            for (var index = 0; index < skin.TotalSkinBoneCount; index++)
+            {
+                var bone = skin.GetIGameBone(index, false);
+                if (bone == null)
+                {
+                    // non bone in skeletton
+                    boneIds.Add(-2);
+
+                }
+                else
+                {
+                    boneIds.Add(bone.NodeID);
+                    boneIndex[bone.NodeID] = bone;
+                }
+            }
+            while (true)
+            {
+                bool foundMisMatch = false;
+                for (int i = 0; i < boneIds.Count; ++i)
+                {
+                    var id = boneIds[i];
+                    if (id == -2)
+                    {
+                        continue;
+                    }
+                    var parent = boneIndex[id].NodeParent;
+                    if (parent != null)
+                    {
+                        var parentId = parent.NodeID;
+                        if (boneIds.IndexOf(parentId) > i)
+                        {
+                            boneIds.RemoveAt(i);
+                            boneIds.Insert(boneIds.IndexOf(parentId) + 1, id);
+                            foundMisMatch = true;
+                            break;
+                        }
+                    }
+                }
+                if (!foundMisMatch)
+                {
+                    break;
+                }
+            }
+            return boneIds;
+
+        }
+
+        private string GetParentID(IIGameNode parentNode, BabylonScene babylonScene, IIGameScene scene)
+        {
+            var parentType = parentNode.IGameObject.IGameType;
+            var parentId = parentNode.MaxNode.GetGuid().ToString();
+            switch (parentType)
+            {
+                case Autodesk.Max.IGameObject.ObjectTypes.Light:
+                case Autodesk.Max.IGameObject.ObjectTypes.Mesh:
+                case Autodesk.Max.IGameObject.ObjectTypes.Camera:
+                    break;
+
+
+                default:
+                    if (babylonScene.MeshesList.All(m => m.id != parentId))
+                    {
+                        ExportMesh(scene, parentNode, babylonScene);
+                    }
+                    break;
+            }
+            return parentId;
+        }
+
         private int bonesCount;
         private void ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
@@ -31,13 +106,54 @@ namespace Max2Babylon
             bool initialized = gameMesh.InitializeData; //needed, the property is in fact a method initializing the exporter that has wrongly been auto 
             // translated into a property because it has no parameters
 
-            var babylonMesh = new BabylonMesh();
+            var babylonMesh = new BabylonMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
 
-            babylonMesh.name = meshNode.Name;
-            babylonMesh.id = meshNode.MaxNode.GetGuid().ToString();
             if (meshNode.NodeParent != null)
             {
-                babylonMesh.parentId = meshNode.NodeParent.MaxNode.GetGuid().ToString();
+                babylonMesh.parentId = GetParentID(meshNode.NodeParent, babylonScene, scene);
+            }
+
+            // Sounds
+            var soundName = meshNode.MaxNode.GetStringProperty("babylonjs_sound_filename", "");
+            if (!string.IsNullOrEmpty(soundName))
+            {
+                var filename = Path.GetFileName(soundName);
+
+                var meshSound = new BabylonSound
+                {
+                    name = filename,
+                    autoplay = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_autoplay", 1),
+                    loop = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_loop", 1),
+                    volume = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_volume", 1.0f),
+                    playbackRate = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_playbackrate", 1.0f),
+                    connectedMeshId = babylonMesh.id,
+                    isDirectional = false,
+                    spatialSound = false,
+                    distanceModel = meshNode.MaxNode.GetStringProperty("babylonjs_sound_distancemodel", "linear"),
+                    maxDistance = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_maxdistance", 100f),
+                    rolloffFactor = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_rolloff", 1.0f),
+                    refDistance = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_refdistance", 1.0f),
+                };
+
+                var isDirectional = meshNode.MaxNode.GetBoolProperty("babylonjs_sound_directional", 0);
+                
+                if (isDirectional)
+                {
+                    meshSound.isDirectional = true;
+                    meshSound.coneInnerAngle = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneinnerangle", 360f);
+                    meshSound.coneOuterAngle = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneouterangle", 360f);
+                    meshSound.coneOuterGain = meshNode.MaxNode.GetFloatProperty("babylonjs_sound_coneoutergain", 1.0f);
+                }
+
+                babylonScene.SoundsList.Add(meshSound);
+
+                try
+                {
+                    File.Copy(soundName, Path.Combine(babylonScene.OutputPath, filename), true);
+                }
+                catch
+                {
+                }
             }
 
             // Misc.
@@ -49,38 +165,48 @@ namespace Max2Babylon
             babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics == 1;
             babylonMesh.alphaIndex = (int)meshNode.MaxNode.GetFloatProperty("babylonjs_alphaindex", 1000);
 
+            // Actions
+            babylonMesh.actions = ExportNodeAction(meshNode);
+
             // Collisions
             babylonMesh.checkCollisions = meshNode.MaxNode.GetBoolProperty("babylonjs_checkcollisions");
 
-            bool isSkinned = gameMesh.IsObjectSkinned;
+            var isSkinned = gameMesh.IsObjectSkinned;
             var skin = gameMesh.IGameSkin;
             var unskinnedMesh = gameMesh;
             IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+            List<int> boneIds = null;
             if (isSkinned)
             {
                 bonesCount = skin.TotalSkinBoneCount;
                 skins.Add(skin);
+
                 skinnedNodes.Add(meshNode);
                 babylonMesh.skeletonId = skins.IndexOf(skin);
                 skin.GetInitSkinTM(skinInitPoseMatrix);
+                boneIds = SortBones(skin);
+                skinSortedBones[skin] = boneIds;
             }
 
             // Position / rotation / scaling
+            var localTM = meshNode.GetObjectTM(0);
+            if (meshNode.NodeParent != null)
             {
-                var localTM = meshNode.GetObjectTM(0);
-
-                var meshTrans = localTM.Translation;
-                var meshRotation = localTM.Rotation;
-                var meshScale = localTM.Scaling;
-                babylonMesh.position = new float[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
-                babylonMesh.rotationQuaternion = new float[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
-                babylonMesh.scaling = new float[] { meshScale.X, meshScale.Y, meshScale.Z };
+                var parentWorld = meshNode.NodeParent.GetObjectTM(0);
+                localTM.MultiplyBy(parentWorld.Inverse);
             }
+
+            var meshTrans = localTM.Translation;
+            var meshRotation = localTM.Rotation;
+            var meshScale = localTM.Scaling;
+            babylonMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
+            babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+            babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
 
             // Mesh
             RaiseMessage(meshNode.Name, 1);
 
-            if (unskinnedMesh != null && unskinnedMesh.IGameType == Autodesk.Max.IGameObject.ObjectTypes.Mesh && unskinnedMesh.MaxMesh != null)
+            if (unskinnedMesh.IGameType == Autodesk.Max.IGameObject.ObjectTypes.Mesh && unskinnedMesh.MaxMesh != null)
             {
                 if (unskinnedMesh.NumberOfFaces < 1)
                 {
@@ -95,6 +221,32 @@ namespace Max2Babylon
                 if (unskinnedMesh.NumberOfVerts >= 65536)
                 {
                     RaiseWarning(string.Format("Mesh {0} has tmore than 65536 vertices which means that it will require specific WebGL extension to be rendered. This may impact portability of your scene on low end devices.", babylonMesh.name), 2);
+                }
+
+                // Physics
+                var impostorText = meshNode.MaxNode.GetStringProperty("babylonjs_impostor", "None");
+
+                if (impostorText != "None")
+                {
+                    switch (impostorText)
+                    {
+                        case "Sphere":
+                            babylonMesh.physicsImpostor = 1;
+                            break;
+                        case "Box":
+                            babylonMesh.physicsImpostor = 2;
+                            break;
+                        case "Plane":
+                            babylonMesh.physicsImpostor = 3;
+                            break;
+                        default:
+                            babylonMesh.physicsImpostor = 0;
+                            break;
+                    }
+
+                    babylonMesh.physicsMass = meshNode.MaxNode.GetFloatProperty("babylonjs_mass");
+                    babylonMesh.physicsFriction = meshNode.MaxNode.GetFloatProperty("babylonjs_friction", 0.2f);
+                    babylonMesh.physicsRestitution = meshNode.MaxNode.GetFloatProperty("babylonjs_restitution", 0.2f);
                 }
 
                 // Material
@@ -122,7 +274,7 @@ namespace Max2Babylon
                 bool hasUV2 = false;
                 for (int i = 0; i < mappingChannels.Count; ++i)
                 {
-                    IntPtr indexer = new IntPtr(i);
+                    var indexer = new IntPtr(i);
                     var channelNum = mappingChannels[indexer];
                     if (channelNum == 1)
                     {
@@ -138,8 +290,6 @@ namespace Max2Babylon
 
                 var optimizeVertices = meshNode.MaxNode.GetBoolProperty("babylonjs_optimizevertices");
 
-
-
                 // Compute normals
                 List<GlobalVertex>[] verticesAlreadyExported = null;
 
@@ -154,38 +304,30 @@ namespace Max2Babylon
 
                 for (int i = 0; i < multiMatsCount; ++i)
                 {
-                    if (meshNode.NodeMaterial == null)
-                    {
-                        continue;
-                    }
-
-                    int materialId = meshNode.NodeMaterial.GetMaterialID(i);
-                    ITab<IFaceEx> materialFaces = null;
+                    int materialId = meshNode.NodeMaterial == null ? 0 : meshNode.NodeMaterial.GetMaterialID(i);
                     var indexCount = 0;
                     var minVertexIndex = int.MaxValue;
                     var maxVertexIndex = int.MinValue;
-                    var subMesh = new BabylonSubMesh();
-                    subMesh.indexStart = indexStart;
-                    subMesh.materialIndex = i;
+                    var subMesh = new BabylonSubMesh { indexStart = indexStart, materialIndex = i };
 
                     if (multiMatsCount == 1)
                     {
                         for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
                         {
                             var face = unskinnedMesh.GetFace(j);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
                     else
                     {
-                        materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
+                        ITab<IFaceEx> materialFaces = unskinnedMesh.GetFacesFromMatID(materialId);
                         for (int j = 0; j < materialFaces.Count; ++j)
                         {
                             var faceIndexer = new IntPtr(j);
                             var face = materialFaces[faceIndexer];
 
                             Marshal.FreeHGlobal(faceIndexer);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
 
@@ -215,15 +357,15 @@ namespace Max2Babylon
                 RaiseMessage(string.Format("{0} vertices, {1} faces", vertices.Count, indices.Count / 3), 2);
 
                 // Buffers
-                babylonMesh.positions = vertices.SelectMany(v => new float[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
-                babylonMesh.normals = vertices.SelectMany(v => new float[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
+                babylonMesh.positions = vertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
+                babylonMesh.normals = vertices.SelectMany(v => new[] { v.Normal.X, v.Normal.Y, v.Normal.Z }).ToArray();
                 if (hasUV)
                 {
-                    babylonMesh.uvs = vertices.SelectMany(v => new float[] { v.UV.X, 1 - v.UV.Y }).ToArray();
+                    babylonMesh.uvs = vertices.SelectMany(v => new[] { v.UV.X, 1 - v.UV.Y }).ToArray();
                 }
                 if (hasUV2)
                 {
-                    babylonMesh.uvs2 = vertices.SelectMany(v => new float[] { v.UV2.X, 1 - v.UV2.Y }).ToArray();
+                    babylonMesh.uvs2 = vertices.SelectMany(v => new[] { v.UV2.X, 1 - v.UV2.Y }).ToArray();
                 }
 
                 if (skin != null)
@@ -271,20 +413,19 @@ namespace Max2Babylon
 
                 var instance = new BabylonAbstractMesh { name = tab.Name };
                 {
+                    var instanceLocalTM = meshNode.GetObjectTM(0);
 
-                    var localTM = meshNode.GetObjectTM(0);
-
-                    var meshTrans = localTM.Translation;
-                    var meshRotation = localTM.Rotation;
-                    var meshScale = localTM.Scaling;
-                    instance.position = new float[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
+                    var instanceTrans = instanceLocalTM.Translation;
+                    var instanceRotation = instanceLocalTM.Rotation;
+                    var instanceScale = instanceLocalTM.Scaling;
+                    instance.position = new[] { instanceTrans.X, instanceTrans.Y, instanceTrans.Z };
                     float rotx = 0, roty = 0, rotz = 0;
                     unsafe
                     {
-                        meshRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
+                        instanceRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
                     }
-                    instance.rotation = new float[] { rotx, roty, rotz };
-                    instance.scaling = new float[] { meshScale.X, meshScale.Y, meshScale.Z };
+                    instance.rotation = new[] { rotx, roty, rotz };
+                    instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
                 }
                 var instanceAnimations = new List<BabylonAnimation>();
                 GenerateCoordinatesAnimations(meshNode, instanceAnimations);
@@ -297,8 +438,8 @@ namespace Max2Babylon
 
             // Animations
             var animations = new List<BabylonAnimation>();
-            GenerateCoordinatesAnimations(meshNode, animations);
 
+            GenerateCoordinatesAnimations(meshNode, animations);
 
             if (!ExportFloatController(meshNode.MaxNode.VisController, "visibility", animations))
             {
@@ -318,11 +459,11 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face)
+        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
         {
-            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
-            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin);
+            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
             indices.Add(a);
             indices.Add(b);
             indices.Add(c);
@@ -364,33 +505,63 @@ namespace Max2Babylon
 
         public static void GenerateCoordinatesAnimations(IIGameNode meshNode, List<BabylonAnimation> animations)
         {
-            ExportVector3Animation("position", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Pos) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.PosZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                var trans = worldMatrix.Translation;
-                return new float[] { trans.X, trans.Y, trans.Z };
-            });
+                ExportVector3Animation("position", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var trans = worldMatrix.Translation;
+                    return new[] { trans.X, trans.Y, trans.Z };
+                });
+            }
 
-            ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Rot) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerX) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerY) ||
+                meshNode.IGameControl.IsAnimated(IGameControlType.EulerZ))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
+                ExportQuaternionAnimation("rotationQuaternion", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
 
 
+                    var rot = worldMatrix.Rotation;
+                    return new[] { rot.X, rot.Y, rot.Z, -rot.W };
+                });
+            }
 
-                var rot = worldMatrix.Rotation;
-                return new float[] { rot.X, rot.Y, rot.Z, -rot.W };
-            });
-
-            ExportVector3Animation("scaling", animations, key =>
+            if (meshNode.IGameControl.IsAnimated(IGameControlType.Scale))
             {
-                var worldMatrix = meshNode.GetObjectTM(key);
-                var scale = worldMatrix.Scaling;
+                ExportVector3Animation("scaling", animations, key =>
+                {
+                    var worldMatrix = meshNode.GetObjectTM(key);
+                    if (meshNode.NodeParent != null)
+                    {
+                        var parentWorld = meshNode.NodeParent.GetObjectTM(key);
+                        worldMatrix.MultiplyBy(parentWorld.Inverse);
+                    }
+                    var scale = worldMatrix.Scaling;
 
-                return new float[] { scale.X, scale.Y, scale.Z };
-            });
+                    return new[] { scale.X, scale.Y, scale.Z };
+                });
+            }
         }
 
-        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin)
+
+        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin, List<int> boneIds)
         {
             var vertexIndex = (int)face.Vert[facePart];
 
@@ -403,7 +574,7 @@ namespace Max2Babylon
 
             if (hasUV)
             {
-                int[] indices = new int[3];
+                var indices = new int[3];
                 unsafe
                 {
                     fixed (int* indicesPtr = indices)
@@ -417,7 +588,7 @@ namespace Max2Babylon
 
             if (hasUV2)
             {
-                int[] indices = new int[3];
+                var indices = new int[3];
                 unsafe
                 {
                     fixed (int* indicesPtr = indices)
@@ -436,12 +607,20 @@ namespace Max2Babylon
                 float alpha = 1;
                 if (hasAlpha)
                 {
-                    IPoint3 p = Loader.Global.Point3.Create();
-                    mesh.GetMapFaceIndex(-2, face.MeshFaceIndex, p.GetNativeHandle());
-                    alpha = p.X;
+                    var indices = new int[3];
+                    unsafe
+                    {
+                        fixed (int* indicesPtr = indices)
+                        {
+                            mesh.GetMapFaceIndex(-2, face.MeshFaceIndex, new IntPtr(indicesPtr));
+                        }
+                    }
+                    var color = mesh.GetMapVertex(-2, indices[facePart]);
+
+                    alpha = color.X;
                 }
 
-                vertex.Color = new float[] { vertexColor.X, vertexColor.Y, vertexColor.Z, alpha };
+                vertex.Color = new[] { vertexColor.X, vertexColor.Y, vertexColor.Z, alpha };
             }
 
             if (skin != null)
@@ -457,25 +636,25 @@ namespace Max2Babylon
 
                 if (nbBones > 0)
                 {
-                    bone0 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 0), false);
+                    bone0 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 0).NodeID);
                     weight0 = skin.GetWeight(vertexIndex, 0);
                 }
 
                 if (nbBones > 1)
                 {
-                    bone1 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 1), false);
+                    bone1 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 1).NodeID);
                     weight1 = skin.GetWeight(vertexIndex, 1);
                 }
 
                 if (nbBones > 2)
                 {
-                    bone2 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 2), false);
+                    bone2 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 2).NodeID);
                     weight2 = skin.GetWeight(vertexIndex, 2);
                 }
 
                 if (nbBones > 3)
                 {
-                    bone3 = skin.GetBoneIndex(skin.GetBone(vertexIndex, 3), false);
+                    bone3 = boneIds.IndexOf(skin.GetIGameBone(vertexIndex, 3).NodeID);
                 }
 
                 if (nbBones == 0)

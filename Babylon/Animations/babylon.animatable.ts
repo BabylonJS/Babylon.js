@@ -23,8 +23,8 @@
                 var animation = animations[index];
 
                 animation._target = target;
-                this._animations.push(animation);    
-            }            
+                this._animations.push(animation);
+            }
         }
 
         public getAnimationByTargetProperty(property: string) {
@@ -85,6 +85,12 @@
                 var animation = animations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
+            }
+
+            if (!running) {
+                // Remove from active animatables
+                index = this._scene._activeAnimatables.indexOf(this);
+                this._scene._activeAnimatables.splice(index, 1);
             }
 
             if (!running && this.onAnimationEnd) {

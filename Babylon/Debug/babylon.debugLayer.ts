@@ -1,6 +1,8 @@
 ﻿module BABYLON {
     export class DebugLayer {
         private _scene: Scene;
+        private _camera: Camera;
+        private _transformationMatrix = Matrix.Identity();
         private _enabled: boolean = false;
         private _labelsEnabled: boolean = false;
         private _displayStatistics = true;
@@ -20,6 +22,7 @@
 
         private _syncPositions: () => void;
         private _syncData: () => void;
+        private _syncUI: () => void;
         private _onCanvasClick: (evt: MouseEvent) => void;
 
         private _clickPosition: any;
@@ -35,19 +38,23 @@
 
         public axisRatio = 0.02;
 
+        public accentColor = "orange";
+
+        public customStatsFunction: () => string;
+
         constructor(scene: Scene) {
             this._scene = scene;
 
             this._syncPositions = (): void => {
                 var engine = this._scene.getEngine();
                 var canvasRect = engine.getRenderingCanvasClientRect();
-                
+
                 if (this._showUI) {
-                    this._statsDiv.style.left = (canvasRect.width - 310) + "px";
-                    this._statsDiv.style.top = (canvasRect.height - 370) + "px";
-                    this._statsDiv.style.width = "300px";
-                    this._statsDiv.style.height = "360px";
-                    this._statsSubsetDiv.style.maxHeight = (canvasRect.height - 60) + "px";
+                    this._statsDiv.style.left = (canvasRect.width - 410) + "px";
+                    this._statsDiv.style.top = (canvasRect.height - 290) + "px";
+                    this._statsDiv.style.width = "400px";
+                    this._statsDiv.style.height = "auto";
+                    this._statsSubsetDiv.style.maxHeight = "240px";
 
                     this._optionsDiv.style.left = "0px";
                     this._optionsDiv.style.top = "10px";
@@ -64,7 +71,7 @@
                     this._treeDiv.style.top = "10px";
                     this._treeDiv.style.width = "300px";
                     this._treeDiv.style.height = "auto";
-                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 420) + "px";
+                    this._treeSubsetDiv.style.maxHeight = (canvasRect.height - 340) + "px";
                 }
 
                 this._globalDiv.style.left = canvasRect.left + "px";
@@ -96,7 +103,7 @@
                 };
             }
 
-            this._syncData = (): void => {
+            this._syncUI = (): void => {
                 if (this._showUI) {
                     if (this._displayStatistics) {
                         this._displayStats();
@@ -124,22 +131,27 @@
                         this._treeDiv.style.display = "none";
                     }
                 }
+            }
 
+            this._syncData = (): void => {
                 if (this._labelsEnabled || !this._showUI) {
+
+                    this._camera.getViewMatrix().multiplyToRef(this._camera.getProjectionMatrix(), this._transformationMatrix);
+
                     this._drawingContext.clearRect(0, 0, this._drawingCanvas.width, this._drawingCanvas.height);
 
                     var engine = this._scene.getEngine();
-                    var viewport = this._scene.activeCamera.viewport;
+                    var viewport = this._camera.viewport;
                     var globalViewport = viewport.toGlobal(engine);
 
                     // Meshes
-                    var meshes = this._scene.getActiveMeshes();
+                    var meshes = this._camera.getActiveMeshes();
                     for (var index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
 
                         var position = mesh.getBoundingInfo().boundingSphere.center;
 
-                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._scene.getTransformMatrix(), globalViewport);
+                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
 
                         if (mesh.renderOverlay || this.shouldDisplayAxis && this.shouldDisplayAxis(mesh)) {
                             this._renderAxis(projectedPosition, mesh, globalViewport);
@@ -157,18 +169,18 @@
                     for (index = 0; index < cameras.length; index++) {
                         var camera = cameras[index];
 
-                        if (camera === this._scene.activeCamera) {
+                        if (camera === this._camera) {
                             continue;
                         }
 
-                        projectedPosition = Vector3.Project(camera.position, this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
+                        projectedPosition = Vector3.Project(Vector3.Zero(), camera.getWorldMatrix(), this._transformationMatrix, globalViewport);
 
                         if (!this.shouldDisplayLabel || this.shouldDisplayLabel(camera)) {
                             this._renderLabel(camera.name, projectedPosition, 12,
                                 () => {
-                                    this._scene.activeCamera.detachControl(engine.getRenderingCanvas());
-                                    this._scene.activeCamera = camera;
-                                    this._scene.activeCamera.attachControl(engine.getRenderingCanvas());
+                                    this._camera.detachControl(engine.getRenderingCanvas());
+                                    this._camera = camera;
+                                    this._camera.attachControl(engine.getRenderingCanvas());
                                 },
                                 () => { return "purple"; });
                         }
@@ -181,14 +193,14 @@
 
                         if (light.position) {
 
-                            projectedPosition = Vector3.Project(light.position, this._identityMatrix, this._scene.getTransformMatrix(), globalViewport);
+                            projectedPosition = Vector3.Project(light.getAbsolutePosition(), this._identityMatrix, this._transformationMatrix, globalViewport);
 
                             if (!this.shouldDisplayLabel || this.shouldDisplayLabel(light)) {
                                 this._renderLabel(light.name, projectedPosition, -20,
-                                () => {
-                                    light.setEnabled(!light.isEnabled());
-                                },
-                                () => { return light.isEnabled() ? "orange" : "gray"; });
+                                    () => {
+                                        light.setEnabled(!light.isEnabled());
+                                    },
+                                    () => { return light.isEnabled() ? "orange" : "gray"; });
                             }
 
                         }
@@ -200,6 +212,10 @@
         }
 
         private _refreshMeshesTreeContent(): void {
+            while (this._treeSubsetDiv.hasChildNodes()) {
+                this._treeSubsetDiv.removeChild(this._treeSubsetDiv.lastChild);
+            }
+
             // Add meshes
             var sortedArray = this._scene.meshes.slice(0, this._scene.meshes.length);
 
@@ -218,10 +234,10 @@
                     continue;
                 }
 
-                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, (element, mesh) => {
-                    mesh.isVisible = element.checked;
+                this._generateAdvancedCheckBox(this._treeSubsetDiv, mesh.name, mesh.getTotalVertices() + " verts", mesh.isVisible, (element, m) => {
+                    m.isVisible = element.checked;
                 }, mesh);
-            } 
+            }
         }
 
         private _renderSingleAxis(zero: Vector3, unit: Vector3, unitText: Vector3, label: string, color: string) {
@@ -242,21 +258,21 @@
             var position = mesh.getBoundingInfo().boundingSphere.center;
             var worldMatrix = mesh.getWorldMatrix();
 
-            var unprojectedVector = Vector3.UnprojectFromTransform(projectedPosition.add(new Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._scene.getTransformMatrix());
+            var unprojectedVector = Vector3.UnprojectFromTransform(projectedPosition.add(new Vector3(this._drawingCanvas.width * this.axisRatio, 0, 0)), globalViewport.width, globalViewport.height, worldMatrix, this._transformationMatrix);
             var unit = (unprojectedVector.subtract(position)).length();
 
-            var xAxis = Vector3.Project(position.add(new Vector3(unit, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var xAxisText = Vector3.Project(position.add(new Vector3(unit * 1.5, 0, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var xAxis = Vector3.Project(position.add(new Vector3(unit, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var xAxisText = Vector3.Project(position.add(new Vector3(unit * 1.5, 0, 0)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, xAxis, xAxisText, "x", "#FF0000");
 
-            var yAxis = Vector3.Project(position.add(new Vector3(0, unit, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var yAxisText = Vector3.Project(position.add(new Vector3(0, unit * 1.5, 0)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var yAxis = Vector3.Project(position.add(new Vector3(0, unit, 0)), worldMatrix, this._transformationMatrix, globalViewport);
+            var yAxisText = Vector3.Project(position.add(new Vector3(0, unit * 1.5, 0)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, yAxis, yAxisText, "y", "#00FF00");
 
-            var zAxis = Vector3.Project(position.add(new Vector3(0, 0, unit)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
-            var zAxisText = Vector3.Project(position.add(new Vector3(0, 0, unit * 1.5)), worldMatrix, this._scene.getTransformMatrix(), globalViewport);
+            var zAxis = Vector3.Project(position.add(new Vector3(0, 0, unit)), worldMatrix, this._transformationMatrix, globalViewport);
+            var zAxisText = Vector3.Project(position.add(new Vector3(0, 0, unit * 1.5)), worldMatrix, this._transformationMatrix, globalViewport);
 
             this._renderSingleAxis(projectedPosition, zAxis, zAxisText, "z", "#0000FF");
         }
@@ -267,8 +283,9 @@
                 var textMetrics = this._drawingContext.measureText(text);
                 var centerX = projectedPosition.x - textMetrics.width / 2;
                 var centerY = projectedPosition.y;
+                var clientRect = this._drawingCanvas.getBoundingClientRect();
 
-                if (this._isClickInsideRect(centerX - 5, centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
+                if (this._showUI && this._isClickInsideRect(clientRect.left * this._ratio + centerX - 5, clientRect.top * this._ratio + centerY - labelOffset - 12, textMetrics.width + 10, 17)) {
                     onClick();
                 }
 
@@ -321,7 +338,8 @@
 
             var engine = this._scene.getEngine();
 
-            this._scene.unregisterAfterRender(this._syncData);
+            this._scene.unregisterBeforeRender(this._syncData);
+            this._scene.unregisterAfterRender(this._syncUI);
             document.body.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
@@ -350,17 +368,22 @@
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         }
 
-        public show(showUI: boolean = true) {
+        public show(showUI: boolean = true, camera: Camera = null) {
             if (this._enabled) {
                 return;
             }
 
             this._enabled = true;
+
+            if (camera) {
+                this._camera = camera;
+            } else {
+                this._camera = this._scene.activeCamera;
+            }
+
             this._showUI = showUI;
 
             var engine = this._scene.getEngine();
-
-            this._scene.registerAfterRender(this._syncData);
 
             this._globalDiv = document.createElement("div");
 
@@ -372,6 +395,8 @@
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
+            this._scene.registerBeforeRender(this._syncData);
+            this._scene.registerAfterRender(this._syncUI);
         }
 
         private _clearLabels(): void {
@@ -393,13 +418,15 @@
             header.style.backgroundColor = "Black";
             header.style.padding = "5px 5px 4px 0px";
             header.style.marginLeft = "-5px";
+            header.style.fontWeight = "bold";
 
             root.appendChild(header);
         }
 
-        private _generateTexBox(root: HTMLDivElement, title: string): void {
+        private _generateTexBox(root: HTMLDivElement, title: string, color: string): void {
             var label = document.createElement("label");
             label.innerHTML = title;
+            label.style.color = color;
 
             root.appendChild(label);
             root.appendChild(document.createElement("br"));
@@ -425,6 +452,8 @@
 
             leftPart.innerHTML = leftTitle;
             rightPart.innerHTML = rightTitle;
+            rightPart.style.fontSize = "12px";
+            rightPart.style.maxWidth = "200px";
 
             container.appendChild(leftPart);
             container.appendChild(rightPart);
@@ -437,17 +466,33 @@
         private _generateCheckBox(root: HTMLDivElement, title: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
 
-            var boundingBoxesCheckbox = document.createElement("input");
-            boundingBoxesCheckbox.type = "checkbox";
-            boundingBoxesCheckbox.checked = initialState;
+            var checkBox = document.createElement("input");
+            checkBox.type = "checkbox";
+            checkBox.checked = initialState;
 
-            boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
+            checkBox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
             });
 
-            label.appendChild(boundingBoxesCheckbox);
+            label.appendChild(checkBox);
             label.appendChild(document.createTextNode(title));
             root.appendChild(label);
+            root.appendChild(document.createElement("br"));
+        }
+
+        private _generateButton(root: HTMLDivElement, title: string, task: (element, tag) => void, tag: any = null): void {
+            var button = document.createElement("button");
+            button.innerHTML = title;
+            button.style.height = "24px";
+            button.style.color = "#444444";
+            button.style.border = "1px solid white"; 
+            button.className = "debugLayerButton";
+
+            button.addEventListener("click",(evt: Event) => {
+                task(evt.target, tag);
+            });
+
+            root.appendChild(button);
             root.appendChild(document.createElement("br"));
         }
 
@@ -471,6 +516,11 @@
 
         private _generateDOMelements(): void {
             this._globalDiv.id = "DebugLayer";
+            this._globalDiv.style.position = "absolute";
+
+            this._globalDiv.style.fontFamily = "Segoe UI, Arial";
+            this._globalDiv.style.fontSize = "14px";
+            this._globalDiv.style.color = "white";
 
             // Drawing canvas
             this._drawingCanvas = document.createElement("canvas");
@@ -491,12 +541,11 @@
                 this._statsDiv.style.position = "absolute";
                 this._statsDiv.style.background = background;
                 this._statsDiv.style.padding = "0px 0px 0px 5px";
-                this._statsDiv.style.pointerEvents = "none";
-                this._statsDiv.style.overflowY = "auto";
-                this._generateheader(this._statsDiv, "Statistics");
+                this._generateheader(this._statsDiv, "STATISTICS");
                 this._statsSubsetDiv = document.createElement("div");
                 this._statsSubsetDiv.style.paddingTop = "5px";
                 this._statsSubsetDiv.style.paddingBottom = "5px";
+                this._statsSubsetDiv.style.overflowY = "auto";
                 this._statsDiv.appendChild(this._statsSubsetDiv);
 
                 // Tree
@@ -507,7 +556,7 @@
                 this._treeDiv.style.background = background;
                 this._treeDiv.style.padding = "0px 0px 0px 5px";
                 this._treeDiv.style.display = "none";
-                this._generateheader(this._treeDiv, "Meshes tree");
+                this._generateheader(this._treeDiv, "MESHES TREE");
                 this._treeSubsetDiv = document.createElement("div");
                 this._treeSubsetDiv.style.paddingTop = "5px";
                 this._treeSubsetDiv.style.paddingRight = "5px";
@@ -524,7 +573,7 @@
                 this._logDiv.style.background = background;
                 this._logDiv.style.padding = "0px 0px 0px 5px";
                 this._logDiv.style.display = "none";
-                this._generateheader(this._logDiv, "Logs");
+                this._generateheader(this._logDiv, "LOGS");
                 this._logSubsetDiv = document.createElement("div");
                 this._logSubsetDiv.style.height = "127px";
                 this._logSubsetDiv.style.paddingTop = "5px";
@@ -545,7 +594,7 @@
                 this._optionsDiv.style.background = background;
                 this._optionsDiv.style.padding = "0px 0px 0px 5px";
                 this._optionsDiv.style.overflowY = "auto";
-                this._generateheader(this._optionsDiv, "Options");
+                this._generateheader(this._optionsDiv, "OPTIONS");
                 this._optionsSubsetDiv = document.createElement("div");
                 this._optionsSubsetDiv.style.paddingTop = "5px";
                 this._optionsSubsetDiv.style.paddingBottom = "5px";
@@ -553,13 +602,15 @@
                 this._optionsSubsetDiv.style.maxHeight = "200px";
                 this._optionsDiv.appendChild(this._optionsSubsetDiv);
 
-                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Windows:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Statistics", this._displayStatistics, (element) => { this._displayStatistics = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Logs", this._displayLogs, (element) => { this._displayLogs = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Meshes tree", this._displayTree, (element) => {
                     this._displayTree = element.checked;
                     this._needToRefreshMeshesTree = true;
                 });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>General:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Bounding boxes", this._scene.forceShowBoundingBoxes, (element) => { this._scene.forceShowBoundingBoxes = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Clickable labels", this._labelsEnabled, (element) => {
                     this._labelsEnabled = element.checked;
@@ -567,7 +618,7 @@
                         this._clearLabels();
                     }
                 });
-                this._generateCheckBox(this._optionsSubsetDiv, "Generate user marks", Tools.PerformanceLogLevel === Tools.PerformanceUserMarkLogLevel,
+                this._generateCheckBox(this._optionsSubsetDiv, "Generate user marks (F12)", Tools.PerformanceLogLevel === Tools.PerformanceUserMarkLogLevel,
                     (element) => {
                         if (element.checked) {
                             Tools.PerformanceLogLevel = Tools.PerformanceUserMarkLogLevel;
@@ -577,7 +628,7 @@
                     });
                 ;
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Rendering mode:</b>", this.accentColor);
                 this._generateRadio(this._optionsSubsetDiv, "Solid", "renderMode", !this._scene.forceWireframe && !this._scene.forcePointsCloud, (element) => {
                     if (element.checked) {
                         this._scene.forceWireframe = false;
@@ -597,7 +648,7 @@
                     }
                 });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Texture channels:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Diffuse", StandardMaterial.DiffuseTextureEnabled, (element) => { StandardMaterial.DiffuseTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Ambient", StandardMaterial.AmbientTextureEnabled, (element) => { StandardMaterial.AmbientTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Specular", StandardMaterial.SpecularTextureEnabled, (element) => { StandardMaterial.SpecularTextureEnabled = element.checked });
@@ -607,7 +658,7 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>");
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, (element) => { this._scene.animationsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Collisions", this._scene.collisionsEnabled, (element) => { this._scene.collisionsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fog", this._scene.fogEnabled, (element) => { this._scene.fogEnabled = element.checked });
@@ -619,40 +670,82 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, (element) => { this._scene.renderTargetsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, (element) => { this._scene.shadowsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, (element) => { this._scene.spritesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
-
-                // Global
-
-                this._globalDiv.style.position = "absolute";
+                if (Engine.audioEngine.canUseWebAudio) {
+                    this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                    this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
+                    this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, (element) => {
+                        if (element.checked) {
+                            this._scene.headphone = true;
+                        }
+                    });
+                    this._generateRadio(this._optionsSubsetDiv, "Normal Speakers", "panningModel", !this._scene.headphone, (element) => {
+                        if (element.checked) {
+                            this._scene.headphone = false;
+                        }
+                    });
+                    this._generateCheckBox(this._optionsSubsetDiv, "Disable audio", !this._scene.audioEnabled, (element) => {
+                        this._scene.audioEnabled = !element.checked;
+                    });
+                }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
+                this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+  
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
                 this._globalDiv.appendChild(this._treeDiv);
-
-                this._globalDiv.style.fontFamily = "Segoe UI, Arial";
-                this._globalDiv.style.fontSize = "14px";
-                this._globalDiv.style.color = "white";
             }
         }
 
         private _displayStats() {
             var scene = this._scene;
             var engine = scene.getEngine();
+            var glInfo = engine.getGlInfo();
 
-            this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(Tools.GetFps(), 0) + " fps</b><br><br>"
-            + "Total meshes: " + scene.meshes.length + "<br>"
-            + "Total vertices: " + scene.getTotalVertices() + "<br>"
-            + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
-            + "Active vertices: " + scene.getActiveVertices() + "<br>"
-            + "Active bones: " + scene.getActiveBones() + "<br>"
-            + "Active particles: " + scene.getActiveParticles() + "<br><br>"
-            + "Frame duration: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-            + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
-            + "<i>Evaluate Active Meshes duration:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
-            + "<i>Render Targets duration:</i> " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
-            + "<i>Particles duration:</i> " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
-            + "<i>Sprites duration:</i> " + Tools.Format(scene.getSpritesDuration()) + " ms<br>"
-            + "<i>Render duration:</i> <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b>";
+            this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(engine.getFps(), 0) + " fps</b><br><br>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+                + "<b>Count</b><br>"
+                + "Total meshes: " + scene.meshes.length + "<br>"
+                + "Total vertices: " + scene.getTotalVertices() + "<br>"
+                + "Total materials: " + scene.materials.length + "<br>"
+                + "Total textures: " + scene.textures.length + "<br>"
+                + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
+                + "Active indices: " + scene.getActiveIndices() + "<br>"
+                + "Active bones: " + scene.getActiveBones() + "<br>"
+                + "Active particles: " + scene.getActiveParticles() + "<br>"
+                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
+                + "<b>Duration</b><br>"
+                + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
+                + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
+                + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
+                + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
+                + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
+                + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
+                + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+                + "</div>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+                + "<b>Extensions</b><br>"
+                + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
+                + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
+                + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
+                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
+                + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+                + "<b>Caps.</b><br>"
+                + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
+                + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
+                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
+                + "</div><br>"
+                + "<b>Info</b><br>"
+                + glInfo.version + "<br>"
+                + glInfo.renderer + "<br>";
+
+            if (this.customStatsFunction) {
+                this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
+            }
         }
     }
 }

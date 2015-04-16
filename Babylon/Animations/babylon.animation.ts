@@ -5,12 +5,12 @@
         private _highLimitsCache = {};
         private _stopped = false;
         public _target;
-        private _easingFunction: BABYLON.IEasingFunction;
+        private _easingFunction: IEasingFunction;
 
         public targetPropertyPath: string[];
         public currentFrame: number;
 
-        public static CreateAndStartAnimation(name: string, mesh: BABYLON.AbstractMesh, tartgetProperty: string,
+        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, tartgetProperty: string,
             framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number) {
 
@@ -18,18 +18,18 @@
 
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
-            } else if (from instanceof BABYLON.Quaternion) {
+            } else if (from instanceof Quaternion) {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
-            } else if (from instanceof BABYLON.Vector3) {
+            } else if (from instanceof Vector3) {
                 dataType = Animation.ANIMATIONTYPE_VECTOR3;
-            } else if (from instanceof BABYLON.Vector2) {
+            } else if (from instanceof Vector2) {
                 dataType = Animation.ANIMATIONTYPE_VECTOR2;
-            } else if (from instanceof BABYLON.Color3) {
+            } else if (from instanceof Color3) {
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
             }
 
             if (dataType == undefined) {
-                return;
+                return null;
             }
 
             var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
@@ -41,10 +41,9 @@
 
             mesh.animations.push(animation);
 
-            mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode == 1));
+            return mesh.getScene().beginAnimation(mesh, 0, totalFrame,(animation.loopMode === 1));
 
         }
-
 
         constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number) {
             this.targetPropertyPath = targetProperty.split(".");
@@ -65,7 +64,7 @@
             return this._easingFunction;
         }
 
-        public setEasingFunction(easingFunction: BABYLON.EasingFunction) {
+        public setEasingFunction(easingFunction: EasingFunction) {
             this._easingFunction = easingFunction;
         }
 
@@ -74,19 +73,39 @@
         }
 
         public quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion {
-            return BABYLON.Quaternion.Slerp(startValue, endValue, gradient);
+            return Quaternion.Slerp(startValue, endValue, gradient);
         }
 
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
-            return BABYLON.Vector3.Lerp(startValue, endValue, gradient);
+            return Vector3.Lerp(startValue, endValue, gradient);
         }
 
         public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
-            return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
+            return Vector2.Lerp(startValue, endValue, gradient);
         }
 
         public color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3 {
-            return BABYLON.Color3.Lerp(startValue, endValue, gradient);
+            return Color3.Lerp(startValue, endValue, gradient);
+        }
+
+        public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
+            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
+            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
+
+            var result = Matrix.Compose(resultScale, resultRotation, resultTranslation);
+
+            return result;
         }
 
         public clone(): Animation {
@@ -103,6 +122,13 @@
             this._highLimitsCache = {};
         }
 
+        private _getKeyValue(value: any): any {
+            if (typeof value === "function") {
+                return value();
+            }
+
+            return value;
+        }
 
         private _interpolate(currentFrame: number, repeatCount: number, loopMode: number, offsetValue?, highLimitValue?) {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
@@ -111,12 +137,20 @@
 
             this.currentFrame = currentFrame;
 
-            for (var key = 0; key < this._keys.length; key++) {
-                // for each frame, we need the key just before the frame superior
+            // Try to get a hash to find the right key
+            var startKey = Math.max(0, Math.min(this._keys.length - 1, Math.floor(this._keys.length * (currentFrame - this._keys[0].frame) / (this._keys[this._keys.length - 1].frame - this._keys[0].frame)) - 1));
+
+            if (this._keys[startKey].frame >= currentFrame) {
+                while (startKey - 1 >= 0 && this._keys[startKey].frame >= currentFrame) {
+                    startKey--;
+                }
+            }
+
+            for (var key = startKey; key < this._keys.length ; key++) {
                 if (this._keys[key + 1].frame >= currentFrame) {
 
-                    var startValue = this._keys[key].value;
-                    var endValue = this._keys[key + 1].value;
+                    var startValue = this._getKeyValue(this._keys[key].value);
+                    var endValue = this._getKeyValue(this._keys[key + 1].value);
 
                     // gradient : percent of currentFrame between the frame inf and the frame sup
                     var gradient = (currentFrame - this._keys[key].frame) / (this._keys[key + 1].frame - this._keys[key].frame);
@@ -183,6 +217,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                   // return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
@@ -192,7 +227,7 @@
                     break;
                 }
             }
-            return this._keys[this._keys.length - 1].value;
+            return this._getKeyValue(this._keys[this._keys.length - 1].value);
         }
 
 
@@ -204,7 +239,7 @@
             var returnValue = true;
 
             // Adding a start key at frame 0 if missing
-            if (this._keys[0].frame != 0) {
+            if (this._keys[0].frame !== 0) {
                 var newKey = { frame: 0, value: this._keys[0].value };
                 this._keys.splice(0, 0, newKey);
             }
@@ -222,15 +257,15 @@
             var offsetValue;
             // ratio represents the frame delta between from and to
             var ratio = delay * (this.framePerSecond * speedRatio) / 1000.0;
+            var highLimitValue = 0;
 
             if (ratio > range && !loop) { // If we are out of range and not looping get back to caller
                 returnValue = false;
-                highLimitValue = this._keys[this._keys.length - 1].value;
+                highLimitValue = this._getKeyValue(this._keys[this._keys.length - 1].value);
             } else {
                 // Get max value if required
-                var highLimitValue = 0;
 
-                if (this.loopMode != Animation.ANIMATIONLOOPMODE_CYCLE) {
+                if (this.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
 
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {

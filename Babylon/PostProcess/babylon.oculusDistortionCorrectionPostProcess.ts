@@ -24,8 +24,7 @@
             this._postProcessScaleFactor = cameraSettings.PostProcessScaleFactor;
             this._lensCenterOffset = cameraSettings.LensCenterOffset;
 
-
-           this.onSizeChanged = () => {
+            this.onSizeChanged = () => {
                 this.aspectRatio = this.width * .5 / this.height;
                 this._scaleIn = new BABYLON.Vector2(2, 2 / this.aspectRatio);
                 this._scaleFactor = new BABYLON.Vector2(.5 * (1 / this._postProcessScaleFactor), .5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
