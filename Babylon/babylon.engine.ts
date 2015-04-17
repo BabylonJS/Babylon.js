@@ -866,8 +866,8 @@
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || this._renderingCanvas.width;
-            var height = requiredHeight || this._renderingCanvas.height;
+            var width = requiredWidth   || (navigator.isCocoonJS ? window.innerWidth  : this._renderingCanvas.width);
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
             var x = viewport.x || 0;
             var y = viewport.y || 0;
 
@@ -898,7 +898,10 @@
          *   });
          */
         public resize(): void {
-            this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
+            var width  = navigator.isCocoonJS ? window.innerWidth  : this._renderingCanvas.clientWidth;
+            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+            
+            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
         }
 
         /**
