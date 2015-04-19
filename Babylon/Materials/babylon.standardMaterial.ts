@@ -59,7 +59,7 @@
         }
 
         public needAlphaTesting(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && !this.diffuseTexture.getAlphaFromRGB;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         }
 
         private _shouldUseAlphaFromDiffuseTexture(): boolean {

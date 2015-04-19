@@ -52,12 +52,14 @@ var BABYLON;
         Node.prototype._isSynchronized = function () {
             return true;
         };
+        Node.prototype._markSyncedWithParent = function () {
+            this._parentRenderId = this.parent._currentRenderId;
+        };
         Node.prototype.isSynchronizedWithParent = function () {
             if (!this.parent) {
                 return true;
             }
             if (this._parentRenderId !== this.parent._currentRenderId) {
-                this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
             return this.parent.isSynchronized();

@@ -59,6 +59,7 @@ var BABYLON;
                     this._parentedWorldMatrix = BABYLON.Matrix.Identity();
                 }
                 worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);
+                this._markSyncedWithParent();
                 return this._parentedWorldMatrix;
             }
             return worldMatrix;

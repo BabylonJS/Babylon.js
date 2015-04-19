@@ -732,7 +732,7 @@ var BABYLON;
                         var name = parsedAction.properties[i].name;
                         var targetType = parsedAction.properties[i].targetType;
                         if (name === "target")
-                            if (targetType != null && targetType === "SceneProperties")
+                            if (targetType !== null && targetType === "SceneProperties")
                                 value = target = scene;
                             else
                                 value = target = scene.getNodeByName(value);
