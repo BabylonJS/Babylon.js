@@ -410,6 +410,7 @@ var BABYLON;
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
+                this._markSyncedWithParent();
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             }
             else {

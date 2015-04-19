@@ -4235,7 +4235,7 @@ var __extends = this.__extends || function (d, b) {
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.1.0 alpha";
+                return "2.1.0 beta";
             },
             enumerable: true,
             configurable: true
@@ -4406,8 +4406,8 @@ var __extends = this.__extends || function (d, b) {
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
-            var width = requiredWidth || this._renderingCanvas.width;
-            var height = requiredHeight || this._renderingCanvas.height;
+            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.width);
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
             var x = viewport.x || 0;
             var y = viewport.y || 0;
             this._cachedViewport = viewport;
@@ -4431,7 +4431,9 @@ var __extends = this.__extends || function (d, b) {
          *   });
          */
         Engine.prototype.resize = function () {
-            this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
+            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
         };
         /**
          * force a specific size of the canvas
@@ -5608,12 +5610,14 @@ var __extends = this.__extends || function (d, b) {
         Node.prototype._isSynchronized = function () {
             return true;
         };
+        Node.prototype._markSyncedWithParent = function () {
+            this._parentRenderId = this.parent._currentRenderId;
+        };
         Node.prototype.isSynchronizedWithParent = function () {
             if (!this.parent) {
                 return true;
             }
             if (this._parentRenderId !== this.parent._currentRenderId) {
-                this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
             return this.parent.isSynchronized();
@@ -6062,6 +6066,7 @@ var BABYLON;
                     this._parentedWorldMatrix = BABYLON.Matrix.Identity();
                 }
                 worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);
+                this._markSyncedWithParent();
                 return this._parentedWorldMatrix;
             }
             return worldMatrix;
@@ -7021,9 +7026,9 @@ var BABYLON;
             this._update();
         };
         // Synchronized
-        Camera.prototype.isSynchronizedWithParent = function () {
-            return false;
-        };
+        //public isSynchronizedWithParent(): boolean {
+        //    return false;
+        //}
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         };
@@ -7144,6 +7149,7 @@ var BABYLON;
             this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             this._computedViewMatrix.invert();
             this._currentRenderId = this.getScene().getRenderId();
+            this._markSyncedWithParent();
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
@@ -10477,6 +10483,7 @@ var BABYLON;
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
+                this._markSyncedWithParent();
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             }
             else {
@@ -14899,7 +14906,7 @@ var BABYLON;
             return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         };
         StandardMaterial.prototype.needAlphaTesting = function () {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && !this.diffuseTexture.getAlphaFromRGB;
+            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
         };
         StandardMaterial.prototype._shouldUseAlphaFromDiffuseTexture = function () {
             return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
@@ -20422,7 +20429,7 @@ var BABYLON;
                         var name = parsedAction.properties[i].name;
                         var targetType = parsedAction.properties[i].targetType;
                         if (name === "target")
-                            if (targetType != null && targetType === "SceneProperties")
+                            if (targetType !== null && targetType === "SceneProperties")
                                 value = target = scene;
                             else
                                 value = target = scene.getNodeByName(value);

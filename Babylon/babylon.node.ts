@@ -76,13 +76,16 @@
             return true;
         }
 
+        public _markSyncedWithParent() {
+            this._parentRenderId = this.parent._currentRenderId;
+        }
+        
         public isSynchronizedWithParent(): boolean {
             if (!this.parent) {
                 return true;
             }
 
             if (this._parentRenderId !== this.parent._currentRenderId) {
-                this._parentRenderId = this.parent._currentRenderId;
                 return false;
             }
 

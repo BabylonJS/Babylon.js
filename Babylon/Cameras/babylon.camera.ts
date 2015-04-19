@@ -125,10 +125,6 @@
         }
 
         // Synchronized
-        public isSynchronizedWithParent(): boolean {
-            return false;
-        }
-
         public _isSynchronized(): boolean {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         }
@@ -309,6 +305,8 @@
             this._computedViewMatrix.invert();
 
             this._currentRenderId = this.getScene().getRenderId();
+
+            this._markSyncedWithParent();
 
             return this._computedViewMatrix;
         }

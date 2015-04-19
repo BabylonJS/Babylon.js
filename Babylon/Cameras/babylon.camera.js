@@ -120,9 +120,6 @@ var BABYLON;
             this._update();
         };
         // Synchronized
-        Camera.prototype.isSynchronizedWithParent = function () {
-            return false;
-        };
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         };
@@ -243,6 +240,7 @@ var BABYLON;
             this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
             this._computedViewMatrix.invert();
             this._currentRenderId = this.getScene().getRenderId();
+            this._markSyncedWithParent();
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
