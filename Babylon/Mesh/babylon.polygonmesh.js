@@ -137,7 +137,7 @@ var BABYLON;
                 });
             });
             result.setVerticesData(VertexBuffer.PositionKind,positions,  updatable);
-            result.setVerticesData(VertexBuffer.NormalKind,  updatable);
+            result.setVerticesData(VertexBuffer.NormalKind,normals, updatable);
             result.setVerticesData(VertexBuffer.UVKind,uvs, updatable);
             result.setIndices(indices);
             return result;
