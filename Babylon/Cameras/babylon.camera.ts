@@ -284,29 +284,28 @@
         public getViewMatrix(): Matrix {
             this._computedViewMatrix = this._computeViewMatrix();
 
-            if (!this.parent
-                || !this.parent.getWorldMatrix
-                || this.isSynchronized()) {
-
-                this._globalPosition.copyFrom(this.position);
-
+            if (this.isSynchronized()) {
                 return this._computedViewMatrix;
             }
 
-            if (!this._worldMatrix) {
-                this._worldMatrix = Matrix.Identity();
+            if (!this.parent || !this.parent.getWorldMatrix) {
+                this._globalPosition.copyFrom(this.position);
+            } else {
+                if (!this._worldMatrix) {
+                    this._worldMatrix = Matrix.Identity();
+                }
+
+                this._computedViewMatrix.invertToRef(this._worldMatrix);
+
+                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+                this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
+
+                this._computedViewMatrix.invert();
+
+                this._markSyncedWithParent();
             }
 
-            this._computedViewMatrix.invertToRef(this._worldMatrix);
-
-            this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
-            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
-
-            this._computedViewMatrix.invert();
-
             this._currentRenderId = this.getScene().getRenderId();
-
-            this._markSyncedWithParent();
 
             return this._computedViewMatrix;
         }
