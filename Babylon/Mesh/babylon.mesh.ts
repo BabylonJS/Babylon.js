@@ -525,11 +525,11 @@
             }
         }
 
-        public registerAfterRender(func: () => void): void {
+        public registerAfterRender(func: (mesh: AbstractMesh) => void): void {
             this._onAfterRenderCallbacks.push(func);
         }
 
-        public unregisterAfterRender(func: () => void): void {
+        public unregisterAfterRender(func: (mesh: AbstractMesh) => void): void {
             var index = this._onAfterRenderCallbacks.indexOf(func);
 
             if (index > -1) {
