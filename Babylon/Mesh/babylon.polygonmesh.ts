@@ -152,9 +152,9 @@
                 });
             });
 
-            result.setVerticesData(VertexBuffer.PositionKind,positions,  updatable);
-            result.setVerticesData(VertexBuffer.NormalKind,normals  updatable);
-            result.setVerticesData(VertexBuffer.UVKind,uvs, updatable);
+            result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
+            result.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+            result.setVerticesData(VertexBuffer.UVKind, uvs, updatable);
             result.setIndices(indices);
 
             return result;
