@@ -7148,9 +7148,9 @@ var BABYLON;
                 this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
                 this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
                 this._computedViewMatrix.invert();
-                this._currentRenderId = this.getScene().getRenderId();
                 this._markSyncedWithParent();
             }
+            this._currentRenderId = this.getScene().getRenderId();
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
@@ -28736,9 +28736,9 @@ var BABYLON;
                     indices.push(point.index);
                 });
             });
-            result.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
-            result.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
-            result.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs, updatable);
             result.setIndices(indices);
             return result;
         };
