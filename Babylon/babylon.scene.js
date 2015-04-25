@@ -324,6 +324,24 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
             };
+            this._onPointerUp = function (evt) {
+                var predicate = null;
+                if (!_this.onPointerUp) {
+                    predicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
+                    };
+                }
+                _this._updatePointerPosition(evt);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+                if (_this.onPointerUp) {
+                    _this.onPointerUp(evt, pickResult);
+                }
+            };
             this._onKeyDown = function (evt) {
                 if (_this.actionManager) {
                     _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
@@ -337,6 +355,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -346,6 +365,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }

@@ -54,6 +54,7 @@
         private static _OnIntersectionExitTrigger = 9;
         private static _OnKeyDownTrigger = 10;
         private static _OnKeyUpTrigger = 11;
+        private static _OnPickUpTrigger = 12;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -102,6 +103,9 @@
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
         }
+        public static get OnPickUpTrigger(): number {
+            return ActionManager._OnPickUpTrigger;
+        }
         // Members
         public actions = new Array<Action>();
 
@@ -136,6 +140,23 @@
                 var action = this.actions[index];
 
                 if (triggers.indexOf(action.trigger) > -1) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled 
+         */
+        public hasSpecificTrigger(trigger: number): boolean {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+
+                if (action.trigger === trigger) {
                     return true;
                 }
             }
