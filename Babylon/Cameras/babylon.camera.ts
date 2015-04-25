@@ -281,10 +281,10 @@
             return Matrix.Identity();
         }
 
-        public getViewMatrix(): Matrix {
-            this._computedViewMatrix = this._computeViewMatrix();
+        public getViewMatrix(force?: boolean): Matrix {
+            this._computedViewMatrix = this._computeViewMatrix(force);
 
-            if (this.isSynchronized()) {
+            if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
 

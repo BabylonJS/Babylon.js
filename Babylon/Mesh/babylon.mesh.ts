@@ -1216,13 +1216,13 @@
         }
 
         public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-           var disc = new Mesh(name, scene);
-           var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            var disc = new Mesh(name, scene);
+            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
 
-           vertexData.applyToMesh(disc, updatable);
+            vertexData.applyToMesh(disc, updatable);
 
-           return disc;
-       }
+            return disc;
+        }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var box = new Mesh(name, scene);

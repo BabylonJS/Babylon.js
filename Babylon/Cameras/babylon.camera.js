@@ -226,9 +226,9 @@ var BABYLON;
         Camera.prototype._getViewMatrix = function () {
             return BABYLON.Matrix.Identity();
         };
-        Camera.prototype.getViewMatrix = function () {
-            this._computedViewMatrix = this._computeViewMatrix();
-            if (this.isSynchronized()) {
+        Camera.prototype.getViewMatrix = function (force) {
+            this._computedViewMatrix = this._computeViewMatrix(force);
+            if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
             if (!this.parent || !this.parent.getWorldMatrix) {
