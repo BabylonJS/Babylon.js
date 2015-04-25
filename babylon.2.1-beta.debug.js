@@ -8524,6 +8524,24 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
             };
+            this._onPointerUp = function (evt) {
+                var predicate = null;
+                if (!_this.onPointerUp) {
+                    predicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
+                    };
+                }
+                _this._updatePointerPosition(evt);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+                if (_this.onPointerUp) {
+                    _this.onPointerUp(evt, pickResult);
+                }
+            };
             this._onKeyDown = function (evt) {
                 if (_this.actionManager) {
                     _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
@@ -8537,6 +8555,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -8546,6 +8565,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -25053,6 +25073,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
@@ -25077,6 +25104,20 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled
+         */
+        ActionManager.prototype.hasSpecificTrigger = function (trigger) {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+                if (action.trigger === trigger) {
+                    return true;
+                }
+            }
+            return false;
+        };
         Object.defineProperty(ActionManager.prototype, "hasPointerTriggers", {
             /**
              * Does this action manager has pointer triggers
@@ -25086,6 +25127,9 @@ var BABYLON;
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                        return true;
+                    }
+                    if (action.trigger == ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -25175,6 +25219,7 @@ var BABYLON;
         ActionManager._OnIntersectionExitTrigger = 9;
         ActionManager._OnKeyDownTrigger = 10;
         ActionManager._OnKeyUpTrigger = 11;
+        ActionManager._OnPickUpTrigger = 12;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;
