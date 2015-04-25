@@ -194,9 +194,6 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
                     return true;
                 }
-                if (action.trigger == ActionManager._OnPickUpTrigger) {
-                    return true;
-                }
             }
 
             return false;
