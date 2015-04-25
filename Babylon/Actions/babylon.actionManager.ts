@@ -175,6 +175,9 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                     return true;
                 }
+                if (action.trigger == ActionManager._OnPickUpTrigger) {
+                    return true;
+                }
             }
 
             return false;
@@ -189,6 +192,9 @@
                 var action = this.actions[index];
 
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
+                    return true;
+                }
+                if (action.trigger == ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }
