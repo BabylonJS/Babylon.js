@@ -785,6 +785,13 @@ var BABYLON;
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
+            for (var index = 0; index < this.scenes.length; index++) {
+                var scene = this.scenes[index];
+                for (var camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    var cam = scene.cameras[camIndex];
+                    cam._currentRenderId = 0;
+                }
+            }
         };
         Engine.prototype.bindFramebuffer = function (texture) {
             this._currentRenderTarget = texture;

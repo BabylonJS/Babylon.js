@@ -1483,5 +1483,4 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Mesh/babylon.mesh.js.map
+//# sourceMappingURL=babylon.mesh.js.map
