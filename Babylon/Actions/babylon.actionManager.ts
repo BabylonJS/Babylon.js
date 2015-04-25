@@ -54,6 +54,7 @@
         private static _OnIntersectionExitTrigger = 9;
         private static _OnKeyDownTrigger = 10;
         private static _OnKeyUpTrigger = 11;
+        private static _OnPickUpTrigger = 12;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -101,6 +102,9 @@
 
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
+        }
+        public static get OnPickUpTrigger(): number {
+            return ActionManager._OnPickUpTrigger;
         }
         // Members
         public actions = new Array<Action>();
@@ -154,6 +158,9 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                     return true;
                 }
+                if (action.trigger == ActionManager._OnPickUpTrigger) {
+                    return true;
+                }
             }
 
             return false;
@@ -168,6 +175,9 @@
                 var action = this.actions[index];
 
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
+                    return true;
+                }
+                if (action.trigger == ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }
