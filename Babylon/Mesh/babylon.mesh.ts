@@ -72,7 +72,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
 
                 // Material
                 this.material = source.material;
