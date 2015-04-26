@@ -72,7 +72,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
 
                 // Material
                 this.material = source.material;
@@ -525,11 +525,11 @@
             }
         }
 
-        public registerAfterRender(func: () => void): void {
+        public registerAfterRender(func: (mesh: AbstractMesh) => void): void {
             this._onAfterRenderCallbacks.push(func);
         }
 
-        public unregisterAfterRender(func: () => void): void {
+        public unregisterAfterRender(func: (mesh: AbstractMesh) => void): void {
             var index = this._onAfterRenderCallbacks.indexOf(func);
 
             if (index > -1) {
@@ -875,6 +875,7 @@
             }
 
             data = this.getVerticesData(VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -1216,13 +1217,13 @@
         }
 
         public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-           var disc = new Mesh(name, scene);
-           var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            var disc = new Mesh(name, scene);
+            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
 
-           vertexData.applyToMesh(disc, updatable);
+            vertexData.applyToMesh(disc, updatable);
 
-           return disc;
-       }
+            return disc;
+        }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var box = new Mesh(name, scene);

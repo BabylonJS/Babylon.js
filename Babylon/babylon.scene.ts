@@ -63,7 +63,9 @@
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
+        private _onPointerUp: (evt: PointerEvent) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
@@ -465,6 +467,30 @@
                     this.onPointerDown(evt, pickResult);
                 }
             };
+            this._onPointerUp = (evt: PointerEvent) => {
+
+                var predicate = null;
+
+                if (!this.onPointerUp) {
+                    predicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnPickUpTrigger);
+                    };
+                }
+
+                this._updatePointerPosition(evt);
+
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+
+                if (this.onPointerUp) {
+                    this.onPointerUp(evt, pickResult);
+                }
+            };
 
             this._onKeyDown = (evt: Event) => {
                 if (this.actionManager) {
@@ -482,6 +508,7 @@
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -493,6 +520,7 @@
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
 
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
