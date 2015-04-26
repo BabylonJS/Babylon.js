@@ -4444,6 +4444,13 @@ var __extends = this.__extends || function (d, b) {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
+            for (var index = 0; index < this.scenes.length; index++) {
+                var scene = this.scenes[index];
+                for (var camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    var cam = scene.cameras[camIndex];
+                    cam._currentRenderId = 0;
+                }
+            }
         };
         Engine.prototype.bindFramebuffer = function (texture) {
             this._currentRenderTarget = texture;
@@ -7026,9 +7033,6 @@ var BABYLON;
             this._update();
         };
         // Synchronized
-        //public isSynchronizedWithParent(): boolean {
-        //    return false;
-        //}
         Camera.prototype._isSynchronized = function () {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         };
@@ -7135,21 +7139,25 @@ var BABYLON;
         Camera.prototype._getViewMatrix = function () {
             return BABYLON.Matrix.Identity();
         };
-        Camera.prototype.getViewMatrix = function () {
-            this._computedViewMatrix = this._computeViewMatrix();
-            if (!this.parent || !this.parent.getWorldMatrix || this.isSynchronized()) {
-                this._globalPosition.copyFrom(this.position);
+        Camera.prototype.getViewMatrix = function (force) {
+            this._computedViewMatrix = this._computeViewMatrix(force);
+            if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
-            if (!this._worldMatrix) {
-                this._worldMatrix = BABYLON.Matrix.Identity();
+            if (!this.parent || !this.parent.getWorldMatrix) {
+                this._globalPosition.copyFrom(this.position);
             }
-            this._computedViewMatrix.invertToRef(this._worldMatrix);
-            this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
-            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
-            this._computedViewMatrix.invert();
+            else {
+                if (!this._worldMatrix) {
+                    this._worldMatrix = BABYLON.Matrix.Identity();
+                }
+                this._computedViewMatrix.invertToRef(this._worldMatrix);
+                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+                this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
+                this._computedViewMatrix.invert();
+                this._markSyncedWithParent();
+            }
             this._currentRenderId = this.getScene().getRenderId();
-            this._markSyncedWithParent();
             return this._computedViewMatrix;
         };
         Camera.prototype._computeViewMatrix = function (force) {
@@ -8516,6 +8524,24 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
             };
+            this._onPointerUp = function (evt) {
+                var predicate = null;
+                if (!_this.onPointerUp) {
+                    predicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
+                    };
+                }
+                _this._updatePointerPosition(evt);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+                if (_this.onPointerUp) {
+                    _this.onPointerUp(evt, pickResult);
+                }
+            };
             this._onKeyDown = function (evt) {
                 if (_this.actionManager) {
                     _this.actionManager.processTrigger(BABYLON.ActionManager.OnKeyDownTrigger, BABYLON.ActionEvent.CreateNewFromScene(_this, evt));
@@ -8529,6 +8555,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -8538,6 +8565,7 @@ var BABYLON;
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -10910,7 +10938,7 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
                 // Material
                 this.material = source.material;
                 if (!doNotCloneChildren) {
@@ -11595,6 +11623,7 @@ var BABYLON;
                 return;
             }
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -25045,6 +25074,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
@@ -25069,6 +25105,20 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled
+         */
+        ActionManager.prototype.hasSpecificTrigger = function (trigger) {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+                if (action.trigger === trigger) {
+                    return true;
+                }
+            }
+            return false;
+        };
         Object.defineProperty(ActionManager.prototype, "hasPointerTriggers", {
             /**
              * Does this action manager has pointer triggers
@@ -25078,6 +25128,9 @@ var BABYLON;
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                        return true;
+                    }
+                    if (action.trigger == ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -25167,6 +25220,7 @@ var BABYLON;
         ActionManager._OnIntersectionExitTrigger = 9;
         ActionManager._OnKeyDownTrigger = 10;
         ActionManager._OnKeyUpTrigger = 11;
+        ActionManager._OnPickUpTrigger = 12;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;
@@ -28735,9 +28789,9 @@ var BABYLON;
                     indices.push(point.index);
                 });
             });
-            result.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
-            result.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
-            result.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs, updatable);
             result.setIndices(indices);
             return result;
         };
