@@ -10938,7 +10938,7 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
                 // Material
                 this.material = source.material;
                 if (!doNotCloneChildren) {
