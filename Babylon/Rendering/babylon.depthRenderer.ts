@@ -22,6 +22,11 @@
             this._depthMap.refreshRate = 1;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
+            
+            // set default depth value to 1.0 (far away)
+            this._depthMap.onClear = (engine: Engine) => {
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
+            }
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
