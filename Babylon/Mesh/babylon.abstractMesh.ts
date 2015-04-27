@@ -65,6 +65,8 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
+        public alwaysSelectAsActiveMesh = false;
+
         // Physics
         public _physicImpostor = PhysicsEngine.NoImpostor;
         public _physicsMass: number;
@@ -106,6 +108,8 @@
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
         private _onAfterWorldMatrixUpdate = new Array<(mesh: AbstractMesh) => void>();
+
+        private _isWorldMatrixFrozen = false;
 
         // Loading properties
         public _waitingActions: any;
@@ -180,6 +184,16 @@
 
         public get absolutePosition(): Vector3 {
             return this._absolutePosition;
+        }
+
+        public freezeWorldMatrix() {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+        }
+
+        public unfreezeWorldMatrix() {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = false;
         }
 
         public rotate(axis: Vector3, amount: number, space: Space): void {
@@ -393,6 +407,10 @@
         }
 
         public computeWorldMatrix(force?: boolean): Matrix {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
+
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }

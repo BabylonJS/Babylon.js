@@ -9111,7 +9111,7 @@ var BABYLON;
             return (this._activeMeshes.indexOf(mesh) !== -1);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
                 if (mesh.showSubMeshesBoundingBox) {
                     this._boundingBoxRenderer.renderList.push(subMesh.getBoundingInfo().boundingBox);
@@ -9162,7 +9162,7 @@ var BABYLON;
                     continue;
                 }
                 this._totalVertices += mesh.getTotalVertices();
-                if (!mesh.isReady()) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
                 mesh.computeWorldMatrix();
@@ -9176,7 +9176,7 @@ var BABYLON;
                     continue;
                 }
                 mesh._preActivate();
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
@@ -10142,6 +10142,7 @@ var BABYLON;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
             this.layerMask = 0x0FFFFFFF;
+            this.alwaysSelectAsActiveMesh = false;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
@@ -10170,6 +10171,7 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
+            this._isWorldMatrixFrozen = false;
             scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
@@ -10274,6 +10276,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AbstractMesh.prototype.freezeWorldMatrix = function () {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+        };
+        AbstractMesh.prototype.unfreezeWorldMatrix = function () {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = false;
+        };
         AbstractMesh.prototype.rotate = function (axis, amount, space) {
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
@@ -10453,6 +10463,9 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
@@ -29585,6 +29598,10 @@ var BABYLON;
             this._depthMap.refreshRate = 1;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
+            // set default depth value to 1.0 (far away)
+            this._depthMap.onClear = function (engine) {
+                engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
+            };
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
