@@ -3428,7 +3428,7 @@
             var continuedPoints = this._points.slice();
             var curvePoints = curve.getPoints();
             for (var i = 1; i < curvePoints.length; i++) {
-                continuedPoints.push(curvePoints[i].add(lastPoint));
+                continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
             }
             return new Curve3(continuedPoints);
         }
