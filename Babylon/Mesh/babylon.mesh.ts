@@ -227,11 +227,11 @@
             return this._geometry.getTotalVertices();
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind);
+            return this._geometry.getVerticesData(kind, copyWhenShared);
         }
 
         public getVertexBuffer(kind): VertexBuffer {
@@ -271,11 +271,11 @@
             return this._geometry.getTotalIndices();
         }
 
-        public getIndices(): number[] {
+        public getIndices(copyWhenShared?: boolean): number[] {
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices();
+            return this._geometry.getIndices(copyWhenShared);
         }
 
         public get isBlocked(): boolean {
@@ -875,6 +875,7 @@
             }
 
             data = this.getVerticesData(VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -1738,52 +1739,68 @@
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
-        public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean): Mesh {
-            var source = meshes[0];
-            var material = source.material;
-            var scene = source.getScene();
-
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean, meshSubclass?: Mesh): Mesh {
             if (!allow32BitsIndices) {
                 var totalVertices = 0;
 
                 // Counting vertices
                 for (var index = 0; index < meshes.length; index++) {
-                    totalVertices += meshes[index].getTotalVertices();
+                    if (meshes[index]) {
+                        totalVertices += meshes[index].getTotalVertices();
 
-                    if (totalVertices > 65536) {
-                        Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
+                        if (totalVertices > 65536) {
+                            Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                            return null;
+                        }
                     }
                 }
             }
 
             // Merge
-            var vertexData = VertexData.ExtractFromMesh(source);
-            vertexData.transform(source.getWorldMatrix());
+            var vertexData: VertexData;
+            var otherVertexData: VertexData;
 
-            for (index = 1; index < meshes.length; index++) {
-                var otherVertexData = VertexData.ExtractFromMesh(meshes[index]);
-                otherVertexData.transform(meshes[index].getWorldMatrix());
+            var source: Mesh;
+            for (index = 0; index < meshes.length; index++) {
+                if (meshes[index]) {
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData.transform(meshes[index].getWorldMatrix());
 
-                vertexData.merge(otherVertexData);
+                    if (vertexData) {
+                        vertexData.merge(otherVertexData);
+                    } else {
+                        vertexData = otherVertexData;
+                        source = meshes[index];
+                    }
+                }
             }
 
-            var newMesh = new Mesh(source.name + "_merged", scene);
-
-            vertexData.applyToMesh(newMesh);
+            if (!meshSubclass) {
+                meshSubclass = new Mesh(source.name + "_merged", source.getScene());
+            }
+            vertexData.applyToMesh(meshSubclass);
 
             // Setting properties
-            newMesh.material = material;
-            newMesh.checkCollisions = source.checkCollisions;
+            meshSubclass.material = source.material;
+            meshSubclass.checkCollisions = source.checkCollisions;
 
             // Cleaning
             if (disposeSource) {
                 for (index = 0; index < meshes.length; index++) {
-                    meshes[index].dispose();
+                    if (meshes[index]) {
+                        meshes[index].dispose();
+                    }
                 }
             }
 
-            return newMesh;
+            return meshSubclass;
         }
     }
 } 

@@ -1,8 +1,8 @@
 ﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string): number[];
-        getIndices(): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getIndices(copyWhenShared?: boolean): number[];
         setVerticesData(kind: string, data: number[], updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: number[]): void;
@@ -236,46 +236,46 @@
         }
 
         // Statics
-        public static ExtractFromMesh(mesh: Mesh): VertexData {
-            return VertexData._ExtractFrom(mesh);
+        public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData {
+            return VertexData._ExtractFrom(mesh, copyWhenShared);
         }
 
-        public static ExtractFromGeometry(geometry: Geometry): VertexData {
-            return VertexData._ExtractFrom(geometry);
+        public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData {
+            return VertexData._ExtractFrom(geometry, copyWhenShared);
         }
 
-        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData): VertexData {
+        private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean): VertexData {
             var result = new VertexData();
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind);
+                result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind);
+                result.normals = meshOrGeometry.getVerticesData(VertexBuffer.NormalKind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind);
+                result.uvs = meshOrGeometry.getVerticesData(VertexBuffer.UVKind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind);
+                result.uv2s = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind);
+                result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                result.matricesIndices = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesKind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared);
             }
 
-            result.indices = meshOrGeometry.getIndices();
+            result.indices = meshOrGeometry.getIndices(copyWhenShared);
 
             return result;
         }

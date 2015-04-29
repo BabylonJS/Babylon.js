@@ -108,12 +108,23 @@ var BABYLON;
             }
             return this._totalVertices;
         };
-        Geometry.prototype.getVerticesData = function (kind) {
+        Geometry.prototype.getVerticesData = function (kind, copyWhenShared) {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            return vertexBuffer.getData();
+            var orig = vertexBuffer.getData();
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getVertexBuffer = function (kind) {
             if (!this.isReady()) {
@@ -174,11 +185,22 @@ var BABYLON;
             }
             return this._indices.length;
         };
-        Geometry.prototype.getIndices = function () {
+        Geometry.prototype.getIndices = function (copyWhenShared) {
             if (!this.isReady()) {
                 return null;
             }
-            return this._indices;
+            var orig = this._indices;
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getIndexBuffer = function () {
             if (!this.isReady()) {
