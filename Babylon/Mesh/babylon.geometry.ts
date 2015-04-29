@@ -147,12 +147,22 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            return vertexBuffer.getData();
+            var orig = vertexBuffer.getData();
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            } else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         }
 
         public getVertexBuffer(kind: string): VertexBuffer {
@@ -224,11 +234,21 @@
             return this._indices.length;
         }
 
-        public getIndices(): number[] {
+        public getIndices(copyWhenShared?: boolean): number[] {
             if (!this.isReady()) {
                 return null;
             }
-            return this._indices;
+            var orig = this._indices;
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            } else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         }
 
         public getIndexBuffer(): any {

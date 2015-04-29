@@ -3389,13 +3389,12 @@
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
-            var step = 1 / nbPoints;
             var equation = (t: number, val0: number, val1: number, val2: number) => {
                 var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
                 return res;
             }
-            for (var i = 0; i <= 1; i += step) {
-                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            for (var i = 0; i <= nbPoints; i++) {
+                bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x), equation(i / nbPoints, v0.y, v1.y, v2.y), equation(i / nbPoints, v0.z, v1.z, v2.z)));
             }
             return new Curve3(bez);
         }
@@ -3404,13 +3403,12 @@
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
-            var step = 1 / nbPoints;
             var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
                 var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
                 return res;
             }
-            for (var i = 0; i <= 1; i += step) {
-                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            for (var i = 0; i <= nbPoints; i++) {
+                bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x, v3.x), equation(i / nbPoints, v0.y, v1.y, v2.y, v3.y), equation(i / nbPoints, v0.z, v1.z, v2.z, v3.z)));
             }
             return new Curve3(bez);
         }
@@ -3428,7 +3426,7 @@
             var continuedPoints = this._points.slice();
             var curvePoints = curve.getPoints();
             for (var i = 1; i < curvePoints.length; i++) {
-                continuedPoints.push(curvePoints[i].add(lastPoint));
+                continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
             }
             return new Curve3(continuedPoints);
         }
@@ -3519,7 +3517,7 @@
             SIMDHelper._isEnabled = true;
         }
     }
-    
+
     if (window.SIMD !== undefined) {
         SIMDHelper.EnableSIMD();
     }

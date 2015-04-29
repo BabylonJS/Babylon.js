@@ -206,11 +206,11 @@ var BABYLON;
             }
             return this._geometry.getTotalVertices();
         };
-        Mesh.prototype.getVerticesData = function (kind) {
+        Mesh.prototype.getVerticesData = function (kind, copyWhenShared) {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind);
+            return this._geometry.getVerticesData(kind, copyWhenShared);
         };
         Mesh.prototype.getVertexBuffer = function (kind) {
             if (!this._geometry) {
@@ -245,11 +245,11 @@ var BABYLON;
             }
             return this._geometry.getTotalIndices();
         };
-        Mesh.prototype.getIndices = function () {
+        Mesh.prototype.getIndices = function (copyWhenShared) {
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices();
+            return this._geometry.getIndices(copyWhenShared);
         };
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
@@ -732,6 +732,7 @@ var BABYLON;
                 return;
             }
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -1438,41 +1439,60 @@ var BABYLON;
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
-        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices, meshSubclass) {
             if (disposeSource === void 0) { disposeSource = true; }
-            var source = meshes[0];
-            var material = source.material;
-            var scene = source.getScene();
             if (!allow32BitsIndices) {
                 var totalVertices = 0;
                 for (var index = 0; index < meshes.length; index++) {
-                    totalVertices += meshes[index].getTotalVertices();
-                    if (totalVertices > 65536) {
-                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
+                    if (meshes[index]) {
+                        totalVertices += meshes[index].getTotalVertices();
+                        if (totalVertices > 65536) {
+                            BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                            return null;
+                        }
                     }
                 }
             }
             // Merge
-            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
-            vertexData.transform(source.getWorldMatrix());
-            for (index = 1; index < meshes.length; index++) {
-                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
-                otherVertexData.transform(meshes[index].getWorldMatrix());
-                vertexData.merge(otherVertexData);
+            var vertexData;
+            var otherVertexData;
+            var source;
+            for (index = 0; index < meshes.length; index++) {
+                if (meshes[index]) {
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData.transform(meshes[index].getWorldMatrix());
+                    if (vertexData) {
+                        vertexData.merge(otherVertexData);
+                    }
+                    else {
+                        vertexData = otherVertexData;
+                        source = meshes[index];
+                    }
+                }
             }
-            var newMesh = new Mesh(source.name + "_merged", scene);
-            vertexData.applyToMesh(newMesh);
+            if (!meshSubclass) {
+                meshSubclass = new Mesh(source.name + "_merged", source.getScene());
+            }
+            vertexData.applyToMesh(meshSubclass);
             // Setting properties
-            newMesh.material = material;
-            newMesh.checkCollisions = source.checkCollisions;
+            meshSubclass.material = source.material;
+            meshSubclass.checkCollisions = source.checkCollisions;
             // Cleaning
             if (disposeSource) {
                 for (index = 0; index < meshes.length; index++) {
-                    meshes[index].dispose();
+                    if (meshes[index]) {
+                        meshes[index].dispose();
+                    }
                 }
             }
-            return newMesh;
+            return meshSubclass;
         };
         // Consts
         Mesh._FRONTSIDE = 0;

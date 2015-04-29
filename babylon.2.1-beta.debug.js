@@ -2713,13 +2713,12 @@ var __extends = this.__extends || function (d, b) {
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
-            var step = 1 / nbPoints;
             var equation = function (t, val0, val1, val2) {
                 var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
                 return res;
             };
-            for (var i = 0; i <= 1; i += step) {
-                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x), equation(i, v0.y, v1.y, v2.y), equation(i, v0.z, v1.z, v2.z)));
+            for (var i = 0; i <= nbPoints; i++) {
+                bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x), equation(i / nbPoints, v0.y, v1.y, v2.y), equation(i / nbPoints, v0.z, v1.z, v2.z)));
             }
             return new Curve3(bez);
         };
@@ -2727,13 +2726,12 @@ var __extends = this.__extends || function (d, b) {
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
-            var step = 1 / nbPoints;
             var equation = function (t, val0, val1, val2, val3) {
                 var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
                 return res;
             };
-            for (var i = 0; i <= 1; i += step) {
-                bez.push(new Vector3(equation(i, v0.x, v1.x, v2.x, v3.x), equation(i, v0.y, v1.y, v2.y, v3.y), equation(i, v0.z, v1.z, v2.z, v3.z)));
+            for (var i = 0; i <= nbPoints; i++) {
+                bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x, v3.x), equation(i / nbPoints, v0.y, v1.y, v2.y, v3.y), equation(i / nbPoints, v0.z, v1.z, v2.z, v3.z)));
             }
             return new Curve3(bez);
         };
@@ -2745,7 +2743,7 @@ var __extends = this.__extends || function (d, b) {
             var continuedPoints = this._points.slice();
             var curvePoints = curve.getPoints();
             for (var i = 1; i < curvePoints.length; i++) {
-                continuedPoints.push(curvePoints[i].add(lastPoint));
+                continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
             }
             return new Curve3(continuedPoints);
         };
@@ -9111,7 +9109,7 @@ var BABYLON;
             return (this._activeMeshes.indexOf(mesh) !== -1);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
                 if (mesh.showSubMeshesBoundingBox) {
                     this._boundingBoxRenderer.renderList.push(subMesh.getBoundingInfo().boundingBox);
@@ -9162,7 +9160,7 @@ var BABYLON;
                     continue;
                 }
                 this._totalVertices += mesh.getTotalVertices();
-                if (!mesh.isReady()) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
                 mesh.computeWorldMatrix();
@@ -9176,7 +9174,7 @@ var BABYLON;
                     continue;
                 }
                 mesh._preActivate();
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
@@ -10142,6 +10140,7 @@ var BABYLON;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
             this.layerMask = 0x0FFFFFFF;
+            this.alwaysSelectAsActiveMesh = false;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
@@ -10170,6 +10169,7 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
+            this._isWorldMatrixFrozen = false;
             scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
@@ -10274,6 +10274,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AbstractMesh.prototype.freezeWorldMatrix = function () {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+        };
+        AbstractMesh.prototype.unfreezeWorldMatrix = function () {
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = false;
+        };
         AbstractMesh.prototype.rotate = function (axis, amount, space) {
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
@@ -10453,6 +10461,9 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
@@ -11097,11 +11108,11 @@ var BABYLON;
             }
             return this._geometry.getTotalVertices();
         };
-        Mesh.prototype.getVerticesData = function (kind) {
+        Mesh.prototype.getVerticesData = function (kind, copyWhenShared) {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind);
+            return this._geometry.getVerticesData(kind, copyWhenShared);
         };
         Mesh.prototype.getVertexBuffer = function (kind) {
             if (!this._geometry) {
@@ -11136,11 +11147,11 @@ var BABYLON;
             }
             return this._geometry.getTotalIndices();
         };
-        Mesh.prototype.getIndices = function () {
+        Mesh.prototype.getIndices = function (copyWhenShared) {
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices();
+            return this._geometry.getIndices(copyWhenShared);
         };
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
@@ -11623,6 +11634,7 @@ var BABYLON;
                 return;
             }
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -12329,41 +12341,60 @@ var BABYLON;
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
-        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices, meshSubclass) {
             if (disposeSource === void 0) { disposeSource = true; }
-            var source = meshes[0];
-            var material = source.material;
-            var scene = source.getScene();
             if (!allow32BitsIndices) {
                 var totalVertices = 0;
                 for (var index = 0; index < meshes.length; index++) {
-                    totalVertices += meshes[index].getTotalVertices();
-                    if (totalVertices > 65536) {
-                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
+                    if (meshes[index]) {
+                        totalVertices += meshes[index].getTotalVertices();
+                        if (totalVertices > 65536) {
+                            BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                            return null;
+                        }
                     }
                 }
             }
             // Merge
-            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
-            vertexData.transform(source.getWorldMatrix());
-            for (index = 1; index < meshes.length; index++) {
-                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
-                otherVertexData.transform(meshes[index].getWorldMatrix());
-                vertexData.merge(otherVertexData);
+            var vertexData;
+            var otherVertexData;
+            var source;
+            for (index = 0; index < meshes.length; index++) {
+                if (meshes[index]) {
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData.transform(meshes[index].getWorldMatrix());
+                    if (vertexData) {
+                        vertexData.merge(otherVertexData);
+                    }
+                    else {
+                        vertexData = otherVertexData;
+                        source = meshes[index];
+                    }
+                }
             }
-            var newMesh = new Mesh(source.name + "_merged", scene);
-            vertexData.applyToMesh(newMesh);
+            if (!meshSubclass) {
+                meshSubclass = new Mesh(source.name + "_merged", source.getScene());
+            }
+            vertexData.applyToMesh(meshSubclass);
             // Setting properties
-            newMesh.material = material;
-            newMesh.checkCollisions = source.checkCollisions;
+            meshSubclass.material = source.material;
+            meshSubclass.checkCollisions = source.checkCollisions;
             // Cleaning
             if (disposeSource) {
                 for (index = 0; index < meshes.length; index++) {
-                    meshes[index].dispose();
+                    if (meshes[index]) {
+                        meshes[index].dispose();
+                    }
                 }
             }
-            return newMesh;
+            return meshSubclass;
         };
         // Consts
         Mesh._FRONTSIDE = 0;
@@ -22449,36 +22480,36 @@ var BABYLON;
             }
         };
         // Statics
-        VertexData.ExtractFromMesh = function (mesh) {
-            return VertexData._ExtractFrom(mesh);
+        VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
+            return VertexData._ExtractFrom(mesh, copyWhenShared);
         };
-        VertexData.ExtractFromGeometry = function (geometry) {
-            return VertexData._ExtractFrom(geometry);
+        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared) {
+            return VertexData._ExtractFrom(geometry, copyWhenShared);
         };
-        VertexData._ExtractFrom = function (meshOrGeometry) {
+        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared) {
             var result = new VertexData();
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared);
             }
-            result.indices = meshOrGeometry.getIndices();
+            result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
         };
         VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset, sideOrientation) {
@@ -25590,12 +25621,23 @@ var BABYLON;
             }
             return this._totalVertices;
         };
-        Geometry.prototype.getVerticesData = function (kind) {
+        Geometry.prototype.getVerticesData = function (kind, copyWhenShared) {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            return vertexBuffer.getData();
+            var orig = vertexBuffer.getData();
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getVertexBuffer = function (kind) {
             if (!this.isReady()) {
@@ -25656,11 +25698,22 @@ var BABYLON;
             }
             return this._indices.length;
         };
-        Geometry.prototype.getIndices = function () {
+        Geometry.prototype.getIndices = function (copyWhenShared) {
             if (!this.isReady()) {
                 return null;
             }
-            return this._indices;
+            var orig = this._indices;
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getIndexBuffer = function () {
             if (!this.isReady()) {
@@ -29584,6 +29637,10 @@ var BABYLON;
             this._depthMap.refreshRate = 1;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
+            // set default depth value to 1.0 (far away)
+            this._depthMap.onClear = function (engine) {
+                engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
+            };
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();

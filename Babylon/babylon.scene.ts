@@ -1175,7 +1175,7 @@
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -1236,7 +1236,7 @@
 
                 this._totalVertices += mesh.getTotalVertices();
 
-                if (!mesh.isReady()) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
 
@@ -1256,7 +1256,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);

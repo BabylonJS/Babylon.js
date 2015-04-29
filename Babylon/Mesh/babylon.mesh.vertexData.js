@@ -183,36 +183,36 @@ var BABYLON;
             }
         };
         // Statics
-        VertexData.ExtractFromMesh = function (mesh) {
-            return VertexData._ExtractFrom(mesh);
+        VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
+            return VertexData._ExtractFrom(mesh, copyWhenShared);
         };
-        VertexData.ExtractFromGeometry = function (geometry) {
-            return VertexData._ExtractFrom(geometry);
+        VertexData.ExtractFromGeometry = function (geometry, copyWhenShared) {
+            return VertexData._ExtractFrom(geometry, copyWhenShared);
         };
-        VertexData._ExtractFrom = function (meshOrGeometry) {
+        VertexData._ExtractFrom = function (meshOrGeometry, copyWhenShared) {
             var result = new VertexData();
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                result.positions = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.PositionKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                result.normals = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.NormalKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+                result.matricesIndices = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+                result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared);
             }
-            result.indices = meshOrGeometry.getIndices();
+            result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
         };
         VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset, sideOrientation) {
