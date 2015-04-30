@@ -9,6 +9,7 @@ var BABYLON;
     var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
         function AbstractMesh(name, scene) {
+            var _this = this;
             _super.call(this, name, scene);
             // Properties
             this.definedFacingForward = true; // orientation for POV movement & rotation
@@ -71,6 +72,13 @@ var BABYLON;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
             this._isWorldMatrixFrozen = false;
+            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
+                if (collidedMesh === void 0) { collidedMesh = null; }
+                newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
+                if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
+                    _this.position.addInPlace(_this._diffPositionForCollisions);
+                }
+            };
             scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
@@ -602,11 +610,7 @@ var BABYLON;
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
-            if (this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPositionForCollisions);
-            }
+            this.getScene().collisionCoordinator._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
         };
         // Submeshes octree
         /**

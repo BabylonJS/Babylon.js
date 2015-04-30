@@ -714,8 +714,11 @@
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+            this.getScene().collisionCoordinator._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        }
+
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPositionForCollisions);
