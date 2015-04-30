@@ -10,6 +10,7 @@ var BABYLON;
     var ArcRotateCamera = (function (_super) {
         __extends(ArcRotateCamera, _super);
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
+            var _this = this;
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
             this.alpha = alpha;
             this.beta = beta;
@@ -41,6 +42,19 @@ var BABYLON;
             this._previousPosition = BABYLON.Vector3.Zero();
             this._collisionVelocity = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
+                if (collidedMesh === void 0) { collidedMesh = null; }
+                if (!newPosition.equalsWithEpsilon(_this.position)) {
+                    _this.position.copyFrom(_this._previousPosition);
+                    _this.alpha = _this._previousAlpha;
+                    _this.beta = _this._previousBeta;
+                    _this.radius = _this._previousRadius;
+                    if (_this.onCollide && collidedMesh) {
+                        _this.onCollide(collidedMesh);
+                    }
+                }
+                _this._collisionTriggered = false;
+            };
             if (!this.target) {
                 this.target = BABYLON.Vector3.Zero();
             }
@@ -274,6 +288,10 @@ var BABYLON;
             }
         };
         ArcRotateCamera.prototype._update = function () {
+            //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
+            if (this._collisionTriggered) {
+                return;
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
@@ -346,16 +364,8 @@ var BABYLON;
             if (this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
                 this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
-                this.getScene()._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, this._newPosition);
-                if (!this._newPosition.equalsWithEpsilon(this.position)) {
-                    this.position.copyFrom(this._previousPosition);
-                    this.alpha = this._previousAlpha;
-                    this.beta = this._previousBeta;
-                    this.radius = this._previousRadius;
-                    if (this.onCollide) {
-                        this.onCollide(this._collider.collidedMesh);
-                    }
-                }
+                this._collisionTriggered = true;
+                this.getScene().collisionCoordinator._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
             BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
             this._previousAlpha = this.alpha;
