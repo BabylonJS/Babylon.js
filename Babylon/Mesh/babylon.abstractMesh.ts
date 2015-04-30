@@ -187,13 +187,18 @@
         }
 
         public freezeWorldMatrix() {
+            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = true;
         }
 
         public unfreezeWorldMatrix() {
-            this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
+        }
+        
+        public get isWorldMatrixFrozen() :boolean {
+            return this._isWorldMatrixFrozen;
         }
 
         public rotate(axis: Vector3, amount: number, space: Space): void {
