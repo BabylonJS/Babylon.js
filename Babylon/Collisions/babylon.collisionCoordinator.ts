@@ -208,7 +208,7 @@ module BABYLON {
         }
 
         public onGeometryAdded(geometry: Geometry) {
-            //TODO this will break if the user uses his own function. This should be an array on callbacks!
+            //TODO this will break if the user uses his own function. This should be an array of callbacks!
             geometry.onGeometryUpdated = this.onGeometryUpdated;
             this.onGeometryUpdated(geometry);
         }

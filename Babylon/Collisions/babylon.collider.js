@@ -99,6 +99,7 @@ var BABYLON;
         Collider.prototype._testTriangle = function (faceIndex, trianglePlaneArray, p1, p2, p3, hasMaterial) {
             var t0;
             var embeddedInPlane = false;
+            //defensive programming, actually not needed.
             if (!trianglePlaneArray) {
                 trianglePlaneArray = [];
             }

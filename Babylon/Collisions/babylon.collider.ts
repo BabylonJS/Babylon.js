@@ -136,6 +136,7 @@
             var t0;
             var embeddedInPlane = false;
 
+            //defensive programming, actually not needed.
             if (!trianglePlaneArray) {
                 trianglePlaneArray = [];
             }

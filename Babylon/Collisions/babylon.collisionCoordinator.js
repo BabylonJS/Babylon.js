@@ -111,7 +111,7 @@ var BABYLON;
             this._toRemoveMeshesArray.push(mesh.uniqueId);
         };
         CollisionCoordinatorWorker.prototype.onGeometryAdded = function (geometry) {
-            //TODO this will break if the user uses his own function. This should be an array on callbacks!
+            //TODO this will break if the user uses his own function. This should be an array of callbacks!
             geometry.onGeometryUpdated = this.onGeometryUpdated;
             this.onGeometryUpdated(geometry);
         };
