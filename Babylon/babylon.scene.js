@@ -86,7 +86,6 @@ var BABYLON;
             this.lensFlareSystems = new Array();
             // Collisions
             this.collisionsEnabled = true;
-            this.workerCollisions = true;
             this.gravity = new BABYLON.Vector3(0, -9.0, 0);
             // Postprocesses
             this.postProcessesEnabled = true;
@@ -142,8 +141,8 @@ var BABYLON;
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             //simplification queue
             this.simplificationQueue = new BABYLON.SimplificationQueue();
-            //collision coordinator
-            this.collisionCoordinator = new BABYLON.CollisionCoordinator(this);
+            //collision coordinator initialization
+            this.workerCollisions = true;
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
@@ -177,6 +176,21 @@ var BABYLON;
             // Properties 
             get: function () {
                 return this._debugLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "workerCollisions", {
+            get: function () {
+                return this._workerCollisions;
+            },
+            set: function (enabled) {
+                this._workerCollisions = enabled;
+                if (this.collisionCoordinator) {
+                    this.collisionCoordinator.destroy();
+                }
+                this.collisionCoordinator = enabled ? new BABYLON.CollisionCoordinatorWorker() : new BABYLON.CollisionCoordinatorLegacy();
+                this.collisionCoordinator.init(this);
             },
             enumerable: true,
             configurable: true
@@ -552,6 +566,8 @@ var BABYLON;
         Scene.prototype.addMesh = function (newMesh) {
             newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshAdded(newMesh);
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
             }
@@ -562,6 +578,8 @@ var BABYLON;
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshRemoved(toRemove);
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
             }
@@ -764,6 +782,8 @@ var BABYLON;
                 return false;
             }
             this._geometries.push(geometry);
+            //notify the collision coordinator
+            this.collisionCoordinator.onGeometryAdded(geometry);
             if (this.onGeometryAdded) {
                 this.onGeometryAdded(geometry);
             }
@@ -778,6 +798,8 @@ var BABYLON;
             var index = this._geometries.indexOf(geometry);
             if (index > -1) {
                 this._geometries.splice(index, 1);
+                //notify the collision coordinator
+                this.collisionCoordinator.onGeometryDeleted(geometry);
                 if (this.onGeometryRemoved) {
                     this.onGeometryRemoved(geometry);
                 }

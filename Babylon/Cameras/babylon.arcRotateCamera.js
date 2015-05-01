@@ -365,7 +365,7 @@ var BABYLON;
                 this._collider.radius = this.collisionRadius;
                 this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
             BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
             this._previousAlpha = this.alpha;

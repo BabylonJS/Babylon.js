@@ -163,8 +163,8 @@
 
         // Collisions
         public collisionsEnabled = true;
-        public workerCollisions = true;
-        public collisionCoordinator: CollisionCoordinator;
+        private _workerCollisions;
+        public collisionCoordinator: ICollisionCoordinator;
         public gravity = new Vector3(0, -9.0, 0);
 
         // Postprocesses
@@ -291,13 +291,28 @@
 
             //simplification queue
             this.simplificationQueue = new SimplificationQueue();
-            //collision coordinator
-            this.collisionCoordinator = new CollisionCoordinator(this);
+            //collision coordinator initialization
+            this.workerCollisions = true;
         }
 
         // Properties 
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
+        }
+
+        public set workerCollisions(enabled: boolean) {
+            this._workerCollisions = enabled;
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.destroy();
+            }
+
+            this.collisionCoordinator = enabled ? new CollisionCoordinatorWorker() : new CollisionCoordinatorLegacy();
+
+            this.collisionCoordinator.init(this);
+        }
+
+        public get workerCollisions() : boolean {
+            return this._workerCollisions;
         }
 
         /**
@@ -754,6 +769,10 @@
         public addMesh(newMesh: AbstractMesh) {
             newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
+
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshAdded(newMesh);
+
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
             }
@@ -765,6 +784,9 @@
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshRemoved(toRemove);
+
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
             }
@@ -996,6 +1018,10 @@
             }
 
             this._geometries.push(geometry);
+
+            //notify the collision coordinator
+            this.collisionCoordinator.onGeometryAdded(geometry);
+
             if (this.onGeometryAdded) {
                 this.onGeometryAdded(geometry);
             }
@@ -1013,6 +1039,10 @@
 
             if (index > -1) {
                 this._geometries.splice(index, 1);
+
+                //notify the collision coordinator
+                this.collisionCoordinator.onGeometryDeleted(geometry);
+
                 if (this.onGeometryRemoved) {
                     this.onGeometryRemoved(geometry);
                 }

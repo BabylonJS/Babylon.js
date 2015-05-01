@@ -168,7 +168,7 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator._getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, velocity.equals(this.getScene().gravity) ? this.uniqueId + 100000 : this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, velocity.equals(this.getScene().gravity) ? this.uniqueId + 100000 : this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
