@@ -309,7 +309,6 @@ var BABYLON;
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
         engine._activeTexturesCache = [];
-        texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
@@ -1260,6 +1259,7 @@ var BABYLON;
             texture.url = url;
             texture.noMipmap = noMipmap;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
             this._loadedTexturesCache.push(texture);
             var onerror = function () {
                 scene._removePendingData(texture);

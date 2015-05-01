@@ -330,7 +330,6 @@
         gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
-        texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
 
@@ -1515,6 +1514,7 @@
             texture.url = url;
             texture.noMipmap = noMipmap;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
             this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
