@@ -95,11 +95,13 @@ var BABYLON;
         CollisionCoordinatorWorker.prototype.init = function (scene) {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            //TODO init worker
+            var blobURL = URL.createObjectURL(new Blob(['(', BABYLON.CollisionWorker.toString(), ')()'], { type: 'application/javascript' }));
+            this._worker = new Worker(blobURL);
+            URL.revokeObjectURL(blobURL);
         };
         CollisionCoordinatorWorker.prototype.destroy = function () {
             this._scene.unregisterAfterRender(this._afterRender);
-            //TODO destroy worker
+            this._worker.terminate();
         };
         CollisionCoordinatorWorker.prototype.onMeshAdded = function (mesh) {
             mesh.registerAfterWorldMatrixUpdate(this.onMeshUpdated);

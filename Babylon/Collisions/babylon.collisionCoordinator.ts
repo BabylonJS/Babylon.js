@@ -182,13 +182,14 @@ module BABYLON {
         public init(scene: Scene): void {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            //TODO init worker
-
+            var blobURL = URL.createObjectURL(new Blob(['(', BABYLON.CollisionWorker.toString(), ')()'], { type: 'application/javascript' }));
+            this._worker = new Worker(blobURL);
+            URL.revokeObjectURL(blobURL);
         }
 
         public destroy(): void {
             this._scene.unregisterAfterRender(this._afterRender);
-            //TODO destroy worker
+            this._worker.terminate();
         }
 
         public onMeshAdded(mesh: AbstractMesh) {
