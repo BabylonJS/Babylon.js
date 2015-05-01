@@ -250,6 +250,11 @@ module BABYLON {
 
         private _onMessageFromWorker = (e: MessageEvent) => {
             var returnData = <WorkerReply> e.data;
+            if (returnData.error != WorkerReplyType.SUCCESS) {
+                //TODO what errors can be returned from the worker?
+                Tools.Warn("error returned from worker!");
+                return;
+            }
 
             switch (returnData.taskType) {
                 case WorkerTaskType.INIT:

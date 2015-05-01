@@ -52,6 +52,11 @@ var BABYLON;
             };
             this._onMessageFromWorker = function (e) {
                 var returnData = e.data;
+                if (returnData.error != 0 /* SUCCESS */) {
+                    //TODO what errors can be returned from the worker?
+                    BABYLON.Tools.Warn("error returned from worker!");
+                    return;
+                }
                 switch (returnData.taskType) {
                     case 0 /* INIT */:
                         //TODO is init required after worker is done initializing?
