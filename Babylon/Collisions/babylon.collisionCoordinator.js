@@ -127,7 +127,8 @@ var BABYLON;
                         verticesStart: sm.verticesStart,
                         verticesCount: sm.verticesCount,
                         indexStart: sm.indexStart,
-                        indexCount: sm.indexCount
+                        indexCount: sm.indexCount,
+                        hasMaterial: !!sm.getMaterial()
                     };
                 });
             }
