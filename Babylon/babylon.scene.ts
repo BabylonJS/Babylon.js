@@ -291,8 +291,8 @@
 
             //simplification queue
             this.simplificationQueue = new SimplificationQueue();
-            //collision coordinator initialization
-            this.workerCollisions = true;
+            //collision coordinator initialization - if worker not enabled the legacy collision detection will be initialized.
+            this.workerCollisions = !!Worker;
         }
 
         // Properties 
