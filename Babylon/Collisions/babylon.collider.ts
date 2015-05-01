@@ -68,7 +68,7 @@
         public initialPosition: Vector3;
         public nearestDistance: number;
         public intersectionPoint: Vector3;
-        public collidedMesh: AbstractMesh
+        public collidedMesh: AbstractMesh;
 
         private _collisionPoint = BABYLON.Vector3.Zero();
         private _planeIntersectionPoint = BABYLON.Vector3.Zero();
@@ -132,22 +132,22 @@
             return true;
         }
 
-        public _testTriangle(faceIndex: number, subMesh: SubMesh, p1: Vector3, p2: Vector3, p3: Vector3): void {
+        public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void {
             var t0;
             var embeddedInPlane = false;
 
-            if (!subMesh._trianglePlanes) {
-                subMesh._trianglePlanes = [];
+            if (!trianglePlaneArray) {
+                trianglePlaneArray = [];
             }
 
-            if (!subMesh._trianglePlanes[faceIndex]) {
-                subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
-                subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
+            if (!trianglePlaneArray[faceIndex]) {
+                trianglePlaneArray[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
+                trianglePlaneArray[faceIndex].copyFromPoints(p1, p2, p3);
             }
 
-            var trianglePlane = subMesh._trianglePlanes[faceIndex];
+            var trianglePlane = trianglePlaneArray[faceIndex];
 
-            if ((!subMesh.getMaterial()) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
                 return;
 
             var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
@@ -310,18 +310,17 @@
                     }
                     this.nearestDistance = distToCollision;
                     this.collisionFound = true;
-                    this.collidedMesh = subMesh.getMesh();
                 }
             }
         }
 
-        public _collide(subMesh, pts: Vector3[], indices: number[], indexStart: number, indexEnd: number, decal: number): void {
+        public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[], indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
             for (var i = indexStart; i < indexEnd; i += 3) {
                 var p1 = pts[indices[i] - decal];
                 var p2 = pts[indices[i + 1] - decal];
                 var p3 = pts[indices[i + 2] - decal];
 
-                this._testTriangle(i, subMesh, p3, p2, p1);
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial);
             }
         }
 

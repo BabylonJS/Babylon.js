@@ -149,13 +149,10 @@ module BABYLON.CollisionWorker {
             for (var i = start; i < end; i++) {
                 subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
             }
-            subMesh['getMaterial'] = function () {
-                return true;
-            }
         
             //}
             // Collide
-            this.collider._collide(subMesh, subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            this.collider._collide([], subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
         }
 
         //TODO - this! :-)

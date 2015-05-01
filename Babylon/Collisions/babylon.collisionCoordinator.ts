@@ -34,6 +34,7 @@ module BABYLON {
         verticesCount: number;
         indexStart: number;
         indexCount: number;
+        hasMaterial: boolean;
     }
 
     export interface SerializedGeometry {
@@ -128,7 +129,7 @@ module BABYLON {
         }
 
         public static SerializeMesh = function (mesh: BABYLON.AbstractMesh): SerializedMesh {
-            var submeshes = [];
+            var submeshes : Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
                 submeshes = mesh.subMeshes.map(function (sm, idx) {
                     return {
@@ -136,7 +137,8 @@ module BABYLON {
                         verticesStart: sm.verticesStart,
                         verticesCount: sm.verticesCount,
                         indexStart: sm.indexStart,
-                        indexCount: sm.indexCount
+                        indexCount: sm.indexCount,
+                        hasMaterial: !!sm.getMaterial()
                     }
                 });
             }

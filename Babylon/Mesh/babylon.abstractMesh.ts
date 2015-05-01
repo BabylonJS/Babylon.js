@@ -760,7 +760,10 @@
                 }
             }
             // Collide
-            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            if (collider.collisionFound) {
+                collider.collidedMesh = this;
+            }
         }
 
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {
