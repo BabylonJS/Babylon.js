@@ -74,6 +74,9 @@ var BABYLON;
             this._isWorldMatrixFrozen = false;
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
+                //TODO move this to the collision coordinator!
+                if (collisionId != null || collisionId != undefined)
+                    newPosition.multiplyInPlace(_this._collider.radius);
                 newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPositionForCollisions);
@@ -196,7 +199,7 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
-            if (!space || space === BABYLON.Space.LOCAL) {
+            if (!space || space === 0 /* LOCAL */) {
                 var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
@@ -212,7 +215,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
-            if (!space || space === BABYLON.Space.LOCAL) {
+            if (!space || space === 0 /* LOCAL */) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -813,4 +816,5 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.abstractMesh.js.map
+
+//# sourceMappingURL=../Mesh/babylon.abstractMesh.js.map

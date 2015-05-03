@@ -27,7 +27,11 @@ var BABYLON;
             this._newPosition = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
-                newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
+                //TODO move this to the collision coordinator!
+                if (collisionId != null || collisionId != undefined)
+                    newPosition.multiplyInPlace(_this._collider.radius);
+                _this._newPosition.copyFrom(newPosition);
+                _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
                 var oldPosition = _this.position.clone();
                 if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPosition);
@@ -217,4 +221,5 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.freeCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.freeCamera.js.map
