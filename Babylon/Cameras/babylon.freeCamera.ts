@@ -194,7 +194,14 @@
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
-            newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+            //TODO move this to the collision coordinator!
+            if (collisionId != null || collisionId != undefined)
+                newPosition.multiplyInPlace(this._collider.radius);
+
+            this._newPosition.copyFrom(newPosition);
+
+            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+
             var oldPosition = this.position.clone();
             if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPosition);

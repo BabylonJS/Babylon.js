@@ -44,6 +44,8 @@ var BABYLON;
             this._newPosition = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
+                if (collisionId != null || collisionId != undefined)
+                    newPosition.multiplyInPlace(_this._collider.radius);
                 if (!newPosition.equalsWithEpsilon(_this.position)) {
                     _this.position.copyFrom(_this._previousPosition);
                     _this.alpha = _this._previousAlpha;
@@ -402,4 +404,5 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.arcRotateCamera.js.map

@@ -718,6 +718,10 @@
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            //TODO move this to the collision coordinator!
+            if (collisionId != null || collisionId != undefined)
+                newPosition.multiplyInPlace(this._collider.radius);
+
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
