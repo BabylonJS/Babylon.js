@@ -91,13 +91,34 @@ var BABYLON;
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
+            var payload = {
+                collider: {
+                    position: this._scaledPosition.asArray(),
+                    velocity: this._scaledVelocity.asArray(),
+                    radius: collider.radius.asArray()
+                },
+                collisionId: collisionIndex,
+                excludedMeshUniqueId: excludedMesh ? excludedMesh.uniqueId : null,
+                maximumRetry: maximumRetry
+            };
+            var message = {
+                payload: payload,
+                taskType: 2 /* COLLIDE */
+            };
+            //console.time("webworker");
+            this._worker.postMessage(message);
         };
         CollisionCoordinatorWorker.prototype.init = function (scene) {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            var blobURL = URL.createObjectURL(new Blob(['(', BABYLON.CollisionWorker.toString(), ')()'], { type: 'application/javascript' }));
+            var blobURL = URL.createObjectURL(new Blob(['(function(CollisionWorker){', BABYLON.CollisionWorker, '})({})'], { type: 'application/javascript' }));
             this._worker = new Worker(blobURL);
             URL.revokeObjectURL(blobURL);
+            var message = {
+                payload: {},
+                taskType: 0 /* INIT */
+            };
+            this._worker.postMessage(message);
         };
         CollisionCoordinatorWorker.prototype.destroy = function () {
             this._scene.unregisterAfterRender(this._afterRender);

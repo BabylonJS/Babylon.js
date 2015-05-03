@@ -179,14 +179,36 @@ module BABYLON {
 
             this._collisionsCallbackArray[collisionIndex] = onNewPosition;
 
+            var payload: CollidePayload = {
+                collider: {
+                    position: this._scaledPosition.asArray(),
+                    velocity: this._scaledVelocity.asArray(),
+                    radius: collider.radius.asArray()
+                },
+                collisionId: collisionIndex,
+                excludedMeshUniqueId: excludedMesh ? excludedMesh.uniqueId : null,
+                maximumRetry: maximumRetry
+            };
+            var message: BabylonMessage = {
+                payload: payload,
+                taskType: WorkerTaskType.COLLIDE
+            }
+            //console.time("webworker");
+            this._worker.postMessage(message);
+
         }
 
         public init(scene: Scene): void {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            var blobURL = URL.createObjectURL(new Blob(['(', BABYLON.CollisionWorker.toString(), ')()'], { type: 'application/javascript' }));
+            var blobURL = URL.createObjectURL(new Blob(['(function(CollisionWorker){', BABYLON.CollisionWorker, '})({})'], { type: 'application/javascript' }));
             this._worker = new Worker(blobURL);
             URL.revokeObjectURL(blobURL);
+            var message: BabylonMessage = {
+                payload: {},
+                taskType: WorkerTaskType.INIT
+            }
+            this._worker.postMessage(message);
         }
 
         public destroy(): void {
