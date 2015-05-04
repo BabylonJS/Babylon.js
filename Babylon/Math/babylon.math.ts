@@ -3282,7 +3282,7 @@
         private _binormals = new Array<Vector3>();
 
         constructor(public path: Vector3[]) {
-            this._curve = path.slice();   // copy array  
+            this._copyPath(path);
             this._compute();
         }
 
@@ -3307,11 +3307,15 @@
         }
 
         public update(path: Vector3[]): Path3D {
-            for (var i = 0; i < path.length; i++) {
-                this._curve[i] = path[i];
-            }
+            this._copyPath(path);
             this._compute();
             return this;
+        }
+
+        private _copyPath(path: Vector3[]) {
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p] = path[p].clone(); // hard copy
+            }            
         }
 
         // private function compute() : computes tangents, normals and binormals
@@ -3319,7 +3323,7 @@
             var l = this._curve.length;
 
             // first and last tangents
-            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0] = this._getFirstNonNullVector(0);
             this._tangents[0].normalize();
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
@@ -3330,7 +3334,7 @@
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._normals[0].normalize();
+            this._binormals[0].normalize();
             this._distances[0] = 0;
 
             // normals and binormals : next points
@@ -3342,9 +3346,9 @@
 
             for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i - 1]);
+                prev = this._getLastNonNullVector(i);
                 if (i < l - 1) {
-                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    cur = this._getFirstNonNullVector(i);
                     this._tangents[i] = prev.add(cur);
                     this._tangents[i].normalize();
                 }
@@ -3360,6 +3364,30 @@
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
                 this._binormals[i].normalize();
             }
+        }
+
+        // private function getFirstNonNullVector(index)
+        // returns the first non null vector from index : curve[index + N].subtract(curve[index])
+        private _getFirstNonNullVector(index: number): Vector3 {
+            var i = 1;
+            var nNVector: Vector3 = this._curve[index + i].subtract(this._curve[index]);
+            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+                i++;
+                nNVector = this._curve[index + i].subtract(this._curve[index]);
+            }
+            return nNVector;
+        }
+
+        // private function getLastNonNullVector(index)
+        // returns the last non null vector from index : curve[index].subtract(curve[index - N])
+        private _getLastNonNullVector(index: number): Vector3 {
+            var i = 1;
+            var nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
+            while (nLVector.length() == 0 && index > i + 1) {
+                i++;
+                nLVector = this._curve[index].subtract(this._curve[index - i]);
+            }
+            return nLVector;
         }
 
         // private function normalVector(v0, vt) :
