@@ -187,13 +187,21 @@ var BABYLON;
             configurable: true
         });
         AbstractMesh.prototype.freezeWorldMatrix = function () {
+            this._isWorldMatrixFrozen = false; // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = true;
         };
         AbstractMesh.prototype.unfreezeWorldMatrix = function () {
-            this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
         };
+        Object.defineProperty(AbstractMesh.prototype, "isWorldMatrixFrozen", {
+            get: function () {
+                return this._isWorldMatrixFrozen;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.rotate = function (axis, amount, space) {
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);

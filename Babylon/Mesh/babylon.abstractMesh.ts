@@ -159,7 +159,7 @@
         public get useBones(): boolean {
             return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
         }
-        
+
         public _preActivate(): void {
         }
 
@@ -187,13 +187,18 @@
         }
 
         public freezeWorldMatrix() {
+            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = true;
         }
 
         public unfreezeWorldMatrix() {
-            this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
+        }
+
+        public get isWorldMatrixFrozen(): boolean {
+            return this._isWorldMatrixFrozen;
         }
 
         public rotate(axis: Vector3, amount: number, space: Space): void {
@@ -280,7 +285,7 @@
          * @param {number} amountUp
          * @param {number} amountForward
          */
-        public movePOV(amountRight : number, amountUp : number, amountForward : number) : void {
+        public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
         }
         
@@ -292,11 +297,11 @@
          * @param {number} amountUp
          * @param {number} amountForward
          */
-        public calcMovePOV(amountRight : number, amountUp : number, amountForward : number) : Vector3 {
+        public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
             var rotMatrix = new Matrix();
             var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
             rotQuaternion.toRotationMatrix(rotMatrix);
-            
+
             var translationDelta = Vector3.Zero();
             var defForwardMult = this.definedFacingForward ? -1 : 1;
             Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
@@ -310,7 +315,7 @@
          * @param {number} twirlClockwise
          * @param {number} tiltRight
          */
-        public rotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : void {
+        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
         }
         
@@ -321,11 +326,11 @@
          * @param {number} twirlClockwise
          * @param {number} tiltRight
          */
-        public calcRotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : Vector3 {
+        public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
             return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         }
-        
+
         public setPivotMatrix(matrix: Matrix): void {
             this._pivotMatrix = matrix;
             this._cache.pivotMatrixUpdated = true;
