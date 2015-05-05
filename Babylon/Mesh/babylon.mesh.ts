@@ -1314,22 +1314,22 @@
         }
 
         // Extrusion
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation, extrudedInstance);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         }
 
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation, extrudedInstance);
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         }
 
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
             
             // extrusion geometry
-            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
@@ -1356,13 +1356,43 @@
                     angle += angleStep;
                     index++;
                 }
+                // cap
+                var capPath = function(shapePath) {
+                    var pointCap = Array<Vector3>();
+                    var barycenter = Vector3.Zero();
+                    var i: number;
+                    for (i = 0; i < shapePath.length; i++) {
+                        barycenter.addInPlace(shapePath[i]);
+                    }
+                    barycenter.scaleInPlace(1 / shapePath.length);
+                    for (i = 0; i < shapePath.length; i++) {
+                        pointCap.push(barycenter);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case 0:
+                        break;
+                    case 1:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case 2:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case 3:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
+                }
                 return shapePaths;
             };
 
             if (instance) { // instance update
                 
                 var path3D = ((<any>instance).path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
                 return instance;
@@ -1371,11 +1401,13 @@
 
             var path3D = <any>new Path3D(curve);
             var newShapePaths = new Array<Array<Vector3>>();
-            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
 
             var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
             (<any>extrudedGeneric).pathArray = pathArray;
             (<any>extrudedGeneric).path3D = path3D;
+            (<any>extrudedGeneric).cap = cap;
 
             return extrudedGeneric;
         }
