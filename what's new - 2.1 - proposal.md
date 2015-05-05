@@ -1,6 +1,5 @@
 ﻿- 2.1.0:
  - **Major updates**
- - SIMD.js support for math library. See [demo](http://www.babylonjs.com/simd.html) ([deltakosh](http://www.github.com/deltakosh))
  - Unity 5  scene exporter. More info [here](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) ([davrous](http://www.github.com/davrous), [deltakosh](http://www.github.com/deltakosh))
  - New ```Mesh.CreateDecal()``` function to create decals. See [demo](http://www.babylonjs.com/?DECALS). More info [here](http://doc.babylonjs.com/page.php?p=25094) ([deltakosh](http://www.github.com/deltakosh))
  - New tool for debugLayer: You can now dump renderTargets to see their content ([deltakosh](http://www.github.com/deltakosh))
@@ -11,6 +10,7 @@
  - New ```BABYLON.Mesh.ExtrudeShape``` and ```BABYLON.Mesh.ExtrudeShapeCustom```. More info [here](http://doc.babylonjs.com/page.php?p=24847) ([jbousquie](https://github.com/jbousquie))
  - **Updates**
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
+ - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))
  - Added mesh.freezeWorldMatrix() for static meshes ([deltakosh](http://www.github.com/deltakosh))
  - Added mesh.alwaysSelectAsActiveMesh to disable frustum clipping for a specific mesh ([deltakosh](http://www.github.com/deltakosh))
  - Added updateMeshPositions method ([jbousquie](https://github.com/jbousquie))
@@ -28,7 +28,8 @@
  - Mesh Default layerMask changed to allow more "special cameras filtering" ([Palmer-JC](http://www.github.com/Palmer-JC))
  - Sprite can now have .width and .height properties ([deltakosh](http://www.github.com/deltakosh))
  - Ability to register events based on mesh/camera/light addition and deletion ([raananw](http://www.github.com/raananw))
- - New ```Curve``` object ([jbousquie](https://github.com/jbousquie))
+ - New ```Curve``` object ([jbousquie](https://github.com/jbousquie)) More info [here](http://doc.babylonjs.com/page.php?p=25091)
+ - New ```Path3D``` object ([jbousquie](https://github.com/jbousquie)) More info [here](http://doc.babylonjs.com/page.php?p=25090)
  - New 'color correction' post process ([jahow](http://www.github.com/jahow))
  - Added sampling mode as a parameter for SpriteManager ([jahow](http://www.github.com/jahow))
  - RenderTexture can now be saved to a file ([deltakosh](http://www.github.com/deltakosh))
