@@ -11,6 +11,10 @@
         public static _BACKSIDE: number = 1;
         public static _DOUBLESIDE: number = 2;
         public static _DEFAULTSIDE: number = 0;
+        public static _NO_CAP = 0;
+        public static _CAP_START = 1;
+        public static _CAP_END = 2;
+        public static _CAP_ALL = 3;
 
         public static get FRONTSIDE(): number {
             return Mesh._FRONTSIDE;
@@ -26,6 +30,18 @@
 
         public static get DEFAULTSIDE(): number {
             return Mesh._DEFAULTSIDE;
+        }
+        public static get NO_CAP(): number {
+            return Mesh._NO_CAP;
+        }
+        public static get CAP_START(): number {
+            return Mesh._CAP_START;
+        }
+        public static get CAP_END(): number {
+            return Mesh._CAP_END;
+        }
+        public static get CAP_ALL(): number {
+            return Mesh._CAP_ALL;
         }
 
         // Members
@@ -1371,15 +1387,15 @@
                     return pointCap;
                 };
                 switch (cap) {
-                    case 0:
+                    case BABYLON.Mesh.NO_CAP:
                         break;
-                    case 1:
+                    case BABYLON.Mesh.CAP_START:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         break;
-                    case 2:
+                    case BABYLON.Mesh.CAP_END:
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
-                    case 3:
+                    case BABYLON.Mesh.CAP_ALL:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
@@ -1523,15 +1539,15 @@
                     return pointCap;
                 };
                 switch (cap) {
-                    case 0:
+                    case BABYLON.Mesh.NO_CAP:
                         break;
-                    case 1:
+                    case BABYLON.Mesh.CAP_START:
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         break;
-                    case 2:
+                    case BABYLON.Mesh.CAP_END:
                          circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;
-                    case 3:
+                    case BABYLON.Mesh.CAP_ALL:
                          circlePaths.unshift(capPath(tessellation + 1, 0));
                          circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break; 
