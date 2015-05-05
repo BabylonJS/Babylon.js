@@ -3284,7 +3284,7 @@
         constructor(public path: Vector3[], firstNormal?: Vector3) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
-            }  
+            }
             this._compute(firstNormal);
         }
 
@@ -3313,7 +3313,7 @@
                 this._curve[p].x = path[p].x;
                 this._curve[p].y = path[p].y;
                 this._curve[p].z = path[p].z;
-            }  
+            }
             this._compute(firstNormal);
             return this;
         }
@@ -3413,7 +3413,7 @@
                 Vector3.CrossToRef(normal0, vt, normal0);
                 //normal0 = Vector3.Cross(normal0, vt);
             }
-            normal0.normalize();       
+            normal0.normalize();
             return normal0;
         }
     }

@@ -1373,7 +1373,7 @@
                     index++;
                 }
                 // cap
-                var capPath = function(shapePath) {
+                var capPath = function (shapePath) {
                     var pointCap = Array<Vector3>();
                     var barycenter = Vector3.Zero();
                     var i: number;
@@ -1408,7 +1408,7 @@
             if (instance) { // instance update
                 
                 var path3D = ((<any>instance).path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
+                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction,(<any>instance).cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
                 return instance;
@@ -1531,10 +1531,10 @@
                     index++;
                 }
                 // cap
-                var capPath = function(nbPoints, pathIndex) {
+                var capPath = function (nbPoints, pathIndex) {
                     var pointCap = Array<Vector3>();
-                    for(var i = 0; i < nbPoints; i++) {
-                        pointCap.push(path[pathIndex]); 
+                    for (var i = 0; i < nbPoints; i++) {
+                        pointCap.push(path[pathIndex]);
                     }
                     return pointCap;
                 };
@@ -1545,21 +1545,21 @@
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         break;
                     case BABYLON.Mesh.CAP_END:
-                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;
                     case BABYLON.Mesh.CAP_ALL:
-                         circlePaths.unshift(capPath(tessellation + 1, 0));
-                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
-                        break; 
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
                     default:
-                        break;                   
+                        break;
                 }
                 return circlePaths;
             };
 
             if (tubeInstance) { // tube update
                 var path3D = ((<any>tubeInstance).path3D).update(path);
-                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
+                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction,(<any>tubeInstance).cap);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
                 return tubeInstance;
