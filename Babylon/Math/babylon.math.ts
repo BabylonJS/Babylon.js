@@ -3281,9 +3281,11 @@
         private _normals = new Array<Vector3>();
         private _binormals = new Array<Vector3>();
 
-        constructor(public path: Vector3[]) {
-            this._curve = path.slice();   // copy array  
-            this._compute();
+        constructor(public path: Vector3[], firstNormal?: Vector3) {
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p] = path[p].clone(); // hard copy
+            }  
+            this._compute(firstNormal);
         }
 
         public getCurve(): Vector3[] {
@@ -3306,31 +3308,33 @@
             return this._distances;
         }
 
-        public update(path: Vector3[]): Path3D {
-            for (var i = 0; i < path.length; i++) {
-                this._curve[i] = path[i];
-            }
-            this._compute();
+        public update(path: Vector3[], firstNormal?: Vector3): Path3D {
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p].x = path[p].x;
+                this._curve[p].y = path[p].y;
+                this._curve[p].z = path[p].z;
+            }  
+            this._compute(firstNormal);
             return this;
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute() {
+        private _compute(firstNormal) {
             var l = this._curve.length;
 
             // first and last tangents
-            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0] = this._getFirstNonNullVector(0);
             this._tangents[0].normalize();
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
             
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
-            var pp0 = this._normalVector(this._curve[0], tg0);
+            var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._normals[0].normalize();
+            this._binormals[0].normalize();
             this._distances[0] = 0;
 
             // normals and binormals : next points
@@ -3342,9 +3346,9 @@
 
             for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i - 1]);
+                prev = this._getLastNonNullVector(i);
                 if (i < l - 1) {
-                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    cur = this._getFirstNonNullVector(i);
                     this._tangents[i] = prev.add(cur);
                     this._tangents[i].normalize();
                 }
@@ -3362,22 +3366,54 @@
             }
         }
 
-        // private function normalVector(v0, vt) :
-        // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
-        private _normalVector(v0: Vector3, vt: Vector3): Vector3 {
-            var point: Vector3;
+        // private function getFirstNonNullVector(index)
+        // returns the first non null vector from index : curve[index + N].subtract(curve[index])
+        private _getFirstNonNullVector(index: number): Vector3 {
+            var i = 1;
+            var nNVector: Vector3 = this._curve[index + i].subtract(this._curve[index]);
+            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+                i++;
+                nNVector = this._curve[index + i].subtract(this._curve[index]);
+            }
+            return nNVector;
+        }
 
-            if (vt.x !== 1) {     // search for a point in the plane
-                point = new Vector3(1, 0, 0);
+        // private function getLastNonNullVector(index)
+        // returns the last non null vector from index : curve[index].subtract(curve[index - N])
+        private _getLastNonNullVector(index: number): Vector3 {
+            var i = 1;
+            var nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
+            while (nLVector.length() == 0 && index > i + 1) {
+                i++;
+                nLVector = this._curve[index].subtract(this._curve[index - i]);
             }
-            else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);
+            return nLVector;
+        }
+
+        // private function normalVector(v0, vt, va) :
+        // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
+        // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
+        private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
+            var normal0: Vector3;
+            if (va === undefined || va === null) {
+                var point: Vector3;
+                if (vt.x !== 1) {     // search for a point in the plane
+                    point = new Vector3(1, 0, 0);
+                }
+                else if (vt.y !== 1) {
+                    point = new Vector3(0, 1, 0);
+                }
+                else if (vt.z !== 1) {
+                    point = new Vector3(0, 0, 1);
+                }
+                normal0 = Vector3.Cross(vt, point);
             }
-            else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);
+            else {
+                normal0 = Vector3.Cross(vt, va);
+                Vector3.CrossToRef(normal0, vt, normal0);
+                //normal0 = Vector3.Cross(normal0, vt);
             }
-            var normal0: Vector3 = Vector3.Cross(vt, point);
-            normal0.normalize();
+            normal0.normalize();       
             return normal0;
         }
     }
