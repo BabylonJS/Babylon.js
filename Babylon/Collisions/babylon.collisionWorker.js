@@ -35,7 +35,7 @@ var BABYLON;
             this.collisionTranformationMatrix = BABYLON.Matrix.Zero();
         }
         CollideWorker.prototype.collideWithWorld = function (position, velocity, maximumRetry, excludedMeshUniqueId) {
-            //TODO might be a redundant calculation!
+            //TODO CollisionsEpsilon should be defined here and not in the engine.
             var closeDistance = 0.01;
             //is initializing here correct? A quick look - looks like it is fine.
             if (this.collider.retry >= maximumRetry) {
@@ -60,7 +60,6 @@ var BABYLON;
                 this.collider._getResponse(position, velocity);
             }
             if (velocity.length() <= closeDistance) {
-                //console.log("webworker collision with " + this.collider.collidedMesh);
                 this.finalPosition.copyFrom(position);
                 return;
             }
@@ -134,7 +133,7 @@ var BABYLON;
         };
         //TODO - this! :-)
         CollideWorker.prototype.checkSubmeshCollision = function (subMesh) {
-            return true;
+            return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         };
         return CollideWorker;
     })();
@@ -145,8 +144,8 @@ var BABYLON;
         CollisionDetectorTransferable.prototype.onInit = function (payload) {
             this._collisionCache = new CollisionCache();
             var reply = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.INIT
+                error: 0 /* SUCCESS */,
+                taskType: 0 /* INIT */
             };
             postMessage(reply, undefined);
         };
@@ -162,10 +161,9 @@ var BABYLON;
                 }
             }
             var replay = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.UPDATE
+                error: 0 /* SUCCESS */,
+                taskType: 1 /* UPDATE */
             };
-            console.log("updated");
             postMessage(replay, undefined);
         };
         CollisionDetectorTransferable.prototype.onCollision = function (payload) {
@@ -181,8 +179,8 @@ var BABYLON;
                 newPosition: finalPosition.asArray()
             };
             var reply = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.COLLIDE,
+                error: 0 /* SUCCESS */,
+                taskType: 2 /* COLLIDE */,
                 payload: replyPayload
             };
             postMessage(reply, undefined);
@@ -191,19 +189,20 @@ var BABYLON;
     })();
     BABYLON.CollisionDetectorTransferable = CollisionDetectorTransferable;
     //check if we are in a web worker, as this code should NOT run on the main UI thread
-    if (self && !self.document) {
-        var window = {};
+    if (self && self instanceof WorkerGlobalScope) {
+        //Window hack to allow including babylonjs native code. the <any> is for typescript.
+        window = {};
         var collisionDetector = new CollisionDetectorTransferable();
         var onNewMessage = function (event) {
             var message = event.data;
             switch (message.taskType) {
-                case BABYLON.WorkerTaskType.INIT:
+                case 0 /* INIT */:
                     collisionDetector.onInit(message.payload);
                     break;
-                case BABYLON.WorkerTaskType.COLLIDE:
+                case 2 /* COLLIDE */:
                     collisionDetector.onCollision(message.payload);
                     break;
-                case BABYLON.WorkerTaskType.UPDATE:
+                case 1 /* UPDATE */:
                     collisionDetector.onUpdate(message.payload);
                     break;
             }

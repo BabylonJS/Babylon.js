@@ -40,7 +40,7 @@ module BABYLON {
 
         public collideWithWorld(position: BABYLON.Vector3, velocity: BABYLON.Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
 
-            //TODO might be a redundant calculation!
+            //TODO CollisionsEpsilon should be defined here and not in the engine.
             var closeDistance = /*BABYLON.Engine.CollisionsEpsilon * 10.0*/ 0.01;
             //is initializing here correct? A quick look - looks like it is fine.
             
@@ -50,7 +50,6 @@ module BABYLON {
             }
 
             this.collider._initialize(position, velocity, closeDistance);
-        
 
             // Check all meshes
             var meshes = this._collisionCache.getMeshes();
@@ -72,7 +71,6 @@ module BABYLON {
             }
 
             if (velocity.length() <= closeDistance) {
-                //console.log("webworker collision with " + this.collider.collidedMesh);
                 this.finalPosition.copyFrom(position);
                 return;
             }
@@ -160,8 +158,8 @@ module BABYLON {
         }
 
         //TODO - this! :-)
-        private checkSubmeshCollision(subMesh: SerializedSubMesh) {
-            return true;
+        private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {
+            return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         }
 
 
@@ -201,7 +199,6 @@ module BABYLON {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.UPDATE
             }
-            console.log("updated");
             postMessage(replay, undefined);
         }
 
@@ -227,10 +224,14 @@ module BABYLON {
         }
     }
 
-    //check if we are in a web worker, as this code should NOT run on the main UI thread
-    if (self && !self.document) {
+    //TypeScript doesn't know WorkerGlobalScope
+    declare class WorkerGlobalScope { }
 
-        var window = {};
+    //check if we are in a web worker, as this code should NOT run on the main UI thread
+    if (self && self instanceof WorkerGlobalScope) {
+
+        //Window hack to allow including babylonjs native code. the <any> is for typescript.
+        window = <any> {};
 
         var collisionDetector: ICollisionDetector = new CollisionDetectorTransferable();
 
