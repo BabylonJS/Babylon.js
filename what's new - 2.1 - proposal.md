@@ -35,7 +35,7 @@
  - Source conform to typescript 1.4 ([raananw](http://www.github.com/raananw)) 
  - Adding subMeshId property in PickingInfo structure ([deltakosh](http://www.github.com/deltakosh))
  - No more error when a manifest is not found ([deltakosh](http://www.github.com/deltakosh))
- - ** Bug fixes **
+ - **Bug fixes**
  - Initial quaternion fix for OIMO plugin ([raananw](http://www.github.com/raananw)) 
  - ArcRotateCamera pinch zoom debug ([vousk](https://github.com/vousk)) 
  - Fixing animatable bug when animation is over ([temechon](http://www.github.com/temechon))
