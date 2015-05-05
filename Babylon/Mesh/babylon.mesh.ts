@@ -11,6 +11,10 @@
         public static _BACKSIDE: number = 1;
         public static _DOUBLESIDE: number = 2;
         public static _DEFAULTSIDE: number = 0;
+        public static _NO_CAP = 0;
+        public static _CAP_START = 1;
+        public static _CAP_END = 2;
+        public static _CAP_ALL = 3;
 
         public static get FRONTSIDE(): number {
             return Mesh._FRONTSIDE;
@@ -26,6 +30,18 @@
 
         public static get DEFAULTSIDE(): number {
             return Mesh._DEFAULTSIDE;
+        }
+        public static get NO_CAP(): number {
+            return Mesh._NO_CAP;
+        }
+        public static get CAP_START(): number {
+            return Mesh._CAP_START;
+        }
+        public static get CAP_END(): number {
+            return Mesh._CAP_END;
+        }
+        public static get CAP_ALL(): number {
+            return Mesh._CAP_ALL;
         }
 
         // Members
@@ -1314,22 +1330,22 @@
         }
 
         // Extrusion
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation, extrudedInstance);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         }
 
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation, extrudedInstance);
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         }
 
-        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
+        private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
             
             // extrusion geometry
-            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
@@ -1356,13 +1372,43 @@
                     angle += angleStep;
                     index++;
                 }
+                // cap
+                var capPath = function(shapePath) {
+                    var pointCap = Array<Vector3>();
+                    var barycenter = Vector3.Zero();
+                    var i: number;
+                    for (i = 0; i < shapePath.length; i++) {
+                        barycenter.addInPlace(shapePath[i]);
+                    }
+                    barycenter.scaleInPlace(1 / shapePath.length);
+                    for (i = 0; i < shapePath.length; i++) {
+                        pointCap.push(barycenter);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case BABYLON.Mesh.NO_CAP:
+                        break;
+                    case BABYLON.Mesh.CAP_START:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case BABYLON.Mesh.CAP_END:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case BABYLON.Mesh.CAP_ALL:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
+                }
                 return shapePaths;
             };
 
             if (instance) { // instance update
                 
                 var path3D = ((<any>instance).path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
                 return instance;
@@ -1371,11 +1417,13 @@
 
             var path3D = <any>new Path3D(curve);
             var newShapePaths = new Array<Array<Vector3>>();
-            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
 
             var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
             (<any>extrudedGeneric).pathArray = pathArray;
             (<any>extrudedGeneric).path3D = path3D;
+            (<any>extrudedGeneric).cap = cap;
 
             return extrudedGeneric;
         }
@@ -1451,10 +1499,10 @@
             return ground;
         }
 
-        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
+        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
             
             // tube geometry
-            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -1473,20 +1521,45 @@
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
                     normal = normals[i];                        // current normal  
-                    for (var ang = 0; ang < pi2; ang += step) {
-                        rotationMatrix = Matrix.RotationAxis(tangents[i], ang);
+                    for (var t = 0; t < tessellation; t++) {
+                        rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
+                    circlePath.push(circlePath[0]);
                     circlePaths[index] = circlePath;
                     index++;
+                }
+                // cap
+                var capPath = function(nbPoints, pathIndex) {
+                    var pointCap = Array<Vector3>();
+                    for(var i = 0; i < nbPoints; i++) {
+                        pointCap.push(path[pathIndex]); 
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case BABYLON.Mesh.NO_CAP:
+                        break;
+                    case BABYLON.Mesh.CAP_START:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case BABYLON.Mesh.CAP_END:
+                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case BABYLON.Mesh.CAP_ALL:
+                         circlePaths.unshift(capPath(tessellation + 1, 0));
+                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break; 
+                    default:
+                        break;                   
                 }
                 return circlePaths;
             };
 
             if (tubeInstance) { // tube update
                 var path3D = ((<any>tubeInstance).path3D).update(path);
-                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction);
+                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
                 return tubeInstance;
@@ -1496,11 +1569,13 @@
 
             var path3D = <any>new Path3D(path);
             var newPathArray = new Array<Array<Vector3>>();
-            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
             var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
+            (<any>tube).cap = cap;
 
             return tube;
         }
