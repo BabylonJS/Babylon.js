@@ -1451,10 +1451,10 @@
             return ground;
         }
 
-        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
+        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
             
             // tube geometry
-            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -1473,20 +1473,45 @@
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
                     normal = normals[i];                        // current normal  
-                    for (var ang = 0; ang < pi2; ang += step) {
-                        rotationMatrix = Matrix.RotationAxis(tangents[i], ang);
+                    for (var t = 0; t < tessellation; t++) {
+                        rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
+                    circlePath.push(circlePath[0]);
                     circlePaths[index] = circlePath;
                     index++;
+                }
+                // cap
+                var capPath = function(nbPoints, pathIndex) {
+                    var pointCap = Array<Vector3>();
+                    for(var i = 0; i < nbPoints; i++) {
+                        pointCap.push(path[pathIndex]); 
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case 0:
+                        break;
+                    case 1:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case 2:
+                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case 3:
+                         circlePaths.unshift(capPath(tessellation + 1, 0));
+                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break; 
+                    default:
+                        break;                   
                 }
                 return circlePaths;
             };
 
             if (tubeInstance) { // tube update
                 var path3D = ((<any>tubeInstance).path3D).update(path);
-                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction);
+                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
                 return tubeInstance;
@@ -1496,11 +1521,13 @@
 
             var path3D = <any>new Path3D(path);
             var newPathArray = new Array<Array<Vector3>>();
-            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
             var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
+            (<any>tube).cap = cap;
 
             return tube;
         }
