@@ -2606,15 +2606,17 @@ var BABYLON;
     })();
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
-        function Path3D(path) {
+        function Path3D(path, firstNormal) {
             this.path = path;
             this._curve = new Array();
             this._distances = new Array();
             this._tangents = new Array();
             this._normals = new Array();
             this._binormals = new Array();
-            this._curve = path.slice(); // copy array  
-            this._compute();
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p] = path[p].clone(); // hard copy
+            }
+            this._compute(firstNormal);
         }
         Path3D.prototype.getCurve = function () {
             return this._curve;
@@ -2631,28 +2633,30 @@ var BABYLON;
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
-        Path3D.prototype.update = function (path) {
-            for (var i = 0; i < path.length; i++) {
-                this._curve[i] = path[i];
+        Path3D.prototype.update = function (path, firstNormal) {
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p].x = path[p].x;
+                this._curve[p].y = path[p].y;
+                this._curve[p].z = path[p].z;
             }
-            this._compute();
+            this._compute(firstNormal);
             return this;
         };
         // private function compute() : computes tangents, normals and binormals
-        Path3D.prototype._compute = function () {
+        Path3D.prototype._compute = function (firstNormal) {
             var l = this._curve.length;
             // first and last tangents
-            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0] = this._getFirstNonNullVector(0);
             this._tangents[0].normalize();
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
-            var pp0 = this._normalVector(this._curve[0], tg0);
+            var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._normals[0].normalize();
+            this._binormals[0].normalize();
             this._distances[0] = 0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
@@ -2662,9 +2666,9 @@ var BABYLON;
             var prevBinor; // previous binormal
             for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i - 1]);
+                prev = this._getLastNonNullVector(i);
                 if (i < l - 1) {
-                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    cur = this._getFirstNonNullVector(i);
                     this._tangents[i] = prev.add(cur);
                     this._tangents[i].normalize();
                 }
@@ -2680,20 +2684,50 @@ var BABYLON;
                 this._binormals[i].normalize();
             }
         };
-        // private function normalVector(v0, vt) :
+        // private function getFirstNonNullVector(index)
+        // returns the first non null vector from index : curve[index + N].subtract(curve[index])
+        Path3D.prototype._getFirstNonNullVector = function (index) {
+            var i = 1;
+            var nNVector = this._curve[index + i].subtract(this._curve[index]);
+            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+                i++;
+                nNVector = this._curve[index + i].subtract(this._curve[index]);
+            }
+            return nNVector;
+        };
+        // private function getLastNonNullVector(index)
+        // returns the last non null vector from index : curve[index].subtract(curve[index - N])
+        Path3D.prototype._getLastNonNullVector = function (index) {
+            var i = 1;
+            var nLVector = this._curve[index].subtract(this._curve[index - i]);
+            while (nLVector.length() == 0 && index > i + 1) {
+                i++;
+                nLVector = this._curve[index].subtract(this._curve[index - i]);
+            }
+            return nLVector;
+        };
+        // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
-        Path3D.prototype._normalVector = function (v0, vt) {
-            var point;
-            if (vt.x !== 1) {
-                point = new Vector3(1, 0, 0);
+        // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
+        Path3D.prototype._normalVector = function (v0, vt, va) {
+            var normal0;
+            if (va === undefined || va === null) {
+                var point;
+                if (vt.x !== 1) {
+                    point = new Vector3(1, 0, 0);
+                }
+                else if (vt.y !== 1) {
+                    point = new Vector3(0, 1, 0);
+                }
+                else if (vt.z !== 1) {
+                    point = new Vector3(0, 0, 1);
+                }
+                normal0 = Vector3.Cross(vt, point);
             }
-            else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);
+            else {
+                normal0 = Vector3.Cross(vt, va);
+                Vector3.CrossToRef(normal0, vt, normal0);
             }
-            else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);
-            }
-            var normal0 = Vector3.Cross(vt, point);
             normal0.normalize();
             return normal0;
         };
