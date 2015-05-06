@@ -3420,8 +3420,9 @@
 
     export class Curve3 {
         private _points: Vector3[];
+        private _length:number = 0;
 
-        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
@@ -3435,7 +3436,7 @@
             return new Curve3(bez);
         }
 
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
@@ -3449,12 +3450,27 @@
             return new Curve3(bez);
         }
 
+        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
+            var hermite = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            for(var i = 0; i <= nbPoints; i++) {
+                hermite.push(BABYLON.Vector3.Hermite(p1, t1, p2, t2, i * step));
+            }
+            return new Curve3(hermite);
+        }
+
         constructor(points: Vector3[]) {
             this._points = points;
+            this._length = this._computeLength(points);
         }
 
         public getPoints() {
             return this._points;
+        }
+
+        public length() {
+            return this._length;
         }
 
         public continue(curve: Curve3): Curve3 {
@@ -3464,7 +3480,16 @@
             for (var i = 1; i < curvePoints.length; i++) {
                 continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
             }
-            return new Curve3(continuedPoints);
+            var continuedCurve = new Curve3(continuedPoints);
+            return continuedCurve;
+        }
+
+        private _computeLength(path: Vector3[]): number {
+            var l = 0;
+            for (var i = 1; i < path.length; i++) {
+                l += (path[i].subtract(path[i - 1])).length();
+            }
+            return l;
         }
     }
 
