@@ -3422,7 +3422,7 @@
         private _points: Vector3[];
         private _length:number = 0;
 
-        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
@@ -3436,7 +3436,7 @@
             return new Curve3(bez);
         }
 
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
@@ -3448,6 +3448,16 @@
                 bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x, v3.x), equation(i / nbPoints, v0.y, v1.y, v2.y, v3.y), equation(i / nbPoints, v0.z, v1.z, v2.z, v3.z)));
             }
             return new Curve3(bez);
+        }
+
+        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
+            var hermite = new Array<Vector3>();
+            var step = 1 / nbPoints;
+            for(var i = 0; i <= nbPoints; i++) {
+                hermite.push(BABYLON.Vector3.Hermite(p1, t1, p2, t2, i * step));
+            }
+            return new Curve3(hermite);
         }
 
         constructor(points: Vector3[]) {
