@@ -2611,15 +2611,17 @@ var __extends = this.__extends || function (d, b) {
     })();
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
-        function Path3D(path) {
+        function Path3D(path, firstNormal) {
             this.path = path;
             this._curve = new Array();
             this._distances = new Array();
             this._tangents = new Array();
             this._normals = new Array();
             this._binormals = new Array();
-            this._curve = path.slice(); // copy array  
-            this._compute();
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p] = path[p].clone(); // hard copy
+            }
+            this._compute(firstNormal);
         }
         Path3D.prototype.getCurve = function () {
             return this._curve;
@@ -2636,28 +2638,30 @@ var __extends = this.__extends || function (d, b) {
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
-        Path3D.prototype.update = function (path) {
-            for (var i = 0; i < path.length; i++) {
-                this._curve[i] = path[i];
+        Path3D.prototype.update = function (path, firstNormal) {
+            for (var p = 0; p < path.length; p++) {
+                this._curve[p].x = path[p].x;
+                this._curve[p].y = path[p].y;
+                this._curve[p].z = path[p].z;
             }
-            this._compute();
+            this._compute(firstNormal);
             return this;
         };
         // private function compute() : computes tangents, normals and binormals
-        Path3D.prototype._compute = function () {
+        Path3D.prototype._compute = function (firstNormal) {
             var l = this._curve.length;
             // first and last tangents
-            this._tangents[0] = this._curve[1].subtract(this._curve[0]);
+            this._tangents[0] = this._getFirstNonNullVector(0);
             this._tangents[0].normalize();
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
             this._tangents[l - 1].normalize();
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
-            var pp0 = this._normalVector(this._curve[0], tg0);
+            var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
             this._normals[0] = pp0;
             this._normals[0].normalize();
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._normals[0].normalize();
+            this._binormals[0].normalize();
             this._distances[0] = 0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
@@ -2667,9 +2671,9 @@ var __extends = this.__extends || function (d, b) {
             var prevBinor; // previous binormal
             for (var i = 1; i < l; i++) {
                 // tangents
-                prev = this._curve[i].subtract(this._curve[i - 1]);
+                prev = this._getLastNonNullVector(i);
                 if (i < l - 1) {
-                    cur = this._curve[i + 1].subtract(this._curve[i]);
+                    cur = this._getFirstNonNullVector(i);
                     this._tangents[i] = prev.add(cur);
                     this._tangents[i].normalize();
                 }
@@ -2685,20 +2689,50 @@ var __extends = this.__extends || function (d, b) {
                 this._binormals[i].normalize();
             }
         };
-        // private function normalVector(v0, vt) :
+        // private function getFirstNonNullVector(index)
+        // returns the first non null vector from index : curve[index + N].subtract(curve[index])
+        Path3D.prototype._getFirstNonNullVector = function (index) {
+            var i = 1;
+            var nNVector = this._curve[index + i].subtract(this._curve[index]);
+            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+                i++;
+                nNVector = this._curve[index + i].subtract(this._curve[index]);
+            }
+            return nNVector;
+        };
+        // private function getLastNonNullVector(index)
+        // returns the last non null vector from index : curve[index].subtract(curve[index - N])
+        Path3D.prototype._getLastNonNullVector = function (index) {
+            var i = 1;
+            var nLVector = this._curve[index].subtract(this._curve[index - i]);
+            while (nLVector.length() == 0 && index > i + 1) {
+                i++;
+                nLVector = this._curve[index].subtract(this._curve[index - i]);
+            }
+            return nLVector;
+        };
+        // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
-        Path3D.prototype._normalVector = function (v0, vt) {
-            var point;
-            if (vt.x !== 1) {
-                point = new Vector3(1, 0, 0);
+        // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
+        Path3D.prototype._normalVector = function (v0, vt, va) {
+            var normal0;
+            if (va === undefined || va === null) {
+                var point;
+                if (vt.x !== 1) {
+                    point = new Vector3(1, 0, 0);
+                }
+                else if (vt.y !== 1) {
+                    point = new Vector3(0, 1, 0);
+                }
+                else if (vt.z !== 1) {
+                    point = new Vector3(0, 0, 1);
+                }
+                normal0 = Vector3.Cross(vt, point);
             }
-            else if (vt.y !== 1) {
-                point = new Vector3(0, 1, 0);
+            else {
+                normal0 = Vector3.Cross(vt, va);
+                Vector3.CrossToRef(normal0, vt, normal0);
             }
-            else if (vt.z !== 1) {
-                point = new Vector3(0, 0, 1);
-            }
-            var normal0 = Vector3.Cross(vt, point);
             normal0.normalize();
             return normal0;
         };
@@ -11010,6 +11044,34 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Mesh, "NO_CAP", {
+            get: function () {
+                return Mesh._NO_CAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_START", {
+            get: function () {
+                return Mesh._CAP_START;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_END", {
+            get: function () {
+                return Mesh._CAP_END;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_ALL", {
+            get: function () {
+                return Mesh._CAP_ALL;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
             // Methods
             get: function () {
@@ -11998,23 +12060,23 @@ var BABYLON;
             return lines;
         };
         // Extrusion
-        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation, extrudedInstance) {
+        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, cap, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             if (extrudedInstance === void 0) { extrudedInstance = null; }
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation, extrudedInstance);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         };
-        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation, extrudedInstance) {
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             if (extrudedInstance === void 0) { extrudedInstance = null; }
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation, extrudedInstance);
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         };
-        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side, instance) {
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance) {
             // extrusion geometry
-            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, custom) {
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var binormals = path3D.getBinormals();
@@ -12043,21 +12105,53 @@ var BABYLON;
                     angle += angleStep;
                     index++;
                 }
+                // cap
+                var capPath = function (shapePath) {
+                    var pointCap = Array();
+                    var barycenter = BABYLON.Vector3.Zero();
+                    var i;
+                    for (i = 0; i < shapePath.length; i++) {
+                        barycenter.addInPlace(shapePath[i]);
+                    }
+                    barycenter.scaleInPlace(1 / shapePath.length);
+                    for (i = 0; i < shapePath.length; i++) {
+                        pointCap.push(barycenter);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case BABYLON.Mesh.NO_CAP:
+                        break;
+                    case BABYLON.Mesh.CAP_START:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case BABYLON.Mesh.CAP_END:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case BABYLON.Mesh.CAP_ALL:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
+                }
                 return shapePaths;
             };
             if (instance) {
                 var path3D = (instance.path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, custom);
+                var pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, instance.cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
                 return instance;
             }
             // extruded shape creation
             var path3D = new BABYLON.Path3D(curve);
             var newShapePaths = new Array();
-            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, custom);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
             var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
             extrudedGeneric.pathArray = pathArray;
             extrudedGeneric.path3D = path3D;
+            extrudedGeneric.cap = cap;
             return extrudedGeneric;
         };
         // Plane & ground
@@ -12111,11 +12205,11 @@ var BABYLON;
             }, scene.database);
             return ground;
         };
-        Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, scene, updatable, sideOrientation, tubeInstance) {
+        Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, cap, scene, updatable, sideOrientation, tubeInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             if (tubeInstance === void 0) { tubeInstance = null; }
             // tube geometry
-            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
@@ -12133,30 +12227,57 @@ var BABYLON;
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array(); // current circle array
                     normal = normals[i]; // current normal  
-                    for (var ang = 0; ang < pi2; ang += step) {
-                        rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
+                    for (var t = 0; t < tessellation; t++) {
+                        rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], step * t);
                         rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
+                    circlePath.push(circlePath[0]);
                     circlePaths[index] = circlePath;
                     index++;
+                }
+                // cap
+                var capPath = function (nbPoints, pathIndex) {
+                    var pointCap = Array();
+                    for (var i = 0; i < nbPoints; i++) {
+                        pointCap.push(path[pathIndex]);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case BABYLON.Mesh.NO_CAP:
+                        break;
+                    case BABYLON.Mesh.CAP_START:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case BABYLON.Mesh.CAP_END:
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case BABYLON.Mesh.CAP_ALL:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    default:
+                        break;
                 }
                 return circlePaths;
             };
             if (tubeInstance) {
                 var path3D = (tubeInstance.path3D).update(path);
-                var pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction);
+                var pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction, tubeInstance.cap);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
                 return tubeInstance;
             }
             // tube creation
             var path3D = new BABYLON.Path3D(path);
             var newPathArray = new Array();
-            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction);
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
             var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
+            tube.cap = cap;
             return tube;
         };
         // Decals
@@ -12409,6 +12530,10 @@ var BABYLON;
         Mesh._BACKSIDE = 1;
         Mesh._DOUBLESIDE = 2;
         Mesh._DEFAULTSIDE = 0;
+        Mesh._NO_CAP = 0;
+        Mesh._CAP_START = 1;
+        Mesh._CAP_END = 2;
+        Mesh._CAP_ALL = 3;
         return Mesh;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
@@ -23230,40 +23355,67 @@ var BABYLON;
          * @param {any} - normals   (number[] or Float32Array)
          */
         VertexData.ComputeNormals = function (positions, indices, normals) {
-            var positionVectors = [];
-            var facesOfVertices = [];
-            var index;
-            for (index = 0; index < positions.length; index += 3) {
-                var vector3 = new BABYLON.Vector3(positions[index], positions[index + 1], positions[index + 2]);
-                positionVectors.push(vector3);
-                facesOfVertices.push([]);
-            }
-            // Compute normals
-            var facesNormals = [];
-            for (index = 0; index < indices.length / 3; index++) {
+            var index = 0;
+            // temp Vector3
+            var p1 = BABYLON.Vector3.Zero();
+            var p2 = BABYLON.Vector3.Zero();
+            var p3 = BABYLON.Vector3.Zero();
+            var p1p2 = BABYLON.Vector3.Zero();
+            var p3p2 = BABYLON.Vector3.Zero();
+            var faceNormal = BABYLON.Vector3.Zero();
+            var vertexNormali1 = BABYLON.Vector3.Zero();
+            var vertexNormali2 = BABYLON.Vector3.Zero();
+            var vertexNormali3 = BABYLON.Vector3.Zero();
+            // indice triplet = 1 face
+            var nbFaces = indices.length / 3;
+            for (index = 0; index < nbFaces; index++) {
                 var i1 = indices[index * 3];
                 var i2 = indices[index * 3 + 1];
                 var i3 = indices[index * 3 + 2];
-                var p1 = positionVectors[i1];
-                var p2 = positionVectors[i2];
-                var p3 = positionVectors[i3];
-                var p1p2 = p1.subtract(p2);
-                var p3p2 = p3.subtract(p2);
-                facesNormals[index] = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
-                facesOfVertices[i1].push(index);
-                facesOfVertices[i2].push(index);
-                facesOfVertices[i3].push(index);
+                // setting the temp V3
+                BABYLON.Vector3.FromFloatsToRef(positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2], p1);
+                BABYLON.Vector3.FromFloatsToRef(positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2], p2);
+                BABYLON.Vector3.FromFloatsToRef(positions[i3 * 3], positions[i3 * 3 + 1], positions[i3 * 3 + 2], p3);
+                p1.subtractToRef(p2, p1p2);
+                p3.subtractToRef(p2, p3p2);
+                BABYLON.Vector3.CrossToRef(p1p2, p3p2, faceNormal);
+                faceNormal.normalize();
+                // All intermediate results are stored in the normals array :
+                // get the normals at i1, i2 and i3 indexes
+                normals[i1 * 3] = normals[i1 * 3] || 0.0;
+                normals[i1 * 3 + 1] = normals[i1 * 3 + 1] || 0.0;
+                normals[i1 * 3 + 2] = normals[i1 * 3 + 2] || 0.0;
+                normals[i2 * 3] = normals[i2 * 3] || 0.0;
+                normals[i2 * 3 + 1] = normals[i2 * 3 + 1] || 0.0;
+                normals[i2 * 3 + 2] = normals[i2 * 3 + 2] || 0.0;
+                normals[i3 * 3] = normals[i3 * 3] || 0.0;
+                normals[i3 * 3 + 1] = normals[i3 * 3 + 1] || 0.0;
+                normals[i3 * 3 + 2] = normals[i3 * 3 + 2] || 0.0;
+                // make intermediate vectors3 from normals values
+                BABYLON.Vector3.FromFloatsToRef(normals[i1 * 3], normals[i1 * 3 + 1], normals[i1 * 3 + 2], vertexNormali1);
+                BABYLON.Vector3.FromFloatsToRef(normals[i2 * 3], normals[i2 * 3 + 1], normals[i2 * 3 + 2], vertexNormali2);
+                BABYLON.Vector3.FromFloatsToRef(normals[i3 * 3], normals[i3 * 3 + 1], normals[i3 * 3 + 2], vertexNormali3);
+                // add the current face normals to these intermediate vectors3
+                vertexNormali1 = vertexNormali1.addInPlace(faceNormal);
+                vertexNormali2 = vertexNormali2.addInPlace(faceNormal);
+                vertexNormali3 = vertexNormali3.addInPlace(faceNormal);
+                // store back intermediate vectors3 into the normals array
+                normals[i1 * 3] = vertexNormali1.x;
+                normals[i1 * 3 + 1] = vertexNormali1.y;
+                normals[i1 * 3 + 2] = vertexNormali1.z;
+                normals[i2 * 3] = vertexNormali2.x;
+                normals[i2 * 3 + 1] = vertexNormali2.y;
+                normals[i2 * 3 + 2] = vertexNormali2.z;
+                normals[i3 * 3] = vertexNormali3.x;
+                normals[i3 * 3 + 1] = vertexNormali3.y;
+                normals[i3 * 3 + 2] = vertexNormali3.z;
             }
-            for (index = 0; index < positionVectors.length; index++) {
-                var faces = facesOfVertices[index];
-                var normal = BABYLON.Vector3.Zero();
-                for (var faceIndex = 0; faceIndex < faces.length; faceIndex++) {
-                    normal.addInPlace(facesNormals[faces[faceIndex]]);
-                }
-                normal = BABYLON.Vector3.Normalize(normal.scale(1.0 / faces.length));
-                normals[index * 3] = normal.x;
-                normals[index * 3 + 1] = normal.y;
-                normals[index * 3 + 2] = normal.z;
+            for (index = 0; index < normals.length / 3; index++) {
+                BABYLON.Vector3.FromFloatsToRef(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2], vertexNormali1);
+                vertexNormali1.normalize();
+                normals[index * 3] = vertexNormali1.x;
+                normals[index * 3 + 1] = vertexNormali1.y;
+                normals[index * 3 + 2] = vertexNormali1.z;
             }
         };
         VertexData._ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
