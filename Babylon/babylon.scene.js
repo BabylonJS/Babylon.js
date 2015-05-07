@@ -141,8 +141,8 @@ var BABYLON;
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             //simplification queue
             this.simplificationQueue = new BABYLON.SimplificationQueue();
-            //collision coordinator initialization - if worker not enabled the legacy collision detection will be initialized.
-            this.workerCollisions = !!Worker;
+            //collision coordinator initialization.
+            this.workerCollisions = (!!Worker && !!BABYLON.CollisionWorker);
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
