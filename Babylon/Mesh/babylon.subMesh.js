@@ -12,6 +12,7 @@ var BABYLON;
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);
+            this._trianglePlanes = [];
             this._id = mesh.subMeshes.length - 1;
             if (createBoundingBox) {
                 this.refreshBoundingInfo();

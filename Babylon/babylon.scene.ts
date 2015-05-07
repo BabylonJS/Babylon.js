@@ -163,6 +163,8 @@
 
         // Collisions
         public collisionsEnabled = true;
+        private _workerCollisions;
+        public collisionCoordinator: ICollisionCoordinator;
         public gravity = new Vector3(0, -9.0, 0);
 
         // Postprocesses
@@ -247,9 +249,6 @@
         private _transformMatrix = Matrix.Zero();
         private _pickWithRayInverseMatrix: Matrix;
 
-        private _scaledPosition = Vector3.Zero();
-        private _scaledVelocity = Vector3.Zero();
-
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
@@ -292,11 +291,28 @@
 
             //simplification queue
             this.simplificationQueue = new SimplificationQueue();
+            //collision coordinator initialization.
+            this.workerCollisions = (!!Worker && !!BABYLON.CollisionWorker);
         }
 
         // Properties 
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
+        }
+
+        public set workerCollisions(enabled: boolean) {
+            this._workerCollisions = enabled;
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.destroy();
+            }
+
+            this.collisionCoordinator = enabled ? new CollisionCoordinatorWorker() : new CollisionCoordinatorLegacy();
+
+            this.collisionCoordinator.init(this);
+        }
+
+        public get workerCollisions() : boolean {
+            return this._workerCollisions;
         }
 
         /**
@@ -753,6 +769,10 @@
         public addMesh(newMesh: AbstractMesh) {
             newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
+
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshAdded(newMesh);
+
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
             }
@@ -764,6 +784,9 @@
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshRemoved(toRemove);
+
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
             }
@@ -995,6 +1018,10 @@
             }
 
             this._geometries.push(geometry);
+
+            //notify the collision coordinator
+            this.collisionCoordinator.onGeometryAdded(geometry);
+
             if (this.onGeometryAdded) {
                 this.onGeometryAdded(geometry);
             }
@@ -1012,6 +1039,10 @@
 
             if (index > -1) {
                 this._geometries.splice(index, 1);
+
+                //notify the collision coordinator
+                this.collisionCoordinator.onGeometryDeleted(geometry);
+
                 if (this.onGeometryRemoved) {
                     this.onGeometryRemoved(geometry);
                 }
@@ -1890,55 +1921,6 @@
             for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
                 this.soundTracks[scIndex].dispose();
             }
-        }
-
-        // Collisions
-        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
-            position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
-
-            collider.retry = 0;
-            collider.initialVelocity = this._scaledVelocity;
-            collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
-
-            finalPosition.multiplyInPlace(collider.radius);
-        }
-
-        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
-            var closeDistance = Engine.CollisionsEpsilon * 10.0;
-
-            if (collider.retry >= maximumRetry) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-
-            collider._initialize(position, velocity, closeDistance);
-
-            // Check all meshes
-            for (var index = 0; index < this.meshes.length; index++) {
-                var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
-                    mesh._checkCollision(collider);
-                }
-            }
-
-            if (!collider.collisionFound) {
-                position.addToRef(velocity, finalPosition);
-                return;
-            }
-
-            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
-                collider._getResponse(position, velocity);
-            }
-
-            if (velocity.length() <= closeDistance) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-
-            collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
 
         // Octrees

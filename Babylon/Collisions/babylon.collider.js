@@ -96,18 +96,19 @@ var BABYLON;
                 return false;
             return true;
         };
-        Collider.prototype._testTriangle = function (faceIndex, subMesh, p1, p2, p3) {
+        Collider.prototype._testTriangle = function (faceIndex, trianglePlaneArray, p1, p2, p3, hasMaterial) {
             var t0;
             var embeddedInPlane = false;
-            if (!subMesh._trianglePlanes) {
-                subMesh._trianglePlanes = [];
+            //defensive programming, actually not needed.
+            if (!trianglePlaneArray) {
+                trianglePlaneArray = [];
             }
-            if (!subMesh._trianglePlanes[faceIndex]) {
-                subMesh._trianglePlanes[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
-                subMesh._trianglePlanes[faceIndex].copyFromPoints(p1, p2, p3);
+            if (!trianglePlaneArray[faceIndex]) {
+                trianglePlaneArray[faceIndex] = new BABYLON.Plane(0, 0, 0, 0);
+                trianglePlaneArray[faceIndex].copyFromPoints(p1, p2, p3);
             }
-            var trianglePlane = subMesh._trianglePlanes[faceIndex];
-            if ((!subMesh.getMaterial()) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+            var trianglePlane = trianglePlaneArray[faceIndex];
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
                 return;
             var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
             var normalDotVelocity = BABYLON.Vector3.Dot(trianglePlane.normal, this.velocity);
@@ -241,16 +242,15 @@ var BABYLON;
                     }
                     this.nearestDistance = distToCollision;
                     this.collisionFound = true;
-                    this.collidedMesh = subMesh.getMesh();
                 }
             }
         };
-        Collider.prototype._collide = function (subMesh, pts, indices, indexStart, indexEnd, decal) {
+        Collider.prototype._collide = function (trianglePlaneArray, pts, indices, indexStart, indexEnd, decal, hasMaterial) {
             for (var i = indexStart; i < indexEnd; i += 3) {
                 var p1 = pts[indices[i] - decal];
                 var p2 = pts[indices[i + 1] - decal];
                 var p3 = pts[indices[i + 2] - decal];
-                this._testTriangle(i, subMesh, p3, p2, p1);
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial);
             }
         };
         Collider.prototype._getResponse = function (pos, vel) {

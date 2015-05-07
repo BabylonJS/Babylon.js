@@ -20,6 +20,8 @@
             this._renderingMesh = renderingMesh || <Mesh>mesh;
             mesh.subMeshes.push(this);
 
+            this._trianglePlanes = [];
+
             this._id = mesh.subMeshes.length - 1;
 
             if (createBoundingBox) {

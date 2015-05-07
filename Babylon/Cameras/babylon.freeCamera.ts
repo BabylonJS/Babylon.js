@@ -177,7 +177,7 @@
             }
         }
 
-        public _collideWithWorld(velocity: Vector3): void {
+        public _collideWithWorld(velocity: Vector3, gravityInspection: boolean = false): void {
             var globalPosition: Vector3;
 
             if (this.parent) {
@@ -189,17 +189,32 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
-
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide) {
-                    this.onCollide(this._collider.collidedMesh);
-                }
-            }
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, velocity.equals(this.getScene().gravity) ? this.uniqueId + 100000 : this.uniqueId);
+            
         }
 
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            //TODO move this to the collision coordinator!
+            if (collisionId != null || collisionId != undefined)
+                newPosition.multiplyInPlace(this._collider.radius);
+
+            this._newPosition.copyFrom(newPosition);
+
+            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+
+            var oldPosition = this.position.clone();
+            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+                this.position.addInPlace(this._diffPosition);
+                if (this.onCollide && collidedMesh) {
+                    this.onCollide(collidedMesh);
+                }
+            }
+            //check if it is the gravity inspection
+            if (collisionId != this.uniqueId) {
+                this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
+            }
+        }
+        
         public _checkInputs(): void {
             if (!this._localDirection) {
                 this._localDirection = BABYLON.Vector3.Zero();
@@ -233,11 +248,9 @@
 
         public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
-                this._collideWithWorld(this.cameraDirection);
+                this._collideWithWorld(this.cameraDirection, false);
                 if (this.applyGravity) {
-                    var oldPosition = this.position;
-                    this._collideWithWorld(this.getScene().gravity);
-                    this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
+                    this._collideWithWorld(this.getScene().gravity, true);
                 }
             } else {
                 this.position.addInPlace(this.cameraDirection);

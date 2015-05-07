@@ -9,6 +9,7 @@ var BABYLON;
     var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
         function AbstractMesh(name, scene) {
+            var _this = this;
             _super.call(this, name, scene);
             // Properties
             this.definedFacingForward = true; // orientation for POV movement & rotation
@@ -71,6 +72,16 @@ var BABYLON;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
             this._isWorldMatrixFrozen = false;
+            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
+                if (collidedMesh === void 0) { collidedMesh = null; }
+                //TODO move this to the collision coordinator!
+                if (collisionId != null || collisionId != undefined)
+                    newPosition.multiplyInPlace(_this._collider.radius);
+                newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
+                if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
+                    _this.position.addInPlace(_this._diffPositionForCollisions);
+                }
+            };
             scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
@@ -610,11 +621,7 @@ var BABYLON;
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
-            if (this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPositionForCollisions);
-            }
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
         };
         // Submeshes octree
         /**
@@ -648,7 +655,10 @@ var BABYLON;
                 }
             }
             // Collide
-            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            if (collider.collisionFound) {
+                collider.collidedMesh = this;
+            }
         };
         AbstractMesh.prototype._processCollisionsForSubMeshes = function (collider, transformMatrix) {
             var subMeshes;
@@ -814,4 +824,5 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.abstractMesh.js.map
+
+//# sourceMappingURL=../Mesh/babylon.abstractMesh.js.map

@@ -50,6 +50,8 @@
         private _previousAlpha: number;
         private _previousBeta: number;
         private _previousRadius: number;
+        //due to async collision inspection
+        private _collisionTriggered: boolean;
 
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -344,6 +346,12 @@
         }
 
         public _update(): void {
+
+            //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
+            if (this._collisionTriggered) {
+                return;
+            }
+
             // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
@@ -431,19 +439,8 @@
                 this._collider.radius = this.collisionRadius;
                 this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
 
-                this.getScene()._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, this._newPosition);
-
-                if (!this._newPosition.equalsWithEpsilon(this.position)) {
-                    this.position.copyFrom(this._previousPosition);
-
-                    this.alpha = this._previousAlpha;
-                    this.beta = this._previousBeta;
-                    this.radius = this._previousRadius;
-
-                    if (this.onCollide) {
-                        this.onCollide(this._collider.collidedMesh);
-                    }
-                }
+                this._collisionTriggered = true;
+                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
 
             Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
@@ -457,6 +454,25 @@
             this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
             return this._viewMatrix;
+        }
+
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+
+            if (collisionId != null || collisionId != undefined)
+               newPosition.multiplyInPlace(this._collider.radius);
+
+            if (!newPosition.equalsWithEpsilon(this.position)) {
+                this.position.copyFrom(this._previousPosition);
+
+                this.alpha = this._previousAlpha;
+                this.beta = this._previousBeta;
+                this.radius = this._previousRadius;
+
+                if (this.onCollide && collidedMesh) {
+                    this.onCollide(collidedMesh);
+                }
+            }
+            this._collisionTriggered = false;
         }
 
         public zoomOn(meshes?: AbstractMesh[]): void {

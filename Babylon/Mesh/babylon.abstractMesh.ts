@@ -719,8 +719,15 @@
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        }
+
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            //TODO move this to the collision coordinator!
+            if (collisionId != null || collisionId != undefined)
+                newPosition.multiplyInPlace(this._collider.radius);
+
+            newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPositionForCollisions);
@@ -762,7 +769,10 @@
                 }
             }
             // Collide
-            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            if (collider.collisionFound) {
+                collider.collidedMesh = this;
+            }
         }
 
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {
