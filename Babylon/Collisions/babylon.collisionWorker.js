@@ -1,5 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
+    //If this file is included in the main thread, this will be initialized.
+    BABYLON.WorkerIncluded = true;
     var CollisionCache = (function () {
         function CollisionCache() {
             this._meshes = {};
@@ -188,26 +190,37 @@ var BABYLON;
         return CollisionDetectorTransferable;
     })();
     BABYLON.CollisionDetectorTransferable = CollisionDetectorTransferable;
-    //check if we are in a web worker, as this code should NOT run on the main UI thread
-    if (self && self instanceof WorkerGlobalScope) {
-        //Window hack to allow including babylonjs native code. the <any> is for typescript.
-        window = {};
-        var collisionDetector = new CollisionDetectorTransferable();
-        var onNewMessage = function (event) {
-            var message = event.data;
-            switch (message.taskType) {
-                case 0 /* INIT */:
-                    collisionDetector.onInit(message.payload);
-                    break;
-                case 2 /* COLLIDE */:
-                    collisionDetector.onCollision(message.payload);
-                    break;
-                case 1 /* UPDATE */:
-                    collisionDetector.onUpdate(message.payload);
-                    break;
+    try {
+        if (self && self instanceof WorkerGlobalScope) {
+            //Window hack to allow including babylonjs native code. the <any> is for typescript.
+            window = {};
+            //scripts were not included, standalone worker
+            if (!BABYLON.Collider) {
+                importScripts("./babylon.collisionCoordinator.js");
+                importScripts("./babylon.collider.js");
+                importScripts("../Math/babylon.math.js");
             }
-        };
-        self.onmessage = onNewMessage;
+            var collisionDetector = new CollisionDetectorTransferable();
+            var onNewMessage = function (event) {
+                var message = event.data;
+                switch (message.taskType) {
+                    case 0 /* INIT */:
+                        collisionDetector.onInit(message.payload);
+                        break;
+                    case 2 /* COLLIDE */:
+                        collisionDetector.onCollision(message.payload);
+                        break;
+                    case 1 /* UPDATE */:
+                        collisionDetector.onUpdate(message.payload);
+                        break;
+                }
+            };
+            self.onmessage = onNewMessage;
+        }
+    }
+    catch (e) {
+        console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionWorker.js.map
+
+//# sourceMappingURL=../Collisions/babylon.collisionWorker.js.map

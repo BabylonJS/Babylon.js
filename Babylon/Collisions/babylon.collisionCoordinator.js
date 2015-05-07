@@ -129,8 +129,8 @@ var BABYLON;
         CollisionCoordinatorWorker.prototype.init = function (scene) {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            var blobURL = URL.createObjectURL(new Blob([BABYLON.CollisionWorker], { type: 'application/javascript' }));
-            this._worker = new Worker(blobURL);
+            var workerUrl = BABYLON.WorkerIncluded ? "./Collisions/babylon.collisionWorker.js" : URL.createObjectURL(new Blob([BABYLON.CollisionWorker], { type: 'application/javascript' }));
+            this._worker = new Worker(workerUrl);
             this._worker.onmessage = this._onMessageFromWorker;
             var message = {
                 payload: {},
@@ -269,4 +269,5 @@ var BABYLON;
     })();
     BABYLON.CollisionCoordinatorLegacy = CollisionCoordinatorLegacy;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionCoordinator.js.map
+
+//# sourceMappingURL=../Collisions/babylon.collisionCoordinator.js.map

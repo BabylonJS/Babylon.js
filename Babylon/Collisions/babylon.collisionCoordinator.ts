@@ -211,8 +211,8 @@ module BABYLON {
         public init(scene: Scene): void {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            var blobURL = URL.createObjectURL(new Blob([BABYLON.CollisionWorker], { type: 'application/javascript' }));
-            this._worker = new Worker(blobURL);
+            var workerUrl = BABYLON.WorkerIncluded ? "./Collisions/babylon.collisionWorker.js" : URL.createObjectURL(new Blob([BABYLON.CollisionWorker], { type: 'application/javascript' }));
+            this._worker = new Worker(workerUrl);
             this._worker.onmessage = this._onMessageFromWorker;
             var message: BabylonMessage = {
                 payload: {},
