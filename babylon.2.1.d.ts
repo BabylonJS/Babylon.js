@@ -82,6 +82,7 @@ declare module BABYLON {
         static Version: string;
         static Epsilon: number;
         static CollisionsEpsilon: number;
+        static CodeRepository: string;
         static ShadersRepository: string;
         isFullscreen: boolean;
         isPointerLock: boolean;
@@ -409,6 +410,7 @@ declare module BABYLON {
         updateCache(force?: boolean): void;
         _updateCache(ignoreParentClass?: boolean): void;
         _isSynchronized(): boolean;
+        _markSyncedWithParent(): void;
         isSynchronizedWithParent(): boolean;
         isSynchronized(updateCache?: boolean): boolean;
         hasNewParent(update?: boolean): boolean;
@@ -492,7 +494,9 @@ declare module BABYLON {
         animationsEnabled: boolean;
         private _onPointerMove;
         private _onPointerDown;
+        private _onPointerUp;
         onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         cameraToUseForPointers: Camera;
         private _pointerX;
         private _pointerY;
@@ -563,6 +567,8 @@ declare module BABYLON {
         lensFlaresEnabled: boolean;
         lensFlareSystems: LensFlareSystem[];
         collisionsEnabled: boolean;
+        private _workerCollisions;
+        collisionCoordinator: ICollisionCoordinator;
         gravity: Vector3;
         postProcessesEnabled: boolean;
         postProcessManager: PostProcessManager;
@@ -618,8 +624,6 @@ declare module BABYLON {
         _activeAnimatables: Animatable[];
         private _transformMatrix;
         private _pickWithRayInverseMatrix;
-        private _scaledPosition;
-        private _scaledVelocity;
         private _boundingBoxRenderer;
         private _outlineRenderer;
         private _viewMatrix;
@@ -636,6 +640,7 @@ declare module BABYLON {
          */
         constructor(engine: Engine);
         debugLayer: DebugLayer;
+        workerCollisions: boolean;
         /**
          * The mesh that is currently under the pointer.
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
@@ -842,8 +847,6 @@ declare module BABYLON {
         disableDepthRenderer(): void;
         dispose(): void;
         disposeSounds(): void;
-        _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh?: AbstractMesh): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
         getWorldExtends(): {
             min: Vector3;
             max: Vector3;
@@ -938,6 +941,7 @@ declare module BABYLON {
         private static _OnIntersectionExitTrigger;
         private static _OnKeyDownTrigger;
         private static _OnKeyUpTrigger;
+        private static _OnPickUpTrigger;
         static NothingTrigger: number;
         static OnPickTrigger: number;
         static OnLeftPickTrigger: number;
@@ -950,6 +954,7 @@ declare module BABYLON {
         static OnIntersectionExitTrigger: number;
         static OnKeyDownTrigger: number;
         static OnKeyUpTrigger: number;
+        static OnPickUpTrigger: number;
         actions: Action[];
         private _scene;
         constructor(scene: Scene);
@@ -961,6 +966,12 @@ declare module BABYLON {
          * @return {boolean} whether one (or more) of the triggers is handeled
          */
         hasSpecificTriggers(triggers: number[]): boolean;
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled
+         */
+        hasSpecificTrigger(trigger: number): boolean;
         /**
          * Does this action manager has pointer triggers
          * @return {boolean} whether or not it has pointer triggers
@@ -1514,6 +1525,7 @@ declare module BABYLON {
         keysRight: number[];
         zoomOnFactor: number;
         targetScreenOffset: Vector2;
+        pinchInwards: boolean;
         private _keys;
         private _viewMatrix;
         private _attachedElement;
@@ -1539,6 +1551,7 @@ declare module BABYLON {
         private _previousAlpha;
         private _previousBeta;
         private _previousRadius;
+        private _collisionTriggered;
         constructor(name: string, alpha: number, beta: number, radius: number, target: any, scene: Scene);
         _getTargetPosition(): Vector3;
         _initCache(): void;
@@ -1549,6 +1562,7 @@ declare module BABYLON {
         _update(): void;
         setPosition(position: Vector3): void;
         _getViewMatrix(): Matrix;
+        private _onCollisionPositionChange;
         zoomOn(meshes?: AbstractMesh[]): void;
         focusOn(meshesOrMinMaxVectorAndDistance: any): void;
     }
@@ -1593,7 +1607,6 @@ declare module BABYLON {
         _initCache(): void;
         _updateCache(ignoreParentClass?: boolean): void;
         _updateFromScene(): void;
-        isSynchronizedWithParent(): boolean;
         _isSynchronized(): boolean;
         _isSynchronizedViewMatrix(): boolean;
         _isSynchronizedProjectionMatrix(): boolean;
@@ -1604,7 +1617,7 @@ declare module BABYLON {
         detachPostProcess(postProcess: PostProcess, atIndices?: any): number[];
         getWorldMatrix(): Matrix;
         _getViewMatrix(): Matrix;
-        getViewMatrix(): Matrix;
+        getViewMatrix(force?: boolean): Matrix;
         _computeViewMatrix(force?: boolean): Matrix;
         getProjectionMatrix(force?: boolean): Matrix;
         dispose(): void;
@@ -1673,7 +1686,8 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
-        _collideWithWorld(velocity: Vector3): void;
+        _collideWithWorld(velocity: Vector3, gravityInspection?: boolean): void;
+        private _onCollisionPositionChange;
         _checkInputs(): void;
         _decideIfNeedsToMove(): boolean;
         _updatePosition(): void;
@@ -1844,9 +1858,185 @@ declare module BABYLON {
         _initialize(source: Vector3, dir: Vector3, e: number): void;
         _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
         _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, subMesh: SubMesh, p1: Vector3, p2: Vector3, p3: Vector3): void;
-        _collide(subMesh: any, pts: Vector3[], indices: number[], indexStart: number, indexEnd: number, decal: number): void;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[], indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
         _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Int32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+    }
+    class CollideWorker {
+        collider: BABYLON.Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: BABYLON.Collider, _collisionCache: CollisionCache, finalPosition: BABYLON.Vector3);
+        collideWithWorld(position: BABYLON.Vector3, velocity: BABYLON.Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
     }
 }
 declare module BABYLON {
@@ -3232,23 +3422,29 @@ declare module BABYLON {
         private _tangents;
         private _normals;
         private _binormals;
-        constructor(path: Vector3[]);
+        constructor(path: Vector3[], firstNormal?: Vector3);
         getCurve(): Vector3[];
         getTangents(): Vector3[];
         getNormals(): Vector3[];
         getBinormals(): Vector3[];
         getDistances(): number[];
-        update(path: Vector3[]): Path3D;
-        private _compute();
-        private _normalVector(v0, vt);
+        update(path: Vector3[], firstNormal?: Vector3): Path3D;
+        private _compute(firstNormal);
+        private _getFirstNonNullVector(index);
+        private _getLastNonNullVector(index);
+        private _normalVector(v0, vt, va);
     }
     class Curve3 {
         private _points;
+        private _length;
         static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
         static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
+        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
         constructor(points: Vector3[]);
         getPoints(): Vector3[];
+        length(): number;
         continue(curve: Curve3): Curve3;
+        private _computeLength(path);
     }
     class PositionNormalVertex {
         position: Vector3;
@@ -3316,6 +3512,7 @@ declare module BABYLON {
         useOctreeForPicking: boolean;
         useOctreeForCollisions: boolean;
         layerMask: number;
+        alwaysSelectAsActiveMesh: boolean;
         _physicImpostor: number;
         _physicsMass: number;
         _physicsFriction: number;
@@ -3349,6 +3546,7 @@ declare module BABYLON {
         _submeshesOctree: Octree<SubMesh>;
         _intersectionsInProgress: AbstractMesh[];
         private _onAfterWorldMatrixUpdate;
+        private _isWorldMatrixFrozen;
         _waitingActions: any;
         constructor(name: string, scene: Scene);
         isBlocked: boolean;
@@ -3364,6 +3562,9 @@ declare module BABYLON {
         getWorldMatrix(): Matrix;
         worldMatrixFromCache: Matrix;
         absolutePosition: Vector3;
+        freezeWorldMatrix(): void;
+        unfreezeWorldMatrix(): void;
+        isWorldMatrixFrozen: boolean;
         rotate(axis: Vector3, amount: number, space: Space): void;
         translate(axis: Vector3, distance: number, space: Space): void;
         getAbsolutePosition(): Vector3;
@@ -3435,6 +3636,7 @@ declare module BABYLON {
         setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void;
         updatePhysicsBodyPosition(): void;
         moveWithCollisions(velocity: Vector3): void;
+        private _onCollisionPositionChange;
         /**
         * This function will create an octree to help select the right submeshes for rendering, picking and collisions
         * Please note that you must have a decent number of submeshes to get performance improvements when using octree
@@ -3500,14 +3702,14 @@ declare module BABYLON {
         updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void;
         updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
         getTotalVertices(): number;
-        getVerticesData(kind: string): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
         getVertexBuffer(kind: string): VertexBuffer;
         getVertexBuffers(): VertexBuffer[];
         isVerticesDataPresent(kind: string): boolean;
         getVerticesDataKinds(): string[];
         setIndices(indices: number[], totalVertices?: number): void;
         getTotalIndices(): number;
-        getIndices(): number[];
+        getIndices(copyWhenShared?: boolean): number[];
         getIndexBuffer(): any;
         releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void;
         applyToMesh(mesh: Mesh): void;
@@ -3698,10 +3900,18 @@ declare module BABYLON {
         static _BACKSIDE: number;
         static _DOUBLESIDE: number;
         static _DEFAULTSIDE: number;
+        static _NO_CAP: number;
+        static _CAP_START: number;
+        static _CAP_END: number;
+        static _CAP_ALL: number;
         static FRONTSIDE: number;
         static BACKSIDE: number;
         static DOUBLESIDE: number;
         static DEFAULTSIDE: number;
+        static NO_CAP: number;
+        static CAP_START: number;
+        static CAP_END: number;
+        static CAP_ALL: number;
         delayLoadState: number;
         instances: InstancedMesh[];
         delayLoadingFile: string;
@@ -3722,6 +3932,7 @@ declare module BABYLON {
         _shouldGenerateFlatShading: boolean;
         private _preActivateId;
         private _sideOrientation;
+        private _areNormalsFrozen;
         /**
          * @constructor
          * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
@@ -3752,16 +3963,19 @@ declare module BABYLON {
         getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh;
         geometry: Geometry;
         getTotalVertices(): number;
-        getVerticesData(kind: string): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
         getVertexBuffer(kind: any): VertexBuffer;
         isVerticesDataPresent(kind: string): boolean;
         getVerticesDataKinds(): string[];
         getTotalIndices(): number;
-        getIndices(): number[];
+        getIndices(copyWhenShared?: boolean): number[];
         isBlocked: boolean;
         isReady(): boolean;
         isDisposed(): boolean;
         sideOrientation: number;
+        areNormalsFrozen: boolean;
+        freezeNormals(): void;
+        unfreezeNormals(): void;
         _preActivate(): void;
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): void;
         refreshBoundingInfo(): void;
@@ -3777,8 +3991,8 @@ declare module BABYLON {
         _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
         registerBeforeRender(func: (mesh: AbstractMesh) => void): void;
         unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void;
-        registerAfterRender(func: () => void): void;
-        unregisterAfterRender(func: () => void): void;
+        registerAfterRender(func: (mesh: AbstractMesh) => void): void;
+        unregisterAfterRender(func: (mesh: AbstractMesh) => void): void;
         _getInstancesRenderList(subMeshId: number): _InstancesBatch;
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
         _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix) => void): void;
@@ -3824,9 +4038,9 @@ declare module BABYLON {
         static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance?: LinesMesh): LinesMesh;
-        static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
-        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: any, rotationFunction: any, ribbonCloseArray: boolean, ribbonClosePath: boolean, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
-        private static _ExtrudeShapeGeneric(name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side, instance);
+        static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
+        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: any, rotationFunction: any, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
+        private static _ExtrudeShapeGeneric(name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance);
         static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
         static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
@@ -3839,21 +4053,28 @@ declare module BABYLON {
         static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh;
         static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: {
             (i: number, distance: number): number;
-        }, scene: Scene, updatable?: boolean, sideOrientation?: number, tubeInstance?: Mesh): Mesh;
+        }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, tubeInstance?: Mesh): Mesh;
         static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle?: number): Mesh;
         static MinMax(meshes: AbstractMesh[]): {
             min: Vector3;
             max: Vector3;
         };
         static Center(meshesOrMinMaxVector: any): Vector3;
-        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean): Mesh;
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh): Mesh;
     }
 }
 declare module BABYLON {
     interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string): number[];
-        getIndices(): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getIndices(copyWhenShared?: boolean): number[];
         setVerticesData(kind: string, data: number[], updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: number[]): void;
@@ -3876,9 +4097,9 @@ declare module BABYLON {
         private _update(meshOrGeometry, updateExtends?, makeItUnique?);
         transform(matrix: Matrix): void;
         merge(other: VertexData): void;
-        static ExtractFromMesh(mesh: Mesh): VertexData;
-        static ExtractFromGeometry(geometry: Geometry): VertexData;
-        private static _ExtractFrom(meshOrGeometry);
+        static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData;
+        static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData;
+        private static _ExtractFrom(meshOrGeometry, copyWhenShared?);
         static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation?: number): VertexData;
         static CreateBox(size: number, sideOrientation?: number): VertexData;
         static CreateSphere(segments: number, diameter: number, sideOrientation?: number): VertexData;

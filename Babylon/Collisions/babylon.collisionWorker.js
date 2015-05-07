@@ -222,5 +222,4 @@ var BABYLON;
         console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Collisions/babylon.collisionWorker.js.map
+//# sourceMappingURL=babylon.collisionWorker.js.map

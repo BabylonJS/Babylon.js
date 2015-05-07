@@ -41,6 +41,7 @@ var BABYLON;
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
             this._sideOrientation = Mesh._DEFAULTSIDE;
+            this._areNormalsFrozen = false; // Will be used by ribbons mainly
             if (source) {
                 // Geometry
                 if (source._geometry) {
@@ -305,6 +306,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
+            get: function () {
+                return this._areNormalsFrozen;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Mesh.prototype.freezeNormals = function () {
+            this._areNormalsFrozen = true;
+        };
+        Mesh.prototype.unfreezeNormals = function () {
+            this._areNormalsFrozen = false;
+        };
         // Methods  
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
@@ -1026,7 +1040,8 @@ var BABYLON;
                 };
                 var sideOrientation = ribbonInstance.sideOrientation;
                 var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
-                ribbonInstance.updateMeshPositions(positionFunction, true);
+                var computeNormals = !(ribbonInstance.areNormalsFrozen);
+                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
                 return ribbonInstance;
             }
             else {

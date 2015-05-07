@@ -467,6 +467,7 @@
         // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
+        public static CodeRepository = "Babylon/";
         public static ShadersRepository = "Babylon/Shaders/";
 
         // Public members
