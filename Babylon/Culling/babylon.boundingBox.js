@@ -70,7 +70,7 @@ var BABYLON;
             return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
         };
         BoundingBox.prototype.intersectsPoint = function (point) {
-            var delta = BABYLON.Engine.Epsilon;
+            var delta = -BABYLON.Engine.Epsilon;
             if (this.maximumWorld.x - point.x < delta || delta > point.x - this.minimumWorld.x)
                 return false;
             if (this.maximumWorld.y - point.y < delta || delta > point.y - this.minimumWorld.y)
@@ -136,4 +136,4 @@ var BABYLON;
     })();
     BABYLON.BoundingBox = BoundingBox;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.boundingBox.js.map
+//# sourceMappingURL=babylon.BoundingBox.js.map
