@@ -153,8 +153,8 @@
         {
             "variable" : "BABYLON.CollisionWorker",
             "files" : [	
-                "../../Babylon/Collisions/babylon.collisionWorker.js",
                 "../../Babylon/Collisions/babylon.collider.js",
+                "../../Babylon/Collisions/babylon.collisionWorker.js",
                 "../../Babylon/Collisions/babylon.collisionCoordinator.js",
                 "../../Babylon/Math/babylon.math.js"
             ]
