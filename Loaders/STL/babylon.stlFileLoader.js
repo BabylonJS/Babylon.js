@@ -37,7 +37,11 @@ var BABYLON;
             return true;
         };
         STLFileLoader.prototype.load = function (scene, data, rootUrl) {
-            return this.importMesh(null, scene, data, rootUrl, null, null, null);
+            var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
+            if (result) {
+                scene.createDefaultCameraOrLight();
+            }
+            return result;
         };
         STLFileLoader.prototype.parseSolid = function (mesh, solidData) {
             var normals = [];
@@ -54,10 +58,10 @@ var BABYLON;
                 if (!normalMatches) {
                     continue;
                 }
-                var normal = [Number(normalMatches[1]), Number(normalMatches[3]), Number(normalMatches[5])];
+                var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
                 var vertexMatch;
                 while (vertexMatch = this.vertexPattern.exec(facet)) {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
                     normals.push(normal[0], normal[1], normal[2]);
                 }
                 indices.push(indicesCount++, indicesCount++, indicesCount++);

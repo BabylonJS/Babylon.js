@@ -9,7 +9,6 @@
 
         public extensions = ".stl";
 
-
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
             var matches;
 
@@ -40,11 +39,16 @@
             }
 
             return true;
-
         }
 
         public load(scene: Scene, data: string, rootUrl: string): boolean {
-            return this.importMesh(null, scene, data, rootUrl, null, null, null);
+            var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
+
+            if (result) {
+                scene.createDefaultCameraOrLight();
+            }
+
+            return result;
         }
 
         private parseSolid(mesh: Mesh, solidData: string) {
@@ -63,11 +67,11 @@
                 if (!normalMatches) {
                     continue;
                 }
-                var normal = [Number(normalMatches[1]), Number(normalMatches[3]), Number(normalMatches[5])];
+                var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
 
                 var vertexMatch;
                 while (vertexMatch = this.vertexPattern.exec(facet)) {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
                     normals.push(normal[0], normal[1], normal[2]);
                 }
                 indices.push(indicesCount++, indicesCount++, indicesCount++);
