@@ -106,6 +106,7 @@
   <script src="Babylon/Cameras/babylon.targetCamera.js"></script>
   <script src="Babylon/Cameras/babylon.camera.js"></script>
   <script src="Babylon/Collisions/babylon.collider.js"></script>
+  <script src="Babylon/Collisions/babylon.collisionCoordinator.js"></script>
   <script src="Babylon/Lights//Shadows/babylon.shadowGenerator.js"></script>
   <script src="Babylon/Lights/babylon.directionalLight.js"></script>
   <script src="Babylon/Lights/babylon.hemisphericLight.js"></script>

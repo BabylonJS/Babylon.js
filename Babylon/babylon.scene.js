@@ -128,8 +128,6 @@ var BABYLON;
             this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
-            this._scaledPosition = BABYLON.Vector3.Zero();
-            this._scaledVelocity = BABYLON.Vector3.Zero();
             this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
@@ -143,6 +141,8 @@ var BABYLON;
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             //simplification queue
             this.simplificationQueue = new BABYLON.SimplificationQueue();
+            //collision coordinator initialization.
+            this.workerCollisions = (!!Worker && !!BABYLON.CollisionWorker);
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
@@ -176,6 +176,21 @@ var BABYLON;
             // Properties 
             get: function () {
                 return this._debugLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "workerCollisions", {
+            get: function () {
+                return this._workerCollisions;
+            },
+            set: function (enabled) {
+                this._workerCollisions = enabled;
+                if (this.collisionCoordinator) {
+                    this.collisionCoordinator.destroy();
+                }
+                this.collisionCoordinator = enabled ? new BABYLON.CollisionCoordinatorWorker() : new BABYLON.CollisionCoordinatorLegacy();
+                this.collisionCoordinator.init(this);
             },
             enumerable: true,
             configurable: true
@@ -551,6 +566,8 @@ var BABYLON;
         Scene.prototype.addMesh = function (newMesh) {
             newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshAdded(newMesh);
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
             }
@@ -561,6 +578,8 @@ var BABYLON;
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshRemoved(toRemove);
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
             }
@@ -763,6 +782,8 @@ var BABYLON;
                 return false;
             }
             this._geometries.push(geometry);
+            //notify the collision coordinator
+            this.collisionCoordinator.onGeometryAdded(geometry);
             if (this.onGeometryAdded) {
                 this.onGeometryAdded(geometry);
             }
@@ -777,6 +798,8 @@ var BABYLON;
             var index = this._geometries.indexOf(geometry);
             if (index > -1) {
                 this._geometries.splice(index, 1);
+                //notify the collision coordinator
+                this.collisionCoordinator.onGeometryDeleted(geometry);
                 if (this.onGeometryRemoved) {
                     this.onGeometryRemoved(geometry);
                 }
@@ -1487,45 +1510,6 @@ var BABYLON;
             for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
                 this.soundTracks[scIndex].dispose();
             }
-        };
-        // Collisions
-        Scene.prototype._getNewPosition = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
-            if (excludedMesh === void 0) { excludedMesh = null; }
-            position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
-            collider.retry = 0;
-            collider.initialVelocity = this._scaledVelocity;
-            collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
-            finalPosition.multiplyInPlace(collider.radius);
-        };
-        Scene.prototype._collideWithWorld = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
-            if (excludedMesh === void 0) { excludedMesh = null; }
-            var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
-            if (collider.retry >= maximumRetry) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-            collider._initialize(position, velocity, closeDistance);
-            for (var index = 0; index < this.meshes.length; index++) {
-                var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
-                    mesh._checkCollision(collider);
-                }
-            }
-            if (!collider.collisionFound) {
-                position.addToRef(velocity, finalPosition);
-                return;
-            }
-            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
-                collider._getResponse(position, velocity);
-            }
-            if (velocity.length() <= closeDistance) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-            collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         };
         // Octrees
         Scene.prototype.getWorldExtends = function () {
