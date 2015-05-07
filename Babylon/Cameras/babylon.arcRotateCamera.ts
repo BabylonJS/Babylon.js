@@ -20,6 +20,7 @@
         public keysRight = [39];
         public zoomOnFactor = 1;
         public targetScreenOffset = Vector2.Zero();
+        public pinchInwards: boolean = true;
 
 
         private _keys = [];
@@ -154,7 +155,7 @@
                             //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
                             pointers.item(evt.pointerId).x = evt.clientX;
                             pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = 1;
+                            var direction = this.pinchInwards ? 1 : -1;
                             var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
                             var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
                             var pinchSquaredDistance = (distX * distX) + (distY * distY);
@@ -164,10 +165,7 @@
                             }
 
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                if (pinchSquaredDistance > previousPinchDistance) {
-                                    direction = -1;
-                                }
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility);
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
