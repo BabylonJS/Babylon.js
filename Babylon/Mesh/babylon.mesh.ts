@@ -67,6 +67,7 @@
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
+        private _areNormalsFrozen: boolean = false;
 
         /**
          * @constructor
@@ -317,7 +318,19 @@
         public set sideOrientation(sideO: number) {
             this._sideOrientation = sideO;
         }
+        
+        public get areNormalsFrozen(): boolean {
+            return this._areNormalsFrozen;
+        }
+        
+        public freezeNormals(): void {
+            this._areNormalsFrozen = true;
+        }
 
+        public unfreezeNormals(): void {
+            this._areNormalsFrozen = false;
+        }
+        
         // Methods  
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
@@ -1214,7 +1227,8 @@
                 };
                 var sideOrientation = ribbonInstance.sideOrientation;
                 var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
-                ribbonInstance.updateMeshPositions(positionFunction, true);
+                var computeNormals = !(ribbonInstance.areNormalsFrozen);
+                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
 
                 return ribbonInstance;
 
