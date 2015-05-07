@@ -10,6 +10,7 @@
  - New lens effects rendering pipeline. More info [here](http://doc.babylonjs.com/page.php?p=24841) ([jahow](https://github.com/jahow))
  - New basic mesh type: Ribbons. See [demo](http://www.babylonjs.com/?RIBBONS). More info [here](http://doc.babylonjs.com/page.php?p=25088) ([jbousquie](https://github.com/jbousquie))
  - New ```BABYLON.Mesh.ExtrudeShape``` and ```BABYLON.Mesh.ExtrudeShapeCustom```. More info [here](http://doc.babylonjs.com/page.php?p=24847) ([jbousquie](https://github.com/jbousquie))
+ - New Loaders folder with a first additionnal plugin: STL  ([raananw](http://www.github.com/raananw), [deltakosh](http://www.github.com/deltakosh))
  - **Updates**
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
  - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))
