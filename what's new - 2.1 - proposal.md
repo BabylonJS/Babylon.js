@@ -1,7 +1,7 @@
 ﻿- 2.1.0:
  - **Major updates**
  - Collisions can now be offloaded on webworkers ([raananw](http://www.github.com/raananw))
- - SIMD.js support for math library. See [demo](http://www.babylonjs.com/simd.html) ([deltakosh](http://www.github.com/deltakosh))
+ - SIMD.js support for math library. See [demo](http://www.babylonjs.com/scenes/simd.html) ([deltakosh](http://www.github.com/deltakosh))
  - Unity 5  scene exporter. More info [here](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) ([davrous](http://www.github.com/davrous), [deltakosh](http://www.github.com/deltakosh))
  - New ```Mesh.CreateDecal()``` function to create decals. See [demo](http://www.babylonjs.com/?DECALS). More info [here](http://doc.babylonjs.com/page.php?p=25094) ([deltakosh](http://www.github.com/deltakosh))
  - New tool for debugLayer: You can now dump renderTargets to see their content ([deltakosh](http://www.github.com/deltakosh))
