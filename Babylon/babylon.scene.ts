@@ -291,8 +291,8 @@
 
             //simplification queue
             this.simplificationQueue = new SimplificationQueue();
-            //collision coordinator initialization.
-            this.workerCollisions = (!!Worker && !!BABYLON.CollisionWorker);
+            //collision coordinator initialization. For now legacy per default.
+            this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
 
         // Properties 

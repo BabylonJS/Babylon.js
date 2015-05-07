@@ -141,8 +141,8 @@ var BABYLON;
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             //simplification queue
             this.simplificationQueue = new BABYLON.SimplificationQueue();
-            //collision coordinator initialization.
-            this.workerCollisions = (!!Worker && !!BABYLON.CollisionWorker);
+            //collision coordinator initialization. For now legacy per default.
+            this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
         Object.defineProperty(Scene, "FOGMODE_NONE", {
             get: function () {
