@@ -1,5 +1,8 @@
 module BABYLON {
 
+    //If this file is included in the main thread, this will be initialized.
+    export var WorkerIncluded: boolean = true;
+
     export class CollisionCache {
         private _meshes: { [n: number]: SerializedMesh; } = {};
         private _geometries: { [s: number]: SerializedGeometry; } = {};
@@ -228,29 +231,39 @@ module BABYLON {
     declare class WorkerGlobalScope { }
 
     //check if we are in a web worker, as this code should NOT run on the main UI thread
-    if (self && self instanceof WorkerGlobalScope) {
+    try {
+        if (self && self instanceof WorkerGlobalScope) {
 
-        //Window hack to allow including babylonjs native code. the <any> is for typescript.
-        window = <any> {};
+            //Window hack to allow including babylonjs native code. the <any> is for typescript.
+            window = <any> {};
 
-        var collisionDetector: ICollisionDetector = new CollisionDetectorTransferable();
-
-        var onNewMessage = function (event: MessageEvent) {
-            var message = <BabylonMessage> event.data;
-            switch (message.taskType) {
-                case WorkerTaskType.INIT:
-                    collisionDetector.onInit(<InitPayload> message.payload);
-                    break;
-                case WorkerTaskType.COLLIDE:
-                    collisionDetector.onCollision(<CollidePayload> message.payload);
-                    break;
-                case WorkerTaskType.UPDATE:
-                    collisionDetector.onUpdate(<UpdatePayload> message.payload);
-                    break;
+            //scripts were not included, standalone worker
+            if (!BABYLON.Collider) {
+                importScripts("./babylon.collisionCoordinator.js");
+                importScripts("./babylon.collider.js");
+                importScripts("../Math/babylon.math.js");
             }
+
+            var collisionDetector: ICollisionDetector = new CollisionDetectorTransferable();
+
+            var onNewMessage = function (event: MessageEvent) {
+                var message = <BabylonMessage> event.data;
+                switch (message.taskType) {
+                    case WorkerTaskType.INIT:
+                        collisionDetector.onInit(<InitPayload> message.payload);
+                        break;
+                    case WorkerTaskType.COLLIDE:
+                        collisionDetector.onCollision(<CollidePayload> message.payload);
+                        break;
+                    case WorkerTaskType.UPDATE:
+                        collisionDetector.onUpdate(<UpdatePayload> message.payload);
+                        break;
+                }
+            }
+
+            self.onmessage = onNewMessage;
         }
-
-        self.onmessage = onNewMessage;
+    } catch (e) {
+        console.log("single worker init");
     }
-
 }
