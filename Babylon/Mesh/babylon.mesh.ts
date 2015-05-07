@@ -67,7 +67,7 @@
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
-        private _areNormalsFrozen: boolean = false;
+        private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
         /**
          * @constructor
@@ -318,11 +318,11 @@
         public set sideOrientation(sideO: number) {
             this._sideOrientation = sideO;
         }
-        
+
         public get areNormalsFrozen(): boolean {
             return this._areNormalsFrozen;
         }
-        
+
         public freezeNormals(): void {
             this._areNormalsFrozen = true;
         }

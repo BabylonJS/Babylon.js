@@ -457,7 +457,7 @@
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
 
             if (collisionId != null || collisionId != undefined)
-               newPosition.multiplyInPlace(this._collider.radius);
+                newPosition.multiplyInPlace(this._collider.radius);
 
             if (!newPosition.equalsWithEpsilon(this.position)) {
                 this.position.copyFrom(this._previousPosition);

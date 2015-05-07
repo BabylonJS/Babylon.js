@@ -2736,9 +2736,11 @@ var BABYLON;
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
         function Curve3(points) {
+            this._length = 0;
             this._points = points;
+            this._length = this._computeLength(points);
         }
-        // QuadraticBezier(origin_V3, control_V3, destination_V3 )
+        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
@@ -2751,7 +2753,7 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3)
+        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
@@ -2764,8 +2766,20 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
+        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
+            var hermite = new Array();
+            var step = 1 / nbPoints;
+            for (var i = 0; i <= nbPoints; i++) {
+                hermite.push(BABYLON.Vector3.Hermite(p1, t1, p2, t2, i * step));
+            }
+            return new Curve3(hermite);
+        };
         Curve3.prototype.getPoints = function () {
             return this._points;
+        };
+        Curve3.prototype.length = function () {
+            return this._length;
         };
         Curve3.prototype.continue = function (curve) {
             var lastPoint = this._points[this._points.length - 1];
@@ -2774,7 +2788,15 @@ var BABYLON;
             for (var i = 1; i < curvePoints.length; i++) {
                 continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
             }
-            return new Curve3(continuedPoints);
+            var continuedCurve = new Curve3(continuedPoints);
+            return continuedCurve;
+        };
+        Curve3.prototype._computeLength = function (path) {
+            var l = 0;
+            for (var i = 1; i < path.length; i++) {
+                l += (path[i].subtract(path[i - 1])).length();
+            }
+            return l;
         };
         return Curve3;
     })();
