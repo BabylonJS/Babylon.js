@@ -110,6 +110,8 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Exporter for 3ds Max
  - Assets manager
 
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
+
 ## Apache License 2.0 (Apache)
 
 Apache License
