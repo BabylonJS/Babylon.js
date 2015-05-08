@@ -25,10 +25,8 @@ var BABYLON;
             this._oldPosition = BABYLON.Vector3.Zero();
             this._diffPosition = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
-            this._newPositionBuffer = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
-                var fromGravity = collisionId !== _this.uniqueId;
                 //TODO move this to the collision coordinator!
                 if (_this.getScene().workerCollisions)
                     newPosition.multiplyInPlace(_this._collider.radius);
@@ -41,10 +39,6 @@ var BABYLON;
                         if (_this.onCollide && collidedMesh) {
                             _this.onCollide(collidedMesh);
                         }
-                    }
-                    //check if it is the gravity inspection
-                    if (fromGravity) {
-                        _this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, _this.position) != 0);
                     }
                 };
                 updatePosition(newPosition);
@@ -166,22 +160,21 @@ var BABYLON;
                 this._reset();
             }
         };
-        FreeCamera.prototype._collideWithWorld = function (velocity, gravityInspection) {
-            if (gravityInspection === void 0) { gravityInspection = false; }
+        FreeCamera.prototype._collideWithWorld = function (velocity) {
             var globalPosition;
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(gravityInspection ? this._newPositionBuffer : this.position, this.parent.getWorldMatrix());
+                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
             }
             else {
                 globalPosition = this.position;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-            //in case we are using web workers, add gravity to the velocity to prevent the dual-collision checking
-            if (this.getScene().workerCollisions) {
+            //add gravity to the velocity to prevent the dual-collision checking
+            if (this.applyGravity) {
                 velocity.addInPlace(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -213,10 +206,7 @@ var BABYLON;
         };
         FreeCamera.prototype._updatePosition = function () {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
-                this._collideWithWorld(this.cameraDirection, false);
-                if (this.applyGravity && !this.getScene().workerCollisions) {
-                    this._collideWithWorld(this.getScene().gravity, true);
-                }
+                this._collideWithWorld(this.cameraDirection);
             }
             else {
                 this.position.addInPlace(this.cameraDirection);
@@ -230,5 +220,3 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=../Cameras/babylon.freeCamera.js.map
