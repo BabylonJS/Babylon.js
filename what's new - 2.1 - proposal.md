@@ -11,6 +11,7 @@
  - New basic mesh type: Ribbons. See [demo](http://www.babylonjs.com/?RIBBONS). More info [here](http://doc.babylonjs.com/page.php?p=25088) ([jbousquie](https://github.com/jbousquie))
  - New ```BABYLON.Mesh.ExtrudeShape``` and ```BABYLON.Mesh.ExtrudeShapeCustom```. More info [here](http://doc.babylonjs.com/page.php?p=24847) ([jbousquie](https://github.com/jbousquie))
  - New Loaders folder with a first additionnal plugin: [STL](http://doc.babylonjs.com/page.php?p=25109)  ([raananw](http://www.github.com/raananw), [deltakosh](http://www.github.com/deltakosh))
+ - Gulp building process revamped, updated and simplified and now includes a config.json ([raananw](http://www.github.com/raananw)) 
  - **Updates**
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
  - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))
@@ -45,3 +46,4 @@
  - ArcRotateCamera pinch zoom debug ([vousk](https://github.com/vousk)) 
  - Fixing animatable bug when animation is over ([temechon](http://www.github.com/temechon))
  - useCameraPostProcess whenever there is a special camera in use ([m0ppers](https://github.com/m0ppers))
+ - delta in BoundingBox's intersectsPoint is now calculated correctly ([raananw](http://www.github.com/raananw)) 
