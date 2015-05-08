@@ -15,6 +15,7 @@
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
  - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))
  - Added mesh.freezeWorldMatrix() for static meshes ([deltakosh](http://www.github.com/deltakosh))
+ - Added mesh.freezeNormals() for parametric mesh updates ([jbousquie](http://www.github.com/jbousquie))
  - Added mesh.alwaysSelectAsActiveMesh to disable frustum clipping for a specific mesh ([deltakosh](http://www.github.com/deltakosh))
  - Added updateMeshPositions method ([jbousquie](https://github.com/jbousquie))
  - Callbacks for geometry changes ([raananw](http://www.github.com/raananw))
