@@ -1,9 +1,10 @@
 {
     "build" : {
-        "filename" : "babylon.js",
-        "minSuffix" : ".min",
+        "filename" : "babylon.max.js",
+        "minFilename": "babylon.js",
+        "minNoWorkerFilename" : "babylon.noworker.js",
         "declarationFilename" : "babylon.d.ts",
-        "outputDirectory" : "build/"
+        "outputDirectory" : "../../"
     },
     "core" : {
         "typescript" : [

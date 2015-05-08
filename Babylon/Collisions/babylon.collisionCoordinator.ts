@@ -84,21 +84,21 @@ module BABYLON {
     export interface InitPayload {
 
     }
-    
+
     export interface CollidePayload {
         collisionId: number;
         collider: SerializedColliderToWorker;
         maximumRetry: number;
         excludedMeshUniqueId?: number;
     }
-        
+
     export interface UpdatePayload {
         updatedMeshes: { [n: number]: SerializedMesh; };
         updatedGeometries: { [s: string]: SerializedGeometry; };
         removedMeshes: Array<number>;
         removedGeometries: Array<string>;
     }
-    
+
     export enum WorkerReplyType {
         SUCCESS,
         UNKNOWN_ERROR
@@ -136,7 +136,7 @@ module BABYLON {
         }
 
         public static SerializeMesh = function (mesh: BABYLON.AbstractMesh): SerializedMesh {
-            var submeshes : Array<SerializedSubMesh> = [];
+            var submeshes: Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
                 submeshes = mesh.subMeshes.map(function (sm, idx) {
                     return {
@@ -345,7 +345,7 @@ module BABYLON {
         public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
-            
+
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
