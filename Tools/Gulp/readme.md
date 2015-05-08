@@ -37,8 +37,8 @@ npm update
 gulp
 ```
 Will be generated :
-- build/babylon.js
-- build/babylon.min.js
+- babylon.js
+- babylon.max.js (unminified)
 
 ### Build Babylon.js when you save a javascript file:
 ```
@@ -52,9 +52,9 @@ gulp watch
 gulp typescript
 ```
 Will be generated :
-- build/babylon.js
-- build/babylon.d.ts
-- build/babylon.min.js
+- babylon.js
+- babylon.d.ts
+- babylon.max.js (unminified)
 
 Be aware that all js files content will be overwrite.
 
