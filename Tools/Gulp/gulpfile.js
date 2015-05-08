@@ -66,7 +66,7 @@ gulp.task('typescript-sourcemaps', function() {
                     typescript: require('typescript')
                 }));
     return tsResult.js
-            .pipe(sourcemaps.write(./)) // sourcemaps are written.
+            .pipe(sourcemaps.write("./")) // sourcemaps are written.
             .pipe(gulp.dest('../../Babylon/'));
 });
 
