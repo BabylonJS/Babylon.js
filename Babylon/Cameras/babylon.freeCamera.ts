@@ -191,7 +191,7 @@
             this._collider.radius = this.ellipsoid;
 
             this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
-            
+
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
@@ -228,15 +228,15 @@
                 if (fromGravity) {
                     this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
                 }
-            }    
-            
+            }
+
             if (fromGravity) {
                 //if arrived from gravity, use the buffered diffPosition that was created during the regular collision check.
                 this.position.addInPlace(this._diffPosition);
             }
             updatePosition(newPosition);
         }
-        
+
         public _checkInputs(): void {
             if (!this._localDirection) {
                 this._localDirection = BABYLON.Vector3.Zero();

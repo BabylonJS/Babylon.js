@@ -58,7 +58,18 @@ gulp.task('typescript-compile', function() {
     ]);
 });
 
-gulp.task("build", ["workers", "shaders"], function() {
+gulp.task("buildNoWorker", ["shaders"], function () {
+    return merge2(
+        gulp.src(config.core.files, config.extras.files),
+        shadersStream
+    )
+    .pipe(concat(config.build.minNoWorkerFilename))
+    .pipe(cleants())
+    .pipe(uglify())
+    .pipe(gulp.dest(config.build.outputDirectory))
+});
+
+gulp.task("build", ["workers", "shaders"], function () {
     return merge2(
         gulp.src(config.core.files, config.extras.files),    
         shadersStream,
@@ -67,7 +78,7 @@ gulp.task("build", ["workers", "shaders"], function() {
     .pipe(concat(config.build.filename))
     .pipe(cleants())
     .pipe(gulp.dest(config.build.outputDirectory))
-    .pipe(rename({suffix: config.build.minSuffix}))
+    .pipe(rename(config.build.minFilename))
     .pipe(uglify())
     .pipe(gulp.dest(config.build.outputDirectory))
 });
@@ -80,7 +91,7 @@ gulp.task("typescript", function(cb) {
  * The default task, call the tasks: build
  */
 gulp.task('default', function() {
-    return gulp.start('build');
+    return runSequence("buildNoWorker", "build");
 });
 
 /**
