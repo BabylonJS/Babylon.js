@@ -185,6 +185,7 @@ var BABYLON;
                 return this._workerCollisions;
             },
             set: function (enabled) {
+                enabled = (enabled && !!Worker);
                 this._workerCollisions = enabled;
                 if (this.collisionCoordinator) {
                     this.collisionCoordinator.destroy();
@@ -1731,4 +1732,3 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map
