@@ -38,6 +38,7 @@ gulp
 ```
 Will be generated :
 - babylon.js
+- babylon.noworker.js (minified version without collisions workers)
 - babylon.max.js (unminified)
 
 ### Build Babylon.js when you save a javascript file:
@@ -54,6 +55,7 @@ gulp typescript
 Will be generated :
 - babylon.js
 - babylon.d.ts
+- babylon.noworker.js (minified version without collisions workers)
 - babylon.max.js (unminified)
 
 Be aware that all js files content will be overwrite.
