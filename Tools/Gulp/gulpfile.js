@@ -41,7 +41,6 @@ Compiles all typescript files and creating a declaration file.
 */
 gulp.task('typescript-compile', function() {  
   var tsResult = gulp.src(config.core.typescript)
-                .pipe(sourcemaps.init()) // sourcemaps init. currently redundant directory def, waiting for this - https://github.com/floridoo/gulp-sourcemaps/issues/111
                 .pipe(typescript({ 
                     noExternalResolve: true, 
                     target: 'ES5', 
@@ -53,9 +52,22 @@ gulp.task('typescript-compile', function() {
             .pipe(concat(config.build.declarationFilename))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
-            .pipe(sourcemaps.write("./")) // sourcemaps are written
             .pipe(gulp.dest('../../Babylon/'))
     ]);
+});
+
+gulp.task('typescript-sourcemaps', function() {
+    var tsResult = gulp.src(config.core.typescript)
+                .pipe(sourcemaps.init()) // sourcemaps init. currently redundant directory def, waiting for this - https://github.com/floridoo/gulp-sourcemaps/issues/111
+                .pipe(typescript({ 
+                    noExternalResolve: true, 
+                    target: 'ES5', 
+                    declarationFiles: true,
+                    typescript: require('typescript')
+                }));
+    return tsResult.js
+            .pipe(sourcemaps.write(./)) // sourcemaps are written.
+            .pipe(gulp.dest('../../Babylon/'));
 });
 
 gulp.task("buildNoWorker", ["shaders"], function () {
