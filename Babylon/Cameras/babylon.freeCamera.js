@@ -171,7 +171,9 @@ var BABYLON;
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
             //add gravity to the velocity to prevent the dual-collision checking
-            velocity.addInPlace(this.getScene().gravity);
+            if (this.applyGravity) {
+                velocity.addInPlace(this.getScene().gravity);
+            }
             this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
