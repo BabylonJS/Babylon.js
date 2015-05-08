@@ -21,28 +21,47 @@ var BABYLON;
             this.angularSensibility = 2000.0;
             this._keys = [];
             this._collider = new BABYLON.Collider();
-            this._needMoveForGravity = true;
+            this._needMoveForGravity = false;
             this._oldPosition = BABYLON.Vector3.Zero();
             this._diffPosition = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+            this._newPositionBuffer = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
+                var fromGravity = collisionId !== _this.uniqueId;
                 //TODO move this to the collision coordinator!
-                if (collisionId != null || collisionId != undefined)
+                if (_this.getScene().workerCollisions)
                     newPosition.multiplyInPlace(_this._collider.radius);
-                _this._newPosition.copyFrom(newPosition);
-                _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
-                var oldPosition = _this.position.clone();
-                if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
-                    _this.position.addInPlace(_this._diffPosition);
-                    if (_this.onCollide && collidedMesh) {
-                        _this.onCollide(collidedMesh);
+                //If this is a gravity-enabled camera AND this is the regular inspection, use the new position for grvity inspection.
+                if (!fromGravity && _this.applyGravity) {
+                    _this._newPositionBuffer.copyFrom(newPosition);
+                    _this._newPositionBuffer.subtractToRef(_this._oldPosition, _this._diffPosition);
+                    _this.position.addToRef(_this._diffPosition, _this._newPositionBuffer);
+                    //send the gravity collision inspection.
+                    _this._collideWithWorld(_this.getScene().gravity, true);
+                    //don't update the position yet, to prevent "jumping".
+                    return;
+                }
+                var updatePosition = function (newPos) {
+                    _this._newPosition.copyFrom(newPos);
+                    _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
+                    var oldPosition = _this.position.clone();
+                    if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
+                        _this.position.addInPlace(_this._diffPosition);
+                        if (_this.onCollide && collidedMesh) {
+                            _this.onCollide(collidedMesh);
+                        }
                     }
+                    //check if it is the gravity inspection
+                    if (fromGravity) {
+                        _this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, _this.position) != 0);
+                    }
+                };
+                if (fromGravity) {
+                    //if arrived from gravity, use the buffered diffPosition that was created during the regular collision check.
+                    _this.position.addInPlace(_this._diffPosition);
                 }
-                //check if it is the gravity inspection
-                if (collisionId != _this.uniqueId) {
-                    _this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, _this.position) != 0);
-                }
+                updatePosition(newPosition);
             };
         }
         // Controls
@@ -165,14 +184,14 @@ var BABYLON;
             if (gravityInspection === void 0) { gravityInspection = false; }
             var globalPosition;
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
+                globalPosition = BABYLON.Vector3.TransformCoordinates(gravityInspection ? this._newPositionBuffer : this.position, this.parent.getWorldMatrix());
             }
             else {
                 globalPosition = this.position;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, velocity.equals(this.getScene().gravity) ? this.uniqueId + 100000 : this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -205,9 +224,6 @@ var BABYLON;
         FreeCamera.prototype._updatePosition = function () {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection, false);
-                if (this.applyGravity) {
-                    this._collideWithWorld(this.getScene().gravity, true);
-                }
             }
             else {
                 this.position.addInPlace(this.cameraDirection);
