@@ -16,7 +16,6 @@
         private _oldPosition = BABYLON.Vector3.Zero();
         private _diffPosition = BABYLON.Vector3.Zero();
         private _newPosition = BABYLON.Vector3.Zero();
-        private _newPositionBuffer = BABYLON.Vector3.Zero();
         private _attachedElement: HTMLElement;
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
@@ -178,11 +177,11 @@
             }
         }
 
-        public _collideWithWorld(velocity: Vector3, gravityInspection: boolean = false): void {
+        public _collideWithWorld(velocity: Vector3): void {
             var globalPosition: Vector3;
 
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(gravityInspection ? this._newPositionBuffer : this.position, this.parent.getWorldMatrix());
+                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
             } else {
                 globalPosition = this.position;
             }
@@ -190,18 +189,14 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
-            //in case we are using web workers, add gravity to the velocity to prevent the dual-collision checking
-            if (this.getScene().workerCollisions) {
-                velocity.addInPlace(this.getScene().gravity);
-            }
+            //add gravity to the velocity to prevent the dual-collision checking
+            velocity.addInPlace(this.getScene().gravity);
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
-            var fromGravity: boolean = collisionId !== this.uniqueId;
-
             //TODO move this to the collision coordinator!
             if (this.getScene().workerCollisions)
                 newPosition.multiplyInPlace(this._collider.radius);
@@ -217,10 +212,6 @@
                     if (this.onCollide && collidedMesh) {
                         this.onCollide(collidedMesh);
                     }
-                }
-                //check if it is the gravity inspection
-                if (fromGravity) {
-                    this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
                 }
             }    
             
@@ -260,10 +251,7 @@
 
         public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
-                this._collideWithWorld(this.cameraDirection, false);
-                if (this.applyGravity && !this.getScene().workerCollisions) {
-                    this._collideWithWorld(this.getScene().gravity, true);
-                }
+                this._collideWithWorld(this.cameraDirection);
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }
