@@ -182,8 +182,8 @@ module BABYLON {
         }
 
         public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void {
-            if (!this._init);
-            if (this._collisionsCallbackArray[collisionIndex]) return;
+            if (!this._init) return;
+            if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
 
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
@@ -353,7 +353,7 @@ module BABYLON {
 
             this._finalPosition.multiplyInPlace(collider.radius);
             //run the callback
-            onNewPosition(null, this._finalPosition, collider.collidedMesh);
+            onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
         }
 
         public init(scene: Scene): void {
