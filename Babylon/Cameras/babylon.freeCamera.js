@@ -32,16 +32,6 @@ var BABYLON;
                 //TODO move this to the collision coordinator!
                 if (_this.getScene().workerCollisions)
                     newPosition.multiplyInPlace(_this._collider.radius);
-                //If this is a gravity-enabled camera AND this is the regular inspection, use the new position for grvity inspection.
-                if (!fromGravity && _this.applyGravity) {
-                    _this._newPositionBuffer.copyFrom(newPosition);
-                    _this._newPositionBuffer.subtractToRef(_this._oldPosition, _this._diffPosition);
-                    _this.position.addToRef(_this._diffPosition, _this._newPositionBuffer);
-                    //send the gravity collision inspection.
-                    _this._collideWithWorld(_this.getScene().gravity, true);
-                    //don't update the position yet, to prevent "jumping".
-                    return;
-                }
                 var updatePosition = function (newPos) {
                     _this._newPosition.copyFrom(newPos);
                     _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
@@ -57,10 +47,6 @@ var BABYLON;
                         _this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, _this.position) != 0);
                     }
                 };
-                if (fromGravity) {
-                    //if arrived from gravity, use the buffered diffPosition that was created during the regular collision check.
-                    _this.position.addInPlace(_this._diffPosition);
-                }
                 updatePosition(newPosition);
             };
         }
@@ -191,6 +177,10 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
+            //in case we are using web workers, add gravity to the velocity to prevent the dual-collision checking
+            if (this.getScene().workerCollisions) {
+                velocity.addInPlace(this.getScene().gravity);
+            }
             this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
@@ -224,6 +214,9 @@ var BABYLON;
         FreeCamera.prototype._updatePosition = function () {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection, false);
+                if (this.applyGravity && !this.getScene().workerCollisions) {
+                    this._collideWithWorld(this.getScene().gravity, true);
+                }
             }
             else {
                 this.position.addInPlace(this.cameraDirection);
@@ -237,4 +230,5 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.freeCamera.js.map
+
+//# sourceMappingURL=../Cameras/babylon.freeCamera.js.map
