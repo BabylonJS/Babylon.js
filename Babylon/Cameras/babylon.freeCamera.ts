@@ -12,10 +12,11 @@
 
         private _keys = [];
         private _collider = new Collider();
-        private _needMoveForGravity = true;
+        private _needMoveForGravity = false;
         private _oldPosition = BABYLON.Vector3.Zero();
         private _diffPosition = BABYLON.Vector3.Zero();
         private _newPosition = BABYLON.Vector3.Zero();
+        private _newPositionBuffer = BABYLON.Vector3.Zero();
         private _attachedElement: HTMLElement;
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
@@ -181,7 +182,7 @@
             var globalPosition: Vector3;
 
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
+                globalPosition = BABYLON.Vector3.TransformCoordinates(gravityInspection ? this._newPositionBuffer : this.position, this.parent.getWorldMatrix());
             } else {
                 globalPosition = this.position;
             }
@@ -189,30 +190,51 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, velocity.equals(this.getScene().gravity) ? this.uniqueId + 100000 : this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, gravityInspection ? this.uniqueId + 100000 : this.uniqueId);
             
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            var fromGravity: boolean = collisionId !== this.uniqueId;
+
             //TODO move this to the collision coordinator!
-            if (collisionId != null || collisionId != undefined)
+            if (this.getScene().workerCollisions)
                 newPosition.multiplyInPlace(this._collider.radius);
 
-            this._newPosition.copyFrom(newPosition);
+            //If this is a gravity-enabled camera AND this is the regular inspection, use the new position for grvity inspection.
+            if (!fromGravity && this.applyGravity) {
+                this._newPositionBuffer.copyFrom(newPosition);
+                this._newPositionBuffer.subtractToRef(this._oldPosition, this._diffPosition);
+                this.position.addToRef(this._diffPosition, this._newPositionBuffer);
+                //send the gravity collision inspection.
+                this._collideWithWorld(this.getScene().gravity, true);
+                //don't update the position yet, to prevent "jumping".
+                return;
+            }
 
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+            var updatePosition = (newPos) => {
+                this._newPosition.copyFrom(newPos);
 
-            var oldPosition = this.position.clone();
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide && collidedMesh) {
-                    this.onCollide(collidedMesh);
+                this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+
+                var oldPosition = this.position.clone();
+                if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+                    this.position.addInPlace(this._diffPosition);
+                    if (this.onCollide && collidedMesh) {
+                        this.onCollide(collidedMesh);
+                    }
                 }
+                //check if it is the gravity inspection
+                if (fromGravity) {
+                    this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
+                }
+            }    
+            
+            if (fromGravity) {
+                //if arrived from gravity, use the buffered diffPosition that was created during the regular collision check.
+                this.position.addInPlace(this._diffPosition);
             }
-            //check if it is the gravity inspection
-            if (collisionId != this.uniqueId) {
-                this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
-            }
+            updatePosition(newPosition);
         }
         
         public _checkInputs(): void {
@@ -249,9 +271,9 @@
         public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection, false);
-                if (this.applyGravity) {
-                    this._collideWithWorld(this.getScene().gravity, true);
-                }
+                //if (this.applyGravity) {
+                //    this._collideWithWorld(this.getScene().gravity, true);
+                //}
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }

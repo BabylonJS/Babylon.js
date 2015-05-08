@@ -104,8 +104,8 @@ var BABYLON;
         }
         CollisionCoordinatorWorker.prototype.getNewPosition = function (position, velocity, collider, maximumRetry, excludedMesh, onNewPosition, collisionIndex) {
             if (!this._init)
-                ;
-            if (this._collisionsCallbackArray[collisionIndex])
+                return;
+            if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000])
                 return;
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
@@ -216,7 +216,7 @@ var BABYLON;
             this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
             this._finalPosition.multiplyInPlace(collider.radius);
             //run the callback
-            onNewPosition(null, this._finalPosition, collider.collidedMesh);
+            onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
         };
         CollisionCoordinatorLegacy.prototype.init = function (scene) {
             this._scene = scene;
