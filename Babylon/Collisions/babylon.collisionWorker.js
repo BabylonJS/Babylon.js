@@ -124,7 +124,6 @@ var BABYLON;
             }
             if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
                 subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-                //The following two arrays should be initialized CORRECTLY to save some calculation time.
                 subMesh['_lastColliderWorldVertices'] = [];
                 subMesh['_trianglePlanes'] = [];
                 var start = subMesh.verticesStart;

@@ -45,8 +45,8 @@ module BABYLON {
 
             //TODO CollisionsEpsilon should be defined here and not in the engine.
             var closeDistance = /*BABYLON.Engine.CollisionsEpsilon * 10.0*/ 0.01;
+
             //is initializing here correct? A quick look - looks like it is fine.
-            
             if (this.collider.retry >= maximumRetry) {
                 this.finalPosition.copyFrom(position);
                 return;
@@ -151,7 +151,6 @@ module BABYLON {
             
             if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
                 subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-                //The following two arrays should be initialized CORRECTLY to save some calculation time.
                 subMesh['_lastColliderWorldVertices'] = [];
                 subMesh['_trianglePlanes'] = [];
                 var start = subMesh.verticesStart;
@@ -168,8 +167,6 @@ module BABYLON {
         private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {
             return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         }
-
-
     }
 
     export interface ICollisionDetector {
