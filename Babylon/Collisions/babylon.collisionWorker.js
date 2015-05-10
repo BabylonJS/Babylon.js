@@ -47,8 +47,12 @@ var BABYLON;
             this.collider._initialize(position, velocity, closeDistance);
             // Check all meshes
             var meshes = this._collisionCache.getMeshes();
-            for (var uniqueId in meshes) {
-                if (meshes.hasOwnProperty(uniqueId) && parseInt(uniqueId) != excludedMeshUniqueId) {
+            var keys = Object.keys(meshes);
+            var len = keys.length;
+            var uniqueId;
+            for (var i = 0; i < len; ++i) {
+                uniqueId = keys[i];
+                if (parseInt(uniqueId) != excludedMeshUniqueId) {
                     var mesh = meshes[uniqueId];
                     if (mesh.checkCollisions)
                         this.checkCollision(mesh);
@@ -107,33 +111,29 @@ var BABYLON;
                 // Bounding test
                 if (len > 1 && !this.checkSubmeshCollision(subMesh))
                     continue;
-                //Unneeded
-                //subMesh['getMesh'] = function () {
-                //    return mesh.uniqueId;
-                //}
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
             }
         };
         CollideWorker.prototype.collideForSubMesh = function (subMesh, transformMatrix, meshGeometry) {
             var positionsArray = [];
-            for (var i = 0; i < meshGeometry.positions.length; i = i + 3) {
+            for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
                 var p = BABYLON.Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
                 positionsArray.push(p);
             }
-            subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-            //The following two arrays should be initialized CORRECTLY to save some calculation time.
-            subMesh['_lastColliderWorldVertices'] = [];
-            subMesh['_trianglePlanes'] = [];
-            var start = subMesh.verticesStart;
-            var end = (subMesh.verticesStart + subMesh.verticesCount);
-            for (var i = start; i < end; i++) {
-                subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
+            if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
+                subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
+                //The following two arrays should be initialized CORRECTLY to save some calculation time.
+                subMesh['_lastColliderWorldVertices'] = [];
+                subMesh['_trianglePlanes'] = [];
+                var start = subMesh.verticesStart;
+                var end = (subMesh.verticesStart + subMesh.verticesCount);
+                for (var i = start; i < end; i++) {
+                    subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
+                }
             }
-            //}
             // Collide
-            this.collider._collide(subMesh['_trianglePlanes'] = [], subMesh['_lastColliderWorldVertices'], meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
         };
-        //TODO - this! :-)
         CollideWorker.prototype.checkSubmeshCollision = function (subMesh) {
             return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         };
@@ -146,8 +146,8 @@ var BABYLON;
         CollisionDetectorTransferable.prototype.onInit = function (payload) {
             this._collisionCache = new CollisionCache();
             var reply = {
-                error: 0 /* SUCCESS */,
-                taskType: 0 /* INIT */
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.INIT
             };
             postMessage(reply, undefined);
         };
@@ -163,8 +163,8 @@ var BABYLON;
                 }
             }
             var replay = {
-                error: 0 /* SUCCESS */,
-                taskType: 1 /* UPDATE */
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.UPDATE
             };
             postMessage(replay, undefined);
         };
@@ -181,8 +181,8 @@ var BABYLON;
                 newPosition: finalPosition.asArray()
             };
             var reply = {
-                error: 0 /* SUCCESS */,
-                taskType: 2 /* COLLIDE */,
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.COLLIDE,
                 payload: replyPayload
             };
             postMessage(reply, undefined);
@@ -204,13 +204,13 @@ var BABYLON;
             var onNewMessage = function (event) {
                 var message = event.data;
                 switch (message.taskType) {
-                    case 0 /* INIT */:
+                    case BABYLON.WorkerTaskType.INIT:
                         collisionDetector.onInit(message.payload);
                         break;
-                    case 2 /* COLLIDE */:
+                    case BABYLON.WorkerTaskType.COLLIDE:
                         collisionDetector.onCollision(message.payload);
                         break;
-                    case 1 /* UPDATE */:
+                    case BABYLON.WorkerTaskType.UPDATE:
                         collisionDetector.onUpdate(message.payload);
                         break;
                 }
