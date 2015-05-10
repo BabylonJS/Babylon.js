@@ -56,8 +56,13 @@ module BABYLON {
 
             // Check all meshes
             var meshes = this._collisionCache.getMeshes();
-            for (var uniqueId in meshes) {
-                if (meshes.hasOwnProperty(uniqueId) && parseInt(uniqueId) != excludedMeshUniqueId) {
+            var keys = Object.keys(meshes);
+            var len = keys.length;
+            var uniqueId;
+
+            for (var i = 0; i < len; ++i) {
+                uniqueId = keys[i];
+                if (parseInt(uniqueId) != excludedMeshUniqueId) {
                     var mesh: SerializedMesh = meshes[uniqueId];
                     if (mesh.checkCollisions)
                         this.checkCollision(mesh);
@@ -131,36 +136,32 @@ module BABYLON {
                 if (len > 1 && !this.checkSubmeshCollision(subMesh))
                     continue;
 
-                //Unneeded
-                //subMesh['getMesh'] = function () {
-                //    return mesh.uniqueId;
-                //}
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
             }
         }
 
         private collideForSubMesh(subMesh: SerializedSubMesh, transformMatrix: BABYLON.Matrix, meshGeometry: SerializedGeometry): void {
             var positionsArray = [];
-            for (var i = 0; i < meshGeometry.positions.length; i = i + 3) {
+            for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
                 var p = BABYLON.Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
                 positionsArray.push(p);
             }
-            subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-            //The following two arrays should be initialized CORRECTLY to save some calculation time.
-            subMesh['_lastColliderWorldVertices'] = [];
-            subMesh['_trianglePlanes'] = [];
-            var start = subMesh.verticesStart;
-            var end = (subMesh.verticesStart + subMesh.verticesCount);
-            for (var i = start; i < end; i++) {
-                subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
-            }
-        
-            //}
+            if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
+                subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
+                //The following two arrays should be initialized CORRECTLY to save some calculation time.
+                subMesh['_lastColliderWorldVertices'] = [];
+                subMesh['_trianglePlanes'] = [];
+                var start = subMesh.verticesStart;
+                var end = (subMesh.verticesStart + subMesh.verticesCount);
+                for (var i = start; i < end; i++) {
+                    subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
+                }
+            }        
+
             // Collide
-            this.collider._collide(subMesh['_trianglePlanes'] = [], subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
         }
 
-        //TODO - this! :-)
         private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {
             return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         }
