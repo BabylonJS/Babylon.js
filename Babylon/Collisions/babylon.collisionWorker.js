@@ -115,10 +115,12 @@ var BABYLON;
             }
         };
         CollideWorker.prototype.collideForSubMesh = function (subMesh, transformMatrix, meshGeometry) {
-            var positionsArray = [];
-            for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
-                var p = BABYLON.Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
-                positionsArray.push(p);
+            if (!meshGeometry['positionsArray']) {
+                meshGeometry['positionsArray'] = [];
+                for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
+                    var p = BABYLON.Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
+                    meshGeometry['positionsArray'].push(p);
+                }
             }
             if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
                 subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
@@ -128,7 +130,7 @@ var BABYLON;
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
                 for (var i = start; i < end; i++) {
-                    subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(positionsArray[i], transformMatrix));
+                    subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(meshGeometry['positionsArray'][i], transformMatrix));
                 }
             }
             // Collide
