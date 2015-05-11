@@ -322,11 +322,13 @@
         public get areNormalsFrozen(): boolean {
             return this._areNormalsFrozen;
         }
-        
+
+        // This method only affects paramatric shapes on update : ribbons, tubes, etc. It has no effect at all on other mesh types.
         public freezeNormals(): void {
             this._areNormalsFrozen = true;
         }
-
+        
+        // This method only affects paramatric shapes on update : ribbons, tubes, etc on update. It has no effect at all on other mesh types.
         public unfreezeNormals(): void {
             this._areNormalsFrozen = false;
         }
