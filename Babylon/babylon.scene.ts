@@ -1519,13 +1519,17 @@
                             } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1) {
+                            //They intersected, and now they don't.
 
-                            var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+                            //is this trigger an exit trigger? execute an event.
+                            if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                            }
 
-                            if (indexOfOther > -1) {
-                                sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
+                            //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                             }
                         }
                     }

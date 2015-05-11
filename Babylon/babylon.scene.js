@@ -1182,11 +1182,15 @@ var BABYLON;
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                         }
-                        else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                            action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
-                            var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
-                            if (indexOfOther > -1) {
-                                sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
+                        else if (!areIntersecting && currentIntersectionInProgress > -1) {
+                            //They intersected, and now they don't.
+                            //is this trigger an exit trigger? execute an event.
+                            if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                            }
+                            //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger) || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                             }
                         }
                     }
@@ -1732,3 +1736,4 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.scene.js.map
