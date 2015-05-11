@@ -323,10 +323,12 @@
             return this._areNormalsFrozen;
         }
 
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         public freezeNormals(): void {
             this._areNormalsFrozen = true;
         }
 
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         public unfreezeNormals(): void {
             this._areNormalsFrozen = false;
         }
