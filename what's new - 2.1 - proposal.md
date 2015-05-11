@@ -15,11 +15,13 @@
  - **Updates**
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
  - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))
+ - Allow static Mesh.MergeMeshes to work with clones & Mesh subclasses ([Palmer-JC](http://www.github.com/Palmer-JC))
  - Added mesh.freezeWorldMatrix() for static meshes ([deltakosh](http://www.github.com/deltakosh))
  - Added mesh.freezeNormals() for parametric mesh updates ([jbousquie](http://www.github.com/jbousquie))
  - Added mesh.alwaysSelectAsActiveMesh to disable frustum clipping for a specific mesh ([deltakosh](http://www.github.com/deltakosh))
  - Added updateMeshPositions method ([jbousquie](https://github.com/jbousquie))
  - Callbacks for geometry changes ([raananw](http://www.github.com/raananw))
+ - Allow Engine to run for CocoonJS with standard html, including devices where the hardware scaling != 1 ([Palmer-JC](http://www.github.com/Palmer-JC))
  - Material onBind callback improvement ([jahow](http://www.github.com/jahow))
  - New front/back/double side feature for meshes ([jbousquie](https://github.com/jbousquie)) 
  - New basic mesh type: Disc ([jbousquie](https://github.com/jbousquie))
