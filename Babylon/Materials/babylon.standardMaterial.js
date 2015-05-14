@@ -61,11 +61,13 @@ var BABYLON;
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
+                    return true;
                 }
             }
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
+                    return true;
                 }
             }
             var engine = scene.getEngine();

@@ -74,7 +74,7 @@
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
-                 //   return true;
+                    return true;
                 }
             }
 
@@ -82,7 +82,7 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                  //  return true;
+                    return true;
                 }
             }
 
