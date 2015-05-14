@@ -313,9 +313,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         Mesh.prototype.freezeNormals = function () {
             this._areNormalsFrozen = true;
         };
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
         };
