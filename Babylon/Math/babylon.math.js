@@ -2898,7 +2898,7 @@ var BABYLON;
         return SIMDHelper;
     })();
     BABYLON.SIMDHelper = SIMDHelper;
-    if (window.SIMD !== undefined) {
+    if (window.SIMD !== undefined && window.SIMD.float32x4 && window.SIMD.float32x4.swizzle) {
         SIMDHelper.EnableSIMD();
     }
 })(BABYLON || (BABYLON = {}));
