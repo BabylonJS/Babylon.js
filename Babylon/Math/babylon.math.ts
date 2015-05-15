@@ -3579,7 +3579,7 @@
         }
     }
 
-    if (window.SIMD !== undefined) {
+    if (window.SIMD !== undefined && window.SIMD.float32x4 && window.SIMD.float32x4.swizzle) {
         SIMDHelper.EnableSIMD();
     }
 }
