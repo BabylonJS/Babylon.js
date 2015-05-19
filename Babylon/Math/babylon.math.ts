@@ -3397,11 +3397,11 @@
             var normal0: Vector3;
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (vt.x !== 1) {     // search for a point in the plane
-                    point = new Vector3(1, 0, 0);
+                if (vt.y !== 1) {     // search for a point in the plane
+                    point = new Vector3(0, -1, 0);
                 }
-                else if (vt.y !== 1) {
-                    point = new Vector3(0, 1, 0);
+                else if (vt.x !== 1) {
+                    point = new Vector3(1, 0, 0);
                 }
                 else if (vt.z !== 1) {
                     point = new Vector3(0, 0, 1);
