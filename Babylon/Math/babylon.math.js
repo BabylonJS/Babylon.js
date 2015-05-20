@@ -2713,11 +2713,11 @@ var BABYLON;
             var normal0;
             if (va === undefined || va === null) {
                 var point;
-                if (vt.x !== 1) {
-                    point = new Vector3(1, 0, 0);
+                if (vt.y !== 1) {
+                    point = new Vector3(0, -1, 0);
                 }
-                else if (vt.y !== 1) {
-                    point = new Vector3(0, 1, 0);
+                else if (vt.x !== 1) {
+                    point = new Vector3(1, 0, 0);
                 }
                 else if (vt.z !== 1) {
                     point = new Vector3(0, 0, 1);
