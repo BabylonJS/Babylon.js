@@ -71,7 +71,7 @@ module BABYLON {
 
                 case PhysicsEngine.PlaneImpostor:
                 //Oimo "fakes" a cylinder as a box, so why don't we!
-                case PhysicsEngine.CylinderImpostor:u
+                case PhysicsEngine.CylinderImpostor:
                 case PhysicsEngine.BoxImpostor:
 
                     var min = bbox.minimumWorld;
