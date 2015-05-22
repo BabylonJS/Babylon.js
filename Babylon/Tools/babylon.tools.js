@@ -19,6 +19,14 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.SetImmediate = function (action) {
+            if (window.setImmediate) {
+                window.setImmediate(action);
+            }
+            else {
+                setTimeout(action, 1);
+            }
+        };
         Tools.GetFilename = function (path) {
             var index = path.lastIndexOf("/");
             if (index < 0)
