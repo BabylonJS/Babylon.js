@@ -30,6 +30,14 @@
     export class Tools {
         public static BaseUrl = "";
 
+        public static SetImmediate(action: () => void) {
+            if (window.setImmediate) {
+                window.setImmediate(action);
+            } else {
+                setTimeout(action, 1);
+            }
+        }
+
         public static GetExponantOfTwo = (value: number, max: number): number => {
             var count = 1;
 

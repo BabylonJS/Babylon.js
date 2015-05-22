@@ -51,3 +51,4 @@
  - Fixing animatable bug when animation is over ([temechon](http://www.github.com/temechon))
  - useCameraPostProcess whenever there is a special camera in use ([m0ppers](https://github.com/m0ppers))
  - delta in BoundingBox's intersectsPoint is now calculated correctly ([raananw](http://www.github.com/raananw)) 
+ - textures cache fixed ([deltakosh](http://www.github.com/deltakosh))

@@ -1686,7 +1686,7 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
-        _collideWithWorld(velocity: Vector3, gravityInspection?: boolean): void;
+        _collideWithWorld(velocity: Vector3): void;
         private _onCollisionPositionChange;
         _checkInputs(): void;
         _decideIfNeedsToMove(): boolean;
@@ -2571,6 +2571,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         getSubMaterial(index: any): Material;
         isReady(mesh?: AbstractMesh): boolean;
+        clone(name: string): MultiMaterial;
     }
 }
 declare module BABYLON {
@@ -3974,7 +3975,9 @@ declare module BABYLON {
         isDisposed(): boolean;
         sideOrientation: number;
         areNormalsFrozen: boolean;
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         freezeNormals(): void;
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
         unfreezeNormals(): void;
         _preActivate(): void;
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): void;

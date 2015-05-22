@@ -44,6 +44,13 @@ var BABYLON;
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
+            else {
+                BABYLON.Tools.SetImmediate(function () {
+                    if (onLoad) {
+                        onLoad();
+                    }
+                });
+            }
         }
         Texture.prototype.delayLoad = function () {
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
