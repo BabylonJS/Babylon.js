@@ -564,11 +564,7 @@
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
-                return false;
-            }
-
-            return true;
+            return this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
         public isCompletelyInFrustum(camera?: Camera): boolean {
@@ -724,7 +720,7 @@
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
             //TODO move this to the collision coordinator!
-            if (collisionId != null || collisionId != undefined)
+            if (this.getScene().workerCollisions)
                 newPosition.multiplyInPlace(this._collider.radius);
 
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
