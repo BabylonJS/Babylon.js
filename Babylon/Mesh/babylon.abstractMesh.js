@@ -75,7 +75,7 @@ var BABYLON;
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 //TODO move this to the collision coordinator!
-                if (collisionId != null || collisionId != undefined)
+                if (_this.getScene().workerCollisions)
                     newPosition.multiplyInPlace(_this._collider.radius);
                 newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
@@ -501,10 +501,7 @@ var BABYLON;
             this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
         };
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
-            if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
-                return false;
-            }
-            return true;
+            return this._boundingInfo.isInFrustum(frustumPlanes);
         };
         AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
             if (!camera) {
@@ -824,4 +821,3 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.abstractMesh.js.map

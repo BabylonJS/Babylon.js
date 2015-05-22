@@ -2,7 +2,7 @@
 
     export class STLFileLoader implements ISceneLoaderPlugin {
 
-        public solidPattern = /solid (\S*)([\S\s]*)endsolid (\S*)/g;
+        public solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
         public facetsPattern = /facet([\s\S]*?)endfacet/g;
         public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
         public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
