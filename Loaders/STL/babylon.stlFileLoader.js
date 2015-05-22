@@ -2,7 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     var STLFileLoader = (function () {
         function STLFileLoader() {
-            this.solidPattern = /solid (\S*)([\S\s]*)endsolid (\S*)/g;
+            this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
             this.facetsPattern = /facet([\s\S]*?)endfacet/g;
             this.normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
             this.vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
