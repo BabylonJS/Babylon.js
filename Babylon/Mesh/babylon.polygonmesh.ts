@@ -1,8 +1,15 @@
-﻿module BABYLON {
+module BABYLON {
     class IndexedVector2 extends Vector2 {
         constructor(original: Vector2, public index: number) {
             super(original.x, original.y);
         }
+    }
+
+    function nearlyEqual(a: number, b: number, epsilon: number = 0.0001): boolean {
+        if (a === b) {
+            return true;
+        }
+        return Math.abs(a - b) < epsilon;
     }
 
     class PolygonPoints {
@@ -12,7 +19,7 @@
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length === 0 || !(Tools.WithinEpsilon(point.x, result[0].x, 0.00001) && Tools.WithinEpsilon(point.y, result[0].y, 0.00001))) {
+                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
@@ -86,7 +93,7 @@
             var floats = input.split(/[^-+eE\.\d]+/).map(parseFloat).filter(val => (!isNaN(val)));
             var i: number, result = [];
             for (i = 0; i < (floats.length & 0x7FFFFFFE); i += 2) {
-                result.push(new poly2tri.Point(floats[i], floats[i + 1]));
+                result.push(new Vector2(floats[i], floats[i + 1]));
             }
             return result;
         }
@@ -100,11 +107,13 @@
 
         private _swctx: poly2tri.SweepContext;
         private _points = new PolygonPoints();
+        private _outlinepoints = new PolygonPoints();
+        private _holes = [];
 
         private _name: string;
         private _scene: Scene;
 
-        constructor(name: string, contours: Path2, scene: Scene) 
+        constructor(name: string, contours: Path2, scene: Scene)
         constructor(name: string, contours: Vector2[], scene: Scene)
         constructor(name: string, contours: any, scene: Scene) {
             if (!("poly2tri" in window)) {
@@ -122,14 +131,18 @@
             }
 
             this._swctx = new poly2tri.SweepContext(this._points.add(points));
+            this._outlinepoints.add(points)
         }
 
         addHole(hole: Vector2[]): PolygonMeshBuilder {
             this._swctx.addHole(this._points.add(hole));
+            var holepoints = new PolygonPoints();
+            holepoints.add(hole); 
+            this._holes.push(holepoints) ;
             return this;
         }
 
-        build(updatable: boolean = false): Mesh {
+        build(updatable: boolean = false, depth?:number): Mesh {
             var result = new Mesh(this._name, this._scene);
 
             var normals = [];
@@ -152,13 +165,116 @@
                 });
             });
 
-            result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
-            result.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
-            result.setVerticesData(VertexBuffer.UVKind, uvs, updatable);
+            if (depth > 0) { 
+                var positionscount = (positions.length / 3); //get the current pointcount
+               
+                this._points.elements.forEach((p) => { //add the elements at the depth
+                    normals.push(0, -1.0, 0);                   
+                    positions.push(p.x, -depth, p.y);                
+                    uvs.push(1-(p.x - bounds.min.x) / bounds.width,1-(p.y - bounds.min.y) / bounds.height);
+                });
+
+                var p1: IndexedVector2;           //we need to change order of point so the triangles are made in the rigth way.
+                var p2: IndexedVector2;
+                var poscounter: number = 0;
+                this._swctx.getTriangles().forEach((triangle) => {
+                    triangle.getPoints().forEach((point) => {
+
+                        switch (poscounter) {
+                            case 0:
+                                p1 = <IndexedVector2>point;
+                                break;
+                            case 1:
+                                p2 = <IndexedVector2>point;
+                                break;
+                            case 2:
+                                indices.push((<IndexedVector2>point).index + positionscount); 
+                                indices.push(p2.index + positionscount);
+                                indices.push(p1.index + positionscount);
+                                poscounter = -1;
+                                break;
+                        }
+                        poscounter++;
+                        //indices.push((<IndexedVector2>point).index + positionscount);
+                    });
+                });
+                //Add the sides
+                this.addside(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false)
+
+                this._holes.forEach((hole) => {
+                    this.addside(positions, normals, uvs, indices, bounds, hole, depth, true)
+                });                               
+            }
+
+            result.setVerticesData(positions, VertexBuffer.PositionKind, updatable);
+            result.setVerticesData(normals, VertexBuffer.NormalKind, updatable);
+            result.setVerticesData(uvs, VertexBuffer.UVKind, updatable);
             result.setIndices(indices);
 
             return result;
-        }
+        } 
 
+       private addside(positions: any[], normals: any[], uvs: any[], indices:any[],bounds: any, points: PolygonPoints, depth:number, flip:boolean ){
+            var StartIndex: number = positions.length / 3;
+            var ulength: number = 0;
+            for (var i: number = 0; i < points.elements.length; i++) {
+                var p: IndexedVector2 = points.elements[i];
+                var p1: IndexedVector2
+                if ((i + 1) > points.elements.length - 1) {
+                    p1 = points.elements[0];
+                }
+                else {
+                    p1 = points.elements[i + 1];
+                }
+
+                positions.push(p.x, 0, p.y);
+                positions.push(p.x, -depth, p.y);
+                positions.push(p1.x, 0, p1.y);
+                positions.push(p1.x, -depth, p1.y);
+
+                var v1 = new Vector3(p.x, 0, p.y);
+                var v2 = new Vector3(p1.x, 0, p1.y);
+                var v3 = v2.subtract(v1);
+                var v4 = new Vector3(0, 1, 0);
+                var vn = Vector3.Cross(v3, v4);
+                vn = vn.normalize();
+                
+                uvs.push(ulength / bounds.width, 0);
+                uvs.push(ulength / bounds.width, 1);
+                ulength += v3.length();
+                uvs.push((ulength / bounds.width), 0);
+                uvs.push((ulength / bounds.width), 1);
+
+                if (!flip) {
+                    normals.push(-vn.x,- vn.y, -vn.z);
+                    normals.push(-vn.x, -vn.y, -vn.z);
+                    normals.push(-vn.x, -vn.y, -vn.z);
+                    normals.push(-vn.x, -vn.y, -vn.z);
+
+                    indices.push(StartIndex);
+                    indices.push(StartIndex + 1);
+                    indices.push(StartIndex + 2);
+
+                    indices.push(StartIndex + 1);
+                    indices.push(StartIndex + 3);
+                    indices.push(StartIndex + 2);
+                }
+                else {
+                    normals.push(vn.x, vn.y, vn.z);
+                    normals.push(vn.x, vn.y, vn.z);
+                    normals.push(vn.x, vn.y, vn.z);
+                    normals.push(vn.x, vn.y, vn.z);
+
+                    indices.push(StartIndex);
+                    indices.push(StartIndex + 2);
+                    indices.push(StartIndex + 1);
+
+                    indices.push(StartIndex + 1);
+                    indices.push(StartIndex + 2);
+                    indices.push(StartIndex + 3);
+                }                
+                StartIndex += 4;
+            };
+        }
     }
 }
