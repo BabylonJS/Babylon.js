@@ -214,7 +214,7 @@ module BABYLON {
             return result;
         } 
 
-       private addside(positions: any[], normals: any[], uvs: any[], indices:any[],bounds: any, points: PolygonPoints, depth:number, flip:boolean ){
+       private addSide(positions: any[], normals: any[], uvs: any[], indices:any[],bounds: any, points: PolygonPoints, depth:number, flip:boolean ){
             var StartIndex: number = positions.length / 3;
             var ulength: number = 0;
             for (var i: number = 0; i < points.elements.length; i++) {
