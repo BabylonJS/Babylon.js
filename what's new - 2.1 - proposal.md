@@ -52,3 +52,5 @@
  - useCameraPostProcess whenever there is a special camera in use ([m0ppers](https://github.com/m0ppers))
  - delta in BoundingBox's intersectsPoint is now calculated correctly ([raananw](http://www.github.com/raananw)) 
  - textures cache fixed ([deltakosh](http://www.github.com/deltakosh))
+ - **Breaking changes**
+ - OculusCamera was renamed to VRCamera ([deltakosh](http://www.github.com/deltakosh))

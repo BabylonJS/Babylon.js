@@ -1,8 +1,8 @@
 {
   "name": "babylonjs",
-  "version": "2.1.0",
+  "version": "2.0.0",
   "description": "Babylon.js is a complete JavaScript framework for building 3D games with HTML 5 and WebGL",
-  "main": "babylon.2.1-beta.js",
+  "main": "babylon.2.0.js",
   "homepage": "https://www.babylonjs.com",
   "repository": {
     "type": "git",
@@ -27,7 +27,6 @@
     "Exporters",
     "Loaders",
     "Previous releases",
-    "References",
     "Tools",
     "gulpfile.js",
     "package.json",

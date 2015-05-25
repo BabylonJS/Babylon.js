@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.ellipsoidControl = new Max2Babylon.Vector3Control();
             this.label3 = new System.Windows.Forms.Label();
             this.chkGravity = new System.Windows.Forms.CheckBox();
             this.chkCollisions = new System.Windows.Forms.CheckBox();
@@ -48,10 +49,9 @@
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.chkNoExport = new System.Windows.Forms.CheckBox();
-            this.cbCameraType = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.ellipsoidControl = new Max2Babylon.Vector3Control();
+            this.cbCameraType = new System.Windows.Forms.ComboBox();
+            this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupInertia)).BeginInit();
@@ -76,6 +76,16 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Collisions";
+            // 
+            // ellipsoidControl
+            // 
+            this.ellipsoidControl.Location = new System.Drawing.Point(21, 95);
+            this.ellipsoidControl.Name = "ellipsoidControl";
+            this.ellipsoidControl.Size = new System.Drawing.Size(294, 28);
+            this.ellipsoidControl.TabIndex = 3;
+            this.ellipsoidControl.X = 0F;
+            this.ellipsoidControl.Y = 0F;
+            this.ellipsoidControl.Z = 0F;
             // 
             // label3
             // 
@@ -297,17 +307,14 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Misc.";
             // 
-            // chkNoExport
+            // label6
             // 
-            this.chkNoExport.AutoSize = true;
-            this.chkNoExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkNoExport.Location = new System.Drawing.Point(21, 28);
-            this.chkNoExport.Name = "chkNoExport";
-            this.chkNoExport.Size = new System.Drawing.Size(87, 17);
-            this.chkNoExport.TabIndex = 4;
-            this.chkNoExport.Text = "Do not export";
-            this.chkNoExport.ThreeState = true;
-            this.chkNoExport.UseVisualStyleBackColor = true;
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 58);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(34, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Type:";
             // 
             // cbCameraType
             // 
@@ -322,8 +329,6 @@
             "FollowCamera",
             "FreeCamera",
             "GamepadCamera",
-            "OculusCamera",
-            "OculusGamepadCamera",
             "TouchCamera",
             "VirtualJoysticksCamera",
             "WebVRCamera",
@@ -333,24 +338,17 @@
             this.cbCameraType.Size = new System.Drawing.Size(290, 21);
             this.cbCameraType.TabIndex = 5;
             // 
-            // label6
+            // chkNoExport
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 58);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(34, 13);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Type:";
-            // 
-            // ellipsoidControl
-            // 
-            this.ellipsoidControl.Location = new System.Drawing.Point(21, 95);
-            this.ellipsoidControl.Name = "ellipsoidControl";
-            this.ellipsoidControl.Size = new System.Drawing.Size(294, 28);
-            this.ellipsoidControl.TabIndex = 3;
-            this.ellipsoidControl.X = 0F;
-            this.ellipsoidControl.Y = 0F;
-            this.ellipsoidControl.Z = 0F;
+            this.chkNoExport.AutoSize = true;
+            this.chkNoExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkNoExport.Location = new System.Drawing.Point(21, 28);
+            this.chkNoExport.Name = "chkNoExport";
+            this.chkNoExport.Size = new System.Drawing.Size(87, 17);
+            this.chkNoExport.TabIndex = 4;
+            this.chkNoExport.Text = "Do not export";
+            this.chkNoExport.ThreeState = true;
+            this.chkNoExport.UseVisualStyleBackColor = true;
             // 
             // CameraPropertiesForm
             // 

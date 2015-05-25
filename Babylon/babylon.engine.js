@@ -197,7 +197,10 @@ var BABYLON;
             configurable: true
         });
         _AlphaState.prototype.setAlphaBlendFunctionParameters = function (value0, value1, value2, value3) {
-            if (this._blendFunctionParameters[0] === value0 && this._blendFunctionParameters[1] === value1 && this._blendFunctionParameters[2] === value2 && this._blendFunctionParameters[3] === value3) {
+            if (this._blendFunctionParameters[0] === value0 &&
+                this._blendFunctionParameters[1] === value1 &&
+                this._blendFunctionParameters[2] === value2 &&
+                this._blendFunctionParameters[3] === value3) {
                 return;
             }
             this._blendFunctionParameters[0] = value0;
@@ -380,6 +383,7 @@ var BABYLON;
             this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
             options = options || {};
             options.antialias = antialias;
+            // GL
             try {
                 this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
             }
@@ -452,7 +456,10 @@ var BABYLON;
                 }
                 // Pointer lock
                 if (_this.isFullscreen && _this._pointerLockRequested) {
-                    canvas.requestPointerLock = canvas.requestPointerLock || canvas.msRequestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
+                    canvas.requestPointerLock = canvas.requestPointerLock ||
+                        canvas.msRequestPointerLock ||
+                        canvas.mozRequestPointerLock ||
+                        canvas.webkitRequestPointerLock;
                     if (canvas.requestPointerLock) {
                         canvas.requestPointerLock();
                     }
@@ -464,7 +471,10 @@ var BABYLON;
             document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
             // Pointer lock
             this._onPointerLockChange = function () {
-                _this.isPointerLock = (document.mozPointerLockElement === canvas || document.webkitPointerLockElement === canvas || document.msPointerLockElement === canvas || document.pointerLockElement === canvas);
+                _this.isPointerLock = (document.mozPointerLockElement === canvas ||
+                    document.webkitPointerLockElement === canvas ||
+                    document.msPointerLockElement === canvas ||
+                    document.pointerLockElement === canvas);
             };
             document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
@@ -1549,12 +1559,8 @@ var BABYLON;
                     _this._workingCanvas.width = width;
                     _this._workingCanvas.height = height;
                     var faces = [
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-                        gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                        gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                        gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                        gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
@@ -1587,6 +1593,7 @@ var BABYLON;
                 gl.deleteRenderbuffer(texture._depthBuffer);
             }
             gl.deleteTexture(texture);
+            // Unbind channels
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
                 this._gl.activeTexture(this._gl["TEXTURE" + channel]);
                 this._gl.bindTexture(this._gl.TEXTURE_2D, null);
@@ -1709,14 +1716,17 @@ var BABYLON;
         Engine.prototype.dispose = function () {
             this.hideLoadingUI();
             this.stopRenderLoop();
+            // Release scenes
             while (this.scenes.length) {
                 this.scenes[0].dispose();
             }
             // Release audio engine
             Engine.audioEngine.dispose();
+            // Release effects
             for (var name in this._compiledEffects) {
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
             }
+            // Unbind
             for (var i in this._vertexAttribArrays) {
                 if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
                     continue;

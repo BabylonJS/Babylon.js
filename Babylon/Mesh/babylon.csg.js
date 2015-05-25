@@ -76,6 +76,7 @@ var BABYLON;
                 polygonType |= type;
                 types.push(type);
             }
+            // Put the polygon in the correct list, splitting it when necessary.
             switch (polygonType) {
                 case COPLANAR:
                     (BABYLON.Vector3.Dot(this.normal, polygon.plane.normal) > 0 ? coplanarFront : coplanarBack).push(polygon);
@@ -139,9 +140,7 @@ var BABYLON;
             return new Polygon(vertices, this.shared);
         };
         Polygon.prototype.flip = function () {
-            this.vertices.reverse().map(function (v) {
-                v.flip();
-            });
+            this.vertices.reverse().map(function (v) { v.flip(); });
             this.plane.flip();
         };
         return Polygon;
@@ -393,9 +392,7 @@ var BABYLON;
             return csg;
         };
         CSG.prototype.inverseInPlace = function () {
-            this.polygons.map(function (p) {
-                p.flip();
-            });
+            this.polygons.map(function (p) { p.flip(); });
         };
         // This is used to keep meshes transformations so they can be restored
         // when we build back a Babylon Mesh
@@ -450,7 +447,12 @@ var BABYLON;
                         var localNormal = BABYLON.Vector3.TransformNormal(normal, matrix);
                         vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
                         // Check if 2 points can be merged
-                        if (!(typeof vertex_idx !== 'undefined' && normals[vertex_idx * 3] === localNormal.x && normals[vertex_idx * 3 + 1] === localNormal.y && normals[vertex_idx * 3 + 2] === localNormal.z && uvs[vertex_idx * 2] === uv.x && uvs[vertex_idx * 2 + 1] === uv.y)) {
+                        if (!(typeof vertex_idx !== 'undefined' &&
+                            normals[vertex_idx * 3] === localNormal.x &&
+                            normals[vertex_idx * 3 + 1] === localNormal.y &&
+                            normals[vertex_idx * 3 + 2] === localNormal.z &&
+                            uvs[vertex_idx * 2] === uv.x &&
+                            uvs[vertex_idx * 2 + 1] === uv.y)) {
                             vertices.push(localVertex.x, localVertex.y, localVertex.z);
                             uvs.push(uv.x, uv.y);
                             normals.push(normal.x, normal.y, normal.z);

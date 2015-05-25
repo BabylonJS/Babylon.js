@@ -14,9 +14,7 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.angularSensibility = 200;
             this.moveSensibility = 75;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) {
-                _this._onNewGameConnected(gamepad);
-            });
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
         GamepadCamera.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad can control the camera

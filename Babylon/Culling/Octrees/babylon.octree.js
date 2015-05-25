@@ -59,6 +59,7 @@ var BABYLON;
         Octree._CreateBlocks = function (worldMin, worldMax, entries, maxBlockCapacity, currentDepth, maxDepth, target, creationFunc) {
             target.blocks = new Array();
             var blockSize = new BABYLON.Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+            // Segmenting space
             for (var x = 0; x < 2; x++) {
                 for (var y = 0; y < 2; y++) {
                     for (var z = 0; z < 2; z++) {

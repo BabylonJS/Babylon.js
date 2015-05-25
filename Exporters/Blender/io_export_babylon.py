@@ -85,10 +85,8 @@ DEV_ORIENT_CAM = 'DeviceOrientationCamera'
 FOLLOW_CAM = 'FollowCamera'
 FREE_CAM = 'FreeCamera' 
 GAMEPAD_CAM = 'GamepadCamera'
-OCULUS_CAM = 'OculusCamera'
 TOUCH_CAM = 'TouchCamera'
 V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
-OCULUS_GAMEPAD_CAM = 'OculusGamepadCamera'
 VR_DEV_ORIENT_CAM ='VRDeviceOrientationCamera'
 WEB_VR_CAM = 'WebVRCamera'
 
@@ -1734,7 +1732,6 @@ bpy.types.Camera.CameraType = bpy.props.EnumProperty(
     items = ( 
              (V_JOYSTICKS_CAM   , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
              (TOUCH_CAM         , 'Touch'              , 'Use Touch Camera'),
-             (OCULUS_CAM        , 'Oculus'             , 'Use Oculus Camera'),
              (GAMEPAD_CAM       , 'Gamepad'            , 'Use Gamepad Camera'),
              (FREE_CAM          , 'Free'               , 'Use Free Camera'),
              (FOLLOW_CAM        , 'Follow'             , 'Use Follow Camera'),
@@ -1742,7 +1739,6 @@ bpy.types.Camera.CameraType = bpy.props.EnumProperty(
              (ARC_ROTATE_CAM    , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
              (ANAGLYPH_FREE_CAM , 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
              (ANAGLYPH_ARC_CAM  , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera'),
-             (OCULUS_GAMEPAD_CAM, 'Oculus Gampad'      , 'Use Oculus Gamepad Camera'),
              (VR_DEV_ORIENT_CAM , 'VR Dev Orientation' , 'Use VR Dev Orientation Camera'),
              (WEB_VR_CAM        , 'Web VR'             , 'Use Web VR Camera')
             ),
@@ -1839,3 +1835,4 @@ class ObjectPanel(bpy.types.Panel):
             layout.separator()
 
             layout.prop(ob.data, 'autoAnimate')   
+

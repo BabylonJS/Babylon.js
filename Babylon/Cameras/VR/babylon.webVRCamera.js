@@ -24,6 +24,7 @@ var BABYLON;
             // Reset devices.
             this._sensorDevice = null;
             this._hmdDevice = null;
+            // Search for a HmdDevice.
             while (i < size && this._hmdDevice === null) {
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];
@@ -64,7 +65,7 @@ var BABYLON;
             this._vrEnabled = false;
         };
         return WebVRCamera;
-    })(BABYLON.OculusCamera);
+    })(BABYLON.VRCamera);
     BABYLON.WebVRCamera = WebVRCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.webVRCamera.js.map

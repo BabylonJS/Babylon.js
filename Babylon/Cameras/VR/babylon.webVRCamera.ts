@@ -2,7 +2,7 @@ declare var HMDVRDevice;
 declare var PositionSensorVRDevice;
 
 module BABYLON {
-    export class WebVRCamera extends BABYLON.OculusCamera {
+    export class WebVRCamera extends BABYLON.VRCamera {
         public _hmdDevice = null;
         public _sensorDevice = null;
         public _cacheState = null;

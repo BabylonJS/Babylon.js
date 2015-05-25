@@ -96,10 +96,6 @@
             serializationObject.type = "DeviceOrientationCamera";
         } else if (camera instanceof FollowCamera) {
             serializationObject.type = "FollowCamera";
-        } else if (camera instanceof OculusCamera) {
-            serializationObject.type = "OculusCamera";
-        } else if (camera instanceof OculusGamepadCamera) {
-            serializationObject.type = "OculusGamepadCamera";
         } else if (camera instanceof TouchCamera) {
             serializationObject.type = "TouchCamera";
         } else if (camera instanceof VirtualJoysticksCamera) {

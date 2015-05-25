@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class OculusDistortionCorrectionPostProcess extends PostProcess {
+    export class VRDistortionCorrectionPostProcess extends PostProcess {
         public aspectRatio: number;
 
         private _isRightEye: boolean;
@@ -12,7 +12,7 @@
 
         //ANY
         constructor(name: string, camera: Camera, isRightEye: boolean, cameraSettings: any) {
-            super(name, "oculusDistortionCorrection", [
+            super(name, "vrDistortionCorrection", [
                 'LensCenter',
                 'Scale',
                 'ScaleIn',

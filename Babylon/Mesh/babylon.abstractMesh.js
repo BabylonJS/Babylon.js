@@ -207,7 +207,7 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
-            if (!space || space === 0 /* LOCAL */) {
+            if (!space || space === BABYLON.Space.LOCAL) {
                 var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
@@ -223,7 +223,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
-            if (!space || space === 0 /* LOCAL */) {
+            if (!space || space === BABYLON.Space.LOCAL) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -452,6 +452,7 @@ var BABYLON;
             this._updateBoundingInfo();
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+            // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
             }
@@ -770,6 +771,7 @@ var BABYLON;
             if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
+            // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
                 var other = this._intersectionsInProgress[index];
                 var pos = other._intersectionsInProgress.indexOf(this);
@@ -781,6 +783,7 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeMesh(this);
             if (!doNotRecurse) {
+                // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();
@@ -821,3 +824,4 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.abstractMesh.js.map

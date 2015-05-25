@@ -1802,7 +1802,21 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class VRDeviceOrientationCamera extends BABYLON.OculusCamera {
+    class VRCamera extends FreeCamera {
+        private _leftCamera;
+        private _rightCamera;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        constructor(name: string, position: Vector3, scene: Scene);
+        _update(): void;
+        _updateCamera(camera: FreeCamera): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+    }
+}
+declare module BABYLON {
+    class VRDeviceOrientationCamera extends BABYLON.VRCamera {
         _alpha: number;
         _beta: number;
         _gamma: number;
@@ -1813,7 +1827,7 @@ declare module BABYLON {
 declare var HMDVRDevice: any;
 declare var PositionSensorVRDevice: any;
 declare module BABYLON {
-    class WebVRCamera extends BABYLON.OculusCamera {
+    class WebVRCamera extends BABYLON.VRCamera {
         _hmdDevice: any;
         _sensorDevice: any;
         _cacheState: any;
@@ -4912,6 +4926,19 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class VRDistortionCorrectionPostProcess extends PostProcess {
+        aspectRatio: number;
+        private _isRightEye;
+        private _distortionFactors;
+        private _postProcessScaleFactor;
+        private _lensCenterOffset;
+        private _scaleIn;
+        private _scaleFactor;
+        private _lensCenter;
+        constructor(name: string, camera: Camera, isRightEye: boolean, cameraSettings: any);
+    }
+}
+declare module BABYLON {
     class PostProcessRenderEffect {
         private _engine;
         private _postProcesses;
@@ -5521,6 +5548,7 @@ declare module BABYLON {
     }
     class Tools {
         static BaseUrl: string;
+        static SetImmediate(action: () => void): void;
         static GetExponantOfTwo: (value: number, max: number) => number;
         static GetFilename(path: string): string;
         static GetDOMTextContent(element: HTMLElement): string;

@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    var OculusRiftDevKit2013_Metric = {
+    var DefaultVRConstants = {
         HResolution: 1280,
         VResolution: 800,
         HScreenSize: 0.149759993,
@@ -15,7 +15,7 @@
         LensCenterOffset: 0.151976421
     };
 
-    class _OculusInnerGamepadCamera extends FreeCamera {
+    class _VRInnerCamera extends FreeCamera {
         private _aspectRatioAspectRatio: number;
         private _aspectRatioFov: number;
         private _hMatrix: Matrix;
@@ -27,20 +27,20 @@
             super(name, position, scene);
 
             // Constants
-            this._aspectRatioAspectRatio = OculusRiftDevKit2013_Metric.HResolution / (2 * OculusRiftDevKit2013_Metric.VResolution);
-            this._aspectRatioFov = (2 * Math.atan((OculusRiftDevKit2013_Metric.PostProcessScaleFactor * OculusRiftDevKit2013_Metric.VScreenSize) / (2 * OculusRiftDevKit2013_Metric.EyeToScreenDistance)));
+            this._aspectRatioAspectRatio = DefaultVRConstants.HResolution / (2 * DefaultVRConstants.VResolution);
+            this._aspectRatioFov = (2 * Math.atan((DefaultVRConstants.PostProcessScaleFactor * DefaultVRConstants.VScreenSize) / (2 * DefaultVRConstants.EyeToScreenDistance)));
 
-            var hMeters = (OculusRiftDevKit2013_Metric.HScreenSize / 4) - (OculusRiftDevKit2013_Metric.LensSeparationDistance / 2);
-            var h = (4 * hMeters) / OculusRiftDevKit2013_Metric.HScreenSize;
+            var hMeters = (DefaultVRConstants.HScreenSize / 4) - (DefaultVRConstants.LensSeparationDistance / 2);
+            var h = (4 * hMeters) / DefaultVRConstants.HScreenSize;
 
             this._hMatrix = BABYLON.Matrix.Translation(isLeftEye ? h : -h, 0, 0);
 
             this.viewport = new BABYLON.Viewport(isLeftEye ? 0 : 0.5, 0, 0.5, 1.0);
 
-            this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * OculusRiftDevKit2013_Metric.InterpupillaryDistance : -.5 * OculusRiftDevKit2013_Metric.InterpupillaryDistance, 0, 0);
+            this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * DefaultVRConstants.InterpupillaryDistance : -.5 * DefaultVRConstants.InterpupillaryDistance, 0, 0);
 
             // Postprocess
-            var postProcess = new BABYLON.OculusDistortionCorrectionPostProcess("Oculus Distortion", this, !isLeftEye, OculusRiftDevKit2013_Metric);
+            var postProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR Distortion", this, !isLeftEye, DefaultVRConstants);
         }
 
         public getProjectionMatrix(): Matrix {
@@ -65,34 +65,22 @@
         }
     }
 
-    export class OculusGamepadCamera extends FreeCamera {
-        private _leftCamera: _OculusInnerGamepadCamera;
-        private _rightCamera: _OculusInnerGamepadCamera;
+    export class VRCamera extends FreeCamera {
+        private _leftCamera: _VRInnerCamera;
+        private _rightCamera: _VRInnerCamera;
         private _offsetOrientation: { yaw: number; pitch: number; roll: number };
         private _deviceOrientationHandler;
-        private _gamepad: BABYLON.Gamepad;
-        private _gamepads: BABYLON.Gamepads;
-        public angularSensibility = 200;
-        public moveSensibility = 75;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
 
-            this._leftCamera = new _OculusInnerGamepadCamera(name + "_left", position.clone(), scene, true);
-            this._rightCamera = new _OculusInnerGamepadCamera(name + "_right", position.clone(), scene, false);
+            this._leftCamera = new _VRInnerCamera(name + "_left", position.clone(), scene, true);
+            this._rightCamera = new _VRInnerCamera(name + "_right", position.clone(), scene, false);
 
             this.subCameras.push(this._leftCamera);
             this.subCameras.push(this._rightCamera);
 
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
-            this._gamepads = new BABYLON.Gamepads((gamepad: BABYLON.Gamepad) => { this._onNewGameConnected(gamepad); });
-        }
-
-        private _onNewGameConnected(gamepad: BABYLON.Gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
-                this._gamepad = gamepad;
-            }
         }
 
         public _update(): void {
@@ -105,22 +93,6 @@
             super._update();
         }
 
-        public _checkInputs(): void {
-            if (!this._gamepad) {
-                return;
-            }
-
-            var LSValues = this._gamepad.leftStick;
-            var normalizedLX = LSValues.x / this.moveSensibility;
-            var normalizedLY = LSValues.y / this.moveSensibility;
-            LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-            LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x, 0, -LSValues.y), cameraTransform);
-            this.cameraDirection = this.cameraDirection.add(deltaTransform);
-        }
-
         public _updateCamera(camera: FreeCamera): void {
             camera.minZ = this.minZ;
             camera.maxZ = this.maxZ;
@@ -130,7 +102,7 @@
             camera.rotation.z = this.rotation.z;
         }
 
-        // Oculus events
+        // Orientation events
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             var yaw = evt.alpha / 180 * Math.PI;
             var pitch = evt.beta / 180 * Math.PI;
@@ -165,11 +137,6 @@
             super.detachControl(element);
 
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
-        }
-
-        public dispose(): void {
-            this._gamepads.dispose();
-            super.dispose();
         }
     }
 } 
