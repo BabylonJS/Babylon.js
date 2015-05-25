@@ -52,6 +52,7 @@ var BABYLON;
                 // Material
                 this.material = source.material;
                 if (!doNotCloneChildren) {
+                    // Children
                     for (var index = 0; index < scene.meshes.length; index++) {
                         var mesh = scene.meshes[index];
                         if (mesh.parent === source) {
@@ -60,6 +61,7 @@ var BABYLON;
                         }
                     }
                 }
+                // Particles
                 for (index = 0; index < scene.particleSystems.length; index++) {
                     var system = scene.particleSystems[index];
                     if (system.emitter === source) {
@@ -369,6 +371,7 @@ var BABYLON;
             var totalIndices = this.getTotalIndices();
             var subdivisionSize = (totalIndices / count) | 0;
             var offset = 0;
+            // Ensure that subdivisionSize is a multiple of 3
             while (subdivisionSize % 3 !== 0) {
                 subdivisionSize++;
             }
@@ -481,6 +484,7 @@ var BABYLON;
                 return;
             }
             var engine = this.getScene().getEngine();
+            // Draw order
             switch (fillMode) {
                 case BABYLON.Material.PointFillMode:
                     engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
@@ -717,8 +721,7 @@ var BABYLON;
                     }
                     _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(_this);
-                }, function () {
-                }, scene.database, getBinaryData);
+                }, function () { }, scene.database, getBinaryData);
             }
         };
         Mesh.prototype.isInFrustum = function (frustumPlanes) {
@@ -840,11 +843,12 @@ var BABYLON;
                     onSuccess(_this);
                 }
             };
-            BABYLON.Tools.LoadImage(url, onload, function () {
-            }, scene.database);
+            BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
         };
         Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight) {
-            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)
+                || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)
+                || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                 BABYLON.Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
                 return;
             }
@@ -900,6 +904,7 @@ var BABYLON;
             var previousSubmeshes = this.subMeshes.slice(0);
             var indices = this.getIndices();
             var totalIndices = this.getTotalIndices();
+            // Generating unique vertices per face
             for (var index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
                 for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -923,6 +928,7 @@ var BABYLON;
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
                 var normal = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+                // Store same normals for every vertex
                 for (var localIndex = 0; localIndex < 3; localIndex++) {
                     normals.push(normal.x);
                     normals.push(normal.y);
@@ -931,6 +937,7 @@ var BABYLON;
             }
             this.setIndices(indices);
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatableNormals);
+            // Updating vertex buffers
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
                 kind = kinds[kindIndex];
                 this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
@@ -963,7 +970,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
+            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -1155,12 +1162,8 @@ var BABYLON;
                 var binormals = path3D.getBinormals();
                 var distances = path3D.getDistances();
                 var angle = 0;
-                var returnScale = function (i, distance) {
-                    return scale;
-                };
-                var returnRotation = function (i, distance) {
-                    return rotation;
-                };
+                var returnScale = function (i, distance) { return scale; };
+                var returnRotation = function (i, distance) { return rotation; };
                 var rotate = custom ? rotateFunction : returnRotation;
                 var scl = custom ? scaleFunction : returnScale;
                 var index = 0;
@@ -1274,8 +1277,7 @@ var BABYLON;
                     onReady(ground);
                 }
             };
-            BABYLON.Tools.LoadImage(url, onload, function () {
-            }, scene.database);
+            BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
             return ground;
         };
         Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, cap, scene, updatable, sideOrientation, tubeInstance) {
@@ -1554,6 +1556,7 @@ var BABYLON;
             if (disposeSource === void 0) { disposeSource = true; }
             if (!allow32BitsIndices) {
                 var totalVertices = 0;
+                // Counting vertices
                 for (var index = 0; index < meshes.length; index++) {
                     if (meshes[index]) {
                         totalVertices += meshes[index].getTotalVertices();

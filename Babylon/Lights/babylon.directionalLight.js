@@ -28,6 +28,7 @@ var BABYLON;
             var orthoBottom = Number.MAX_VALUE;
             var tempVector3 = BABYLON.Vector3.Zero();
             var activeCamera = this.getScene().activeCamera;
+            // Check extends
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 var mesh = renderList[meshIndex];
                 if (!mesh) {

@@ -71,6 +71,7 @@ var BABYLON;
                     var workingArray = this.getByteFrequencyData();
                     this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
                     this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
+                    // Draw the frequency domain chart.
                     for (var i = 0; i < this.getFrequencyBinCount(); i++) {
                         var value = workingArray[i];
                         var percent = value / this.BARGRAPHAMPLITUDE;

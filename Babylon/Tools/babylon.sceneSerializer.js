@@ -91,12 +91,6 @@ var BABYLON;
         else if (camera instanceof BABYLON.FollowCamera) {
             serializationObject.type = "FollowCamera";
         }
-        else if (camera instanceof BABYLON.OculusCamera) {
-            serializationObject.type = "OculusCamera";
-        }
-        else if (camera instanceof BABYLON.OculusGamepadCamera) {
-            serializationObject.type = "OculusGamepadCamera";
-        }
         else if (camera instanceof BABYLON.TouchCamera) {
             serializationObject.type = "TouchCamera";
         }

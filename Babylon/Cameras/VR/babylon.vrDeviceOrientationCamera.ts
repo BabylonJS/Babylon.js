@@ -1,5 +1,5 @@
 module BABYLON {
-	export class VRDeviceOrientationCamera extends BABYLON.OculusCamera {
+    export class VRDeviceOrientationCamera extends BABYLON.VRCamera {
 		public _alpha = 0;
 		public _beta = 0;
 		public _gamma = 0;

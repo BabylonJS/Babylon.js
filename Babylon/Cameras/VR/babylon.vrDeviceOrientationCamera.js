@@ -30,7 +30,7 @@ var BABYLON;
             this.rotation.z = this._beta / 180.0 * Math.PI;
         };
         return VRDeviceOrientationCamera;
-    })(BABYLON.OculusCamera);
+    })(BABYLON.VRCamera);
     BABYLON.VRDeviceOrientationCamera = VRDeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.vrDeviceOrientationCamera.js.map

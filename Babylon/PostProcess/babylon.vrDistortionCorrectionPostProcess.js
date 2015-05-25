@@ -6,12 +6,12 @@ var __extends = this.__extends || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
-    var OculusDistortionCorrectionPostProcess = (function (_super) {
-        __extends(OculusDistortionCorrectionPostProcess, _super);
+    var VRDistortionCorrectionPostProcess = (function (_super) {
+        __extends(VRDistortionCorrectionPostProcess, _super);
         //ANY
-        function OculusDistortionCorrectionPostProcess(name, camera, isRightEye, cameraSettings) {
+        function VRDistortionCorrectionPostProcess(name, camera, isRightEye, cameraSettings) {
             var _this = this;
-            _super.call(this, name, "oculusDistortionCorrection", [
+            _super.call(this, name, "vrDistortionCorrection", [
                 'LensCenter',
                 'Scale',
                 'ScaleIn',
@@ -34,8 +34,8 @@ var BABYLON;
                 effect.setFloat4("HmdWarpParam", _this._distortionFactors[0], _this._distortionFactors[1], _this._distortionFactors[2], _this._distortionFactors[3]);
             };
         }
-        return OculusDistortionCorrectionPostProcess;
+        return VRDistortionCorrectionPostProcess;
     })(BABYLON.PostProcess);
-    BABYLON.OculusDistortionCorrectionPostProcess = OculusDistortionCorrectionPostProcess;
+    BABYLON.VRDistortionCorrectionPostProcess = VRDistortionCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.oculusDistortionCorrectionPostProcess.js.map
+//# sourceMappingURL=babylon.vrDistortionCorrectionPostProcess.js.map
