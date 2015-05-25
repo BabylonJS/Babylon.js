@@ -13,6 +13,7 @@
  - New Loaders folder with a first additionnal plugin: [STL](http://doc.babylonjs.com/page.php?p=25109)  ([raananw](http://www.github.com/raananw), [deltakosh](http://www.github.com/deltakosh))
  - Gulp building process revamped, updated and simplified and now includes a config.json ([raananw](http://www.github.com/raananw)) 
  - **Updates**
+ - VR cameras can disable distortion postprocess to get more performance ([deltakosh](http://www.github.com/deltakosh))
  - New ```MultiMaterial.clone()``` function ([deltakosh](http://www.github.com/deltakosh))
  - Faster ```mesh.computeNormals()``` function ([jbousquie](https://github.com/jbousquie))
  - Added the ability [to dynamically update or to morph](http://doc.babylonjs.com/page.php?p=25096) an mesh instance ([jbousquie](https://github.com/jbousquie))

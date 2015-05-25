@@ -22,7 +22,7 @@ var BABYLON;
     };
     var _VRInnerCamera = (function (_super) {
         __extends(_VRInnerCamera, _super);
-        function _VRInnerCamera(name, position, scene, isLeftEye) {
+        function _VRInnerCamera(name, position, scene, isLeftEye, compensateDistorsion) {
             _super.call(this, name, position, scene);
             this._workMatrix = new BABYLON.Matrix();
             this._actualUp = new BABYLON.Vector3(0, 0, 0);
@@ -34,8 +34,10 @@ var BABYLON;
             this._hMatrix = BABYLON.Matrix.Translation(isLeftEye ? h : -h, 0, 0);
             this.viewport = new BABYLON.Viewport(isLeftEye ? 0 : 0.5, 0, 0.5, 1.0);
             this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * DefaultVRConstants.InterpupillaryDistance : -.5 * DefaultVRConstants.InterpupillaryDistance, 0, 0);
-            // Postprocess
-            var postProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR Distortion", this, !isLeftEye, DefaultVRConstants);
+            if (compensateDistorsion) {
+                // Postprocess
+                var postProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR Distortion", this, !isLeftEye, DefaultVRConstants);
+            }
         }
         _VRInnerCamera.prototype.getProjectionMatrix = function () {
             BABYLON.Matrix.PerspectiveFovLHToRef(this._aspectRatioFov, this._aspectRatioAspectRatio, this.minZ, this.maxZ, this._workMatrix);
@@ -56,10 +58,11 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     var VRCamera = (function (_super) {
         __extends(VRCamera, _super);
-        function VRCamera(name, position, scene) {
+        function VRCamera(name, position, scene, compensateDistorsion) {
+            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
             _super.call(this, name, position, scene);
-            this._leftCamera = new _VRInnerCamera(name + "_left", position.clone(), scene, true);
-            this._rightCamera = new _VRInnerCamera(name + "_right", position.clone(), scene, false);
+            this._leftCamera = new _VRInnerCamera(name + "_left", position.clone(), scene, true, compensateDistorsion);
+            this._rightCamera = new _VRInnerCamera(name + "_right", position.clone(), scene, false, compensateDistorsion);
             this.subCameras.push(this._leftCamera);
             this.subCameras.push(this._rightCamera);
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
