@@ -23,7 +23,7 @@
         private _preViewMatrix: Matrix;
         private _actualUp = new BABYLON.Vector3(0, 0, 0);
 
-        constructor(name: string, position: Vector3, scene: Scene, isLeftEye: boolean) {
+        constructor(name: string, position: Vector3, scene: Scene, isLeftEye: boolean, compensateDistorsion: boolean) {
             super(name, position, scene);
 
             // Constants
@@ -39,8 +39,10 @@
 
             this._preViewMatrix = BABYLON.Matrix.Translation(isLeftEye ? .5 * DefaultVRConstants.InterpupillaryDistance : -.5 * DefaultVRConstants.InterpupillaryDistance, 0, 0);
 
-            // Postprocess
-            var postProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR Distortion", this, !isLeftEye, DefaultVRConstants);
+            if (compensateDistorsion) {
+                // Postprocess
+                var postProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR Distortion", this, !isLeftEye, DefaultVRConstants);
+            }
         }
 
         public getProjectionMatrix(): Matrix {
@@ -71,11 +73,11 @@
         private _offsetOrientation: { yaw: number; pitch: number; roll: number };
         private _deviceOrientationHandler;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion = true) {
             super(name, position, scene);
 
-            this._leftCamera = new _VRInnerCamera(name + "_left", position.clone(), scene, true);
-            this._rightCamera = new _VRInnerCamera(name + "_right", position.clone(), scene, false);
+            this._leftCamera = new _VRInnerCamera(name + "_left", position.clone(), scene, true, compensateDistorsion);
+            this._rightCamera = new _VRInnerCamera(name + "_right", position.clone(), scene, false, compensateDistorsion);
 
             this.subCameras.push(this._leftCamera);
             this.subCameras.push(this._rightCamera);
