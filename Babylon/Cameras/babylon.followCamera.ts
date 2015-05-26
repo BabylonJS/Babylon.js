@@ -55,8 +55,8 @@
             this.setTarget(cameraTarget.position);
         }
 
-        public _update():void {
-            super._update();
+        public _checkInputs():void {
+            super._checkInputs();
             this.follow(this.target);
         }
     }
