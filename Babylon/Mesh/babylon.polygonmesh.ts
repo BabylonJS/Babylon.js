@@ -5,13 +5,6 @@ module BABYLON {
         }
     }
 
-    function nearlyEqual(a: number, b: number, epsilon: number = 0.0001): boolean {
-        if (a === b) {
-            return true;
-        }
-        return Math.abs(a - b) < epsilon;
-    }
-
     class PolygonPoints {
         elements = new Array<IndexedVector2>();
 
@@ -19,7 +12,7 @@ module BABYLON {
 
             var result = new Array<IndexedVector2>();
             originalPoints.forEach(point => {
-                if (result.length === 0 || !(nearlyEqual(point.x, result[0].x) && nearlyEqual(point.y, result[0].y))) {
+                if (result.length === 0 || !point.equalsWithEpsilon(result[0])) {
                     var newPoint = new IndexedVector2(point, this.elements.length);
                     result.push(newPoint);
                     this.elements.push(newPoint);
@@ -199,10 +192,10 @@ module BABYLON {
                     });
                 });
                 //Add the sides
-                this.addside(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false)
+                this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false)
 
                 this._holes.forEach((hole) => {
-                    this.addside(positions, normals, uvs, indices, bounds, hole, depth, true)
+                    this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true)
                 });                               
             }
 

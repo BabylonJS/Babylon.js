@@ -25,7 +25,6 @@ var BABYLON;
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
             this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
-            // World
             for (var index = 0; index < this.vectors.length; index++) {
                 this.vectorsWorld[index] = BABYLON.Vector3.Zero();
             }

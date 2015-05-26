@@ -50,7 +50,6 @@ var BABYLON;
                 var use_pal = false;
                 var use_rgb = false;
                 var use_grey = false;
-                // Get some informations.
                 switch (header.image_type) {
                     case TGATools._TYPE_RLE_INDEXED:
                         use_rle = true;
@@ -88,11 +87,9 @@ var BABYLON;
                         count = (c & 0x7f) + 1;
                         // RLE pixels
                         if (c & 0x80) {
-                            // Bind pixel tmp array
                             for (i = 0; i < pixel_size; ++i) {
                                 pixels[i] = data[offset++];
                             }
-                            // Copy pixel array
                             for (i = 0; i < count; ++i) {
                                 pixel_data.set(pixels, localOffset + i * pixel_size);
                             }

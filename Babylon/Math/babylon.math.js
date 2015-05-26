@@ -302,6 +302,9 @@ var BABYLON;
         Vector2.prototype.equals = function (otherVector) {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         };
+        Vector2.prototype.equalsWithEpsilon = function (otherVector) {
+            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y);
+        };
         // Properties
         Vector2.prototype.length = function () {
             return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -496,7 +499,7 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         };
         Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
+            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y) && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z);
         };
         Vector3.prototype.equalsToFloats = function (x, y, z) {
             return this.x === x && this.y === y && this.z === z;
@@ -3003,3 +3006,4 @@ var BABYLON;
         SIMDHelper.EnableSIMD();
     }
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.math.js.map

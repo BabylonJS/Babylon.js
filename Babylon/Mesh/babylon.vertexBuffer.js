@@ -18,7 +18,6 @@ var BABYLON;
                 this._strideSize = stride;
                 return;
             }
-            // Deduce stride from kind
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this._strideSize = 3;

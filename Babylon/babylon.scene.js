@@ -1074,7 +1074,6 @@ var BABYLON;
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
             BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
-            // Skeletons
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
                 skeleton.prepare();
@@ -1156,7 +1155,6 @@ var BABYLON;
                 this._renderForCamera(camera);
                 return;
             }
-            // Sub-cameras
             for (var index = 0; index < camera.subCameras.length; index++) {
                 this._renderForCamera(camera.subCameras[index]);
             }
@@ -1321,7 +1319,6 @@ var BABYLON;
             for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
                 this._onAfterRenderCallbacks[callbackIndex]();
             }
-            // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
                 this._toBeDisposed.data[index].dispose();
                 this._toBeDisposed[index] = null;
@@ -1475,35 +1472,27 @@ var BABYLON;
             for (index = 0; index < this.cameras.length; index++) {
                 this.cameras[index].detachControl(canvas);
             }
-            // Release lights
             while (this.lights.length) {
                 this.lights[0].dispose();
             }
-            // Release meshes
             while (this.meshes.length) {
                 this.meshes[0].dispose(true);
             }
-            // Release cameras
             while (this.cameras.length) {
                 this.cameras[0].dispose();
             }
-            // Release materials
             while (this.materials.length) {
                 this.materials[0].dispose();
             }
-            // Release particles
             while (this.particleSystems.length) {
                 this.particleSystems[0].dispose();
             }
-            // Release sprites
             while (this.spriteManagers.length) {
                 this.spriteManagers[0].dispose();
             }
-            // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
             }
-            // Release textures
             while (this.textures.length) {
                 this.textures[0].dispose();
             }
@@ -1712,7 +1701,9 @@ var BABYLON;
                 return list;
             }
             var listByTags = [];
-            forEach = forEach || (function (item) { return; });
+            forEach = forEach || (function (item) {
+                return;
+            });
             for (var i in list) {
                 var item = list[i];
                 if (BABYLON.Tags.MatchesQuery(item, tagsQuery)) {

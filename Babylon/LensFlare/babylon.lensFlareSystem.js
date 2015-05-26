@@ -134,7 +134,6 @@ var BABYLON;
             engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
-            // Flares
             for (var index = 0; index < this.lensFlares.length; index++) {
                 var flare = this.lensFlares[index];
                 var x = centerX - (distX * flare.position);

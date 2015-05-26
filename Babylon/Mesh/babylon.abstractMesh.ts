@@ -539,7 +539,7 @@
         }
 
         public locallyTranslate(vector3: Vector3): void {
-            this.computeWorldMatrix();
+            this.computeWorldMatrix(true);
 
             this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
         }

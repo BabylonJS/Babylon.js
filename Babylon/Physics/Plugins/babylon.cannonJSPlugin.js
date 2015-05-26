@@ -110,13 +110,11 @@ var BABYLON;
         CannonJSPlugin.prototype._createConvexPolyhedron = function (rawVerts, rawFaces, mesh, options) {
             var verts = [], faces = [];
             mesh.computeWorldMatrix(true);
-            // Get vertices
             for (var i = 0; i < rawVerts.length; i += 3) {
                 var transformed = BABYLON.Vector3.Zero();
                 BABYLON.Vector3.TransformNormalFromFloatsToRef(rawVerts[i], rawVerts[i + 1], rawVerts[i + 2], mesh.getWorldMatrix(), transformed);
                 verts.push(new CANNON.Vec3(transformed.x, transformed.z, transformed.y));
             }
-            // Get faces
             for (var j = 0; j < rawFaces.length; j += 3) {
                 faces.push([rawFaces[j], rawFaces[j + 2], rawFaces[j + 1]]);
             }

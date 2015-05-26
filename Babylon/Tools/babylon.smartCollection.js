@@ -29,7 +29,6 @@ var BABYLON;
         SmartCollection.prototype.removeItemOfIndex = function (index) {
             if (index < this.count && index > -1) {
                 delete this.items[this._keys[index]];
-                //here, shifting by hand is better optimised than .splice
                 while (index < this.count) {
                     this._keys[index] = this._keys[index + 1];
                     index++;

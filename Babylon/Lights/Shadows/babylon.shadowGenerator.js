@@ -194,9 +194,7 @@ var BABYLON;
         });
         Object.defineProperty(ShadowGenerator.prototype, "usePoissonSampling", {
             get: function () {
-                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING ||
-                    (!this._light.supportsVSM() && (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
-                        this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP));
+                return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING || (!this._light.supportsVSM() && (this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP || this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP));
             },
             set: function (value) {
                 this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
