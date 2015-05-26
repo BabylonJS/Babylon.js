@@ -102,15 +102,33 @@ var BABYLON;
             var b = start.b + ((end.b - start.b) * amount);
             return new Color3(r, g, b);
         };
-        Color3.Red = function () { return new Color3(1, 0, 0); };
-        Color3.Green = function () { return new Color3(0, 1, 0); };
-        Color3.Blue = function () { return new Color3(0, 0, 1); };
-        Color3.Black = function () { return new Color3(0, 0, 0); };
-        Color3.White = function () { return new Color3(1, 1, 1); };
-        Color3.Purple = function () { return new Color3(0.5, 0, 0.5); };
-        Color3.Magenta = function () { return new Color3(1, 0, 1); };
-        Color3.Yellow = function () { return new Color3(1, 1, 0); };
-        Color3.Gray = function () { return new Color3(0.5, 0.5, 0.5); };
+        Color3.Red = function () {
+            return new Color3(1, 0, 0);
+        };
+        Color3.Green = function () {
+            return new Color3(0, 1, 0);
+        };
+        Color3.Blue = function () {
+            return new Color3(0, 0, 1);
+        };
+        Color3.Black = function () {
+            return new Color3(0, 0, 0);
+        };
+        Color3.White = function () {
+            return new Color3(1, 1, 1);
+        };
+        Color3.Purple = function () {
+            return new Color3(0.5, 0, 0.5);
+        };
+        Color3.Magenta = function () {
+            return new Color3(1, 0, 1);
+        };
+        Color3.Yellow = function () {
+            return new Color3(1, 1, 0);
+        };
+        Color3.Gray = function () {
+            return new Color3(0.5, 0.5, 0.5);
+        };
         return Color3;
     })();
     BABYLON.Color3 = Color3;
@@ -319,12 +337,8 @@ var BABYLON;
         Vector2.CatmullRom = function (value1, value2, value3, value4, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
-            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
-                (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
-                ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
-            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
-                (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
-                ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) + (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) + ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) + (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) + ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
             return new Vector2(x, y);
         };
         Vector2.Clamp = function (value, min, max) {
@@ -482,9 +496,7 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         };
         Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon;
         };
         Vector3.prototype.equalsToFloats = function (x, y, z) {
             return this.x === x && this.y === y && this.z === z;
@@ -664,15 +676,9 @@ var BABYLON;
         Vector3.CatmullRom = function (value1, value2, value3, value4, amount) {
             var squared = amount * amount;
             var cubed = amount * squared;
-            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
-                (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
-                ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
-            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
-                (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
-                ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
-            var z = 0.5 * ((((2.0 * value2.z) + ((-value1.z + value3.z) * amount)) +
-                (((((2.0 * value1.z) - (5.0 * value2.z)) + (4.0 * value3.z)) - value4.z) * squared)) +
-                ((((-value1.z + (3.0 * value2.z)) - (3.0 * value3.z)) + value4.z) * cubed));
+            var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) + (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) + ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+            var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) + (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) + ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+            var z = 0.5 * ((((2.0 * value2.z) + ((-value1.z + value3.z) * amount)) + (((((2.0 * value1.z) - (5.0 * value2.z)) + (4.0 * value3.z)) - value4.z) * squared)) + ((((-value1.z + (3.0 * value2.z)) - (3.0 * value3.z)) + value4.z) * cubed));
             return new Vector3(x, y, z);
         };
         Vector3.Clamp = function (value, min, max) {
@@ -784,6 +790,107 @@ var BABYLON;
             center.scaleInPlace(0.5);
             return center;
         };
+        /**
+         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         */
+        Vector3.RotationFromAxis = function (axis1, axis2, axis3) {
+            var u = BABYLON.Vector3.Normalize(axis1);
+            var v = BABYLON.Vector3.Normalize(axis2);
+            var w = BABYLON.Vector3.Normalize(axis3);
+            // world axis
+            var X = BABYLON.Axis.X;
+            var Y = BABYLON.Axis.Y;
+            var Z = BABYLON.Axis.Z;
+            // equation unknows and vars
+            var yaw = 0.0;
+            var pitch = 0.0;
+            var roll = 0.0;
+            var x = 0.0;
+            var y = 0.0;
+            var z = 0.0;
+            var t = 0.0;
+            var sign = -1.0;
+            var pi = Math.PI;
+            var nbRevert = 0;
+            var cross;
+            var dot = 0.0;
+            // step 1  : rotation around w
+            // Rv3(u) = u1, and u1 belongs to plane xOz
+            // Rv3(w) = w1 = w invariant
+            var u1;
+            var v1;
+            if (w.z == 0) {
+                z = 1.0;
+            }
+            else if (w.x == 0) {
+                x = 1.0;
+            }
+            else {
+                t = w.z / w.x;
+                x = -t * Math.sqrt(1 / (1 + t * t));
+                z = Math.sqrt(1 / (1 + t * t));
+            }
+            u1 = new BABYLON.Vector3(x, y, z);
+            v1 = BABYLON.Vector3.Cross(w, u1); // v1 image of v thru rotation around w
+            cross = BABYLON.Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(w, cross) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(u, u1);
+            roll = Math.acos(dot) * sign;
+            if (BABYLON.Vector3.Dot(u1, X) < 0) {
+                roll = Math.PI + roll;
+                u1 = u1.scaleInPlace(-1);
+                v1 = v1.scaleInPlace(-1);
+                nbRevert++;
+            }
+            // step 2 : rotate around u1
+            // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
+            // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
+            var w2;
+            var v2;
+            x = 0.0;
+            y = 0.0;
+            z = 0.0;
+            sign = -1;
+            if (w.z == 0) {
+                x = 1.0;
+            }
+            else {
+                t = u1.z / u1.x;
+                x = -t * Math.sqrt(1 / (1 + t * t));
+                z = Math.sqrt(1 / (1 + t * t));
+            }
+            w2 = new BABYLON.Vector3(x, y, z);
+            v2 = BABYLON.Vector3.Cross(w2, u1); // v2 image of v1 thru rotation around u1
+            cross = BABYLON.Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(u1, cross) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(w, w2);
+            pitch = Math.acos(dot) * sign;
+            if (BABYLON.Vector3.Dot(v2, Y) < 0) {
+                pitch = Math.PI + pitch;
+                v2 = v2.scaleInPlace(-1);
+                w2 = w2.scaleInPlace(-1);
+                nbRevert++;
+            }
+            // step 3 : rotate around v2
+            // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
+            sign = -1;
+            cross = BABYLON.Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(cross, Y) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(u1, X);
+            yaw = -Math.acos(dot) * sign; // negative : plane zOx oriented clockwise
+            if (dot < 0 && nbRevert < 2) {
+                yaw = Math.PI + yaw;
+            }
+            return new BABYLON.Vector3(pitch, yaw, roll);
+        };
         return Vector3;
     })();
     BABYLON.Vector3 = Vector3;
@@ -881,10 +988,7 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         };
         Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
+            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon && Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon && Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon && Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
         };
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
             return this.x === x && this.y === y && this.z === z && this.w === w;
@@ -1314,10 +1418,7 @@ var BABYLON;
         Matrix.prototype.isIdentity = function () {
             if (this.m[0] !== 1.0 || this.m[5] !== 1.0 || this.m[10] !== 1.0 || this.m[15] !== 1.0)
                 return false;
-            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 ||
-                this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 ||
-                this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 ||
-                this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
+            if (this.m[1] !== 0.0 || this.m[2] !== 0.0 || this.m[3] !== 0.0 || this.m[4] !== 0.0 || this.m[6] !== 0.0 || this.m[7] !== 0.0 || this.m[8] !== 0.0 || this.m[9] !== 0.0 || this.m[11] !== 0.0 || this.m[12] !== 0.0 || this.m[13] !== 0.0 || this.m[14] !== 0.0)
                 return false;
             return true;
         };
@@ -1328,9 +1429,7 @@ var BABYLON;
             var temp4 = (this.m[8] * this.m[15]) - (this.m[11] * this.m[12]);
             var temp5 = (this.m[8] * this.m[14]) - (this.m[10] * this.m[12]);
             var temp6 = (this.m[8] * this.m[13]) - (this.m[9] * this.m[12]);
-            return ((((this.m[0] * (((this.m[5] * temp1) - (this.m[6] * temp2)) + (this.m[7] * temp3))) - (this.m[1] * (((this.m[4] * temp1) -
-                (this.m[6] * temp4)) + (this.m[7] * temp5)))) + (this.m[2] * (((this.m[4] * temp2) - (this.m[5] * temp4)) + (this.m[7] * temp6)))) -
-                (this.m[3] * (((this.m[4] * temp3) - (this.m[5] * temp5)) + (this.m[6] * temp6))));
+            return ((((this.m[0] * (((this.m[5] * temp1) - (this.m[6] * temp2)) + (this.m[7] * temp3))) - (this.m[1] * (((this.m[4] * temp1) - (this.m[6] * temp4)) + (this.m[7] * temp5)))) + (this.m[2] * (((this.m[4] * temp2) - (this.m[5] * temp4)) + (this.m[7] * temp6)))) - (this.m[3] * (((this.m[4] * temp3) - (this.m[5] * temp5)) + (this.m[6] * temp6))));
         };
         // Methods
         Matrix.prototype.toArray = function () {
@@ -1604,11 +1703,7 @@ var BABYLON;
             SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
         };
         Matrix.prototype.equals = function (value) {
-            return value &&
-                (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
-                    this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] &&
-                    this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
-                    this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
+            return value && (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] && this.m[4] === value.m[4] && this.m[5] === value.m[5] && this.m[6] === value.m[6] && this.m[7] === value.m[7] && this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] && this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         };
         Matrix.prototype.clone = function () {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5], this.m[6], this.m[7], this.m[8], this.m[9], this.m[10], this.m[11], this.m[12], this.m[13], this.m[14], this.m[15]);
@@ -2406,9 +2501,7 @@ var BABYLON;
                 refinedT = Math.min(1, Math.max(0, refinedT));
             }
             // Resolve cubic bezier for the given x
-            return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
-                3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
-                Math.pow(refinedT, 3);
+            return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
         };
         return BezierCurve;
     })();
@@ -2465,8 +2558,8 @@ var BABYLON;
                 a3 -= 360.0;
             if (a3 - a2 < -180.0)
                 a3 += 360.0;
-            this.orientation = (a2 - a1) < 0 ? Orientation.CW : Orientation.CCW;
-            this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
+            this.orientation = (a2 - a1) < 0 ? 0 /* CW */ : 1 /* CCW */;
+            this.angle = Angle.FromDegrees(this.orientation === 0 /* CW */ ? a1 - a3 : a3 - a1);
         }
         return Arc2;
     })();
@@ -2557,7 +2650,7 @@ var BABYLON;
             var endPoint = new Vector2(endX, endY);
             var arc = new Arc2(startPoint, midPoint, endPoint);
             var increment = arc.angle.radians() / numberOfSegments;
-            if (arc.orientation === Orientation.CW)
+            if (arc.orientation === 0 /* CW */)
                 increment *= -1;
             var currentAngle = arc.startAngle.radians() + increment;
             for (var i = 0; i < numberOfSegments; i++) {
@@ -2874,7 +2967,9 @@ var BABYLON;
             Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
             Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
             Object.defineProperty(BABYLON.Vector3.prototype, "x", {
-                get: function () { return this._data[0]; },
+                get: function () {
+                    return this._data[0];
+                },
                 set: function (value) {
                     if (!this._data) {
                         this._data = new Float32Array(3);
@@ -2883,13 +2978,17 @@ var BABYLON;
                 }
             });
             Object.defineProperty(BABYLON.Vector3.prototype, "y", {
-                get: function () { return this._data[1]; },
+                get: function () {
+                    return this._data[1];
+                },
                 set: function (value) {
                     this._data[1] = value;
                 }
             });
             Object.defineProperty(BABYLON.Vector3.prototype, "z", {
-                get: function () { return this._data[2]; },
+                get: function () {
+                    return this._data[2];
+                },
                 set: function (value) {
                     this._data[2] = value;
                 }
@@ -2904,4 +3003,3 @@ var BABYLON;
         SIMDHelper.EnableSIMD();
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map
