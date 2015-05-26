@@ -996,6 +996,114 @@
             center.scaleInPlace(0.5);
             return center;
         }
+
+        /** 
+         * Given three orthogonal left-handed oriented Vector3 axis in space (target system), 
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         */
+        public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
+            var u = BABYLON.Vector3.Normalize(axis1);
+            var v = BABYLON.Vector3.Normalize(axis2);
+            var w = BABYLON.Vector3.Normalize(axis3);
+
+            // world axis
+            var X = BABYLON.Axis.X;
+            var Y = BABYLON.Axis.Y;
+            var Z = BABYLON.Axis.Z;
+
+            // equation unknows and vars
+            var yaw = 0.0;
+            var pitch = 0.0;
+            var roll = 0.0;
+            var x = 0.0;
+            var y = 0.0;
+            var z = 0.0;
+            var t = 0.0;
+            var sign = -1.0;
+            var pi = Math.PI;
+            var nbRevert = 0;
+            var cross: Vector3; 
+            var dot = 0.0;
+
+            // step 1  : rotation around w
+            // Rv3(u) = u1, and u1 belongs to plane xOz
+            // Rv3(w) = w1 = w invariant
+            var u1: Vector3;
+            var v1: Vector3;
+            if (w.z == 0) {
+                z = 1.0;
+            }
+            else if (w.x == 0) {
+                x = 1.0;
+            }
+            else {
+                t = w.z / w.x;
+                x = - t * Math.sqrt(1 / (1 + t * t));
+                z = Math.sqrt(1 / (1 + t *t));
+            }
+            u1 = new BABYLON.Vector3(x, y, z);
+            v1 = BABYLON.Vector3.Cross(w, u1);     // v1 image of v thru rotation around w
+            cross = BABYLON.Vector3.Cross(u, u1);  // returns same direction as w (=local z) if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(w, cross) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(u, u1);
+            roll = Math.acos(dot) * sign;       
+            if (BABYLON.Vector3.Dot(u1, X) < 0) { // checks X orientation
+                roll = Math.PI + roll;
+                u1 = u1.scaleInPlace(-1);
+                v1 = v1.scaleInPlace(-1);
+                nbRevert++;
+            }
+            
+            // step 2 : rotate around u1
+            // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
+            // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
+            var w2: Vector3;
+            var v2: Vector3;
+            x = 0.0;
+            y = 0.0;
+            z = 0.0;
+            sign = -1;
+            if (w.z == 0) {
+                x = 1.0;
+            }
+            else {
+                t = u1.z / u1.x;
+                x = - t * Math.sqrt(1  / (1 + t * t));
+                z = Math.sqrt(1 / (1 + t * t));
+            }
+            w2 = new BABYLON.Vector3(x, y, z);
+            v2 = BABYLON.Vector3.Cross(w2, u1);   // v2 image of v1 thru rotation around u1
+            cross = BABYLON.Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(u1, cross) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(w, w2);
+            pitch = Math.acos(dot) * sign;      
+            if (BABYLON.Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
+                pitch = Math.PI + pitch;
+                v2 = v2.scaleInPlace(-1);
+                w2 = w2.scaleInPlace(-1);
+                nbRevert++;
+            }
+            
+            // step 3 : rotate around v2
+            // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
+            sign = -1;
+            cross = BABYLON.Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            if (BABYLON.Vector3.Dot(cross, Y) < 0) {
+                sign = 1;
+            }
+            dot = BABYLON.Vector3.Dot(u1, X);
+            yaw = - Math.acos(dot) * sign;         // negative : plane zOx oriented clockwise
+            if (dot < 0 && nbRevert < 2) {
+                yaw = Math.PI + yaw;
+            }
+
+            return new BABYLON.Vector3(pitch, yaw, roll);
+        }
     }
 
     //Vector4 class created for EulerAngle class conversion to Quaternion
