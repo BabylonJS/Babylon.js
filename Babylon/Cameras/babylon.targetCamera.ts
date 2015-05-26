@@ -14,6 +14,8 @@
         public _camMatrix = Matrix.Zero();
         public _cameraTransformMatrix = Matrix.Zero();
         public _cameraRotationMatrix = Matrix.Zero();
+        private _subCamTransformMatrix: Matrix;
+
         public _referencePoint = new Vector3(0, 0, 1);
         public _transformedReferencePoint = Vector3.Zero();
         public _lookAtTemp = Matrix.Zero();
@@ -125,7 +127,7 @@
         public _updatePosition():void{
             this.position.addInPlace(this.cameraDirection);
         }
-        public _update():void {
+        public _checkInputs():void {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
@@ -205,6 +207,72 @@
 
             Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
+        }
+        
+        public _getOculusViewMatrix(): Matrix {
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._OculusActualUp);
+
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+
+            BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._OculusActualUp, this._OculusWorkMatrix);
+
+            this._OculusWorkMatrix.multiplyToRef(this._OculusPreViewMatrix, this._viewMatrix);
+            return this._viewMatrix;
+        }
+        
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        public GetSubCamera(name : string, isA : boolean) : Camera{
+            var subCamera = new BABYLON.TargetCamera(name, this.position.clone(), this.getScene());
+            if (this._subCameraMode === Camera.SUB_CAMS_OCULUS){
+                subCamera._OculusActualUp = new Vector3(0, 0, 0);
+                subCamera._getViewMatrix = subCamera._getOculusViewMatrix;
+            }
+            return subCamera;
+        }
+        
+        /**
+         * @override
+         * needs to be overridden, adding copy of position, and rotation for Oculus, or target for rest
+         */
+        public _updateSubCameras(){
+            var camA = <TargetCamera> this.subCameras[Camera.SUB_CAM_A];
+            var camB = <TargetCamera> this.subCameras[Camera.SUB_CAM_B];
+
+            if (this._subCameraMode === Camera.SUB_CAMS_OCULUS){
+                camA.rotation.x = camB.rotation.x = this.rotation.x;
+                camA.rotation.y = camB.rotation.y = this.rotation.y;
+                camA.rotation.z = camB.rotation.z = this.rotation.z;
+                
+                camA.position.copyFrom(this.position);
+                camB.position.copyFrom(this.position);
+                
+            }else{
+                camA.setTarget(this.getTarget());
+                camB.setTarget(this.getTarget());
+                
+                this._getSubCamPosition(-this._subCamHalfSapce, camA.position);
+                this._getSubCamPosition( this._subCamHalfSapce, camB.position);
+            }
+            super._updateSubCameras();
+        }
+        
+        private _getSubCamPosition(halfSapce, result) {
+            if (!this._subCamTransformMatrix){
+                this._subCamTransformMatrix = new BABYLON.Matrix();
+            }
+            var target = this.getTarget();
+            BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(halfSapce), this._subCamTransformMatrix);
+
+            this._subCamTransformMatrix = this._subCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
+
+            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._subCamTransformMatrix, result);
         }
     }
 } 
