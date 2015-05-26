@@ -88,6 +88,7 @@
             "../../Babylon/PostProcess/babylon.convolutionPostProcess.js",
             "../../Babylon/PostProcess/babylon.filterPostProcess.js",
             "../../Babylon/PostProcess/babylon.fxaaPostProcess.js",
+            "../../Babylon/PostProcess/babylon.StereogramInterlacePostProcess.js",
             "../../Babylon/LensFlare/babylon.lensFlare.js",
             "../../Babylon/LensFlare/babylon.lensFlareSystem.js",
             "../../Babylon/Physics/Plugins/babylon.cannonJSPlugin.js",

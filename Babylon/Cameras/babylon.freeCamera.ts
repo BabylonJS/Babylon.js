@@ -258,11 +258,5 @@
                 this.position.addInPlace(this.cameraDirection);
             }
         }
-
-        public _update(): void {
-            this._checkInputs();
-            super._update();
-        }
-
     }
 } 
