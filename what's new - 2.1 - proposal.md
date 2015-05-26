@@ -20,6 +20,7 @@
  - Allow static Mesh.MergeMeshes to work with clones & Mesh subclasses ([Palmer-JC](http://www.github.com/Palmer-JC))
  - Added mesh.freezeWorldMatrix() for static meshes ([deltakosh](http://www.github.com/deltakosh))
  - Added mesh.freezeNormals() for parametric mesh updates ([jbousquie](http://www.github.com/jbousquie))
+ - Added Vector3.RotationFromAxis() to get Euler rotation angles from a target system ([jbousquie](http://www.github.com/jbousquie))
  - Added mesh.alwaysSelectAsActiveMesh to disable frustum clipping for a specific mesh ([deltakosh](http://www.github.com/deltakosh))
  - Added updateMeshPositions method ([jbousquie](https://github.com/jbousquie))
  - Callbacks for geometry changes ([raananw](http://www.github.com/raananw))
