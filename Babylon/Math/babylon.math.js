@@ -796,14 +796,14 @@ var BABYLON;
          * to something in order to rotate it from its local system to the given target system.
          */
         Vector3.RotationFromAxis = function (axis1, axis2, axis3) {
-            var u = BABYLON.Vector3.Normalize(axis1);
-            var v = BABYLON.Vector3.Normalize(axis2);
-            var w = BABYLON.Vector3.Normalize(axis3);
+            var u = Vector3.Normalize(axis1);
+            var v = Vector3.Normalize(axis2);
+            var w = Vector3.Normalize(axis3);
             // world axis
-            var X = BABYLON.Axis.X;
-            var Y = BABYLON.Axis.Y;
-            var Z = BABYLON.Axis.Z;
-            // equation unknows and vars
+            var X = Axis.X;
+            var Y = Axis.Y;
+            var Z = Axis.Z;
+            // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
             var roll = 0.0;
@@ -832,15 +832,15 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            u1 = new BABYLON.Vector3(x, y, z);
-            v1 = BABYLON.Vector3.Cross(w, u1); // v1 image of v thru rotation around w
-            cross = BABYLON.Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
-            if (BABYLON.Vector3.Dot(w, cross) < 0) {
+            u1 = new Vector3(x, y, z);
+            v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
+            cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            if (Vector3.Dot(w, cross) < 0) {
                 sign = 1;
             }
-            dot = BABYLON.Vector3.Dot(u, u1);
+            dot = Vector3.Dot(u, u1);
             roll = Math.acos(dot) * sign;
-            if (BABYLON.Vector3.Dot(u1, X) < 0) {
+            if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
                 u1 = u1.scaleInPlace(-1);
                 v1 = v1.scaleInPlace(-1);
@@ -864,7 +864,7 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             w2 = new BABYLON.Vector3(x, y, z);
-            v2 = BABYLON.Vector3.Cross(w2, u1); // v2 image of v1 thru rotation around u1
+            v2 = BABYLON.Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
             cross = BABYLON.Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             if (BABYLON.Vector3.Dot(u1, cross) < 0) {
                 sign = 1;
