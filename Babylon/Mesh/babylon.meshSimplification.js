@@ -71,7 +71,7 @@ var BABYLON;
         };
         SimplificationQueue.prototype.getSimplifier = function (task) {
             switch (task.simplificationType) {
-                case SimplificationType.QUADRATIC:
+                case 0 /* QUADRATIC */:
                 default:
                     return new QuadraticErrorSimplification(task.mesh);
             }
@@ -128,9 +128,7 @@ var BABYLON;
             }
         }
         QuadraticMatrix.prototype.det = function (a11, a12, a13, a21, a22, a23, a31, a32, a33) {
-            var det = this.data[a11] * this.data[a22] * this.data[a33] + this.data[a13] * this.data[a21] * this.data[a32] +
-                this.data[a12] * this.data[a23] * this.data[a31] - this.data[a13] * this.data[a22] * this.data[a31] -
-                this.data[a11] * this.data[a23] * this.data[a32] - this.data[a12] * this.data[a21] * this.data[a33];
+            var det = this.data[a11] * this.data[a22] * this.data[a33] + this.data[a13] * this.data[a21] * this.data[a32] + this.data[a12] * this.data[a23] * this.data[a31] - this.data[a13] * this.data[a22] * this.data[a31] - this.data[a11] * this.data[a23] * this.data[a32] - this.data[a12] * this.data[a21] * this.data[a33];
             return det;
         };
         QuadraticMatrix.prototype.addInPlace = function (matrix) {
@@ -295,7 +293,9 @@ var BABYLON;
                             }
                         }
                     };
-                    BABYLON.AsyncLoop.SyncAsyncForLoop(_this.triangles.length, _this.syncIterations, trianglesIterator, callback, function () { return (triangleCount - deletedTriangles <= targetCount); });
+                    BABYLON.AsyncLoop.SyncAsyncForLoop(_this.triangles.length, _this.syncIterations, trianglesIterator, callback, function () {
+                        return (triangleCount - deletedTriangles <= targetCount);
+                    });
                 }, 0);
             };
             BABYLON.AsyncLoop.Run(this.decimationIterations, function (loop) {
@@ -485,7 +485,7 @@ var BABYLON;
                 var s = this.references[vertex1.triangleStart + i].vertexId;
                 var v1 = t.vertices[(s + 1) % 3];
                 var v2 = t.vertices[(s + 2) % 3];
-                if ((v1 === vertex2 || v2 === vertex2) /* && !this.isTriangleOnBoundingBox(t)*/) {
+                if ((v1 === vertex2 || v2 === vertex2)) {
                     deletedArray[i] = true;
                     delTr.push(t);
                     continue;
@@ -610,8 +610,7 @@ var BABYLON;
             var x = point.x;
             var y = point.y;
             var z = point.z;
-            return q.data[0] * x * x + 2 * q.data[1] * x * y + 2 * q.data[2] * x * z + 2 * q.data[3] * x + q.data[4] * y * y
-                + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
+            return q.data[0] * x * x + 2 * q.data[1] * x * y + 2 * q.data[2] * x * z + 2 * q.data[3] * x + q.data[4] * y * y + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
         };
         QuadraticErrorSimplification.prototype.calculateError = function (vertex1, vertex2, pointResult, normalResult, uvResult, colorResult) {
             var q = vertex1.q.add(vertex2.q);

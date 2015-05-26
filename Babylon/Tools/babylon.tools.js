@@ -367,7 +367,6 @@ var BABYLON;
             var halfHeight = height / 2;
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
-            //To flip image on Y axis.
             for (var i = 0; i < halfHeight; i++) {
                 for (var j = 0; j < numberOfChannelsByLine; j++) {
                     var currentCell = j + i * numberOfChannelsByLine;

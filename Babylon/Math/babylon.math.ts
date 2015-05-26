@@ -353,6 +353,10 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
+        public equalsWithEpsilon(otherVector: Vector2): boolean {
+            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x) && Tools.WithinEpsilon(this.y, otherVector.y);
+        }
+
         // Properties
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -609,9 +613,7 @@
         }
 
         public equalsWithEpsilon(otherVector: Vector3): boolean {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < Engine.Epsilon;
+            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x) && Tools.WithinEpsilon(this.y, otherVector.y) && Tools.WithinEpsilon(this.z, otherVector.z);
         }
 
         public equalsToFloats(x: number, y: number, z: number): boolean {

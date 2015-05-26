@@ -126,29 +126,19 @@ var BABYLON;
         Camera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronized.call(this))
                 return false;
-            return this._cache.position.equals(this.position)
-                && this._cache.upVector.equals(this.upVector)
-                && this.isSynchronizedWithParent();
+            return this._cache.position.equals(this.position) && this._cache.upVector.equals(this.upVector) && this.isSynchronizedWithParent();
         };
         Camera.prototype._isSynchronizedProjectionMatrix = function () {
-            var check = this._cache.mode === this.mode
-                && this._cache.minZ === this.minZ
-                && this._cache.maxZ === this.maxZ;
+            var check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
             if (!check) {
                 return false;
             }
             var engine = this.getEngine();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-                check = this._cache.fov === this.fov
-                    && this._cache.aspectRatio === engine.getAspectRatio(this);
+                check = this._cache.fov === this.fov && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
-                check = this._cache.orthoLeft === this.orthoLeft
-                    && this._cache.orthoRight === this.orthoRight
-                    && this._cache.orthoBottom === this.orthoBottom
-                    && this._cache.orthoTop === this.orthoTop
-                    && this._cache.renderWidth === engine.getRenderWidth()
-                    && this._cache.renderHeight === engine.getRenderHeight();
+                check = this._cache.orthoLeft === this.orthoLeft && this._cache.orthoRight === this.orthoRight && this._cache.orthoBottom === this.orthoBottom && this._cache.orthoTop === this.orthoTop && this._cache.renderWidth === engine.getRenderWidth() && this._cache.renderHeight === engine.getRenderHeight();
             }
             return check;
         };
@@ -285,7 +275,6 @@ var BABYLON;
         Camera.prototype.dispose = function () {
             // Remove from scene
             this.getScene().removeCamera(this);
-            // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }

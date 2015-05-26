@@ -63,7 +63,6 @@ var BABYLON;
                 initialRotation.toRotationMatrix(m);
                 deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
             }
-            // register mesh
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
@@ -81,7 +80,6 @@ var BABYLON;
                     });
                     break;
                 case BABYLON.PhysicsEngine.PlaneImpostor:
-                //Oimo "fakes" a cylinder as a box, so why don't we!
                 case BABYLON.PhysicsEngine.CylinderImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
                     var min = bbox.minimumWorld;

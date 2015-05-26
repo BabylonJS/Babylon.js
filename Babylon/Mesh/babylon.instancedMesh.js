@@ -129,7 +129,6 @@ var BABYLON;
                 result.parent = newParent;
             }
             if (!doNotCloneChildren) {
-                // Children
                 for (var index = 0; index < this.getScene().meshes.length; index++) {
                     var mesh = this.getScene().meshes[index];
                     if (mesh.parent === this) {

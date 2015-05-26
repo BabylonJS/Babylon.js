@@ -87,7 +87,6 @@ var BABYLON;
         };
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
-            // Triangles test
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                 var p0 = positions[indices[index]];
                 var p1 = positions[indices[index + 1]];

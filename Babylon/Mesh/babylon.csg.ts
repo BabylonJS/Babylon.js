@@ -276,6 +276,7 @@
         public matrix: Matrix;
         public position: Vector3;
         public rotation: Vector3;
+        public rotationQuaternion: Quaternion;
         public scaling: Vector3;
 
         // Convert BABYLON.Mesh to BABYLON.CSG
@@ -290,6 +291,7 @@
                 var matrix = mesh.getWorldMatrix();
                 var meshPosition = mesh.position.clone();
                 var meshRotation = mesh.rotation.clone();
+                var meshRotationQuaternion = mesh.rotationQuaternion.clone();
                 var meshScaling = mesh.scaling.clone();
             } else {
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
@@ -330,6 +332,7 @@
             csg.position = meshPosition;
             csg.rotation = meshRotation;
             csg.scaling = meshScaling;
+            csg.rotationQuaternion = meshRotationQuaternion;
             currentCSGMeshId++;
 
             return csg;
@@ -458,6 +461,7 @@
             this.position = csg.position;
             this.rotation = csg.rotation;
             this.scaling = csg.scaling;
+            this.rotationQuaternion = csg.rotationQuaternion;
 
             return this;
         }
@@ -585,6 +589,7 @@
 
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
+            mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
 
