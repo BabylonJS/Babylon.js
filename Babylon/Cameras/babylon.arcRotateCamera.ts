@@ -343,7 +343,7 @@
             }
         }
 
-        public _update(): void {
+        public _checkInputs(): void {
 
             //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
             if (this._collisionTriggered) {
@@ -501,6 +501,31 @@
             this.target = Mesh.Center(meshesOrMinMaxVector);
 
             this.maxZ = distance * 2;
+        }
+        
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        public GetSubCamera(name : string, isA : boolean) : Camera{
+            var alphaSpace = this._subCamHalfSapce * (isA? -1 : 1);
+            return new BABYLON.ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
+        }
+        
+        /**
+         * @override
+         * needs to be overridden, adding copy of alpha, beta & radius
+         */
+        public _updateSubCameras(){
+            var camA = <ArcRotateCamera> this.subCameras[Camera.SUB_CAM_A];
+            var camB = <ArcRotateCamera> this.subCameras[Camera.SUB_CAM_B];
+            
+            camA.alpha = this.alpha - this._subCamHalfSapce;
+            camB.alpha = this.alpha + this._subCamHalfSapce;
+            
+            camA.beta   = camB.beta   = this.beta;
+            camA.radius = camB.radius = this.radius;
+            super._updateSubCameras();
         }
     }
 } 
