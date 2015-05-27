@@ -1249,6 +1249,53 @@
                         delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
                     }
 
+                    //Geometry?
+                    if (parsedMesh.geometryId) {
+                        //does the file contain geometries?
+                        if (parsedData.geometries) {
+                            //find the correct geometry and add it to the scene
+                            var found: boolean = false;
+                            ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
+                                if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
+                                    return;
+                                } else {
+                                    parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
+                                        if (parsedGeometryData.id == parsedMesh.geometryId) {
+                                            switch (geometryType) {
+                                                case "boxes":
+                                                    parseBox(parsedGeometryData, scene);
+                                                    break;
+                                                case "spheres":
+                                                    parseSphere(parsedGeometryData, scene);
+                                                    break;
+                                                case "cylinders":
+                                                    parseCylinder(parsedGeometryData, scene);
+                                                    break;
+                                                case "toruses":
+                                                    parseTorus(parsedGeometryData, scene);
+                                                    break;
+                                                case "grounds":
+                                                    parseGround(parsedGeometryData, scene);
+                                                    break;
+                                                case "planes":
+                                                    parsePlane(parsedGeometryData, scene);
+                                                    break;
+                                                case "torusKnots":
+                                                    parseTorusKnot(parsedGeometryData, scene);
+                                                    break;
+                                                case "vertexData":
+                                                    parseVertexData(parsedGeometryData, scene, rootUrl);
+                                                    break;
+                                            }
+                                            found = true;
+                                        }
+                                    });
+                                    
+                                }
+                            });
+                        }
+                    }
+
                     // Material ?
                     if (parsedMesh.materialId) {
                         var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
