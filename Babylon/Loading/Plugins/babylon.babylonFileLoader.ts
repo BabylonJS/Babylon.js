@@ -429,10 +429,10 @@
         } else if (parsedCamera.type === "VirtualJoysticksCamera") {
             camera = new VirtualJoysticksCamera(parsedCamera.name, position, scene);
 
-        } else if (parsedCamera.type === "WebVRCamera") {
+        } else if (parsedCamera.type === "WebVRFreeCamera") {
             camera = new WebVRFreeCamera(parsedCamera.name, position, scene);
 
-        } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
+        } else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
             camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
 
         } else {

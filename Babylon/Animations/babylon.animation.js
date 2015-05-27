@@ -124,6 +124,7 @@ var BABYLON;
                         gradient = this._easingFunction.ease(gradient);
                     }
                     switch (this.dataType) {
+                        // Float
                         case Animation.ANIMATIONTYPE_FLOAT:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
@@ -133,6 +134,7 @@ var BABYLON;
                                     return offsetValue * repeatCount + this.floatInterpolateFunction(startValue, endValue, gradient);
                             }
                             break;
+                        // Quaternion
                         case Animation.ANIMATIONTYPE_QUATERNION:
                             var quaternion = null;
                             switch (loopMode) {
@@ -145,6 +147,7 @@ var BABYLON;
                                     break;
                             }
                             return quaternion;
+                        // Vector3
                         case Animation.ANIMATIONTYPE_VECTOR3:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
@@ -153,6 +156,7 @@ var BABYLON;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
+                        // Vector2
                         case Animation.ANIMATIONTYPE_VECTOR2:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
@@ -161,6 +165,7 @@ var BABYLON;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
+                        // Color3
                         case Animation.ANIMATIONTYPE_COLOR3:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
@@ -169,10 +174,12 @@ var BABYLON;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
+                        // Matrix
                         case Animation.ANIMATIONTYPE_MATRIX:
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                // return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
@@ -220,16 +227,21 @@ var BABYLON;
                         var fromValue = this._interpolate(from, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
                         var toValue = this._interpolate(to, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
                         switch (this.dataType) {
+                            // Float
                             case Animation.ANIMATIONTYPE_FLOAT:
                                 this._offsetsCache[keyOffset] = toValue - fromValue;
                                 break;
+                            // Quaternion
                             case Animation.ANIMATIONTYPE_QUATERNION:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                                 break;
+                            // Vector3
                             case Animation.ANIMATIONTYPE_VECTOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Vector2
                             case Animation.ANIMATIONTYPE_VECTOR2:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Color3
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             default:
@@ -243,18 +255,23 @@ var BABYLON;
             }
             if (offsetValue === undefined) {
                 switch (this.dataType) {
+                    // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
                         offsetValue = 0;
                         break;
+                    // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         offsetValue = new BABYLON.Quaternion(0, 0, 0, 0);
                         break;
+                    // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         offsetValue = BABYLON.Vector3.Zero();
                         break;
+                    // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         offsetValue = BABYLON.Vector2.Zero();
                         break;
+                    // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
                         offsetValue = BABYLON.Color3.Black();
                 }

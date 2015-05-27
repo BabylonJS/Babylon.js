@@ -98,10 +98,10 @@ var BABYLON;
             serializationObject.type = "VirtualJoysticksCamera";
         }
         else if (camera instanceof BABYLON.WebVRFreeCamera) {
-            serializationObject.type = "WebVRCamera";
+            serializationObject.type = "WebVRFreeCamera";
         }
         else if (camera instanceof BABYLON.VRDeviceOrientationFreeCamera) {
-            serializationObject.type = "VRDeviceOrientationCamera";
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
         }
         //special properties of specific cameras
         if (camera instanceof BABYLON.ArcRotateCamera || camera instanceof BABYLON.AnaglyphArcRotateCamera) {

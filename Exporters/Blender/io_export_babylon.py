@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 8, 0),
+    'version': (1, 8, 1),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -87,8 +87,8 @@ FREE_CAM = 'FreeCamera'
 GAMEPAD_CAM = 'GamepadCamera'
 TOUCH_CAM = 'TouchCamera'
 V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
-VR_DEV_ORIENT_CAM ='VRDeviceOrientationCamera'
-WEB_VR_CAM = 'WebVRCamera'
+VR_DEV_ORIENT_FREE_CAM ='VRDeviceOrientationFreeCamera'
+WEB_VR_FREE_CAM = 'WebVRFreeCamera'
 
 # used in Light constructor, never formally defined in Babylon, but used in babylonFileLoader
 POINT_LIGHT = 0
@@ -1730,17 +1730,17 @@ bpy.types.Camera.CameraType = bpy.props.EnumProperty(
     description='',
     # ONLY Append, or existing .blends will have their camera changed
     items = ( 
-             (V_JOYSTICKS_CAM   , 'Virtual Joysticks'  , 'Use Virtual Joysticks Camera'),
-             (TOUCH_CAM         , 'Touch'              , 'Use Touch Camera'),
-             (GAMEPAD_CAM       , 'Gamepad'            , 'Use Gamepad Camera'),
-             (FREE_CAM          , 'Free'               , 'Use Free Camera'),
-             (FOLLOW_CAM        , 'Follow'             , 'Use Follow Camera'),
-             (DEV_ORIENT_CAM    , 'Device Orientation' , 'Use Device Orientation Camera'),
-             (ARC_ROTATE_CAM    , 'Arc Rotate'         , 'Use Arc Rotate Camera'),
-             (ANAGLYPH_FREE_CAM , 'Anaglyph Free'      , 'Use Anaglyph Free Camera'), 
-             (ANAGLYPH_ARC_CAM  , 'Anaglyph Arc Rotate', 'Use Anaglyph Arc Rotate Camera'),
-             (VR_DEV_ORIENT_CAM , 'VR Dev Orientation' , 'Use VR Dev Orientation Camera'),
-             (WEB_VR_CAM        , 'Web VR'             , 'Use Web VR Camera')
+             (V_JOYSTICKS_CAM        , 'Virtual Joysticks'       , 'Use Virtual Joysticks Camera'),
+             (TOUCH_CAM              , 'Touch'                   , 'Use Touch Camera'),
+             (GAMEPAD_CAM            , 'Gamepad'                 , 'Use Gamepad Camera'),
+             (FREE_CAM               , 'Free'                    , 'Use Free Camera'),
+             (FOLLOW_CAM             , 'Follow'                  , 'Use Follow Camera'),
+             (DEV_ORIENT_CAM         , 'Device Orientation'      , 'Use Device Orientation Camera'),
+             (ARC_ROTATE_CAM         , 'Arc Rotate'              , 'Use Arc Rotate Camera'),
+             (ANAGLYPH_FREE_CAM      , 'Anaglyph Free'           , 'Use Anaglyph Free Camera'), 
+             (ANAGLYPH_ARC_CAM       , 'Anaglyph Arc Rotate'     , 'Use Anaglyph Arc Rotate Camera'),
+             (VR_DEV_ORIENT_FREE_CAM , 'VR Dev Orientation Free' , 'Use VR Dev Orientation Free Camera'),
+             (WEB_VR_FREE_CAM        , 'Web VR Free'             , 'Use Web VR Free Camera')
             ),
     default = FREE_CAM
 )

@@ -87,15 +87,9 @@ var BABYLON;
             this._createHighlightsPostProcess(ratio);
             this._createDepthOfFieldPostProcess(ratio);
             // Set up pipeline
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () {
-                return _this._chromaticAberrationPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () {
-                return _this._highlightsPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () {
-                return _this._depthOfFieldPostProcess;
-            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () { return _this._chromaticAberrationPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () { return _this._highlightsPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () { return _this._depthOfFieldPostProcess; }, true));
             if (this._highlightsGain == -1) {
                 this._disableEffect(this.HighlightsEnhancingEffect, null);
             }
@@ -106,51 +100,21 @@ var BABYLON;
             }
         }
         // public methods (self explanatory)
-        LensRenderingPipeline.prototype.setEdgeBlur = function (amount) {
-            this._edgeBlur = amount;
-        };
-        LensRenderingPipeline.prototype.disableEdgeBlur = function () {
-            this._edgeBlur = 0;
-        };
-        LensRenderingPipeline.prototype.setGrainAmount = function (amount) {
-            this._grainAmount = amount;
-        };
-        LensRenderingPipeline.prototype.disableGrain = function () {
-            this._grainAmount = 0;
-        };
-        LensRenderingPipeline.prototype.setChromaticAberration = function (amount) {
-            this._chromaticAberration = amount;
-        };
-        LensRenderingPipeline.prototype.disableChromaticAberration = function () {
-            this._chromaticAberration = 0;
-        };
-        LensRenderingPipeline.prototype.setEdgeDistortion = function (amount) {
-            this._distortion = amount;
-        };
-        LensRenderingPipeline.prototype.disableEdgeDistortion = function () {
-            this._distortion = 0;
-        };
-        LensRenderingPipeline.prototype.setFocusDepth = function (amount) {
-            this._dofDepth = amount;
-        };
-        LensRenderingPipeline.prototype.disableDepthOfField = function () {
-            this._dofDepth = -1;
-        };
-        LensRenderingPipeline.prototype.setAperture = function (amount) {
-            this._dofAperture = amount;
-        };
-        LensRenderingPipeline.prototype.enablePentagonBokeh = function () {
-            this._dofPentagon = true;
-        };
-        LensRenderingPipeline.prototype.disablePentagonBokeh = function () {
-            this._dofPentagon = false;
-        };
-        LensRenderingPipeline.prototype.enableNoiseBlur = function () {
-            this._blurNoise = true;
-        };
-        LensRenderingPipeline.prototype.disableNoiseBlur = function () {
-            this._blurNoise = false;
-        };
+        LensRenderingPipeline.prototype.setEdgeBlur = function (amount) { this._edgeBlur = amount; };
+        LensRenderingPipeline.prototype.disableEdgeBlur = function () { this._edgeBlur = 0; };
+        LensRenderingPipeline.prototype.setGrainAmount = function (amount) { this._grainAmount = amount; };
+        LensRenderingPipeline.prototype.disableGrain = function () { this._grainAmount = 0; };
+        LensRenderingPipeline.prototype.setChromaticAberration = function (amount) { this._chromaticAberration = amount; };
+        LensRenderingPipeline.prototype.disableChromaticAberration = function () { this._chromaticAberration = 0; };
+        LensRenderingPipeline.prototype.setEdgeDistortion = function (amount) { this._distortion = amount; };
+        LensRenderingPipeline.prototype.disableEdgeDistortion = function () { this._distortion = 0; };
+        LensRenderingPipeline.prototype.setFocusDepth = function (amount) { this._dofDepth = amount; };
+        LensRenderingPipeline.prototype.disableDepthOfField = function () { this._dofDepth = -1; };
+        LensRenderingPipeline.prototype.setAperture = function (amount) { this._dofAperture = amount; };
+        LensRenderingPipeline.prototype.enablePentagonBokeh = function () { this._dofPentagon = true; };
+        LensRenderingPipeline.prototype.disablePentagonBokeh = function () { this._dofPentagon = false; };
+        LensRenderingPipeline.prototype.enableNoiseBlur = function () { this._blurNoise = true; };
+        LensRenderingPipeline.prototype.disableNoiseBlur = function () { this._blurNoise = false; };
         LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
             this._highlightsGain = amount;
         };
@@ -203,18 +167,8 @@ var BABYLON;
         LensRenderingPipeline.prototype._createDepthOfFieldPostProcess = function (ratio) {
             var _this = this;
             this._depthOfFieldPostProcess = new BABYLON.PostProcess("LensDepthOfField", "depthOfField", [
-                "focus_depth",
-                "aperture",
-                "pentagon",
-                "maxZ",
-                "edge_blur",
-                "chromatic_aberration",
-                "distortion",
-                "blur_noise",
-                "grain_amount",
-                "screen_width",
-                "screen_height",
-                "highlights"
+                "focus_depth", "aperture", "pentagon", "maxZ", "edge_blur", "chromatic_aberration",
+                "distortion", "blur_noise", "grain_amount", "screen_width", "screen_height", "highlights"
             ], ["depthSampler", "grainSampler", "highlightsSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._depthOfFieldPostProcess.onApply = function (effect) {
                 effect.setBool('blur_noise', _this._blurNoise);

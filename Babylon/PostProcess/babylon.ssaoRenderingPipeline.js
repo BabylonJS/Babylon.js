@@ -81,21 +81,11 @@ var BABYLON;
             this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () {
-                return _this._originalColorPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, function () {
-                return _this._ssaoPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, function () {
-                return _this._blurHPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, function () {
-                return _this._blurVPostProcess;
-            }, true));
-            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, function () {
-                return _this._ssaoCombinePostProcess;
-            }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () { return _this._originalColorPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, function () { return _this._ssaoPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, function () { return _this._blurHPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, function () { return _this._blurVPostProcess; }, true));
+            this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, function () { return _this._ssaoCombinePostProcess; }, true));
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
             if (cameras)
@@ -135,54 +125,22 @@ var BABYLON;
         SSAORenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {
             var _this = this;
             var sampleSphere = [
-                0.5381,
-                0.1856,
-                -0.4319,
-                0.1379,
-                0.2486,
-                0.4430,
-                0.3371,
-                0.5679,
-                -0.0057,
-                -0.6999,
-                -0.0451,
-                -0.0019,
-                0.0689,
-                -0.1598,
-                -0.8547,
-                0.0560,
-                0.0069,
-                -0.1843,
-                -0.0146,
-                0.1402,
-                0.0762,
-                0.0100,
-                -0.1924,
-                -0.0344,
-                -0.3577,
-                -0.5301,
-                -0.4358,
-                -0.3169,
-                0.1063,
-                0.0158,
-                0.0103,
-                -0.5869,
-                0.0046,
-                -0.0897,
-                -0.4940,
-                0.3287,
-                0.7119,
-                -0.0154,
-                -0.0918,
-                -0.0533,
-                0.0596,
-                -0.5411,
-                0.0352,
-                -0.0631,
-                0.5460,
-                -0.4776,
-                0.2847,
-                -0.0271
+                0.5381, 0.1856, -0.4319,
+                0.1379, 0.2486, 0.4430,
+                0.3371, 0.5679, -0.0057,
+                -0.6999, -0.0451, -0.0019,
+                0.0689, -0.1598, -0.8547,
+                0.0560, 0.0069, -0.1843,
+                -0.0146, 0.1402, 0.0762,
+                0.0100, -0.1924, -0.0344,
+                -0.3577, -0.5301, -0.4358,
+                -0.3169, 0.1063, 0.0158,
+                0.0103, -0.5869, 0.0046,
+                -0.0897, -0.4940, 0.3287,
+                0.7119, -0.0154, -0.0918,
+                -0.0533, 0.0596, -0.5411,
+                0.0352, -0.0631, 0.5460,
+                -0.4776, 0.2847, -0.0271
             ];
             var samplesFactor = 1.0 / 16.0;
             this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius", "area", "fallOff"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);

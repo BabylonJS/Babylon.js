@@ -44,7 +44,7 @@ var BABYLON;
                 };
                 var message = {
                     payload: payload,
-                    taskType: 1 /* UPDATE */
+                    taskType: WorkerTaskType.UPDATE
                 };
                 var serializable = [];
                 for (var id in payload.updatedGeometries) {
@@ -63,13 +63,13 @@ var BABYLON;
             };
             this._onMessageFromWorker = function (e) {
                 var returnData = e.data;
-                if (returnData.error != 0 /* SUCCESS */) {
+                if (returnData.error != WorkerReplyType.SUCCESS) {
                     //TODO what errors can be returned from the worker?
                     BABYLON.Tools.Warn("error returned from worker!");
                     return;
                 }
                 switch (returnData.taskType) {
-                    case 0 /* INIT */:
+                    case WorkerTaskType.INIT:
                         _this._init = true;
                         //Update the worked with ALL of the scene's current state
                         _this._scene.meshes.forEach(function (mesh) {
@@ -79,10 +79,10 @@ var BABYLON;
                             _this.onGeometryAdded(geometry);
                         });
                         break;
-                    case 1 /* UPDATE */:
+                    case WorkerTaskType.UPDATE:
                         _this._runningUpdated--;
                         break;
-                    case 2 /* COLLIDE */:
+                    case WorkerTaskType.COLLIDE:
                         _this._runningCollisionTask = false;
                         var returnPayload = returnData.payload;
                         if (!_this._collisionsCallbackArray[returnPayload.collisionId])
@@ -122,7 +122,7 @@ var BABYLON;
             };
             var message = {
                 payload: payload,
-                taskType: 2 /* COLLIDE */
+                taskType: WorkerTaskType.COLLIDE
             };
             this._worker.postMessage(message);
         };
@@ -134,7 +134,7 @@ var BABYLON;
             this._worker.onmessage = this._onMessageFromWorker;
             var message = {
                 payload: {},
-                taskType: 0 /* INIT */
+                taskType: WorkerTaskType.INIT
             };
             this._worker.postMessage(message);
         };
@@ -225,18 +225,12 @@ var BABYLON;
             //Legacy need no destruction method.
         };
         //No update in legacy mode
-        CollisionCoordinatorLegacy.prototype.onMeshAdded = function (mesh) {
-        };
-        CollisionCoordinatorLegacy.prototype.onMeshUpdated = function (mesh) {
-        };
-        CollisionCoordinatorLegacy.prototype.onMeshRemoved = function (mesh) {
-        };
-        CollisionCoordinatorLegacy.prototype.onGeometryAdded = function (geometry) {
-        };
-        CollisionCoordinatorLegacy.prototype.onGeometryUpdated = function (geometry) {
-        };
-        CollisionCoordinatorLegacy.prototype.onGeometryDeleted = function (geometry) {
-        };
+        CollisionCoordinatorLegacy.prototype.onMeshAdded = function (mesh) { };
+        CollisionCoordinatorLegacy.prototype.onMeshUpdated = function (mesh) { };
+        CollisionCoordinatorLegacy.prototype.onMeshRemoved = function (mesh) { };
+        CollisionCoordinatorLegacy.prototype.onGeometryAdded = function (geometry) { };
+        CollisionCoordinatorLegacy.prototype.onGeometryUpdated = function (geometry) { };
+        CollisionCoordinatorLegacy.prototype.onGeometryDeleted = function (geometry) { };
         CollisionCoordinatorLegacy.prototype._collideWithWorld = function (position, velocity, collider, maximumRetry, finalPosition, excludedMesh) {
             if (excludedMesh === void 0) { excludedMesh = null; }
             var closeDistance = BABYLON.Engine.CollisionsEpsilon * 10.0;
@@ -245,6 +239,7 @@ var BABYLON;
                 return;
             }
             collider._initialize(position, velocity, closeDistance);
+            // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
                 if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
