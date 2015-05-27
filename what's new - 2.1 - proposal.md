@@ -57,6 +57,7 @@
  - useCameraPostProcess whenever there is a special camera in use ([m0ppers](https://github.com/m0ppers))
  - delta in BoundingBox's intersectsPoint is now calculated correctly ([raananw](http://www.github.com/raananw)) 
  - textures cache fixed ([deltakosh](http://www.github.com/deltakosh))
+ - ImportMesh not importing referenced geometries ([raananw](http://www.github.com/raananw)) 
  - **Breaking changes**
  - OculusCamera was removed ([deltakosh](http://www.github.com/deltakosh))
  - VRDeviceOrientationCamera was renamed to VRDeviceOrientationFreeCamera ([deltakosh](http://www.github.com/deltakosh))
