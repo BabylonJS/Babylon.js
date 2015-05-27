@@ -287,7 +287,7 @@ var BABYLON;
                 this._reset();
             }
         };
-        ArcRotateCamera.prototype._update = function () {
+        ArcRotateCamera.prototype._checkInputs = function () {
             //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
             if (this._collisionTriggered) {
                 return;
@@ -341,6 +341,7 @@ var BABYLON;
             if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
             }
+            _super.prototype._checkInputs.call(this);
         };
         ArcRotateCamera.prototype.setPosition = function (position) {
             var radiusv3 = position.subtract(this._getTargetPosition());
@@ -397,6 +398,27 @@ var BABYLON;
             }
             this.target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
             this.maxZ = distance * 2;
+        };
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        ArcRotateCamera.prototype.getSubCamera = function (name, isA) {
+            var alphaSpace = this._subCamHalfSpace * (isA ? -1 : 1);
+            return new BABYLON.ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
+        };
+        /**
+         * @override
+         * needs to be overridden, adding copy of alpha, beta & radius
+         */
+        ArcRotateCamera.prototype._updateSubCameras = function () {
+            var camA = this.subCameras[BABYLON.Camera.SUB_CAMERAID_A];
+            var camB = this.subCameras[BABYLON.Camera.SUB_CAMERAID_B];
+            camA.alpha = this.alpha - this._subCamHalfSpace;
+            camB.alpha = this.alpha + this._subCamHalfSpace;
+            camA.beta = camB.beta = this.beta;
+            camA.radius = camB.radius = this.radius;
+            _super.prototype._updateSubCameras.call(this);
         };
         return ArcRotateCamera;
     })(BABYLON.Camera);

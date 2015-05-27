@@ -1,27 +1,69 @@
 ﻿module BABYLON {
-    // Oculus source & derived constants
-    var OculusRiftDevKit2013_Metric = {
-        HResolution: 1280,
-        VResolution: 800,
-        HScreenSize: 0.149759993,
-        VScreenSize: 0.0935999975,
-        VScreenCenter: 0.0467999987,
-        EyeToScreenDistance: 0.0410000011,
-        LensSeparationDistance: 0.0635000020,
-        InterpupillaryDistance: 0.0640000030,
-        DistortionK: [1.0, 0.219999999, 0.239999995, 0.0],
-        ChromaAbCorrection: [0.995999992, -0.00400000019, 1.01400006, 0.0],
-        PostProcessScaleFactor: 1.714605507808412,
-        LensCenterOffset: 0.151976421
-    };
-    var OculusAspectRatio = OculusRiftDevKit2013_Metric.HResolution / (2 * OculusRiftDevKit2013_Metric.VResolution);
-    var OculusAspectRatioFov = (2 * Math.atan((OculusRiftDevKit2013_Metric.PostProcessScaleFactor * OculusRiftDevKit2013_Metric.VScreenSize) / (2 * OculusRiftDevKit2013_Metric.EyeToScreenDistance)));
-    var OculusHMeters = (OculusRiftDevKit2013_Metric.HScreenSize / 4) - (OculusRiftDevKit2013_Metric.LensSeparationDistance / 2);
-    var OculusH = (4 * OculusHMeters) / OculusRiftDevKit2013_Metric.HScreenSize;
-    var OculusLeftHMatrix  = Matrix.Translation( OculusH , 0, 0);
-    var OculusRightHMatrix = Matrix.Translation(-OculusH , 0, 0);
-    var OculusLeftPreViewMatrix  = Matrix.Translation( .5 * OculusRiftDevKit2013_Metric.InterpupillaryDistance, 0, 0);
-    var OculusRightPreViewMatrix = Matrix.Translation(-.5 * OculusRiftDevKit2013_Metric.InterpupillaryDistance, 0, 0);
+
+    export class VRCameraMetrics {
+        public hResolution: number;
+        public vResolution: number;
+        public hScreenSize: number;
+        public vScreenSize: number;
+        public vScreenCenter: number;
+        public eyeToScreenDistance: number;
+        public lensSeparationDistance: number;
+        public interpupillaryDistance: number;
+        public distortionK: number[];
+        public chromaAbCorrection: number[];
+        public postProcessScaleFactor: number;
+        public lensCenterOffset: number;
+        public compensateDistorsion = true;
+
+        public get aspectRatio(): number {
+            return this.hResolution / (2 * this.vResolution);
+        }
+
+        public get aspectRatioFov(): number {
+            return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
+        }
+
+        public get leftHMatrix(): Matrix {
+            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+            var h = (4 * meters) / this.hScreenSize;
+
+            return Matrix.Translation(h, 0, 0);
+        }
+
+        public get rightHMatrix(): Matrix {
+            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+            var h = (4 * meters) / this.hScreenSize;
+
+            return Matrix.Translation(-h, 0, 0);
+        }
+
+        public get leftPreViewMatrix(): Matrix {
+            return Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
+        }
+
+        public get rightPreViewMatrix(): Matrix {
+            return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
+        }
+
+        public static GetDefault(): VRCameraMetrics {
+            var result = new VRCameraMetrics();
+
+            result.hResolution = 1280;
+            result.vResolution = 800;
+            result.hScreenSize = 0.149759993;
+            result.vScreenSize = 0.0935999975;
+            result.vScreenCenter = 0.0467999987,
+            result.eyeToScreenDistance = 0.0410000011;
+            result.lensSeparationDistance = 0.0635000020;
+            result.interpupillaryDistance = 0.0640000030;
+            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
+            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
+            result.postProcessScaleFactor = 1.714605507808412;
+            result.lensCenterOffset = 0.151976421;
+
+            return result;
+        }
+    }
 
     export class Camera extends Node {
         // Statics
@@ -31,14 +73,15 @@
         private static _FOVMODE_VERTICAL_FIXED = 0;
         private static _FOVMODE_HORIZONTAL_FIXED = 1;
 
-        private static _SUB_CAMS_NONE = 0;
-        private static _SUB_CAMS_ANAGLYPH = 1;
-        private static _SUB_CAMS_HORIZ_STEREOGRAM = 2;
-        private static _SUB_CAMS_VERT_STEREOGRAM = 3;
-        private static _SUB_CAMS_OCULUS = 4;
-        private static _SUB_CAM_A = 0;
-        private static _SUB_CAM_B = 1;
-        
+        private static _SUB_CAMERA_MODE_NONE = 0;
+        private static _SUB_CAMERA_MODE_ANAGLYPH = 1;
+        private static _SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM = 2;
+        private static _SUB_CAMERA_MODE_VERTICAL_STEREOGRAM = 3;
+        private static _SUB_CAMERA_MODE_VR = 4;
+
+        private static _SUB_CAMERAID_A = 0;
+        private static _SUB_CAMERAID_B = 1;
+
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
         }
@@ -54,35 +97,33 @@
         public static get FOVMODE_HORIZONTAL_FIXED(): number {
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
-        
-        public static get SUB_CAMS_NONE(): number {
-            return Camera._SUB_CAMS_NONE;
+
+        public static get SUB_CAMERA_MODE_NONE(): number {
+            return Camera._SUB_CAMERA_MODE_NONE;
         }
-        
-        public static get SUB_CAMS_ANAGLYPH(): number {
-            return Camera._SUB_CAMS_ANAGLYPH;
+
+        public static get SUB_CAMERA_MODE_ANAGLYPH(): number {
+            return Camera._SUB_CAMERA_MODE_ANAGLYPH;
         }
-        
-        public static get SUB_CAMS_HORIZ_STEREOGRAM(): number {
-            return Camera._SUB_CAMS_HORIZ_STEREOGRAM;
+
+        public static get SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM(): number {
+            return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
         }
-        
-        public static get SUB_CAMS_VERT_STEREOGRAM(): number {
-            return Camera._SUB_CAMS_VERT_STEREOGRAM;
+
+        public static get SUB_CAMERA_MODE_VERTICAL_STEREOGRAM(): number {
+            return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM;
         }
-        
-        public static get SUB_CAMS_OCULUS(): number {
-            return Camera._SUB_CAMS_OCULUS;
+
+        public static get SUB_CAMERA_MODE_VR(): number {
+            return Camera._SUB_CAMERA_MODE_VR;
         }
-        
-        public static SUB_CAMS_UI_ENGLISH = ['None', 'Anaglyph', 'Stereogram Horizontal', 'Stereogram Vertical', 'Oculus Rift'];
-        
-        public static get SUB_CAM_A(): number {
-            return Camera._SUB_CAM_A;
+
+        public static get SUB_CAMERAID_A(): number {
+            return Camera._SUB_CAMERAID_A;
         }
-        
-        public static get SUB_CAM_B(): number {
-            return Camera._SUB_CAM_B;
+
+        public static get SUB_CAMERAID_B(): number {
+            return Camera._SUB_CAMERAID_B;
         }
         
         // Members
@@ -103,13 +144,17 @@
    
         // Subcamera members
         public subCameras = new Array<Camera>();
-        public _subCameraMode = Camera._SUB_CAMS_NONE;
-        public _subCamHalfSapce: number;
-        private _OculusHMatrix : Matrix;
-        public _OculusPreViewMatrix : Matrix;
-        public _OculusWorkMatrix : Matrix;
-        public _OculusActualUp : Vector3;
+        public _subCameraMode = Camera.SUB_CAMERA_MODE_NONE;
+        public _subCamHalfSpace: number;
 
+        // VR related
+        private _vrMetrics: VRCameraMetrics;
+        private _vrHMatrix: Matrix;
+        public _vrPreViewMatrix: Matrix;
+        public _vrWorkMatrix: Matrix;
+        public _vrActualUp: Vector3;
+
+        // Cache
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
@@ -244,14 +289,14 @@
 
         public _update(): void {
             this._checkInputs();
-            if (this._subCameraMode !== Camera._SUB_CAMS_NONE){
+            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
                 this._updateSubCameras();
             }
         }
 
-        public _checkInputs(): void {            
+        public _checkInputs(): void {
         }
-        
+
         public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
                 Tools.Error("You're trying to reuse a post process not defined as reusable.");
@@ -422,7 +467,7 @@
         public dispose(): void {
             // Remove from scene
             this.getScene().removeCamera(this);
-            while (this.subCameras.length > 0){
+            while (this.subCameras.length > 0) {
                 this.subCameras.pop().dispose();
             }                    
 
@@ -433,95 +478,102 @@
         }
         
         // ---- 3D cameras section ----
-        public setSubCameraMode(mode : number, halfSapce : number) : void{
-            // not likely in production that any prior sub cams, but in dev maybe
-            while (this.subCameras.length > 0){
+        public setSubCameraMode(mode: number, halfSpace = 0, metrics?: VRCameraMetrics): void {
+            while (this.subCameras.length > 0) {
                 this.subCameras.pop().dispose();
-            }                        
-            this._subCameraMode = mode;   
-            this._subCamHalfSapce = Tools.ToRadians(halfSapce);
-            
-            var camA = this.GetSubCamera(this.name + "_A", true );
-            var camB = this.GetSubCamera(this.name + "_B", false);
-            var postProcessA : PostProcess;
-            var postProcessB : PostProcess;
-            
-            switch (this._subCameraMode){
-                case Camera._SUB_CAMS_ANAGLYPH:
+            }
+            this._subCameraMode = mode;
+            this._subCamHalfSpace = Tools.ToRadians(halfSpace);
+
+            var camA = this.getSubCamera(this.name + "_A", true);
+            var camB = this.getSubCamera(this.name + "_B", false);
+            var postProcessA: PostProcess;
+            var postProcessB: PostProcess;
+
+            switch (this._subCameraMode) {
+                case Camera.SUB_CAMERA_MODE_ANAGLYPH:
                     postProcessA = new PassPostProcess(this.name + "_leftTexture", 1.0, camA);
                     camA.isIntermediate = true;
-                    
+
                     postProcessB = new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, camB);
                     postProcessB.onApply = effect => {
                         effect.setTextureFromPostProcess("leftSampler", postProcessA);
                     };
                     break;
-                    
-                case Camera._SUB_CAMS_HORIZ_STEREOGRAM:
-                case Camera._SUB_CAMS_VERT_STEREOGRAM:
-                    var isStereogramHoriz = this._subCameraMode === Camera._SUB_CAMS_HORIZ_STEREOGRAM;
-                    postProcessA = new PassPostProcess("passthru", 1.0, camA);  
+
+                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM:
+                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOGRAM:
+                    var isStereogramHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+                    postProcessA = new PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
-                    
-                    postProcessB = new StereogramInterlacePostProcess("st_interlace" , camB, postProcessA, isStereogramHoriz);  
+
+                    postProcessB = new StereogramInterlacePostProcess("st_interlace", camB, postProcessA, isStereogramHoriz);
                     break;
-                    
-                case Camera._SUB_CAMS_OCULUS:
-                    camA.viewport = new Viewport(  0,   0, 0.5, 1.0);
-                    camA._OculusWorkMatrix = new Matrix();
-                    
-                    camA._OculusHMatrix = OculusLeftHMatrix;
-                    camA._OculusPreViewMatrix = OculusLeftPreViewMatrix;                    
-                    camA.getProjectionMatrix = camA.getOculusProjectionMatrix;
-                    postProcessA = new OculusDistortionCorrectionPostProcess("Oculus Distortion Left", camA, false, OculusRiftDevKit2013_Metric);
-                    
-                    camB.viewport = new Viewport(0.5,   0, 0.5, 1.0);
-                    camB._OculusWorkMatrix = new Matrix();
-                    camB._OculusHMatrix = OculusRightHMatrix;
-                    camB._OculusPreViewMatrix = OculusRightPreViewMatrix;
-                    
-                    camB.getProjectionMatrix = camB.getOculusProjectionMatrix;
-                    postProcessB = new OculusDistortionCorrectionPostProcess("Oculus Distortion Right", camB, true , OculusRiftDevKit2013_Metric);
+
+                case Camera.SUB_CAMERA_MODE_VR:
+                    metrics = metrics || VRCameraMetrics.GetDefault();;
+                    camA._vrMetrics = metrics;
+                    camA.viewport = new Viewport(0, 0, 0.5, 1.0);
+                    camA._vrWorkMatrix = new Matrix();
+
+                    camA._vrHMatrix = metrics.leftHMatrix;
+                    camA._vrPreViewMatrix = metrics.leftPreViewMatrix;
+                    camA.getProjectionMatrix = camA._getVRProjectionMatrix;
+
+                    if (metrics.compensateDistorsion) {
+                        postProcessA = new VRDistortionCorrectionPostProcess("Distortion Compensation Left", camA, false, metrics);
+                    }
+
+                    camB._vrMetrics = camA._vrMetrics;
+                    camB.viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                    camB._vrWorkMatrix = new Matrix();
+                    camB._vrHMatrix = metrics.rightHMatrix;
+                    camB._vrPreViewMatrix = metrics.rightPreViewMatrix;
+
+                    camB.getProjectionMatrix = camB._getVRProjectionMatrix;
+
+                    if (metrics.compensateDistorsion) {
+                        postProcessB = new VRDistortionCorrectionPostProcess("Distortion Compensation Right", camB, true, metrics);
+                    }
             }
-            if (this._subCameraMode !== Camera._SUB_CAMS_NONE){
+            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
                 this.subCameras.push(camA);
                 this.subCameras.push(camB);
             }
             this._update();
         }
-        
-        private getOculusProjectionMatrix(): Matrix {
-            Matrix.PerspectiveFovLHToRef(OculusAspectRatioFov, OculusAspectRatio, this.minZ, this.maxZ, this._OculusWorkMatrix);
-            this._OculusWorkMatrix.multiplyToRef(this._OculusHMatrix, this._projectionMatrix);
+
+        private _getVRProjectionMatrix(): Matrix {
+            Matrix.PerspectiveFovLHToRef(this._vrMetrics.aspectRatioFov, this._vrMetrics.aspectRatio, this.minZ, this.maxZ, this._vrWorkMatrix);
+            this._vrWorkMatrix.multiplyToRef(this._vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
         }
-        
-        public setSubCamHalfSapce( halfSapce : number){
-            this._subCamHalfSapce = Tools.ToRadians(halfSapce);
+
+        public setSubCamHalfSapce(halfSapce: number) {
+            this._subCamHalfSpace = Tools.ToRadians(halfSapce);
         }
         
         /**
-         * needs to be overridden in ArcRotateCamera & TargetCamera, so sub has required properties to be copied
+         * May needs to be overridden by children so sub has required properties to be copied
          */
-        public GetSubCamera(name : string, isA : boolean) : Camera{ 
-            return null;  
+        public getSubCamera(name: string, isA: boolean): Camera {
+            return null;
         }
         
         /**
-         * needs to be overridden in ArcRotateCamera, adding copy of alpha, beta & radius
-         * needs to be overridden in TargetCamera, adding copy of position, and rotation for Oculus, or target for rest
+         * May needs to be overridden by children
          */
-        public _updateSubCameras(){
-            var camA = this.subCameras[Camera.SUB_CAM_A];
-            var camB = this.subCameras[Camera.SUB_CAM_B];
+        public _updateSubCameras() {
+            var camA = this.subCameras[Camera.SUB_CAMERAID_A];
+            var camB = this.subCameras[Camera.SUB_CAMERAID_B];
             camA.minZ = camB.minZ = this.minZ;
             camA.maxZ = camB.maxZ = this.maxZ;
-            camA.fov  = camB.fov  = this.fov; // original Oculus did not do this
+            camA.fov = camB.fov = this.fov;
             
             // only update viewport, when ANAGLYPH
-            if (this._subCameraMode === Camera.SUB_CAMS_ANAGLYPH){
-                camA.viewport = camB.viewport = this.viewport;                
+            if (this._subCameraMode === Camera.SUB_CAMERA_MODE_ANAGLYPH) {
+                camA.viewport = camB.viewport = this.viewport;
             }
-        }        
+        }
     }
 }

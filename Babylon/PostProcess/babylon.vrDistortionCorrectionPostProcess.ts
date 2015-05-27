@@ -11,18 +11,18 @@
         private _lensCenter: Vector2;
 
         //ANY
-        constructor(name: string, camera: Camera, isRightEye: boolean, cameraSettings: any) {
+        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
             super(name, "vrDistortionCorrection", [
                 'LensCenter',
                 'Scale',
                 'ScaleIn',
                 'HmdWarpParam'
-            ], null, cameraSettings.PostProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, null, null);
+            ], null, vrMetrics.postProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, null, null);
 
             this._isRightEye = isRightEye;
-            this._distortionFactors = cameraSettings.DistortionK;
-            this._postProcessScaleFactor = cameraSettings.PostProcessScaleFactor;
-            this._lensCenterOffset = cameraSettings.LensCenterOffset;
+            this._distortionFactors = vrMetrics.distortionK;
+            this._postProcessScaleFactor = vrMetrics.postProcessScaleFactor;
+            this._lensCenterOffset = vrMetrics.lensCenterOffset;
 
             this.onSizeChanged = () => {
                 this.aspectRatio = this.width * .5 / this.height;

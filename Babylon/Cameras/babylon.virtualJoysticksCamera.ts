@@ -29,6 +29,8 @@
             if (!this._rightjoystick.pressed) {
                 this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
             }
+
+            super._checkInputs();
         }
 
         public dispose(): void {

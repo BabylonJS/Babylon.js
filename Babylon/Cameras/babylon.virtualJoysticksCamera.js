@@ -33,6 +33,7 @@ var BABYLON;
             if (!this._rightjoystick.pressed) {
                 this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
             }
+            _super.prototype._checkInputs.call(this);
         };
         VirtualJoysticksCamera.prototype.dispose = function () {
             this._leftjoystick.releaseCanvas();

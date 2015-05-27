@@ -100,9 +100,9 @@
             serializationObject.type = "TouchCamera";
         } else if (camera instanceof VirtualJoysticksCamera) {
             serializationObject.type = "VirtualJoysticksCamera";
-        } else if (camera instanceof WebVRCamera) {
+        } else if (camera instanceof WebVRFreeCamera) {
             serializationObject.type = "WebVRCamera";
-        } else if (camera instanceof VRDeviceOrientationCamera) {
+        } else if (camera instanceof VRDeviceOrientationFreeCamera) {
             serializationObject.type = "VRDeviceOrientationCamera";
         } 
 

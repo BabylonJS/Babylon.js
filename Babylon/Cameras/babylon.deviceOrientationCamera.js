@@ -64,6 +64,7 @@ var BABYLON;
             var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
             BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
             this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+            _super.prototype._checkInputs.call(this);
         };
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);

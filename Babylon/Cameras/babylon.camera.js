@@ -6,6 +6,74 @@ var __extends = this.__extends || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
+    var VRCameraMetrics = (function () {
+        function VRCameraMetrics() {
+            this.compensateDistorsion = true;
+        }
+        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
+            get: function () {
+                return this.hResolution / (2 * this.vResolution);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatioFov", {
+            get: function () {
+                return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "leftHMatrix", {
+            get: function () {
+                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+                var h = (4 * meters) / this.hScreenSize;
+                return BABYLON.Matrix.Translation(h, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "rightHMatrix", {
+            get: function () {
+                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+                var h = (4 * meters) / this.hScreenSize;
+                return BABYLON.Matrix.Translation(-h, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "leftPreViewMatrix", {
+            get: function () {
+                return BABYLON.Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "rightPreViewMatrix", {
+            get: function () {
+                return BABYLON.Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        VRCameraMetrics.GetDefault = function () {
+            var result = new VRCameraMetrics();
+            result.hResolution = 1280;
+            result.vResolution = 800;
+            result.hScreenSize = 0.149759993;
+            result.vScreenSize = 0.0935999975;
+            result.vScreenCenter = 0.0467999987, result.eyeToScreenDistance = 0.0410000011;
+            result.lensSeparationDistance = 0.0635000020;
+            result.interpupillaryDistance = 0.0640000030;
+            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
+            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
+            result.postProcessScaleFactor = 1.714605507808412;
+            result.lensCenterOffset = 0.151976421;
+            return result;
+        };
+        return VRCameraMetrics;
+    })();
+    BABYLON.VRCameraMetrics = VRCameraMetrics;
     var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera(name, position, scene) {
@@ -24,9 +92,12 @@ var BABYLON;
             this.mode = Camera.PERSPECTIVE_CAMERA;
             this.isIntermediate = false;
             this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
-            this.subCameras = [];
-            this.layerMask = 0xFFFFFFFF;
+            this.layerMask = 0x0FFFFFFF;
             this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
+            // Subcamera members
+            this.subCameras = new Array();
+            this._subCameraMode = Camera.SUB_CAMERA_MODE_NONE;
+            // Cache
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
@@ -62,6 +133,55 @@ var BABYLON;
         Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
             get: function () {
                 return Camera._FOVMODE_HORIZONTAL_FIXED;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_NONE", {
+            get: function () {
+                return Camera._SUB_CAMERA_MODE_NONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_ANAGLYPH", {
+            get: function () {
+                return Camera._SUB_CAMERA_MODE_ANAGLYPH;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM", {
+            get: function () {
+                return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VERTICAL_STEREOGRAM", {
+            get: function () {
+                return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VR", {
+            get: function () {
+                return Camera._SUB_CAMERA_MODE_VR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERAID_A", {
+            get: function () {
+                return Camera._SUB_CAMERAID_A;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera, "SUB_CAMERAID_B", {
+            get: function () {
+                return Camera._SUB_CAMERAID_B;
             },
             enumerable: true,
             configurable: true
@@ -148,6 +268,12 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype._update = function () {
+            this._checkInputs();
+            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
+                this._updateSubCameras();
+            }
+        };
+        Camera.prototype._checkInputs = function () {
         };
         Camera.prototype.attachPostProcess = function (postProcess, insertAt) {
             if (insertAt === void 0) { insertAt = null; }
@@ -275,8 +401,95 @@ var BABYLON;
         Camera.prototype.dispose = function () {
             // Remove from scene
             this.getScene().removeCamera(this);
+            while (this.subCameras.length > 0) {
+                this.subCameras.pop().dispose();
+            }
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
+            }
+        };
+        // ---- 3D cameras section ----
+        Camera.prototype.setSubCameraMode = function (mode, halfSpace, metrics) {
+            if (halfSpace === void 0) { halfSpace = 0; }
+            while (this.subCameras.length > 0) {
+                this.subCameras.pop().dispose();
+            }
+            this._subCameraMode = mode;
+            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSpace);
+            var camA = this.getSubCamera(this.name + "_A", true);
+            var camB = this.getSubCamera(this.name + "_B", false);
+            var postProcessA;
+            var postProcessB;
+            switch (this._subCameraMode) {
+                case Camera.SUB_CAMERA_MODE_ANAGLYPH:
+                    postProcessA = new BABYLON.PassPostProcess(this.name + "_leftTexture", 1.0, camA);
+                    camA.isIntermediate = true;
+                    postProcessB = new BABYLON.AnaglyphPostProcess(this.name + "_anaglyph", 1.0, camB);
+                    postProcessB.onApply = function (effect) {
+                        effect.setTextureFromPostProcess("leftSampler", postProcessA);
+                    };
+                    break;
+                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM:
+                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOGRAM:
+                    var isStereogramHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+                    postProcessA = new BABYLON.PassPostProcess("passthru", 1.0, camA);
+                    camA.isIntermediate = true;
+                    postProcessB = new BABYLON.StereogramInterlacePostProcess("st_interlace", camB, postProcessA, isStereogramHoriz);
+                    break;
+                case Camera.SUB_CAMERA_MODE_VR:
+                    metrics = metrics || VRCameraMetrics.GetDefault();
+                    ;
+                    camA._vrMetrics = metrics;
+                    camA.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
+                    camA._vrWorkMatrix = new BABYLON.Matrix();
+                    camA._vrHMatrix = metrics.leftHMatrix;
+                    camA._vrPreViewMatrix = metrics.leftPreViewMatrix;
+                    camA.getProjectionMatrix = camA._getVRProjectionMatrix;
+                    if (metrics.compensateDistorsion) {
+                        postProcessA = new BABYLON.VRDistortionCorrectionPostProcess("Distortion Compensation Left", camA, false, metrics);
+                    }
+                    camB._vrMetrics = camA._vrMetrics;
+                    camB.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
+                    camB._vrWorkMatrix = new BABYLON.Matrix();
+                    camB._vrHMatrix = metrics.rightHMatrix;
+                    camB._vrPreViewMatrix = metrics.rightPreViewMatrix;
+                    camB.getProjectionMatrix = camB._getVRProjectionMatrix;
+                    if (metrics.compensateDistorsion) {
+                        postProcessB = new BABYLON.VRDistortionCorrectionPostProcess("Distortion Compensation Right", camB, true, metrics);
+                    }
+            }
+            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
+                this.subCameras.push(camA);
+                this.subCameras.push(camB);
+            }
+            this._update();
+        };
+        Camera.prototype._getVRProjectionMatrix = function () {
+            BABYLON.Matrix.PerspectiveFovLHToRef(this._vrMetrics.aspectRatioFov, this._vrMetrics.aspectRatio, this.minZ, this.maxZ, this._vrWorkMatrix);
+            this._vrWorkMatrix.multiplyToRef(this._vrHMatrix, this._projectionMatrix);
+            return this._projectionMatrix;
+        };
+        Camera.prototype.setSubCamHalfSapce = function (halfSapce) {
+            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSapce);
+        };
+        /**
+         * May needs to be overridden by children so sub has required properties to be copied
+         */
+        Camera.prototype.getSubCamera = function (name, isA) {
+            return null;
+        };
+        /**
+         * May needs to be overridden by children
+         */
+        Camera.prototype._updateSubCameras = function () {
+            var camA = this.subCameras[Camera.SUB_CAMERAID_A];
+            var camB = this.subCameras[Camera.SUB_CAMERAID_B];
+            camA.minZ = camB.minZ = this.minZ;
+            camA.maxZ = camB.maxZ = this.maxZ;
+            camA.fov = camB.fov = this.fov;
+            // only update viewport, when ANAGLYPH
+            if (this._subCameraMode === Camera.SUB_CAMERA_MODE_ANAGLYPH) {
+                camA.viewport = camB.viewport = this.viewport;
             }
         };
         // Statics
@@ -284,6 +497,13 @@ var BABYLON;
         Camera._ORTHOGRAPHIC_CAMERA = 1;
         Camera._FOVMODE_VERTICAL_FIXED = 0;
         Camera._FOVMODE_HORIZONTAL_FIXED = 1;
+        Camera._SUB_CAMERA_MODE_NONE = 0;
+        Camera._SUB_CAMERA_MODE_ANAGLYPH = 1;
+        Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM = 2;
+        Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM = 3;
+        Camera._SUB_CAMERA_MODE_VR = 4;
+        Camera._SUB_CAMERAID_A = 0;
+        Camera._SUB_CAMERAID_B = 1;
         return Camera;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;
