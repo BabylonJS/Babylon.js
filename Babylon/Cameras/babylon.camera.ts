@@ -549,8 +549,8 @@
             return this._projectionMatrix;
         }
 
-        public setSubCamHalfSapce(halfSapce: number) {
-            this._subCamHalfSpace = Tools.ToRadians(halfSapce);
+        public setSubCamHalfSpace(halfSpace: number) {
+            this._subCamHalfSpace = Tools.ToRadians(halfSpace);
         }
         
         /**
