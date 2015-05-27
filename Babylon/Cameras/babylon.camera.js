@@ -469,8 +469,8 @@ var BABYLON;
             this._vrWorkMatrix.multiplyToRef(this._vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
         };
-        Camera.prototype.setSubCamHalfSapce = function (halfSapce) {
-            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSapce);
+        Camera.prototype.setSubCamHalfSpace = function (halfSpace) {
+            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSpace);
         };
         /**
          * May needs to be overridden by children so sub has required properties to be copied
