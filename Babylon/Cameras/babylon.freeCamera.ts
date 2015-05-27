@@ -245,6 +245,8 @@
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
                 this.cameraDirection.addInPlace(this._transformedDirection);
             }
+
+            super._checkInputs();
         }
 
         public _decideIfNeedsToMove(): boolean {

@@ -1,12 +1,19 @@
 module BABYLON {
-    export class VRDeviceOrientationCamera extends BABYLON.VRCamera {
+    export class VRDeviceOrientationFreeCamera extends BABYLON.FreeCamera {
 		public _alpha = 0;
 		public _beta = 0;
 		public _gamma = 0;
 	
-		constructor(name: string, position: Vector3, scene: Scene) {
-			super(name, position, scene);
-		}
+        private _offsetOrientation: { yaw: number; pitch: number; roll: number };
+        private _deviceOrientationHandler;
+
+        constructor(name: string, position: Vector3, scene: Scene) {
+            super(name, position, scene);
+
+            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR);
+
+            this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
+        }
 
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             this._alpha = +evt.alpha|0;
@@ -24,6 +31,18 @@ module BABYLON {
             this.rotation.x = this._gamma / 180.0 * Math.PI;   
 			this.rotation.y = -this._alpha / 180.0 * Math.PI;	
 			this.rotation.z	= this._beta / 180.0 * Math.PI;		
+        }
+
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+            super.attachControl(element, noPreventDefault);
+
+            window.addEventListener("deviceorientation", this._deviceOrientationHandler);
+        }
+
+        public detachControl(element: HTMLElement): void {
+            super.detachControl(element);
+
+            window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
 	}
 }

@@ -109,6 +109,7 @@ var BABYLON;
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
                 this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
             }
+            _super.prototype._checkInputs.call(this);
         };
         return TouchCamera;
     })(BABYLON.FreeCamera);

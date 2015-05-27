@@ -1482,23 +1482,11 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        private _eyeSpace;
-        private _leftCamera;
-        private _rightCamera;
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, eyeSpace: number, scene: any);
-        _update(): void;
-        _updateCamera(camera: ArcRotateCamera): void;
-    }
     class AnaglyphFreeCamera extends FreeCamera {
-        private _eyeSpace;
-        private _leftCamera;
-        private _rightCamera;
-        private _transformMatrix;
         constructor(name: string, position: Vector3, eyeSpace: number, scene: Scene);
-        _getSubCameraPosition(eyeSpace: any, result: any): void;
-        _update(): void;
-        _updateCamera(camera: FreeCamera): void;
+    }
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: any, eyeSpace: number, scene: any);
     }
 }
 declare module BABYLON {
@@ -1559,25 +1547,71 @@ declare module BABYLON {
         _isSynchronizedViewMatrix(): boolean;
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
-        _update(): void;
+        _checkInputs(): void;
         setPosition(position: Vector3): void;
         _getViewMatrix(): Matrix;
         private _onCollisionPositionChange;
         zoomOn(meshes?: AbstractMesh[]): void;
         focusOn(meshesOrMinMaxVectorAndDistance: any): void;
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        getSubCamera(name: string, isA: boolean): Camera;
+        /**
+         * @override
+         * needs to be overridden, adding copy of alpha, beta & radius
+         */
+        _updateSubCameras(): void;
     }
 }
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistorsion: boolean;
+        aspectRatio: number;
+        aspectRatioFov: number;
+        leftHMatrix: Matrix;
+        rightHMatrix: Matrix;
+        leftPreViewMatrix: Matrix;
+        rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
     class Camera extends Node {
         position: Vector3;
         private static _PERSPECTIVE_CAMERA;
         private static _ORTHOGRAPHIC_CAMERA;
         private static _FOVMODE_VERTICAL_FIXED;
         private static _FOVMODE_HORIZONTAL_FIXED;
+        private static _SUB_CAMERA_MODE_NONE;
+        private static _SUB_CAMERA_MODE_ANAGLYPH;
+        private static _SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+        private static _SUB_CAMERA_MODE_VERTICAL_STEREOGRAM;
+        private static _SUB_CAMERA_MODE_VR;
+        private static _SUB_CAMERAID_A;
+        private static _SUB_CAMERAID_B;
         static PERSPECTIVE_CAMERA: number;
         static ORTHOGRAPHIC_CAMERA: number;
         static FOVMODE_VERTICAL_FIXED: number;
         static FOVMODE_HORIZONTAL_FIXED: number;
+        static SUB_CAMERA_MODE_NONE: number;
+        static SUB_CAMERA_MODE_ANAGLYPH: number;
+        static SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM: number;
+        static SUB_CAMERA_MODE_VERTICAL_STEREOGRAM: number;
+        static SUB_CAMERA_MODE_VR: number;
+        static SUB_CAMERAID_A: number;
+        static SUB_CAMERAID_B: number;
         upVector: Vector3;
         orthoLeft: any;
         orthoRight: any;
@@ -1590,9 +1624,16 @@ declare module BABYLON {
         mode: number;
         isIntermediate: boolean;
         viewport: Viewport;
-        subCameras: any[];
         layerMask: number;
         fovMode: number;
+        subCameras: Camera[];
+        _subCameraMode: number;
+        _subCamHalfSpace: number;
+        private _vrMetrics;
+        private _vrHMatrix;
+        _vrPreViewMatrix: Matrix;
+        _vrWorkMatrix: Matrix;
+        _vrActualUp: Vector3;
         private _computedViewMatrix;
         _projectionMatrix: Matrix;
         private _worldMatrix;
@@ -1613,6 +1654,7 @@ declare module BABYLON {
         attachControl(element: HTMLElement): void;
         detachControl(element: HTMLElement): void;
         _update(): void;
+        _checkInputs(): void;
         attachPostProcess(postProcess: PostProcess, insertAt?: number): number;
         detachPostProcess(postProcess: PostProcess, atIndices?: any): number[];
         getWorldMatrix(): Matrix;
@@ -1621,6 +1663,17 @@ declare module BABYLON {
         _computeViewMatrix(force?: boolean): Matrix;
         getProjectionMatrix(force?: boolean): Matrix;
         dispose(): void;
+        setSubCameraMode(mode: number, halfSpace?: number, metrics?: VRCameraMetrics): void;
+        private _getVRProjectionMatrix();
+        setSubCamHalfSapce(halfSapce: number): void;
+        /**
+         * May needs to be overridden by children so sub has required properties to be copied
+         */
+        getSubCamera(name: string, isA: boolean): Camera;
+        /**
+         * May needs to be overridden by children
+         */
+        _updateSubCameras(): void;
     }
 }
 declare module BABYLON {
@@ -1652,7 +1705,7 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         private getRadians(degrees);
         private follow(cameraTarget);
-        _update(): void;
+        _checkInputs(): void;
     }
 }
 declare module BABYLON {
@@ -1691,7 +1744,6 @@ declare module BABYLON {
         _checkInputs(): void;
         _decideIfNeedsToMove(): boolean;
         _updatePosition(): void;
-        _update(): void;
     }
 }
 declare module BABYLON {
@@ -1719,6 +1771,7 @@ declare module BABYLON {
         _camMatrix: Matrix;
         _cameraTransformMatrix: Matrix;
         _cameraRotationMatrix: Matrix;
+        private _subCamTransformMatrix;
         _referencePoint: Vector3;
         _transformedReferencePoint: Vector3;
         _lookAtTemp: Matrix;
@@ -1735,8 +1788,20 @@ declare module BABYLON {
         getTarget(): Vector3;
         _decideIfNeedsToMove(): boolean;
         _updatePosition(): void;
-        _update(): void;
+        _checkInputs(): void;
         _getViewMatrix(): Matrix;
+        _getVRViewMatrix(): Matrix;
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        getSubCamera(name: string, isA: boolean): Camera;
+        /**
+         * @override
+         * needs to be overridden, adding copy of position, and rotation for VR, or target for rest
+         */
+        _updateSubCameras(): void;
+        private _getSubCamPosition(halfSpace, result);
     }
 }
 declare module BABYLON {
@@ -1767,67 +1832,22 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class OculusCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene);
-        _update(): void;
-        _updateCamera(camera: FreeCamera): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-declare module BABYLON {
-    class OculusGamepadCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        private _gamepad;
-        private _gamepads;
-        angularSensibility: number;
-        moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _onNewGameConnected(gamepad);
-        _update(): void;
-        _checkInputs(): void;
-        _updateCamera(camera: FreeCamera): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    class VRCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene);
-        _update(): void;
-        _updateCamera(camera: FreeCamera): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-declare module BABYLON {
-    class VRDeviceOrientationCamera extends BABYLON.VRCamera {
+    class VRDeviceOrientationFreeCamera extends BABYLON.FreeCamera {
         _alpha: number;
         _beta: number;
         _gamma: number;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
         constructor(name: string, position: Vector3, scene: Scene);
         _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
     }
 }
 declare var HMDVRDevice: any;
 declare var PositionSensorVRDevice: any;
 declare module BABYLON {
-    class WebVRCamera extends BABYLON.VRCamera {
+    class WebVRFreeCamera extends FreeCamera {
         _hmdDevice: any;
         _sensorDevice: any;
         _cacheState: any;
@@ -1836,7 +1856,7 @@ declare module BABYLON {
         _vrEnabled: boolean;
         constructor(name: string, position: Vector3, scene: Scene);
         private _getWebVRDevices(devices);
-        _update(): void;
+        _checkInputs(): void;
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
     }
@@ -3076,6 +3096,7 @@ declare module BABYLON {
         scaleInPlace(scale: number): Vector2;
         scale(scale: number): Vector2;
         equals(otherVector: Vector2): boolean;
+        equalsWithEpsilon(otherVector: Vector2): boolean;
         length(): number;
         lengthSquared(): number;
         normalize(): Vector2;
@@ -3165,6 +3186,12 @@ declare module BABYLON {
         static Distance(value1: Vector3, value2: Vector3): number;
         static DistanceSquared(value1: Vector3, value2: Vector3): number;
         static Center(value1: Vector3, value2: Vector3): Vector3;
+        /**
+         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         */
+        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
     }
     class Vector4 {
         x: number;
@@ -3673,6 +3700,7 @@ declare module BABYLON {
         matrix: Matrix;
         position: Vector3;
         rotation: Vector3;
+        rotationQuaternion: Quaternion;
         scaling: Vector3;
         static FromMesh(mesh: Mesh): CSG;
         private static FromPolygons(polygons);
@@ -4283,12 +4311,15 @@ declare module BABYLON {
     class PolygonMeshBuilder {
         private _swctx;
         private _points;
+        private _outlinepoints;
+        private _holes;
         private _name;
         private _scene;
         constructor(name: string, contours: Path2, scene: Scene);
         constructor(name: string, contours: Vector2[], scene: Scene);
         addHole(hole: Vector2[]): PolygonMeshBuilder;
-        build(updatable?: boolean): Mesh;
+        build(updatable?: boolean, depth?: number): Mesh;
+        private addSide(positions, normals, uvs, indices, bounds, points, depth, flip);
     }
 }
 declare module BABYLON {
@@ -4851,6 +4882,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    class StereogramInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        constructor(name: string, camB: Camera, postProcessA: PostProcess, isStereogramHoriz: boolean, samplingMode?: number);
+    }
+}
+declare module BABYLON {
     class VolumetricLightScatteringPostProcess extends PostProcess {
         private _volumetricLightScatteringPass;
         private _volumetricLightScatteringRTT;
@@ -4935,7 +4972,7 @@ declare module BABYLON {
         private _scaleIn;
         private _scaleFactor;
         private _lensCenter;
-        constructor(name: string, camera: Camera, isRightEye: boolean, cameraSettings: any);
+        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
     }
 }
 declare module BABYLON {

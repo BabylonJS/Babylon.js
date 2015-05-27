@@ -352,10 +352,10 @@ var BABYLON;
                 camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
             }
             else if (parsedCamera.type === "WebVRCamera") {
-                camera = new BABYLON.WebVRCamera(parsedCamera.name, position, scene);
+                camera = new BABYLON.WebVRFreeCamera(parsedCamera.name, position, scene);
             }
             else if (parsedCamera.type === "VRDeviceOrientationCamera") {
-                camera = new BABYLON.VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+                camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
             }
             else {
                 // Free Camera is the default value

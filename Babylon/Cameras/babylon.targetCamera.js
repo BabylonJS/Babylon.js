@@ -102,7 +102,7 @@ var BABYLON;
         TargetCamera.prototype._updatePosition = function () {
             this.position.addInPlace(this.cameraDirection);
         };
-        TargetCamera.prototype._update = function () {
+        TargetCamera.prototype._checkInputs = function () {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
             // Move
@@ -143,6 +143,7 @@ var BABYLON;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
             }
+            _super.prototype._checkInputs.call(this);
         };
         TargetCamera.prototype._getViewMatrix = function () {
             if (!this.lockedTarget) {
@@ -166,6 +167,59 @@ var BABYLON;
             }
             BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
+        };
+        TargetCamera.prototype._getVRViewMatrix = function () {
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._vrActualUp);
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+            BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._vrActualUp, this._vrWorkMatrix);
+            this._vrWorkMatrix.multiplyToRef(this._vrPreViewMatrix, this._viewMatrix);
+            return this._viewMatrix;
+        };
+        /**
+         * @override
+         * needs to be overridden, so sub has required properties to be copied
+         */
+        TargetCamera.prototype.getSubCamera = function (name, isA) {
+            var subCamera = new BABYLON.TargetCamera(name, this.position.clone(), this.getScene());
+            if (this._subCameraMode === BABYLON.Camera.SUB_CAMERA_MODE_VR) {
+                subCamera._vrActualUp = new BABYLON.Vector3(0, 0, 0);
+                subCamera._getViewMatrix = subCamera._getVRViewMatrix;
+            }
+            return subCamera;
+        };
+        /**
+         * @override
+         * needs to be overridden, adding copy of position, and rotation for VR, or target for rest
+         */
+        TargetCamera.prototype._updateSubCameras = function () {
+            var camA = this.subCameras[BABYLON.Camera.SUB_CAMERAID_A];
+            var camB = this.subCameras[BABYLON.Camera.SUB_CAMERAID_B];
+            if (this._subCameraMode === BABYLON.Camera.SUB_CAMERA_MODE_VR) {
+                camA.rotation.x = camB.rotation.x = this.rotation.x;
+                camA.rotation.y = camB.rotation.y = this.rotation.y;
+                camA.rotation.z = camB.rotation.z = this.rotation.z;
+                camA.position.copyFrom(this.position);
+                camB.position.copyFrom(this.position);
+            }
+            else {
+                camA.setTarget(this.getTarget());
+                camB.setTarget(this.getTarget());
+                this._getSubCamPosition(-this._subCamHalfSpace, camA.position);
+                this._getSubCamPosition(this._subCamHalfSpace, camB.position);
+            }
+            _super.prototype._updateSubCameras.call(this);
+        };
+        TargetCamera.prototype._getSubCamPosition = function (halfSpace, result) {
+            if (!this._subCamTransformMatrix) {
+                this._subCamTransformMatrix = new BABYLON.Matrix();
+            }
+            var target = this.getTarget();
+            BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(halfSpace), this._subCamTransformMatrix);
+            this._subCamTransformMatrix = this._subCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
+            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._subCamTransformMatrix, result);
         };
         return TargetCamera;
     })(BABYLON.Camera);

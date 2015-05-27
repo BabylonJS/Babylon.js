@@ -405,6 +405,8 @@
             if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
             }
+
+            super._checkInputs();
         }
 
         public setPosition(position: Vector3): void {
@@ -507,8 +509,8 @@
          * @override
          * needs to be overridden, so sub has required properties to be copied
          */
-        public GetSubCamera(name : string, isA : boolean) : Camera{
-            var alphaSpace = this._subCamHalfSapce * (isA? -1 : 1);
+        public getSubCamera(name : string, isA : boolean) : Camera{
+            var alphaSpace = this._subCamHalfSpace * (isA? -1 : 1);
             return new BABYLON.ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
         }
         
@@ -517,11 +519,11 @@
          * needs to be overridden, adding copy of alpha, beta & radius
          */
         public _updateSubCameras(){
-            var camA = <ArcRotateCamera> this.subCameras[Camera.SUB_CAM_A];
-            var camB = <ArcRotateCamera> this.subCameras[Camera.SUB_CAM_B];
+            var camA = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_A];
+            var camB = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_B];
             
-            camA.alpha = this.alpha - this._subCamHalfSapce;
-            camB.alpha = this.alpha + this._subCamHalfSapce;
+            camA.alpha = this.alpha - this._subCamHalfSpace;
+            camB.alpha = this.alpha + this._subCamHalfSpace;
             
             camA.beta   = camB.beta   = this.beta;
             camA.radius = camB.radius = this.radius;

@@ -55,4 +55,6 @@
  - delta in BoundingBox's intersectsPoint is now calculated correctly ([raananw](http://www.github.com/raananw)) 
  - textures cache fixed ([deltakosh](http://www.github.com/deltakosh))
  - **Breaking changes**
- - OculusCamera was renamed to VRCamera ([deltakosh](http://www.github.com/deltakosh))
+ - OculusCamera was removed ([deltakosh](http://www.github.com/deltakosh))
+ - VRDeviceOrientationCamera was renamed to VRDeviceOrientationFreeCamera ([deltakosh](http://www.github.com/deltakosh))
+ - WebVRCamera was renamed to WebVRFreeCamera ([deltakosh](http://www.github.com/deltakosh))

@@ -2,16 +2,19 @@ declare var HMDVRDevice;
 declare var PositionSensorVRDevice;
 
 module BABYLON {
-    export class WebVRCamera extends BABYLON.VRCamera {
+    export class WebVRFreeCamera extends FreeCamera {
         public _hmdDevice = null;
         public _sensorDevice = null;
         public _cacheState = null;
-        public _cacheQuaternion = new BABYLON.Quaternion();
-        public _cacheRotation = BABYLON.Vector3.Zero();
+        public _cacheQuaternion = new Quaternion();
+        public _cacheRotation = Vector3.Zero();
         public _vrEnabled = false;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+
+            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR);
+
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
 
@@ -43,7 +46,7 @@ module BABYLON {
             this._vrEnabled = this._sensorDevice && this._hmdDevice ? true : false;
         }
 
-        public _update(): void {
+        public _checkInputs(): void {
             if (this._vrEnabled) {
                 this._cacheState = this._sensorDevice.getState();
                 this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
@@ -54,7 +57,7 @@ module BABYLON {
                 this.rotation.z = this._cacheRotation.x;
             }
 
-            super._update();
+            super._checkInputs();
         }
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {

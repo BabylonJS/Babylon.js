@@ -52,8 +52,8 @@ var BABYLON;
             this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
             this.setTarget(cameraTarget.position);
         };
-        FollowCamera.prototype._update = function () {
-            _super.prototype._update.call(this);
+        FollowCamera.prototype._checkInputs = function () {
+            _super.prototype._checkInputs.call(this);
             this.follow(this.target);
         };
         return FollowCamera;

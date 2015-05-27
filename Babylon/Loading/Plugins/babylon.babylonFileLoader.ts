@@ -430,10 +430,10 @@
             camera = new VirtualJoysticksCamera(parsedCamera.name, position, scene);
 
         } else if (parsedCamera.type === "WebVRCamera") {
-            camera = new WebVRCamera(parsedCamera.name, position, scene);
+            camera = new WebVRFreeCamera(parsedCamera.name, position, scene);
 
         } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
-            camera = new VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+            camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
 
         } else {
             // Free Camera is the default value

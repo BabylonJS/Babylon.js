@@ -6,9 +6,9 @@ var __extends = this.__extends || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
-    var WebVRCamera = (function (_super) {
-        __extends(WebVRCamera, _super);
-        function WebVRCamera(name, position, scene) {
+    var WebVRFreeCamera = (function (_super) {
+        __extends(WebVRFreeCamera, _super);
+        function WebVRFreeCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this._hmdDevice = null;
             this._sensorDevice = null;
@@ -16,9 +16,10 @@ var BABYLON;
             this._cacheQuaternion = new BABYLON.Quaternion();
             this._cacheRotation = BABYLON.Vector3.Zero();
             this._vrEnabled = false;
+            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR);
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
-        WebVRCamera.prototype._getWebVRDevices = function (devices) {
+        WebVRFreeCamera.prototype._getWebVRDevices = function (devices) {
             var size = devices.length;
             var i = 0;
             // Reset devices.
@@ -39,7 +40,7 @@ var BABYLON;
             }
             this._vrEnabled = this._sensorDevice && this._hmdDevice ? true : false;
         };
-        WebVRCamera.prototype._update = function () {
+        WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {
                 this._cacheState = this._sensorDevice.getState();
                 this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
@@ -48,9 +49,9 @@ var BABYLON;
                 this.rotation.y = -this._cacheRotation.y;
                 this.rotation.z = this._cacheRotation.x;
             }
-            _super.prototype._update.call(this);
+            _super.prototype._checkInputs.call(this);
         };
-        WebVRCamera.prototype.attachControl = function (element, noPreventDefault) {
+        WebVRFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             _super.prototype.attachControl.call(this, element, noPreventDefault);
             if (navigator.getVRDevices) {
                 navigator.getVRDevices().then(this._getWebVRDevices);
@@ -59,12 +60,12 @@ var BABYLON;
                 navigator.mozGetVRDevices(this._getWebVRDevices);
             }
         };
-        WebVRCamera.prototype.detachControl = function (element) {
+        WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
         };
-        return WebVRCamera;
-    })(BABYLON.VRCamera);
-    BABYLON.WebVRCamera = WebVRCamera;
+        return WebVRFreeCamera;
+    })(BABYLON.FreeCamera);
+    BABYLON.WebVRFreeCamera = WebVRFreeCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.webVRCamera.js.map
