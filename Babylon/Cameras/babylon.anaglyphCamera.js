@@ -24,5 +24,14 @@ var BABYLON;
         return AnaglyphArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
     BABYLON.AnaglyphArcRotateCamera = AnaglyphArcRotateCamera;
+    var AnaglyphGamepadCamera = (function (_super) {
+        __extends(AnaglyphGamepadCamera, _super);
+        function AnaglyphGamepadCamera(name, position, eyeSpace, scene) {
+            _super.call(this, name, position, scene);
+            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_ANAGLYPH, eyeSpace);
+        }
+        return AnaglyphGamepadCamera;
+    })(BABYLON.GamepadCamera);
+    BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.anaglyphCamera.js.map

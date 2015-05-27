@@ -101,9 +101,9 @@
         } else if (camera instanceof VirtualJoysticksCamera) {
             serializationObject.type = "VirtualJoysticksCamera";
         } else if (camera instanceof WebVRFreeCamera) {
-            serializationObject.type = "WebVRCamera";
+            serializationObject.type = "WebVRFreeCamera";
         } else if (camera instanceof VRDeviceOrientationFreeCamera) {
-            serializationObject.type = "VRDeviceOrientationCamera";
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
         } 
 
         //special properties of specific cameras

@@ -331,8 +331,8 @@
             "GamepadCamera",
             "TouchCamera",
             "VirtualJoysticksCamera",
-            "WebVRCamera",
-            "VRDeviceOrientationCamera"});
+            "WebVRFreeCamera",
+            "VRDeviceOrientationFreeCamera"});
             this.cbCameraType.Location = new System.Drawing.Point(23, 74);
             this.cbCameraType.Name = "cbCameraType";
             this.cbCameraType.Size = new System.Drawing.Size(290, 21);

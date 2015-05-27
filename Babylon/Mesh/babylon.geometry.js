@@ -248,6 +248,7 @@ var BABYLON;
         };
         Geometry.prototype._applyToMesh = function (mesh) {
             var numOfMeshes = this._meshes.length;
+            // vertexBuffers
             for (var kind in this._vertexBuffers) {
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
@@ -301,8 +302,7 @@ var BABYLON;
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, function () {
-            }, scene.database);
+            }, function () { }, scene.database);
         };
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;

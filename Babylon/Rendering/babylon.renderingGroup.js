@@ -33,6 +33,7 @@ var BABYLON;
             engine.setAlphaTesting(false);
             // Transparent
             if (this._transparentSubMeshes.length) {
+                // Sorting
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
                     submesh._alphaIndex = submesh.getMesh().alphaIndex;

@@ -27,8 +27,7 @@ var BABYLON;
                 {
                     frame: 0,
                     value: this._target[this._property]
-                },
-                {
+                }, {
                     frame: 100,
                     value: this.value
                 }
