@@ -1432,8 +1432,18 @@ var BABYLON;
         Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
-            // Scale the video if it is a NPOT using the current working canvas
-            if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
+            // Testing video texture support
+            if (this._videoTextureSupported === undefined) {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+                if (this._gl.getError() !== 0) {
+                    this._videoTextureSupported = false;
+                }
+                else {
+                    this._videoTextureSupported = true;
+                }
+            }
+            // Copy video through the current working canvas if video texture is not supported
+            if (!this._videoTextureSupported) {
                 if (!texture._workingCanvas) {
                     texture._workingCanvas = document.createElement("canvas");
                     texture._workingContext = texture._workingCanvas.getContext("2d");

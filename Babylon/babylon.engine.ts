@@ -251,7 +251,7 @@
     var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
-        gl.shaderSource(shader,(defines ? defines + "\n" : "") + source);
+        gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -504,6 +504,8 @@
         private _glVersion: string;
         private _glRenderer: string;
         private _glVendor: string;
+
+        private _videoTextureSupported: boolean;
 
         private _renderingQueueLaunched = false;
         private _activeRenderLoops = [];
@@ -1533,7 +1535,7 @@
 
                     var header = Internals.TGATools.GetTGAHeader(data);
 
-                    prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false,() => {
+                    prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
 
                         if (onLoad) {
@@ -1554,7 +1556,7 @@
                     var info = Internals.DDSTools.GetDDSInfo(data);
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC,() => {
+                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
 
@@ -1573,7 +1575,7 @@
 
             } else {
                 var onload = (img) => {
-                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false,(potWidth, potHeight) => {
+                    prepareWebGLTexture(texture, this._gl, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight) => {
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         if (!isPot) {
                             this._prepareWorkingCanvas();
@@ -1720,8 +1722,19 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
 
-            // Scale the video if it is a NPOT using the current working canvas
-            if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
+            // Testing video texture support
+            if (this._videoTextureSupported === undefined) {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+
+                if (this._gl.getError() !== 0) {
+                    this._videoTextureSupported = false;
+                } else {
+                    this._videoTextureSupported = true;
+                }
+            }
+
+            // Copy video through the current working canvas if video texture is not supported
+            if (!this._videoTextureSupported) {
                 if (!texture._workingCanvas) {
                     texture._workingCanvas = document.createElement("canvas");
                     texture._workingContext = texture._workingCanvas.getContext("2d");

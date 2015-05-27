@@ -49,7 +49,7 @@
 
             var now = Tools.Now;
 
-            if (now - this._lastUpdate < 15) {
+            if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
                 return false;
             }
 
