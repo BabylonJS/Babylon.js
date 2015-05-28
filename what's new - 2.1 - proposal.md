@@ -32,6 +32,7 @@
  - Material onBind callback improvement ([jahow](http://www.github.com/jahow))
  - New front/back/double side feature for meshes ([jbousquie](https://github.com/jbousquie)) 
  - New basic mesh type: Disc ([jbousquie](https://github.com/jbousquie))
+ - New basic mesh type : Dashed Lines ([jbousquie](https://github.com/jbousquie))
  - New basic mesh type: Tube. More info [here](http://doc.babylonjs.com/page.php?p=24847) ([jbousquie](https://github.com/jbousquie))
  - Allow ComputeNormals to work with Typed Arrays & the Typescript Level ([Palmer-JC](http://www.github.com/Palmer-JC))
  - Added uniqueId for nodes ([raananw](http://www.github.com/raananw))
