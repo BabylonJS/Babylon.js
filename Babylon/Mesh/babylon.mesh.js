@@ -1024,31 +1024,26 @@ var BABYLON;
             if (ribbonInstance) {
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
-                var positionsOfRibbon = function (pathArray, sideOrientation) {
-                    var positionFunction = function (positions) {
-                        var minlg = pathArray[0].length;
-                        var i = 0;
-                        var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
-                        for (var si = 1; si <= ns; si++) {
-                            for (var p = 0; p < pathArray.length; p++) {
-                                var path = pathArray[p];
-                                var l = path.length;
-                                minlg = (minlg < l) ? minlg : l;
-                                var j = 0;
-                                while (j < minlg) {
-                                    positions[i] = path[j].x;
-                                    positions[i + 1] = path[j].y;
-                                    positions[i + 2] = path[j].z;
-                                    j++;
-                                    i += 3;
-                                }
+                var positionFunction = function (positions) {
+                    var minlg = pathArray[0].length;
+                    var i = 0;
+                    var ns = (ribbonInstance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    for (var si = 1; si <= ns; si++) {
+                        for (var p = 0; p < pathArray.length; p++) {
+                            var path = pathArray[p];
+                            var l = path.length;
+                            minlg = (minlg < l) ? minlg : l;
+                            var j = 0;
+                            while (j < minlg) {
+                                positions[i] = path[j].x;
+                                positions[i + 1] = path[j].y;
+                                positions[i + 2] = path[j].z;
+                                j++;
+                                i += 3;
                             }
                         }
-                    };
-                    return positionFunction;
+                    }
                 };
-                var sideOrientation = ribbonInstance.sideOrientation;
-                var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
                 var computeNormals = !(ribbonInstance.areNormalsFrozen);
                 ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
                 return ribbonInstance;
@@ -1138,6 +1133,62 @@ var BABYLON;
             var vertexData = BABYLON.VertexData.CreateLines(points);
             vertexData.applyToMesh(lines, updatable);
             return lines;
+        };
+        // Dashed Lines
+        Mesh.CreateDashedLines = function (name, points, dashSize, gapSize, dashNb, scene, updatable, linesInstance) {
+            if (linesInstance === void 0) { linesInstance = null; }
+            if (linesInstance) {
+                var positionFunction = function (positions) {
+                    var curvect = BABYLON.Vector3.Zero();
+                    var nbSeg = positions.length / 6;
+                    var lg = 0;
+                    var nb = 0;
+                    var shft = 0;
+                    var dashshft = 0;
+                    var curshft = 0;
+                    var p = 0;
+                    var i = 0;
+                    var j = 0;
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        lg += curvect.length();
+                    }
+                    shft = lg / nbSeg;
+                    dashshft = linesInstance.dashSize * shft / (linesInstance.dashSize + linesInstance.gapSize);
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        curvect.normalize();
+                        nb = Math.floor(curvect.length() / shft);
+                        j = 0;
+                        while (j < nb && p < positions.length) {
+                            curshft = shft * j;
+                            positions[p] = points[i].x + curshft * curvect.x;
+                            positions[p + 1] = points[i].y + curshft * curvect.y;
+                            positions[p + 2] = points[i].z + curshft * curvect.z;
+                            positions[p + 3] = points[i].x + (curshft + dashshft) * curvect.x;
+                            positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
+                            positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
+                            p += 6;
+                            j++;
+                        }
+                    }
+                    while (p < positions.length) {
+                        positions[p] = points[i].x;
+                        positions[p + 1] = points[i].y;
+                        positions[p + 2] = points[i].z;
+                        p += 3;
+                    }
+                };
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // dashed lines creation
+            var dashedLines = new BABYLON.LinesMesh(name, scene, updatable);
+            var vertexData = BABYLON.VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
+            vertexData.applyToMesh(dashedLines, updatable);
+            dashedLines.dashSize = dashSize;
+            dashedLines.gapSize = gapSize;
+            return dashedLines;
         };
         // Extrusion
         Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, cap, scene, updatable, sideOrientation, extrudedInstance) {

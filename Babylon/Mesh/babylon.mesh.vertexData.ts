@@ -798,8 +798,8 @@
             gapSize = gapSize || 1;
             dashNb = dashNb || 200;
 
-            var positions = [];
-            var indices = [];
+            var positions = new Array<number>();
+            var indices = new Array<number>();
 
             var curvect = Vector3.Zero();
             var lg = 0;
@@ -821,8 +821,8 @@
                 nb = Math.floor(curvect.length() / shft);
                 for (var j = 0; j < nb; j++) {
                     curshft = shft * j;
-                    positions.push(points[i].x + curshft * curvect.x , points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
-                    positions.push(points[i].x + (curshft + dashshft)* curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
+                    positions.push(points[i].x + curshft * curvect.x, points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
+                    positions.push(points[i].x + (curshft + dashshft) * curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
                     indices.push(idx, idx + 1);
                     idx += 2;
                 }
@@ -849,7 +849,7 @@
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0,((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
                     var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
@@ -968,7 +968,7 @@
             // Vertices
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0,((subdivisions - row) * height) / subdivisions - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
 
                     // Compute height
                     var heightMapX = (((position.x + width / 2) / width) * (bufferWidth - 1)) | 0;
