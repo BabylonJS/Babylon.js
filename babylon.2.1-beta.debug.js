@@ -4151,6 +4151,24 @@ var BABYLON;
                 setTimeout(action, 1);
             }
         };
+        Tools.IsExponantOfTwo = function (value) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            return count === value;
+        };
+        ;
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            if (count > max)
+                count = max;
+            return count;
+        };
+        ;
         Tools.GetFilename = function (path) {
             var index = path.lastIndexOf("/");
             if (index < 0)
@@ -4822,15 +4840,6 @@ var BABYLON;
             return 0;
         };
         Tools.BaseUrl = "";
-        Tools.GetExponantOfTwo = function (value, max) {
-            var count = 1;
-            do {
-                count *= 2;
-            } while (count < value);
-            if (count > max)
-                count = max;
-            return count;
-        };
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
@@ -6332,13 +6341,16 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponantOfTwo) {
+            if (forceExponantOfTwo === void 0) { forceExponantOfTwo = true; }
             var texture = this._gl.createTexture();
-            width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-            height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-            this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
+            if (forceExponantOfTwo) {
+                width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+                height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+            }
+            this._activeTexturesCache = [];
             texture._width = width;
             texture._height = height;
             texture.isReady = false;
@@ -16840,27 +16852,29 @@ var BABYLON;
 (function (BABYLON) {
     var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
-        function VideoTexture(name, urls, size, scene, generateMipMaps, invertY, samplingMode) {
+        function VideoTexture(name, urls, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
+            if (generateMipMaps === void 0) { generateMipMaps = false; }
+            if (invertY === void 0) { invertY = true; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps, invertY);
             this._autoLaunch = true;
             this.name = name;
-            this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-            this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-            var requiredWidth = size.width || size;
-            var requiredHeight = size.height || size;
-            this._texture = scene.getEngine().createDynamicTexture(requiredWidth, requiredHeight, generateMipMaps, samplingMode);
-            var textureSize = this.getSize();
             this.video = document.createElement("video");
-            this.video.width = textureSize.width;
-            this.video.height = textureSize.height;
             this.video.autoplay = false;
             this.video.loop = true;
             this.video.addEventListener("canplaythrough", function () {
-                if (_this._texture) {
-                    _this._texture.isReady = true;
+                if (BABYLON.Tools.IsExponantOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponantOfTwo(_this.video.videoHeight)) {
+                    _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                    _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
                 }
+                else {
+                    _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    generateMipMaps = false;
+                }
+                _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
+                _this._texture.isReady = true;
             });
             urls.forEach(function (url) {
                 //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850

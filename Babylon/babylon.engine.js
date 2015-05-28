@@ -1394,13 +1394,16 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponantOfTwo) {
+            if (forceExponantOfTwo === void 0) { forceExponantOfTwo = true; }
             var texture = this._gl.createTexture();
-            width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-            height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-            this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
+            if (forceExponantOfTwo) {
+                width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+                height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+            }
+            this._activeTexturesCache = [];
             texture._width = width;
             texture._height = height;
             texture.isReady = false;

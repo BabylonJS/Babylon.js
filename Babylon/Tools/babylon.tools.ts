@@ -38,7 +38,17 @@
             }
         }
 
-        public static GetExponantOfTwo = (value: number, max: number): number => {
+        public static IsExponantOfTwo(value: number): boolean {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while (count < value);
+
+            return count === value;
+        };
+
+        public static GetExponantOfTwo(value: number, max: number): number {
             var count = 1;
 
             do {

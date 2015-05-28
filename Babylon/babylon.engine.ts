@@ -1673,15 +1673,17 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponantOfTwo = true): WebGLTexture {
             var texture = this._gl.createTexture();
-
-            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-
-            this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
+
+            if (forceExponantOfTwo) {
+                width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+                height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+            }
+
+            this._activeTexturesCache = [];
             texture._width = width;
             texture._height = height;
             texture.isReady = false;
