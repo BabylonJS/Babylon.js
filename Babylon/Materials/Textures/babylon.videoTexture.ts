@@ -5,7 +5,7 @@
         private _autoLaunch = true;
         private _lastUpdate: number;
 
-        constructor(name: string, urls: string[], scene: Scene, generateMipMaps = false, invertY = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(name: string, urls: string[], scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
 
             this.name = name;

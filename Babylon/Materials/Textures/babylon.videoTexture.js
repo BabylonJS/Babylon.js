@@ -11,7 +11,7 @@ var BABYLON;
         function VideoTexture(name, urls, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
             if (generateMipMaps === void 0) { generateMipMaps = false; }
-            if (invertY === void 0) { invertY = true; }
+            if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps, invertY);
             this._autoLaunch = true;
