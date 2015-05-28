@@ -27,6 +27,24 @@ var BABYLON;
                 setTimeout(action, 1);
             }
         };
+        Tools.IsExponantOfTwo = function (value) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            return count === value;
+        };
+        ;
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            if (count > max)
+                count = max;
+            return count;
+        };
+        ;
         Tools.GetFilename = function (path) {
             var index = path.lastIndexOf("/");
             if (index < 0)
@@ -698,15 +716,6 @@ var BABYLON;
             return 0;
         };
         Tools.BaseUrl = "";
-        Tools.GetExponantOfTwo = function (value, max) {
-            var count = 1;
-            do {
-                count *= 2;
-            } while (count < value);
-            if (count > max)
-                count = max;
-            return count;
-        };
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
