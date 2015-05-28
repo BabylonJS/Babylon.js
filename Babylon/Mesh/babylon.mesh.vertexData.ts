@@ -820,11 +820,11 @@
                 curvect.normalize();
                 nb = Math.floor(curvect.length() / shft);
                 for (var j = 0; j < nb; j++) {
-                      curshft = shft * j;
-                      positions.push(points[i].x + curshft * curvect.x , points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
-                      positions.push(points[i].x + (curshft + dashshft)* curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
-                      indices.push(idx, idx + 1);
-                      idx += 2;
+                    curshft = shft * j;
+                    positions.push(points[i].x + curshft * curvect.x , points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
+                    positions.push(points[i].x + (curshft + dashshft)* curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
+                    indices.push(idx, idx + 1);
+                    idx += 2;
                 }
             }
 
