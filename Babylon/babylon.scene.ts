@@ -1371,6 +1371,7 @@
             engine.setViewport(this.activeCamera.viewport);
 
             // Camera
+            this.resetCachedMaterial();
             this._renderId++;
             this.updateTransformMatrix();
 
