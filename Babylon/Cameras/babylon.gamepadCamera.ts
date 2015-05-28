@@ -30,7 +30,7 @@ module BABYLON {
                 var normalizedRX = RSValues.x / this.angularSensibility;
                 var normalizedRY = RSValues.y / this.angularSensibility;
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;;
+                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
 
                 var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
 

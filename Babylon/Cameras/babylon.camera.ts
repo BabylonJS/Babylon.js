@@ -511,7 +511,7 @@
                     break;
 
                 case Camera.SUB_CAMERA_MODE_VR:
-                    metrics = metrics || VRCameraMetrics.GetDefault();;
+                    metrics = metrics || VRCameraMetrics.GetDefault();
                     camA._vrMetrics = metrics;
                     camA.viewport = new Viewport(0, 0, 0.5, 1.0);
                     camA._vrWorkMatrix = new Matrix();

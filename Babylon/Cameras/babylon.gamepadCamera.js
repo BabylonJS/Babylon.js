@@ -29,18 +29,21 @@ var BABYLON;
                 var normalizedLY = LSValues.y / this.moveSensibility;
                 LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
                 LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-                var RSValues = this._gamepad.rightStick;
+                
+				var RSValues = this._gamepad.rightStick;
                 var normalizedRX = RSValues.x / this.angularSensibility;
                 var normalizedRY = RSValues.y / this.angularSensibility;
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-                ;
-                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
+                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;                
+               
+			   var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
+			   
                 var speed = this._computeLocalCameraSpeed() * 50.0;
                 var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
                 this.cameraDirection = this.cameraDirection.add(deltaTransform);
                 this.cameraRotation = this.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
             }
+			
             _super.prototype._checkInputs.call(this);
         };
         GamepadCamera.prototype.dispose = function () {

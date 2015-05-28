@@ -63,7 +63,7 @@ var BABYLON;
             result.hScreenSize = 0.149759993;
             result.vScreenSize = 0.0935999975;
             result.vScreenCenter = 0.0467999987,
-                result.eyeToScreenDistance = 0.0410000011;
+            result.eyeToScreenDistance = 0.0410000011;
             result.lensSeparationDistance = 0.0635000020;
             result.interpupillaryDistance = 0.0640000030;
             result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
@@ -450,7 +450,6 @@ var BABYLON;
                     break;
                 case Camera.SUB_CAMERA_MODE_VR:
                     metrics = metrics || VRCameraMetrics.GetDefault();
-                    ;
                     camA._vrMetrics = metrics;
                     camA.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
                     camA._vrWorkMatrix = new BABYLON.Matrix();
