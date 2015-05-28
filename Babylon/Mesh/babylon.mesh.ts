@@ -832,7 +832,7 @@
 
                     this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(this);
-                },() => { }, scene.database, getBinaryData);
+                }, () => { }, scene.database, getBinaryData);
             }
         }
 
@@ -990,7 +990,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
         }
 
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
@@ -1011,7 +1011,7 @@
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
-                Vector2.FromArrayToRef(uvs,(index / 3) * 2, uv);
+                Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
                 // Compute height
                 var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
@@ -1092,8 +1092,8 @@
                 indices[index + 2] = index + 2;
 
                 var p1 = Vector3.FromArray(positions, index * 3);
-                var p2 = Vector3.FromArray(positions,(index + 1) * 3);
-                var p3 = Vector3.FromArray(positions,(index + 2) * 3);
+                var p2 = Vector3.FromArray(positions, (index + 1) * 3);
+                var p3 = Vector3.FromArray(positions, (index + 2) * 3);
 
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
@@ -1172,7 +1172,7 @@
             }
             var dupes = [];
 
-            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40,(iteration) => {
+            AsyncLoop.SyncAsyncForLoop(vectorPositions.length, 40, (iteration) => {
                 var realPos = vectorPositions.length - 1 - iteration;
                 var testedPosition = vectorPositions[realPos];
                 for (var j = 0; j < realPos; ++j) {
@@ -1182,7 +1182,7 @@
                         break;
                     }
                 }
-            },() => {
+            }, () => {
                     for (var i = 0; i < indices.length; ++i) {
                         indices[i] = dupes[indices[i]] || indices[i];
                     }
@@ -1199,41 +1199,33 @@
 
         // Statics
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, ribbonInstance: Mesh = null): Mesh {
-
             if (ribbonInstance) {   // existing ribbon instance update
-
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
-                var positionsOfRibbon = function (pathArray, sideOrientation) {
-                    var positionFunction = function (positions) {
-                        var minlg = pathArray[0].length;
-                        var i = 0;
-                        var ns = (sideOrientation == BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
-                        for (var si = 1; si <= ns; si++) {
-                            for (var p = 0; p < pathArray.length; p++) {
-                                var path = pathArray[p];
-                                var l = path.length;
-                                minlg = (minlg < l) ? minlg : l;
-                                var j = 0;
-                                while (j < minlg) {
-                                    positions[i] = path[j].x;
-                                    positions[i + 1] = path[j].y;
-                                    positions[i + 2] = path[j].z;
-                                    j++;
-                                    i += 3;
-                                }
+                var positionFunction = function (positions) {
+                    var minlg = pathArray[0].length;
+                    var i = 0;
+                    var ns = (ribbonInstance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    for (var si = 1; si <= ns; si++) {
+                        for (var p = 0; p < pathArray.length; p++) {
+                            var path = pathArray[p];
+                            var l = path.length;
+                            minlg = (minlg < l) ? minlg : l;
+                            var j = 0;
+                            while (j < minlg) {
+                                positions[i] = path[j].x;
+                                positions[i + 1] = path[j].y;
+                                positions[i + 2] = path[j].z;
+                                j++;
+                                i += 3;
                             }
                         }
-                    };
-                    return positionFunction;
+                    }
                 };
-                var sideOrientation = ribbonInstance.sideOrientation;
-                var positionFunction = positionsOfRibbon(pathArray, sideOrientation);
                 var computeNormals = !(ribbonInstance.areNormalsFrozen);
                 ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
 
                 return ribbonInstance;
-
             }
             else {  // new ribbon creation
 
@@ -1346,53 +1338,50 @@
         }
 
         // Dashed Lines
-        public static CreateDashedLines(name: string, points: Vector3[], dashSize:number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
             if (linesInstance) {  //  dashed lines update
-                var positionsOfLines = function(points) {
-                    var positionFunction = function(positions) {
-                        var curvect = Vector3.Zero();
-                        var nbSeg = positions.length / 6;
-                        var lg = 0;
-                        var nb = 0;
-                        var shft = 0;
-                        var dashshft = 0;
-                        var curshft = 0;
-                        var p = 0;
-                        var i = 0;
-                        var j = 0;
-                        for (i = 0; i < points.length - 1; i++) {
-                            points[i + 1].subtractToRef(points[i], curvect);
-                            lg += curvect.length();
+                var positionFunction = function (positions: number[]): void {
+                    var curvect = Vector3.Zero();
+                    var nbSeg = positions.length / 6;
+                    var lg = 0;
+                    var nb = 0;
+                    var shft = 0;
+                    var dashshft = 0;
+                    var curshft = 0;
+                    var p = 0;
+                    var i = 0;
+                    var j = 0;
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        lg += curvect.length();
+                    }
+                    shft = lg / nbSeg;
+                    dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        curvect.normalize();
+                        nb = Math.floor(curvect.length() / shft);
+                        j = 0;
+                        while (j < nb && p < positions.length) {
+                            curshft = shft * j;
+                            positions[p] = points[i].x + curshft * curvect.x;
+                            positions[p + 1] = points[i].y + curshft * curvect.y;
+                            positions[p + 2] = points[i].z + curshft * curvect.z;
+                            positions[p + 3] = points[i].x + (curshft + dashshft) * curvect.x;
+                            positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
+                            positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
+                            p += 6;
+                            j++;
                         }
-                        shft = lg / nbSeg;
-                        dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
-                        for (i = 0; i < points.length - 1; i++) {
-                            points[i + 1].subtractToRef(points[i], curvect);
-                            curvect.normalize();
-                            nb = Math.floor(curvect.length() / shft);
-                            j = 0;
-                            while (j < nb && p < positions.length) {
-                                curshft = shft * j;
-                                positions[p] = points[i].x + curshft * curvect.x;
-                                positions[p + 1] = points[i].y + curshft * curvect.y;
-                                positions[p + 2] = points[i].z + curshft * curvect.z;
-                                positions[p + 3] = points[i].x + (curshft + dashshft)* curvect.x;
-                                positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
-                                positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
-                                p += 6;
-                                j++;
-                            }
-                        }
-                        while (p < positions.length) {
-                            positions[p] = points[i].x;
-                            positions[p + 1] = points[i].y;
-                            positions[p + 2] = points[i].z;
-                            p += 3;
-                        }
-                    };
-                    return positionFunction;   
-                };
-                var positionFunction = positionsOfLines(points);
+                    }
+                    while (p < positions.length) {
+                        positions[p] = points[i].x;
+                        positions[p + 1] = points[i].y;
+                        positions[p + 2] = points[i].z;
+                        p += 3;
+                    }
+                }
+
                 linesInstance.updateMeshPositions(positionFunction, false);
                 return linesInstance;
             }
@@ -1484,7 +1473,7 @@
             if (instance) { // instance update
                 
                 var path3D = ((<any>instance).path3D).update(curve);
-                var pathArray = extrusionPathArray(shape, curve,(<any>instance).path3D,(<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction,(<any>instance).cap, custom);
+                var pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
                 return instance;
@@ -1570,7 +1559,7 @@
                 }
             };
 
-            Tools.LoadImage(url, onload,() => { }, scene.database);
+            Tools.LoadImage(url, onload, () => { }, scene.database);
 
             return ground;
         }
@@ -1635,7 +1624,7 @@
 
             if (tubeInstance) { // tube update
                 var path3D = ((<any>tubeInstance).path3D).update(path);
-                var pathArray = tubePathArray(path, path3D,(<any>tubeInstance).pathArray, radius,(<any>tubeInstance).tessellation, radiusFunction,(<any>tubeInstance).cap);
+                var pathArray = tubePathArray(path, path3D, (<any>tubeInstance).pathArray, radius, (<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
                 tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
 
                 return tubeInstance;
