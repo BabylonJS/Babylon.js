@@ -803,7 +803,6 @@
 
             var curvect = Vector3.Zero();
             var lg = 0;
-            //var unit: Vector3;
             var nb = 0;
             var shft = 0;
             var dashshft = 0;
