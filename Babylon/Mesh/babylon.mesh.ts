@@ -1345,6 +1345,27 @@
             return lines;
         }
 
+        // Dashed Lines
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize:number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
+            if (linesInstance) {  //  dashed lines update
+                var positionsOfLines = function(points) {
+                    var positionFunction = function(positions) {
+
+                    
+                    };
+                    return positionFunction;   
+                };
+                var positionFunction = positionsOfLines(points);
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // dashed lines creation
+            var dashedLines = new LinesMesh(name, scene, updatable);
+            var vertexData = VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
+            vertexData.applyToMesh(dashedLines, updatable);
+            return dashedLines;
+        }
+
         // Extrusion
         public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
             scale = scale || 1;
