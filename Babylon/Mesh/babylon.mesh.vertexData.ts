@@ -793,6 +793,49 @@
             return vertexData;
         }
 
+        public static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData {
+            dashSize = dashSize || 3;
+            gapSize = gapSize || 1;
+            dashNb = dashNb || 200;
+
+            var positions = [];
+            var indices = [];
+
+            var curvect = Vector3.Zero();
+            var lg = 0;
+            var nb = 0;
+            var shft = 0;
+            var dashshft = 0;
+            var curshft = 0;
+            var idx = 0;
+            var i = 0;
+            for (i = 0; i < points.length - 1; i++) {
+                points[i + 1].subtractToRef(points[i], curvect);
+                lg += curvect.length();
+            }
+            shft = lg / dashNb;
+            dashshft = dashSize * shft / (dashSize + gapSize);
+            for (i = 0; i < points.length - 1; i++) {
+                points[i + 1].subtractToRef(points[i], curvect);
+                curvect.normalize();
+                nb = Math.floor(curvect.length() / shft);
+                for (var j = 0; j < nb; j++) {
+                    curshft = shft * j;
+                    positions.push(points[i].x + curshft * curvect.x , points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
+                    positions.push(points[i].x + (curshft + dashshft)* curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
+                    indices.push(idx, idx + 1);
+                    idx += 2;
+                }
+            }
+
+            // Result
+            var vertexData = new VertexData();
+            vertexData.positions = positions;
+            vertexData.indices = indices;
+
+            return vertexData;
+        }
+
         public static CreateGround(width: number, height: number, subdivisions: number): VertexData {
             var indices = [];
             var positions = [];

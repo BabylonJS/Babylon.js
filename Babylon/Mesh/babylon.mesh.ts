@@ -1345,6 +1345,66 @@
             return lines;
         }
 
+        // Dashed Lines
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize:number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
+            if (linesInstance) {  //  dashed lines update
+                var positionsOfLines = function(points) {
+                    var positionFunction = function(positions) {
+                        var curvect = Vector3.Zero();
+                        var nbSeg = positions.length / 6;
+                        var lg = 0;
+                        var nb = 0;
+                        var shft = 0;
+                        var dashshft = 0;
+                        var curshft = 0;
+                        var p = 0;
+                        var i = 0;
+                        var j = 0;
+                        for (i = 0; i < points.length - 1; i++) {
+                            points[i + 1].subtractToRef(points[i], curvect);
+                            lg += curvect.length();
+                        }
+                        shft = lg / nbSeg;
+                        dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
+                        for (i = 0; i < points.length - 1; i++) {
+                            points[i + 1].subtractToRef(points[i], curvect);
+                            curvect.normalize();
+                            nb = Math.floor(curvect.length() / shft);
+                            j = 0;
+                            while (j < nb && p < positions.length) {
+                                curshft = shft * j;
+                                positions[p] = points[i].x + curshft * curvect.x;
+                                positions[p + 1] = points[i].y + curshft * curvect.y;
+                                positions[p + 2] = points[i].z + curshft * curvect.z;
+                                positions[p + 3] = points[i].x + (curshft + dashshft)* curvect.x;
+                                positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
+                                positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
+                                p += 6;
+                                j++;
+                            }
+                        }
+                        while (p < positions.length) {
+                            positions[p] = points[i].x;
+                            positions[p + 1] = points[i].y;
+                            positions[p + 2] = points[i].z;
+                            p += 3;
+                        }
+                    };
+                    return positionFunction;   
+                };
+                var positionFunction = positionsOfLines(points);
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // dashed lines creation
+            var dashedLines = new LinesMesh(name, scene, updatable);
+            var vertexData = VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
+            vertexData.applyToMesh(dashedLines, updatable);
+            (<any>dashedLines).dashSize = dashSize;
+            (<any>dashedLines).gapSize = gapSize;
+            return dashedLines;
+        }
+
         // Extrusion
         public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
             scale = scale || 1;
