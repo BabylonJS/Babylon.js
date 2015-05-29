@@ -41,9 +41,7 @@ var BABYLON;
                 var max = boundingBox.maximum;
                 var diff = max.subtract(min);
                 var median = min.add(diff.scale(0.5));
-                var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z)
-                    .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
-                    .multiply(boundingBox.getWorldMatrix());
+                var worldMatrix = BABYLON.Matrix.Scaling(diff.x, diff.y, diff.z).multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
                 // VBOs
                 engine.bindBuffers(this._vb.getBuffer(), this._ib, [3], 3 * 4, this._colorShader.getEffect());
                 if (this.showBackLines) {

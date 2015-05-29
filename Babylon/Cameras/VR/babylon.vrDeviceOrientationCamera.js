@@ -8,12 +8,15 @@ var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene) {
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistorsion) {
+            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
             _super.call(this, name, position, scene);
             this._alpha = 0;
             this._beta = 0;
             this._gamma = 0;
-            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR);
+            var metrics = BABYLON.VRCameraMetrics.GetDefault();
+            metrics.compensateDistorsion = compensateDistorsion;
+            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR, 0, metrics);
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
         VRDeviceOrientationFreeCamera.prototype._onOrientationEvent = function (evt) {

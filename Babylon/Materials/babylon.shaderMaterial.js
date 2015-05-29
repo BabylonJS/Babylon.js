@@ -147,36 +147,28 @@ var BABYLON;
                 if (mesh && mesh.useBones) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
-                // Texture
                 for (var name in this._textures) {
                     this._effect.setTexture(name, this._textures[name]);
                 }
-                // Float    
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
-                // Float s   
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }
-                // Color3        
                 for (name in this._colors3) {
                     this._effect.setColor3(name, this._colors3[name]);
                 }
-                // Color4      
                 for (name in this._colors4) {
                     var color = this._colors4[name];
                     this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
                 }
-                // Vector2        
                 for (name in this._vectors2) {
                     this._effect.setVector2(name, this._vectors2[name]);
                 }
-                // Vector3        
                 for (name in this._vectors3) {
                     this._effect.setVector3(name, this._vectors3[name]);
                 }
-                // Matrix      
                 for (name in this._matrices) {
                     this._effect.setMatrix(name, this._matrices[name]);
                 }

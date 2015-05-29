@@ -30,7 +30,9 @@ var BABYLON;
                 this._effect.setTexture("diffuseSampler", alphaTexture);
                 this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
-            mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { _this._effect.setMatrix("world", world); });
+            mesh._processRendering(subMesh, this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
+                _this._effect.setMatrix("world", world);
+            });
         };
         OutlineRenderer.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];

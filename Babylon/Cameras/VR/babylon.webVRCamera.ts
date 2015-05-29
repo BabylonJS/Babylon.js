@@ -10,10 +10,12 @@ module BABYLON {
         public _cacheRotation = Vector3.Zero();
         public _vrEnabled = false;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion = true) {
             super(name, position, scene);
-
-            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR);
+            
+            var metrics = VRCameraMetrics.GetDefault();
+            metrics.compensateDistorsion = compensateDistorsion;
+            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR, 0, metrics);
 
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
