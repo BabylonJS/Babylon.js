@@ -46,7 +46,7 @@
             } while (count < value);
 
             return count === value;
-        };
+        }
 
         public static GetExponantOfTwo(value: number, max: number): number {
             var count = 1;
@@ -59,7 +59,7 @@
                 count = max;
 
             return count;
-        };
+        }
 
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");

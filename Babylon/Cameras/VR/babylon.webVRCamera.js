@@ -8,7 +8,8 @@ var BABYLON;
 (function (BABYLON) {
     var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
-        function WebVRFreeCamera(name, position, scene) {
+        function WebVRFreeCamera(name, position, scene, compensateDistorsion) {
+            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
             _super.call(this, name, position, scene);
             this._hmdDevice = null;
             this._sensorDevice = null;
@@ -16,7 +17,9 @@ var BABYLON;
             this._cacheQuaternion = new BABYLON.Quaternion();
             this._cacheRotation = BABYLON.Vector3.Zero();
             this._vrEnabled = false;
-            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR);
+            var metrics = BABYLON.VRCameraMetrics.GetDefault();
+            metrics.compensateDistorsion = compensateDistorsion;
+            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR, 0, metrics);
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
         WebVRFreeCamera.prototype._getWebVRDevices = function (devices) {
@@ -25,7 +28,6 @@ var BABYLON;
             // Reset devices.
             this._sensorDevice = null;
             this._hmdDevice = null;
-            // Search for a HmdDevice.
             while (i < size && this._hmdDevice === null) {
                 if (devices[i] instanceof HMDVRDevice) {
                     this._hmdDevice = devices[i];

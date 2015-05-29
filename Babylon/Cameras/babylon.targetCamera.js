@@ -62,8 +62,7 @@ var BABYLON;
                 return false;
             }
             var lockedTargetPosition = this._getLockedTargetPosition();
-            return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
-                && this._cache.rotation.equals(this.rotation);
+            return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition) && this._cache.rotation.equals(this.rotation);
         };
         // Methods
         TargetCamera.prototype._computeLocalCameraSpeed = function () {

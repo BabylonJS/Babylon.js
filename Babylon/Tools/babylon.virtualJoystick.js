@@ -22,8 +22,8 @@ var BABYLON;
             VirtualJoystick._globalJoystickIndex++;
             // By default left & right arrow keys are moving the X
             // and up & down keys are moving the Y
-            this._axisTargetedByLeftAndRight = JoystickAxis.X;
-            this._axisTargetedByUpAndDown = JoystickAxis.Y;
+            this._axisTargetedByLeftAndRight = 0 /* X */;
+            this._axisTargetedByUpAndDown = 1 /* Y */;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
@@ -88,7 +88,9 @@ var BABYLON;
             VirtualJoystick.vjCanvas.addEventListener("contextmenu", function (evt) {
                 evt.preventDefault(); // Disables system menu
             }, false);
-            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
+            requestAnimationFrame(function () {
+                _this._drawVirtualJoystick();
+            });
         }
         VirtualJoystick.prototype.setJoystickSensibility = function (newJoystickSensibility) {
             this._joystickSensibility = newJoystickSensibility;
@@ -132,26 +134,26 @@ var BABYLON;
                 var directionLeftRight = this.reverseLeftRight ? -1 : 1;
                 var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
                 switch (this._axisTargetedByLeftAndRight) {
-                    case JoystickAxis.X:
+                    case 0 /* X */:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case JoystickAxis.Y:
+                    case 1 /* Y */:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case JoystickAxis.Z:
+                    case 2 /* Z */:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
                 }
                 var directionUpDown = this.reverseUpDown ? 1 : -1;
                 var deltaJoystickY = directionUpDown * this._deltaJoystickVector.y / this._inversedSensibility;
                 switch (this._axisTargetedByUpAndDown) {
-                    case JoystickAxis.X:
+                    case 0 /* X */:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case JoystickAxis.Y:
+                    case 1 /* Y */:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case JoystickAxis.Z:
+                    case 2 /* Z */:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
                 }
@@ -186,26 +188,26 @@ var BABYLON;
         // Define which axis you'd like to control for left & right 
         VirtualJoystick.prototype.setAxisForLeftRight = function (axis) {
             switch (axis) {
-                case JoystickAxis.X:
-                case JoystickAxis.Y:
-                case JoystickAxis.Z:
+                case 0 /* X */:
+                case 1 /* Y */:
+                case 2 /* Z */:
                     this._axisTargetedByLeftAndRight = axis;
                     break;
                 default:
-                    this._axisTargetedByLeftAndRight = JoystickAxis.X;
+                    this._axisTargetedByLeftAndRight = 0 /* X */;
                     break;
             }
         };
         // Define which axis you'd like to control for up & down 
         VirtualJoystick.prototype.setAxisForUpDown = function (axis) {
             switch (axis) {
-                case JoystickAxis.X:
-                case JoystickAxis.Y:
-                case JoystickAxis.Z:
+                case 0 /* X */:
+                case 1 /* Y */:
+                case 2 /* Z */:
                     this._axisTargetedByUpAndDown = axis;
                     break;
                 default:
-                    this._axisTargetedByUpAndDown = JoystickAxis.Y;
+                    this._axisTargetedByUpAndDown = 1 /* Y */;
                     break;
             }
         };
@@ -250,7 +252,9 @@ var BABYLON;
                     ;
                 });
             }
-            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
+            requestAnimationFrame(function () {
+                _this._drawVirtualJoystick();
+            });
         };
         VirtualJoystick.prototype.releaseCanvas = function () {
             if (VirtualJoystick.vjCanvas) {

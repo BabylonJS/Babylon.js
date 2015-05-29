@@ -158,7 +158,6 @@ var BABYLON;
                         continue;
                     }
                     currentPool.push(current);
-                    // Find compatible meshes
                     for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
                         var otherMesh = globalPool[subIndex];
                         if (!_this._canBeMerged(otherMesh)) {

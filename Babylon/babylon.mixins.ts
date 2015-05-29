@@ -103,3 +103,8 @@ interface Navigator {
     mozGetVRDevices: (any) => any;
     isCocoonJS: boolean;
 }
+
+interface Screen {
+    orientation: string;
+    mozOrientation: string;
+}

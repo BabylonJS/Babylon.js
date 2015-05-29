@@ -75,7 +75,9 @@ var BABYLON;
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
+                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) {
+                            _this._soundLoaded(data);
+                        }, null, null, true);
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -145,7 +147,9 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function (error) { BABYLON.Tools.Error("Error while decoding audio data: " + error.err); });
+            }, function (error) {
+                BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
+            });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -286,7 +290,9 @@ var BABYLON;
                     this._soundSource.loop = this.loop;
                     this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
-                    this._soundSource.onended = function () { _this._onended(); };
+                    this._soundSource.onended = function () {
+                        _this._onended();
+                    };
                     this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     this.isPlaying = true;
                     this.isPaused = false;
