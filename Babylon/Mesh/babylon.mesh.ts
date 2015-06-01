@@ -1308,32 +1308,23 @@
         // Lines
         public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
             if (linesInstance) { // lines update
-                var positionsOfLines = function (points) {
-                    var positionFunction = function (positions) {
-                        var i = 0;
-                        for (var p = 0; p < points.length; p++) {
-                            positions[i] = points[p].x;
-                            positions[i + 1] = points[p].y;
-                            positions[i + 2] = points[p].z;
-                            i += 3;
-                        }
-                    };
-                    return positionFunction;
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        i += 3;
+                    }
                 };
-                var positionFunction = positionsOfLines(points);
                 linesInstance.updateMeshPositions(positionFunction, false);
-
                 return linesInstance;
-
             }
+
             // lines creation
-
             var lines = new LinesMesh(name, scene, updatable);
-
             var vertexData = VertexData.CreateLines(points);
-
             vertexData.applyToMesh(lines, updatable);
-
             return lines;
         }
 
@@ -1359,8 +1350,8 @@
                     dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
-                        curvect.normalize();
                         nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
                         j = 0;
                         while (j < nb && p < positions.length) {
                             curshft = shft * j;
