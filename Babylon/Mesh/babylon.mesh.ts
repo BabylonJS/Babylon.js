@@ -1359,8 +1359,8 @@
                     dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
-                        curvect.normalize();
                         nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
                         j = 0;
                         while (j < nb && p < positions.length) {
                             curshft = shft * j;
