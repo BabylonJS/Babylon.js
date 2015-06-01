@@ -259,13 +259,16 @@ var BABYLON;
         // Convert BABYLON.Mesh to BABYLON.CSG
         CSG.FromMesh = function (mesh) {
             var vertex, normal, uv, position, polygon, polygons = [], vertices;
+            var matrix, meshPosition, meshRotation, meshRotationQuaternion, meshScaling;
             if (mesh instanceof BABYLON.Mesh) {
                 mesh.computeWorldMatrix(true);
-                var matrix = mesh.getWorldMatrix();
-                var meshPosition = mesh.position.clone();
-                var meshRotation = mesh.rotation.clone();
-                var meshRotationQuaternion = mesh.rotationQuaternion.clone();
-                var meshScaling = mesh.scaling.clone();
+                matrix = mesh.getWorldMatrix();
+                meshPosition = mesh.position.clone();
+                meshRotation = mesh.rotation.clone();
+                if (mesh.rotationQuaternion) {
+                    meshRotationQuaternion = mesh.rotationQuaternion.clone();
+                }
+                meshScaling = mesh.scaling.clone();
             }
             else {
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
@@ -492,7 +495,9 @@ var BABYLON;
             mesh.material = material;
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
-            mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            if (this.rotationQuaternion) {
+                mesh.rotationQuaternion = this.rotationQuaternion.clone();
+            }
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
             return mesh;
@@ -501,4 +506,3 @@ var BABYLON;
     })();
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.csg.js.map
