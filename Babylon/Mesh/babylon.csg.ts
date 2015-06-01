@@ -280,16 +280,16 @@
         public scaling: Vector3;
 
         // Convert BABYLON.Mesh to BABYLON.CSG
-        public static FromMesh(mesh: Mesh) {
-            var vertex, normal, uv, position,
-                polygon,
-                polygons = [],
+        public static FromMesh(mesh: Mesh): CSG {
+            var vertex: Vertex, normal: Vector3, uv: Vector2, position: Vector3,
+                polygon: Polygon,
+                polygons = new Array<Polygon>(),
                 vertices;
-			var matrix, 
-				meshPosition,
-				meshRotation,
-				meshRotationQuaternion,
-				meshScaling;
+			var matrix : Matrix, 
+				meshPosition : Vector3,
+				meshRotation : Vector3,
+				meshRotationQuaternion: Quaternion,
+				meshScaling: Vector3;
 				
             if (mesh instanceof BABYLON.Mesh) {
                 mesh.computeWorldMatrix(true);
