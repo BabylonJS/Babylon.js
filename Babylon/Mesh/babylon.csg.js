@@ -492,7 +492,9 @@ var BABYLON;
             mesh.material = material;
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
-            mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            if (this.rotationQuaternion) {
+                mesh.rotationQuaternion = this.rotationQuaternion.clone();
+            }
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
             return mesh;
@@ -501,4 +503,3 @@ var BABYLON;
     })();
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.csg.js.map

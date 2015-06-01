@@ -589,7 +589,9 @@
 
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
-            mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
+			if(this.rotationQuaternion) {
+				mesh.rotationQuaternion = this.rotationQuaternion.clone();
+			}
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
 
