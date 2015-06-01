@@ -285,14 +285,21 @@
                 polygon,
                 polygons = [],
                 vertices;
-
+			var matrix, 
+				meshPosition,
+				meshRotation,
+				meshRotationQuaternion,
+				meshScaling;
+				
             if (mesh instanceof BABYLON.Mesh) {
                 mesh.computeWorldMatrix(true);
-                var matrix = mesh.getWorldMatrix();
-                var meshPosition = mesh.position.clone();
-                var meshRotation = mesh.rotation.clone();
-                var meshRotationQuaternion = mesh.rotationQuaternion.clone();
-                var meshScaling = mesh.scaling.clone();
+                matrix = mesh.getWorldMatrix();
+                meshPosition = mesh.position.clone();
+                meshRotation = mesh.rotation.clone();
+				if(mesh.rotationQuaternion) {
+					meshRotationQuaternion = mesh.rotationQuaternion.clone();
+				}
+                meshScaling = mesh.scaling.clone();
             } else {
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
             }
