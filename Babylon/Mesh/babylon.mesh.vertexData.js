@@ -650,8 +650,8 @@ var BABYLON;
             dashshft = dashSize * shft / (dashSize + gapSize);
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
-                curvect.normalize();
                 nb = Math.floor(curvect.length() / shft);
+                curvect.normalize();
                 for (var j = 0; j < nb; j++) {
                     curshft = shft * j;
                     positions.push(points[i].x + curshft * curvect.x, points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
@@ -1073,4 +1073,3 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map
