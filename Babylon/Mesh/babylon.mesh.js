@@ -1105,19 +1105,15 @@ var BABYLON;
         Mesh.CreateLines = function (name, points, scene, updatable, linesInstance) {
             if (linesInstance === void 0) { linesInstance = null; }
             if (linesInstance) {
-                var positionsOfLines = function (points) {
-                    var positionFunction = function (positions) {
-                        var i = 0;
-                        for (var p = 0; p < points.length; p++) {
-                            positions[i] = points[p].x;
-                            positions[i + 1] = points[p].y;
-                            positions[i + 2] = points[p].z;
-                            i += 3;
-                        }
-                    };
-                    return positionFunction;
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        i += 3;
+                    }
                 };
-                var positionFunction = positionsOfLines(points);
                 linesInstance.updateMeshPositions(positionFunction, false);
                 return linesInstance;
             }
@@ -1150,8 +1146,8 @@ var BABYLON;
                     dashshft = linesInstance.dashSize * shft / (linesInstance.dashSize + linesInstance.gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
-                        curvect.normalize();
                         nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
                         j = 0;
                         while (j < nb && p < positions.length) {
                             curshft = shft * j;
@@ -1663,4 +1659,3 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.js.map
