@@ -258,7 +258,7 @@ var BABYLON;
         }
         // Convert BABYLON.Mesh to BABYLON.CSG
         CSG.FromMesh = function (mesh) {
-            var vertex, normal, uv, position, polygon, polygons = [], vertices;
+            var vertex, normal, uv, position, polygon, polygons = new Array(), vertices;
             var matrix, meshPosition, meshRotation, meshRotationQuaternion, meshScaling;
             if (mesh instanceof BABYLON.Mesh) {
                 mesh.computeWorldMatrix(true);
@@ -506,3 +506,4 @@ var BABYLON;
     })();
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.csg.js.map

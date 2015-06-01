@@ -15121,19 +15121,15 @@ var BABYLON;
         Mesh.CreateLines = function (name, points, scene, updatable, linesInstance) {
             if (linesInstance === void 0) { linesInstance = null; }
             if (linesInstance) {
-                var positionsOfLines = function (points) {
-                    var positionFunction = function (positions) {
-                        var i = 0;
-                        for (var p = 0; p < points.length; p++) {
-                            positions[i] = points[p].x;
-                            positions[i + 1] = points[p].y;
-                            positions[i + 2] = points[p].z;
-                            i += 3;
-                        }
-                    };
-                    return positionFunction;
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        i += 3;
+                    }
                 };
-                var positionFunction = positionsOfLines(points);
                 linesInstance.updateMeshPositions(positionFunction, false);
                 return linesInstance;
             }
@@ -15166,8 +15162,8 @@ var BABYLON;
                     dashshft = linesInstance.dashSize * shft / (linesInstance.dashSize + linesInstance.gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
-                        curvect.normalize();
                         nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
                         j = 0;
                         while (j < nb && p < positions.length) {
                             curshft = shft * j;
@@ -23930,14 +23926,17 @@ var BABYLON;
         }
         // Convert BABYLON.Mesh to BABYLON.CSG
         CSG.FromMesh = function (mesh) {
-            var vertex, normal, uv, position, polygon, polygons = [], vertices;
+            var vertex, normal, uv, position, polygon, polygons = new Array(), vertices;
+            var matrix, meshPosition, meshRotation, meshRotationQuaternion, meshScaling;
             if (mesh instanceof BABYLON.Mesh) {
                 mesh.computeWorldMatrix(true);
-                var matrix = mesh.getWorldMatrix();
-                var meshPosition = mesh.position.clone();
-                var meshRotation = mesh.rotation.clone();
-                var meshRotationQuaternion = mesh.rotationQuaternion.clone();
-                var meshScaling = mesh.scaling.clone();
+                matrix = mesh.getWorldMatrix();
+                meshPosition = mesh.position.clone();
+                meshRotation = mesh.rotation.clone();
+                if (mesh.rotationQuaternion) {
+                    meshRotationQuaternion = mesh.rotationQuaternion.clone();
+                }
+                meshScaling = mesh.scaling.clone();
             }
             else {
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
@@ -24164,7 +24163,9 @@ var BABYLON;
             mesh.material = material;
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
-            mesh.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            if (this.rotationQuaternion) {
+                mesh.rotationQuaternion = this.rotationQuaternion.clone();
+            }
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
             return mesh;
@@ -25373,8 +25374,8 @@ var BABYLON;
             dashshft = dashSize * shft / (dashSize + gapSize);
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
-                curvect.normalize();
                 nb = Math.floor(curvect.length() / shft);
+                curvect.normalize();
                 for (var j = 0; j < nb; j++) {
                     curshft = shft * j;
                     positions.push(points[i].x + curshft * curvect.x, points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
