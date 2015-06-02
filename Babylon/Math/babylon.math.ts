@@ -685,7 +685,7 @@
         public normalize(): Vector3 {
             var len = this.length();
 
-            if (len === 0)
+            if (len === 0 || len === 1.0)
                 return this;
 
             var num = 1.0 / len;

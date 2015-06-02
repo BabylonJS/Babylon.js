@@ -179,6 +179,7 @@ var BABYLON;
                         try {
                             blobTextureURL = URL.createObjectURL(blob, { oneTimeOnly: true });
                         }
+                        // Chrome is raising a type error if we're setting the oneTimeOnly parameter
                         catch (ex) {
                             blobTextureURL = URL.createObjectURL(blob);
                         }
@@ -202,8 +203,7 @@ var BABYLON;
                                         this.hasReachedQuota = true;
                                     }
                                 }
-                                catch (ex) {
-                                }
+                                catch (ex) { }
                                 generateBlobUrl();
                             };
                             transaction.oncomplete = function (event) {
@@ -311,8 +311,7 @@ var BABYLON;
                                 _this.hasReachedQuota = true;
                             }
                         }
-                        catch (ex) {
-                        }
+                        catch (ex) { }
                         callback(-1);
                     };
                     transaction.oncomplete = function (event) {
@@ -426,8 +425,7 @@ var BABYLON;
                                         this.hasReachedQuota = true;
                                     }
                                 }
-                                catch (ex) {
-                                }
+                                catch (ex) { }
                                 callback(fileData);
                             };
                             transaction.oncomplete = function (event) {

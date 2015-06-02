@@ -74,9 +74,7 @@ var BABYLON;
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.name;
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () {
-                    return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true);
-                });
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true); });
                 this._renderEffectsForIsolatedPass[cameraName].emptyPasses();
                 this._renderEffectsForIsolatedPass[cameraName].addPass(pass);
                 this._renderEffectsForIsolatedPass[cameraName]._attachCameras(camera);
@@ -88,9 +86,7 @@ var BABYLON;
             for (var i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.name;
-                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () {
-                    return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true);
-                });
+                this._renderEffectsForIsolatedPass[cameraName] = this._renderEffectsForIsolatedPass[cameraName] || new BABYLON.PostProcessRenderEffect(this._engine, PostProcessRenderPipeline.PASS_EFFECT_NAME, function () { return new BABYLON.DisplayPassPostProcess(PostProcessRenderPipeline.PASS_EFFECT_NAME, 1.0, null, null, _this._engine, true); });
                 this._renderEffectsForIsolatedPass[cameraName]._disable(camera);
             }
             for (var renderEffectName in this._renderEffects) {

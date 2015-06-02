@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -14,9 +14,7 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.angularSensibility = 200;
             this.moveSensibility = 75;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) {
-                _this._onNewGameConnected(gamepad);
-            });
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
         GamepadCamera.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad can control the camera

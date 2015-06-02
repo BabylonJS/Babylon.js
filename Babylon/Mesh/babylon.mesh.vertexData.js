@@ -275,6 +275,7 @@ var BABYLON;
                 }
                 idc += l;
             }
+            // vertical distances (v)
             for (i = 0; i < minlg; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
@@ -376,6 +377,7 @@ var BABYLON;
             var normals = [];
             var uvs = [];
             size = size || 1;
+            // Create each face in turn.
             for (var index = 0; index < normalsSource.length; index++) {
                 var normal = normalsSource[index];
                 // Get two vectors perpendicular to the face normal and to each other.
@@ -499,6 +501,7 @@ var BABYLON;
                     offset.scaleInPlace(-1);
                     textureScale.x = -textureScale.x;
                 }
+                // Positions, normals & uvs
                 for (var i = 0; i < tessellation; i++) {
                     var circleVector = getCircleVector(i);
                     var position = circleVector.scale(radius).add(offset);
@@ -506,6 +509,7 @@ var BABYLON;
                     positions.push(position.x, position.y, position.z);
                     uvs.push(textureCoordinate.x, textureCoordinate.y);
                 }
+                // Indices
                 for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         indices.push(vbase);
@@ -522,6 +526,7 @@ var BABYLON;
             var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
             var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
             var stride = tessellation + 1;
+            // Positions, normals & uvs
             for (var i = 0; i <= tessellation; i++) {
                 var circleVector = getCircleVector(i);
                 var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
@@ -538,6 +543,7 @@ var BABYLON;
                 }
             }
             subdivisions += 1;
+            // Indices
             for (s = 0; s < subdivisions - 1; s++) {
                 for (i = 0; i <= tessellation; i++) {
                     indices.push(i * subdivisions + s);
@@ -771,6 +777,7 @@ var BABYLON;
             var normals = [];
             var uvs = [];
             var row, col;
+            // Vertices
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
                     var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
@@ -789,6 +796,7 @@ var BABYLON;
                     uvs.push(col / subdivisions, 1.0 - row / subdivisions);
                 }
             }
+            // Indices
             for (row = 0; row < subdivisions; row++) {
                 for (col = 0; col < subdivisions; col++) {
                     indices.push(col + 1 + (row + 1) * (subdivisions + 1));
@@ -906,6 +914,7 @@ var BABYLON;
                 var tz = radius * Math.sin(quOverP) * 0.5;
                 return new BABYLON.Vector3(tx, ty, tz);
             };
+            // Vertices
             for (var i = 0; i <= radialSegments; i++) {
                 var modI = i % radialSegments;
                 var u = modI / radialSegments * 2 * p * Math.PI;
@@ -1018,6 +1027,7 @@ var BABYLON;
                 normals[i3 * 3 + 1] = vertexNormali3.y;
                 normals[i3 * 3 + 2] = vertexNormali3.z;
             }
+            // last normalization
             for (index = 0; index < normals.length / 3; index++) {
                 BABYLON.Vector3.FromFloatsToRef(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2], vertexNormali1);
                 vertexNormali1.normalize();
@@ -1034,14 +1044,17 @@ var BABYLON;
             sideOrientation = sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             switch (sideOrientation) {
                 case BABYLON.Mesh.FRONTSIDE:
+                    // nothing changed
                     break;
                 case BABYLON.Mesh.BACKSIDE:
                     var tmp;
+                    // indices
                     for (i = 0; i < li; i += 3) {
                         tmp = indices[i];
                         indices[i] = indices[i + 2];
                         indices[i + 2] = tmp;
                     }
+                    // normals
                     for (n = 0; n < ln; n++) {
                         normals[n] = -normals[n];
                     }
@@ -1053,11 +1066,13 @@ var BABYLON;
                     for (var p = 0; p < lp; p++) {
                         positions[lp + p] = positions[p];
                     }
+                    // indices
                     for (i = 0; i < li; i += 3) {
                         indices[i + li] = indices[i + 2] + l;
                         indices[i + 1 + li] = indices[i + 1] + l;
                         indices[i + 2 + li] = indices[i] + l;
                     }
+                    // normals
                     for (n = 0; n < ln; n++) {
                         normals[ln + n] = -normals[n];
                     }

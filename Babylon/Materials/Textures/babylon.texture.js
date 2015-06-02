@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -83,7 +83,13 @@ var BABYLON;
             t.z += 0.5;
         };
         Texture.prototype.getTextureMatrix = function () {
-            if (this.uOffset === this._cachedUOffset && this.vOffset === this._cachedVOffset && this.uScale === this._cachedUScale && this.vScale === this._cachedVScale && this.uAng === this._cachedUAng && this.vAng === this._cachedVAng && this.wAng === this._cachedWAng) {
+            if (this.uOffset === this._cachedUOffset &&
+                this.vOffset === this._cachedVOffset &&
+                this.uScale === this._cachedUScale &&
+                this.vScale === this._cachedVScale &&
+                this.uAng === this._cachedUAng &&
+                this.vAng === this._cachedVAng &&
+                this.wAng === this._cachedWAng) {
                 return this._cachedTextureMatrix;
             }
             this._cachedUOffset = this.uOffset;
@@ -119,7 +125,11 @@ var BABYLON;
             return this._cachedTextureMatrix;
         };
         Texture.prototype.getReflectionTextureMatrix = function () {
-            if (this.uOffset === this._cachedUOffset && this.vOffset === this._cachedVOffset && this.uScale === this._cachedUScale && this.vScale === this._cachedVScale && this.coordinatesMode === this._cachedCoordinatesMode) {
+            if (this.uOffset === this._cachedUOffset &&
+                this.vOffset === this._cachedVOffset &&
+                this.uScale === this._cachedUScale &&
+                this.vScale === this._cachedVScale &&
+                this.coordinatesMode === this._cachedCoordinatesMode) {
                 return this._cachedTextureMatrix;
             }
             if (!this._cachedTextureMatrix) {
