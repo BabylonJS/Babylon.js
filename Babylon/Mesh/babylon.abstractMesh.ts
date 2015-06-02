@@ -202,6 +202,8 @@
         }
 
         public rotate(axis: Vector3, amount: number, space: Space): void {
+            axis.normalize();
+
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();

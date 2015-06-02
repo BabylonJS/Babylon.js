@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -158,6 +158,7 @@ var BABYLON;
                         continue;
                     }
                     currentPool.push(current);
+                    // Find compatible meshes
                     for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
                         var otherMesh = globalPool[subIndex];
                         if (!_this._canBeMerged(otherMesh)) {

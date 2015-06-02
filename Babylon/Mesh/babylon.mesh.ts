@@ -1183,18 +1183,18 @@
                     }
                 }
             }, () => {
-                    for (var i = 0; i < indices.length; ++i) {
-                        indices[i] = dupes[indices[i]] || indices[i];
-                    }
+                for (var i = 0; i < indices.length; ++i) {
+                    indices[i] = dupes[indices[i]] || indices[i];
+                }
 
-                    //indices are now reordered
-                    var originalSubMeshes = this.subMeshes.slice(0);
-                    this.setIndices(indices);
-                    this.subMeshes = originalSubMeshes;
-                    if (successCallback) {
-                        successCallback(this);
-                    }
-                });
+                //indices are now reordered
+                var originalSubMeshes = this.subMeshes.slice(0);
+                this.setIndices(indices);
+                this.subMeshes = originalSubMeshes;
+                if (successCallback) {
+                    successCallback(this);
+                }
+            });
         }
 
         // Statics
@@ -1491,15 +1491,17 @@
             var pi2 = Math.PI * 2;
             var Y = BABYLON.Axis.Y;
             var shapeLathe = new Array<Vector3>();
+
             // first rotatable point
-            var  i = 0;
-            while (shape[i].x == 0) {
+            var i = 0;
+            while (shape[i].x === 0) {
                 i++;
             }
-            var pt = shape[i];        
+            var pt = shape[i];
             for (i = 0; i < shape.length; i++) {
                 shapeLathe.push(shape[i].subtract(pt));
             }
+
             // circle path
             var step = pi2 / tessellation;
             var rotated;
@@ -1509,9 +1511,10 @@
                 path.push(rotated);
             }
             path.push(path[0]);
-            // extusion
-            var scaleFunction = function() { return 1; };
-            var rotateFunction = function() { return 0; };
+
+            // extrusion
+            var scaleFunction = () => { return 1; };
+            var rotateFunction = () => { return 0; };
             var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, true, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
             return lathe;
         }

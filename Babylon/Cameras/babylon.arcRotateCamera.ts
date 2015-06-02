@@ -141,14 +141,10 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            //var offsetX = evt.clientX - pointers.item(evt.pointerId).x;
-                            //var offsetY = evt.clientY - pointers.item(evt.pointerId).y;
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
                             this.inertialAlphaOffset -= offsetX / this.angularSensibility;
                             this.inertialBetaOffset -= offsetY / this.angularSensibility;
-                            //pointers.item(evt.pointerId).x = evt.clientX;
-                            //pointers.item(evt.pointerId).y = evt.clientY;
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
                             break;
@@ -461,17 +457,18 @@
             if (collisionId != null || collisionId != undefined)
                 newPosition.multiplyInPlace(this._collider.radius);
 
-            if (!newPosition.equalsWithEpsilon(this.position)) {
+            if (newPosition.equalsWithEpsilon(this.position)) {
                 this.position.copyFrom(this._previousPosition);
 
                 this.alpha = this._previousAlpha;
                 this.beta = this._previousBeta;
                 this.radius = this._previousRadius;
-
+            } else {
                 if (this.onCollide && collidedMesh) {
                     this.onCollide(collidedMesh);
                 }
             }
+
             this._collisionTriggered = false;
         }
 
@@ -509,8 +506,8 @@
          * @override
          * needs to be overridden, so sub has required properties to be copied
          */
-        public getSubCamera(name : string, isA : boolean) : Camera{
-            var alphaSpace = this._subCamHalfSpace * (isA? -1 : 1);
+        public getSubCamera(name: string, isA: boolean): Camera {
+            var alphaSpace = this._subCamHalfSpace * (isA ? -1 : 1);
             return new BABYLON.ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
         }
         
@@ -518,14 +515,14 @@
          * @override
          * needs to be overridden, adding copy of alpha, beta & radius
          */
-        public _updateSubCameras(){
+        public _updateSubCameras() {
             var camA = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_A];
             var camB = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_B];
-            
+
             camA.alpha = this.alpha - this._subCamHalfSpace;
             camB.alpha = this.alpha + this._subCamHalfSpace;
-            
-            camA.beta   = camB.beta   = this.beta;
+
+            camA.beta = camB.beta = this.beta;
             camA.radius = camB.radius = this.radius;
             super._updateSubCameras();
         }

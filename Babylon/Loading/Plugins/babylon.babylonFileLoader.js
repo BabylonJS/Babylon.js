@@ -677,6 +677,7 @@ var BABYLON;
                 }
                 var effectiveTarget = propertyPath.split(".");
                 var values = value.split(",");
+                // Get effective Target
                 for (var i = 0; i < effectiveTarget.length; i++) {
                     target = target[effectiveTarget[i]];
                 }
@@ -779,6 +780,7 @@ var BABYLON;
                 for (var i = 0; i < parsedAction.children.length; i++)
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
             };
+            // triggers
             for (var i = 0; i < parsedActions.children.length; i++) {
                 var triggerParams;
                 var trigger = parsedActions.children[i];
@@ -799,19 +801,14 @@ var BABYLON;
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
             var options = {
-                autoplay: parsedSound.autoplay,
-                loop: parsedSound.loop,
-                volume: parsedSound.volume,
-                spatialSound: parsedSound.spatialSound,
-                maxDistance: parsedSound.maxDistance,
+                autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
+                spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
                 playbackRate: parsedSound.playbackRate
             };
-            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
-                scene._removePendingData(newSound);
-            }, options);
+            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
             scene._addPendingData(newSound);
             if (parsedSound.position) {
                 var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
@@ -1101,6 +1098,7 @@ var BABYLON;
                         meshes.push(mesh);
                     }
                 }
+                // Connecting parents
                 for (index = 0; index < scene.meshes.length; index++) {
                     var currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
@@ -1135,6 +1133,7 @@ var BABYLON;
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
                 }
+                // Lights
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
@@ -1227,10 +1226,12 @@ var BABYLON;
                         }
                     }
                 }
+                // Meshes
                 for (index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     parseMesh(parsedMesh, scene, rootUrl);
                 }
+                // Cameras
                 for (index = 0; index < parsedData.cameras.length; index++) {
                     var parsedCamera = parsedData.cameras[index];
                     parseCamera(parsedCamera, scene);
@@ -1238,6 +1239,7 @@ var BABYLON;
                 if (parsedData.activeCameraID) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
+                // Browsing all the graph to connect the dots
                 for (index = 0; index < scene.cameras.length; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
@@ -1264,6 +1266,7 @@ var BABYLON;
                         }
                     }
                 }
+                // Connect parents & children and parse actions
                 for (index = 0; index < scene.meshes.length; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {

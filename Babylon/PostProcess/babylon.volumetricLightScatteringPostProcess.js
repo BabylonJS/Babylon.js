@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -226,6 +226,7 @@ var BABYLON;
                 }
                 engine.setAlphaTesting(false);
                 if (transparentSubMeshes.length) {
+                    // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
                         var submesh = transparentSubMeshes.data[index];
                         submesh._alphaIndex = submesh.getMesh().alphaIndex;
