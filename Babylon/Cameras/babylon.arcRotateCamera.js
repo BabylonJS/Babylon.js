@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -45,19 +45,24 @@ var BABYLON;
             this._newPosition = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
-                if (collisionId != null || collisionId != undefined)
+                if (_this.getScene().workerCollisions && _this.checkCollisions) {
                     newPosition.multiplyInPlace(_this._collider.radius);
-                if (newPosition.equalsWithEpsilon(_this.position)) {
-                    _this.position.copyFrom(_this._previousPosition);
-                    _this.alpha = _this._previousAlpha;
-                    _this.beta = _this._previousBeta;
-                    _this.radius = _this._previousRadius;
+                }
+                if (!collidedMesh) {
+                    _this._previousPosition.copyFrom(_this.position);
+                    _this.setPosition(_this._newPosition);
+                    _this.position.copyFrom(_this._newPosition);
                 }
                 else {
-                    if (_this.onCollide && collidedMesh) {
+                    _this.setPosition(_this._previousPosition);
+                    _this.position.copyFrom(_this._previousPosition);
+                    if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
                 }
+                BABYLON.Matrix.LookAtLHToRef(_this.position, _this._getTargetPosition(), _this.upVector, _this._viewMatrix);
+                _this._viewMatrix.m[12] += _this.targetScreenOffset.x;
+                _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
             };
             if (!this.target) {
@@ -91,11 +96,7 @@ var BABYLON;
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this._getTargetPosition())
-                && this._cache.alpha === this.alpha
-                && this._cache.beta === this.beta
-                && this._cache.radius === this.radius
-                && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
+            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         };
         // Methods
         ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault) {
@@ -190,10 +191,7 @@ var BABYLON;
                     }
                 };
                 this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index === -1) {
                             _this._keys.push(evt.keyCode);
@@ -206,10 +204,7 @@ var BABYLON;
                     }
                 };
                 this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index >= 0) {
                             _this._keys.splice(index, 1);
@@ -300,7 +295,6 @@ var BABYLON;
             if (this._collisionTriggered) {
                 return;
             }
-            // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
@@ -370,20 +364,19 @@ var BABYLON;
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
             var target = this._getTargetPosition();
-            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-            if (this.checkCollisions) {
+            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
-            this._previousAlpha = this.alpha;
-            this._previousBeta = this.beta;
-            this._previousRadius = this.radius;
-            this._previousPosition.copyFrom(this.position);
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            else {
+                this.position.copyFrom(this._newPosition);
+                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+                this._viewMatrix.m[12] += this.targetScreenOffset.x;
+                this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            }
             return this._viewMatrix;
         };
         ArcRotateCamera.prototype.zoomOn = function (meshes) {
@@ -433,4 +426,3 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map

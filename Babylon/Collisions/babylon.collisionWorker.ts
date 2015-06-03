@@ -137,6 +137,9 @@ module BABYLON {
                     continue;
 
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+				if (this.collider.collisionFound) {
+					this.collider.collidedMesh = <any> mesh.id;
+				}
             }
         }
 
@@ -162,6 +165,7 @@ module BABYLON {
 
             // Collide
             this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+			
         }
 
         private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {

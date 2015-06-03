@@ -429,45 +429,46 @@
 
             var target = this._getTargetPosition();
 
-            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-
-            if (this.checkCollisions) {
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+			
+			if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
 
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
-            }
-
-            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
-
-            this._previousAlpha = this.alpha;
-            this._previousBeta = this.beta;
-            this._previousRadius = this.radius;
-            this._previousPosition.copyFrom(this.position);
-
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
+                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            } else {
+				this.position.copyFrom(this._newPosition);
+				Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+				this._viewMatrix.m[12] += this.targetScreenOffset.x;
+				this._viewMatrix.m[13] += this.targetScreenOffset.y;
+			}
 
             return this._viewMatrix;
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
 
-            if (collisionId != null || collisionId != undefined)
+            if (this.getScene().workerCollisions && this.checkCollisions) {
                 newPosition.multiplyInPlace(this._collider.radius);
-
-            if (newPosition.equalsWithEpsilon(this.position)) {
-                this.position.copyFrom(this._previousPosition);
-
-                this.alpha = this._previousAlpha;
-                this.beta = this._previousBeta;
-                this.radius = this._previousRadius;
-            } else {
-                if (this.onCollide && collidedMesh) {
-                    this.onCollide(collidedMesh);
-                }
-            }
+			}
+			
+			if(!collidedMesh) {
+				this._previousPosition.copyFrom(this.position);
+				this.setPosition(this._newPosition);
+				this.position.copyFrom(this._newPosition);
+			} else {
+				this.setPosition(this._previousPosition);
+				this.position.copyFrom(this._previousPosition);
+			
+				if (this.onCollide) {
+				   this.onCollide(collidedMesh);
+				} 
+			}
+			
+			Matrix.LookAtLHToRef(this.position, this._getTargetPosition(), this.upVector, this._viewMatrix);
+			this._viewMatrix.m[12] += this.targetScreenOffset.x;
+			this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
             this._collisionTriggered = false;
         }
