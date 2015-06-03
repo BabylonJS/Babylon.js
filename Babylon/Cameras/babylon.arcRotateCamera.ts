@@ -454,19 +454,20 @@
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
 
-            if (collisionId != null || collisionId != undefined)
+            if (this.getScene().workerCollisions) {
                 newPosition.multiplyInPlace(this._collider.radius);
+			}
 
-            if (newPosition.equalsWithEpsilon(this.position)) {
+            if (!newPosition.equalsWithEpsilon(this.position)) {
                 this.position.copyFrom(this._previousPosition);
 
                 this.alpha = this._previousAlpha;
                 this.beta = this._previousBeta;
                 this.radius = this._previousRadius;
-            } else {
-                if (this.onCollide && collidedMesh) {
-                    this.onCollide(collidedMesh);
-                }
+            } 
+			
+            if (collidedMesh && this.onCollide) {
+               this.onCollide(collidedMesh);
             }
 
             this._collisionTriggered = false;
