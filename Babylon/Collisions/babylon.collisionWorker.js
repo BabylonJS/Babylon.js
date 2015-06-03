@@ -112,6 +112,9 @@ var BABYLON;
                 if (len > 1 && !this.checkSubmeshCollision(subMesh))
                     continue;
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+                if (this.collider.collisionFound) {
+                    this.collider.collidedMesh = mesh.id;
+                }
             }
         };
         CollideWorker.prototype.collideForSubMesh = function (subMesh, transformMatrix, meshGeometry) {
@@ -147,8 +150,8 @@ var BABYLON;
         CollisionDetectorTransferable.prototype.onInit = function (payload) {
             this._collisionCache = new CollisionCache();
             var reply = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.INIT
+                error: 0 /* SUCCESS */,
+                taskType: 0 /* INIT */
             };
             postMessage(reply, undefined);
         };
@@ -164,8 +167,8 @@ var BABYLON;
                 }
             }
             var replay = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.UPDATE
+                error: 0 /* SUCCESS */,
+                taskType: 1 /* UPDATE */
             };
             postMessage(replay, undefined);
         };
@@ -182,8 +185,8 @@ var BABYLON;
                 newPosition: finalPosition.asArray()
             };
             var reply = {
-                error: BABYLON.WorkerReplyType.SUCCESS,
-                taskType: BABYLON.WorkerTaskType.COLLIDE,
+                error: 0 /* SUCCESS */,
+                taskType: 2 /* COLLIDE */,
                 payload: replyPayload
             };
             postMessage(reply, undefined);
@@ -191,7 +194,6 @@ var BABYLON;
         return CollisionDetectorTransferable;
     })();
     BABYLON.CollisionDetectorTransferable = CollisionDetectorTransferable;
-    //check if we are in a web worker, as this code should NOT run on the main UI thread
     try {
         if (self && self instanceof WorkerGlobalScope) {
             //Window hack to allow including babylonjs native code. the <any> is for typescript.
@@ -206,13 +208,13 @@ var BABYLON;
             var onNewMessage = function (event) {
                 var message = event.data;
                 switch (message.taskType) {
-                    case BABYLON.WorkerTaskType.INIT:
+                    case 0 /* INIT */:
                         collisionDetector.onInit(message.payload);
                         break;
-                    case BABYLON.WorkerTaskType.COLLIDE:
+                    case 2 /* COLLIDE */:
                         collisionDetector.onCollision(message.payload);
                         break;
-                    case BABYLON.WorkerTaskType.UPDATE:
+                    case 1 /* UPDATE */:
                         collisionDetector.onUpdate(message.payload);
                         break;
                 }
@@ -224,4 +226,3 @@ var BABYLON;
         console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionWorker.js.map
