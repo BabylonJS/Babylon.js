@@ -75,8 +75,8 @@
 
         private static _SUB_CAMERA_MODE_NONE = 0;
         private static _SUB_CAMERA_MODE_ANAGLYPH = 1;
-        private static _SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM = 2;
-        private static _SUB_CAMERA_MODE_VERTICAL_STEREOGRAM = 3;
+        private static _SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC = 2;
+        private static _SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC = 3;
         private static _SUB_CAMERA_MODE_VR = 4;
 
         private static _SUB_CAMERAID_A = 0;
@@ -106,12 +106,12 @@
             return Camera._SUB_CAMERA_MODE_ANAGLYPH;
         }
 
-        public static get SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM(): number {
-            return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+        public static get SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC(): number {
+            return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
         }
 
-        public static get SUB_CAMERA_MODE_VERTICAL_STEREOGRAM(): number {
-            return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM;
+        public static get SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC(): number {
+            return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC;
         }
 
         public static get SUB_CAMERA_MODE_VR(): number {
@@ -501,13 +501,13 @@
                     };
                     break;
 
-                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM:
-                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOGRAM:
-                    var isStereogramHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC:
+                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC:
+                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
                     postProcessA = new PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
 
-                    postProcessB = new StereogramInterlacePostProcess("st_interlace", camB, postProcessA, isStereogramHoriz);
+                    postProcessB = new StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
                     break;
 
                 case Camera.SUB_CAMERA_MODE_VR:

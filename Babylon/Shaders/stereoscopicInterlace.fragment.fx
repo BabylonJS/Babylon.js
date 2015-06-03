@@ -18,7 +18,7 @@ void main(void)
     vec3 frag1;
     vec3 frag2;
     
-#ifdef IS_STEREOGRAM_HORIZ
+#ifdef IS_STEREOSCOPIC_HORIZ
 	    useCamB = vUV.x > 0.5;
 	    texCoord1 = vec2(useCamB ? (vUV.x - 0.5) * 2.0 : vUV.x * 2.0, vUV.y);
 	    texCoord2 = vec2(texCoord1.x + stepSize.x, vUV.y);

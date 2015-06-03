@@ -6,11 +6,11 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
-    var StereogramInterlacePostProcess = (function (_super) {
-        __extends(StereogramInterlacePostProcess, _super);
-        function StereogramInterlacePostProcess(name, camB, postProcessA, isStereogramHoriz, samplingMode) {
+    var StereoscopicInterlacePostProcess = (function (_super) {
+        __extends(StereoscopicInterlacePostProcess, _super);
+        function StereoscopicInterlacePostProcess(name, camB, postProcessA, isStereoscopicHoriz, samplingMode) {
             var _this = this;
-            _super.call(this, name, "stereogramInterlace", ['stepSize'], ['camASampler'], 1, camB, samplingMode, camB.getScene().getEngine(), false, isStereogramHoriz ? "#define IS_STEREOGRAM_HORIZ 1" : undefined);
+            _super.call(this, name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, camB, samplingMode, camB.getScene().getEngine(), false, isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined);
             this._stepSize = new BABYLON.Vector2(1 / this.width, 1 / this.height);
             this.onSizeChanged = function () {
                 _this._stepSize = new BABYLON.Vector2(1 / _this.width, 1 / _this.height);
@@ -20,8 +20,8 @@ var BABYLON;
                 effect.setFloat2("stepSize", _this._stepSize.x, _this._stepSize.y);
             };
         }
-        return StereogramInterlacePostProcess;
+        return StereoscopicInterlacePostProcess;
     })(BABYLON.PostProcess);
-    BABYLON.StereogramInterlacePostProcess = StereogramInterlacePostProcess;
+    BABYLON.StereoscopicInterlacePostProcess = StereoscopicInterlacePostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.stereogramInterlacePostProcess.js.map
+//# sourceMappingURL=babylon.stereoscopicInterlacePostProcess.js.map
