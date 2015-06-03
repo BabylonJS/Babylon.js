@@ -176,6 +176,10 @@
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
+                this._updateSpatialParameters();
+                if (this.isPlaying) {
+                    this._soundSource.playbackRate.value = this._playbackRate;
+                }
             }
         }
 
@@ -185,7 +189,14 @@
                     this._panningModel = "HRTF";
                 }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
+                this._updateSpatialParameters();
+                this._soundPanner.connect(this._ouputAudioNode);
+                this._inputAudioNode = this._soundPanner;
+            }
+        }
 
+        private _updateSpatialParameters() {
+            if (this.spatialSound) {
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
                     this._soundPanner.distanceModel = "linear";
@@ -201,8 +212,6 @@
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
                     this._soundPanner.panningModel = this._panningModel;
                 }
-                this._soundPanner.connect(this._ouputAudioNode);
-                this._inputAudioNode = this._soundPanner;
             }
         }
 
@@ -354,7 +363,7 @@
         }
 
         public setVolume(newVolume: number, time?: number) {
-            if (Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
+            if (Engine.audioEngine.canUseWebAudio) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
@@ -380,8 +389,8 @@
         public attachToMesh(meshToConnectTo: AbstractMesh) {
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
-                this._createSpatialParameters();
                 this.spatialSound = true;
+                this._createSpatialParameters();
                 if (this.isPlaying && this.loop) {
                     this.stop();
                     this.play();
