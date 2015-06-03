@@ -7527,7 +7527,7 @@ var BABYLON;
     BABYLON.BoundingInfo = BoundingInfo;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.boundingInfo.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -8355,7 +8355,7 @@ var BABYLON;
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.abstractMesh.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -8434,7 +8434,7 @@ var BABYLON;
     BABYLON.Light = Light;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.light.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -8477,7 +8477,7 @@ var BABYLON;
     BABYLON.PointLight = PointLight;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.pointLight.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -8550,7 +8550,7 @@ var BABYLON;
     BABYLON.SpotLight = SpotLight;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.spotLight.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -8588,7 +8588,7 @@ var BABYLON;
     BABYLON.HemisphericLight = HemisphericLight;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.hemisphericLight.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -9557,7 +9557,7 @@ var BABYLON;
     BABYLON.CollisionCoordinatorLegacy = CollisionCoordinatorLegacy;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.collisionCoordinator.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -9711,16 +9711,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+                return Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC;
+                return Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
@@ -10000,9 +10000,9 @@ var BABYLON;
                         effect.setTextureFromPostProcess("leftSampler", postProcessA);
                     };
                     break;
-                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC:
-                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC:
-                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+                case Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC:
+                case Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC:
+                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
                     postProcessA = new BABYLON.PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
                     postProcessB = new BABYLON.StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
@@ -10069,8 +10069,8 @@ var BABYLON;
         Camera._FOVMODE_HORIZONTAL_FIXED = 1;
         Camera._SUB_CAMERA_MODE_NONE = 0;
         Camera._SUB_CAMERA_MODE_ANAGLYPH = 1;
-        Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC = 2;
-        Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC = 3;
+        Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC = 2;
+        Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC = 3;
         Camera._SUB_CAMERA_MODE_VR = 4;
         Camera._SUB_CAMERAID_A = 0;
         Camera._SUB_CAMERAID_B = 1;
@@ -10079,7 +10079,7 @@ var BABYLON;
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.camera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -10308,7 +10308,7 @@ var BABYLON;
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.targetCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -10535,7 +10535,7 @@ var BABYLON;
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.freeCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -10598,7 +10598,7 @@ var BABYLON;
     BABYLON.FollowCamera = FollowCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.followCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -10716,7 +10716,7 @@ var BABYLON;
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.touchCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -11175,7 +11175,7 @@ var BABYLON;
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.arcRotateCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -11248,7 +11248,7 @@ var BABYLON;
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.deviceOrientationCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -11789,7 +11789,7 @@ var BABYLON;
     BABYLON.Xbox360Pad = Xbox360Pad;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.gamepads.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -13932,7 +13932,7 @@ var BABYLON;
     BABYLON.VertexBuffer = VertexBuffer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.vertexBuffer.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -14086,7 +14086,7 @@ var BABYLON;
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.instancedMesh.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16058,7 +16058,7 @@ var BABYLON;
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.baseTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16273,7 +16273,7 @@ var BABYLON;
     BABYLON.Texture = Texture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.texture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16335,7 +16335,7 @@ var BABYLON;
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.cubeTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16503,7 +16503,7 @@ var BABYLON;
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.renderTargetTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16753,7 +16753,7 @@ var BABYLON;
     BABYLON.ProceduralTexture = ProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.proceduralTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16799,7 +16799,7 @@ var BABYLON;
     BABYLON.MirrorTexture = MirrorTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.mirrorTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16894,7 +16894,7 @@ var BABYLON;
     BABYLON.DynamicTexture = DynamicTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.dynamicTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16954,7 +16954,7 @@ var BABYLON;
     BABYLON.VideoTexture = VideoTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.videoTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -17080,7 +17080,7 @@ var BABYLON;
     BABYLON.CustomProceduralTexture = CustomProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.customProceduralTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -17976,7 +17976,7 @@ var BABYLON;
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.material.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -18590,7 +18590,7 @@ var BABYLON;
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.standardMaterial.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -21251,7 +21251,7 @@ var BABYLON;
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.animatable.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22096,7 +22096,7 @@ var BABYLON;
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.postProcessManager.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22114,7 +22114,7 @@ var BABYLON;
     BABYLON.PassPostProcess = PassPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.passPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22141,7 +22141,7 @@ var BABYLON;
     BABYLON.BlurPostProcess = BlurPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.blurPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22179,7 +22179,7 @@ var BABYLON;
     BABYLON.RefractionPostProcess = RefractionPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.refractionPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22197,7 +22197,7 @@ var BABYLON;
     BABYLON.BlackAndWhitePostProcess = BlackAndWhitePostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.blackAndWhitePostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22229,7 +22229,7 @@ var BABYLON;
     BABYLON.ConvolutionPostProcess = ConvolutionPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.convolutionPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22252,7 +22252,7 @@ var BABYLON;
     BABYLON.FilterPostProcess = FilterPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.filterPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -22278,7 +22278,7 @@ var BABYLON;
     BABYLON.FxaaPostProcess = FxaaPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.fxaaPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -24346,7 +24346,7 @@ var BABYLON;
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.csg.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -24654,7 +24654,7 @@ var BABYLON;
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoystick.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -24700,7 +24700,7 @@ var BABYLON;
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoysticksCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -25988,7 +25988,7 @@ var BABYLON;
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.mesh.vertexData.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -26025,7 +26025,7 @@ var BABYLON;
     BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.anaglyphCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -26585,7 +26585,7 @@ var BABYLON;
     BABYLON.PostProcessRenderPipelineManager = PostProcessRenderPipelineManager;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.postProcessRenderPipelineManager.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -26685,7 +26685,7 @@ var BABYLON;
     BABYLON.BoundingBoxRenderer = BoundingBoxRenderer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.boundingBoxRenderer.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -27163,7 +27163,7 @@ var BABYLON;
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.actionManager.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -27229,7 +27229,7 @@ var BABYLON;
     BABYLON.InterpolateValueAction = InterpolateValueAction;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.interpolateValueAction.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -27435,7 +27435,7 @@ var BABYLON;
     BABYLON.StopSoundAction = StopSoundAction;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.directActions.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28047,7 +28047,7 @@ var BABYLON;
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.geometry.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28088,7 +28088,7 @@ var BABYLON;
     BABYLON.GroundMesh = GroundMesh;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.groundMesh.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28459,7 +28459,7 @@ var BABYLON;
     BABYLON.AssetsManager = AssetsManager;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.assetsManager.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28508,7 +28508,7 @@ var BABYLON;
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.vrDeviceOrientationCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28583,7 +28583,7 @@ var BABYLON;
     BABYLON.WebVRFreeCamera = WebVRFreeCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.webVRCamera.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -30068,7 +30068,7 @@ var BABYLON;
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.debugLayer.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -30123,7 +30123,7 @@ var BABYLON;
     BABYLON.RawTexture = RawTexture;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.rawTexture.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31260,7 +31260,7 @@ var BABYLON;
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.depthRenderer.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31454,7 +31454,7 @@ var BABYLON;
     BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31741,7 +31741,7 @@ var BABYLON;
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.volumetricLightScatteringPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31968,7 +31968,7 @@ var BABYLON;
 //  For explanations on color grading, see here:
 //      http://udn.epicgames.com/Three/ColorGrading.html
 //
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31994,7 +31994,7 @@ var BABYLON;
     BABYLON.ColorCorrectionPostProcess = ColorCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.colorCorrectionPostProcess.js.map
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -32006,7 +32006,7 @@ var BABYLON;
         __extends(StereoscopicFreeCamera, _super);
         function StereoscopicFreeCamera(name, position, eyeSpace, isVertical, scene) {
             _super.call(this, name, position, scene);
-            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC, eyeSpace);
+            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC, eyeSpace);
         }
         return StereoscopicFreeCamera;
     })(BABYLON.FreeCamera);
@@ -32015,7 +32015,7 @@ var BABYLON;
         __extends(StereoscopicArcRotateCamera, _super);
         function StereoscopicArcRotateCamera(name, alpha, beta, radius, target, eyeSpace, isVertical, scene) {
             _super.call(this, name, alpha, beta, radius, target, scene);
-            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC, eyeSpace);
+            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC, eyeSpace);
         }
         return StereoscopicArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
@@ -32024,7 +32024,7 @@ var BABYLON;
         __extends(StereoscopicGamepadCamera, _super);
         function StereoscopicGamepadCamera(name, position, eyeSpace, isVertical, scene) {
             _super.call(this, name, position, scene);
-            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC, eyeSpace);
+            this.setSubCameraMode(isVertical ? BABYLON.Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC : BABYLON.Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC, eyeSpace);
         }
         return StereoscopicGamepadCamera;
     })(BABYLON.GamepadCamera);

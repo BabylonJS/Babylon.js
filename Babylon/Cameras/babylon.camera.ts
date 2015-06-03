@@ -75,8 +75,8 @@
 
         private static _SUB_CAMERA_MODE_NONE = 0;
         private static _SUB_CAMERA_MODE_ANAGLYPH = 1;
-        private static _SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC = 2;
-        private static _SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC = 3;
+        private static _SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC = 2;
+        private static _SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC = 3;
         private static _SUB_CAMERA_MODE_VR = 4;
 
         private static _SUB_CAMERAID_A = 0;
@@ -106,12 +106,12 @@
             return Camera._SUB_CAMERA_MODE_ANAGLYPH;
         }
 
-        public static get SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC(): number {
-            return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+        public static get SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC(): number {
+            return Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
         }
 
-        public static get SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC(): number {
-            return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC;
+        public static get SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC(): number {
+            return Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC;
         }
 
         public static get SUB_CAMERA_MODE_VR(): number {
@@ -501,9 +501,9 @@
                     };
                     break;
 
-                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC:
-                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC:
-                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+                case Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC:
+                case Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC:
+                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
                     postProcessA = new PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
 
