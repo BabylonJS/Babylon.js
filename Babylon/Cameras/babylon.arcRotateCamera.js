@@ -48,18 +48,21 @@ var BABYLON;
                 if (_this.getScene().workerCollisions && _this.checkCollisions) {
                     newPosition.multiplyInPlace(_this._collider.radius);
                 }
-                if (!newPosition.equalsWithEpsilon(_this.position)) {
+                if (!collidedMesh) {
+                    _this._previousPosition.copyFrom(_this.position);
+                    _this.setPosition(_this._newPosition);
+                    _this.position.copyFrom(_this._newPosition);
+                }
+                else {
+                    _this.setPosition(_this._previousPosition);
                     _this.position.copyFrom(_this._previousPosition);
-                    _this.alpha = _this._previousAlpha;
-                    _this.beta = _this._previousBeta;
-                    _this.radius = _this._previousRadius;
+                    if (_this.onCollide) {
+                        _this.onCollide(collidedMesh);
+                    }
                 }
                 BABYLON.Matrix.LookAtLHToRef(_this.position, _this._getTargetPosition(), _this.upVector, _this._viewMatrix);
                 _this._viewMatrix.m[12] += _this.targetScreenOffset.x;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
-                if (collidedMesh && _this.onCollide) {
-                    _this.onCollide(collidedMesh);
-                }
                 _this._collisionTriggered = false;
             };
             if (!this.target) {
@@ -361,23 +364,19 @@ var BABYLON;
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
             var target = this._getTargetPosition();
-            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-            if (this.checkCollisions) {
+            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
             else {
+                this.position.copyFrom(this._newPosition);
                 BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
-            //TODO the definition "previous" is not entirely true.
-            this._previousAlpha = this.alpha;
-            this._previousBeta = this.beta;
-            this._previousRadius = this.radius;
-            this._previousPosition.copyFrom(this.position);
             return this._viewMatrix;
         };
         ArcRotateCamera.prototype.zoomOn = function (meshes) {
