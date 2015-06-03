@@ -45,7 +45,7 @@ var BABYLON;
             this._newPosition = BABYLON.Vector3.Zero();
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
-                if (_this.getScene().workerCollisions) {
+                if (_this.getScene().workerCollisions && _this.checkCollisions) {
                     newPosition.multiplyInPlace(_this._collider.radius);
                 }
                 if (!newPosition.equalsWithEpsilon(_this.position)) {
@@ -54,6 +54,9 @@ var BABYLON;
                     _this.beta = _this._previousBeta;
                     _this.radius = _this._previousRadius;
                 }
+                BABYLON.Matrix.LookAtLHToRef(_this.position, _this._getTargetPosition(), _this.upVector, _this._viewMatrix);
+                _this._viewMatrix.m[12] += _this.targetScreenOffset.x;
+                _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 if (collidedMesh && _this.onCollide) {
                     _this.onCollide(collidedMesh);
                 }
@@ -365,13 +368,16 @@ var BABYLON;
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+            else {
+                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+                this._viewMatrix.m[12] += this.targetScreenOffset.x;
+                this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            }
+            //TODO the definition "previous" is not entirely true.
             this._previousAlpha = this.alpha;
             this._previousBeta = this.beta;
             this._previousRadius = this.radius;
             this._previousPosition.copyFrom(this.position);
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
             return this._viewMatrix;
         };
         ArcRotateCamera.prototype.zoomOn = function (meshes) {
