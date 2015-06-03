@@ -150,8 +150,8 @@ var BABYLON;
         CollisionDetectorTransferable.prototype.onInit = function (payload) {
             this._collisionCache = new CollisionCache();
             var reply = {
-                error: 0 /* SUCCESS */,
-                taskType: 0 /* INIT */
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.INIT
             };
             postMessage(reply, undefined);
         };
@@ -167,8 +167,8 @@ var BABYLON;
                 }
             }
             var replay = {
-                error: 0 /* SUCCESS */,
-                taskType: 1 /* UPDATE */
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.UPDATE
             };
             postMessage(replay, undefined);
         };
@@ -185,8 +185,8 @@ var BABYLON;
                 newPosition: finalPosition.asArray()
             };
             var reply = {
-                error: 0 /* SUCCESS */,
-                taskType: 2 /* COLLIDE */,
+                error: BABYLON.WorkerReplyType.SUCCESS,
+                taskType: BABYLON.WorkerTaskType.COLLIDE,
                 payload: replyPayload
             };
             postMessage(reply, undefined);
@@ -194,6 +194,7 @@ var BABYLON;
         return CollisionDetectorTransferable;
     })();
     BABYLON.CollisionDetectorTransferable = CollisionDetectorTransferable;
+    //check if we are in a web worker, as this code should NOT run on the main UI thread
     try {
         if (self && self instanceof WorkerGlobalScope) {
             //Window hack to allow including babylonjs native code. the <any> is for typescript.
@@ -208,13 +209,13 @@ var BABYLON;
             var onNewMessage = function (event) {
                 var message = event.data;
                 switch (message.taskType) {
-                    case 0 /* INIT */:
+                    case BABYLON.WorkerTaskType.INIT:
                         collisionDetector.onInit(message.payload);
                         break;
-                    case 2 /* COLLIDE */:
+                    case BABYLON.WorkerTaskType.COLLIDE:
                         collisionDetector.onCollision(message.payload);
                         break;
-                    case 1 /* UPDATE */:
+                    case BABYLON.WorkerTaskType.UPDATE:
                         collisionDetector.onUpdate(message.payload);
                         break;
                 }
@@ -226,3 +227,4 @@ var BABYLON;
         console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.collisionWorker.js.map

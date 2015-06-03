@@ -8,11 +8,11 @@ var BABYLON;
             this._audioEngine = BABYLON.Engine.audioEngine;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain = this._audioEngine.audioContext.createGain();
-                this._trackGain.connect(this._audioEngine.masterGain);
+                this._outputAudioNode = this._audioEngine.audioContext.createGain();
+                this._outputAudioNode.connect(this._audioEngine.masterGain);
                 if (options) {
                     if (options.volume) {
-                        this._trackGain.gain.value = options.volume;
+                        this._outputAudioNode.gain.value = options.volume;
                     }
                     if (options.mainTrack) {
                         this._isMainTrack = options.mainTrack;
@@ -32,13 +32,13 @@ var BABYLON;
                 while (this.soundCollection.length) {
                     this.soundCollection[0].dispose();
                 }
-                this._trackGain.disconnect();
-                this._trackGain = null;
+                this._outputAudioNode.disconnect();
+                this._outputAudioNode = null;
             }
         };
         SoundTrack.prototype.AddSound = function (sound) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                sound.connectToSoundTrackAudioNode(this._trackGain);
+                sound.connectToSoundTrackAudioNode(this._outputAudioNode);
             }
             if (sound.soundTrackId) {
                 if (sound.soundTrackId === -1) {
@@ -59,7 +59,7 @@ var BABYLON;
         };
         SoundTrack.prototype.setVolume = function (newVolume) {
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain.gain.value = newVolume;
+                this._outputAudioNode.gain.value = newVolume;
             }
         };
         SoundTrack.prototype.switchPanningModelToHRTF = function () {
@@ -82,8 +82,8 @@ var BABYLON;
             }
             this._connectedAnalyser = analyser;
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this._trackGain, this._audioEngine.masterGain);
+                this._outputAudioNode.disconnect();
+                this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, this._audioEngine.masterGain);
             }
         };
         return SoundTrack;
