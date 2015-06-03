@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -152,16 +152,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+                return Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC;
+                return Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
@@ -441,9 +441,9 @@ var BABYLON;
                         effect.setTextureFromPostProcess("leftSampler", postProcessA);
                     };
                     break;
-                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC:
-                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC:
-                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
+                case Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC:
+                case Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC:
+                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
                     postProcessA = new BABYLON.PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
                     postProcessB = new BABYLON.StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
@@ -510,8 +510,8 @@ var BABYLON;
         Camera._FOVMODE_HORIZONTAL_FIXED = 1;
         Camera._SUB_CAMERA_MODE_NONE = 0;
         Camera._SUB_CAMERA_MODE_ANAGLYPH = 1;
-        Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC = 2;
-        Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC = 3;
+        Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC = 2;
+        Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC = 3;
         Camera._SUB_CAMERA_MODE_VR = 4;
         Camera._SUB_CAMERAID_A = 0;
         Camera._SUB_CAMERAID_B = 1;
