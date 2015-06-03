@@ -323,7 +323,7 @@ var BABYLON;
             }
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
-                this.alpha += this.inertialAlphaOffset;
+                this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
                 this.inertialAlphaOffset *= this.inertia;
@@ -337,17 +337,31 @@ var BABYLON;
                     this.inertialRadiusOffset = 0;
             }
             // Limits
+            if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
+                if (this.beta > Math.PI) {
+                    this.beta = this.beta - (2 * Math.PI);
+                }
+            }
+            else {
+                if (this.beta < this.lowerBetaLimit) {
+                    this.beta = this.lowerBetaLimit;
+                }
+            }
+            if (this.upperBetaLimit === null || this.upperBetaLimit === undefined) {
+                if (this.beta < -Math.PI) {
+                    this.beta = this.beta + (2 * Math.PI);
+                }
+            }
+            else {
+                if (this.beta > this.upperBetaLimit) {
+                    this.beta = this.upperBetaLimit;
+                }
+            }
             if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
                 this.alpha = this.lowerAlphaLimit;
             }
             if (this.upperAlphaLimit && this.alpha > this.upperAlphaLimit) {
                 this.alpha = this.upperAlphaLimit;
-            }
-            if (this.lowerBetaLimit && this.beta < this.lowerBetaLimit) {
-                this.beta = this.lowerBetaLimit;
-            }
-            if (this.upperBetaLimit && this.beta > this.upperBetaLimit) {
-                this.beta = this.upperBetaLimit;
             }
             if (this.lowerRadiusLimit && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
@@ -375,19 +389,24 @@ var BABYLON;
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
             var target = this._getTargetPosition();
-            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
-            if (this.getScene().collisionsEnabled && this.checkCollisions) {
+            target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
+            if (this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
+                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
-            else {
-                this.position.copyFrom(this._newPosition);
-                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
-                this._viewMatrix.m[12] += this.targetScreenOffset.x;
-                this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            var up = this.upVector.clone();
+            if (this.beta < 0) {
+                up = up.negate();
             }
+            BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+            this._previousAlpha = this.alpha;
+            this._previousBeta = this.beta;
+            this._previousRadius = this.radius;
+            this._previousPosition.copyFrom(this.position);
+            this._viewMatrix.m[12] += this.targetScreenOffset.x;
+            this._viewMatrix.m[13] += this.targetScreenOffset.y;
             return this._viewMatrix;
         };
         ArcRotateCamera.prototype.zoomOn = function (meshes) {

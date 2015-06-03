@@ -152,16 +152,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+                return Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VERTICAL_STEREOGRAM", {
+        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM;
+                return Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC;
             },
             enumerable: true,
             configurable: true
@@ -441,12 +441,12 @@ var BABYLON;
                         effect.setTextureFromPostProcess("leftSampler", postProcessA);
                     };
                     break;
-                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM:
-                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOGRAM:
-                    var isStereogramHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM;
+                case Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC:
+                case Camera.SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC:
+                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC;
                     postProcessA = new BABYLON.PassPostProcess("passthru", 1.0, camA);
                     camA.isIntermediate = true;
-                    postProcessB = new BABYLON.StereogramInterlacePostProcess("st_interlace", camB, postProcessA, isStereogramHoriz);
+                    postProcessB = new BABYLON.StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
                     break;
                 case Camera.SUB_CAMERA_MODE_VR:
                     metrics = metrics || VRCameraMetrics.GetDefault();
@@ -510,8 +510,8 @@ var BABYLON;
         Camera._FOVMODE_HORIZONTAL_FIXED = 1;
         Camera._SUB_CAMERA_MODE_NONE = 0;
         Camera._SUB_CAMERA_MODE_ANAGLYPH = 1;
-        Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOGRAM = 2;
-        Camera._SUB_CAMERA_MODE_VERTICAL_STEREOGRAM = 3;
+        Camera._SUB_CAMERA_MODE_HORIZONTAL_STEREOSCOPIC = 2;
+        Camera._SUB_CAMERA_MODE_VERTICAL_STEREOSCOPIC = 3;
         Camera._SUB_CAMERA_MODE_VR = 4;
         Camera._SUB_CAMERAID_A = 0;
         Camera._SUB_CAMERAID_B = 1;
