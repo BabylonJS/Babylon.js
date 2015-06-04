@@ -20,8 +20,8 @@
         public keysRight = [39];
         public zoomOnFactor = 1;
         public targetScreenOffset = Vector2.Zero();
-        public pinchInwards: boolean = true;
-
+        public pinchInwards = true;
+        public allowUpsideDown = true;
 
         private _keys = [];
         private _viewMatrix = new Matrix();
@@ -376,7 +376,7 @@
 
             // Limits
             if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
-                if (this.beta > Math.PI) {
+                if (this.allowUpsideDown && this.beta > Math.PI) {
                     this.beta = this.beta - (2 * Math.PI);
                 }
             } else {
@@ -386,7 +386,7 @@
             }
 
             if (this.upperBetaLimit === null || this.upperBetaLimit === undefined) {
-                if (this.beta < -Math.PI) {
+                if (this.allowUpsideDown && this.beta < -Math.PI) {
                     this.beta = this.beta + (2 * Math.PI);
                 }
             } else {
@@ -401,7 +401,6 @@
             if (this.upperAlphaLimit && this.alpha > this.upperAlphaLimit) {
                 this.alpha = this.upperAlphaLimit;
             }
-
 
             if (this.lowerRadiusLimit && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
@@ -443,9 +442,10 @@
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
-
-            var up = this.upVector.clone();
-            if (this.beta < 0) {
+            
+            var up = this.upVector;
+            if (this.allowUpsideDown && this.beta < 0) {
+                var up = up.clone();
                 up = up.negate();
             }
 
