@@ -35,7 +35,7 @@ var BABYLON;
             this.zoomOnFactor = 1;
             this.targetScreenOffset = BABYLON.Vector2.Zero();
             this.pinchInwards = true;
-            this.allowUpsideDown = false;
+            this.allowUpsideDown = true;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             this.checkCollisions = false;
