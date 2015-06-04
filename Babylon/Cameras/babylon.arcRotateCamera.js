@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -35,6 +35,7 @@ var BABYLON;
             this.zoomOnFactor = 1;
             this.targetScreenOffset = BABYLON.Vector2.Zero();
             this.pinchInwards = true;
+            this.allowUpsideDown = false;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             this.checkCollisions = false;
@@ -338,7 +339,7 @@ var BABYLON;
             }
             // Limits
             if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
-                if (this.beta > Math.PI) {
+                if (this.allowUpsideDown && this.beta > Math.PI) {
                     this.beta = this.beta - (2 * Math.PI);
                 }
             }
@@ -348,7 +349,7 @@ var BABYLON;
                 }
             }
             if (this.upperBetaLimit === null || this.upperBetaLimit === undefined) {
-                if (this.beta < -Math.PI) {
+                if (this.allowUpsideDown && this.beta < -Math.PI) {
                     this.beta = this.beta + (2 * Math.PI);
                 }
             }
@@ -396,8 +397,9 @@ var BABYLON;
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             }
-            var up = this.upVector.clone();
-            if (this.beta < 0) {
+            var up = this.upVector;
+            if (this.allowUpsideDown && this.beta < 0) {
+                var up = up.clone();
                 up = up.negate();
             }
             BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
