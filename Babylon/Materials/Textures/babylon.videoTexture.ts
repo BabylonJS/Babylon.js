@@ -16,11 +16,11 @@
 
             this.video.addEventListener("canplaythrough", () => {
                 if (Tools.IsExponantOfTwo(this.video.videoWidth) && Tools.IsExponantOfTwo(this.video.videoHeight)) {
-                    this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-                    this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+                    this.wrapU = Texture.WRAP_ADDRESSMODE;
+                    this.wrapV = Texture.WRAP_ADDRESSMODE;
                 } else {
-                    this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    this.wrapU = Texture.CLAMP_ADDRESSMODE;
+                    this.wrapV = Texture.CLAMP_ADDRESSMODE;
                     generateMipMaps = false;
                 }
 

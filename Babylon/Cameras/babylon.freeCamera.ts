@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class FreeCamera extends TargetCamera {
-        public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+        public ellipsoid = new Vector3(0.5, 1, 0.5);
         public keysUp = [38];
         public keysDown = [40];
         public keysLeft = [37];
@@ -13,9 +13,9 @@
         private _keys = [];
         private _collider = new Collider();
         private _needMoveForGravity = false;
-        private _oldPosition = BABYLON.Vector3.Zero();
-        private _diffPosition = BABYLON.Vector3.Zero();
-        private _newPosition = BABYLON.Vector3.Zero();
+        private _oldPosition = Vector3.Zero();
+        private _diffPosition = Vector3.Zero();
+        private _newPosition = Vector3.Zero();
         private _attachedElement: HTMLElement;
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
@@ -138,8 +138,8 @@
                 this._reset = () => {
                     this._keys = [];
                     previousPosition = null;
-                    this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-                    this.cameraRotation = new BABYLON.Vector2(0, 0);
+                    this.cameraDirection = new Vector3(0, 0, 0);
+                    this.cameraRotation = new Vector2(0, 0);
                 };
             }
 
@@ -181,7 +181,7 @@
             var globalPosition: Vector3;
 
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
+                globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
             } else {
                 globalPosition = this.position;
             }
@@ -222,8 +222,8 @@
 
         public _checkInputs(): void {
             if (!this._localDirection) {
-                this._localDirection = BABYLON.Vector3.Zero();
-                this._transformedDirection = BABYLON.Vector3.Zero();
+                this._localDirection = Vector3.Zero();
+                this._transformedDirection = Vector3.Zero();
             }
 
             // Keyboard
@@ -242,7 +242,7 @@
                 }
 
                 this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
-                BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
                 this.cameraDirection.addInPlace(this._transformedDirection);
             }
 

@@ -212,15 +212,15 @@
         }
         
         public _getVRViewMatrix(): Matrix {
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
 
-            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._vrActualUp);
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._vrActualUp);
 
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
 
-            BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._vrActualUp, this._vrWorkMatrix);
+            Matrix.LookAtLHToRef(this.position, this._currentTarget, this._vrActualUp, this._vrWorkMatrix);
 
             this._vrWorkMatrix.multiplyToRef(this._vrPreViewMatrix, this._viewMatrix);
             return this._viewMatrix;
@@ -231,7 +231,7 @@
          * needs to be overridden, so sub has required properties to be copied
          */
         public getSubCamera(name : string, isA : boolean) : Camera{
-            var subCamera = new BABYLON.TargetCamera(name, this.position.clone(), this.getScene());
+            var subCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             if (this._subCameraMode === Camera.SUB_CAMERA_MODE_VR){
                 subCamera._vrActualUp = new Vector3(0, 0, 0);
                 subCamera._getViewMatrix = subCamera._getVRViewMatrix;
@@ -267,14 +267,14 @@
         
         private _getSubCamPosition(halfSpace: number, result: Vector3) {
             if (!this._subCamTransformMatrix){
-                this._subCamTransformMatrix = new BABYLON.Matrix();
+                this._subCamTransformMatrix = new Matrix();
             }
             var target = this.getTarget();
-            BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(halfSpace), this._subCamTransformMatrix);
+            Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(Matrix.RotationY(halfSpace), this._subCamTransformMatrix);
 
-            this._subCamTransformMatrix = this._subCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
+            this._subCamTransformMatrix = this._subCamTransformMatrix.multiply(Matrix.Translation(target.x, target.y, target.z));
 
-            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._subCamTransformMatrix, result);
+            Vector3.TransformCoordinatesToRef(this.position, this._subCamTransformMatrix, result);
         }
     }
 } 

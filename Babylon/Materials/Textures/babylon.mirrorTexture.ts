@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class MirrorTexture extends RenderTargetTexture {
-        public mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
+        public mirrorPlane = new Plane(0, 1, 0, 1);
 
-        private _transformMatrix = BABYLON.Matrix.Zero();
-        private _mirrorMatrix = BABYLON.Matrix.Zero();
+        private _transformMatrix = Matrix.Zero();
+        private _mirrorMatrix = Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
             super(name, size, scene, generateMipMaps, true);
 
             this.onBeforeRender = () => {
-                BABYLON.Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
+                Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
 
                 this._mirrorMatrix.multiplyToRef(this._savedViewMatrix, this._transformMatrix);
@@ -32,7 +32,7 @@
 
         public clone(): MirrorTexture {
             var textureSize = this.getSize();
-            var newTexture = new BABYLON.MirrorTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new MirrorTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

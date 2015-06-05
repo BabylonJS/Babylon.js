@@ -114,10 +114,10 @@
             var newGamepad;
 
             if ((<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
-                newGamepad = new BABYLON.Xbox360Pad(gamepad.id, gamepad.index, gamepad);
+                newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad);
             }
             else {
-                newGamepad = new BABYLON.GenericPad(gamepad.id, gamepad.index, gamepad);
+                newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
             }
             this.babylonGamepads.push(newGamepad);
             return newGamepad;

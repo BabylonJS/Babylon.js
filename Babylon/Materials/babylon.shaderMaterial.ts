@@ -10,7 +10,7 @@
         private _vectors2 = new Array<Vector2>();
         private _vectors3 = new Array<Vector3>();
         private _matrices = new Array<Matrix>();
-        private _cachedWorldViewMatrix = new BABYLON.Matrix();
+        private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
         constructor(name: string, scene: Scene, shaderPath: any, options: any) {

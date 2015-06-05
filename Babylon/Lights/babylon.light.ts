@@ -85,7 +85,7 @@
 
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._parentedWorldMatrix) {
-                    this._parentedWorldMatrix = BABYLON.Matrix.Identity();
+                    this._parentedWorldMatrix = Matrix.Identity();
                 }
 
                 worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);

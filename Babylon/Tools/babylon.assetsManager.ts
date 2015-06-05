@@ -21,7 +21,7 @@
         }
 
         public run(scene: Scene, onSuccess: () => void, onError: () => void) {
-            BABYLON.SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
+            SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
                 (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
                     this.loadedMeshes = meshes;
                     this.loadedParticleSystems = particleSystems;
@@ -173,7 +173,7 @@
                 onError();
             };
 
-            this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onError);
+            this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onError);
         }
     }
 
