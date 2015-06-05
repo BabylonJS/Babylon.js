@@ -3,6 +3,7 @@ var uglify = require("gulp-uglify");
 var typescript = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
 var srcToVariable = require("./gulp-srcToVariable");
+var addModuleExports = require("./gulp-addModuleExports");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
@@ -77,6 +78,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
     )
     .pipe(concat(config.build.minNoWorkerFilename))
     .pipe(cleants())
+    .pipe(addModuleExports("BABYLON"))
     .pipe(uglify())
     .pipe(gulp.dest(config.build.outputDirectory))
 });
@@ -89,6 +91,7 @@ gulp.task("build", ["workers", "shaders"], function () {
     )
     .pipe(concat(config.build.filename))
     .pipe(cleants())
+    .pipe(addModuleExports("BABYLON"))
     .pipe(gulp.dest(config.build.outputDirectory))
     .pipe(rename(config.build.minFilename))
     .pipe(uglify())
