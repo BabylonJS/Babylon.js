@@ -16,7 +16,7 @@ module BABYLON {
         private _registerFunc;
         private _audioEngine: AudioEngine;
 
-        constructor(scene: BABYLON.Scene) {
+        constructor(scene: Scene) {
             this._scene = scene;
             this._audioEngine = Engine.audioEngine;
             if (this._audioEngine.canUseWebAudio) {
