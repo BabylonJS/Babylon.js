@@ -5,8 +5,16 @@ module.exports = function (varName) {
   return through.obj(function (file, enc, cb) {
 
     var moduleExportsAddition = 
-      '\nif (module && module.exports) {\n' +
+      '\nif (window.module && module.exports) {\n' +
       '    module.exports = ' + varName + ';\n' +
+      '};\n';
+      
+      var extendsAddition = 
+      'var __extends = (this && this.__extends) || function (d, b) {\n' +
+        'for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];\n' +
+        'function __() { this.constructor = d; }\n' +
+        '__.prototype = b.prototype;\n' +
+        'd.prototype = new __();\n' +
       '};\n';
 
     if (file.isNull()) {
@@ -20,7 +28,7 @@ module.exports = function (varName) {
     }
 
     try {
-      file.contents = new Buffer(String(file.contents).concat(moduleExportsAddition));
+      file.contents = new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportsAddition));
       this.push(file);
 
     } catch (err) {

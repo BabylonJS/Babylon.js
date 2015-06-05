@@ -10,11 +10,14 @@ var rename = require("gulp-rename");
 var cleants = require('gulp-clean-ts-extends');
 var changed = require('gulp-changed');
 var runSequence = require('run-sequence');
+var replace = require("gulp-replace")
 
 var config = require("./config.json");
 
 var shadersStream;
 var workersStream;
+
+var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g
 
 //function to convert the shaders' filenames to variable names.
 function shadersName(filename) {
@@ -78,6 +81,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
     )
     .pipe(concat(config.build.minNoWorkerFilename))
     .pipe(cleants())
+    .pipe(replace(extendsSearchRegex, ""))
     .pipe(addModuleExports("BABYLON"))
     .pipe(uglify())
     .pipe(gulp.dest(config.build.outputDirectory))
@@ -91,6 +95,7 @@ gulp.task("build", ["workers", "shaders"], function () {
     )
     .pipe(concat(config.build.filename))
     .pipe(cleants())
+    .pipe(replace(extendsSearchRegex, ""))
     .pipe(addModuleExports("BABYLON"))
     .pipe(gulp.dest(config.build.outputDirectory))
     .pipe(rename(config.build.minFilename))

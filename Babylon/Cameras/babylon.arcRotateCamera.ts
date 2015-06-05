@@ -375,6 +375,12 @@
             }
 
             // Limits
+            this._checkLimits();
+
+            super._checkInputs();
+        }
+
+        private _checkLimits() {
             if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
                 if (this.allowUpsideDown && this.beta > Math.PI) {
                     this.beta = this.beta - (2 * Math.PI);
@@ -408,8 +414,6 @@
             if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
             }
-
-            super._checkInputs();
         }
 
         public setPosition(position: Vector3): void {
@@ -425,6 +429,8 @@
 
             // Beta
             this.beta = Math.acos(radiusv3.y / this.radius);
+
+            this._checkLimits();
         }
 
         public _getViewMatrix(): Matrix {
@@ -443,14 +449,14 @@
                 this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
             } else {
                 this.position.copyFrom(this._newPosition);
-				
-				var up = this.upVector;
-				if (this.allowUpsideDown && this.beta < 0) {
-					var up = up.clone();
-					up = up.negate();
-				}
-				
-                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+
+                var up = this.upVector;
+                if (this.allowUpsideDown && this.beta < 0) {
+                    var up = up.clone();
+                    up = up.negate();
+                }
+
+                BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
@@ -465,8 +471,6 @@
 
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
-                this.setPosition(this._newPosition);
-                this.position.copyFrom(this._newPosition);
             } else {
                 this.setPosition(this.position);
 
@@ -475,13 +479,22 @@
                 }
             }
 
-			var up = this.upVector;
-			if (this.allowUpsideDown && this.beta < 0) {
-				var up = up.clone();
-				up = up.negate();
-			}
-			
-            Matrix.LookAtLHToRef(this.position, this._getTargetPosition(), up, this._viewMatrix);
+            // Recompute because of constraints
+            var cosa = Math.cos(this.alpha);
+            var sina = Math.sin(this.alpha);
+            var cosb = Math.cos(this.beta);
+            var sinb = Math.sin(this.beta);
+            var target = this._getTargetPosition();
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            this.position.copyFrom(this._newPosition);
+
+            var up = this.upVector;
+            if (this.allowUpsideDown && this.beta < 0) {
+                var up = up.clone();
+                up = up.negate();
+            }
+
+            Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
             this._viewMatrix.m[12] += this.targetScreenOffset.x;
             this._viewMatrix.m[13] += this.targetScreenOffset.y;
 

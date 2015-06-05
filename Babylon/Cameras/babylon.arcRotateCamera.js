@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -51,8 +51,6 @@ var BABYLON;
                 }
                 if (!collidedMesh) {
                     _this._previousPosition.copyFrom(_this.position);
-                    _this.setPosition(_this._newPosition);
-                    _this.position.copyFrom(_this._newPosition);
                 }
                 else {
                     _this.setPosition(_this.position);
@@ -60,12 +58,20 @@ var BABYLON;
                         _this.onCollide(collidedMesh);
                     }
                 }
+                // Recompute because of constraints
+                var cosa = Math.cos(_this.alpha);
+                var sina = Math.sin(_this.alpha);
+                var cosb = Math.cos(_this.beta);
+                var sinb = Math.sin(_this.beta);
+                var target = _this._getTargetPosition();
+                target.addToRef(new BABYLON.Vector3(_this.radius * cosa * sinb, _this.radius * cosb, _this.radius * sina * sinb), _this._newPosition);
+                _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
                 if (_this.allowUpsideDown && _this.beta < 0) {
                     var up = up.clone();
                     up = up.negate();
                 }
-                BABYLON.Matrix.LookAtLHToRef(_this.position, _this._getTargetPosition(), up, _this._viewMatrix);
+                BABYLON.Matrix.LookAtLHToRef(_this.position, target, up, _this._viewMatrix);
                 _this._viewMatrix.m[12] += _this.targetScreenOffset.x;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
@@ -101,7 +107,11 @@ var BABYLON;
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
+            return this._cache.target.equals(this._getTargetPosition())
+                && this._cache.alpha === this.alpha
+                && this._cache.beta === this.beta
+                && this._cache.radius === this.radius
+                && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         };
         // Methods
         ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault) {
@@ -196,7 +206,10 @@ var BABYLON;
                     }
                 };
                 this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index === -1) {
                             _this._keys.push(evt.keyCode);
@@ -209,7 +222,10 @@ var BABYLON;
                     }
                 };
                 this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index >= 0) {
                             _this._keys.splice(index, 1);
@@ -300,6 +316,7 @@ var BABYLON;
             if (this._collisionTriggered) {
                 return;
             }
+            // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
@@ -331,6 +348,10 @@ var BABYLON;
                     this.inertialRadiusOffset = 0;
             }
             // Limits
+            this._checkLimits();
+            _super.prototype._checkInputs.call(this);
+        };
+        ArcRotateCamera.prototype._checkLimits = function () {
             if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
                 if (this.allowUpsideDown && this.beta > Math.PI) {
                     this.beta = this.beta - (2 * Math.PI);
@@ -363,7 +384,6 @@ var BABYLON;
             if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
             }
-            _super.prototype._checkInputs.call(this);
         };
         ArcRotateCamera.prototype.setPosition = function (position) {
             var radiusv3 = position.subtract(this._getTargetPosition());
@@ -375,6 +395,7 @@ var BABYLON;
             }
             // Beta
             this.beta = Math.acos(radiusv3.y / this.radius);
+            this._checkLimits();
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
@@ -397,7 +418,7 @@ var BABYLON;
                     var up = up.clone();
                     up = up.negate();
                 }
-                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+                BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
@@ -450,3 +471,4 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.arcRotateCamera.js.map

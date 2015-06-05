@@ -585,7 +585,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.1.0 beta";
+                return "2.1.0";
             },
             enumerable: true,
             configurable: true
