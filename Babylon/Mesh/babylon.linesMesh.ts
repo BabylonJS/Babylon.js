@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class LinesMesh extends Mesh {
-        public color = new BABYLON.Color3(1, 1, 1);
+        public color = new Color3(1, 1, 1);
         public alpha = 1;
 
         private _colorShader: ShaderMaterial;

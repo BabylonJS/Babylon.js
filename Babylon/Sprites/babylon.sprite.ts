@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Sprite {
         public position: Vector3;
-        public color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+        public color = new Color4(1.0, 1.0, 1.0, 1.0);
         public width = 1.0;
         public height = 1.0;
         public angle = 0;
@@ -35,7 +35,7 @@
 
             this._manager.sprites.push(this);
 
-            this.position = BABYLON.Vector3.Zero();
+            this.position = Vector3.Zero();
         }
 
         public playAnimation(from: number, to: number, loop: boolean, delay: number): void {

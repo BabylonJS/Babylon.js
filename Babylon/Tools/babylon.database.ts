@@ -17,7 +17,7 @@ module BABYLON {
 
         constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {
             this.callbackManifestChecked = callbackManifestChecked;
-            this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
+            this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
             this.enableSceneOffline = false;
             this.enableTexturesOffline = false;
@@ -38,7 +38,7 @@ module BABYLON {
 
         static ReturnFullUrlLocation = (url: string): string => {
             if (url.indexOf("http:/") === -1) {
-                return (BABYLON.Database.parseURL(window.location.href) + url);
+                return (Database.parseURL(window.location.href) + url);
             }
             else {
                 return url;

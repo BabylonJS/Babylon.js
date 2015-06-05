@@ -466,14 +466,14 @@
         // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
         // This dedicated positionFunction computes new mesh positions according to the given mesh type.
         public updateMeshPositions(positionFunction, computeNormals: boolean = true): void {
-            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
             positionFunction(positions);
-            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+            this.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
             if (computeNormals) {
                 var indices = this.getIndices();
-                var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-                this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+                var normals = this.getVerticesData(VertexBuffer.NormalKind);
+                VertexData.ComputeNormals(positions, indices, normals);
+                this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
             }
         }
 
@@ -1205,7 +1205,7 @@
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (ribbonInstance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -1443,15 +1443,15 @@
                     return pointCap;
                 };
                 switch (cap) {
-                    case BABYLON.Mesh.NO_CAP:
+                    case Mesh.NO_CAP:
                         break;
-                    case BABYLON.Mesh.CAP_START:
+                    case Mesh.CAP_START:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         break;
-                    case BABYLON.Mesh.CAP_END:
+                    case Mesh.CAP_END:
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
-                    case BABYLON.Mesh.CAP_ALL:
+                    case Mesh.CAP_ALL:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
@@ -1489,7 +1489,7 @@
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
-            var Y = BABYLON.Axis.Y;
+            var Y = Axis.Y;
             var shapeLathe = new Array<Vector3>();
 
             // first rotatable point
@@ -1630,15 +1630,15 @@
                     return pointCap;
                 };
                 switch (cap) {
-                    case BABYLON.Mesh.NO_CAP:
+                    case Mesh.NO_CAP:
                         break;
-                    case BABYLON.Mesh.CAP_START:
+                    case Mesh.CAP_START:
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         break;
-                    case BABYLON.Mesh.CAP_END:
+                    case Mesh.CAP_END:
                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;
-                    case BABYLON.Mesh.CAP_ALL:
+                    case Mesh.CAP_ALL:
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;

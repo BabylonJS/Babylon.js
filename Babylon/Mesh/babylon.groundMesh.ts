@@ -2,7 +2,7 @@
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
-        private _worldInverse = new BABYLON.Matrix();
+        private _worldInverse = new Matrix();
         public _subdivisions: number;
 
         constructor(name: string, scene: Scene) {
@@ -19,7 +19,7 @@
         }
 
         public getHeightAtCoordinates(x: number, z: number): number {
-            var ray = new Ray(new Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
+            var ray = new Ray(new Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new Vector3(0, -1, 0));
 
             this.getWorldMatrix().invertToRef(this._worldInverse);
 

@@ -15,7 +15,7 @@
         }
 
         private _checkWithEpsilon(value: number): number {
-            return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
+            return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;
         }
 
         public runOneStep(delta: number): void {
@@ -46,7 +46,7 @@
 
 
                 if (!registeredMesh.mesh.rotationQuaternion) {
-                    registeredMesh.mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                    registeredMesh.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                 }
 
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
@@ -66,23 +66,23 @@
             mesh.computeWorldMatrix(true);
 
             switch (impostor) {
-                case BABYLON.PhysicsEngine.SphereImpostor:
+                case PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
 
                     return this._createSphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2, mesh, options);
-                case BABYLON.PhysicsEngine.BoxImpostor:
+                case PhysicsEngine.BoxImpostor:
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
                     return this._createBox(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z), mesh, options);
-                case BABYLON.PhysicsEngine.PlaneImpostor:
+                case PhysicsEngine.PlaneImpostor:
                     return this._createPlane(mesh, options);
-                case BABYLON.PhysicsEngine.MeshImpostor:
-                    var rawVerts = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                case PhysicsEngine.MeshImpostor:
+                    var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
 
                     return this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
@@ -128,9 +128,9 @@
 
             // Get vertices
             for (var i = 0; i < rawVerts.length; i += 3) {
-                var transformed = BABYLON.Vector3.Zero();
+                var transformed = Vector3.Zero();
 
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(rawVerts[i], rawVerts[i + 1], rawVerts[i + 2], mesh.getWorldMatrix(), transformed);
+                Vector3.TransformNormalFromFloatsToRef(rawVerts[i], rawVerts[i + 1], rawVerts[i + 2], mesh.getWorldMatrix(), transformed);
                 verts.push(new CANNON.Vec3(transformed.x, transformed.z, transformed.y));
             }
 
@@ -183,7 +183,7 @@
 
             if (mesh.rotationQuaternion) {
                 initialRotation = mesh.rotationQuaternion.clone();
-                mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
             }
 
             // The delta between the mesh position and the mesh bounding box center

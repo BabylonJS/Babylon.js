@@ -62,7 +62,7 @@ module BABYLON {
 
             // collections of pointers
             this._touches = new SmartCollection();
-            this.deltaPosition = BABYLON.Vector3.Zero();
+            this.deltaPosition = Vector3.Zero();
 
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -106,10 +106,10 @@ module BABYLON {
 
             this._joystickPointerID = -1;
             // current joystick position
-            this._joystickPointerPos = new BABYLON.Vector2(0, 0);
+            this._joystickPointerPos = new Vector2(0, 0);
             // origin joystick position
-            this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
-            this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
+            this._joystickPointerStartPos = new Vector2(0, 0);
+            this._deltaJoystickVector = new Vector2(0, 0);
 
             VirtualJoystick.vjCanvas.addEventListener('pointerdown',(evt) => {
                 this._onPointerDown(evt);
