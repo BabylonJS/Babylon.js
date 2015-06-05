@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -1027,7 +1027,7 @@ var BABYLON;
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (ribbonInstance.sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -1243,15 +1243,15 @@ var BABYLON;
                     return pointCap;
                 };
                 switch (cap) {
-                    case BABYLON.Mesh.NO_CAP:
+                    case Mesh.NO_CAP:
                         break;
-                    case BABYLON.Mesh.CAP_START:
+                    case Mesh.CAP_START:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         break;
-                    case BABYLON.Mesh.CAP_END:
+                    case Mesh.CAP_END:
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
-                    case BABYLON.Mesh.CAP_ALL:
+                    case Mesh.CAP_ALL:
                         shapePaths.unshift(capPath(shapePaths[0]));
                         shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
                         break;
@@ -1400,15 +1400,15 @@ var BABYLON;
                     return pointCap;
                 };
                 switch (cap) {
-                    case BABYLON.Mesh.NO_CAP:
+                    case Mesh.NO_CAP:
                         break;
-                    case BABYLON.Mesh.CAP_START:
+                    case Mesh.CAP_START:
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         break;
-                    case BABYLON.Mesh.CAP_END:
+                    case Mesh.CAP_END:
                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;
-                    case BABYLON.Mesh.CAP_ALL:
+                    case Mesh.CAP_ALL:
                         circlePaths.unshift(capPath(tessellation + 1, 0));
                         circlePaths.push(capPath(tessellation + 1, path.length - 1));
                         break;

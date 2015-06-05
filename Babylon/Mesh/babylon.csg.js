@@ -304,12 +304,12 @@ var BABYLON;
         };
         // Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
         CSG.FromPolygons = function (polygons) {
-            var csg = new BABYLON.CSG();
+            var csg = new CSG();
             csg.polygons = polygons;
             return csg;
         };
         CSG.prototype.clone = function () {
-            var csg = new BABYLON.CSG();
+            var csg = new CSG();
             csg.polygons = this.polygons.map(function (p) { return p.clone(); });
             csg.copyTransformAttributes(this);
             return csg;
