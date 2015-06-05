@@ -34,17 +34,17 @@ module BABYLON {
 
     export class CollideWorker {
 
-        private collisionsScalingMatrix = BABYLON.Matrix.Zero();
-        private collisionTranformationMatrix = BABYLON.Matrix.Zero();
+        private collisionsScalingMatrix = Matrix.Zero();
+        private collisionTranformationMatrix = Matrix.Zero();
 
-        constructor(public collider: BABYLON.Collider, private _collisionCache: CollisionCache, private finalPosition: BABYLON.Vector3) {
+        constructor(public collider: Collider, private _collisionCache: CollisionCache, private finalPosition: Vector3) {
 
         }
 
-        public collideWithWorld(position: BABYLON.Vector3, velocity: BABYLON.Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
+        public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
 
             //TODO CollisionsEpsilon should be defined here and not in the engine.
-            var closeDistance = /*BABYLON.Engine.CollisionsEpsilon * 10.0*/ 0.01;
+            var closeDistance = /*Engine.CollisionsEpsilon * 10.0*/ 0.01;
 
             //is initializing here correct? A quick look - looks like it is fine.
             if (this.collider.retry >= maximumRetry) {
@@ -89,20 +89,20 @@ module BABYLON {
 
         private checkCollision(mesh: SerializedMesh) {
 
-            if (!this.collider._canDoCollision(BABYLON.Vector3.FromArray(mesh.sphereCenter), mesh.sphereRadius, BABYLON.Vector3.FromArray(mesh.boxMinimum), BABYLON.Vector3.FromArray(mesh.boxMaximum))) {
+            if (!this.collider._canDoCollision(Vector3.FromArray(mesh.sphereCenter), mesh.sphereRadius, Vector3.FromArray(mesh.boxMinimum), Vector3.FromArray(mesh.boxMaximum))) {
                 return;
             };
 
             // Transformation matrix
-            BABYLON.Matrix.ScalingToRef(1.0 / this.collider.radius.x, 1.0 / this.collider.radius.y, 1.0 / this.collider.radius.z, this.collisionsScalingMatrix);
-            var worldFromCache = BABYLON.Matrix.FromArray(mesh.worldMatrixFromCache);
+            Matrix.ScalingToRef(1.0 / this.collider.radius.x, 1.0 / this.collider.radius.y, 1.0 / this.collider.radius.z, this.collisionsScalingMatrix);
+            var worldFromCache = Matrix.FromArray(mesh.worldMatrixFromCache);
             worldFromCache.multiplyToRef(this.collisionsScalingMatrix, this.collisionTranformationMatrix);
 
             this.processCollisionsForSubMeshes(this.collisionTranformationMatrix, mesh);
             //return colTransMat;
         }
 
-        private processCollisionsForSubMeshes(transformMatrix: BABYLON.Matrix, mesh: SerializedMesh): void {
+        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void {
             var len: number;
             var subMeshes;
 
@@ -143,11 +143,11 @@ module BABYLON {
             }
         }
 
-        private collideForSubMesh(subMesh: SerializedSubMesh, transformMatrix: BABYLON.Matrix, meshGeometry: SerializedGeometry): void {
+        private collideForSubMesh(subMesh: SerializedSubMesh, transformMatrix: Matrix, meshGeometry: SerializedGeometry): void {
             if (!meshGeometry['positionsArray']) {
                 meshGeometry['positionsArray'] = [];
                 for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
-                    var p = BABYLON.Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
+                    var p = Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
                     meshGeometry['positionsArray'].push(p);
                 }
             }
@@ -159,7 +159,7 @@ module BABYLON {
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
                 for (var i = start; i < end; i++) {
-                    subMesh['_lastColliderWorldVertices'].push(BABYLON.Vector3.TransformCoordinates(meshGeometry['positionsArray'][i], transformMatrix));
+                    subMesh['_lastColliderWorldVertices'].push(Vector3.TransformCoordinates(meshGeometry['positionsArray'][i], transformMatrix));
                 }
             }        
 
@@ -169,7 +169,7 @@ module BABYLON {
         }
 
         private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {
-            return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
+            return this.collider._canDoCollision(Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, Vector3.FromArray(subMesh.boxMinimum), Vector3.FromArray(subMesh.boxMaximum));
         }
     }
 
@@ -211,13 +211,13 @@ module BABYLON {
         }
 
         public onCollision(payload: CollidePayload) {
-            var finalPosition = BABYLON.Vector3.Zero();
+            var finalPosition = Vector3.Zero();
             //create a new collider
-            var collider = new BABYLON.Collider();
-            collider.radius = BABYLON.Vector3.FromArray(payload.collider.radius);
+            var collider = new Collider();
+            collider.radius = Vector3.FromArray(payload.collider.radius);
 
             var colliderWorker = new CollideWorker(collider, this._collisionCache, finalPosition);
-            colliderWorker.collideWithWorld(BABYLON.Vector3.FromArray(payload.collider.position), BABYLON.Vector3.FromArray(payload.collider.velocity), payload.maximumRetry, payload.excludedMeshUniqueId);
+            colliderWorker.collideWithWorld(Vector3.FromArray(payload.collider.position), Vector3.FromArray(payload.collider.velocity), payload.maximumRetry, payload.excludedMeshUniqueId);
             var replyPayload: CollisionReplyPayload = {
                 collidedMeshUniqueId: <any> collider.collidedMesh,
                 collisionId: payload.collisionId,

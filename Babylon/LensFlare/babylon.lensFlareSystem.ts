@@ -74,12 +74,12 @@
         public computeEffectivePosition(globalViewport: Viewport): boolean {
             var position = this.getEmitterPosition();
 
-            position = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), this._scene.getTransformMatrix(), globalViewport);
+            position = Vector3.Project(position, Matrix.Identity(), this._scene.getTransformMatrix(), globalViewport);
 
             this._positionX = position.x;
             this._positionY = position.y;
 
-            position = BABYLON.Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
+            position = Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
 
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
@@ -101,7 +101,7 @@
             var distance = direction.length();
             direction.normalize();
 
-            var ray = new BABYLON.Ray(this._scene.activeCamera.position, direction);
+            var ray = new Ray(this._scene.activeCamera.position, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
 
             return !pickInfo.hit || pickInfo.distance > distance;
@@ -169,7 +169,7 @@
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
+            engine.setAlphaMode(Engine.ALPHA_ADD);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
@@ -186,7 +186,7 @@
                 var cx = 2 * (x / globalViewport.width) - 1.0;
                 var cy = 1.0 - 2 * (y / globalViewport.height);
 
-                var viewportMatrix = BABYLON.Matrix.FromValues(
+                var viewportMatrix = Matrix.FromValues(
                     cw / 2, 0, 0, 0,
                     0, ch / 2, 0, 0,
                     0, 0, 1, 0,
@@ -205,7 +205,7 @@
             }
 
             engine.setDepthBuffer(true);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
             return true;
         }
 

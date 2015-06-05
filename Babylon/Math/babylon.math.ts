@@ -1080,16 +1080,16 @@
                 z = Math.sqrt(1 / (1 + t * t));
             }
 
-            w2 = new BABYLON.Vector3(x, y, z);
-            v2 = BABYLON.Vector3.Cross(w2, u1);   // v2 image of v1 through rotation around u1
-            cross = BABYLON.Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
-            if (BABYLON.Vector3.Dot(u1, cross) < 0) {
+            w2 = new Vector3(x, y, z);
+            v2 = Vector3.Cross(w2, u1);   // v2 image of v1 through rotation around u1
+            cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            if (Vector3.Dot(u1, cross) < 0) {
                 sign = 1;
             }
 
-            dot = BABYLON.Vector3.Dot(w, w2);
+            dot = Vector3.Dot(w, w2);
             pitch = Math.acos(dot) * sign;      
-            if (BABYLON.Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
+            if (Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
                 pitch = Math.PI + pitch;
                 v2 = v2.scaleInPlace(-1);
                 w2 = w2.scaleInPlace(-1);
@@ -1099,17 +1099,17 @@
             // step 3 : rotate around v2
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
             sign = -1;
-            cross = BABYLON.Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
-            if (BABYLON.Vector3.Dot(cross, Y) < 0) {
+            cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            if (Vector3.Dot(cross, Y) < 0) {
                 sign = 1;
             }
-            dot = BABYLON.Vector3.Dot(u1, X);
+            dot = Vector3.Dot(u1, X);
             yaw = - Math.acos(dot) * sign;         // negative : plane zOx oriented clockwise
             if (dot < 0 && nbRevert < 2) {
                 yaw = Math.PI + yaw;
             }
 
-            return new BABYLON.Vector3(pitch, yaw, roll);
+            return new Vector3(pitch, yaw, roll);
         }
     }
 
@@ -3571,7 +3571,7 @@
             var hermite = new Array<Vector3>();
             var step = 1 / nbPoints;
             for(var i = 0; i <= nbPoints; i++) {
-                hermite.push(BABYLON.Vector3.Hermite(p1, t1, p2, t2, i * step));
+                hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
             }
             return new Curve3(hermite);
         }
@@ -3667,7 +3667,7 @@
             Vector3.TransformCoordinatesToRef = <any>Vector3.TransformCoordinatesToRefSIMD;
             Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
 
-            Object.defineProperty(BABYLON.Vector3.prototype, "x", {
+            Object.defineProperty(Vector3.prototype, "x", {
                 get: function () { return this._data[0]; },
                 set: function (value: number) {
                     if (!this._data) {
@@ -3677,14 +3677,14 @@
                 }
             });
 
-            Object.defineProperty(BABYLON.Vector3.prototype, "y", {
+            Object.defineProperty(Vector3.prototype, "y", {
                 get: function () { return this._data[1]; },
                 set: function (value: number) {
                     this._data[1] = value;
                 }
             });
 
-            Object.defineProperty(BABYLON.Vector3.prototype, "z", {
+            Object.defineProperty(Vector3.prototype, "z", {
                 get: function () { return this._data[2]; },
                 set: function (value: number) {
                     this._data[2] = value;

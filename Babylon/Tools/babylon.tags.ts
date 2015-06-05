@@ -32,7 +32,7 @@
             if (!obj._tags) {
                 return false;
             }
-            return !BABYLON.Tools.IsEmpty(obj._tags);
+            return !Tools.IsEmpty(obj._tags);
         }
 
         public static GetTags(obj: any): any {

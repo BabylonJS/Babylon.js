@@ -27,8 +27,8 @@
         public boundingSphere: BoundingSphere;
 
         constructor(public minimum: Vector3, public maximum: Vector3) {
-            this.boundingBox = new BABYLON.BoundingBox(minimum, maximum);
-            this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
+            this.boundingBox = new BoundingBox(minimum, maximum);
+            this.boundingSphere = new BoundingSphere(minimum, maximum);
         }
 
         // Methods
@@ -73,11 +73,11 @@
                 return false;
             }
 
-            if (!BABYLON.BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
+            if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
                 return false;
             }
 
-            if (!BABYLON.BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox)) {
+            if (!BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox)) {
                 return false;
             }
 
@@ -94,15 +94,15 @@
             if (!axisOverlap(box1.directions[0], box0, box1)) return false;
             if (!axisOverlap(box1.directions[1], box0, box1)) return false;
             if (!axisOverlap(box1.directions[2], box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) return false;
 
             return true;
         }

@@ -6,8 +6,8 @@
         private _system: LensFlareSystem;
 
         constructor(public size: number, public position: number, color, imgUrl: string, system: LensFlareSystem) {
-            this.color = color || new BABYLON.Color3(1, 1, 1);
-            this.texture = imgUrl ? new BABYLON.Texture(imgUrl, system.getScene(), true) : null;
+            this.color = color || new Color3(1, 1, 1);
+            this.texture = imgUrl ? new Texture(imgUrl, system.getScene(), true) : null;
             this._system = system;
 
             system.lensFlares.push(this);

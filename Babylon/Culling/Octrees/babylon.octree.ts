@@ -13,7 +13,7 @@
 
         constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, public maxDepth = 2) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selectionContent = new BABYLON.SmartArray<T>(1024);
+            this._selectionContent = new SmartArray<T>(1024);
             this._creationFunc = creationFunc;
         }
 
@@ -78,7 +78,7 @@
 
         public static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void {
             target.blocks = new Array<OctreeBlock<T>>();
-            var blockSize = new BABYLON.Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+            var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
 
             // Segmenting space
             for (var x = 0; x < 2; x++) {
@@ -87,7 +87,7 @@
                         var localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
                         var localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
 
-                        var block = new BABYLON.OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
+                        var block = new OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
                         block.addEntries(entries);
                         target.blocks.push(block);
                     }

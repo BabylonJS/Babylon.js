@@ -1,16 +1,16 @@
 ﻿module BABYLON {
     export class SoundTrack {
-        private _audioEngine: BABYLON.AudioEngine;
+        private _audioEngine: AudioEngine;
         private _outputAudioNode: GainNode;
         private _inputAudioNode: AudioNode;
         private _trackConvolver: ConvolverNode;
-        private _scene: BABYLON.Scene;
+        private _scene: Scene;
         public id: number = -1;
-        public soundCollection: Array<BABYLON.Sound>;
+        public soundCollection: Array<Sound>;
         private _isMainTrack: boolean = false;
         private _connectedAnalyser: Analyser;
 
-        constructor(scene: BABYLON.Scene, options?: any) {
+        constructor(scene: Scene, options?: any) {
             this._scene = scene;
             this._audioEngine = Engine.audioEngine;
             this.soundCollection = new Array();
@@ -42,7 +42,7 @@
             }
         }
 
-        public AddSound(sound: BABYLON.Sound) {
+        public AddSound(sound: Sound) {
             if (Engine.audioEngine.canUseWebAudio) {
                 sound.connectToSoundTrackAudioNode(this._outputAudioNode);
             }
@@ -59,7 +59,7 @@
             sound.soundTrackId = this.id;
         }
 
-        public RemoveSound(sound: BABYLON.Sound) {
+        public RemoveSound(sound: Sound) {
             var index = this.soundCollection.indexOf(sound);
             if (index !== -1) {
                 this.soundCollection.splice(index, 1);
