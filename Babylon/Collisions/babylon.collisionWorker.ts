@@ -138,7 +138,7 @@ module BABYLON {
 
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
 				if (this.collider.collisionFound) {
-					this.collider.collidedMesh = <any> mesh.id;
+					this.collider.collidedMesh = <any> mesh.uniqueId;
 				}
             }
         }
