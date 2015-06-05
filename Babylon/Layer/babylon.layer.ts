@@ -13,9 +13,9 @@
         private _effect: Effect;
 
         constructor(public name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4) {
-            this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
+            this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
-            this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
+            this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
             this._scene = scene;
             this._scene.layers.push(this);
@@ -70,9 +70,9 @@
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
 
             // Draw order
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(Engine.ALPHA_COMBINE);
             engine.draw(true, 0, 6);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {

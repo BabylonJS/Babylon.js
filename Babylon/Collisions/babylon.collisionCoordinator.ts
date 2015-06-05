@@ -4,7 +4,7 @@ module BABYLON {
     export var CollisionWorker = "";
 
     export interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
         init(scene: Scene): void;
         destroy(): void;
 
@@ -111,7 +111,7 @@ module BABYLON {
         private _scaledPosition = Vector3.Zero();
         private _scaledVelocity = Vector3.Zero();
 
-        private _collisionsCallbackArray: Array<(collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void>;
+        private _collisionsCallbackArray: Array<(collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void>;
 
         private _init: boolean;
         private _runningUpdated: number;
@@ -135,7 +135,7 @@ module BABYLON {
             this._toRemoveMeshesArray = [];
         }
 
-        public static SerializeMesh = function (mesh: BABYLON.AbstractMesh): SerializedMesh {
+        public static SerializeMesh = function (mesh: AbstractMesh): SerializedMesh {
             var submeshes: Array<SerializedSubMesh> = [];
             if (mesh.subMeshes) {
                 submeshes = mesh.subMeshes.map(function (sm, idx) {
@@ -154,7 +154,7 @@ module BABYLON {
                 });
             }
 
-            var geometryId = (<BABYLON.Mesh>mesh).geometry ? (<BABYLON.Mesh>mesh).geometry.id : null;
+            var geometryId = (<Mesh>mesh).geometry ? (<Mesh>mesh).geometry.id : null;
 
             return {
                 uniqueId: mesh.uniqueId,
@@ -171,17 +171,17 @@ module BABYLON {
             }
         }
 
-        public static SerializeGeometry = function (geometry: BABYLON.Geometry): SerializedGeometry {
+        public static SerializeGeometry = function (geometry: Geometry): SerializedGeometry {
             return {
                 id: geometry.id,
-                positions: new Float32Array(geometry.getVerticesData(BABYLON.VertexBuffer.PositionKind) || []),
-                normals: new Float32Array(geometry.getVerticesData(BABYLON.VertexBuffer.NormalKind) || []),
+                positions: new Float32Array(geometry.getVerticesData(VertexBuffer.PositionKind) || []),
+                normals: new Float32Array(geometry.getVerticesData(VertexBuffer.NormalKind) || []),
                 indices: new Int32Array(geometry.getIndices() || []),
-                //uvs: new Float32Array(geometry.getVerticesData(BABYLON.VertexBuffer.UVKind) || [])
+                //uvs: new Float32Array(geometry.getVerticesData(VertexBuffer.UVKind) || [])
             }
         }
 
-        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
             if (!this._init) return;
             if (this._collisionsCallbackArray[collisionIndex] || this._collisionsCallbackArray[collisionIndex + 100000]) return;
 
@@ -342,7 +342,7 @@ module BABYLON {
 
         private _finalPosition = Vector3.Zero();
 
-        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: BABYLON.Vector3, collidedMesh?: BABYLON.AbstractMesh) => void, collisionIndex: number): void {
+        public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
 			collider.collidedMesh = null;

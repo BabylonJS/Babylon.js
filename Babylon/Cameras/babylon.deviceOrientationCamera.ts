@@ -67,10 +67,10 @@ module BABYLON {
             this.cameraRotation.y -= this._offsetX / this.angularSensibility;
 
             var speed = this._computeLocalCameraSpeed();
-            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+            var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
 
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-            this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+            Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+            this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
 
             super._checkInputs();
         }
