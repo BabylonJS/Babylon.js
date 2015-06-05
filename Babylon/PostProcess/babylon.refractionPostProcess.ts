@@ -5,7 +5,7 @@
             super(name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode, engine, reusable);
 
             this.onActivate = (cam: Camera) => {
-                this._refRexture = this._refRexture || new BABYLON.Texture(refractionTextureUrl, cam.getScene());
+                this._refRexture = this._refRexture || new Texture(refractionTextureUrl, cam.getScene());
             };
 
             this.onApply = (effect: Effect) => {

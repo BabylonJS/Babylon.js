@@ -17,7 +17,7 @@
                 'Scale',
                 'ScaleIn',
                 'HmdWarpParam'
-            ], null, vrMetrics.postProcessScaleFactor, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, null, null);
+            ], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE, null, null);
 
             this._isRightEye = isRightEye;
             this._distortionFactors = vrMetrics.distortionK;
@@ -26,9 +26,9 @@
 
             this.onSizeChanged = () => {
                 this.aspectRatio = this.width * .5 / this.height;
-                this._scaleIn = new BABYLON.Vector2(2, 2 / this.aspectRatio);
-                this._scaleFactor = new BABYLON.Vector2(.5 * (1 / this._postProcessScaleFactor), .5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
-                this._lensCenter = new BABYLON.Vector2(this._isRightEye ? 0.5 - this._lensCenterOffset * 0.5 : 0.5 + this._lensCenterOffset * 0.5, 0.5);
+                this._scaleIn = new Vector2(2, 2 / this.aspectRatio);
+                this._scaleFactor = new Vector2(.5 * (1 / this._postProcessScaleFactor), .5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
+                this._lensCenter = new Vector2(this._isRightEye ? 0.5 - this._lensCenterOffset * 0.5 : 0.5 + this._lensCenterOffset * 0.5, 0.5);
             };
             this.onApply = (effect: Effect) => {
                 effect.setFloat2("LensCenter", this._lensCenter.x, this._lensCenter.y);

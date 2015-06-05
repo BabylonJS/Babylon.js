@@ -291,7 +291,7 @@
 				meshRotationQuaternion: Quaternion,
 				meshScaling: Vector3;
 				
-            if (mesh instanceof BABYLON.Mesh) {
+            if (mesh instanceof Mesh) {
                 mesh.computeWorldMatrix(true);
                 matrix = mesh.getWorldMatrix();
                 meshPosition = mesh.position.clone();
@@ -305,9 +305,9 @@
             }
 
             var indices = mesh.getIndices(),
-                positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind),
-                normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind),
-                uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+                positions = mesh.getVerticesData(VertexBuffer.PositionKind),
+                normals = mesh.getVerticesData(VertexBuffer.NormalKind),
+                uvs = mesh.getVerticesData(VertexBuffer.UVKind);
 
             var subMeshes = mesh.subMeshes;
 
@@ -315,11 +315,11 @@
                 for (var i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
                     vertices = [];
                     for (var j = 0; j < 3; j++) {
-                        var sourceNormal = new BABYLON.Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
-                        uv = new BABYLON.Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
-                        var sourcePosition = new BABYLON.Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
-                        position = BABYLON.Vector3.TransformCoordinates(sourcePosition, matrix);
-                        normal = BABYLON.Vector3.TransformNormal(sourceNormal, matrix);
+                        var sourceNormal = new Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
+                        uv = new Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
+                        var sourcePosition = new Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
+                        position = Vector3.TransformCoordinates(sourcePosition, matrix);
+                        normal = Vector3.TransformNormal(sourceNormal, matrix);
 
                         vertex = new Vertex(position, normal, uv);
                         vertices.push(vertex);
@@ -348,13 +348,13 @@
 
         // Construct a BABYLON.CSG solid from a list of `BABYLON.CSG.Polygon` instances.
         private static FromPolygons(polygons: Polygon[]): CSG {
-            var csg = new BABYLON.CSG();
+            var csg = new CSG();
             csg.polygons = polygons;
             return csg;
         }
 
         public clone(): CSG {
-            var csg = new BABYLON.CSG();
+            var csg = new CSG();
             csg.polygons = this.polygons.map(p => p.clone());
             csg.copyTransformAttributes(this);
             return csg;
@@ -479,14 +479,14 @@
             var matrix = this.matrix.clone();
             matrix.invert();
 
-            var mesh = new BABYLON.Mesh(name, scene),
+            var mesh = new Mesh(name, scene),
                 vertices = [],
                 indices = [],
                 normals = [],
                 uvs = [],
-                vertex = BABYLON.Vector3.Zero(),
-                normal = BABYLON.Vector3.Zero(),
-                uv = BABYLON.Vector2.Zero(),
+                vertex = Vector3.Zero(),
+                normal = Vector3.Zero(),
+                uv = Vector2.Zero(),
                 polygons = this.polygons,
                 polygonIndices = [0, 0, 0], polygon,
                 vertice_dict = {},
@@ -533,8 +533,8 @@
                         vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
                         normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
                         uv.copyFrom(polygon.vertices[polygonIndices[k]].uv);
-                        var localVertex = BABYLON.Vector3.TransformCoordinates(vertex, matrix);
-                        var localNormal = BABYLON.Vector3.TransformNormal(normal, matrix);
+                        var localVertex = Vector3.TransformCoordinates(vertex, matrix);
+                        var localNormal = Vector3.TransformNormal(normal, matrix);
 
                         vertex_idx = vertice_dict[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
 
@@ -562,9 +562,9 @@
 
             }
 
-            mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, vertices);
-            mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
-            mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
+            mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
+            mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+            mesh.setVerticesData(VertexBuffer.UVKind, uvs);
             mesh.setIndices(indices);
 
             if (keepSubMeshes) {
@@ -578,7 +578,7 @@
                     materialMaxIndex = -1;
                     for (var sm in subMesh_dict[m]) {
                         subMesh_obj = subMesh_dict[m][sm];
-                        BABYLON.SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, mesh);
+                        SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, mesh);
                         materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex);
                     }
                     materialIndexOffset += ++materialMaxIndex;
