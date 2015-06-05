@@ -435,27 +435,25 @@
             var sinb = Math.sin(this.beta);
 
             var target = this._getTargetPosition();
-            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-            if (this.checkCollisions) {
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
-                this.getScene().collisionCoordinator.getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            } else {
+                this.position.copyFrom(this._newPosition);
+				
+				var up = this.upVector;
+				if (this.allowUpsideDown && this.beta < 0) {
+					var up = up.clone();
+					up = up.negate();
+				}
+				
+                BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+                this._viewMatrix.m[12] += this.targetScreenOffset.x;
+                this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
-            
-            var up = this.upVector;
-            if (this.allowUpsideDown && this.beta < 0) {
-                var up = up.clone();
-                up = up.negate();
-            }
-
-            Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
-            this._previousAlpha = this.alpha;
-            this._previousBeta = this.beta;
-            this._previousRadius = this.radius;
-            this._previousPosition.copyFrom(this.position);
-            this._viewMatrix.m[12] += this.targetScreenOffset.x;
-            this._viewMatrix.m[13] += this.targetScreenOffset.y;
             return this._viewMatrix;
         }
 
@@ -470,15 +468,20 @@
                 this.setPosition(this._newPosition);
                 this.position.copyFrom(this._newPosition);
             } else {
-                this.setPosition(this._previousPosition);
-                this.position.copyFrom(this._previousPosition);
+                this.setPosition(this.position);
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);
                 }
             }
 
-            Matrix.LookAtLHToRef(this.position, this._getTargetPosition(), this.upVector, this._viewMatrix);
+			var up = this.upVector;
+			if (this.allowUpsideDown && this.beta < 0) {
+				var up = up.clone();
+				up = up.negate();
+			}
+			
+            Matrix.LookAtLHToRef(this.position, this._getTargetPosition(), up, this._viewMatrix);
             this._viewMatrix.m[12] += this.targetScreenOffset.x;
             this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
