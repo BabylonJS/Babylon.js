@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -452,7 +452,7 @@ var BABYLON;
          */
         ArcRotateCamera.prototype.getSubCamera = function (name, isA) {
             var alphaSpace = this._subCamHalfSpace * (isA ? -1 : 1);
-            return new BABYLON.ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
+            return new ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
         };
         /**
          * @override

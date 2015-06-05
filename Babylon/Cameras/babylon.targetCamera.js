@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -184,7 +184,7 @@ var BABYLON;
          * needs to be overridden, so sub has required properties to be copied
          */
         TargetCamera.prototype.getSubCamera = function (name, isA) {
-            var subCamera = new BABYLON.TargetCamera(name, this.position.clone(), this.getScene());
+            var subCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             if (this._subCameraMode === BABYLON.Camera.SUB_CAMERA_MODE_VR) {
                 subCamera._vrActualUp = new BABYLON.Vector3(0, 0, 0);
                 subCamera._getViewMatrix = subCamera._getVRViewMatrix;

@@ -5,7 +5,7 @@ var BABYLON;
             // Handling various flavors of prefixed version of IndexedDB
             this.idbFactory = (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
             this.callbackManifestChecked = callbackManifestChecked;
-            this.currentSceneUrl = BABYLON.Database.ReturnFullUrlLocation(urlToScene);
+            this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
             this.enableSceneOffline = false;
             this.enableTexturesOffline = false;
@@ -481,7 +481,7 @@ var BABYLON;
         };
         Database.ReturnFullUrlLocation = function (url) {
             if (url.indexOf("http:/") === -1) {
-                return (BABYLON.Database.parseURL(window.location.href) + url);
+                return (Database.parseURL(window.location.href) + url);
             }
             else {
                 return url;
