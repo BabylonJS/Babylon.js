@@ -25,7 +25,6 @@ var BABYLON;
             this.showBoundingBox = false;
             this.showSubMeshesBoundingBox = false;
             this.onDispose = null;
-            this.checkCollisions = false;
             this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
@@ -46,6 +45,7 @@ var BABYLON;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
+            this._checkCollisions = false;
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
             this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             this._collider = new BABYLON.Collider();
@@ -614,7 +614,20 @@ var BABYLON;
             }
             this.getScene().getPhysicsEngine()._updateBodyPosition(this);
         };
-        // Collisions
+        Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
+            // Collisions
+            get: function () {
+                return this._checkCollisions;
+            },
+            set: function (collisionEnabled) {
+                this._checkCollisions = collisionEnabled;
+                if (this.getScene().workerCollisions) {
+                    this.getScene().collisionCoordinator.onMeshUpdated(this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.moveWithCollisions = function (velocity) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);

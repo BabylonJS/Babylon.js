@@ -179,9 +179,9 @@ var BABYLON;
                     _this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true);
                 });
             }
-            result.setVerticesData(positions, BABYLON.VertexBuffer.PositionKind, updatable);
-            result.setVerticesData(normals, BABYLON.VertexBuffer.NormalKind, updatable);
-            result.setVerticesData(uvs, BABYLON.VertexBuffer.UVKind, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatable);
+            result.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs, updatable);
             result.setIndices(indices);
             return result;
         };

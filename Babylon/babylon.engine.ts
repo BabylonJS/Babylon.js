@@ -532,7 +532,6 @@
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
-        private _canvasClientRect: ClientRect;
         private _uintIndicesCurrentlySet = false;
 
         private _workingCanvas: HTMLCanvasElement;
@@ -546,7 +545,6 @@
          */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?) {
             this._renderingCanvas = canvas;
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
             options = options || {};
             options.antialias = antialias;
@@ -914,8 +912,6 @@
         public setSize(width: number, height: number): void {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
-
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
             for (var index = 0; index < this.scenes.length; index++) {
                 var scene = this.scenes[index];
@@ -1816,6 +1812,10 @@
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
 
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+
             // Unbind
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -2100,6 +2100,8 @@
                 }
                 this._gl.disableVertexAttribArray(i);
             }
+            
+            this._gl = null;
 
             // Events
             window.removeEventListener("blur", this._onBlur);

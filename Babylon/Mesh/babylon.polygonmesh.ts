@@ -199,9 +199,9 @@ module BABYLON {
                 });                               
             }
 
-            result.setVerticesData(positions, VertexBuffer.PositionKind, updatable);
-            result.setVerticesData(normals, VertexBuffer.NormalKind, updatable);
-            result.setVerticesData(uvs, VertexBuffer.UVKind, updatable);
+            result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
+            result.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+            result.setVerticesData(VertexBuffer.UVKind, uvs, updatable);
             result.setIndices(indices);
 
             return result;

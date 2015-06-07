@@ -380,7 +380,6 @@ var BABYLON;
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
             this._renderingCanvas = canvas;
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
             options = options || {};
             options.antialias = antialias;
             // GL
@@ -793,7 +792,6 @@ var BABYLON;
         Engine.prototype.setSize = function (width, height) {
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
             for (var index = 0; index < this.scenes.length; index++) {
                 var scene = this.scenes[index];
                 for (var camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
@@ -1515,6 +1513,9 @@ var BABYLON;
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
             // Unbind
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -1746,6 +1747,7 @@ var BABYLON;
                 }
                 this._gl.disableVertexAttribArray(i);
             }
+            this._gl = null;
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);

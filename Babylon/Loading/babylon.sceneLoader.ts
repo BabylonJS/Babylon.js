@@ -63,6 +63,9 @@
                 return;
             }
 
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
+
             var manifestChecked = success => {
                 scene.database = database;
 
@@ -78,14 +81,14 @@
                             if (onerror) {
                                 onerror(scene, 'unable to load the scene');
                             }
-
+                            scene._removePendingData(loadingToken);
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
                             onerror(scene, e);
                         }
-
+                        scene._removePendingData(loadingToken);
                         return;
                     }
 
@@ -93,6 +96,7 @@
                     if (onsuccess) {
                         scene.importedMeshesFiles.push(rootUrl + sceneFilename);
                         onsuccess(meshes, particleSystems, skeletons);
+                        scene._removePendingData(loadingToken);
                     }
                 };
 
@@ -137,6 +141,9 @@
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
 
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
+
             if (SceneLoader.ShowLoadingScreen) {
                 scene.getEngine().displayLoadingUI();
             }
@@ -149,6 +156,7 @@
                         onerror(scene);
                     }
 
+                    scene._removePendingData(loadingToken);
                     scene.getEngine().hideLoadingUI();
                     return;
                 }
@@ -156,6 +164,7 @@
                 if (onsuccess) {
                     onsuccess(scene);
                 }
+                scene._removePendingData(loadingToken);
 
                 if (SceneLoader.ShowLoadingScreen) {
                     scene.executeWhenReady(() => {

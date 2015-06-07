@@ -1132,7 +1132,7 @@
 
             if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                 var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
             }
 
             if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
