@@ -42,7 +42,6 @@
         public showBoundingBox = false;
         public showSubMeshesBoundingBox = false;
         public onDispose = null;
-        public checkCollisions = false;
         public isBlocker = false;
         public skeleton: Skeleton;
         public renderingGroupId = 0;
@@ -74,6 +73,7 @@
         public _physicRestitution: number;
 
         // Collisions
+        private _checkCollisions = false;
         public ellipsoid = new Vector3(0.5, 1, 0.5);
         public ellipsoidOffset = new Vector3(0, 0, 0);
         private _collider = new Collider();
@@ -710,6 +710,18 @@
 
 
         // Collisions
+
+        public get checkCollisions() : boolean {
+            return this._checkCollisions;
+        }
+
+        public set checkCollisions(collisionEnabled: boolean) {
+            this._checkCollisions = collisionEnabled;
+            if (this.getScene().workerCollisions) {
+                this.getScene().collisionCoordinator.onMeshUpdated(this);
+            }
+        }
+
         public moveWithCollisions(velocity: Vector3): void {
             var globalPosition = this.getAbsolutePosition();
 
