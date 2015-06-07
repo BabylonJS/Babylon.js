@@ -25,7 +25,6 @@ var BABYLON;
             this.showBoundingBox = false;
             this.showSubMeshesBoundingBox = false;
             this.onDispose = null;
-            this.checkCollisions = false;
             this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
@@ -46,6 +45,7 @@ var BABYLON;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
+            this._checkCollisions = false;
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
             this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             this._collider = new BABYLON.Collider();
@@ -453,7 +453,6 @@ var BABYLON;
             this._updateBoundingInfo();
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
-            // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
             }
@@ -614,7 +613,20 @@ var BABYLON;
             }
             this.getScene().getPhysicsEngine()._updateBodyPosition(this);
         };
-        // Collisions
+        Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
+            // Collisions
+            get: function () {
+                return this._checkCollisions;
+            },
+            set: function (collisionEnabled) {
+                this._checkCollisions = collisionEnabled;
+                if (this.getScene().workerCollisions) {
+                    this.getScene().collisionCoordinator.onMeshUpdated(this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.moveWithCollisions = function (velocity) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
@@ -772,7 +784,6 @@ var BABYLON;
             if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
-            // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
                 var other = this._intersectionsInProgress[index];
                 var pos = other._intersectionsInProgress.indexOf(this);
@@ -784,7 +795,6 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeMesh(this);
             if (!doNotRecurse) {
-                // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();
