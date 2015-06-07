@@ -218,7 +218,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {

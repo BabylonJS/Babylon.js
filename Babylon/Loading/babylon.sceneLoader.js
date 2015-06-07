@@ -48,6 +48,8 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
             var manifestChecked = function (success) {
                 scene.database = database;
                 var plugin = SceneLoader._getPluginForFilename(sceneFilename);
@@ -60,6 +62,7 @@ var BABYLON;
                             if (onerror) {
                                 onerror(scene, 'unable to load the scene');
                             }
+                            scene._removePendingData(loadingToken);
                             return;
                         }
                     }
@@ -67,11 +70,13 @@ var BABYLON;
                         if (onerror) {
                             onerror(scene, e);
                         }
+                        scene._removePendingData(loadingToken);
                         return;
                     }
                     if (onsuccess) {
                         scene.importedMeshesFiles.push(rootUrl + sceneFilename);
                         onsuccess(meshes, particleSystems, skeletons);
+                        scene._removePendingData(loadingToken);
                     }
                 };
                 if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
@@ -108,6 +113,8 @@ var BABYLON;
             }
             var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
             if (SceneLoader.ShowLoadingScreen) {
                 scene.getEngine().displayLoadingUI();
             }
@@ -117,12 +124,14 @@ var BABYLON;
                     if (onerror) {
                         onerror(scene);
                     }
+                    scene._removePendingData(loadingToken);
                     scene.getEngine().hideLoadingUI();
                     return;
                 }
                 if (onsuccess) {
                     onsuccess(scene);
                 }
+                scene._removePendingData(loadingToken);
                 if (SceneLoader.ShowLoadingScreen) {
                     scene.executeWhenReady(function () {
                         scene.getEngine().hideLoadingUI();
