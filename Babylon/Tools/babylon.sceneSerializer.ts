@@ -122,8 +122,8 @@
             serializationObject.rotationOffset = followCam.rotationOffset;
         } else if (camera instanceof AnaglyphFreeCamera || camera instanceof AnaglyphArcRotateCamera) {
             //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
-            if (camera['_eyeSpace'] !== undefined) {
-                serializationObject.eye_space = Tools.ToDegrees(camera['_eyeSpace']);
+            if (camera['_interaxialDistance'] !== undefined) {
+                serializationObject.interaxial_distance = Tools.ToDegrees(camera['_interaxialDistance']);
             }
         }
 

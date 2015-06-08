@@ -15,7 +15,7 @@ module BABYLON {
             
             var metrics = VRCameraMetrics.GetDefault();
             metrics.compensateDistorsion = compensateDistorsion;
-            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR, 0, metrics);
+            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
 
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
