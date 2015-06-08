@@ -556,7 +556,7 @@
         public setCameraRigParameter(name: string, value: any) {
             this._cameraRigParams[name] = value;
             //provisionnally:
-            if (name === "interaxialDistance") { this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value); }
+            if (name === "interaxialDistance") { this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637); }
         }
         
         /**
