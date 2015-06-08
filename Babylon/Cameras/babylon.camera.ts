@@ -73,14 +73,14 @@
         private static _FOVMODE_VERTICAL_FIXED = 0;
         private static _FOVMODE_HORIZONTAL_FIXED = 1;
 
-        private static _SUB_CAMERA_MODE_NONE = 0;
-        private static _SUB_CAMERA_MODE_ANAGLYPH = 1;
-        private static _SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC = 2;
-        private static _SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC = 3;
-        private static _SUB_CAMERA_MODE_VR = 4;
-
-        private static _SUB_CAMERAID_A = 0;
-        private static _SUB_CAMERAID_B = 1;
+        private static _RIG_MODE_NONE = 0;        
+        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+        private static _STEREOSCOPY_CONVERGENCE_MODE = 0;
+        private static _STEREOSCOPY_PARALLEL_MODE = 1;
+        private static _RIG_MODE_VR = 20;
 
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
@@ -98,32 +98,36 @@
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
 
-        public static get SUB_CAMERA_MODE_NONE(): number {
-            return Camera._SUB_CAMERA_MODE_NONE;
+        public static get RIG_MODE_NONE(): number {
+            return Camera._RIG_MODE_NONE;
         }
 
-        public static get SUB_CAMERA_MODE_ANAGLYPH(): number {
-            return Camera._SUB_CAMERA_MODE_ANAGLYPH;
+        public static get RIG_MODE_STEREOSCOPIC_ANAGLYPH(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_ANAGLYPH;
         }
 
-        public static get SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC(): number {
-            return Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
+        public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+        }
+        
+        public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
         }
 
-        public static get SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC(): number {
-            return Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC;
+        public static get RIG_MODE_STEREOSCOPIC_OVERUNDER(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER;
+        }
+        
+        public static get STEREOSCOPY_CONVERGENCE_MODE(): number {
+            return Camera._STEREOSCOPY_CONVERGENCE_MODE;
+        }
+        
+        public static get STEREOSCOPY_PARALLEL_MODE(): number {
+            return Camera._STEREOSCOPY_PARALLEL_MODE;
         }
 
-        public static get SUB_CAMERA_MODE_VR(): number {
-            return Camera._SUB_CAMERA_MODE_VR;
-        }
-
-        public static get SUB_CAMERAID_A(): number {
-            return Camera._SUB_CAMERAID_A;
-        }
-
-        public static get SUB_CAMERAID_B(): number {
-            return Camera._SUB_CAMERAID_B;
+        public static get RIG_MODE_VR(): number {
+            return Camera._RIG_MODE_VR;
         }
         
         // Members
@@ -142,17 +146,10 @@
         public layerMask: number = 0x0FFFFFFF;
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
    
-        // Subcamera members
-        public subCameras = new Array<Camera>();
-        public _subCameraMode = Camera.SUB_CAMERA_MODE_NONE;
-        public _subCamHalfSpace: number;
-
-        // VR related
-        private _vrMetrics: VRCameraMetrics;
-        private _vrHMatrix: Matrix;
-        public _vrPreViewMatrix: Matrix;
-        public _vrWorkMatrix: Matrix;
-        public _vrActualUp: Vector3;
+        // Camera rig members
+        public cameraRigMode = Camera.RIG_MODE_NONE;
+        public _cameraRigParams: any;
+        public _rigCameras = new Array<Camera>();
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -289,8 +286,8 @@
 
         public _update(): void {
             this._checkInputs();
-            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
-                this._updateSubCameras();
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._updateRigCameras();
             }
         }
 
@@ -467,9 +464,9 @@
         public dispose(): void {
             // Remove from scene
             this.getScene().removeCamera(this);
-            while (this.subCameras.length > 0) {
-                this.subCameras.pop().dispose();
-            }                    
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
+            }
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
@@ -477,102 +474,123 @@
             }
         }
         
-        // ---- 3D cameras section ----
-        public setSubCameraMode(mode: number, halfSpace = 0, metrics?: VRCameraMetrics): void {
-            while (this.subCameras.length > 0) {
-                this.subCameras.pop().dispose();
+        // ---- Camera rigs section ----
+        public setCameraRigMode(mode: number, rigParams: any): void {
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
             }
-            this._subCameraMode = mode;
-            this._subCamHalfSpace = Tools.ToRadians(halfSpace);
+            this.cameraRigMode = mode;
+            this._cameraRigParams = {};
+        
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    this._cameraRigParams.stereoMode = Camera.STEREOSCOPY_CONVERGENCE_MODE; //by default, for now
+                    
+                    this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
+                    //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+                    //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
+                    this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+                    
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                break;
+            }
+            
+            var postProcesses = new Array<PostProcess>();
+            
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]));
+                    this._rigCameras[0].isIntermediate = true;
 
-            var camA = this.getSubCamera(this.name + "_A", true);
-            var camB = this.getSubCamera(this.name + "_B", false);
-            var postProcessA: PostProcess;
-            var postProcessB: PostProcess;
-
-            switch (this._subCameraMode) {
-                case Camera.SUB_CAMERA_MODE_ANAGLYPH:
-                    postProcessA = new PassPostProcess(this.name + "_leftTexture", 1.0, camA);
-                    camA.isIntermediate = true;
-
-                    postProcessB = new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, camB);
-                    postProcessB.onApply = effect => {
-                        effect.setTextureFromPostProcess("leftSampler", postProcessA);
+                    postProcesses.push(new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras[1]));
+                    postProcesses[1].onApply = effect => {
+                        effect.setTextureFromPostProcess("leftSampler", postProcesses[0]);
                     };
                     break;
 
-                case Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC:
-                case Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC:
-                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
-                    postProcessA = new PassPostProcess("passthru", 1.0, camA);
-                    camA.isIntermediate = true;
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    var isStereoscopicHoriz = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED);
+                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED)? 1 : 0;
+                    var secondCamIndex = 1 - firstCamIndex;
+                    
+                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[firstCamIndex]));
+                    this._rigCameras[firstCamIndex].isIntermediate = true;
 
-                    postProcessB = new StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
+                    postProcesses.push(new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras[secondCamIndex], postProcesses[0], isStereoscopicHoriz));
                     break;
 
-                case Camera.SUB_CAMERA_MODE_VR:
-                    metrics = metrics || VRCameraMetrics.GetDefault();
-                    camA._vrMetrics = metrics;
-                    camA.viewport = new Viewport(0, 0, 0.5, 1.0);
-                    camA._vrWorkMatrix = new Matrix();
+                case Camera.RIG_MODE_VR:
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                    
+                    var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+                    this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
+                    this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
+                    this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
 
-                    camA._vrHMatrix = metrics.leftHMatrix;
-                    camA._vrPreViewMatrix = metrics.leftPreViewMatrix;
-                    camA.getProjectionMatrix = camA._getVRProjectionMatrix;
-
-                    if (metrics.compensateDistorsion) {
-                        postProcessA = new VRDistortionCorrectionPostProcess("Distortion Compensation Left", camA, false, metrics);
-                    }
-
-                    camB._vrMetrics = camA._vrMetrics;
-                    camB.viewport = new Viewport(0.5, 0, 0.5, 1.0);
-                    camB._vrWorkMatrix = new Matrix();
-                    camB._vrHMatrix = metrics.rightHMatrix;
-                    camB._vrPreViewMatrix = metrics.rightPreViewMatrix;
-
-                    camB.getProjectionMatrix = camB._getVRProjectionMatrix;
+                    this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
+                    this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
+                    this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
 
                     if (metrics.compensateDistorsion) {
-                        postProcessB = new VRDistortionCorrectionPostProcess("Distortion Compensation Right", camB, true, metrics);
+                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
+
+                    this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
+                    this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                    this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
+                    this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
+                    this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
+
+                    this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
+
+                    if (metrics.compensateDistorsion) {
+                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
+                    }
+                    break;
             }
-            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
-                this.subCameras.push(camA);
-                this.subCameras.push(camB);
-            }
+            
             this._update();
         }
 
         private _getVRProjectionMatrix(): Matrix {
-            Matrix.PerspectiveFovLHToRef(this._vrMetrics.aspectRatioFov, this._vrMetrics.aspectRatio, this.minZ, this.maxZ, this._vrWorkMatrix);
-            this._vrWorkMatrix.multiplyToRef(this._vrHMatrix, this._projectionMatrix);
+            Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
         }
 
-        public setSubCamHalfSpace(halfSpace: number) {
-            this._subCamHalfSpace = Tools.ToRadians(halfSpace);
+        public setCameraRigParameter(name: string, value: any) {
+            this._cameraRigParams[name] = value;
+            //provisionnally:
+            if (name === "interaxialDistance") { this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value); }
         }
         
         /**
          * May needs to be overridden by children so sub has required properties to be copied
          */
-        public getSubCamera(name: string, isA: boolean): Camera {
+        public createRigCamera(name: string, cameraIndex: number): Camera {
             return null;
         }
         
         /**
          * May needs to be overridden by children
          */
-        public _updateSubCameras() {
-            var camA = this.subCameras[Camera.SUB_CAMERAID_A];
-            var camB = this.subCameras[Camera.SUB_CAMERAID_B];
-            camA.minZ = camB.minZ = this.minZ;
-            camA.maxZ = camB.maxZ = this.maxZ;
-            camA.fov = camB.fov = this.fov;
+        public _updateRigCameras() {
+            for (var i=0 ; i<this._rigCameras.length ; i++) {
+                this._rigCameras[i].minZ = this.minZ;
+                this._rigCameras[i].maxZ = this.maxZ;
+                this._rigCameras[i].fov = this.fov;
+            }
             
-            // only update viewport, when ANAGLYPH
-            if (this._subCameraMode === Camera.SUB_CAMERA_MODE_ANAGLYPH) {
-                camA.viewport = camB.viewport = this.viewport;
+            // only update viewport when ANAGLYPH
+            if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
+                this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         }
     }

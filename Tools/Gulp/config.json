@@ -103,7 +103,6 @@
       "../../Babylon/Cameras/babylon.virtualJoysticksCamera.js",
       "../../Babylon/Materials/babylon.shaderMaterial.js",
       "../../Babylon/Mesh/babylon.mesh.vertexData.js",
-      "../../Babylon/Cameras/babylon.anaglyphCamera.js",
       "../../Babylon/PostProcess/babylon.anaglyphPostProcess.js",
       "../../Babylon/Tools/babylon.tags.js",
       "../../Babylon/Tools/babylon.andOrNotEvaluator.js",
@@ -141,7 +140,7 @@
       "../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
       "../../Babylon/PostProcess/babylon.lensRenderingPipeline.js",
       "../../Babylon/PostProcess/babylon.colorCorrectionPostProcess.js",
-      "../../Babylon/Cameras/babylon.stereoscopicCamera.js"
+      "../../Babylon/Cameras/babylon.stereoscopicCameras.js"
     ]
   },
   "shadersDirectories": [

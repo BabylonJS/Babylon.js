@@ -533,27 +533,40 @@
         
         /**
          * @override
-         * needs to be overridden, so sub has required properties to be copied
+         * Override Camera.createRigCamera
          */
-        public getSubCamera(name: string, isA: boolean): Camera {
-            var alphaSpace = this._subCamHalfSpace * (isA ? -1 : 1);
-            return new ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
+        public createRigCamera(name: string, cameraIndex: number): Camera {
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case Camera.RIG_MODE_VR:
+                    var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
+                    return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            }
         }
         
         /**
          * @override
-         * needs to be overridden, adding copy of alpha, beta & radius
+         * Override Camera._updateRigCameras
          */
-        public _updateSubCameras() {
-            var camA = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_A];
-            var camB = <ArcRotateCamera> this.subCameras[Camera.SUB_CAMERAID_B];
-
-            camA.alpha = this.alpha - this._subCamHalfSpace;
-            camB.alpha = this.alpha + this._subCamHalfSpace;
-
-            camA.beta = camB.beta = this.beta;
-            camA.radius = camB.radius = this.radius;
-            super._updateSubCameras();
+        public _updateRigCameras() {
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case Camera.RIG_MODE_VR:
+                    var camLeft = <ArcRotateCamera> this._rigCameras[0];
+                    var camRight = <ArcRotateCamera> this._rigCameras[1];
+                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camLeft.beta = camRight.beta = this.beta;
+                    camLeft.radius = camRight.radius = this.radius;
+                    break;
+            }
+            super._updateRigCameras();
         }
     }
 } 
