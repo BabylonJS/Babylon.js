@@ -187,6 +187,7 @@ var BABYLON;
             if (this.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
                 if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
+                    rigCamera._cameraRigParams = {};
                     rigCamera._cameraRigParams.vrActualUp = new BABYLON.Vector3(0, 0, 0);
                     rigCamera._getViewMatrix = rigCamera._getVRViewMatrix;
                 }

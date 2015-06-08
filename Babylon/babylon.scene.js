@@ -86,7 +86,7 @@ var BABYLON;
             this.lensFlareSystems = new Array();
             // Collisions
             this.collisionsEnabled = true;
-            this.gravity = new BABYLON.Vector3(0, -9.0, 0);
+            this.gravity = new BABYLON.Vector3(0, -9.807, 0);
             // Postprocesses
             this.postProcessesEnabled = true;
             // Customs render targets

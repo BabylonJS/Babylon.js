@@ -488,7 +488,7 @@ var BABYLON;
             this._cameraRigParams[name] = value;
             //provisionnally:
             if (name === "interaxialDistance") {
-                this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(value);
+                this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(value / 0.0637);
             }
         };
         /**
