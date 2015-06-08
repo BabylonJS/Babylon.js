@@ -18,7 +18,7 @@ var BABYLON;
             this._currentPlugin.runOneStep(delta);
         };
         PhysicsEngine.prototype._setGravity = function (gravity) {
-            this.gravity = gravity || new BABYLON.Vector3(0, -9.82, 0);
+            this.gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this._currentPlugin.setGravity(this.gravity);
         };
         PhysicsEngine.prototype._registerMesh = function (mesh, impostor, options) {

@@ -254,7 +254,7 @@ var BABYLON;
             var reader = new FileReader();
             reader.onerror = function (e) {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.81, 0], meshes: [], cameras: [], lights: [] }));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = function (e) {
                 //target doesn't have result from ts 1.3
