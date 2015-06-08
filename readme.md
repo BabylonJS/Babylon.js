@@ -3,6 +3,11 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
+## CDN
+- http://cdn.babylonjs.com/2-1/babylon.js 
+- http://cdn.babylonjs.com/2-1/babylon.max.js 
+- http://cdn.babylonjs.com/2-1/babylon-noworker.js 
+
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
 - [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
