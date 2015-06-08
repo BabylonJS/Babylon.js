@@ -17,7 +17,7 @@
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
-        public _delayLoadingFunction: (any, Geometry) => void;
+        public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;
@@ -486,7 +486,7 @@
 
         /// Abstract class
         export class _Primitive extends Geometry {
-            // Private 
+            // Private
             private _beingRegenerated: boolean;
             private _canBeRegenerated: boolean;
 
@@ -769,4 +769,4 @@
             }
         }
     }
-} 
+}

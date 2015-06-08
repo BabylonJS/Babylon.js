@@ -16,7 +16,7 @@ module BABYLON {
         static IsUASupportingBlobStorage = true;
         static IDBStorageEnabled = true;
 
-        constructor(urlToScene: string, callbackManifestChecked: (boolean) => any) {
+        constructor(urlToScene: string, callbackManifestChecked: (checked: boolean) => any) {
             this.callbackManifestChecked = callbackManifestChecked;
             this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
@@ -131,7 +131,7 @@ module BABYLON {
                         Tools.Error("IDB request blocked. Please reload the page.");
                         handleError();
                     };
-                    
+
                     // DB has been opened successfully
                     request.onsuccess = event => {
                         this.db = request.result;
