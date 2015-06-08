@@ -57,7 +57,7 @@
         private _onBeforeRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
         private _onAfterRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
         public _delayInfo; //ANY
-        public _delayLoadingFunction: (any, Mesh) => void;
+        public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
         public _visibleInstances: any = {};
         private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
@@ -332,8 +332,8 @@
         public unfreezeNormals(): void {
             this._areNormalsFrozen = false;
         }
-        
-        // Methods  
+
+        // Methods
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
             if (this._preActivateId === sceneRenderId) {
@@ -940,7 +940,7 @@
             return true;
         }
 
-        // Clone 
+        // Clone
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): Mesh {
             return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
@@ -1399,7 +1399,7 @@
         }
 
         private static _ExtrudeShapeGeneric(name: string, shape: Vector3[], curve: Vector3[], scale: number, rotation: number, scaleFunction: { (i: number, distance: number): number; }, rotateFunction: { (i: number, distance: number): number; }, rbCA: boolean, rbCP: boolean, cap: number, custom: boolean, scene: Scene, updtbl: boolean, side: number, instance: Mesh): Mesh {
-            
+
             // extrusion geometry
             var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
@@ -1462,7 +1462,7 @@
             };
 
             if (instance) { // instance update
-                
+
                 var path3D = ((<any>instance).path3D).update(curve);
                 var pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
                 instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
@@ -1571,7 +1571,7 @@
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
-                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
+                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
@@ -1591,7 +1591,7 @@
         }
 
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
-            
+
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
                 var tangents = path3D.getTangents();
@@ -1611,7 +1611,7 @@
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
-                    normal = normals[i];                        // current normal  
+                    normal = normals[i];                        // current normal
                     for (var t = 0; t < tessellation; t++) {
                         rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
@@ -1718,7 +1718,7 @@
                 return result;
             }
 
-            
+
             // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
             var clip = (vertices: PositionNormalVertex[], axis: Vector3): PositionNormalVertex[]=> {
                 if (vertices.length === 0) {
@@ -1852,7 +1852,7 @@
                 if (faceVertices.length === 0) {
                     continue;
                 }
-                
+
                 // Add UVs and get back to world
                 var localRotationMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle);
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
@@ -1970,4 +1970,4 @@
             return meshSubclass;
         }
     }
-} 
+}
