@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -448,24 +448,39 @@ var BABYLON;
         };
         /**
          * @override
-         * needs to be overridden, so sub has required properties to be copied
+         * Override Camera.createRigCamera
          */
-        ArcRotateCamera.prototype.getSubCamera = function (name, isA) {
-            var alphaSpace = this._subCamHalfSpace * (isA ? -1 : 1);
-            return new ArcRotateCamera(name, this.alpha + alphaSpace, this.beta, this.radius, this.target, this.getScene());
+        ArcRotateCamera.prototype.createRigCamera = function (name, cameraIndex) {
+            switch (this.cameraRigMode) {
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case BABYLON.Camera.RIG_MODE_VR:
+                    var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
+                    return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            }
         };
         /**
          * @override
-         * needs to be overridden, adding copy of alpha, beta & radius
+         * Override Camera._updateRigCameras
          */
-        ArcRotateCamera.prototype._updateSubCameras = function () {
-            var camA = this.subCameras[BABYLON.Camera.SUB_CAMERAID_A];
-            var camB = this.subCameras[BABYLON.Camera.SUB_CAMERAID_B];
-            camA.alpha = this.alpha - this._subCamHalfSpace;
-            camB.alpha = this.alpha + this._subCamHalfSpace;
-            camA.beta = camB.beta = this.beta;
-            camA.radius = camB.radius = this.radius;
-            _super.prototype._updateSubCameras.call(this);
+        ArcRotateCamera.prototype._updateRigCameras = function () {
+            switch (this.cameraRigMode) {
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case BABYLON.Camera.RIG_MODE_VR:
+                    var camLeft = this._rigCameras[0];
+                    var camRight = this._rigCameras[1];
+                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camLeft.beta = camRight.beta = this.beta;
+                    camLeft.radius = camRight.radius = this.radius;
+                    break;
+            }
+            _super.prototype._updateRigCameras.call(this);
         };
         return ArcRotateCamera;
     })(BABYLON.Camera);

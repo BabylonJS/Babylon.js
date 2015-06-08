@@ -1153,13 +1153,13 @@ var BABYLON;
             BABYLON.Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         };
         Scene.prototype._processSubCameras = function (camera) {
-            if (camera.subCameras.length === 0) {
+            if (camera.cameraRigMode === BABYLON.Camera.RIG_MODE_NONE) {
                 this._renderForCamera(camera);
                 return;
             }
-            // Sub-cameras
-            for (var index = 0; index < camera.subCameras.length; index++) {
-                this._renderForCamera(camera.subCameras[index]);
+            // rig cameras
+            for (var index = 0; index < camera._rigCameras.length; index++) {
+                this._renderForCamera(camera._rigCameras[index]);
             }
             this.activeCamera = camera;
             this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());

@@ -78,8 +78,6 @@
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         private static _RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
-        private static _STEREOSCOPY_CONVERGENCE_MODE = 0;
-        private static _STEREOSCOPY_PARALLEL_MODE = 1;
         private static _RIG_MODE_VR = 20;
 
         public static get PERSPECTIVE_CAMERA(): number {
@@ -116,15 +114,7 @@
 
         public static get RIG_MODE_STEREOSCOPIC_OVERUNDER(): number {
             return Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER;
-        }
-        
-        public static get STEREOSCOPY_CONVERGENCE_MODE(): number {
-            return Camera._STEREOSCOPY_CONVERGENCE_MODE;
-        }
-        
-        public static get STEREOSCOPY_PARALLEL_MODE(): number {
-            return Camera._STEREOSCOPY_PARALLEL_MODE;
-        }
+        }        
 
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
@@ -487,8 +477,6 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                    this._cameraRigParams.stereoMode = Camera.STEREOSCOPY_CONVERGENCE_MODE; //by default, for now
-                    
                     this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
                     //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
                     //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
