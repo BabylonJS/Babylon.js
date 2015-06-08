@@ -1,9 +1,9 @@
 module BABYLON {
     export class VRDeviceOrientationFreeCamera extends FreeCamera {
-		public _alpha = 0;
-		public _beta = 0;
-		public _gamma = 0;
-	
+        public _alpha = 0;
+        public _beta = 0;
+        public _gamma = 0;
+    
         private _offsetOrientation: { yaw: number; pitch: number; roll: number };
         private _deviceOrientationHandler;
 
@@ -12,7 +12,7 @@ module BABYLON {
 
             var metrics = VRCameraMetrics.GetDefault();
             metrics.compensateDistorsion = compensateDistorsion;
-            this.setSubCameraMode(Camera.SUB_CAMERA_MODE_VR, 0, metrics);
+            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
 
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
@@ -23,16 +23,16 @@ module BABYLON {
             this._gamma = +evt.gamma|0;
 
             if (this._gamma < 0) {
-            	this._gamma = 90 + this._gamma;
+                this._gamma = 90 + this._gamma;
             }
             else {
-				// Incline it in the correct angle.
-            	this._gamma = 270 - this._gamma;
+                // Incline it in the correct angle.
+                this._gamma = 270 - this._gamma;
             }
 
             this.rotation.x = this._gamma / 180.0 * Math.PI;   
-			this.rotation.y = -this._alpha / 180.0 * Math.PI;	
-			this.rotation.z	= this._beta / 180.0 * Math.PI;		
+            this.rotation.y = -this._alpha / 180.0 * Math.PI;   
+            this.rotation.z = this._beta / 180.0 * Math.PI;     
         }
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
@@ -46,5 +46,5 @@ module BABYLON {
 
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
-	}
+    }
 }
