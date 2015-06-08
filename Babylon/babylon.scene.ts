@@ -165,7 +165,7 @@
         public collisionsEnabled = true;
         private _workerCollisions;
         public collisionCoordinator: ICollisionCoordinator;
-        public gravity = new Vector3(0, -9.0, 0);
+        public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
         public postProcessesEnabled = true;
