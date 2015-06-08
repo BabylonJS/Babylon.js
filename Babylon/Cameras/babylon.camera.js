@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -95,9 +95,9 @@ var BABYLON;
             this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
             this.layerMask = 0x0FFFFFFF;
             this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
-            // Subcamera members
-            this.subCameras = new Array();
-            this._subCameraMode = Camera.SUB_CAMERA_MODE_NONE;
+            // Camera rig members
+            this.cameraRigMode = Camera.RIG_MODE_NONE;
+            this._rigCameras = new Array();
             // Cache
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
@@ -138,51 +138,44 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_NONE", {
+        Object.defineProperty(Camera, "RIG_MODE_NONE", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_NONE;
+                return Camera._RIG_MODE_NONE;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_ANAGLYPH", {
+        Object.defineProperty(Camera, "RIG_MODE_STEREOSCOPIC_ANAGLYPH", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_ANAGLYPH;
+                return Camera._RIG_MODE_STEREOSCOPIC_ANAGLYPH;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
+                return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC", {
+        Object.defineProperty(Camera, "RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC;
+                return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERA_MODE_VR", {
+        Object.defineProperty(Camera, "RIG_MODE_STEREOSCOPIC_OVERUNDER", {
             get: function () {
-                return Camera._SUB_CAMERA_MODE_VR;
+                return Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Camera, "SUB_CAMERAID_A", {
+        Object.defineProperty(Camera, "RIG_MODE_VR", {
             get: function () {
-                return Camera._SUB_CAMERAID_A;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Camera, "SUB_CAMERAID_B", {
-            get: function () {
-                return Camera._SUB_CAMERAID_B;
+                return Camera._RIG_MODE_VR;
             },
             enumerable: true,
             configurable: true
@@ -280,8 +273,8 @@ var BABYLON;
         };
         Camera.prototype._update = function () {
             this._checkInputs();
-            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
-                this._updateSubCameras();
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._updateRigCameras();
             }
         };
         Camera.prototype._checkInputs = function () {
@@ -412,95 +405,110 @@ var BABYLON;
         Camera.prototype.dispose = function () {
             // Remove from scene
             this.getScene().removeCamera(this);
-            while (this.subCameras.length > 0) {
-                this.subCameras.pop().dispose();
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
             }
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }
         };
-        // ---- 3D cameras section ----
-        Camera.prototype.setSubCameraMode = function (mode, halfSpace, metrics) {
-            if (halfSpace === void 0) { halfSpace = 0; }
-            while (this.subCameras.length > 0) {
-                this.subCameras.pop().dispose();
+        // ---- Camera rigs section ----
+        Camera.prototype.setCameraRigMode = function (mode, rigParams) {
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
             }
-            this._subCameraMode = mode;
-            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSpace);
-            var camA = this.getSubCamera(this.name + "_A", true);
-            var camB = this.getSubCamera(this.name + "_B", false);
-            var postProcessA;
-            var postProcessB;
-            switch (this._subCameraMode) {
-                case Camera.SUB_CAMERA_MODE_ANAGLYPH:
-                    postProcessA = new BABYLON.PassPostProcess(this.name + "_leftTexture", 1.0, camA);
-                    camA.isIntermediate = true;
-                    postProcessB = new BABYLON.AnaglyphPostProcess(this.name + "_anaglyph", 1.0, camB);
-                    postProcessB.onApply = function (effect) {
-                        effect.setTextureFromPostProcess("leftSampler", postProcessA);
+            this.cameraRigMode = mode;
+            this._cameraRigParams = {};
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
+                    //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+                    //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
+                    this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                    break;
+            }
+            var postProcesses = new Array();
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                    postProcesses.push(new BABYLON.PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]));
+                    this._rigCameras[0].isIntermediate = true;
+                    postProcesses.push(new BABYLON.AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras[1]));
+                    postProcesses[1].onApply = function (effect) {
+                        effect.setTextureFromPostProcess("leftSampler", postProcesses[0]);
                     };
                     break;
-                case Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC:
-                case Camera.SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC:
-                    var isStereoscopicHoriz = this._subCameraMode === Camera.SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC;
-                    postProcessA = new BABYLON.PassPostProcess("passthru", 1.0, camA);
-                    camA.isIntermediate = true;
-                    postProcessB = new BABYLON.StereoscopicInterlacePostProcess("st_interlace", camB, postProcessA, isStereoscopicHoriz);
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    var isStereoscopicHoriz = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED);
+                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : 0;
+                    var secondCamIndex = 1 - firstCamIndex;
+                    postProcesses.push(new BABYLON.PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[firstCamIndex]));
+                    this._rigCameras[firstCamIndex].isIntermediate = true;
+                    postProcesses.push(new BABYLON.StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras[secondCamIndex], postProcesses[0], isStereoscopicHoriz));
                     break;
-                case Camera.SUB_CAMERA_MODE_VR:
-                    metrics = metrics || VRCameraMetrics.GetDefault();
-                    camA._vrMetrics = metrics;
-                    camA.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
-                    camA._vrWorkMatrix = new BABYLON.Matrix();
-                    camA._vrHMatrix = metrics.leftHMatrix;
-                    camA._vrPreViewMatrix = metrics.leftPreViewMatrix;
-                    camA.getProjectionMatrix = camA._getVRProjectionMatrix;
+                case Camera.RIG_MODE_VR:
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                    var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+                    this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
+                    this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
+                    this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
+                    this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
+                    this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
+                    this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
                     if (metrics.compensateDistorsion) {
-                        postProcessA = new BABYLON.VRDistortionCorrectionPostProcess("Distortion Compensation Left", camA, false, metrics);
+                        postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
-                    camB._vrMetrics = camA._vrMetrics;
-                    camB.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                    camB._vrWorkMatrix = new BABYLON.Matrix();
-                    camB._vrHMatrix = metrics.rightHMatrix;
-                    camB._vrPreViewMatrix = metrics.rightPreViewMatrix;
-                    camB.getProjectionMatrix = camB._getVRProjectionMatrix;
+                    this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
+                    this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
+                    this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
+                    this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
+                    this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
+                    this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
                     if (metrics.compensateDistorsion) {
-                        postProcessB = new BABYLON.VRDistortionCorrectionPostProcess("Distortion Compensation Right", camB, true, metrics);
+                        postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
                     }
-            }
-            if (this._subCameraMode !== Camera.SUB_CAMERA_MODE_NONE) {
-                this.subCameras.push(camA);
-                this.subCameras.push(camB);
+                    break;
             }
             this._update();
         };
         Camera.prototype._getVRProjectionMatrix = function () {
-            BABYLON.Matrix.PerspectiveFovLHToRef(this._vrMetrics.aspectRatioFov, this._vrMetrics.aspectRatio, this.minZ, this.maxZ, this._vrWorkMatrix);
-            this._vrWorkMatrix.multiplyToRef(this._vrHMatrix, this._projectionMatrix);
+            BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
             return this._projectionMatrix;
         };
-        Camera.prototype.setSubCamHalfSpace = function (halfSpace) {
-            this._subCamHalfSpace = BABYLON.Tools.ToRadians(halfSpace);
+        Camera.prototype.setCameraRigParameter = function (name, value) {
+            this._cameraRigParams[name] = value;
+            //provisionnally:
+            if (name === "interaxialDistance") {
+                this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(value);
+            }
         };
         /**
          * May needs to be overridden by children so sub has required properties to be copied
          */
-        Camera.prototype.getSubCamera = function (name, isA) {
+        Camera.prototype.createRigCamera = function (name, cameraIndex) {
             return null;
         };
         /**
          * May needs to be overridden by children
          */
-        Camera.prototype._updateSubCameras = function () {
-            var camA = this.subCameras[Camera.SUB_CAMERAID_A];
-            var camB = this.subCameras[Camera.SUB_CAMERAID_B];
-            camA.minZ = camB.minZ = this.minZ;
-            camA.maxZ = camB.maxZ = this.maxZ;
-            camA.fov = camB.fov = this.fov;
-            // only update viewport, when ANAGLYPH
-            if (this._subCameraMode === Camera.SUB_CAMERA_MODE_ANAGLYPH) {
-                camA.viewport = camB.viewport = this.viewport;
+        Camera.prototype._updateRigCameras = function () {
+            for (var i = 0; i < this._rigCameras.length; i++) {
+                this._rigCameras[i].minZ = this.minZ;
+                this._rigCameras[i].maxZ = this.maxZ;
+                this._rigCameras[i].fov = this.fov;
+            }
+            // only update viewport when ANAGLYPH
+            if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
+                this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         };
         // Statics
@@ -508,13 +516,12 @@ var BABYLON;
         Camera._ORTHOGRAPHIC_CAMERA = 1;
         Camera._FOVMODE_VERTICAL_FIXED = 0;
         Camera._FOVMODE_HORIZONTAL_FIXED = 1;
-        Camera._SUB_CAMERA_MODE_NONE = 0;
-        Camera._SUB_CAMERA_MODE_ANAGLYPH = 1;
-        Camera._SUB_CAMERA_MODE_CROSSEDSIDEBYSIDE_STEREOSCOPIC = 2;
-        Camera._SUB_CAMERA_MODE_OVERUNDER_STEREOSCOPIC = 3;
-        Camera._SUB_CAMERA_MODE_VR = 4;
-        Camera._SUB_CAMERAID_A = 0;
-        Camera._SUB_CAMERAID_B = 1;
+        Camera._RIG_MODE_NONE = 0;
+        Camera._RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+        Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+        Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+        Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+        Camera._RIG_MODE_VR = 20;
         return Camera;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;

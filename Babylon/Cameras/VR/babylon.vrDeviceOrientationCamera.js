@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -16,7 +16,7 @@ var BABYLON;
             this._gamma = 0;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
             metrics.compensateDistorsion = compensateDistorsion;
-            this.setSubCameraMode(BABYLON.Camera.SUB_CAMERA_MODE_VR, 0, metrics);
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
         VRDeviceOrientationFreeCamera.prototype._onOrientationEvent = function (evt) {

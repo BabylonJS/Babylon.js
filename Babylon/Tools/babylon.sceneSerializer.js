@@ -121,8 +121,8 @@ var BABYLON;
         }
         else if (camera instanceof BABYLON.AnaglyphFreeCamera || camera instanceof BABYLON.AnaglyphArcRotateCamera) {
             //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
-            if (camera['_eyeSpace'] !== undefined) {
-                serializationObject.eye_space = BABYLON.Tools.ToDegrees(camera['_eyeSpace']);
+            if (camera['_interaxialDistance'] !== undefined) {
+                serializationObject.interaxial_distance = BABYLON.Tools.ToDegrees(camera['_interaxialDistance']);
             }
         }
         //general properties that not all cameras have. The [] is due to typescript's type safety

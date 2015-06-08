@@ -320,16 +320,16 @@ var BABYLON;
                 var beta = parsedCamera.beta;
                 var radius = parsedCamera.radius;
                 if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    var eye_space = parsedCamera.eye_space;
-                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
+                    var interaxial_distance = parsedCamera.interaxial_distance;
+                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
                 }
                 else {
                     camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
                 }
             }
             else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                eye_space = parsedCamera.eye_space;
-                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
+                interaxial_distance = parsedCamera.interaxial_distance;
+                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
             }
             else if (parsedCamera.type === "DeviceOrientationCamera") {
                 camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
