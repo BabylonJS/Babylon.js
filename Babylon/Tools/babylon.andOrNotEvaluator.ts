@@ -1,6 +1,6 @@
 ﻿module BABYLON.Internals {
     export class AndOrNotEvaluator {
-        public static Eval(query: string, evaluateCallback: (val) => boolean): boolean {
+        public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
             if (!query.match(/\([^\(\)]*\)/g)) {
                 query = AndOrNotEvaluator._HandleParenthesisContent(query, evaluateCallback);
             }
@@ -99,4 +99,4 @@
             return booleanString;
         }
     }
-} 
+}
