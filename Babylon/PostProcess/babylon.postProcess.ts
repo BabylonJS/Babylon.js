@@ -1,9 +1,9 @@
 ﻿module BABYLON {
     export class PostProcess {
-        public onApply: (Effect) => void;
-        public onBeforeRender: (Effect) => void;
+        public onApply: (effect: Effect) => void;
+        public onBeforeRender: (effect: Effect) => void;
         public onSizeChanged: () => void;
-        public onActivate: (Camera) => void;
+        public onActivate: (camera: Camera) => void;
         public width = -1;
         public height = -1;
         public renderTargetSamplingMode: number;
@@ -139,4 +139,4 @@
             }
         }
     }
-} 
+}
