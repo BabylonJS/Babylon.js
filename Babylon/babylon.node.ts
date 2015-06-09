@@ -76,6 +76,10 @@
             return true;
         }
 
+        public _markSyncedWithParent() {
+            this._parentRenderId = this.parent._currentRenderId;
+        }
+        
         public isSynchronizedWithParent(): boolean {
             if (!this.parent) {
                 return true;
@@ -85,9 +89,7 @@
                 return false;
             }
 
-            this._parentRenderId = this.parent._currentRenderId;
-
-            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
+            return this.parent.isSynchronized();
         }
 
         public isSynchronized(updateCache?: boolean): boolean {

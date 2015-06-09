@@ -82,7 +82,6 @@
             this.Controls.Add(this.ActionsBuilderWebView);
             this.Name = "ActionsBuilderForm";
             this.Text = "Babylon.js Actions Builder";
-            this.TopMost = true;
             this.Activated += new System.EventHandler(this.ActionsBuilderForm_Activated);
             this.Deactivate += new System.EventHandler(this.ActionsBuilderForm_Deactivate);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ActionsBuilderForm_FormClosed);

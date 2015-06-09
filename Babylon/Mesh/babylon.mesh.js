@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -40,16 +40,19 @@ var BABYLON;
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
             this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+            this._sideOrientation = Mesh._DEFAULTSIDE;
+            this._areNormalsFrozen = false; // Will be used by ribbons mainly
             if (source) {
                 // Geometry
                 if (source._geometry) {
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
                 // Material
                 this.material = source.material;
                 if (!doNotCloneChildren) {
+                    // Children
                     for (var index = 0; index < scene.meshes.length; index++) {
                         var mesh = scene.meshes[index];
                         if (mesh.parent === source) {
@@ -58,6 +61,7 @@ var BABYLON;
                         }
                     }
                 }
+                // Particles
                 for (index = 0; index < scene.particleSystems.length; index++) {
                     var system = scene.particleSystems[index];
                     if (system.emitter === source) {
@@ -95,6 +99,34 @@ var BABYLON;
         Object.defineProperty(Mesh, "DEFAULTSIDE", {
             get: function () {
                 return Mesh._DEFAULTSIDE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "NO_CAP", {
+            get: function () {
+                return Mesh._NO_CAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_START", {
+            get: function () {
+                return Mesh._CAP_START;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_END", {
+            get: function () {
+                return Mesh._CAP_END;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh, "CAP_ALL", {
+            get: function () {
+                return Mesh._CAP_ALL;
             },
             enumerable: true,
             configurable: true
@@ -205,11 +237,11 @@ var BABYLON;
             }
             return this._geometry.getTotalVertices();
         };
-        Mesh.prototype.getVerticesData = function (kind) {
+        Mesh.prototype.getVerticesData = function (kind, copyWhenShared) {
             if (!this._geometry) {
                 return null;
             }
-            return this._geometry.getVerticesData(kind);
+            return this._geometry.getVerticesData(kind, copyWhenShared);
         };
         Mesh.prototype.getVertexBuffer = function (kind) {
             if (!this._geometry) {
@@ -244,11 +276,11 @@ var BABYLON;
             }
             return this._geometry.getTotalIndices();
         };
-        Mesh.prototype.getIndices = function () {
+        Mesh.prototype.getIndices = function (copyWhenShared) {
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices();
+            return this._geometry.getIndices(copyWhenShared);
         };
         Object.defineProperty(Mesh.prototype, "isBlocked", {
             get: function () {
@@ -265,6 +297,31 @@ var BABYLON;
         };
         Mesh.prototype.isDisposed = function () {
             return this._isDisposed;
+        };
+        Object.defineProperty(Mesh.prototype, "sideOrientation", {
+            get: function () {
+                return this._sideOrientation;
+            },
+            set: function (sideO) {
+                this._sideOrientation = sideO;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
+            get: function () {
+                return this._areNormalsFrozen;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
+        Mesh.prototype.freezeNormals = function () {
+            this._areNormalsFrozen = true;
+        };
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
+        Mesh.prototype.unfreezeNormals = function () {
+            this._areNormalsFrozen = false;
         };
         // Methods  
         Mesh.prototype._preActivate = function () {
@@ -314,6 +371,7 @@ var BABYLON;
             var totalIndices = this.getTotalIndices();
             var subdivisionSize = (totalIndices / count) | 0;
             var offset = 0;
+            // Ensure that subdivisionSize is a multiple of 3
             while (subdivisionSize % 3 !== 0) {
                 subdivisionSize++;
             }
@@ -368,6 +426,22 @@ var BABYLON;
                 this.updateVerticesDataDirectly(kind, data, offset, false);
             }
         };
+        // Mesh positions update function :
+        // updates the mesh positions according to the positionFunction returned values.
+        // The positionFunction argument must be a javascript function accepting the mesh "positions" array as parameter.
+        // This dedicated positionFunction computes new mesh positions according to the given mesh type.
+        Mesh.prototype.updateMeshPositions = function (positionFunction, computeNormals) {
+            if (computeNormals === void 0) { computeNormals = true; }
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            positionFunction(positions);
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+            if (computeNormals) {
+                var indices = this.getIndices();
+                var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+                this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            }
+        };
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
                 return;
@@ -410,6 +484,7 @@ var BABYLON;
                 return;
             }
             var engine = this.getScene().getEngine();
+            // Draw order
             switch (fillMode) {
                 case BABYLON.Material.PointFillMode:
                     engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
@@ -646,8 +721,7 @@ var BABYLON;
                     }
                     _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                     scene._removePendingData(_this);
-                }, function () {
-                }, scene.database, getBinaryData);
+                }, function () { }, scene.database, getBinaryData);
             }
         };
         Mesh.prototype.isInFrustum = function (frustumPlanes) {
@@ -705,6 +779,7 @@ var BABYLON;
                 return;
             }
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            temp = [];
             for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
@@ -768,11 +843,12 @@ var BABYLON;
                     onSuccess(_this);
                 }
             };
-            BABYLON.Tools.LoadImage(url, onload, function () {
-            }, scene.database);
+            BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
         };
         Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight) {
-            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)
+                || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)
+                || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                 BABYLON.Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
                 return;
             }
@@ -828,6 +904,7 @@ var BABYLON;
             var previousSubmeshes = this.subMeshes.slice(0);
             var indices = this.getIndices();
             var totalIndices = this.getTotalIndices();
+            // Generating unique vertices per face
             for (var index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
                 for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -851,6 +928,7 @@ var BABYLON;
                 var p1p2 = p1.subtract(p2);
                 var p3p2 = p3.subtract(p2);
                 var normal = BABYLON.Vector3.Normalize(BABYLON.Vector3.Cross(p1p2, p3p2));
+                // Store same normals for every vertex
                 for (var localIndex = 0; localIndex < 3; localIndex++) {
                     normals.push(normal.x);
                     normals.push(normal.y);
@@ -859,6 +937,7 @@ var BABYLON;
             }
             this.setIndices(indices);
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, updatableNormals);
+            // Updating vertex buffers
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
                 kind = kinds[kindIndex];
                 this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
@@ -891,7 +970,7 @@ var BABYLON;
          */
         Mesh.prototype.simplify = function (settings, parallelProcessing, simplificationType, successCallback) {
             if (parallelProcessing === void 0) { parallelProcessing = true; }
-            if (simplificationType === void 0) { simplificationType = 0 /* QUADRATIC */; }
+            if (simplificationType === void 0) { simplificationType = BABYLON.SimplificationType.QUADRATIC; }
             this.getScene().simplificationQueue.addTask({
                 settings: settings,
                 parallelProcessing: parallelProcessing,
@@ -939,12 +1018,50 @@ var BABYLON;
             });
         };
         // Statics
-        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation) {
+        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation, ribbonInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var ribbon = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
-            vertexData.applyToMesh(ribbon, updatable);
-            return ribbon;
+            if (ribbonInstance === void 0) { ribbonInstance = null; }
+            if (ribbonInstance) {
+                // positionFunction : ribbon case
+                // only pathArray and sideOrientation parameters are taken into account for positions update
+                var positionFunction = function (positions) {
+                    var minlg = pathArray[0].length;
+                    var i = 0;
+                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    for (var si = 1; si <= ns; si++) {
+                        for (var p = 0; p < pathArray.length; p++) {
+                            var path = pathArray[p];
+                            var l = path.length;
+                            minlg = (minlg < l) ? minlg : l;
+                            var j = 0;
+                            while (j < minlg) {
+                                positions[i] = path[j].x;
+                                positions[i + 1] = path[j].y;
+                                positions[i + 2] = path[j].z;
+                                j++;
+                                i += 3;
+                            }
+                        }
+                    }
+                };
+                var computeNormals = !(ribbonInstance.areNormalsFrozen);
+                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
+                return ribbonInstance;
+            }
+            else {
+                var ribbon = new Mesh(name, scene);
+                ribbon.sideOrientation = sideOrientation;
+                var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                vertexData.applyToMesh(ribbon, updatable);
+                return ribbon;
+            }
+        };
+        Mesh.CreateDisc = function (name, radius, tessellation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var disc = new Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            vertexData.applyToMesh(disc, updatable);
+            return disc;
         };
         Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
@@ -992,56 +1109,206 @@ var BABYLON;
             return torusKnot;
         };
         // Lines
-        Mesh.CreateLines = function (name, points, scene, updatable) {
+        Mesh.CreateLines = function (name, points, scene, updatable, linesInstance) {
+            if (linesInstance === void 0) { linesInstance = null; }
+            if (linesInstance) {
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        i += 3;
+                    }
+                };
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // lines creation
             var lines = new BABYLON.LinesMesh(name, scene, updatable);
             var vertexData = BABYLON.VertexData.CreateLines(points);
             vertexData.applyToMesh(lines, updatable);
             return lines;
         };
+        // Dashed Lines
+        Mesh.CreateDashedLines = function (name, points, dashSize, gapSize, dashNb, scene, updatable, linesInstance) {
+            if (linesInstance === void 0) { linesInstance = null; }
+            if (linesInstance) {
+                var positionFunction = function (positions) {
+                    var curvect = BABYLON.Vector3.Zero();
+                    var nbSeg = positions.length / 6;
+                    var lg = 0;
+                    var nb = 0;
+                    var shft = 0;
+                    var dashshft = 0;
+                    var curshft = 0;
+                    var p = 0;
+                    var i = 0;
+                    var j = 0;
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        lg += curvect.length();
+                    }
+                    shft = lg / nbSeg;
+                    dashshft = linesInstance.dashSize * shft / (linesInstance.dashSize + linesInstance.gapSize);
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
+                        j = 0;
+                        while (j < nb && p < positions.length) {
+                            curshft = shft * j;
+                            positions[p] = points[i].x + curshft * curvect.x;
+                            positions[p + 1] = points[i].y + curshft * curvect.y;
+                            positions[p + 2] = points[i].z + curshft * curvect.z;
+                            positions[p + 3] = points[i].x + (curshft + dashshft) * curvect.x;
+                            positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
+                            positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
+                            p += 6;
+                            j++;
+                        }
+                    }
+                    while (p < positions.length) {
+                        positions[p] = points[i].x;
+                        positions[p + 1] = points[i].y;
+                        positions[p + 2] = points[i].z;
+                        p += 3;
+                    }
+                };
+                linesInstance.updateMeshPositions(positionFunction, false);
+                return linesInstance;
+            }
+            // dashed lines creation
+            var dashedLines = new BABYLON.LinesMesh(name, scene, updatable);
+            var vertexData = BABYLON.VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
+            vertexData.applyToMesh(dashedLines, updatable);
+            dashedLines.dashSize = dashSize;
+            dashedLines.gapSize = gapSize;
+            return dashedLines;
+        };
         // Extrusion
-        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, scene, updatable, sideOrientation) {
+        Mesh.ExtrudeShape = function (name, shape, path, scale, rotation, cap, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            if (extrudedInstance === void 0) { extrudedInstance = null; }
             scale = scale || 1;
             rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, false, scene, updatable, sideOrientation);
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, extrudedInstance);
             return extruded;
         };
-        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, scene, updatable, sideOrientation) {
+        Mesh.ExtrudeShapeCustom = function (name, shape, path, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, scene, updatable, sideOrientation, extrudedInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, true, scene, updatable, sideOrientation);
+            if (extrudedInstance === void 0) { extrudedInstance = null; }
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, extrudedInstance);
             return extrudedCustom;
         };
-        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, custom, scene, updtbl, side) {
-            var path3D = new BABYLON.Path3D(curve);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var binormals = path3D.getBinormals();
-            var distances = path3D.getDistances();
-            var shapePaths = new Array();
-            var angle = 0;
-            var returnScale = function (i, distance) {
-                return scale;
-            };
-            var returnRotation = function (i, distance) {
-                return rotation;
-            };
-            var rotate = custom ? rotateFunction : returnRotation;
-            var scl = custom ? scaleFunction : returnScale;
-            for (var i = 0; i < curve.length; i++) {
-                var shapePath = new Array();
-                var angleStep = rotate(i, distances[i]);
-                var scaleRatio = scl(i, distances[i]);
-                for (var p = 0; p < shape.length; p++) {
-                    var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
-                    var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                    var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                    shapePath.push(rotated);
+        Mesh._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance) {
+            // extrusion geometry
+            var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
+                var tangents = path3D.getTangents();
+                var normals = path3D.getNormals();
+                var binormals = path3D.getBinormals();
+                var distances = path3D.getDistances();
+                var angle = 0;
+                var returnScale = function (i, distance) { return scale; };
+                var returnRotation = function (i, distance) { return rotation; };
+                var rotate = custom ? rotateFunction : returnRotation;
+                var scl = custom ? scaleFunction : returnScale;
+                var index = 0;
+                for (var i = 0; i < curve.length; i++) {
+                    var shapePath = new Array();
+                    var angleStep = rotate(i, distances[i]);
+                    var scaleRatio = scl(i, distances[i]);
+                    for (var p = 0; p < shape.length; p++) {
+                        var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                        var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
+                        var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
+                        shapePath.push(rotated);
+                    }
+                    shapePaths[index] = shapePath;
+                    angle += angleStep;
+                    index++;
                 }
-                shapePaths.push(shapePath);
-                angle += angleStep;
+                // cap
+                var capPath = function (shapePath) {
+                    var pointCap = Array();
+                    var barycenter = BABYLON.Vector3.Zero();
+                    var i;
+                    for (i = 0; i < shapePath.length; i++) {
+                        barycenter.addInPlace(shapePath[i]);
+                    }
+                    barycenter.scaleInPlace(1 / shapePath.length);
+                    for (i = 0; i < shapePath.length; i++) {
+                        pointCap.push(barycenter);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case Mesh.CAP_END:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case Mesh.CAP_ALL:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
+                }
+                return shapePaths;
+            };
+            if (instance) {
+                var path3D = (instance.path3D).update(curve);
+                var pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, instance.cap, custom);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                return instance;
             }
-            var extrudedGeneric = Mesh.CreateRibbon(name, shapePaths, rbCA, rbCP, 0, scene, updtbl, side);
+            // extruded shape creation
+            var path3D = new BABYLON.Path3D(curve);
+            var newShapePaths = new Array();
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
+            var extrudedGeneric = Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
+            extrudedGeneric.pathArray = pathArray;
+            extrudedGeneric.path3D = path3D;
+            extrudedGeneric.cap = cap;
             return extrudedGeneric;
+        };
+        // Lathe
+        Mesh.CreateLathe = function (name, shape, radius, tessellation, scene, updatable, sideOrientation) {
+            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            radius = radius || 1;
+            tessellation = tessellation || radius * 60;
+            var pi2 = Math.PI * 2;
+            var Y = BABYLON.Axis.Y;
+            var shapeLathe = new Array();
+            // first rotatable point
+            var i = 0;
+            while (shape[i].x === 0) {
+                i++;
+            }
+            var pt = shape[i];
+            for (i = 0; i < shape.length; i++) {
+                shapeLathe.push(shape[i].subtract(pt));
+            }
+            // circle path
+            var step = pi2 / tessellation;
+            var rotated;
+            var path = new Array();
+            ;
+            for (i = 0; i < tessellation; i++) {
+                rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
+                path.push(rotated);
+            }
+            path.push(path[0]);
+            // extrusion
+            var scaleFunction = function () { return 1; };
+            var rotateFunction = function () { return 0; };
+            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, true, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
+            return lathe;
         };
         // Plane & ground
         Mesh.CreatePlane = function (name, size, scene, updatable, sideOrientation) {
@@ -1090,38 +1357,82 @@ var BABYLON;
                     onReady(ground);
                 }
             };
-            BABYLON.Tools.LoadImage(url, onload, function () {
-            }, scene.database);
+            BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
             return ground;
         };
-        Mesh.CreateTube = function (name, path, radius, tesselation, radiusFunction, scene, updatable, sideOrientation) {
+        Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, cap, scene, updatable, sideOrientation, tubeInstance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            var path3D = new BABYLON.Path3D(path);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var distances = path3D.getDistances();
-            var pi2 = Math.PI * 2;
-            var step = pi2 / tesselation;
-            var returnRadius = function (i, distance) { return radius; };
-            var radiusFunctionFinal = radiusFunction || returnRadius;
-            var circlePaths = new Array();
-            var circlePath;
-            var rad;
-            var normal;
-            var rotated;
-            var rotationMatrix;
-            for (var i = 0; i < path.length; i++) {
-                rad = radiusFunctionFinal(i, distances[i]); // current radius
-                circlePath = Array(); // current circle array
-                normal = normals[i]; // current normal  
-                for (var ang = 0; ang < pi2; ang += step) {
-                    rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], ang);
-                    rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
-                    circlePath.push(rotated);
+            if (tubeInstance === void 0) { tubeInstance = null; }
+            // tube geometry
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
+                var tangents = path3D.getTangents();
+                var normals = path3D.getNormals();
+                var distances = path3D.getDistances();
+                var pi2 = Math.PI * 2;
+                var step = pi2 / tessellation;
+                var returnRadius = function (i, distance) { return radius; };
+                var radiusFunctionFinal = radiusFunction || returnRadius;
+                var circlePath;
+                var rad;
+                var normal;
+                var rotated;
+                var rotationMatrix;
+                var index = 0;
+                for (var i = 0; i < path.length; i++) {
+                    rad = radiusFunctionFinal(i, distances[i]); // current radius
+                    circlePath = Array(); // current circle array
+                    normal = normals[i]; // current normal  
+                    for (var t = 0; t < tessellation; t++) {
+                        rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], step * t);
+                        rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
+                        circlePath.push(rotated);
+                    }
+                    circlePath.push(circlePath[0]);
+                    circlePaths[index] = circlePath;
+                    index++;
                 }
-                circlePaths.push(circlePath);
+                // cap
+                var capPath = function (nbPoints, pathIndex) {
+                    var pointCap = Array();
+                    for (var i = 0; i < nbPoints; i++) {
+                        pointCap.push(path[pathIndex]);
+                    }
+                    return pointCap;
+                };
+                switch (cap) {
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case Mesh.CAP_END:
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case Mesh.CAP_ALL:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    default:
+                        break;
+                }
+                return circlePaths;
+            };
+            if (tubeInstance) {
+                var path3D = (tubeInstance.path3D).update(path);
+                var pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction, tubeInstance.cap);
+                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
+                return tubeInstance;
             }
-            var tube = Mesh.CreateRibbon(name, circlePaths, false, true, 0, scene, updatable, sideOrientation);
+            // tube creation
+            var path3D = new BABYLON.Path3D(path);
+            var newPathArray = new Array();
+            cap = (cap < 0 || cap > 3) ? 0 : cap;
+            var pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
+            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            tube.pathArray = pathArray;
+            tube.path3D = path3D;
+            tube.tessellation = tessellation;
+            tube.cap = cap;
             return tube;
         };
         // Decals
@@ -1271,10 +1582,12 @@ var BABYLON;
                 if (faceVertices.length === 0) {
                     continue;
                 }
+                // Add UVs and get back to world
+                var localRotationMatrix = BABYLON.Matrix.RotationYawPitchRoll(yaw, pitch, angle);
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
                     vertexData.indices.push(currentVertexDataIndex);
-                    BABYLON.Vector3.TransformCoordinates(vertex.position, decalWorldMatrix).toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
                     vertexData.uvs.push(0.5 + vertex.position.x / size.x);
                     vertexData.uvs.push(0.5 + vertex.position.y / size.y);
@@ -1284,6 +1597,8 @@ var BABYLON;
             // Return mesh
             var decal = new Mesh(name, sourceMesh.getScene());
             vertexData.applyToMesh(decal);
+            decal.position = position.clone();
+            decal.rotation = new BABYLON.Vector3(pitch, yaw, angle);
             return decal;
         };
         // Tools
@@ -1310,47 +1625,72 @@ var BABYLON;
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
-        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices) {
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        Mesh.MergeMeshes = function (meshes, disposeSource, allow32BitsIndices, meshSubclass) {
             if (disposeSource === void 0) { disposeSource = true; }
-            var source = meshes[0];
-            var material = source.material;
-            var scene = source.getScene();
             if (!allow32BitsIndices) {
                 var totalVertices = 0;
+                // Counting vertices
                 for (var index = 0; index < meshes.length; index++) {
-                    totalVertices += meshes[index].getTotalVertices();
-                    if (totalVertices > 65536) {
-                        BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                        return null;
+                    if (meshes[index]) {
+                        totalVertices += meshes[index].getTotalVertices();
+                        if (totalVertices > 65536) {
+                            BABYLON.Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                            return null;
+                        }
                     }
                 }
             }
             // Merge
-            var vertexData = BABYLON.VertexData.ExtractFromMesh(source);
-            vertexData.transform(source.getWorldMatrix());
-            for (index = 1; index < meshes.length; index++) {
-                var otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index]);
-                otherVertexData.transform(meshes[index].getWorldMatrix());
-                vertexData.merge(otherVertexData);
+            var vertexData;
+            var otherVertexData;
+            var source;
+            for (index = 0; index < meshes.length; index++) {
+                if (meshes[index]) {
+                    meshes[index].computeWorldMatrix(true);
+                    otherVertexData = BABYLON.VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData.transform(meshes[index].getWorldMatrix());
+                    if (vertexData) {
+                        vertexData.merge(otherVertexData);
+                    }
+                    else {
+                        vertexData = otherVertexData;
+                        source = meshes[index];
+                    }
+                }
             }
-            var newMesh = new Mesh(source.name + "_merged", scene);
-            vertexData.applyToMesh(newMesh);
+            if (!meshSubclass) {
+                meshSubclass = new Mesh(source.name + "_merged", source.getScene());
+            }
+            vertexData.applyToMesh(meshSubclass);
             // Setting properties
-            newMesh.material = material;
-            newMesh.checkCollisions = source.checkCollisions;
+            meshSubclass.material = source.material;
+            meshSubclass.checkCollisions = source.checkCollisions;
             // Cleaning
             if (disposeSource) {
                 for (index = 0; index < meshes.length; index++) {
-                    meshes[index].dispose();
+                    if (meshes[index]) {
+                        meshes[index].dispose();
+                    }
                 }
             }
-            return newMesh;
+            return meshSubclass;
         };
         // Consts
         Mesh._FRONTSIDE = 0;
         Mesh._BACKSIDE = 1;
         Mesh._DOUBLESIDE = 2;
         Mesh._DEFAULTSIDE = 0;
+        Mesh._NO_CAP = 0;
+        Mesh._CAP_START = 1;
+        Mesh._CAP_END = 2;
+        Mesh._CAP_ALL = 3;
         return Mesh;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;

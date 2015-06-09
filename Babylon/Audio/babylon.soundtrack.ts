@@ -1,24 +1,25 @@
 ﻿module BABYLON {
     export class SoundTrack {
-        private _audioEngine: BABYLON.AudioEngine;
-        private _trackGain: GainNode;
+        private _audioEngine: AudioEngine;
+        private _outputAudioNode: GainNode;
+        private _inputAudioNode: AudioNode;
         private _trackConvolver: ConvolverNode;
-        private _scene: BABYLON.Scene;
+        private _scene: Scene;
         public id: number = -1;
-        public soundCollection: Array<BABYLON.Sound>;
+        public soundCollection: Array<Sound>;
         private _isMainTrack: boolean = false;
         private _connectedAnalyser: Analyser;
 
-        constructor(scene: BABYLON.Scene, options?: any) {
+        constructor(scene: Scene, options?: any) {
             this._scene = scene;
             this._audioEngine = Engine.audioEngine;
             this.soundCollection = new Array();
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain = this._audioEngine.audioContext.createGain();
-                this._trackGain.connect(this._audioEngine.masterGain);
+                this._outputAudioNode = this._audioEngine.audioContext.createGain();
+                this._outputAudioNode.connect(this._audioEngine.masterGain);
 
                 if (options) {
-                    if (options.volume) { this._trackGain.gain.value = options.volume; }
+                    if (options.volume) { this._outputAudioNode.gain.value = options.volume; }
                     if (options.mainTrack) { this._isMainTrack = options.mainTrack; }
                 }
             }
@@ -36,14 +37,14 @@
                 while (this.soundCollection.length) {
                     this.soundCollection[0].dispose();
                 }
-                this._trackGain.disconnect();
-                this._trackGain = null;
+                this._outputAudioNode.disconnect();
+                this._outputAudioNode = null;
             }
         }
 
-        public AddSound(sound: BABYLON.Sound) {
+        public AddSound(sound: Sound) {
             if (Engine.audioEngine.canUseWebAudio) {
-                sound.connectToSoundTrackAudioNode(this._trackGain);
+                sound.connectToSoundTrackAudioNode(this._outputAudioNode);
             }
             if (sound.soundTrackId) {
                 if (sound.soundTrackId === -1) {
@@ -58,7 +59,7 @@
             sound.soundTrackId = this.id;
         }
 
-        public RemoveSound(sound: BABYLON.Sound) {
+        public RemoveSound(sound: Sound) {
             var index = this.soundCollection.indexOf(sound);
             if (index !== -1) {
                 this.soundCollection.splice(index, 1);
@@ -67,7 +68,7 @@
 
         public setVolume(newVolume: number) {
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain.gain.value = newVolume;
+                this._outputAudioNode.gain.value = newVolume;
             }
         }
 
@@ -93,8 +94,8 @@
             }
             this._connectedAnalyser = analyser;
             if (this._audioEngine.canUseWebAudio) {
-                this._trackGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this._trackGain, this._audioEngine.masterGain);
+                this._outputAudioNode.disconnect();
+                this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, this._audioEngine.masterGain);
             }
         }
     }

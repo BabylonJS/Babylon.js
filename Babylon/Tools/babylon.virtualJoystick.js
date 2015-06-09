@@ -22,12 +22,12 @@ var BABYLON;
             VirtualJoystick._globalJoystickIndex++;
             // By default left & right arrow keys are moving the X
             // and up & down keys are moving the Y
-            this._axisTargetedByLeftAndRight = 0 /* X */;
-            this._axisTargetedByUpAndDown = 1 /* Y */;
+            this._axisTargetedByLeftAndRight = JoystickAxis.X;
+            this._axisTargetedByUpAndDown = JoystickAxis.Y;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection();
+            this._touches = new BABYLON.SmartCollection();
             this.deltaPosition = BABYLON.Vector3.Zero();
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -88,9 +88,7 @@ var BABYLON;
             VirtualJoystick.vjCanvas.addEventListener("contextmenu", function (evt) {
                 evt.preventDefault(); // Disables system menu
             }, false);
-            requestAnimationFrame(function () {
-                _this._drawVirtualJoystick();
-            });
+            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
         }
         VirtualJoystick.prototype.setJoystickSensibility = function (newJoystickSensibility) {
             this._joystickSensibility = newJoystickSensibility;
@@ -134,26 +132,26 @@ var BABYLON;
                 var directionLeftRight = this.reverseLeftRight ? -1 : 1;
                 var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
                 switch (this._axisTargetedByLeftAndRight) {
-                    case 0 /* X */:
+                    case JoystickAxis.X:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case 1 /* Y */:
+                    case JoystickAxis.Y:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case 2 /* Z */:
+                    case JoystickAxis.Z:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
                 }
                 var directionUpDown = this.reverseUpDown ? 1 : -1;
                 var deltaJoystickY = directionUpDown * this._deltaJoystickVector.y / this._inversedSensibility;
                 switch (this._axisTargetedByUpAndDown) {
-                    case 0 /* X */:
+                    case JoystickAxis.X:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case 1 /* Y */:
+                    case JoystickAxis.Y:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case 2 /* Z */:
+                    case JoystickAxis.Z:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
                 }
@@ -188,26 +186,26 @@ var BABYLON;
         // Define which axis you'd like to control for left & right 
         VirtualJoystick.prototype.setAxisForLeftRight = function (axis) {
             switch (axis) {
-                case 0 /* X */:
-                case 1 /* Y */:
-                case 2 /* Z */:
+                case JoystickAxis.X:
+                case JoystickAxis.Y:
+                case JoystickAxis.Z:
                     this._axisTargetedByLeftAndRight = axis;
                     break;
                 default:
-                    this._axisTargetedByLeftAndRight = 0 /* X */;
+                    this._axisTargetedByLeftAndRight = JoystickAxis.X;
                     break;
             }
         };
         // Define which axis you'd like to control for up & down 
         VirtualJoystick.prototype.setAxisForUpDown = function (axis) {
             switch (axis) {
-                case 0 /* X */:
-                case 1 /* Y */:
-                case 2 /* Z */:
+                case JoystickAxis.X:
+                case JoystickAxis.Y:
+                case JoystickAxis.Z:
                     this._axisTargetedByUpAndDown = axis;
                     break;
                 default:
-                    this._axisTargetedByUpAndDown = 1 /* Y */;
+                    this._axisTargetedByUpAndDown = JoystickAxis.Y;
                     break;
             }
         };
@@ -252,9 +250,7 @@ var BABYLON;
                     ;
                 });
             }
-            requestAnimationFrame(function () {
-                _this._drawVirtualJoystick();
-            });
+            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
         };
         VirtualJoystick.prototype.releaseCanvas = function () {
             if (VirtualJoystick.vjCanvas) {
@@ -267,47 +263,5 @@ var BABYLON;
         return VirtualJoystick;
     })();
     BABYLON.VirtualJoystick = VirtualJoystick;
-})(BABYLON || (BABYLON = {}));
-var BABYLON;
-(function (BABYLON) {
-    var VirtualJoystick;
-    (function (VirtualJoystick) {
-        var Collection = (function () {
-            function Collection() {
-                this._count = 0;
-                this._collection = new Array();
-            }
-            Collection.prototype.Count = function () {
-                return this._count;
-            };
-            Collection.prototype.add = function (key, item) {
-                if (this._collection[key] != undefined) {
-                    return undefined;
-                }
-                this._collection[key] = item;
-                return ++this._count;
-            };
-            Collection.prototype.remove = function (key) {
-                if (this._collection[key] == undefined) {
-                    return undefined;
-                }
-                delete this._collection[key];
-                return --this._count;
-            };
-            Collection.prototype.item = function (key) {
-                return this._collection[key];
-            };
-            Collection.prototype.forEach = function (block) {
-                var key;
-                for (key in this._collection) {
-                    if (this._collection.hasOwnProperty(key)) {
-                        block(this._collection[key]);
-                    }
-                }
-            };
-            return Collection;
-        })();
-        VirtualJoystick.Collection = Collection;
-    })(VirtualJoystick = BABYLON.VirtualJoystick || (BABYLON.VirtualJoystick = {}));
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.virtualJoystick.js.map

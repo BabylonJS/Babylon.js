@@ -14,3 +14,4 @@ nbproject
 *.sublime-project
 *.sublime-workspace
 .directory
+build

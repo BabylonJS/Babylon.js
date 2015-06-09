@@ -160,7 +160,7 @@
 
             var vertexShaderUrl;
 
-            if (vertex[0] === ".") {
+            if (vertex[0] === "." || vertex[0] === "/") {
                 vertexShaderUrl = vertex;
             } else {
                 vertexShaderUrl = Engine.ShadersRepository + vertex;
@@ -191,7 +191,7 @@
 
             var fragmentShaderUrl;
 
-            if (fragment[0] === ".") {
+            if (fragment[0] === "." || fragment[0] === "/") {
                 fragmentShaderUrl = fragment;
             } else {
                 fragmentShaderUrl = Engine.ShadersRepository + fragment;
@@ -204,6 +204,11 @@
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
+
+                if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+                }
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
@@ -239,7 +244,17 @@
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else { // Sorry we did everything we can
-                    Tools.Error("Unable to compile effect: " + this.name);
+                    Tools.Error("Unable to compile effect: ");
+                    if (this.name.vertexElement) {
+                        Tools.Error("Vertex shader:" + this.name.vertexElement);
+                        Tools.Error("Fragment shader:" + this.name.fragmentElement);
+                    } else if (this.name.vertex) {
+                        Tools.Error("Vertex shader:" + this.name.vertex);
+                        Tools.Error("Fragment shader:" + this.name.fragment);
+                    } else {
+                        Tools.Error("Vertex shader:" + this.name);
+                        Tools.Error("Fragment shader:" + this.name);
+                    }
                     Tools.Error("Defines: " + defines);
                     Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;

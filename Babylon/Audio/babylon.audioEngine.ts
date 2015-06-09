@@ -1,42 +1,51 @@
 ﻿module BABYLON {
     export class AudioEngine {
-        public audioContext: AudioContext = null;
+        private _audioContext: AudioContext = null;
+        private _audioContextInitialized = false;
         public canUseWebAudio: boolean = false;
         public masterGain: GainNode;
 
         private _connectedAnalyser: Analyser;
         public WarnedWebAudioUnsupported: boolean = false;
 
+        public get audioContext(): AudioContext {
+            if (!this._audioContextInitialized) {
+                this._initializeAudioContext();
+            }
+            return this._audioContext;
+        }
+
         constructor() {
-            // creating the audio context 
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.canUseWebAudio = true;
+            }
+        }
+
+        private _initializeAudioContext() {
             try {
-                if (typeof AudioContext !== 'undefined') {
-                    this.audioContext = new AudioContext();
-                    this.canUseWebAudio = true;
-                } else if (typeof webkitAudioContext !== 'undefined') {
-                    this.audioContext = new webkitAudioContext();
-                    this.canUseWebAudio = true;
+                if (this.canUseWebAudio) {
+                    this._audioContext = new AudioContext();
+                    // create a global volume gain node 
+                    this.masterGain = this._audioContext.createGain();
+                    this.masterGain.gain.value = 1;
+                    this.masterGain.connect(this._audioContext.destination);
+                    this._audioContextInitialized = true;
                 }
-            } catch (e) {
+            }
+            catch (e) {
                 this.canUseWebAudio = false;
                 Tools.Error("Web Audio: " + e.message);
-            }
-
-            // create a global volume gain node 
-            if (this.canUseWebAudio) {
-                this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.value = 1;
-                this.masterGain.connect(this.audioContext.destination);
             }
         }
 
         public dispose() {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
-                    this.masterGain.connect(this.audioContext.destination);
+                    this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
                 this.masterGain.gain.value = 1;
@@ -45,7 +54,7 @@
         }
 
         public getGlobalVolume(): number {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 return this.masterGain.gain.value;
             }
             else {
@@ -54,7 +63,7 @@
         }
 
         public setGlobalVolume(newVolume: number) {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 this.masterGain.gain.value = newVolume;
             }
         }
@@ -63,10 +72,10 @@
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
-            this._connectedAnalyser = analyser;
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
+                this._connectedAnalyser = analyser;
                 this.masterGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                this._connectedAnalyser.connectAudioNodes(this.masterGain, this._audioContext.destination);
             }
         }
     }

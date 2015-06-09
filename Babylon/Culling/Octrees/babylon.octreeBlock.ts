@@ -80,7 +80,7 @@
         }
 
         public select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void {
-            if (BABYLON.BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
+            if (BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
                 if (this.blocks) {
                     for (var index = 0; index < this.blocks.length; index++) {
                         var block = this.blocks[index];
@@ -98,7 +98,7 @@
         }
 
         public intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void {
-            if (BABYLON.BoundingBox.IntersectsSphere(this._minPoint, this._maxPoint, sphereCenter, sphereRadius)) {
+            if (BoundingBox.IntersectsSphere(this._minPoint, this._maxPoint, sphereCenter, sphereRadius)) {
                 if (this.blocks) {
                     for (var index = 0; index < this.blocks.length; index++) {
                         var block = this.blocks[index];

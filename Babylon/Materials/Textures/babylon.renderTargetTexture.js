@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -110,7 +110,7 @@ var BABYLON;
                         mesh._activate(scene.getRenderId());
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeVertices += subMesh.indexCount;
+                            scene._activeIndices += subMesh.indexCount;
                             this._renderingManager.dispatch(subMesh);
                         }
                     }

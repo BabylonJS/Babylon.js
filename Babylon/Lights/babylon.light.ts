@@ -25,6 +25,7 @@
         public includeOnlyWithLayerMask = 0;
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
+        public excludeWithLayerMask = 0;
 
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
@@ -65,7 +66,12 @@
                 return false;
             }
 
-            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
+                return false;
+            }
+
+
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
 
@@ -79,10 +85,12 @@
 
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this._parentedWorldMatrix) {
-                    this._parentedWorldMatrix = BABYLON.Matrix.Identity();
+                    this._parentedWorldMatrix = Matrix.Identity();
                 }
 
                 worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);
+
+                this._markSyncedWithParent();
 
                 return this._parentedWorldMatrix;
             }

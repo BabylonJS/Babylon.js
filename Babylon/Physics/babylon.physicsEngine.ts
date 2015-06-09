@@ -49,7 +49,7 @@
         }
 
         public _setGravity(gravity: Vector3): void {
-            this.gravity = gravity || new Vector3(0, -9.82, 0);
+            this.gravity = gravity || new Vector3(0, -9.807, 0);
             this._currentPlugin.setGravity(this.gravity);
         }
 

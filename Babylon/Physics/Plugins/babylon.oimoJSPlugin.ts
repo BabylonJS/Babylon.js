@@ -6,7 +6,7 @@ module BABYLON {
         private _registeredMeshes = [];
 
         private _checkWithEpsilon(value: number): number {
-            return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
+            return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;
         }
 
         public initialize(iterations?: number): void {
@@ -27,7 +27,7 @@ module BABYLON {
             var initialRotation = null;
             if (mesh.rotationQuaternion) {
                 initialRotation = mesh.rotationQuaternion.clone();
-                mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                 mesh.computeWorldMatrix(true);
             }
 
@@ -38,14 +38,14 @@ module BABYLON {
 
             // Transform delta position with the rotation
             if (initialRotation) {
-                var m = new BABYLON.Matrix();
+                var m = new Matrix();
                 initialRotation.toRotationMatrix(m);
-                deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
+                deltaPosition = Vector3.TransformCoordinates(deltaPosition, m);
             }
 
             // register mesh
             switch (impostor) {
-                case BABYLON.PhysicsEngine.SphereImpostor:
+                case PhysicsEngine.SphereImpostor:
 
 
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
@@ -154,7 +154,7 @@ module BABYLON {
             mesh.computeWorldMatrix();
 
             switch (part.impostor) {
-                case BABYLON.PhysicsEngine.SphereImpostor:
+                case PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
@@ -173,8 +173,8 @@ module BABYLON {
                     };
                     break;
 
-                case BABYLON.PhysicsEngine.PlaneImpostor:
-                case BABYLON.PhysicsEngine.BoxImpostor:
+                case PhysicsEngine.PlaneImpostor:
+                case PhysicsEngine.BoxImpostor:
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
@@ -231,8 +231,9 @@ module BABYLON {
                     mesh.computeWorldMatrix(true);
 
                     var center = mesh.getBoundingInfo().boundingBox.center;
-                    body.setPosition(center.x, center.y, center.z);
-                    body.setRotation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+                    body.setPosition(new OIMO.Vec3(center.x, center.y, center.z));
+                    body.setRotation(new OIMO.Vec3(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z));
+                    body.sleeping = false;
                     return;
                 }
                 // Case where the parent has been updated
@@ -244,8 +245,9 @@ module BABYLON {
                     var absoluteRotation = mesh.rotation;
 
                     body = registeredMesh.body.body;
-                    body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
-                    body.setRotation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
+                    body.setPosition(new OIMO.Vec3(absolutePosition.x, absolutePosition.y, absolutePosition.z));
+                    body.setRotation(new OIMO.Vec3(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z));
+                    body.sleeping = false;
                     return;
                 }
             }
@@ -339,17 +341,17 @@ module BABYLON {
                         mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
                         mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
                         mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
-                        var mtx = BABYLON.Matrix.FromArray(body.getMatrix());
+                        var mtx = Matrix.FromArray(body.getMatrix());
 
                         if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                         }
                         mesh.rotationQuaternion.fromRotationMatrix(mtx);
                         mesh.computeWorldMatrix();
 
                     } else {
                         m = body.getMatrix();
-                        mtx = BABYLON.Matrix.FromArray(m);
+                        mtx = Matrix.FromArray(m);
 
                         // Body position
                         var bodyX = mtx.m[12],
@@ -367,7 +369,7 @@ module BABYLON {
                         }
 
                         if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                         }
                         Quaternion.FromRotationMatrixToRef(mtx, mesh.rotationQuaternion);
                         mesh.computeWorldMatrix();

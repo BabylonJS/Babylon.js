@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -12,12 +12,12 @@ var BABYLON;
         function VirtualJoysticksCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this._leftjoystick = new BABYLON.VirtualJoystick(true);
-            this._leftjoystick.setAxisForUpDown(2 /* Z */);
-            this._leftjoystick.setAxisForLeftRight(0 /* X */);
+            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
+            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
             this._leftjoystick.setJoystickSensibility(0.15);
             this._rightjoystick = new BABYLON.VirtualJoystick(false);
-            this._rightjoystick.setAxisForUpDown(0 /* X */);
-            this._rightjoystick.setAxisForLeftRight(1 /* Y */);
+            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
+            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
             this._rightjoystick.reverseUpDown = true;
             this._rightjoystick.setJoystickSensibility(0.05);
             this._rightjoystick.setJoystickColor("yellow");
@@ -33,6 +33,7 @@ var BABYLON;
             if (!this._rightjoystick.pressed) {
                 this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
             }
+            _super.prototype._checkInputs.call(this);
         };
         VirtualJoysticksCamera.prototype.dispose = function () {
             this._leftjoystick.releaseCanvas();

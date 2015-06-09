@@ -4,6 +4,7 @@
         public id: string;
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public delayLoadingFile: string;
+        public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
         // Private
         private _scene: Scene;
@@ -16,7 +17,7 @@
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
-        public _delayLoadingFunction: (any, Geometry) => void;
+        public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;
@@ -54,6 +55,7 @@
 
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         }
 
         public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void {
@@ -83,6 +85,7 @@
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -93,6 +96,7 @@
             }
 
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         }
 
         public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
@@ -132,6 +136,7 @@
                     }
                 }
             }
+            this.notifyUpdate(kind);
         }
 
         public getTotalVertices(): number {
@@ -142,12 +147,22 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            return vertexBuffer.getData();
+            var orig = vertexBuffer.getData();
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            } else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         }
 
         public getVertexBuffer(kind: string): VertexBuffer {
@@ -209,6 +224,7 @@
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         }
 
         public getTotalIndices(): number {
@@ -218,11 +234,21 @@
             return this._indices.length;
         }
 
-        public getIndices(): number[] {
+        public getIndices(copyWhenShared?: boolean): number[] {
             if (!this.isReady()) {
                 return null;
             }
-            return this._indices;
+            var orig = this._indices;
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            } else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         }
 
         public getIndexBuffer(): any {
@@ -316,6 +342,12 @@
             }
         }
 
+        private notifyUpdate(kind?: string) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
+            }
+        }
+
         public load(scene: Scene, onLoaded?: () => void): void {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return;
@@ -383,12 +415,7 @@
 
             this._boundingInfo = null; // todo: .dispose()
 
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
             this._isDisposed = true;
         }
 
@@ -459,7 +486,7 @@
 
         /// Abstract class
         export class _Primitive extends Geometry {
-            // Private 
+            // Private
             private _beingRegenerated: boolean;
             private _canBeRegenerated: boolean;
 
@@ -742,4 +769,4 @@
             }
         }
     }
-} 
+}

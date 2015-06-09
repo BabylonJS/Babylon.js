@@ -96,18 +96,14 @@
             serializationObject.type = "DeviceOrientationCamera";
         } else if (camera instanceof FollowCamera) {
             serializationObject.type = "FollowCamera";
-        } else if (camera instanceof OculusCamera) {
-            serializationObject.type = "OculusCamera";
-        } else if (camera instanceof OculusGamepadCamera) {
-            serializationObject.type = "OculusGamepadCamera";
         } else if (camera instanceof TouchCamera) {
             serializationObject.type = "TouchCamera";
         } else if (camera instanceof VirtualJoysticksCamera) {
             serializationObject.type = "VirtualJoysticksCamera";
-        } else if (camera instanceof WebVRCamera) {
-            serializationObject.type = "WebVRCamera";
-        } else if (camera instanceof VRDeviceOrientationCamera) {
-            serializationObject.type = "VRDeviceOrientationCamera";
+        } else if (camera instanceof WebVRFreeCamera) {
+            serializationObject.type = "WebVRFreeCamera";
+        } else if (camera instanceof VRDeviceOrientationFreeCamera) {
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
         } 
 
         //special properties of specific cameras
@@ -126,8 +122,8 @@
             serializationObject.rotationOffset = followCam.rotationOffset;
         } else if (camera instanceof AnaglyphFreeCamera || camera instanceof AnaglyphArcRotateCamera) {
             //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
-            if (camera['_eyeSpace'] !== undefined) {
-                serializationObject.eye_space = Tools.ToDegrees(camera['_eyeSpace']);
+            if (camera['_interaxialDistance'] !== undefined) {
+                serializationObject.interaxial_distance = Tools.ToDegrees(camera['_interaxialDistance']);
             }
         }
 

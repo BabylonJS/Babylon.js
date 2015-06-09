@@ -2,7 +2,7 @@
 precision highp float;
 #endif
 
-#if defined(ALPHATEST) || defined(BASIC_RENDER) || defined(OPACITY)
+#if defined(ALPHATEST) || defined(NEED_UV)
 varying vec2 vUV;
 #endif
 

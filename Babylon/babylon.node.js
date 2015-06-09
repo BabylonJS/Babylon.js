@@ -52,6 +52,9 @@ var BABYLON;
         Node.prototype._isSynchronized = function () {
             return true;
         };
+        Node.prototype._markSyncedWithParent = function () {
+            this._parentRenderId = this.parent._currentRenderId;
+        };
         Node.prototype.isSynchronizedWithParent = function () {
             if (!this.parent) {
                 return true;
@@ -59,8 +62,7 @@ var BABYLON;
             if (this._parentRenderId !== this.parent._currentRenderId) {
                 return false;
             }
-            this._parentRenderId = this.parent._currentRenderId;
-            return this.parent._currentRenderId <= this._currentRenderId && this.parent.isSynchronized();
+            return this.parent.isSynchronized();
         };
         Node.prototype.isSynchronized = function (updateCache) {
             var check = this.hasNewParent();

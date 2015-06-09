@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -41,6 +41,7 @@ var BABYLON;
         };
         Geometry.prototype.setAllVerticesData = function (vertexData, updatable) {
             vertexData.applyToGeometry(this, updatable);
+            this.notifyUpdate();
         };
         Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
             this._vertexBuffers = this._vertexBuffers || {};
@@ -62,6 +63,7 @@ var BABYLON;
                     mesh.computeWorldMatrix(true);
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesDataDirectly = function (kind, data, offset) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -69,6 +71,7 @@ var BABYLON;
                 return;
             }
             vertexBuffer.updateDirectly(data, offset);
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.updateVerticesData = function (kind, data, updateExtends) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -97,6 +100,7 @@ var BABYLON;
                     }
                 }
             }
+            this.notifyUpdate(kind);
         };
         Geometry.prototype.getTotalVertices = function () {
             if (!this.isReady()) {
@@ -104,12 +108,23 @@ var BABYLON;
             }
             return this._totalVertices;
         };
-        Geometry.prototype.getVerticesData = function (kind) {
+        Geometry.prototype.getVerticesData = function (kind, copyWhenShared) {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            return vertexBuffer.getData();
+            var orig = vertexBuffer.getData();
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getVertexBuffer = function (kind) {
             if (!this.isReady()) {
@@ -162,6 +177,7 @@ var BABYLON;
             for (var index = 0; index < numOfMeshes; index++) {
                 meshes[index]._createGlobalSubMesh();
             }
+            this.notifyUpdate();
         };
         Geometry.prototype.getTotalIndices = function () {
             if (!this.isReady()) {
@@ -169,11 +185,22 @@ var BABYLON;
             }
             return this._indices.length;
         };
-        Geometry.prototype.getIndices = function () {
+        Geometry.prototype.getIndices = function (copyWhenShared) {
             if (!this.isReady()) {
                 return null;
             }
-            return this._indices;
+            var orig = this._indices;
+            if (!copyWhenShared || this._meshes.length === 1) {
+                return orig;
+            }
+            else {
+                var len = orig.length;
+                var copy = [];
+                for (var i = 0; i < len; i++) {
+                    copy.push(orig[i]);
+                }
+                return copy;
+            }
         };
         Geometry.prototype.getIndexBuffer = function () {
             if (!this.isReady()) {
@@ -221,6 +248,7 @@ var BABYLON;
         };
         Geometry.prototype._applyToMesh = function (mesh) {
             var numOfMeshes = this._meshes.length;
+            // vertexBuffers
             for (var kind in this._vertexBuffers) {
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
@@ -241,6 +269,11 @@ var BABYLON;
             }
             if (this._indexBuffer) {
                 this._indexBuffer.references = numOfMeshes;
+            }
+        };
+        Geometry.prototype.notifyUpdate = function (kind) {
+            if (this.onGeometryUpdated) {
+                this.onGeometryUpdated(this, kind);
             }
         };
         Geometry.prototype.load = function (scene, onLoaded) {
@@ -269,8 +302,7 @@ var BABYLON;
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, function () {
-            }, scene.database);
+            }, function () { }, scene.database);
         };
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;
@@ -298,11 +330,7 @@ var BABYLON;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
             this._boundingInfo = null; // todo: .dispose()
-            var geometries = this._scene.getGeometries();
-            index = geometries.indexOf(this);
-            if (index > -1) {
-                geometries.splice(index, 1);
-            }
+            this._scene.removeGeometry(this);
             this._isDisposed = true;
         };
         Geometry.prototype.copy = function (id) {

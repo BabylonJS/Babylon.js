@@ -29,6 +29,7 @@ var BABYLON;
         SmartCollection.prototype.removeItemOfIndex = function (index) {
             if (index < this.count && index > -1) {
                 delete this.items[this._keys[index]];
+                //here, shifting by hand is better optimised than .splice
                 while (index < this.count) {
                     this._keys[index] = this._keys[index + 1];
                     index++;
@@ -83,6 +84,14 @@ var BABYLON;
                 this.count = 0;
                 this.items = {};
                 this._keys = new Array(this._initialCapacity);
+            }
+        };
+        SmartCollection.prototype.forEach = function (block) {
+            var key;
+            for (key in this.items) {
+                if (this.items.hasOwnProperty(key)) {
+                    block(this.items[key]);
+                }
             }
         };
         return SmartCollection;

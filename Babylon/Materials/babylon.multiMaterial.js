@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -31,6 +31,14 @@ var BABYLON;
                 }
             }
             return true;
+        };
+        MultiMaterial.prototype.clone = function (name) {
+            var newMultiMaterial = new MultiMaterial(name, this.getScene());
+            for (var index = 0; index < this.subMaterials.length; index++) {
+                var subMaterial = this.subMaterials[index];
+                newMultiMaterial.subMaterials.push(subMaterial);
+            }
+            return newMultiMaterial;
         };
         return MultiMaterial;
     })(BABYLON.Material);

@@ -12,6 +12,7 @@ var BABYLON;
             this._mesh = mesh;
             this._renderingMesh = renderingMesh || mesh;
             mesh.subMeshes.push(this);
+            this._trianglePlanes = [];
             this._id = mesh.subMeshes.length - 1;
             if (createBoundingBox) {
                 this.refreshBoundingInfo();
@@ -86,6 +87,7 @@ var BABYLON;
         };
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
+            // Triangles test
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                 var p0 = positions[indices[index]];
                 var p1 = positions[indices[index + 1]];
@@ -135,7 +137,7 @@ var BABYLON;
                 if (vertexIndex > maxVertexIndex)
                     maxVertexIndex = vertexIndex;
             }
-            return new BABYLON.SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
+            return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         };
         return SubMesh;
     })();

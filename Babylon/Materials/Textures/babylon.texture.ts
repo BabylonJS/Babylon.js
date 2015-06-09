@@ -73,6 +73,12 @@
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
+            } else {
+                Tools.SetImmediate(() => {
+                    if (onLoad) {
+                        onLoad();
+                    }
+                });
             }
         }
 

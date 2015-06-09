@@ -82,19 +82,25 @@ namespace Max2Babylon
         {
             // Set common properties (name, is scene or object, etc.)
             _document = ActionsBuilderWebView.Document;
+
+            // Update screen
+            _document.InvokeScript("hideButtons");
+
+            // Set object name
             _document.GetElementById("ActionsBuilderObjectName").SetAttribute("value", _objectName);
+            _document.InvokeScript("updateObjectName");
 
             if (isRootNode)
                 _document.InvokeScript("setIsScene");
             else
                 _document.InvokeScript("setIsObject");
 
-            _document.InvokeScript("updateObjectName");
+            //_document.InvokeScript("updateObjectName");
 
             if (getProperty())
             {
                 _document.GetElementById("ActionsBuilderJSON").SetAttribute("value", _jsonResult);
-                _document.InvokeScript("updateGraphFromJSON");
+                _document.InvokeScript("loadFromJSON");
             }
 
             // Set lists of meshes, lights, cameras etc.
@@ -112,13 +118,16 @@ namespace Max2Babylon
 
             fillSoundsList(meshes, "setSoundsNames");
 
+            // Finish
+            _document.InvokeScript("resetList");
+
             // Need to subclass this, then allow 3ds Max usage 
             //Win32.SubClass(this.ActionsBuilderWebView.Handle);
         }
 
         private void butOK_Click(object sender, EventArgs e)
         {
-            _document.InvokeScript("updateJSONFromGraph");
+            _document.InvokeScript("createJSON");
             _jsonResult = _document.GetElementById("ActionsBuilderJSON").GetAttribute("value");
 
             setProperty();

@@ -14,8 +14,9 @@ var BABYLON;
                         var body = registeredMesh.body.body;
                         mesh.computeWorldMatrix(true);
                         var center = mesh.getBoundingInfo().boundingBox.center;
-                        body.setPosition(center.x, center.y, center.z);
-                        body.setRotation(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+                        body.setPosition(new OIMO.Vec3(center.x, center.y, center.z));
+                        body.setRotation(new OIMO.Vec3(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z));
+                        body.sleeping = false;
                         return;
                     }
                     // Case where the parent has been updated
@@ -25,8 +26,9 @@ var BABYLON;
                         var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
                         var absoluteRotation = mesh.rotation;
                         body = registeredMesh.body.body;
-                        body.setPosition(absolutePosition.x, absolutePosition.y, absolutePosition.z);
-                        body.setRotation(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z);
+                        body.setPosition(new OIMO.Vec3(absolutePosition.x, absolutePosition.y, absolutePosition.z));
+                        body.setRotation(new OIMO.Vec3(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z));
+                        body.sleeping = false;
                         return;
                     }
                 }
@@ -61,6 +63,7 @@ var BABYLON;
                 initialRotation.toRotationMatrix(m);
                 deltaPosition = BABYLON.Vector3.TransformCoordinates(deltaPosition, m);
             }
+            // register mesh
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
@@ -78,6 +81,7 @@ var BABYLON;
                     });
                     break;
                 case BABYLON.PhysicsEngine.PlaneImpostor:
+                //Oimo "fakes" a cylinder as a box, so why don't we!
                 case BABYLON.PhysicsEngine.CylinderImpostor:
                 case BABYLON.PhysicsEngine.BoxImpostor:
                     var min = bbox.minimumWorld;

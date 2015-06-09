@@ -122,7 +122,7 @@ var BABYLON;
                 return;
             }
             var vertexShaderUrl;
-            if (vertex[0] === ".") {
+            if (vertex[0] === "." || vertex[0] === "/") {
                 vertexShaderUrl = vertex;
             }
             else {
@@ -148,7 +148,7 @@ var BABYLON;
                 return;
             }
             var fragmentShaderUrl;
-            if (fragment[0] === ".") {
+            if (fragment[0] === "." || fragment[0] === "/") {
                 fragmentShaderUrl = fragment;
             }
             else {
@@ -160,6 +160,10 @@ var BABYLON;
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
+                if (!engine.getCaps().highPrecisionShaderSupported) {
+                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
+                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
+                }
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
@@ -190,7 +194,19 @@ var BABYLON;
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 }
                 else {
-                    BABYLON.Tools.Error("Unable to compile effect: " + this.name);
+                    BABYLON.Tools.Error("Unable to compile effect: ");
+                    if (this.name.vertexElement) {
+                        BABYLON.Tools.Error("Vertex shader:" + this.name.vertexElement);
+                        BABYLON.Tools.Error("Fragment shader:" + this.name.fragmentElement);
+                    }
+                    else if (this.name.vertex) {
+                        BABYLON.Tools.Error("Vertex shader:" + this.name.vertex);
+                        BABYLON.Tools.Error("Fragment shader:" + this.name.fragment);
+                    }
+                    else {
+                        BABYLON.Tools.Error("Vertex shader:" + this.name);
+                        BABYLON.Tools.Error("Fragment shader:" + this.name);
+                    }
                     BABYLON.Tools.Error("Defines: " + defines);
                     BABYLON.Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;

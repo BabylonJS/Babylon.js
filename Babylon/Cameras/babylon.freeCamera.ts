@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class FreeCamera extends TargetCamera {
-        public ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
+        public ellipsoid = new Vector3(0.5, 1, 0.5);
         public keysUp = [38];
         public keysDown = [40];
         public keysLeft = [37];
@@ -12,10 +12,10 @@
 
         private _keys = [];
         private _collider = new Collider();
-        private _needMoveForGravity = true;
-        private _oldPosition = BABYLON.Vector3.Zero();
-        private _diffPosition = BABYLON.Vector3.Zero();
-        private _newPosition = BABYLON.Vector3.Zero();
+        private _needMoveForGravity = false;
+        private _oldPosition = Vector3.Zero();
+        private _diffPosition = Vector3.Zero();
+        private _newPosition = Vector3.Zero();
         private _attachedElement: HTMLElement;
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
@@ -138,8 +138,8 @@
                 this._reset = () => {
                     this._keys = [];
                     previousPosition = null;
-                    this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-                    this.cameraRotation = new BABYLON.Vector2(0, 0);
+                    this.cameraDirection = new Vector3(0, 0, 0);
+                    this.cameraRotation = new Vector2(0, 0);
                 };
             }
 
@@ -181,7 +181,7 @@
             var globalPosition: Vector3;
 
             if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
+                globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
             } else {
                 globalPosition = this.position;
             }
@@ -189,21 +189,41 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+            //add gravity to the velocity to prevent the dual-collision checking
+            if (this.applyGravity) {
+                velocity.addInPlace(this.getScene().gravity);
+            }
 
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide) {
-                    this.onCollide(this._collider.collidedMesh);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+
+        }
+
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            //TODO move this to the collision coordinator!
+            if (this.getScene().workerCollisions)
+                newPosition.multiplyInPlace(this._collider.radius);
+
+            var updatePosition = (newPos) => {
+                this._newPosition.copyFrom(newPos);
+
+                this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+
+                var oldPosition = this.position.clone();
+                if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+                    this.position.addInPlace(this._diffPosition);
+                    if (this.onCollide && collidedMesh) {
+                        this.onCollide(collidedMesh);
+                    }
                 }
             }
+
+            updatePosition(newPosition);
         }
 
         public _checkInputs(): void {
             if (!this._localDirection) {
-                this._localDirection = BABYLON.Vector3.Zero();
-                this._transformedDirection = BABYLON.Vector3.Zero();
+                this._localDirection = Vector3.Zero();
+                this._transformedDirection = Vector3.Zero();
             }
 
             // Keyboard
@@ -222,9 +242,11 @@
                 }
 
                 this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
-                BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
                 this.cameraDirection.addInPlace(this._transformedDirection);
             }
+
+            super._checkInputs();
         }
 
         public _decideIfNeedsToMove(): boolean {
@@ -234,20 +256,9 @@
         public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
-                if (this.applyGravity) {
-                    var oldPosition = this.position;
-                    this._collideWithWorld(this.getScene().gravity);
-                    this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
-                }
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }
         }
-
-        public _update(): void {
-            this._checkInputs();
-            super._update();
-        }
-
     }
 } 

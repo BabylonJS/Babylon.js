@@ -3,9 +3,19 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
+## CDN
+- http://cdn.babylonjs.com/2-1/babylon.js 
+- http://cdn.babylonjs.com/2-1/babylon.max.js 
+- http://cdn.babylonjs.com/2-1/babylon-noworker.js 
+
+## Preview release
+You can help by testing or contributing to the next version.
+- **2.2-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/Preview%20release)
+- We are not complicate people, but we still have some [coding guidelines](http://doc.babylonjs.com/page.php?p=22671)
+- Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
+
 ## Documentation
-- [Documentation](https://doc.babylonjs.com)
-- [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
+- [Documentation](http://doc.babylonjs.com)
 - [Roadmap](http://doc.babylonjs.com/page.php?p=22681)
 - [Samples](https://github.com/BabylonJS/Samples)
 - [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
@@ -24,6 +34,8 @@ Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can lear
 3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max
 
 Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) can be used to generate a .babylon file from Blender 3d
+
+Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) can be used to export your geometries from Unity 5 scene editor
 
 Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
 
@@ -49,6 +61,8 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Level of details (LOD)
  - Automatic scene optimizer
  - Debug layer to help you optimize and debug scenes
+ - SIMD.js support
+ - Collisions can be offloaded on webworkers
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture
@@ -73,11 +87,12 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Alpha testing
  - Billboarding
  - Fullscreen mode
- - Shadow Maps and Variance Shadow Maps
+ - Shadow Maps and Variance Shadow Maps (with support for blurred shadows)
  - Rendering layers
  - Post-processes (blur, refraction, black'n'white, fxaa, customs...)
  - SSAO
  - Volumetric Light Scattering 
+ - Depth of field and lens effects
  - Lens flares
  - Multi-views
 -  Textures:
@@ -92,7 +107,7 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Touch camera
  - Anaglyph camera
  - Virtual Joysticks camera
- - Oculus Rift camera
+ - Stereoscopic camera
  - Gamepad camera
  - VR Device Oriention camera
  - WebVR camera
@@ -102,13 +117,18 @@ Online [asset converter](http://www.babylonjs.com/converter.html) where you can 
  - Dynamic meshes
  - Height maps
  - Constructive solid geometries
+ - Parametric shapes (Ribbon, tube, etc.)
  - Hardware instances
 -  Import: 
  - Babylon scene file can be converted from .OBJ, .FBX
  - Exporter for Blender
  - Exporter for Cheetah3d
  - Exporter for 3ds Max
+ - Exporter for Unity 5
+ - STL importer
  - Assets manager
+
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
 ## Apache License 2.0 (Apache)
 

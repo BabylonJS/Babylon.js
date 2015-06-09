@@ -30,5 +30,17 @@
 
             return true;
         }
+
+
+        public clone(name: string): MultiMaterial {
+            var newMultiMaterial = new MultiMaterial(name, this.getScene());
+
+            for (var index = 0; index < this.subMaterials.length; index++) {
+                var subMaterial = this.subMaterials[index];
+                newMultiMaterial.subMaterials.push(subMaterial);
+            }
+
+            return newMultiMaterial;
+        }
     }
 } 

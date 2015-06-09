@@ -1,4 +1,70 @@
 ﻿module BABYLON {
+
+    export class VRCameraMetrics {
+        public hResolution: number;
+        public vResolution: number;
+        public hScreenSize: number;
+        public vScreenSize: number;
+        public vScreenCenter: number;
+        public eyeToScreenDistance: number;
+        public lensSeparationDistance: number;
+        public interpupillaryDistance: number;
+        public distortionK: number[];
+        public chromaAbCorrection: number[];
+        public postProcessScaleFactor: number;
+        public lensCenterOffset: number;
+        public compensateDistorsion = true;
+
+        public get aspectRatio(): number {
+            return this.hResolution / (2 * this.vResolution);
+        }
+
+        public get aspectRatioFov(): number {
+            return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
+        }
+
+        public get leftHMatrix(): Matrix {
+            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+            var h = (4 * meters) / this.hScreenSize;
+
+            return Matrix.Translation(h, 0, 0);
+        }
+
+        public get rightHMatrix(): Matrix {
+            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+            var h = (4 * meters) / this.hScreenSize;
+
+            return Matrix.Translation(-h, 0, 0);
+        }
+
+        public get leftPreViewMatrix(): Matrix {
+            return Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
+        }
+
+        public get rightPreViewMatrix(): Matrix {
+            return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
+        }
+
+        public static GetDefault(): VRCameraMetrics {
+            var result = new VRCameraMetrics();
+
+            result.hResolution = 1280;
+            result.vResolution = 800;
+            result.hScreenSize = 0.149759993;
+            result.vScreenSize = 0.0935999975;
+            result.vScreenCenter = 0.0467999987,
+            result.eyeToScreenDistance = 0.0410000011;
+            result.lensSeparationDistance = 0.0635000020;
+            result.interpupillaryDistance = 0.0640000030;
+            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
+            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
+            result.postProcessScaleFactor = 1.714605507808412;
+            result.lensCenterOffset = 0.151976421;
+
+            return result;
+        }
+    }
+
     export class Camera extends Node {
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
@@ -7,10 +73,17 @@
         private static _FOVMODE_VERTICAL_FIXED = 0;
         private static _FOVMODE_HORIZONTAL_FIXED = 1;
 
+        private static _RIG_MODE_NONE = 0;        
+        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+        private static _RIG_MODE_VR = 20;
+
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
         }
-        
+
         public static get ORTHOGRAPHIC_CAMERA(): number {
             return Camera._ORTHOGRAPHIC_CAMERA;
         }
@@ -23,6 +96,30 @@
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
 
+        public static get RIG_MODE_NONE(): number {
+            return Camera._RIG_MODE_NONE;
+        }
+
+        public static get RIG_MODE_STEREOSCOPIC_ANAGLYPH(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_ANAGLYPH;
+        }
+
+        public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+        }
+        
+        public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+        }
+
+        public static get RIG_MODE_STEREOSCOPIC_OVERUNDER(): number {
+            return Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER;
+        }        
+
+        public static get RIG_MODE_VR(): number {
+            return Camera._RIG_MODE_VR;
+        }
+        
         // Members
         public upVector = Vector3.Up();
         public orthoLeft = null;
@@ -36,10 +133,15 @@
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
         public viewport = new Viewport(0, 0, 1.0, 1.0);
-        public subCameras = [];
-        public layerMask: number = 0xFFFFFFFF;
+        public layerMask: number = 0x0FFFFFFF;
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
+   
+        // Camera rig members
+        public cameraRigMode = Camera.RIG_MODE_NONE;
+        public _cameraRigParams: any;
+        public _rigCameras = new Array<Camera>();
 
+        // Cache
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
@@ -173,6 +275,13 @@
         }
 
         public _update(): void {
+            this._checkInputs();
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._updateRigCameras();
+            }
+        }
+
+        public _checkInputs(): void {
         }
 
         public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
@@ -281,30 +390,31 @@
             return Matrix.Identity();
         }
 
-        public getViewMatrix(): Matrix {
-            this._computedViewMatrix = this._computeViewMatrix();
+        public getViewMatrix(force?: boolean): Matrix {
+            this._computedViewMatrix = this._computeViewMatrix(force);
 
-            if (!this.parent
-                || !this.parent.getWorldMatrix
-                || this.isSynchronized()) {
-
-                this._globalPosition.copyFrom(this.position);
-
+            if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
 
-            if (!this._worldMatrix) {
-                this._worldMatrix = Matrix.Identity();
+            if (!this.parent || !this.parent.getWorldMatrix) {
+                this._globalPosition.copyFrom(this.position);
+            } else {
+                if (!this._worldMatrix) {
+                    this._worldMatrix = Matrix.Identity();
+                }
+
+                this._computedViewMatrix.invertToRef(this._worldMatrix);
+
+                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
+                this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
+
+                this._computedViewMatrix.invert();
+
+                this._markSyncedWithParent();
             }
 
-            this._computedViewMatrix.invertToRef(this._worldMatrix);
-
-            this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
-
-            this._computedViewMatrix.invert();
-
             this._currentRenderId = this.getScene().getRenderId();
-            this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
 
             return this._computedViewMatrix;
         }
@@ -315,9 +425,8 @@
             }
 
             this._computedViewMatrix = this._getViewMatrix();
-            if (!this.parent || !this.parent.getWorldMatrix) {
-                this._currentRenderId = this.getScene().getRenderId();
-            }
+            this._currentRenderId = this.getScene().getRenderId();
+
             return this._computedViewMatrix;
         }
 
@@ -345,10 +454,133 @@
         public dispose(): void {
             // Remove from scene
             this.getScene().removeCamera(this);
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
+            }
 
             // Postprocesses
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
+            }
+        }
+        
+        // ---- Camera rigs section ----
+        public setCameraRigMode(mode: number, rigParams: any): void {
+            while (this._rigCameras.length > 0) {
+                this._rigCameras.pop().dispose();
+            }
+            this.cameraRigMode = mode;
+            this._cameraRigParams = {};
+        
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
+                    //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+                    //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
+                    this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+                    
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                break;
+            }
+            
+            var postProcesses = new Array<PostProcess>();
+            
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]));
+                    this._rigCameras[0].isIntermediate = true;
+
+                    postProcesses.push(new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras[1]));
+                    postProcesses[1].onApply = effect => {
+                        effect.setTextureFromPostProcess("leftSampler", postProcesses[0]);
+                    };
+                    break;
+
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    var isStereoscopicHoriz = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED);
+                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED)? 1 : 0;
+                    var secondCamIndex = 1 - firstCamIndex;
+                    
+                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[firstCamIndex]));
+                    this._rigCameras[firstCamIndex].isIntermediate = true;
+
+                    postProcesses.push(new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras[secondCamIndex], postProcesses[0], isStereoscopicHoriz));
+                    break;
+
+                case Camera.RIG_MODE_VR:
+                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                    
+                    var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+                    this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
+                    this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
+                    this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
+
+                    this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
+                    this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
+                    this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
+
+                    if (metrics.compensateDistorsion) {
+                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
+                    }
+
+                    this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
+                    this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                    this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
+                    this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
+                    this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
+
+                    this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
+
+                    if (metrics.compensateDistorsion) {
+                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
+                    }
+                    break;
+            }
+            
+            this._update();
+        }
+
+        private _getVRProjectionMatrix(): Matrix {
+            Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
+            return this._projectionMatrix;
+        }
+
+        public setCameraRigParameter(name: string, value: any) {
+            this._cameraRigParams[name] = value;
+            //provisionnally:
+            if (name === "interaxialDistance") { 
+		this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637); 
+            }
+        }
+        
+        /**
+         * May needs to be overridden by children so sub has required properties to be copied
+         */
+        public createRigCamera(name: string, cameraIndex: number): Camera {
+            return null;
+        }
+        
+        /**
+         * May needs to be overridden by children
+         */
+        public _updateRigCameras() {
+            for (var i=0 ; i<this._rigCameras.length ; i++) {
+                this._rigCameras[i].minZ = this.minZ;
+                this._rigCameras[i].maxZ = this.maxZ;
+                this._rigCameras[i].fov = this.fov;
+            }
+            
+            // only update viewport when ANAGLYPH
+            if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
+                this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         }
     }

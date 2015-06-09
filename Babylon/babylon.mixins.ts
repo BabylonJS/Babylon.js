@@ -17,6 +17,8 @@ interface Window {
     MSGesture: MSGesture;
     CANNON: any;
     SIMD: any;
+    AudioContext: AudioContext;
+    webkitAudioContext: AudioContext;
 }
 
 interface HTMLURL {
@@ -98,6 +100,11 @@ interface MSStyleCSSProperties {
 
 interface Navigator {
     getVRDevices: () => any;
-    mozGetVRDevices: (any) => any;
+    mozGetVRDevices: (any: any) => any;
     isCocoonJS: boolean;
+}
+
+interface Screen {
+    orientation: string;
+    mozOrientation: string;
 }

@@ -310,6 +310,12 @@
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
+        texture._baseWidth = width;
+        texture._baseHeight = height;
+        texture._width = potWidth;
+        texture._height = potHeight;
+        texture.isReady = true;
+
         processFunction(potWidth, potHeight);
 
         var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
@@ -324,12 +330,6 @@
         gl.bindTexture(gl.TEXTURE_2D, null);
 
         engine._activeTexturesCache = [];
-        texture._baseWidth = width;
-        texture._baseHeight = height;
-        texture._width = potWidth;
-        texture._height = potHeight;
-        texture.isReady = true;
-        texture.samplingMode = samplingMode;
         scene._removePendingData(texture);
     };
 
@@ -378,6 +378,7 @@
         public maxAnisotropy: number;
         public instancedArrays;
         public uintIndices: boolean;
+        public highPrecisionShaderSupported: boolean;
     }
 
     /**
@@ -460,12 +461,13 @@
         }
 
         public static get Version(): string {
-            return "2.1.0 alpha";
+            return "2.1.0";
         }
 
         // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
+        public static CodeRepository = "Babylon/";
         public static ShadersRepository = "Babylon/Shaders/";
 
         // Public members
@@ -503,6 +505,8 @@
         private _glRenderer: string;
         private _glVendor: string;
 
+        private _videoTextureSupported: boolean;
+
         private _renderingQueueLaunched = false;
         private _activeRenderLoops = [];
 
@@ -528,7 +532,6 @@
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
-        private _canvasClientRect: ClientRect;
         private _uintIndicesCurrentlySet = false;
 
         private _workingCanvas: HTMLCanvasElement;
@@ -542,7 +545,6 @@
          */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?) {
             this._renderingCanvas = canvas;
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
 
             options = options || {};
             options.antialias = antialias;
@@ -605,6 +607,12 @@
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.highPrecisionShaderSupported = true;
+
+            if (this._gl.getShaderPrecisionFormat) {
+                var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+            }
 
             // Depth buffer
             this.setDepthBuffer(true);
@@ -644,10 +652,10 @@
             // Pointer lock
             this._onPointerLockChange = () => {
                 this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                document.webkitPointerLockElement === canvas ||
-                document.msPointerLockElement === canvas ||
-                document.pointerLockElement === canvas
-                );
+                    document.webkitPointerLockElement === canvas ||
+                    document.msPointerLockElement === canvas ||
+                    document.pointerLockElement === canvas
+                    );
             };
 
             document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
@@ -858,8 +866,8 @@
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || this._renderingCanvas.width;
-            var height = requiredHeight || this._renderingCanvas.height;
+            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.width);
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
             var x = viewport.x || 0;
             var y = viewport.y || 0;
 
@@ -890,7 +898,10 @@
          *   });
          */
         public resize(): void {
-            this.setSize(this._renderingCanvas.clientWidth / this._hardwareScalingLevel, this._renderingCanvas.clientHeight / this._hardwareScalingLevel);
+            var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
+            var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
+
+            this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
         }
 
         /**
@@ -902,7 +913,15 @@
             this._renderingCanvas.width = width;
             this._renderingCanvas.height = height;
 
-            this._canvasClientRect = this._renderingCanvas.getBoundingClientRect();
+            for (var index = 0; index < this.scenes.length; index++) {
+                var scene = this.scenes[index];
+
+                for (var camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    var cam = scene.cameras[camIndex];
+
+                    cam._currentRenderId = 0;
+                }
+            }
         }
 
         public bindFramebuffer(texture: WebGLTexture): void {
@@ -1127,12 +1146,13 @@
             this._drawCalls++;
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
+            var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2, instancesCount);
+                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
                 return;
             }
 
-            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * 2);
+            this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult);
         }
 
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
@@ -1175,7 +1195,7 @@
             return effect;
         }
 
-        public createEffectForParticles(fragmentName: string, uniformsNames: string[]= [], samplers: string[]= [], defines = "", fallbacks?: EffectFallbacks,
+        public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
             return this.createEffect(
@@ -1494,6 +1514,7 @@
             texture.url = url;
             texture.noMipmap = noMipmap;
             texture.references = 1;
+            texture.samplingMode = samplingMode;
             this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
@@ -1648,15 +1669,17 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponantOfTwo = true): WebGLTexture {
             var texture = this._gl.createTexture();
-
-            width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-            height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
-
-            this._activeTexturesCache = [];
             texture._baseWidth = width;
             texture._baseHeight = height;
+
+            if (forceExponantOfTwo) {
+                width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
+                height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+            }
+
+            this._activeTexturesCache = [];
             texture._width = width;
             texture._height = height;
             texture.isReady = false;
@@ -1697,8 +1720,19 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
 
-            // Scale the video if it is a NPOT using the current working canvas
-            if (video.videoWidth !== texture._width || video.videoHeight !== texture._height) {
+            // Testing video texture support
+            if (this._videoTextureSupported === undefined) {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+
+                if (this._gl.getError() !== 0) {
+                    this._videoTextureSupported = false;
+                } else {
+                    this._videoTextureSupported = true;
+                }
+            }
+
+            // Copy video through the current working canvas if video texture is not supported
+            if (!this._videoTextureSupported) {
                 if (!texture._workingCanvas) {
                     texture._workingCanvas = document.createElement("canvas");
                     texture._workingContext = texture._workingCanvas.getContext("2d");
@@ -1776,6 +1810,10 @@
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            }
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
 
             // Unbind
@@ -2062,6 +2100,8 @@
                 }
                 this._gl.disableVertexAttribArray(i);
             }
+            
+            this._gl = null;
 
             // Events
             window.removeEventListener("blur", this._onBlur);
