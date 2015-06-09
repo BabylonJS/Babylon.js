@@ -142,9 +142,9 @@ vec4 getBlurColor(float size) {
 
 	col /= total_weight;		// scales color according to weights
 
-	// darken if out of focus
-	if(darken > 0.0) {
-		col.rgb *= clamp(0.3, 1.0, 1.05-size*0.5*darken);
+								// darken if out of focus
+	if (darken > 0.0) {
+		col.rgb *= clamp(0.3, 1.0, 1.05 - size*0.5*darken);
 	}
 
 	// blur levels debug
@@ -166,13 +166,13 @@ void main(void)
 	vec2 texels_coords = vec2(vUV.x * screen_width, vUV.y * screen_height);	// varies from 0 to SCREEN_WIDTH or _HEIGHT
 
 	float depth = texture2D(depthSampler, distorted_coords).r;	// depth value from DepthRenderer: 0 to 1
-	float distance = near + (far-near)*depth;		// actual distance from the lens
+	float distance = near + (far - near)*depth;		// actual distance from the lens
 	vec4 color = texture2D(textureSampler, vUV);	// original raster
 
 
-	// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
-	// screen_distance is precomputed in code
-	float coc = abs( aperture * ( screen_distance * ( inverse_focal_length - 1.0 / distance ) - 1.0 ) );
+													// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
+													// screen_distance is precomputed in code
+	float coc = abs(aperture * (screen_distance * (inverse_focal_length - 1.0 / distance) - 1.0));
 
 	// disable blur
 	if (dof_enabled == false || coc < 0.07) { coc = 0.0; }

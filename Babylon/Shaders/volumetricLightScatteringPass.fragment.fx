@@ -10,6 +10,10 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
+#if defined(DIFFUSE_COLOR_RENDER)
+uniform vec3 color;
+#endif
+
 #if defined(OPACITY)
 uniform sampler2D opacitySampler;
 uniform float opacityLevel;
@@ -39,16 +43,21 @@ void main(void)
 
 	#if defined(BASIC_RENDER)
 	gl_FragColor = vec4(diffuseColor.rgb, alpha);
+	#elif defined(DIFFUSE_COLOR_RENDER)
+	gl_FragColor = vec4(color.rgb, alpha);
 	#else
 	gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
 	#endif
 
 	gl_FragColor.a = alpha;
 #else
-	#ifndef BASIC_RENDER
-	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-	#else
+
+	#if defined(BASIC_RENDER)
 	gl_FragColor = diffuseColor;
+	#elif defined(DIFFUSE_COLOR_RENDER)
+	gl_FragColor = vec4(color.rgb, 1.0);
+	#else
+	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 	#endif
 #endif
 

@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -37,6 +37,11 @@ var BABYLON;
             */
             this.invert = true;
             /**
+            * Set to true to use the diffuseColor instead of the diffuseTexture
+            * @type {boolean}
+            */
+            this.useDiffuseColor = false;
+            /**
             * Array containing the excluded meshes not rendered in the internal pass
             */
             this.excludedMeshes = new Array();
@@ -68,14 +73,20 @@ var BABYLON;
             var needUV = false;
             // Render this.mesh as default
             if (mesh === this.mesh) {
-                defines.push("#define BASIC_RENDER");
+                if (this.useDiffuseColor) {
+                    defines.push("#define DIFFUSE_COLOR_RENDER");
+                }
+                else {
+                    defines.push("#define BASIC_RENDER");
+                }
                 defines.push("#define NEED_UV");
                 needUV = true;
             }
             // Alpha test
             if (material) {
-                if (material.needAlphaTesting() || mesh === this.mesh)
+                if (material.needAlphaTesting()) {
                     defines.push("#define ALPHATEST");
+                }
                 if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
                     if (material.opacityTexture.getAlphaFromRGB)
@@ -111,7 +122,7 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel"], ["diffuseSampler", "opacitySampler"], join);
+                this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect({ vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" }, attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel", "color"], ["diffuseSampler", "opacitySampler"], join);
             }
             return this._volumetricLightScatteringPass.isReady();
         };
@@ -187,9 +198,14 @@ var BABYLON;
                     // Alpha test
                     if (material && (mesh === _this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
-                        if (alphaTexture) {
-                            _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        if (_this.useDiffuseColor && mesh === _this.mesh) {
+                            _this._volumetricLightScatteringPass.setColor3("color", material.diffuseColor);
+                        }
+                        else {
+                            _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
+                            if (alphaTexture) {
+                                _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                            }
                         }
                         if (material.opacityTexture !== undefined) {
                             _this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
