@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -18,11 +18,12 @@ var BABYLON;
          *      distortion: number;                 // from 0 to x (1 for realism)
          *      grain_amount: number;               // from 0 to 1
          *      grain_texture: BABYLON.Texture;     // texture to use for grain effect; if unset, use random B&W noise
-         *      dof_focus_depth: number;            // depth-of-field: focus depth; unset to disable (disabled by default)
+         *      dof_focus_distance: number;         // depth-of-field: focus distance; unset to disable (disabled by default)
          *      dof_aperture: number;               // depth-of-field: focus blur bias (default: 1)
+         *      dof_darken: number;                 // depth-of-field: darken that which is out of focus (from 0 to 1, disabled by default)
          *      dof_pentagon: boolean;              // depth-of-field: makes a pentagon-like "bokeh" effect
-         *      dof_gain: number;                   // depth-of-field: depthOfField gain; unset to disable (disabled by default)
-         *      dof_threshold: number;              // depth-of-field: depthOfField threshold (default: 1)
+         *      dof_gain: number;                   // depth-of-field: highlights gain; unset to disable (disabled by default)
+         *      dof_threshold: number;              // depth-of-field: highlights threshold (default: 1)
          *      blur_noise: boolean;                // add a little bit of noise to the blur (default: true)
          * }
          * Note: if an effect parameter is unset, effect is disabled
@@ -78,14 +79,15 @@ var BABYLON;
             this._distortion = parameters.distortion ? parameters.distortion : 0;
             this._highlightsGain = parameters.dof_gain !== undefined ? parameters.dof_gain : -1;
             this._highlightsThreshold = parameters.dof_threshold ? parameters.dof_threshold : 1;
-            this._dofDepth = parameters.dof_focus_depth !== undefined ? parameters.dof_focus_depth : -1;
+            this._dofDistance = parameters.dof_focus_distance !== undefined ? parameters.dof_focus_distance : -1;
             this._dofAperture = parameters.dof_aperture ? parameters.dof_aperture : 1;
+            this._dofDarken = parameters.dof_darken ? parameters.dof_darken : 0;
             this._dofPentagon = parameters.dof_pentagon !== undefined ? parameters.dof_pentagon : true;
             this._blurNoise = parameters.blur_noise !== undefined ? parameters.blur_noise : true;
             // Create effects
             this._createChromaticAberrationPostProcess(ratio);
             this._createHighlightsPostProcess(ratio);
-            this._createDepthOfFieldPostProcess(ratio);
+            this._createDepthOfFieldPostProcess(ratio / 4);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () { return _this._chromaticAberrationPostProcess; }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () { return _this._highlightsPostProcess; }, true));
@@ -108,9 +110,10 @@ var BABYLON;
         LensRenderingPipeline.prototype.disableChromaticAberration = function () { this._chromaticAberration = 0; };
         LensRenderingPipeline.prototype.setEdgeDistortion = function (amount) { this._distortion = amount; };
         LensRenderingPipeline.prototype.disableEdgeDistortion = function () { this._distortion = 0; };
-        LensRenderingPipeline.prototype.setFocusDepth = function (amount) { this._dofDepth = amount; };
-        LensRenderingPipeline.prototype.disableDepthOfField = function () { this._dofDepth = -1; };
+        LensRenderingPipeline.prototype.setFocusDistance = function (amount) { this._dofDistance = amount; };
+        LensRenderingPipeline.prototype.disableDepthOfField = function () { this._dofDistance = -1; };
         LensRenderingPipeline.prototype.setAperture = function (amount) { this._dofAperture = amount; };
+        LensRenderingPipeline.prototype.setDarkenOutOfFocus = function (amount) { this._dofDarken = amount; };
         LensRenderingPipeline.prototype.enablePentagonBokeh = function () { this._dofPentagon = true; };
         LensRenderingPipeline.prototype.disablePentagonBokeh = function () { this._dofPentagon = false; };
         LensRenderingPipeline.prototype.enableNoiseBlur = function () { this._blurNoise = true; };
@@ -167,24 +170,27 @@ var BABYLON;
         LensRenderingPipeline.prototype._createDepthOfFieldPostProcess = function (ratio) {
             var _this = this;
             this._depthOfFieldPostProcess = new BABYLON.PostProcess("LensDepthOfField", "depthOfField", [
-                "focus_depth", "aperture", "pentagon", "maxZ", "edge_blur", "chromatic_aberration",
-                "distortion", "blur_noise", "grain_amount", "screen_width", "screen_height", "highlights"
+                "grain_amount", "blur_noise", "screen_width", "screen_height", "distortion", "dof_enabled",
+                "screen_distance", "aperture", "darken", "edge_blur", "highlights", "near", "far"
             ], ["depthSampler", "grainSampler", "highlightsSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._depthOfFieldPostProcess.onApply = function (effect) {
-                effect.setBool('blur_noise', _this._blurNoise);
-                effect.setFloat('maxZ', _this._scene.activeCamera.maxZ);
-                effect.setFloat('grain_amount', _this._grainAmount);
                 effect.setTexture("depthSampler", _this._depthTexture);
                 effect.setTexture("grainSampler", _this._grainTexture);
                 effect.setTextureFromPostProcess("textureSampler", _this._highlightsPostProcess);
                 effect.setTextureFromPostProcess("highlightsSampler", _this._depthOfFieldPostProcess);
+                effect.setFloat('grain_amount', _this._grainAmount);
+                effect.setBool('blur_noise', _this._blurNoise);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
                 effect.setFloat('distortion', _this._distortion);
-                effect.setFloat('focus_depth', _this._dofDepth);
+                effect.setBool('dof_enabled', (_this._dofDistance != -1));
+                effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / _this._dofDistance));
                 effect.setFloat('aperture', _this._dofAperture);
+                effect.setFloat('darken', _this._dofDarken);
                 effect.setFloat('edge_blur', _this._edgeBlur);
                 effect.setBool('highlights', (_this._highlightsGain != -1));
+                effect.setFloat('near', _this._scene.activeCamera.minZ);
+                effect.setFloat('far', _this._scene.activeCamera.maxZ);
             };
         };
         // creates a black and white random noise texture, 512x512

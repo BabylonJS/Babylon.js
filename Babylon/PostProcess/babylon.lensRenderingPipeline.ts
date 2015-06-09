@@ -102,7 +102,7 @@ module BABYLON {
             // Create effects
             this._createChromaticAberrationPostProcess(ratio);
             this._createHighlightsPostProcess(ratio);
-            this._createDepthOfFieldPostProcess(ratio/4);
+            this._createDepthOfFieldPostProcess(ratio / 4);
 
             // Set up pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, () => { return this._chromaticAberrationPostProcess; }, true));
@@ -227,7 +227,7 @@ module BABYLON {
                 effect.setFloat('distortion', this._distortion);
 
                 effect.setBool('dof_enabled', (this._dofDistance != -1));
-                effect.setFloat('screen_distance',  1.0 / ( 0.1 - 1.0 / this._dofDistance ));
+                effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / this._dofDistance));
                 effect.setFloat('aperture', this._dofAperture);
                 effect.setFloat('darken', this._dofDarken);
 

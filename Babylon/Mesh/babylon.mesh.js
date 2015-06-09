@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -323,7 +323,7 @@ var BABYLON;
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
         };
-        // Methods  
+        // Methods
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
             if (this._preActivateId === sceneRenderId) {
@@ -802,7 +802,7 @@ var BABYLON;
             }
             return true;
         };
-        // Clone 
+        // Clone
         Mesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         };
@@ -1347,7 +1347,7 @@ var BABYLON;
                 canvas.height = heightMapHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
-                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949 
+                // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
                 var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
                 vertexData.applyToMesh(ground, updatable);
@@ -1381,7 +1381,7 @@ var BABYLON;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array(); // current circle array
-                    normal = normals[i]; // current normal  
+                    normal = normals[i]; // current normal
                     for (var t = 0; t < tessellation; t++) {
                         rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], step * t);
                         rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
