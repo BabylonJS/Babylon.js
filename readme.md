@@ -8,9 +8,13 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 - http://cdn.babylonjs.com/2-1/babylon.max.js 
 - http://cdn.babylonjs.com/2-1/babylon-noworker.js 
 
+## Preview release
+You can help by testing or contributing to the next version.
+- 2.2-alpha can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/Preview%20release)
+- [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
+
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
-- [Creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
 - [Roadmap](http://doc.babylonjs.com/page.php?p=22681)
 - [Samples](https://github.com/BabylonJS/Samples)
 - [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
