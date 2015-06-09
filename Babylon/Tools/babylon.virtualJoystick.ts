@@ -20,8 +20,8 @@ module BABYLON {
         private static vjCanvas: HTMLCanvasElement;
         private static vjCanvasContext: CanvasRenderingContext2D;
         private static vjCanvasWidth: number;
-        private static vjCanvasHeight: number; 
-        private static halfWidth: number; 
+        private static vjCanvasHeight: number;
+        private static halfWidth: number;
         private static halfHeight: number;
 
         private _action: () => any;
@@ -39,7 +39,7 @@ module BABYLON {
         private _deltaJoystickVector: Vector2;
         private _leftJoystick: boolean;
         private _joystickIndex: number;
-        private _touches: BABYLON.VirtualJoystick.Collection<PointerEvent>;
+        private _touches: SmartCollection;
 
         constructor(leftJoystick?: boolean) {
             if (leftJoystick) {
@@ -61,8 +61,8 @@ module BABYLON {
             this.reverseUpDown = false;
 
             // collections of pointers
-            this._touches = new BABYLON.VirtualJoystick.Collection<PointerEvent>();
-            this.deltaPosition = BABYLON.Vector3.Zero();
+            this._touches = new SmartCollection();
+            this.deltaPosition = Vector3.Zero();
 
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -72,7 +72,7 @@ module BABYLON {
 
             // injecting a canvas element on top of the canvas 3D game
             if (!VirtualJoystick.vjCanvas) {
-                window.addEventListener("resize", () => {
+                window.addEventListener("resize",() => {
                     VirtualJoystick.vjCanvasWidth = window.innerWidth;
                     VirtualJoystick.vjCanvasHeight = window.innerHeight;
                     VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
@@ -106,35 +106,35 @@ module BABYLON {
 
             this._joystickPointerID = -1;
             // current joystick position
-            this._joystickPointerPos = new BABYLON.Vector2(0, 0);
+            this._joystickPointerPos = new Vector2(0, 0);
             // origin joystick position
-            this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
-            this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
+            this._joystickPointerStartPos = new Vector2(0, 0);
+            this._deltaJoystickVector = new Vector2(0, 0);
 
-            VirtualJoystick.vjCanvas.addEventListener('pointerdown', (evt) => {
+            VirtualJoystick.vjCanvas.addEventListener('pointerdown',(evt) => {
                 this._onPointerDown(evt);
             }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointermove', (evt) => {
+            VirtualJoystick.vjCanvas.addEventListener('pointermove',(evt) => {
                 this._onPointerMove(evt);
             }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerup',  (evt) => {
+            VirtualJoystick.vjCanvas.addEventListener('pointerup',(evt) => {
                 this._onPointerUp(evt);
             }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerout', (evt) => {
+            VirtualJoystick.vjCanvas.addEventListener('pointerout',(evt) => {
                 this._onPointerUp(evt);
             }, false);
-            VirtualJoystick.vjCanvas.addEventListener("contextmenu", (evt) => {
+            VirtualJoystick.vjCanvas.addEventListener("contextmenu",(evt) => {
                 evt.preventDefault();    // Disables system menu
             }, false);
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
-        public setJoystickSensibility (newJoystickSensibility: number) {
+        public setJoystickSensibility(newJoystickSensibility: number) {
             this._joystickSensibility = newJoystickSensibility;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
         }
 
-        private _onPointerDown (e: PointerEvent) {
+        private _onPointerDown(e: PointerEvent) {
             var positionOnScreenCondition: boolean;
 
             e.preventDefault();
@@ -166,7 +166,7 @@ module BABYLON {
             }
         }
 
-        private _onPointerMove (e: PointerEvent) {
+        private _onPointerMove(e: PointerEvent) {
             // If the current pointer is the one associated to the joystick (first touch contact)
             if (this._joystickPointerID == e.pointerId) {
                 this._joystickPointerPos.x = e.clientX;
@@ -218,18 +218,18 @@ module BABYLON {
             this._deltaJoystickVector.x = 0;
             this._deltaJoystickVector.y = 0;
 
-           this._touches.remove(e.pointerId.toString());
+            this._touches.remove(e.pointerId.toString());
         }
 
         /**
         * Change the color of the virtual joystick
         * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
         */
-        public setJoystickColor (newColor: string) {
+        public setJoystickColor(newColor: string) {
             this._joystickColor = newColor;
         }
 
-        public setActionOnTouch (action: () => any) {
+        public setActionOnTouch(action: () => any) {
             this._action = action;
         }
 
@@ -267,7 +267,7 @@ module BABYLON {
             }
             else {
                 VirtualJoystick.vjCanvasContext.clearRect(VirtualJoystick.vjCanvasWidth / 2, 0, VirtualJoystick.vjCanvasWidth, VirtualJoystick.vjCanvasHeight);
-            } 
+            }
         }
 
         private _drawVirtualJoystick() {
@@ -304,7 +304,7 @@ module BABYLON {
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
-        public releaseCanvas () {
+        public releaseCanvas() {
             if (VirtualJoystick.vjCanvas) {
                 document.body.removeChild(VirtualJoystick.vjCanvas);
                 VirtualJoystick.vjCanvas = null;
@@ -312,51 +312,5 @@ module BABYLON {
         }
     }
 }
-
-module BABYLON.VirtualJoystick {
-    export class Collection<T> {
-        private _count: number;
-        private _collection: Array<T>;
-
-        constructor() {
-            this._count = 0;
-            this._collection = new Array<T>();
-        }
-
-        public Count(): number {
-            return this._count;
-        }
-
-        public add<T>(key: string, item: T): number {
-            if (this._collection[key] != undefined) {
-                return undefined;
-            }
-            this._collection[key] = item;
-            return ++this._count;
-        }
-
-        public remove(key: string): number {
-            if (this._collection[key] == undefined) {
-                return undefined;
-            }
-            delete this._collection[key];
-            return --this._count;
-        }
-
-        public item(key: string) {
-            return this._collection[key];
-        }
-
-        public forEach<T>(block: (item: T) => void) {
-            var key: string;
-            for (key in this._collection) {
-                if (this._collection.hasOwnProperty(key)) {
-                    block(this._collection[key]);
-                }
-            }
-        }
-    }
-}
-
 
 

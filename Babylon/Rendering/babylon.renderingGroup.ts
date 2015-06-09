@@ -1,9 +1,9 @@
 ﻿module BABYLON {
     export class RenderingGroup {
         private _scene: Scene
-        private _opaqueSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
-        private _transparentSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
-        private _alphaTestSubMeshes = new BABYLON.SmartArray<SubMesh>(256);
+        private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
+        private _transparentSubMeshes = new SmartArray<SubMesh>(256);
+        private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _activeVertices: number;
 
         constructor(public index: number, scene: Scene) {
@@ -71,13 +71,13 @@
                 });
 
                 // Rendering
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
 
                     submesh.render();
                 }
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
             return true;
         }

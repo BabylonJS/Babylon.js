@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -28,6 +28,7 @@ var BABYLON;
             var orthoBottom = Number.MAX_VALUE;
             var tempVector3 = BABYLON.Vector3.Zero();
             var activeCamera = this.getScene().activeCamera;
+            // Check extends
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 var mesh = renderList[meshIndex];
                 if (!mesh) {

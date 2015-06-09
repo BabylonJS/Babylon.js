@@ -19,6 +19,30 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.SetImmediate = function (action) {
+            if (window.setImmediate) {
+                window.setImmediate(action);
+            }
+            else {
+                setTimeout(action, 1);
+            }
+        };
+        Tools.IsExponantOfTwo = function (value) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            return count === value;
+        };
+        Tools.GetExponantOfTwo = function (value, max) {
+            var count = 1;
+            do {
+                count *= 2;
+            } while (count < value);
+            if (count > max)
+                count = max;
+            return count;
+        };
         Tools.GetFilename = function (path) {
             var index = path.lastIndexOf("/");
             if (index < 0)
@@ -144,7 +168,7 @@ var BABYLON;
                 database.loadImageFromDB(url, img);
             };
             //ANY database to do!
-            if (database && database.enableTexturesOffline && BABYLON.Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -230,7 +254,7 @@ var BABYLON;
             var reader = new FileReader();
             reader.onerror = function (e) {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.81, 0], meshes: [], cameras: [], lights: [] }));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = function (e) {
                 //target doesn't have result from ts 1.3
@@ -359,6 +383,7 @@ var BABYLON;
             var halfHeight = height / 2;
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
+            //To flip image on Y axis.
             for (var i = 0; i < halfHeight; i++) {
                 for (var j = 0; j < numberOfChannelsByLine; j++) {
                     var currentCell = j + i * numberOfChannelsByLine;
@@ -689,15 +714,6 @@ var BABYLON;
             return 0;
         };
         Tools.BaseUrl = "";
-        Tools.GetExponantOfTwo = function (value, max) {
-            var count = 1;
-            do {
-                count *= 2;
-            } while (count < value);
-            if (count > max)
-                count = max;
-            return count;
-        };
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;

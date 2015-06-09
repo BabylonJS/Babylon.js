@@ -75,9 +75,7 @@ var BABYLON;
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) {
-                            _this._soundLoaded(data);
-                        }, null, null, true);
+                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -147,9 +145,7 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function (error) {
-                BABYLON.Tools.Error("Error while decoding audio data: " + error.err);
-            });
+            }, function (error) { BABYLON.Tools.Error("Error while decoding audio data: " + error.err); });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -166,6 +162,10 @@ var BABYLON;
                 this.refDistance = options.refDistance || this.refDistance;
                 this.distanceModel = options.distanceModel || this.distanceModel;
                 this._playbackRate = options.playbackRate || this._playbackRate;
+                this._updateSpatialParameters();
+                if (this.isPlaying) {
+                    this._soundSource.playbackRate.value = this._playbackRate;
+                }
             }
         };
         Sound.prototype._createSpatialParameters = function () {
@@ -174,6 +174,13 @@ var BABYLON;
                     this._panningModel = "HRTF";
                 }
                 this._soundPanner = BABYLON.Engine.audioEngine.audioContext.createPanner();
+                this._updateSpatialParameters();
+                this._soundPanner.connect(this._ouputAudioNode);
+                this._inputAudioNode = this._soundPanner;
+            }
+        };
+        Sound.prototype._updateSpatialParameters = function () {
+            if (this.spatialSound) {
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
                     this._soundPanner.distanceModel = "linear";
@@ -189,8 +196,6 @@ var BABYLON;
                     this._soundPanner.rolloffFactor = this.rolloffFactor;
                     this._soundPanner.panningModel = this._panningModel;
                 }
-                this._soundPanner.connect(this._ouputAudioNode);
-                this._inputAudioNode = this._soundPanner;
             }
         };
         Sound.prototype.switchPanningModelToHRTF = function () {
@@ -290,9 +295,7 @@ var BABYLON;
                     this._soundSource.loop = this.loop;
                     this._soundSource.playbackRate.value = this._playbackRate;
                     this._startTime = startTime;
-                    this._soundSource.onended = function () {
-                        _this._onended();
-                    };
+                    this._soundSource.onended = function () { _this._onended(); };
                     this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     this.isPlaying = true;
                     this.isPaused = false;
@@ -327,7 +330,7 @@ var BABYLON;
             }
         };
         Sound.prototype.setVolume = function (newVolume, time) {
-            if (BABYLON.Engine.audioEngine.canUseWebAudio && !this.spatialSound) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 if (time) {
                     this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
@@ -351,8 +354,8 @@ var BABYLON;
             var _this = this;
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
-                this._createSpatialParameters();
                 this.spatialSound = true;
+                this._createSpatialParameters();
                 if (this.isPlaying && this.loop) {
                     this.stop();
                     this.play();

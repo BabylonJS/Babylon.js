@@ -42,7 +42,6 @@
         public showBoundingBox = false;
         public showSubMeshesBoundingBox = false;
         public onDispose = null;
-        public checkCollisions = false;
         public isBlocker = false;
         public skeleton: Skeleton;
         public renderingGroupId = 0;
@@ -65,6 +64,8 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
+        public alwaysSelectAsActiveMesh = false;
+
         // Physics
         public _physicImpostor = PhysicsEngine.NoImpostor;
         public _physicsMass: number;
@@ -72,6 +73,7 @@
         public _physicRestitution: number;
 
         // Collisions
+        private _checkCollisions = false;
         public ellipsoid = new Vector3(0.5, 1, 0.5);
         public ellipsoidOffset = new Vector3(0, 0, 0);
         private _collider = new Collider();
@@ -106,6 +108,8 @@
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
         private _onAfterWorldMatrixUpdate = new Array<(mesh: AbstractMesh) => void>();
+
+        private _isWorldMatrixFrozen = false;
 
         // Loading properties
         public _waitingActions: any;
@@ -155,7 +159,7 @@
         public get useBones(): boolean {
             return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
         }
-        
+
         public _preActivate(): void {
         }
 
@@ -182,7 +186,24 @@
             return this._absolutePosition;
         }
 
+        public freezeWorldMatrix() {
+            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+        }
+
+        public unfreezeWorldMatrix() {
+            this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
+        }
+
+        public get isWorldMatrixFrozen(): boolean {
+            return this._isWorldMatrixFrozen;
+        }
+
         public rotate(axis: Vector3, amount: number, space: Space): void {
+            axis.normalize();
+
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();
@@ -266,7 +287,7 @@
          * @param {number} amountUp
          * @param {number} amountForward
          */
-        public movePOV(amountRight : number, amountUp : number, amountForward : number) : void {
+        public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
         }
         
@@ -278,11 +299,11 @@
          * @param {number} amountUp
          * @param {number} amountForward
          */
-        public calcMovePOV(amountRight : number, amountUp : number, amountForward : number) : Vector3 {
+        public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
             var rotMatrix = new Matrix();
             var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
             rotQuaternion.toRotationMatrix(rotMatrix);
-            
+
             var translationDelta = Vector3.Zero();
             var defForwardMult = this.definedFacingForward ? -1 : 1;
             Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
@@ -296,7 +317,7 @@
          * @param {number} twirlClockwise
          * @param {number} tiltRight
          */
-        public rotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : void {
+        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
         }
         
@@ -307,11 +328,11 @@
          * @param {number} twirlClockwise
          * @param {number} tiltRight
          */
-        public calcRotatePOV(flipBack : number, twirlClockwise : number, tiltRight : number) : Vector3 {
+        public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
             return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         }
-        
+
         public setPivotMatrix(matrix: Matrix): void {
             this._pivotMatrix = matrix;
             this._cache.pivotMatrixUpdated = true;
@@ -393,6 +414,10 @@
         }
 
         public computeWorldMatrix(force?: boolean): Matrix {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
+
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
@@ -435,16 +460,14 @@
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
-                var zero = this.getScene().activeCamera.position.clone();
+                var zero = this.getScene().activeCamera.globalPosition.clone();
 
                 if (this.parent && (<any>this.parent).position) {
                     localPosition.addInPlace((<any>this.parent).position);
                     Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) === AbstractMesh.BILLBOARDMODE_ALL) {
-                    zero = this.getScene().activeCamera.position;
-                } else {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -467,6 +490,7 @@
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
+                this._markSyncedWithParent();
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             } else {
                 this._worldMatrix.copyFrom(this._localWorld);
@@ -517,7 +541,7 @@
         }
 
         public locallyTranslate(vector3: Vector3): void {
-            this.computeWorldMatrix();
+            this.computeWorldMatrix(true);
 
             this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
         }
@@ -542,11 +566,7 @@
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
-                return false;
-            }
-
-            return true;
+            return this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
         public isCompletelyInFrustum(camera?: Camera): boolean {
@@ -690,6 +710,18 @@
 
 
         // Collisions
+
+        public get checkCollisions() : boolean {
+            return this._checkCollisions;
+        }
+
+        public set checkCollisions(collisionEnabled: boolean) {
+            this._checkCollisions = collisionEnabled;
+            if (this.getScene().workerCollisions) {
+                this.getScene().collisionCoordinator.onMeshUpdated(this);
+            }
+        }
+
         public moveWithCollisions(velocity: Vector3): void {
             var globalPosition = this.getAbsolutePosition();
 
@@ -697,8 +729,15 @@
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
 
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        }
+
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+            //TODO move this to the collision coordinator!
+            if (this.getScene().workerCollisions)
+                newPosition.multiplyInPlace(this._collider.radius);
+
+            newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPositionForCollisions);
@@ -740,7 +779,10 @@
                 }
             }
             // Collide
-            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            if (collider.collisionFound) {
+                collider.collidedMesh = this;
+            }
         }
 
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {

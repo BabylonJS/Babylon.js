@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -9,6 +9,7 @@ var BABYLON;
     var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
         function AbstractMesh(name, scene) {
+            var _this = this;
             _super.call(this, name, scene);
             // Properties
             this.definedFacingForward = true; // orientation for POV movement & rotation
@@ -24,7 +25,6 @@ var BABYLON;
             this.showBoundingBox = false;
             this.showSubMeshesBoundingBox = false;
             this.onDispose = null;
-            this.checkCollisions = false;
             this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
@@ -41,9 +41,11 @@ var BABYLON;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
             this.layerMask = 0x0FFFFFFF;
+            this.alwaysSelectAsActiveMesh = false;
             // Physics
             this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
+            this._checkCollisions = false;
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
             this.ellipsoidOffset = new BABYLON.Vector3(0, 0, 0);
             this._collider = new BABYLON.Collider();
@@ -69,6 +71,17 @@ var BABYLON;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
+            this._isWorldMatrixFrozen = false;
+            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
+                if (collidedMesh === void 0) { collidedMesh = null; }
+                //TODO move this to the collision coordinator!
+                if (_this.getScene().workerCollisions)
+                    newPosition.multiplyInPlace(_this._collider.radius);
+                newPosition.subtractToRef(_this._oldPositionForCollisions, _this._diffPositionForCollisions);
+                if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
+                    _this.position.addInPlace(_this._diffPositionForCollisions);
+                }
+            };
             scene.addMesh(this);
         }
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_NONE", {
@@ -173,12 +186,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AbstractMesh.prototype.freezeWorldMatrix = function () {
+            this._isWorldMatrixFrozen = false; // no guarantee world is not already frozen, switch off temporarily
+            this.computeWorldMatrix(true);
+            this._isWorldMatrixFrozen = true;
+        };
+        AbstractMesh.prototype.unfreezeWorldMatrix = function () {
+            this._isWorldMatrixFrozen = false;
+            this.computeWorldMatrix(true);
+        };
+        Object.defineProperty(AbstractMesh.prototype, "isWorldMatrixFrozen", {
+            get: function () {
+                return this._isWorldMatrixFrozen;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.rotate = function (axis, amount, space) {
+            axis.normalize();
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
-            if (!space || space === 0 /* LOCAL */) {
+            if (!space || space === BABYLON.Space.LOCAL) {
                 var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
@@ -194,7 +224,7 @@ var BABYLON;
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
-            if (!space || space === 0 /* LOCAL */) {
+            if (!space || space === BABYLON.Space.LOCAL) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }
@@ -352,6 +382,9 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
+            if (this._isWorldMatrixFrozen) {
+                return this._worldMatrix;
+            }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
                 return this._worldMatrix;
             }
@@ -387,15 +420,12 @@ var BABYLON;
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
-                var zero = this.getScene().activeCamera.position.clone();
+                var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
                     BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) === AbstractMesh.BILLBOARDMODE_ALL) {
-                    zero = this.getScene().activeCamera.position;
-                }
-                else {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -413,6 +443,7 @@ var BABYLON;
             this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
+                this._markSyncedWithParent();
                 this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
             }
             else {
@@ -422,6 +453,7 @@ var BABYLON;
             this._updateBoundingInfo();
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+            // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
             }
@@ -451,7 +483,7 @@ var BABYLON;
             return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         };
         AbstractMesh.prototype.locallyTranslate = function (vector3) {
-            this.computeWorldMatrix();
+            this.computeWorldMatrix(true);
             this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
         };
         AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
@@ -471,10 +503,7 @@ var BABYLON;
             this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
         };
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
-            if (!this._boundingInfo.isInFrustum(frustumPlanes)) {
-                return false;
-            }
-            return true;
+            return this._boundingInfo.isInFrustum(frustumPlanes);
         };
         AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
             if (!camera) {
@@ -585,17 +614,26 @@ var BABYLON;
             }
             this.getScene().getPhysicsEngine()._updateBodyPosition(this);
         };
-        // Collisions
+        Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
+            // Collisions
+            get: function () {
+                return this._checkCollisions;
+            },
+            set: function (collisionEnabled) {
+                this._checkCollisions = collisionEnabled;
+                if (this.getScene().workerCollisions) {
+                    this.getScene().collisionCoordinator.onMeshUpdated(this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         AbstractMesh.prototype.moveWithCollisions = function (velocity) {
             var globalPosition = this.getAbsolutePosition();
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
-            this.getScene()._getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this._newPositionForCollisions, this);
-            this._newPositionForCollisions.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
-            if (this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPositionForCollisions);
-            }
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
         };
         // Submeshes octree
         /**
@@ -629,7 +667,10 @@ var BABYLON;
                 }
             }
             // Collide
-            collider._collide(subMesh, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart);
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            if (collider.collisionFound) {
+                collider.collidedMesh = this;
+            }
         };
         AbstractMesh.prototype._processCollisionsForSubMeshes = function (collider, transformMatrix) {
             var subMeshes;
@@ -744,6 +785,7 @@ var BABYLON;
             if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
             }
+            // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
                 var other = this._intersectionsInProgress[index];
                 var pos = other._intersectionsInProgress.indexOf(this);
@@ -755,6 +797,7 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeMesh(this);
             if (!doNotRecurse) {
+                // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
                     if (this.getScene().particleSystems[index].emitter === this) {
                         this.getScene().particleSystems[index].dispose();

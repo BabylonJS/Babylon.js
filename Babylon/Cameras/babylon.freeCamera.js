@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -9,6 +9,7 @@ var BABYLON;
     var FreeCamera = (function (_super) {
         __extends(FreeCamera, _super);
         function FreeCamera(name, position, scene) {
+            var _this = this;
             _super.call(this, name, position, scene);
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
             this.keysUp = [38];
@@ -20,10 +21,28 @@ var BABYLON;
             this.angularSensibility = 2000.0;
             this._keys = [];
             this._collider = new BABYLON.Collider();
-            this._needMoveForGravity = true;
+            this._needMoveForGravity = false;
             this._oldPosition = BABYLON.Vector3.Zero();
             this._diffPosition = BABYLON.Vector3.Zero();
             this._newPosition = BABYLON.Vector3.Zero();
+            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
+                if (collidedMesh === void 0) { collidedMesh = null; }
+                //TODO move this to the collision coordinator!
+                if (_this.getScene().workerCollisions)
+                    newPosition.multiplyInPlace(_this._collider.radius);
+                var updatePosition = function (newPos) {
+                    _this._newPosition.copyFrom(newPos);
+                    _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
+                    var oldPosition = _this.position.clone();
+                    if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
+                        _this.position.addInPlace(_this._diffPosition);
+                        if (_this.onCollide && collidedMesh) {
+                            _this.onCollide(collidedMesh);
+                        }
+                    }
+                };
+                updatePosition(newPosition);
+            };
         }
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
@@ -82,7 +101,10 @@ var BABYLON;
                     }
                 };
                 this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index === -1) {
                             _this._keys.push(evt.keyCode);
@@ -93,7 +115,10 @@ var BABYLON;
                     }
                 };
                 this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
                         var index = _this._keys.indexOf(evt.keyCode);
                         if (index >= 0) {
                             _this._keys.splice(index, 1);
@@ -151,20 +176,18 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-            this.getScene()._getNewPosition(this._oldPosition, velocity, this._collider, 3, this._newPosition);
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
-            if (this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide) {
-                    this.onCollide(this._collider.collidedMesh);
-                }
+            //add gravity to the velocity to prevent the dual-collision checking
+            if (this.applyGravity) {
+                velocity.addInPlace(this.getScene().gravity);
             }
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
                 this._localDirection = BABYLON.Vector3.Zero();
                 this._transformedDirection = BABYLON.Vector3.Zero();
             }
+            // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
                 var speed = this._computeLocalCameraSpeed();
@@ -184,6 +207,7 @@ var BABYLON;
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
                 this.cameraDirection.addInPlace(this._transformedDirection);
             }
+            _super.prototype._checkInputs.call(this);
         };
         FreeCamera.prototype._decideIfNeedsToMove = function () {
             return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
@@ -191,19 +215,10 @@ var BABYLON;
         FreeCamera.prototype._updatePosition = function () {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);
-                if (this.applyGravity) {
-                    var oldPosition = this.position;
-                    this._collideWithWorld(this.getScene().gravity);
-                    this._needMoveForGravity = (BABYLON.Vector3.DistanceSquared(oldPosition, this.position) != 0);
-                }
             }
             else {
                 this.position.addInPlace(this.cameraDirection);
             }
-        };
-        FreeCamera.prototype._update = function () {
-            this._checkInputs();
-            _super.prototype._update.call(this);
         };
         return FreeCamera;
     })(BABYLON.TargetCamera);

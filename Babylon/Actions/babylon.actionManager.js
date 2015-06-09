@@ -134,6 +134,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
@@ -158,6 +165,20 @@ var BABYLON;
             }
             return false;
         };
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param {number} trigger - the trigger to be tested
+         * @return {boolean} whether the trigger is handeled
+         */
+        ActionManager.prototype.hasSpecificTrigger = function (trigger) {
+            for (var index = 0; index < this.actions.length; index++) {
+                var action = this.actions[index];
+                if (action.trigger === trigger) {
+                    return true;
+                }
+            }
+            return false;
+        };
         Object.defineProperty(ActionManager.prototype, "hasPointerTriggers", {
             /**
              * Does this action manager has pointer triggers
@@ -167,6 +188,9 @@ var BABYLON;
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
+                        return true;
+                    }
+                    if (action.trigger == ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -218,7 +242,8 @@ var BABYLON;
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
                 if (action.trigger === trigger) {
-                    if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
+                    if (trigger === ActionManager.OnKeyUpTrigger
+                        || trigger === ActionManager.OnKeyDownTrigger) {
                         var parameter = action.getTriggerParameter();
                         if (parameter) {
                             var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
@@ -256,6 +281,7 @@ var BABYLON;
         ActionManager._OnIntersectionExitTrigger = 9;
         ActionManager._OnKeyDownTrigger = 10;
         ActionManager._OnKeyUpTrigger = 11;
+        ActionManager._OnPickUpTrigger = 12;
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;

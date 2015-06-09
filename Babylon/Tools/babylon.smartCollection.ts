@@ -102,5 +102,14 @@
                 this._keys = new Array(this._initialCapacity);
             }
         }
+
+        public forEach(block: (item: any) => void) {
+            var key: string;
+            for (key in this.items) {
+                if (this.items.hasOwnProperty(key)) {
+                    block(this.items[key]);
+                }
+            }
+        }
     }
 } 

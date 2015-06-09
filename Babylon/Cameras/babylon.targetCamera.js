@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -62,7 +62,8 @@ var BABYLON;
                 return false;
             }
             var lockedTargetPosition = this._getLockedTargetPosition();
-            return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition) && this._cache.rotation.equals(this.rotation);
+            return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
+                && this._cache.rotation.equals(this.rotation);
         };
         // Methods
         TargetCamera.prototype._computeLocalCameraSpeed = function () {
@@ -102,7 +103,7 @@ var BABYLON;
         TargetCamera.prototype._updatePosition = function () {
             this.position.addInPlace(this.cameraDirection);
         };
-        TargetCamera.prototype._update = function () {
+        TargetCamera.prototype._checkInputs = function () {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
             // Move
@@ -143,6 +144,7 @@ var BABYLON;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
             }
+            _super.prototype._checkInputs.call(this);
         };
         TargetCamera.prototype._getViewMatrix = function () {
             if (!this.lockedTarget) {
@@ -166,6 +168,72 @@ var BABYLON;
             }
             BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
+        };
+        TargetCamera.prototype._getVRViewMatrix = function () {
+            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._cameraRigParams.vrActualUp);
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+            BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._cameraRigParams.vrActualUp, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._viewMatrix);
+            return this._viewMatrix;
+        };
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        TargetCamera.prototype.createRigCamera = function (name, cameraIndex) {
+            if (this.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE) {
+                var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
+                if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
+                    rigCamera._cameraRigParams = {};
+                    rigCamera._cameraRigParams.vrActualUp = new BABYLON.Vector3(0, 0, 0);
+                    rigCamera._getViewMatrix = rigCamera._getVRViewMatrix;
+                }
+                return rigCamera;
+            }
+            return null;
+        };
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        TargetCamera.prototype._updateRigCameras = function () {
+            switch (this.cameraRigMode) {
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case BABYLON.Camera.RIG_MODE_VR:
+                    var camLeft = this._rigCameras[0];
+                    var camRight = this._rigCameras[1];
+                    if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
+                        camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
+                        camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
+                        camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
+                        camLeft.position.copyFrom(this.position);
+                        camRight.position.copyFrom(this.position);
+                    }
+                    else {
+                        camLeft.setTarget(this.getTarget());
+                        camRight.setTarget(this.getTarget());
+                        //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
+                        this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
+                        this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle, camRight.position);
+                    }
+                    break;
+            }
+            _super.prototype._updateRigCameras.call(this);
+        };
+        TargetCamera.prototype._getRigCamPosition = function (halfSpace, result) {
+            if (!this._rigCamTransformMatrix) {
+                this._rigCamTransformMatrix = new BABYLON.Matrix();
+            }
+            var target = this.getTarget();
+            BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(halfSpace), this._rigCamTransformMatrix);
+            this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
+            BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         };
         return TargetCamera;
     })(BABYLON.Camera);

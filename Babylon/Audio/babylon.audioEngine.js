@@ -2,37 +2,48 @@ var BABYLON;
 (function (BABYLON) {
     var AudioEngine = (function () {
         function AudioEngine() {
-            this.audioContext = null;
+            this._audioContext = null;
+            this._audioContextInitialized = false;
             this.canUseWebAudio = false;
             this.WarnedWebAudioUnsupported = false;
-            try {
-                if (typeof AudioContext !== 'undefined') {
-                    this.audioContext = new AudioContext();
-                    this.canUseWebAudio = true;
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.canUseWebAudio = true;
+            }
+        }
+        Object.defineProperty(AudioEngine.prototype, "audioContext", {
+            get: function () {
+                if (!this._audioContextInitialized) {
+                    this._initializeAudioContext();
                 }
-                else if (typeof webkitAudioContext !== 'undefined') {
-                    this.audioContext = new webkitAudioContext();
-                    this.canUseWebAudio = true;
+                return this._audioContext;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        AudioEngine.prototype._initializeAudioContext = function () {
+            try {
+                if (this.canUseWebAudio) {
+                    this._audioContext = new AudioContext();
+                    // create a global volume gain node 
+                    this.masterGain = this._audioContext.createGain();
+                    this.masterGain.gain.value = 1;
+                    this.masterGain.connect(this._audioContext.destination);
+                    this._audioContextInitialized = true;
                 }
             }
             catch (e) {
                 this.canUseWebAudio = false;
                 BABYLON.Tools.Error("Web Audio: " + e.message);
             }
-            // create a global volume gain node 
-            if (this.canUseWebAudio) {
-                this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.value = 1;
-                this.masterGain.connect(this.audioContext.destination);
-            }
-        }
+        };
         AudioEngine.prototype.dispose = function () {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
-                    this.masterGain.connect(this.audioContext.destination);
+                    this.masterGain.connect(this._audioContext.destination);
                     this._connectedAnalyser = null;
                 }
                 this.masterGain.gain.value = 1;
@@ -40,7 +51,7 @@ var BABYLON;
             this.WarnedWebAudioUnsupported = false;
         };
         AudioEngine.prototype.getGlobalVolume = function () {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 return this.masterGain.gain.value;
             }
             else {
@@ -48,7 +59,7 @@ var BABYLON;
             }
         };
         AudioEngine.prototype.setGlobalVolume = function (newVolume) {
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
                 this.masterGain.gain.value = newVolume;
             }
         };
@@ -56,10 +67,10 @@ var BABYLON;
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
-            this._connectedAnalyser = analyser;
-            if (this.canUseWebAudio) {
+            if (this.canUseWebAudio && this._audioContextInitialized) {
+                this._connectedAnalyser = analyser;
                 this.masterGain.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this.masterGain, this.audioContext.destination);
+                this._connectedAnalyser.connectAudioNodes(this.masterGain, this._audioContext.destination);
             }
         };
         return AudioEngine;

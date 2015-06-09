@@ -14,6 +14,8 @@
         public _camMatrix = Matrix.Zero();
         public _cameraTransformMatrix = Matrix.Zero();
         public _cameraRotationMatrix = Matrix.Zero();
+        private _rigCamTransformMatrix: Matrix;
+
         public _referencePoint = new Vector3(0, 0, 1);
         public _transformedReferencePoint = Vector3.Zero();
         public _lookAtTemp = Matrix.Zero();
@@ -125,7 +127,7 @@
         public _updatePosition():void{
             this.position.addInPlace(this.cameraDirection);
         }
-        public _update():void {
+        public _checkInputs():void {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
@@ -177,6 +179,8 @@
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
             }
+
+            super._checkInputs();
         }
 
 
@@ -205,6 +209,85 @@
 
             Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
+        }
+        
+        public _getVRViewMatrix(): Matrix {
+            Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._cameraRigParams.vrActualUp);
+
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+
+            Matrix.LookAtLHToRef(this.position, this._currentTarget, this._cameraRigParams.vrActualUp, this._cameraRigParams.vrWorkMatrix);
+
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._viewMatrix);
+            return this._viewMatrix;
+        }
+        
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        public createRigCamera(name: string, cameraIndex: number): Camera {
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
+                if (this.cameraRigMode === Camera.RIG_MODE_VR) {
+                    rigCamera._cameraRigParams = {};
+                    rigCamera._cameraRigParams.vrActualUp = new Vector3(0, 0, 0);
+                    rigCamera._getViewMatrix = rigCamera._getVRViewMatrix;
+                }
+                return rigCamera;
+            }
+            return null;
+        }
+        
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        public _updateRigCameras(){
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case Camera.RIG_MODE_VR:
+                    var camLeft = <TargetCamera> this._rigCameras[0];
+                    var camRight = <TargetCamera> this._rigCameras[1];
+
+                    if (this.cameraRigMode === Camera.RIG_MODE_VR) {
+                        camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
+                        camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
+                        camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
+                        
+                        camLeft.position.copyFrom(this.position);
+                        camRight.position.copyFrom(this.position);
+                        
+                    } else {
+                        camLeft.setTarget(this.getTarget());
+                        camRight.setTarget(this.getTarget());
+                        
+                        //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
+                        this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
+                        this._getRigCamPosition( this._cameraRigParams.stereoHalfAngle, camRight.position);
+                    }
+                    break;
+            }
+            super._updateRigCameras();
+        }
+        
+        private _getRigCamPosition(halfSpace: number, result: Vector3) {
+            if (!this._rigCamTransformMatrix){
+                this._rigCamTransformMatrix = new Matrix();
+            }
+            var target = this.getTarget();
+            Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(Matrix.RotationY(halfSpace), this._rigCamTransformMatrix);
+
+            this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(Matrix.Translation(target.x, target.y, target.z));
+
+            Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
     }
 } 

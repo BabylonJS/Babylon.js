@@ -399,15 +399,15 @@
             var beta = parsedCamera.beta;
             var radius = parsedCamera.radius;
             if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                var eye_space = parsedCamera.eye_space;
-                camera = new AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
+                var interaxial_distance = parsedCamera.interaxial_distance;
+                camera = new AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
             } else {
                 camera = new ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
             }
 
         } else if (parsedCamera.type === "AnaglyphFreeCamera") {
-            eye_space = parsedCamera.eye_space;
-            camera = new AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
+            interaxial_distance = parsedCamera.interaxial_distance;
+            camera = new AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
 
         } else if (parsedCamera.type === "DeviceOrientationCamera") {
             camera = new DeviceOrientationCamera(parsedCamera.name, position, scene);
@@ -423,23 +423,17 @@
         } else if (parsedCamera.type === "GamepadCamera") {
             camera = new GamepadCamera(parsedCamera.name, position, scene);
 
-        } else if (parsedCamera.type === "OculusCamera") {
-            camera = new OculusCamera(parsedCamera.name, position, scene);
-
-        } else if (parsedCamera.type === "OculusGamepadCamera") {
-            camera = new OculusGamepadCamera(parsedCamera.name, position, scene);
-
         } else if (parsedCamera.type === "TouchCamera") {
             camera = new TouchCamera(parsedCamera.name, position, scene);
 
         } else if (parsedCamera.type === "VirtualJoysticksCamera") {
             camera = new VirtualJoysticksCamera(parsedCamera.name, position, scene);
 
-        } else if (parsedCamera.type === "WebVRCamera") {
-            camera = new WebVRCamera(parsedCamera.name, position, scene);
+        } else if (parsedCamera.type === "WebVRFreeCamera") {
+            camera = new WebVRFreeCamera(parsedCamera.name, position, scene);
 
-        } else if (parsedCamera.type === "VRDeviceOrientationCamera") {
-            camera = new VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+        } else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
+            camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
 
         } else {
             // Free Camera is the default value
@@ -862,10 +856,10 @@
             }
 
             // Return appropriate value with its type
-            if (target instanceof Boolean)
+            if (typeof (target) === "boolean")
                 return values[0] === "true";
 
-            if (target instanceof String)
+            if (typeof (target) === "string")
                 return values[0];
 
             // Parameters with multiple values such as Vector3 etc.
@@ -915,9 +909,13 @@
                 for (var i = 0; i < parsedAction.properties.length; i++) {
                     var value = parsedAction.properties[i].value;
                     var name = parsedAction.properties[i].name;
+                    var targetType = parsedAction.properties[i].targetType;
 
                     if (name === "target")
-                        value = target = scene.getNodeByName(value);
+                        if (targetType !== null && targetType === "SceneProperties")
+                            value = target = scene;
+                        else
+                            value = target = scene.getNodeByName(value);
                     else if (name === "parent")
                         value = scene.getNodeByName(value);
                     else if (name === "sound")
@@ -934,7 +932,13 @@
                     parameters.push(value);
                 }
             }
-            parameters.push(condition);
+
+            if (combineArray === null) {
+                parameters.push(condition);
+            }
+            else {
+                parameters.push(null);
+            }
 
             // If interpolate value action
             if (parsedAction.name === "InterpolateValueAction") {
@@ -972,7 +976,7 @@
 
             if (trigger.properties.length > 0) {
                 var param = trigger.properties[0].value;
-                var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
                 triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
             }
             else
@@ -1128,7 +1132,7 @@
 
             if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                 var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false);
+                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
             }
 
             if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
@@ -1243,6 +1247,53 @@
                     if (meshesNames instanceof Array) {
                         // Remove found mesh name from list.
                         delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
+                    }
+
+                    //Geometry?
+                    if (parsedMesh.geometryId) {
+                        //does the file contain geometries?
+                        if (parsedData.geometries) {
+                            //find the correct geometry and add it to the scene
+                            var found: boolean = false;
+                            ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
+                                if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
+                                    return;
+                                } else {
+                                    parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
+                                        if (parsedGeometryData.id == parsedMesh.geometryId) {
+                                            switch (geometryType) {
+                                                case "boxes":
+                                                    parseBox(parsedGeometryData, scene);
+                                                    break;
+                                                case "spheres":
+                                                    parseSphere(parsedGeometryData, scene);
+                                                    break;
+                                                case "cylinders":
+                                                    parseCylinder(parsedGeometryData, scene);
+                                                    break;
+                                                case "toruses":
+                                                    parseTorus(parsedGeometryData, scene);
+                                                    break;
+                                                case "grounds":
+                                                    parseGround(parsedGeometryData, scene);
+                                                    break;
+                                                case "planes":
+                                                    parsePlane(parsedGeometryData, scene);
+                                                    break;
+                                                case "torusKnots":
+                                                    parseTorusKnot(parsedGeometryData, scene);
+                                                    break;
+                                                case "vertexData":
+                                                    parseVertexData(parsedGeometryData, scene, rootUrl);
+                                                    break;
+                                            }
+                                            found = true;
+                                        }
+                                    });
+                                    
+                                }
+                            });
+                        }
                     }
 
                     // Material ?

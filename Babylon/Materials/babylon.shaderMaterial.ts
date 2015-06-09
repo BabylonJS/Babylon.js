@@ -10,7 +10,7 @@
         private _vectors2 = new Array<Vector2>();
         private _vectors3 = new Array<Vector3>();
         private _matrices = new Array<Matrix>();
-        private _cachedWorldViewMatrix = new BABYLON.Matrix();
+        private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
         constructor(name: string, scene: Scene, shaderPath: any, options: any) {
@@ -33,7 +33,7 @@
         public needAlphaTesting(): boolean {
             return this._options.needAlphaTesting;
         }
-   
+
         private _checkUniform(uniformName): void {
             if (this._options.uniforms.indexOf(uniformName) === -1) {
                 this._options.uniforms.push(uniformName);
@@ -185,7 +185,7 @@
                 }
 
                 // Bones
-                if (mesh.useBones) {
+                if (mesh && mesh.useBones) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
 
@@ -231,7 +231,7 @@
                 }
             }
 
-            super.bind(world, null);
+            super.bind(world, mesh);
         }
 
         public dispose(forceDisposeEffect?: boolean): void {

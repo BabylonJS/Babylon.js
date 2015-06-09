@@ -20,7 +20,8 @@
         public keysRight = [39];
         public zoomOnFactor = 1;
         public targetScreenOffset = Vector2.Zero();
-
+        public pinchInwards = true;
+        public allowUpsideDown = true;
 
         private _keys = [];
         private _viewMatrix = new Matrix();
@@ -50,6 +51,8 @@
         private _previousAlpha: number;
         private _previousBeta: number;
         private _previousRadius: number;
+        //due to async collision inspection
+        private _collisionTriggered: boolean;
 
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -124,7 +127,13 @@
                 this._onPointerUp = evt => {
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
-                    pointers.remove(evt.pointerId);
+                    
+                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
+                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
+                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
+                    pointers.empty();
+                                       
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -138,14 +147,10 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            //var offsetX = evt.clientX - pointers.item(evt.pointerId).x;
-                            //var offsetY = evt.clientY - pointers.item(evt.pointerId).y;
                             var offsetX = evt.clientX - cacheSoloPointer.x;
                             var offsetY = evt.clientY - cacheSoloPointer.y;
                             this.inertialAlphaOffset -= offsetX / this.angularSensibility;
                             this.inertialBetaOffset -= offsetY / this.angularSensibility;
-                            //pointers.item(evt.pointerId).x = evt.clientX;
-                            //pointers.item(evt.pointerId).y = evt.clientY;
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
                             break;
@@ -154,7 +159,7 @@
                             //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
                             pointers.item(evt.pointerId).x = evt.clientX;
                             pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = 1;
+                            var direction = this.pinchInwards ? 1 : -1;
                             var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
                             var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
                             var pinchSquaredDistance = (distX * distX) + (distY * distY);
@@ -164,10 +169,7 @@
                             }
 
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                if (pinchSquaredDistance > previousPinchDistance) {
-                                    direction = -1;
-                                }
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility);
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -343,11 +345,14 @@
             }
         }
 
-        public _update(): void {
+        public _checkInputs(): void {
+            //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
+            if (this._collisionTriggered) {
+                return;
+            }
             // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
-
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     this.inertialAlphaOffset -= 0.01;
                 } else if (this.keysUp.indexOf(keyCode) !== -1) {
@@ -357,42 +362,58 @@
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
                     this.inertialBetaOffset += 0.01;
                 }
-            }
-
+            }			
+			
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
-
-                this.alpha += this.inertialAlphaOffset;
+                this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
-
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-
                 if (Math.abs(this.inertialAlphaOffset) < Engine.Epsilon)
                     this.inertialAlphaOffset = 0;
-
                 if (Math.abs(this.inertialBetaOffset) < Engine.Epsilon)
                     this.inertialBetaOffset = 0;
-
                 if (Math.abs(this.inertialRadiusOffset) < Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 
             // Limits
+            this._checkLimits();
+
+            super._checkInputs();
+        }
+
+        private _checkLimits() {
+            if (this.lowerBetaLimit === null || this.lowerBetaLimit === undefined) {
+                if (this.allowUpsideDown && this.beta > Math.PI) {
+                    this.beta = this.beta - (2 * Math.PI);
+                }
+            } else {
+                if (this.beta < this.lowerBetaLimit) {
+                    this.beta = this.lowerBetaLimit;
+                }
+            }
+
+            if (this.upperBetaLimit === null || this.upperBetaLimit === undefined) {
+                if (this.allowUpsideDown && this.beta < -Math.PI) {
+                    this.beta = this.beta + (2 * Math.PI);
+                }
+            } else {
+                if (this.beta > this.upperBetaLimit) {
+                    this.beta = this.upperBetaLimit;
+                }
+            }
+
             if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
                 this.alpha = this.lowerAlphaLimit;
             }
             if (this.upperAlphaLimit && this.alpha > this.upperAlphaLimit) {
                 this.alpha = this.upperAlphaLimit;
             }
-            if (this.lowerBetaLimit && this.beta < this.lowerBetaLimit) {
-                this.beta = this.lowerBetaLimit;
-            }
-            if (this.upperBetaLimit && this.beta > this.upperBetaLimit) {
-                this.beta = this.upperBetaLimit;
-            }
+
             if (this.lowerRadiusLimit && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
             }
@@ -414,6 +435,8 @@
 
             // Beta
             this.beta = Math.acos(radiusv3.y / this.radius);
+
+            this._checkLimits();
         }
 
         public _getViewMatrix(): Matrix {
@@ -424,39 +447,64 @@
             var sinb = Math.sin(this.beta);
 
             var target = this._getTargetPosition();
-
-            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this.position);
-
-            if (this.checkCollisions) {
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
-                this.position.subtractToRef(this._previousPosition, this._collisionVelocity);
+                this._newPosition.subtractToRef(this.position, this._collisionVelocity);
+                this._collisionTriggered = true;
+                this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            } else {
+                this.position.copyFrom(this._newPosition);
 
-                this.getScene()._getNewPosition(this._previousPosition, this._collisionVelocity, this._collider, 3, this._newPosition);
+                var up = this.upVector;
+                if (this.allowUpsideDown && this.beta < 0) {
+                    var up = up.clone();
+                    up = up.negate();
+                }
 
-                if (!this._newPosition.equalsWithEpsilon(this.position)) {
-                    this.position.copyFrom(this._previousPosition);
+                Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+                this._viewMatrix.m[12] += this.targetScreenOffset.x;
+                this._viewMatrix.m[13] += this.targetScreenOffset.y;
+            }
+            return this._viewMatrix;
+        }
 
-                    this.alpha = this._previousAlpha;
-                    this.beta = this._previousBeta;
-                    this.radius = this._previousRadius;
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
 
-                    if (this.onCollide) {
-                        this.onCollide(this._collider.collidedMesh);
-                    }
+            if (this.getScene().workerCollisions && this.checkCollisions) {
+                newPosition.multiplyInPlace(this._collider.radius);
+            }
+
+            if (!collidedMesh) {
+                this._previousPosition.copyFrom(this.position);
+            } else {
+                this.setPosition(this.position);
+
+                if (this.onCollide) {
+                    this.onCollide(collidedMesh);
                 }
             }
 
-            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._viewMatrix);
+            // Recompute because of constraints
+            var cosa = Math.cos(this.alpha);
+            var sina = Math.sin(this.alpha);
+            var cosb = Math.cos(this.beta);
+            var sinb = Math.sin(this.beta);
+            var target = this._getTargetPosition();
+            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            this.position.copyFrom(this._newPosition);
 
-            this._previousAlpha = this.alpha;
-            this._previousBeta = this.beta;
-            this._previousRadius = this.radius;
-            this._previousPosition.copyFrom(this.position);
+            var up = this.upVector;
+            if (this.allowUpsideDown && this.beta < 0) {
+                var up = up.clone();
+                up = up.negate();
+            }
 
+            Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
             this._viewMatrix.m[12] += this.targetScreenOffset.x;
             this._viewMatrix.m[13] += this.targetScreenOffset.y;
 
-            return this._viewMatrix;
+            this._collisionTriggered = false;
         }
 
         public zoomOn(meshes?: AbstractMesh[]): void {
@@ -487,6 +535,44 @@
             this.target = Mesh.Center(meshesOrMinMaxVector);
 
             this.maxZ = distance * 2;
+        }
+        
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        public createRigCamera(name: string, cameraIndex: number): Camera {
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case Camera.RIG_MODE_VR:
+                    var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
+                    return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            }
+        }
+        
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        public _updateRigCameras() {
+            switch (this.cameraRigMode) {
+                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                case Camera.RIG_MODE_VR:
+                    var camLeft = <ArcRotateCamera> this._rigCameras[0];
+                    var camRight = <ArcRotateCamera> this._rigCameras[1];
+                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camLeft.beta = camRight.beta = this.beta;
+                    camLeft.radius = camRight.radius = this.radius;
+                    break;
+            }
+            super._updateRigCameras();
         }
     }
 } 

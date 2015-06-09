@@ -63,7 +63,9 @@
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
+        private _onPointerUp: (evt: PointerEvent) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
@@ -129,6 +131,8 @@
 
         // Geometries
         private _geometries = new Array<Geometry>();
+        public onGeometryAdded: (newGeometry?: Geometry) => void;
+        public onGeometryRemoved: (removedGeometry?: Geometry) => void;
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
@@ -159,7 +163,9 @@
 
         // Collisions
         public collisionsEnabled = true;
-        public gravity = new Vector3(0, -9.0, 0);
+        private _workerCollisions;
+        public collisionCoordinator: ICollisionCoordinator;
+        public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
         public postProcessesEnabled = true;
@@ -205,7 +211,7 @@
         // Private
         private _engine: Engine;
         private _totalVertices = 0;
-        public _activeVertices = 0;
+        public _activeIndices = 0;
         public _activeParticles = 0;
         private _lastFrameDuration = 0;
         private _evaluateActiveMeshesDuration = 0;
@@ -242,9 +248,6 @@
 
         private _transformMatrix = Matrix.Zero();
         private _pickWithRayInverseMatrix: Matrix;
-
-        private _scaledPosition = Vector3.Zero();
-        private _scaledVelocity = Vector3.Zero();
 
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
@@ -288,11 +291,32 @@
 
             //simplification queue
             this.simplificationQueue = new SimplificationQueue();
+
+            //collision coordinator initialization. For now legacy per default.
+            this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
 
         // Properties 
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
+        }
+
+        public set workerCollisions(enabled: boolean) {
+        
+            enabled = (enabled && !!Worker)
+        
+            this._workerCollisions = enabled;
+            if (this.collisionCoordinator) {
+                this.collisionCoordinator.destroy();
+            }
+
+            this.collisionCoordinator = enabled ? new CollisionCoordinatorWorker() : new CollisionCoordinatorLegacy();
+
+            this.collisionCoordinator.init(this);
+        }
+
+        public get workerCollisions(): boolean {
+            return this._workerCollisions;
         }
 
         /**
@@ -339,8 +363,8 @@
             return this._totalVertices;
         }
 
-        public getActiveVertices(): number {
-            return this._activeVertices;
+        public getActiveIndices(): number {
+            return this._activeIndices;
         }
 
         public getActiveParticles(): number {
@@ -463,6 +487,30 @@
                     this.onPointerDown(evt, pickResult);
                 }
             };
+            this._onPointerUp = (evt: PointerEvent) => {
+
+                var predicate = null;
+
+                if (!this.onPointerUp) {
+                    predicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnPickUpTrigger);
+                    };
+                }
+
+                this._updatePointerPosition(evt);
+
+                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+
+                if (pickResult.hit) {
+                    if (pickResult.pickedMesh.actionManager) {
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    }
+                }
+
+                if (this.onPointerUp) {
+                    this.onPointerUp(evt, pickResult);
+                }
+            };
 
             this._onKeyDown = (evt: Event) => {
                 if (this.actionManager) {
@@ -480,6 +528,7 @@
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -491,6 +540,7 @@
             var eventPrefix = Tools.GetPointerPrefix();
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
 
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -723,6 +773,10 @@
         public addMesh(newMesh: AbstractMesh) {
             newMesh.uniqueId = this._uniqueIdCounter++;
             var position = this.meshes.push(newMesh);
+
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshAdded(newMesh);
+
             if (this.onNewMeshAdded) {
                 this.onNewMeshAdded(newMesh, position, this);
             }
@@ -734,6 +788,9 @@
                 // Remove from the scene if mesh found 
                 this.meshes.splice(index, 1);
             }
+            //notify the collision coordinator
+            this.collisionCoordinator.onMeshRemoved(toRemove);
+
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
             }
@@ -757,6 +814,20 @@
             if (index !== -1) {
                 // Remove from the scene if mesh found 
                 this.cameras.splice(index, 1);
+            }
+            // Remove from activeCameras
+            var index2 = this.activeCameras.indexOf(toRemove);
+            if (index2 !== -1) {
+                // Remove from the scene if mesh found
+                this.activeCameras.splice(index2, 1);
+            }
+            // Reset the activeCamera
+            if (this.activeCamera === toRemove) {
+                if (this.cameras.length > 0) {
+                    this.activeCamera = this.cameras[0];
+                } else {
+                    this.activeCamera = null;
+                }
             }
             if (this.onCameraRemoved) {
                 this.onCameraRemoved(toRemove);
@@ -952,7 +1023,36 @@
 
             this._geometries.push(geometry);
 
+            //notify the collision coordinator
+            this.collisionCoordinator.onGeometryAdded(geometry);
+
+            if (this.onGeometryAdded) {
+                this.onGeometryAdded(geometry);
+            }
+
             return true;
+        }
+
+        /**
+         * Removes an existing geometry
+         * @param {BABYLON.Geometry} geometry - the geometry to be removed from the scene.
+         * @return {boolean} was the geometry removed or not
+         */
+        public removeGeometry(geometry: Geometry): boolean {
+            var index = this._geometries.indexOf(geometry);
+
+            if (index > -1) {
+                this._geometries.splice(index, 1);
+
+                //notify the collision coordinator
+                this.collisionCoordinator.onGeometryDeleted(geometry);
+
+                if (this.onGeometryRemoved) {
+                    this.onGeometryRemoved(geometry);
+                }
+                return true;
+            }
+            return false;
         }
 
         public getGeometries(): Geometry[] {
@@ -1110,7 +1210,7 @@
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-            if (mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
                 var material = subMesh.getMaterial();
 
                 if (mesh.showSubMeshesBoundingBox) {
@@ -1128,7 +1228,7 @@
                     }
 
                     // Dispatch
-                    this._activeVertices += subMesh.indexCount;
+                    this._activeIndices += subMesh.indexCount;
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -1171,7 +1271,7 @@
 
                 this._totalVertices += mesh.getTotalVertices();
 
-                if (!mesh.isReady()) {
+                if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
 
@@ -1191,7 +1291,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
@@ -1271,6 +1371,7 @@
             engine.setViewport(this.activeCamera.viewport);
 
             // Camera
+            this.resetCachedMaterial();
             this._renderId++;
             this.updateTransformMatrix();
 
@@ -1381,14 +1482,14 @@
         }
 
         private _processSubCameras(camera: Camera): void {
-            if (camera.subCameras.length === 0) {
+            if (camera.cameraRigMode === Camera.RIG_MODE_NONE) {
                 this._renderForCamera(camera);
                 return;
             }
 
-            // Sub-cameras
-            for (var index = 0; index < camera.subCameras.length; index++) {
-                this._renderForCamera(camera.subCameras[index]);
+            // rig cameras
+            for (var index = 0; index < camera._rigCameras.length; index++) {
+                this._renderForCamera(camera._rigCameras[index]);
             }
 
             this.activeCamera = camera;
@@ -1419,13 +1520,17 @@
                             } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
-                        } else if (!areIntersecting && currentIntersectionInProgress > -1 && action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                            action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                        } else if (!areIntersecting && currentIntersectionInProgress > -1) {
+                            //They intersected, and now they don't.
 
-                            var indexOfOther = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
+                            //is this trigger an exit trigger? execute an event.
+                            if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                            }
 
-                            if (indexOfOther > -1) {
-                                sourceMesh._intersectionsInProgress.splice(indexOfOther, 1);
+                            //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                                sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                             }
                         }
                     }
@@ -1442,7 +1547,7 @@
             this._renderTargetsDuration = 0;
             this._evaluateActiveMeshesDuration = 0;
             this._totalVertices = 0;
-            this._activeVertices = 0;
+            this._activeIndices = 0;
             this._activeBones = 0;
             this.getEngine().resetDrawCalls();
             this._meshesForIntersections.reset();
@@ -1825,55 +1930,6 @@
             for (var scIndex = 0; scIndex < this.soundTracks.length; scIndex++) {
                 this.soundTracks[scIndex].dispose();
             }
-        }
-
-        // Collisions
-        public _getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
-            position.divideToRef(collider.radius, this._scaledPosition);
-            velocity.divideToRef(collider.radius, this._scaledVelocity);
-
-            collider.retry = 0;
-            collider.initialVelocity = this._scaledVelocity;
-            collider.initialPosition = this._scaledPosition;
-            this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, finalPosition, excludedMesh);
-
-            finalPosition.multiplyInPlace(collider.radius);
-        }
-
-        private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
-            var closeDistance = Engine.CollisionsEpsilon * 10.0;
-
-            if (collider.retry >= maximumRetry) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-
-            collider._initialize(position, velocity, closeDistance);
-
-            // Check all meshes
-            for (var index = 0; index < this.meshes.length; index++) {
-                var mesh = this.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
-                    mesh._checkCollision(collider);
-                }
-            }
-
-            if (!collider.collisionFound) {
-                position.addToRef(velocity, finalPosition);
-                return;
-            }
-
-            if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
-                collider._getResponse(position, velocity);
-            }
-
-            if (velocity.length() <= closeDistance) {
-                finalPosition.copyFrom(position);
-                return;
-            }
-
-            collider.retry++;
-            this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         }
 
         // Octrees

@@ -30,7 +30,25 @@
     export class Tools {
         public static BaseUrl = "";
 
-        public static GetExponantOfTwo = (value: number, max: number): number => {
+        public static SetImmediate(action: () => void) {
+            if (window.setImmediate) {
+                window.setImmediate(action);
+            } else {
+                setTimeout(action, 1);
+            }
+        }
+
+        public static IsExponantOfTwo(value: number): boolean {
+            var count = 1;
+
+            do {
+                count *= 2;
+            } while (count < value);
+
+            return count === value;
+        }
+
+        public static GetExponantOfTwo(value: number, max: number): number {
             var count = 1;
 
             do {
@@ -41,7 +59,7 @@
                 count = max;
 
             return count;
-        };
+        }
 
         public static GetFilename(path: string): string {
             var index = path.lastIndexOf("/");
@@ -200,7 +218,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && Database.isUASupportingBlobStorage) {
+            if (database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -296,7 +314,7 @@
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.81, 0], meshes: [], cameras: [], lights: []}));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: []}));
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3

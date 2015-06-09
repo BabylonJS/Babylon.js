@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -17,6 +17,7 @@ var BABYLON;
             this.includeOnlyWithLayerMask = 0;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
+            this.excludeWithLayerMask = 0;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
@@ -42,7 +43,10 @@ var BABYLON;
             if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
                 return false;
             }
-            if (this.includeOnlyWithLayerMask !== 0 && this.includeOnlyWithLayerMask !== mesh.layerMask) {
+            if (this.includeOnlyWithLayerMask !== 0 && (this.includeOnlyWithLayerMask & mesh.layerMask) === 0) {
+                return false;
+            }
+            if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
             return true;
@@ -55,6 +59,7 @@ var BABYLON;
                     this._parentedWorldMatrix = BABYLON.Matrix.Identity();
                 }
                 worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._parentedWorldMatrix);
+                this._markSyncedWithParent();
                 return this._parentedWorldMatrix;
             }
             return worldMatrix;

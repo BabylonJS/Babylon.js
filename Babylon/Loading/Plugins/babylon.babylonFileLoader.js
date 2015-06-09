@@ -320,16 +320,16 @@ var BABYLON;
                 var beta = parsedCamera.beta;
                 var radius = parsedCamera.radius;
                 if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    var eye_space = parsedCamera.eye_space;
-                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, eye_space, scene);
+                    var interaxial_distance = parsedCamera.interaxial_distance;
+                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
                 }
                 else {
                     camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
                 }
             }
             else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                eye_space = parsedCamera.eye_space;
-                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, eye_space, scene);
+                interaxial_distance = parsedCamera.interaxial_distance;
+                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
             }
             else if (parsedCamera.type === "DeviceOrientationCamera") {
                 camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
@@ -345,23 +345,17 @@ var BABYLON;
             else if (parsedCamera.type === "GamepadCamera") {
                 camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
             }
-            else if (parsedCamera.type === "OculusCamera") {
-                camera = new BABYLON.OculusCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "OculusGamepadCamera") {
-                camera = new BABYLON.OculusGamepadCamera(parsedCamera.name, position, scene);
-            }
             else if (parsedCamera.type === "TouchCamera") {
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             }
             else if (parsedCamera.type === "VirtualJoysticksCamera") {
                 camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
             }
-            else if (parsedCamera.type === "WebVRCamera") {
-                camera = new BABYLON.WebVRCamera(parsedCamera.name, position, scene);
+            else if (parsedCamera.type === "WebVRFreeCamera") {
+                camera = new BABYLON.WebVRFreeCamera(parsedCamera.name, position, scene);
             }
-            else if (parsedCamera.type === "VRDeviceOrientationCamera") {
-                camera = new BABYLON.VRDeviceOrientationCamera(parsedCamera.name, position, scene);
+            else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
+                camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
             }
             else {
                 // Free Camera is the default value
@@ -683,13 +677,14 @@ var BABYLON;
                 }
                 var effectiveTarget = propertyPath.split(".");
                 var values = value.split(",");
+                // Get effective Target
                 for (var i = 0; i < effectiveTarget.length; i++) {
                     target = target[effectiveTarget[i]];
                 }
                 // Return appropriate value with its type
-                if (target instanceof Boolean)
+                if (typeof (target) === "boolean")
                     return values[0] === "true";
-                if (target instanceof String)
+                if (typeof (target) === "string")
                     return values[0];
                 // Parameters with multiple values such as Vector3 etc.
                 var split = new Array();
@@ -730,8 +725,12 @@ var BABYLON;
                     for (var i = 0; i < parsedAction.properties.length; i++) {
                         var value = parsedAction.properties[i].value;
                         var name = parsedAction.properties[i].name;
+                        var targetType = parsedAction.properties[i].targetType;
                         if (name === "target")
-                            value = target = scene.getNodeByName(value);
+                            if (targetType !== null && targetType === "SceneProperties")
+                                value = target = scene;
+                            else
+                                value = target = scene.getNodeByName(value);
                         else if (name === "parent")
                             value = scene.getNodeByName(value);
                         else if (name === "sound")
@@ -748,7 +747,12 @@ var BABYLON;
                         parameters.push(value);
                     }
                 }
-                parameters.push(condition);
+                if (combineArray === null) {
+                    parameters.push(condition);
+                }
+                else {
+                    parameters.push(null);
+                }
                 // If interpolate value action
                 if (parsedAction.name === "InterpolateValueAction") {
                     var param = parameters[parameters.length - 2];
@@ -776,12 +780,13 @@ var BABYLON;
                 for (var i = 0; i < parsedAction.children.length; i++)
                     traverse(parsedAction.children[i], trigger, condition, newAction, null);
             };
+            // triggers
             for (var i = 0; i < parsedActions.children.length; i++) {
                 var triggerParams;
                 var trigger = parsedActions.children[i];
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
-                    var value = trigger.properties[0].targetType == null ? param : scene.getMeshByName(param);
+                    var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
@@ -796,19 +801,14 @@ var BABYLON;
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
             var options = {
-                autoplay: parsedSound.autoplay,
-                loop: parsedSound.loop,
-                volume: parsedSound.volume,
-                spatialSound: parsedSound.spatialSound,
-                maxDistance: parsedSound.maxDistance,
+                autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
+                spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
                 rolloffFactor: parsedSound.rolloffFactor,
                 refDistance: parsedSound.refDistance,
                 distanceModel: parsedSound.distanceModel,
                 playbackRate: parsedSound.playbackRate
             };
-            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () {
-                scene._removePendingData(newSound);
-            }, options);
+            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
             scene._addPendingData(newSound);
             if (parsedSound.position) {
                 var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
@@ -916,7 +916,7 @@ var BABYLON;
                 }
                 if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                     var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
-                    mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
                 }
                 if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
                     var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
@@ -1011,6 +1011,52 @@ var BABYLON;
                             // Remove found mesh name from list.
                             delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
                         }
+                        //Geometry?
+                        if (parsedMesh.geometryId) {
+                            //does the file contain geometries?
+                            if (parsedData.geometries) {
+                                //find the correct geometry and add it to the scene
+                                var found = false;
+                                ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach(function (geometryType) {
+                                    if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
+                                        return;
+                                    }
+                                    else {
+                                        parsedData.geometries[geometryType].forEach(function (parsedGeometryData) {
+                                            if (parsedGeometryData.id == parsedMesh.geometryId) {
+                                                switch (geometryType) {
+                                                    case "boxes":
+                                                        parseBox(parsedGeometryData, scene);
+                                                        break;
+                                                    case "spheres":
+                                                        parseSphere(parsedGeometryData, scene);
+                                                        break;
+                                                    case "cylinders":
+                                                        parseCylinder(parsedGeometryData, scene);
+                                                        break;
+                                                    case "toruses":
+                                                        parseTorus(parsedGeometryData, scene);
+                                                        break;
+                                                    case "grounds":
+                                                        parseGround(parsedGeometryData, scene);
+                                                        break;
+                                                    case "planes":
+                                                        parsePlane(parsedGeometryData, scene);
+                                                        break;
+                                                    case "torusKnots":
+                                                        parseTorusKnot(parsedGeometryData, scene);
+                                                        break;
+                                                    case "vertexData":
+                                                        parseVertexData(parsedGeometryData, scene, rootUrl);
+                                                        break;
+                                                }
+                                                found = true;
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
                         // Material ?
                         if (parsedMesh.materialId) {
                             var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
@@ -1052,6 +1098,7 @@ var BABYLON;
                         meshes.push(mesh);
                     }
                 }
+                // Connecting parents
                 for (index = 0; index < scene.meshes.length; index++) {
                     var currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
@@ -1086,6 +1133,7 @@ var BABYLON;
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
                 }
+                // Lights
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
@@ -1178,10 +1226,12 @@ var BABYLON;
                         }
                     }
                 }
+                // Meshes
                 for (index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     parseMesh(parsedMesh, scene, rootUrl);
                 }
+                // Cameras
                 for (index = 0; index < parsedData.cameras.length; index++) {
                     var parsedCamera = parsedData.cameras[index];
                     parseCamera(parsedCamera, scene);
@@ -1189,6 +1239,7 @@ var BABYLON;
                 if (parsedData.activeCameraID) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
+                // Browsing all the graph to connect the dots
                 for (index = 0; index < scene.cameras.length; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
@@ -1215,6 +1266,7 @@ var BABYLON;
                         }
                     }
                 }
+                // Connect parents & children and parse actions
                 for (index = 0; index < scene.meshes.length; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {

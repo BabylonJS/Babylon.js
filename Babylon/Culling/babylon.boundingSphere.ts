@@ -8,19 +8,19 @@
         private _tempRadiusVector = Vector3.Zero();
 
         constructor(public minimum: Vector3, public maximum: Vector3) {
-            var distance = BABYLON.Vector3.Distance(minimum, maximum);
+            var distance = Vector3.Distance(minimum, maximum);
 
-            this.center = BABYLON.Vector3.Lerp(minimum, maximum, 0.5);
+            this.center = Vector3.Lerp(minimum, maximum, 0.5);
             this.radius = distance * 0.5;
 
-            this.centerWorld = BABYLON.Vector3.Zero();
-            this._update(BABYLON.Matrix.Identity());
+            this.centerWorld = Vector3.Zero();
+            this._update(Matrix.Identity());
         }
 
         // Methods
         public _update(world: Matrix): void {
-            BABYLON.Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            BABYLON.Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, this._tempRadiusVector);
+            Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
+            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, this._tempRadiusVector);
             this.radiusWorld = Math.max(Math.abs(this._tempRadiusVector.x), Math.abs(this._tempRadiusVector.y), Math.abs(this._tempRadiusVector.z)) * this.radius;
         }
 
