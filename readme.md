@@ -37,8 +37,6 @@ Blender [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters
 
 Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Unity%205) can be used to export your geometries from Unity 5 scene editor
 
-Online [asset converter](http://www.babylonjs.com/converter.html) where you can generate .babylon file from .OBJ, .FBX, .DAE
-
 ## Features
 - Complete scene graph with lights, cameras, materials and meshes
 - Collisions engine
