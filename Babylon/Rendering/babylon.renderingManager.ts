@@ -90,9 +90,11 @@
         }
 
         public reset(): void {
-            for (var index in this._renderingGroups) {
+            for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 var renderingGroup = this._renderingGroups[index];
-                renderingGroup.prepare();
+                if (renderingGroup) {
+                    renderingGroup.prepare();
+                }
             }
         }
 
