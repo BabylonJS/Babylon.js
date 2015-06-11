@@ -5,7 +5,7 @@ module.exports = function (varName) {
   return through.obj(function (file, enc, cb) {
 
     var moduleExportsAddition = 
-      '\nif (((window && window.module) || (!window && module)) && module.exports) {\n' +
+      '\nif (((typeof window != "undefined" && window.module) || (typeof module != "undefined")) && typeof module.exports != "undefined") {\n' +
       '    module.exports = ' + varName + ';\n' +
       '};\n';
       
