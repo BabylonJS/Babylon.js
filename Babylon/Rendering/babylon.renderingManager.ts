@@ -90,10 +90,11 @@
         }
 
         public reset(): void {
-            for (var index in this._renderingGroups) {
-                var renderingGroup = this._renderingGroups[index];
-                renderingGroup.prepare();
-            }
+            this._renderingGroups.forEach( function(renderingGroup, index, array) {
+                if (renderingGroup) {
+                    renderingGroup.prepare();
+                }
+            });
         }
 
         public dispatch(subMesh: SubMesh): void {
