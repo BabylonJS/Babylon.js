@@ -69,10 +69,11 @@ var BABYLON;
             }
         };
         RenderingManager.prototype.reset = function () {
-            for (var index in this._renderingGroups) {
-                var renderingGroup = this._renderingGroups[index];
-                renderingGroup.prepare();
-            }
+            this._renderingGroups.forEach(function (renderingGroup, index, array) {
+                if (renderingGroup) {
+                    renderingGroup.prepare();
+                }
+            });
         };
         RenderingManager.prototype.dispatch = function (subMesh) {
             var mesh = subMesh.getMesh();
