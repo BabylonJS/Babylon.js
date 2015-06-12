@@ -6,7 +6,7 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 ## CDN
 - http://cdn.babylonjs.com/2-1/babylon.js 
 - http://cdn.babylonjs.com/2-1/babylon.max.js 
-- http://cdn.babylonjs.com/2-1/babylon-noworker.js 
+- http://cdn.babylonjs.com/2-1/babylon.noworker.js 
 
 ## Preview release
 You can help by testing or contributing to the next version.
