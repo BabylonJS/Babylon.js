@@ -74,6 +74,7 @@ interface WebGLTexture {
     _cachedCoordinatesMode: number;
     _cachedWrapU: number;
     _cachedWrapV: number;
+    _isDisabled: boolean;
 }
 
 interface WebGLBuffer {

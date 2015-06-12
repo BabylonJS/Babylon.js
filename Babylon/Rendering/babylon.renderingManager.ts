@@ -90,7 +90,7 @@
         }
 
         public reset(): void {
-            this._renderingGroups.forEach( function(renderingGroup, index, array) {
+            this._renderingGroups.forEach(function (renderingGroup, index, array) {
                 if (renderingGroup) {
                     renderingGroup.prepare();
                 }

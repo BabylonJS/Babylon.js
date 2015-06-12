@@ -1431,38 +1431,48 @@ var BABYLON;
             texture.isReady = true;
         };
         Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
+            if (texture._isDisabled) {
+                return;
+            }
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
-            // Testing video texture support
-            if (this._videoTextureSupported === undefined) {
-                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
-                if (this._gl.getError() !== 0) {
-                    this._videoTextureSupported = false;
+            try {
+                // Testing video texture support
+                if (this._videoTextureSupported === undefined) {
+                    this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+                    if (this._gl.getError() !== 0) {
+                        this._videoTextureSupported = false;
+                    }
+                    else {
+                        this._videoTextureSupported = true;
+                    }
+                }
+                // Copy video through the current working canvas if video texture is not supported
+                if (!this._videoTextureSupported) {
+                    if (!texture._workingCanvas) {
+                        texture._workingCanvas = document.createElement("canvas");
+                        texture._workingContext = texture._workingCanvas.getContext("2d");
+                        texture._workingCanvas.width = texture._width;
+                        texture._workingCanvas.height = texture._height;
+                    }
+                    texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture._width, texture._height);
+                    this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
                 }
                 else {
-                    this._videoTextureSupported = true;
+                    this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
                 }
-            }
-            // Copy video through the current working canvas if video texture is not supported
-            if (!this._videoTextureSupported) {
-                if (!texture._workingCanvas) {
-                    texture._workingCanvas = document.createElement("canvas");
-                    texture._workingContext = texture._workingCanvas.getContext("2d");
-                    texture._workingCanvas.width = texture._width;
-                    texture._workingCanvas.height = texture._height;
+                if (texture.generateMipMaps) {
+                    this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
-                texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture._width, texture._height);
-                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._activeTexturesCache = [];
+                texture.isReady = true;
             }
-            else {
-                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+            catch (ex) {
+                // Something unexpected
+                // Let's disable the texture
+                texture._isDisabled = true;
             }
-            if (texture.generateMipMaps) {
-                this._gl.generateMipmap(this._gl.TEXTURE_2D);
-            }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
-            texture.isReady = true;
         };
         Engine.prototype.createRenderTargetTexture = function (size, options) {
             // old version had a "generateMipMaps" arg instead of options.
