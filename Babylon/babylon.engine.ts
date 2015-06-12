@@ -549,6 +549,11 @@
             options = options || {};
             options.antialias = antialias;
 
+
+            if (options.preserveDrawingBuffer === undefined) {
+                options.preserveDrawingBuffer = false;
+            }
+
             // GL
             try {
                 this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
