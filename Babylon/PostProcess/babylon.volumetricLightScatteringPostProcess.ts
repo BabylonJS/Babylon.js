@@ -35,9 +35,25 @@
         */
         public excludedMeshes = new Array<AbstractMesh>();
 
+        /**
+        * Controls the overall intensity of the post-process
+        * @type {number}
+        */
         public exposure = 0.3;
+        /**
+        * Dissipates each sample's contribution in range [0, 1]
+        * @type {number}
+        */
         public decay = 0.96815;
+        /**
+        * Controls the overall intensity of each sample
+        * @type {number}
+        */
         public weight = 0.58767;
+        /**
+        * Controls the density of each sample
+        * @type {number}
+        */
         public density = 0.926;
 
         /**
@@ -87,8 +103,13 @@
             if (mesh === this.mesh) {
                 if (this.useDiffuseColor) {
                     defines.push("#define DIFFUSE_COLOR_RENDER");
-                } else {
-                    defines.push("#define BASIC_RENDER");
+                }
+                else if (material) {
+                    if (material.diffuseTexture !== undefined) {
+                        defines.push("#define BASIC_RENDER");
+                    } else {
+                        defines.push("#define DIFFUSE_COLOR_RENDER");
+                    }
                 }
                 defines.push("#define NEED_UV");
                 needUV = true;
@@ -102,10 +123,12 @@
 
                 if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
-                    if (material.opacityTexture.getAlphaFromRGB)
+                    if (material.opacityTexture.getAlphaFromRGB) {
                         defines.push("#define OPACITYRGB");
-                    if (!needUV)
+                    }
+                    if (!needUV) {
                         defines.push("#define NEED_UV");
+                    }
                 }
 
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -238,9 +261,10 @@
                     if (material && (mesh === this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
 
-                        if (this.useDiffuseColor && mesh === this.mesh) {
+                        if ((this.useDiffuseColor || alphaTexture === undefined) && mesh === this.mesh) {
                             this._volumetricLightScatteringPass.setColor3("color", material.diffuseColor);
-                        } else {
+                        }
+                        if (material.needAlphaTesting() || (mesh === this.mesh && alphaTexture && !this.useDiffuseColor)) {
                             this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
                             if (alphaTexture) {
                                 this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());

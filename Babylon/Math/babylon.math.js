@@ -284,8 +284,9 @@ var BABYLON;
         Vector2.prototype.equals = function (otherVector) {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         };
-        Vector2.prototype.equalsWithEpsilon = function (otherVector) {
-            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y);
+        Vector2.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
+            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
+            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon);
         };
         // Properties
         Vector2.prototype.length = function () {
@@ -484,8 +485,9 @@ var BABYLON;
         Vector3.prototype.equals = function (otherVector) {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         };
-        Vector3.prototype.equalsWithEpsilon = function (otherVector) {
-            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y) && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z);
+        Vector3.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
+            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
+            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon) && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z, epsilon);
         };
         Vector3.prototype.equalsToFloats = function (x, y, z) {
             return this.x === x && this.y === y && this.z === z;
@@ -982,11 +984,13 @@ var BABYLON;
         Vector4.prototype.equals = function (otherVector) {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         };
-        Vector4.prototype.equalsWithEpsilon = function (otherVector) {
-            return Math.abs(this.x - otherVector.x) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < BABYLON.Engine.Epsilon &&
-                Math.abs(this.w - otherVector.w) < BABYLON.Engine.Epsilon;
+        Vector4.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
+            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
+            return otherVector
+                && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && BABYLON.Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
         };
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
             return this.x === x && this.y === y && this.z === z && this.w === w;

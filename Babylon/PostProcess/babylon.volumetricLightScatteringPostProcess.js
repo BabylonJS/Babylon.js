@@ -45,9 +45,25 @@ var BABYLON;
             * Array containing the excluded meshes not rendered in the internal pass
             */
             this.excludedMeshes = new Array();
+            /**
+            * Controls the overall intensity of the post-process
+            * @type {number}
+            */
             this.exposure = 0.3;
+            /**
+            * Dissipates each sample's contribution in range [0, 1]
+            * @type {number}
+            */
             this.decay = 0.96815;
+            /**
+            * Controls the overall intensity of each sample
+            * @type {number}
+            */
             this.weight = 0.58767;
+            /**
+            * Controls the density of each sample
+            * @type {number}
+            */
             this.density = 0.926;
             var scene = camera.getScene();
             this._viewPort = new BABYLON.Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
@@ -76,8 +92,13 @@ var BABYLON;
                 if (this.useDiffuseColor) {
                     defines.push("#define DIFFUSE_COLOR_RENDER");
                 }
-                else {
-                    defines.push("#define BASIC_RENDER");
+                else if (material) {
+                    if (material.diffuseTexture !== undefined) {
+                        defines.push("#define BASIC_RENDER");
+                    }
+                    else {
+                        defines.push("#define DIFFUSE_COLOR_RENDER");
+                    }
                 }
                 defines.push("#define NEED_UV");
                 needUV = true;
@@ -89,10 +110,12 @@ var BABYLON;
                 }
                 if (material.opacityTexture !== undefined) {
                     defines.push("#define OPACITY");
-                    if (material.opacityTexture.getAlphaFromRGB)
+                    if (material.opacityTexture.getAlphaFromRGB) {
                         defines.push("#define OPACITYRGB");
-                    if (!needUV)
+                    }
+                    if (!needUV) {
                         defines.push("#define NEED_UV");
+                    }
                 }
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
@@ -198,10 +221,10 @@ var BABYLON;
                     // Alpha test
                     if (material && (mesh === _this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        if (_this.useDiffuseColor && mesh === _this.mesh) {
+                        if ((_this.useDiffuseColor || alphaTexture === undefined) && mesh === _this.mesh) {
                             _this._volumetricLightScatteringPass.setColor3("color", material.diffuseColor);
                         }
-                        else {
+                        if (material.needAlphaTesting() || (mesh === _this.mesh && alphaTexture && !_this.useDiffuseColor)) {
                             _this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
                             if (alphaTexture) {
                                 _this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
