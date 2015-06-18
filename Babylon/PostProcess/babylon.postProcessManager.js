@@ -62,6 +62,9 @@ var BABYLON;
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
+                    if (pp.onAfterRender) {
+                        pp.onAfterRender(effect);
+                    }
                 }
             }
             // Restore depth buffer
@@ -101,6 +104,9 @@ var BABYLON;
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
+                    if (pp.onAfterRender) {
+                        pp.onAfterRender(effect);
+                    }
                 }
             }
             // Restore depth buffer
