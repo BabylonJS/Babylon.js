@@ -353,8 +353,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
-        public equalsWithEpsilon(otherVector: Vector2): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x) && Tools.WithinEpsilon(this.y, otherVector.y);
+        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Engine.Epsilon): boolean {
+            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
@@ -612,8 +612,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
-        public equalsWithEpsilon(otherVector: Vector3): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x) && Tools.WithinEpsilon(this.y, otherVector.y) && Tools.WithinEpsilon(this.z, otherVector.z);
+        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Engine.Epsilon): boolean {
+            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon) && Tools.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number): boolean {
@@ -1228,11 +1228,12 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         }
 
-        public equalsWithEpsilon(otherVector: Vector4): boolean {
-            return Math.abs(this.x - otherVector.x) < Engine.Epsilon &&
-                Math.abs(this.y - otherVector.y) < Engine.Epsilon &&
-                Math.abs(this.z - otherVector.z) < Engine.Epsilon &&
-                Math.abs(this.w - otherVector.w) < Engine.Epsilon;
+        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Engine.Epsilon): boolean {
+            return otherVector 
+            && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) 
+            && Tools.WithinEpsilon(this.y, otherVector.y, epsilon) 
+            && Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
+            && Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
