@@ -2,6 +2,7 @@
     export class PostProcess {
         public onApply: (effect: Effect) => void;
         public onBeforeRender: (effect: Effect) => void;
+        public onAfterRender: (effect: Effect) => void;
         public onSizeChanged: () => void;
         public onActivate: (camera: Camera) => void;
         public width = -1;
@@ -12,13 +13,14 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
-        private _renderRatio: number;
+        private _renderRatio: number|any;
         private _reusable = false;
+        private _textureType: number;
         public _textures = new SmartArray<WebGLTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -32,6 +34,7 @@
             this._renderRatio = ratio;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
+            this._textureType = textureType;
 
             samplers = samplers || [];
             samplers.push("textureSampler");
@@ -51,11 +54,12 @@
 
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
+
             var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
             var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
 
-            desiredWidth = Tools.GetExponantOfTwo(desiredWidth, maxSize);
-            desiredHeight = Tools.GetExponantOfTwo(desiredHeight, maxSize);
+            desiredWidth = this._renderRatio.width || Tools.GetExponantOfTwo(desiredWidth, maxSize);
+            desiredHeight = this._renderRatio.height || Tools.GetExponantOfTwo(desiredHeight, maxSize);
 
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
@@ -66,10 +70,10 @@
                 }
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode }));
+                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
 
                 if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode }));
+                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 }
 
                 if (this.onSizeChanged) {

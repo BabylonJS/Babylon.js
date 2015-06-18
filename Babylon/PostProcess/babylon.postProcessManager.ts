@@ -78,6 +78,10 @@
 
                     // Draw order
                     engine.draw(true, 0, 6);
+
+                    if (pp.onAfterRender) {
+                        pp.onAfterRender(effect);
+                    }
                 }
             }
 
@@ -123,6 +127,10 @@
 
                     // Draw order
                     engine.draw(true, 0, 6);
+
+                    if (pp.onAfterRender) {
+                        pp.onAfterRender(effect);
+                    }
                 }
             }
 
