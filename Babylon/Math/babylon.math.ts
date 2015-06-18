@@ -1025,7 +1025,7 @@
             var sign = -1.0;
             var pi = Math.PI;
             var nbRevert = 0;
-            var cross: Vector3; 
+            var cross: Vector3;
             var dot = 0.0;
 
             // step 1  : rotation around w
@@ -1042,7 +1042,7 @@
             else {
                 t = w.z / w.x;
                 x = - t * Math.sqrt(1 / (1 + t * t));
-                z = Math.sqrt(1 / (1 + t *t));
+                z = Math.sqrt(1 / (1 + t * t));
             }
 
             u1 = new Vector3(x, y, z);
@@ -1053,8 +1053,8 @@
             }
 
             dot = Vector3.Dot(u, u1);
-            roll = Math.acos(dot) * sign;      
-             
+            roll = Math.acos(dot) * sign;
+
             if (Vector3.Dot(u1, X) < 0) { // checks X orientation
                 roll = Math.PI + roll;
                 u1 = u1.scaleInPlace(-1);
@@ -1076,7 +1076,7 @@
             }
             else {
                 t = u1.z / u1.x;
-                x = - t * Math.sqrt(1  / (1 + t * t));
+                x = - t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
 
@@ -1088,7 +1088,7 @@
             }
 
             dot = Vector3.Dot(w, w2);
-            pitch = Math.acos(dot) * sign;      
+            pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
                 pitch = Math.PI + pitch;
                 v2 = v2.scaleInPlace(-1);
@@ -1229,11 +1229,11 @@
         }
 
         public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Engine.Epsilon): boolean {
-            return otherVector 
-            && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) 
-            && Tools.WithinEpsilon(this.y, otherVector.y, epsilon) 
-            && Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
-            && Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
+            return otherVector
+                && Tools.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && Tools.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
@@ -1733,7 +1733,7 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x),(num3 * left.y) + (num2 * right.y),(num3 * left.z) + (num2 * right.z),(num3 * left.w) + (num2 * right.w));
+            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -3537,7 +3537,7 @@
 
     export class Curve3 {
         private _points: Vector3[];
-        private _length:number = 0;
+        private _length: number = 0;
 
         // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
@@ -3571,7 +3571,7 @@
         public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
             var step = 1 / nbPoints;
-            for(var i = 0; i <= nbPoints; i++) {
+            for (var i = 0; i <= nbPoints; i++) {
                 hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
             }
             return new Curve3(hermite);

@@ -352,6 +352,7 @@ interface WebGLTexture {
     _cachedCoordinatesMode: number;
     _cachedWrapU: number;
     _cachedWrapV: number;
+    _isDisabled: boolean;
 }
 interface WebGLBuffer {
     references: number;
@@ -1875,20 +1876,6 @@ declare module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene);
         _checkInputs(): void;
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    class VRCamera extends FreeCamera {
-        private _leftCamera;
-        private _rightCamera;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion?: boolean);
-        _update(): void;
-        _updateCamera(camera: FreeCamera): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
     }
 }
 declare module BABYLON {
@@ -4802,6 +4789,7 @@ declare module BABYLON {
         name: string;
         onApply: (effect: Effect) => void;
         onBeforeRender: (effect: Effect) => void;
+        onAfterRender: (effect: Effect) => void;
         onSizeChanged: () => void;
         onActivate: (camera: Camera) => void;
         width: number;
@@ -4813,10 +4801,11 @@ declare module BABYLON {
         private _engine;
         private _renderRatio;
         private _reusable;
+        private _textureType;
         _textures: SmartArray<WebGLTexture>;
         _currentRenderTextureInd: number;
         private _effect;
-        constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: string);
+        constructor(name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number | any, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: string, textureType?: number);
         isReusable(): boolean;
         activate(camera: Camera, sourceTexture?: WebGLTexture): void;
         apply(): Effect;
@@ -4979,9 +4968,25 @@ declare module BABYLON {
         * Array containing the excluded meshes not rendered in the internal pass
         */
         excludedMeshes: AbstractMesh[];
+        /**
+        * Controls the overall intensity of the post-process
+        * @type {number}
+        */
         exposure: number;
+        /**
+        * Dissipates each sample's contribution in range [0, 1]
+        * @type {number}
+        */
         decay: number;
+        /**
+        * Controls the overall intensity of each sample
+        * @type {number}
+        */
         weight: number;
+        /**
+        * Controls the density of each sample
+        * @type {number}
+        */
         density: number;
         /**
          * @constructor
