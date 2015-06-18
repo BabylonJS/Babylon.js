@@ -1489,17 +1489,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    class AnaglyphFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, scene: Scene);
-    }
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, eyeSpace: number, scene: Scene);
-    }
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, scene: Scene);
-    }
-}
-declare module BABYLON {
     class ArcRotateCamera extends Camera {
         alpha: number;
         beta: number;
@@ -1761,28 +1750,6 @@ declare module BABYLON {
         private _onNewGameConnected(gamepad);
         _checkInputs(): void;
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    class StereogramFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, isVertical: boolean, scene: Scene);
-    }
-    class StereogramArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, eyeSpace: number, isVertical: boolean, scene: Scene);
-    }
-    class StereogramGamepadCamera extends GamepadCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, isVertical: boolean, scene: Scene);
-    }
-}
-declare module BABYLON {
-    class StereoscopicFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, isVertical: boolean, scene: Scene);
-    }
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, eyeSpace: number, isVertical: boolean, scene: Scene);
-    }
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        constructor(name: string, position: Vector3, eyeSpace: number, isVertical: boolean, scene: Scene);
     }
 }
 declare module BABYLON {
