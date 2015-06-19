@@ -13,7 +13,9 @@ precision highp float;
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec4 vDiffuseColor;
+#ifdef SPECULARTERM
 uniform vec4 vSpecularColor;
+#endif
 uniform vec3 vEmissiveColor;
 
 // Input
@@ -31,7 +33,9 @@ varying vec4 vColor;
 #ifdef LIGHT0
 uniform vec4 vLightData0;
 uniform vec4 vLightDiffuse0;
+#ifdef SPECULARTERM
 uniform vec3 vLightSpecular0;
+#endif
 #ifdef SHADOW0
 varying vec4 vPositionFromLight0;
 uniform sampler2D shadowSampler0;
@@ -48,7 +52,9 @@ uniform vec3 vLightGround0;
 #ifdef LIGHT1
 uniform vec4 vLightData1;
 uniform vec4 vLightDiffuse1;
+#ifdef SPECULARTERM
 uniform vec3 vLightSpecular1;
+#endif
 #ifdef SHADOW1
 varying vec4 vPositionFromLight1;
 uniform sampler2D shadowSampler1;
@@ -65,7 +71,9 @@ uniform vec3 vLightGround1;
 #ifdef LIGHT2
 uniform vec4 vLightData2;
 uniform vec4 vLightDiffuse2;
+#ifdef SPECULARTERM
 uniform vec3 vLightSpecular2;
+#endif
 #ifdef SHADOW2
 varying vec4 vPositionFromLight2;
 uniform sampler2D shadowSampler2;
@@ -82,7 +90,9 @@ uniform vec3 vLightGround2;
 #ifdef LIGHT3
 uniform vec4 vLightData3;
 uniform vec4 vLightDiffuse3;
+#ifdef SPECULARTERM
 uniform vec3 vLightSpecular3;
+#endif
 #ifdef SHADOW3
 varying vec4 vPositionFromLight3;
 uniform sampler2D shadowSampler3;
@@ -121,7 +131,7 @@ uniform vec2 vEmissiveInfos;
 uniform sampler2D emissiveSampler;
 #endif
 
-#ifdef SPECULAR
+#if defined(SPECULAR) || defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
@@ -377,7 +387,9 @@ float CalcFogFactor()
 struct lightingInfo
 {
 	vec3 diffuse;
+#ifdef SPECULARTERM
 	vec3 specular;
+#endif
 };
 
 lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range) {
@@ -399,15 +411,16 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 
 	// diffuse
 	float ndl = max(0., dot(vNormal, lightVectorW));
+	result.diffuse = ndl * diffuseColor * attenuation;
 
+#ifdef SPECULARTERM
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, max(1., vSpecularColor.a));
 
-	result.diffuse = ndl * diffuseColor * attenuation;
 	result.specular = specComp * specularColor * attenuation;
-
+#endif
 	return result;
 }
 
@@ -429,20 +442,24 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		// Diffuse
 		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
+		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;
 
+#ifdef SPECULARTERM
 		// Specular
 		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, vSpecularColor.a);
 
-		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;
 		result.specular = specComp * specularColor * spotAtten * attenuation;
+#endif
 
 		return result;
 	}
 
 	result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
 	result.specular = vec3(0.);
+#endif
 
 	return result;
 }
@@ -452,14 +469,16 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 	// Diffuse
 	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
+	result.diffuse = mix(groundColor, diffuseColor, ndl);
 
+#ifdef SPECULARTERM
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
 	float specComp = max(0., dot(vNormal, angleW));
 	specComp = pow(specComp, vSpecularColor.a);
 
-	result.diffuse = mix(groundColor, diffuseColor, ndl);
 	result.specular = specComp * specularColor;
+#endif
 
 	return result;
 }
@@ -521,10 +540,15 @@ void main(void) {
 
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
+#ifdef SPECULARTERM
 	vec3 specularBase = vec3(0., 0., 0.);
+#endif
 	float shadow = 1.;
 
 #ifdef LIGHT0
+#ifndef SPECULARTERM
+	vec3 vLightSpecular0 = vec3(0.0);
+#endif
 #ifdef SPOTLIGHT0
 	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a);
 #endif
@@ -548,10 +572,15 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info.diffuse * shadow;
+#ifdef SPECULARTERM
 	specularBase += info.specular * shadow;
+#endif
 #endif
 
 #ifdef LIGHT1
+#ifndef SPECULARTERM
+	vec3 vLightSpecular1 = vec3(0.0);
+#endif
 #ifdef SPOTLIGHT1
 	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a);
 #endif
@@ -575,10 +604,15 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info.diffuse * shadow;
+#ifdef SPECULARTERM
 	specularBase += info.specular * shadow;
+#endif
 #endif
 
 #ifdef LIGHT2
+#ifndef SPECULARTERM
+	vec3 vLightSpecular2 = vec3(0.0);
+#endif
 #ifdef SPOTLIGHT2
 	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a);
 #endif
@@ -602,10 +636,15 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info.diffuse * shadow;
+#ifdef SPECULARTERM
 	specularBase += info.specular * shadow;
+#endif
 #endif
 
 #ifdef LIGHT3
+#ifndef SPECULARTERM
+	vec3 vLightSpecular3 = vec3(0.0);
+#endif
 #ifdef SPOTLIGHT3
 	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a);
 #endif
@@ -629,7 +668,9 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info.diffuse * shadow;
+#ifdef SPECULARTERM
 	specularBase += info.specular * shadow;
+#endif
 #endif
 
 	// Reflection
@@ -698,9 +739,11 @@ void main(void) {
 #endif
 
 	// Specular map
+#ifdef SPECULARTERM
 	vec3 specularColor = vSpecularColor.rgb;
 #ifdef SPECULAR
 	specularColor = texture2D(specularSampler, vSpecularUV).rgb * vSpecularInfos.y;
+#endif
 #endif
 
 	// Fresnel
@@ -712,7 +755,11 @@ void main(void) {
 
 	// Composition
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+#ifdef SPECULARTERM
 	vec3 finalSpecular = specularBase * specularColor;
+#else
+	vec3 finalSpecular = vec3(0.0);
+#endif
 
 #ifdef SPECULAROVERALPHA
 	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
