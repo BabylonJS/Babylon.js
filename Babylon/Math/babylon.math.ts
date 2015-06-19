@@ -55,6 +55,10 @@
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         }
 
+        public equalsFloats(r: number, g: number, b: number): boolean {
+            return this.r === r && this.g === g && this.b === b;
+        }
+
         public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }

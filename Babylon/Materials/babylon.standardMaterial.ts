@@ -39,6 +39,7 @@
         private _scaledDiffuse = new Color3();
         private _scaledSpecular = new Color3();
         private _renderId: number;
+        private _specularTermEnabled: boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -197,6 +198,7 @@
 
             var shadowsActivated = false;
             var lightIndex = 0;
+            this._specularTermEnabled = false;
             if (scene.lightsEnabled) {
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
@@ -253,6 +255,15 @@
                     defines.push(type);
                     if (lightIndex > 0) {
                         fallbacks.addFallback(lightIndex, type.replace("#define ", ""));
+                    }
+
+                    // Specular
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                        if (!this._specularTermEnabled) {
+                            this._specularTermEnabled = true;
+                            defines.push("#define SPECULARTERM");
+                            fallbacks.addFallback(0, "SPECULARTERM");
+                        }
                     }
 
                     // Shadows
@@ -536,7 +547,10 @@
 
                 this._effect.setVector3("vEyePosition", scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-                this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
+
+                if (this._specularTermEnabled) {
+                    this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
+                }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
 
@@ -575,9 +589,11 @@
                     }
 
                     light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
-                    light.specular.scaleToRef(light.intensity, this._scaledSpecular);
                     this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
-                    this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
+                    if (this._specularTermEnabled) {
+                        light.specular.scaleToRef(light.intensity, this._scaledSpecular);
+                        this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
+                    }
 
                     // Shadows
                     if (scene.shadowsEnabled) {

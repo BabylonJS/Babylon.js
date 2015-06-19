@@ -46,6 +46,9 @@ var BABYLON;
         Color3.prototype.equals = function (otherColor) {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         };
+        Color3.prototype.equalsFloats = function (r, g, b) {
+            return this.r === r && this.g === g && this.b === b;
+        };
         Color3.prototype.scale = function (scale) {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         };
