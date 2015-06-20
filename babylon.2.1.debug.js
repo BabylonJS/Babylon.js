@@ -29210,7 +29210,7 @@ var BABYLON;
                 while (this.soundCollection.length) {
                     this.soundCollection[0].dispose();
                 }
-                this._outputAudioNode.disconnect();
+                if (this._outputAudioNode){this._outputAudioNode.disconnect();}
                 this._outputAudioNode = null;
             }
         };
