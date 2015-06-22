@@ -118,19 +118,19 @@ module BABYLON {
         }
 
         public _checkInputs(): void {
-            if (!this._offsetX) {
-                return;
-            }
-            this.cameraRotation.y += this._offsetX / this.angularSensibility;
+            if (this._offsetX) {
 
-            if (this._pointerPressed.length > 1) {
-                this.cameraRotation.x += -this._offsetY / this.angularSensibility;
-            } else {
-                var speed = this._computeLocalCameraSpeed();
-                var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+                this.cameraRotation.y += this._offsetX / this.angularSensibility;
 
-                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-                this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+                if (this._pointerPressed.length > 1) {
+                    this.cameraRotation.x += -this._offsetY / this.angularSensibility;
+                } else {
+                    var speed = this._computeLocalCameraSpeed();
+                    var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+
+                    Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+                    this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+                }
             }
 
             super._checkInputs();

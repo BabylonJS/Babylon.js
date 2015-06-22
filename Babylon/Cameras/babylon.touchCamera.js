@@ -96,18 +96,17 @@ var BABYLON;
             this._attachedCanvas = null;
         };
         TouchCamera.prototype._checkInputs = function () {
-            if (!this._offsetX) {
-                return;
-            }
-            this.cameraRotation.y += this._offsetX / this.angularSensibility;
-            if (this._pointerPressed.length > 1) {
-                this.cameraRotation.x += -this._offsetY / this.angularSensibility;
-            }
-            else {
-                var speed = this._computeLocalCameraSpeed();
-                var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-                this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+            if (this._offsetX) {
+                this.cameraRotation.y += this._offsetX / this.angularSensibility;
+                if (this._pointerPressed.length > 1) {
+                    this.cameraRotation.x += -this._offsetY / this.angularSensibility;
+                }
+                else {
+                    var speed = this._computeLocalCameraSpeed();
+                    var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+                    BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+                    this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+                }
             }
             _super.prototype._checkInputs.call(this);
         };

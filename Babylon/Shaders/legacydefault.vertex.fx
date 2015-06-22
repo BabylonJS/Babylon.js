@@ -62,7 +62,7 @@ uniform vec2 vEmissiveInfos;
 uniform mat4 emissiveMatrix;
 #endif
 
-#ifdef SPECULAR
+#if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
 uniform mat4 specularMatrix;
@@ -231,7 +231,7 @@ void main(void) {
 	}
 #endif
 
-#ifdef SPECULAR
+#if defined(SPECULAR) && defined(SPECULARTERM)
 	if (vSpecularInfos.x == 0.)
 	{
 		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));

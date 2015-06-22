@@ -131,7 +131,7 @@ uniform vec2 vEmissiveInfos;
 uniform sampler2D emissiveSampler;
 #endif
 
-#if defined(SPECULAR) || defined(SPECULARTERM)
+#if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
 uniform sampler2D specularSampler;
