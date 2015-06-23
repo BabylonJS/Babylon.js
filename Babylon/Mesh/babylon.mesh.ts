@@ -901,15 +901,15 @@
             this.setVerticesData(VertexBuffer.PositionKind, temp, this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable());
 
             // Normals
-            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return;
             }
-            data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            data = this.getVerticesData(VertexBuffer.NormalKind);
             temp = [];
             for (index = 0; index < data.length; index += 3) {
-                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
+                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
             }
-            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable());
+            this.setVerticesData(VertexBuffer.NormalKind, temp, this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable());
             
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
