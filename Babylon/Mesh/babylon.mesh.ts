@@ -908,7 +908,7 @@
             temp = [];
             var temp_normal = new Vector3(0, 0, 0);    // this vector is used to normalize the newly transformed normal
             for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
                 temp_normal.copyFromFloats(temp[index], temp[index + 1], temp[index + 2]);
                 temp_normal.normalize();
                 temp[index] = temp_normal.x;
