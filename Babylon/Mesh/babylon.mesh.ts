@@ -901,21 +901,15 @@
             this.setVerticesData(VertexBuffer.PositionKind, temp, this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable());
 
             // Normals
-            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
                 return;
             }
-            data = this.getVerticesData(VertexBuffer.NormalKind);
+            data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             temp = [];
-            var temp_normal = new Vector3(0, 0, 0);    // this vector is used to normalize the newly transformed normal
             for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
-                temp_normal.copyFromFloats(temp[index], temp[index + 1], temp[index + 2]);
-                temp_normal.normalize();
-                temp[index] = temp_normal.x;
-                temp[index+1] = temp_normal.y;
-                temp[index+2] = temp_normal.z;
+                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
             }
-            this.setVerticesData(VertexBuffer.NormalKind, temp, this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable());
+            this.setVerticesData(BABYLON.VertexBuffer.NormalKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable());
             
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
