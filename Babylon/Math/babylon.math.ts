@@ -295,13 +295,6 @@
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
-        public addInPlace(otherVector: Vector2): Vector2 {
-            this.x += otherVector.x;
-            this.y += otherVector.y;
-
-            return this;
-        }
-
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
@@ -344,10 +337,6 @@
             result.y = this.y / otherVector.y;
 
             return this;
-        }
-
-        public divideByFloats(x: number, y: number): Vector2 {
-            return new Vector2(this.x / x, this.y / y);
         }
 
         public negate(): Vector2 {
@@ -570,18 +559,6 @@
             return this;
         }
 
-        public addFromFloats(x: number, y: number, z: number): Vector3 {
-            return new Vector3(this.x + x, this.y + y, this.z + z);
-        }
-
-        public addFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
-            result.x = this.x + x;
-            result.y = this.y + y;
-            result.z = this.z + z;
-
-            return this;
-        }
-
         public subtractInPlace(otherVector: Vector3): Vector3 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
@@ -681,10 +658,6 @@
             result.z = this.z / otherVector.z;
 
             return this;
-        }
-
-        public divideByFloats(x: number, y: number, z: number): Vector3 {
-            return new Vector3(this.x / x, this.y / y, this.z / z);
         }
 
         public MinimizeInPlace(other: Vector3): Vector3 {
@@ -1197,19 +1170,6 @@
             return this;
         }
 
-        public addFromFloats(x: number, y: number, z: number, w: number): Vector4 {
-            return new Vector4(this.x + x, this.y + y, this.z + z, this.w + w);
-        }
-
-        public addFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4 {
-            result.x = this.x + x;
-            result.y = this.y + y;
-            result.z = this.z + z;
-            result.w = this.w + w;
-
-            return this;
-        }
-
         public subtractInPlace(otherVector: Vector4): Vector4 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
@@ -1321,10 +1281,6 @@
             result.w = this.w / otherVector.w;
 
             return this;
-        }
-
-        public divideByFloats(x: number, y: number, z: number, w: number): Vector4 {
-            return new Vector4(this.x / x, this.y / y, this.z / z, this.w / w);
         }
 
         public MinimizeInPlace(other: Vector4): Vector4 {
