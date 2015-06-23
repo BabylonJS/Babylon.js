@@ -14,7 +14,7 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
-        Animation.CreateAndStartAnimation = function (name, mesh, tartgetProperty, framePerSecond, totalFrame, from, to, loopMode) {
+        Animation.CreateAndStartAnimation = function (name, mesh, targetProperty, framePerSecond, totalFrame, from, to, loopMode) {
             var dataType = undefined;
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -34,7 +34,7 @@ var BABYLON;
             if (dataType == undefined) {
                 return null;
             }
-            var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
+            var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
             var keys = [];
             keys.push({ frame: 0, value: from });
             keys.push({ frame: totalFrame, value: to });

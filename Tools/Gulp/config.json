@@ -140,7 +140,8 @@
       "../../Babylon/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
       "../../Babylon/PostProcess/babylon.lensRenderingPipeline.js",
       "../../Babylon/PostProcess/babylon.colorCorrectionPostProcess.js",
-      "../../Babylon/Cameras/babylon.stereoscopicCameras.js"
+      "../../Babylon/Cameras/babylon.stereoscopicCameras.js",
+      "../../Babylon/PostProcess/babylon.hdrRenderingPipeline.js"
     ]
   },
   "shadersDirectories": [

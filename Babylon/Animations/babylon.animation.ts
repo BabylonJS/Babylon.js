@@ -10,7 +10,7 @@
         public targetPropertyPath: string[];
         public currentFrame: number;
 
-        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, tartgetProperty: string,
+        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
             framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number) {
 
@@ -32,7 +32,7 @@
                 return null;
             }
 
-            var animation = new Animation(name, tartgetProperty, framePerSecond, dataType, loopMode);
+            var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
             var keys = [];
             keys.push({ frame: 0, value: from });
