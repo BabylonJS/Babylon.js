@@ -21,15 +21,15 @@
         public _lookAtTemp = Matrix.Zero();
         public _tempMatrix = Matrix.Zero();
 
-        public _reset:() => void;
+        public _reset: () => void;
 
-        public _waitingLockedTargetId:string;
+        public _waitingLockedTargetId: string;
 
-        constructor(name:string, position:Vector3, scene:Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
         }
 
-        public _getLockedTargetPosition():Vector3 {
+        public _getLockedTargetPosition(): Vector3 {
             if (!this.lockedTarget) {
                 return null;
             }
@@ -44,7 +44,7 @@
             this._cache.rotation = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         }
 
-        public _updateCache(ignoreParentClass?:boolean):void {
+        public _updateCache(ignoreParentClass?: boolean): void {
             if (!ignoreParentClass) {
                 super._updateCache();
             }
@@ -66,7 +66,7 @@
         }
 
         // Synchronized
-        public _isSynchronizedViewMatrix():boolean {
+        public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronizedViewMatrix()) {
                 return false;
             }
@@ -84,7 +84,7 @@
         }
 
         // Target
-        public setTarget(target:Vector3):void {
+        public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
             Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
@@ -115,19 +115,19 @@
             }
         }
 
-        public getTarget():Vector3 {
+        public getTarget(): Vector3 {
             return this._currentTarget;
         }
 
 
-        public _decideIfNeedsToMove():boolean {
+        public _decideIfNeedsToMove(): boolean {
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
-        public _updatePosition():void{
+        public _updatePosition(): void {
             this.position.addInPlace(this.cameraDirection);
         }
-        public _checkInputs():void {
+        public _checkInputs(): void {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
@@ -184,7 +184,7 @@
         }
 
 
-        public _getViewMatrix():Matrix {
+        public _getViewMatrix(): Matrix {
             if (!this.lockedTarget) {
                 // Compute
                 if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
@@ -210,7 +210,7 @@
             Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
         }
-        
+
         public _getVRViewMatrix(): Matrix {
             Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
 
@@ -247,7 +247,7 @@
          * @override
          * Override Camera._updateRigCameras
          */
-        public _updateRigCameras(){
+        public _updateRigCameras() {
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -261,25 +261,25 @@
                         camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
                         camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
                         camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
-                        
+
                         camLeft.position.copyFrom(this.position);
                         camRight.position.copyFrom(this.position);
-                        
+
                     } else {
-                        camLeft.setTarget(this.getTarget());
-                        camRight.setTarget(this.getTarget());
-                        
                         //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
                         this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
-                        this._getRigCamPosition( this._cameraRigParams.stereoHalfAngle, camRight.position);
+                        this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle, camRight.position);
+
+                        camLeft.setTarget(this.getTarget());
+                        camRight.setTarget(this.getTarget());
                     }
                     break;
             }
             super._updateRigCameras();
         }
-        
+
         private _getRigCamPosition(halfSpace: number, result: Vector3) {
-            if (!this._rigCamTransformMatrix){
+            if (!this._rigCamTransformMatrix) {
                 this._rigCamTransformMatrix = new Matrix();
             }
             var target = this.getTarget();

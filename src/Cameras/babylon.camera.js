@@ -272,10 +272,10 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype._update = function () {
-            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
+            this._checkInputs();
         };
         Camera.prototype._checkInputs = function () {
         };

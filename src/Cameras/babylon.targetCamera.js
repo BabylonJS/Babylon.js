@@ -216,11 +216,11 @@ var BABYLON;
                         camRight.position.copyFrom(this.position);
                     }
                     else {
-                        camLeft.setTarget(this.getTarget());
-                        camRight.setTarget(this.getTarget());
                         //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
                         this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
                         this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle, camRight.position);
+                        camLeft.setTarget(this.getTarget());
+                        camRight.setTarget(this.getTarget());
                     }
                     break;
             }

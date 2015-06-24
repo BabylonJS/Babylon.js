@@ -73,7 +73,7 @@
         private static _FOVMODE_VERTICAL_FIXED = 0;
         private static _FOVMODE_HORIZONTAL_FIXED = 1;
 
-        private static _RIG_MODE_NONE = 0;        
+        private static _RIG_MODE_NONE = 0;
         private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
@@ -107,14 +107,14 @@
         public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL(): number {
             return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
         }
-        
+
         public static get RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED(): number {
             return Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
         }
 
         public static get RIG_MODE_STEREOSCOPIC_OVERUNDER(): number {
             return Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER;
-        }        
+        }
 
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
@@ -275,10 +275,10 @@
         }
 
         public _update(): void {
-            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
+            this._checkInputs();
         }
 
         public _checkInputs(): void {
@@ -471,7 +471,7 @@
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-        
+
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -481,14 +481,14 @@
                     //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
                     //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
                     this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
-                    
+
                     this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
                     this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
-                break;
+                    break;
             }
-            
+
             var postProcesses = new Array<PostProcess>();
-            
+
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                     postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]));
@@ -504,9 +504,9 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                     var isStereoscopicHoriz = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED);
-                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED)? 1 : 0;
+                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : 0;
                     var secondCamIndex = 1 - firstCamIndex;
-                    
+
                     postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[firstCamIndex]));
                     this._rigCameras[firstCamIndex].isIntermediate = true;
 
@@ -516,7 +516,7 @@
                 case Camera.RIG_MODE_VR:
                     this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
                     this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
-                    
+
                     var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
                     this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
                     this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
@@ -543,7 +543,7 @@
                     }
                     break;
             }
-            
+
             this._update();
         }
 
@@ -556,8 +556,8 @@
         public setCameraRigParameter(name: string, value: any) {
             this._cameraRigParams[name] = value;
             //provisionnally:
-            if (name === "interaxialDistance") { 
-		this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637); 
+            if (name === "interaxialDistance") {
+                this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637);
             }
         }
         
@@ -572,7 +572,7 @@
          * May needs to be overridden by children
          */
         public _updateRigCameras() {
-            for (var i=0 ; i<this._rigCameras.length ; i++) {
+            for (var i = 0; i < this._rigCameras.length; i++) {
                 this._rigCameras[i].minZ = this.minZ;
                 this._rigCameras[i].maxZ = this.maxZ;
                 this._rigCameras[i].fov = this.fov;
