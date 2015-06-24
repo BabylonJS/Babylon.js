@@ -1140,7 +1140,7 @@
         public flipFaces(flipNormals: boolean = false): void {
             var vertex_data = VertexData.ExtractFromMesh(this);
             
-            if (flipNormals) {
+            if (flipNormals && this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 for (var i = 0; i < vertex_data.normals.length; i++) {
                     vertex_data.normals[i] *= -1;
                 }
