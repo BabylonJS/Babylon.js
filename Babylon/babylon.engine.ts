@@ -1720,6 +1720,35 @@
             this._activeTexturesCache = [];
             texture.isReady = true;
         }
+        Engine.prototype.updateRawTexture = function (texture: WebGLTexture, data: ArrayBufferView, format: number, size: any, invertY: boolean) {
+            var internalFormat = this._gl.RGBA;
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = this._gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = this._gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = this._gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                    internalFormat = this._gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                    internalFormat = this._gl.RGBA;
+                    break;
+            }
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);           
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, size.width, size.height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            if (texture.generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._activeTexturesCache = [];
+            texture.isReady = true;
+        };
 
         public updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void {
             if (texture._isDisabled) {
