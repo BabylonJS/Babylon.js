@@ -795,7 +795,10 @@ var BABYLON;
             this.scaling.copyFromFloats(1, 1, 1);
             this.position.copyFromFloats(0, 0, 0);
             this.rotation.copyFromFloats(0, 0, 0);
-            this.rotationQuaternion = BABYLON.Quaternion.Identity();
+            //only if quaternion is already set
+            if(this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.Identity();
+            }
             this._worldMatrix = BABYLON.Matrix.Identity();
         };
         // Cache
@@ -1726,4 +1729,3 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.js.map
