@@ -904,17 +904,26 @@
             if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return;
             }
-
             data = this.getVerticesData(VertexBuffer.NormalKind);
             temp = [];
             for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).toArray(temp, index);
+                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
             }
-
             this.setVerticesData(VertexBuffer.NormalKind, temp, this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable());
+            
+            // flip faces?
+            if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
         }
 
-
+        // Will apply current transform to mesh and reset world matrix
+        public bakeCurrentTransformIntoVertices(): void {
+            this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
+            this.scaling.copyFromFloats(1, 1, 1);
+            this.position.copyFromFloats(0, 0, 0);
+            this.rotation.copyFromFloats(0, 0, 0);
+            this.rotationQuaternion = Quaternion.Identity();
+            this._worldMatrix = Matrix.Identity();
+        }
 
         // Cache
         public _resetPointsArrayCache(): void {
@@ -1125,6 +1134,27 @@
             }
 
             this.synchronizeInstances();
+        }
+
+        // will inverse faces orientations, and invert normals too if specified
+        public flipFaces(flipNormals: boolean = false): void {
+            var vertex_data = VertexData.ExtractFromMesh(this);
+
+            if (flipNormals && this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                for (var i = 0; i < vertex_data.normals.length; i++) {
+                    vertex_data.normals[i] *= -1;
+                }
+            }
+
+            var temp;
+            for (var i = 0; i < vertex_data.indices.length; i += 3) {
+                // reassign indices
+                temp = vertex_data.indices[i + 1];
+                vertex_data.indices[i + 1] = vertex_data.indices[i + 2];
+                vertex_data.indices[i + 2] = temp;
+            }
+
+            vertex_data.applyToMesh(this);
         }
 
         // Instances
