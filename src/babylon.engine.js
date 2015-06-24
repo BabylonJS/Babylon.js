@@ -1352,11 +1352,7 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
-            var texture = this._gl.createTexture();
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            // Format
+        Engine.prototype.updateRawTexture = function (texture, data, format, invertY) {
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1375,22 +1371,31 @@ var BABYLON;
                     internalFormat = this._gl.RGBA;
                     break;
             }
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
-            if (generateMipMaps) {
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._activeTexturesCache = [];
+            texture.isReady = true;
+        };
+        ;
+        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
+            var texture = this._gl.createTexture();
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = width;
+            texture._height = height;
+            texture.references = 1;
+            this.updateRawTexture(texture, data, format, invertY);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
-            texture._baseWidth = width;
-            texture._baseHeight = height;
-            texture._width = width;
-            texture._height = height;
-            texture.isReady = true;
-            texture.references = 1;
             texture.samplingMode = samplingMode;
             this._loadedTexturesCache.push(texture);
             return texture;

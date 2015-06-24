@@ -1619,16 +1619,9 @@
 
             return texture;
         }
-
-        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
-
-            var texture = this._gl.createTexture();
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-
-            // Format
+        
+        public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean): void {
             var internalFormat = this._gl.RGBA;
-
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
                     internalFormat = this._gl.ALPHA;
@@ -1646,12 +1639,27 @@
                     internalFormat = this._gl.RGBA;
                     break;
             }
-
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
-
-            if (generateMipMaps) {
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
+            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._activeTexturesCache = [];
+            texture.isReady = true;
+        };
+
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
+            var texture = this._gl.createTexture();
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+            texture._width = width;
+            texture._height = height;
+            texture.references = 1;
+
+            this.updateRawTexture(texture, data, format, invertY);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
@@ -1660,13 +1668,6 @@
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
 
-            this._activeTexturesCache = [];
-            texture._baseWidth = width;
-            texture._baseHeight = height;
-            texture._width = width;
-            texture._height = height;
-            texture.isReady = true;
-            texture.references = 1;
             texture.samplingMode = samplingMode;
 
             this._loadedTexturesCache.push(texture);
@@ -1729,8 +1730,7 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
 
-            try
-            {
+            try {
                 // Testing video texture support
                 if (this._videoTextureSupported === undefined) {
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
@@ -2117,7 +2117,7 @@
                 }
                 this._gl.disableVertexAttribArray(i);
             }
-            
+
             this._gl = null;
 
             // Events

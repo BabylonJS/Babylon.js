@@ -8,6 +8,7 @@
     - Adding onAfterRender function in BABYLON.PostProcess [PR](https://github.com/BabylonJS/Babylon.js/pull/572) [julien-moreau](https://github.com/julien-moreau)
     - Improved shaders optimizer to remove specular code when not needed [deltakosh](https://github.com/deltakosh)    
     - Added some utility functions to Vector2/3/4 [PR](https://github.com/BabylonJS/Babylon.js/pull/578) [jahow](https://github.com/jahow)
+    - New rawTexture.update function [robgdl](https://github.com/robgdl)
   - **Bug fixes**
  
   - **Breaking changes**

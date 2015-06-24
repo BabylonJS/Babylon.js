@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class HDRRenderingPipeline extends PostProcessRenderPipeline {
+    export class HDRRenderingPipeline extends PostProcessRenderPipeline implements IDisposable {
 
         /**
         * Public members
@@ -17,7 +17,7 @@
         */
         public gaussMean: number = 1.0;
         /**
-        * Gaussian blur standard derivation
+        * Gaussian blur standard deviation
         * @type {number}
         */
         public gaussStandDev: number = 0.8;
@@ -85,6 +85,7 @@
         private _downSamplePostProcesses: Array<PostProcess>;
 
         // Global
+        private _scene: Scene;
         private _needUpdate: boolean = true;
 
         /**
@@ -97,6 +98,8 @@
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: PostProcess = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
+
+            this._scene = scene;
 
             // Bright pass
             this._createBrightPassPostProcess(scene, ratio);
@@ -124,24 +127,29 @@
             }
 
             // Configure pipeline
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess", () => { return this._originalPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass", () => { return this._brightPassPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDownSampleX4", () => { return this._downSampleX4PostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurH", () => { return this._guassianBlurHPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurV", () => { return this._guassianBlurVPostProcess; }, true));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRTextureAdder", () => { return this._textureAdderPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess",() => { return this._originalPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass",() => { return this._brightPassPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDownSampleX4",() => { return this._downSampleX4PostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurH",() => { return this._guassianBlurHPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRGaussianBlurV",() => { return this._guassianBlurVPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRTextureAdder",() => { return this._textureAdderPostProcess; }, true));
 
             var addDownSamplerPostProcess = (id: number) => {
-                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDownSampler" + id, () => { return this._downSamplePostProcesses[id]; }, true));
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDownSampler" + id,() => { return this._downSamplePostProcesses[id]; }, true));
             };
             for (var i = HDRRenderingPipeline.LUM_STEPS - 1; i >= 0; i--) {
                 addDownSamplerPostProcess(i);
             }
 
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDR", () => { return this._hdrPostProcess; }, true));
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDR",() => { return this._hdrPostProcess; }, true));
 
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
+
+            if (cameras !== null) {
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
+
             this.update();
         }
 
@@ -164,6 +172,24 @@
         */
         public getOutputLuminance(): number {
             return this._hdrOutputLuminance;
+        }
+
+        /**
+        * Releases the rendering pipeline and its internal effects. Detaches pipeline from cameras
+        */
+        public dispose(): void {
+            this._originalPostProcess = undefined;
+            this._brightPassPostProcess = undefined;
+            this._downSampleX4PostProcess = undefined;
+            this._guassianBlurHPostProcess = undefined;
+            this._guassianBlurVPostProcess = undefined;
+            this._textureAdderPostProcess = undefined;
+            for (var i = HDRRenderingPipeline.LUM_STEPS - 1; i >= 0; i--) {
+                this._downSamplePostProcesses[i] = undefined;
+            }
+            this._hdrPostProcess = undefined;
+
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
         }
 
         /**
@@ -391,7 +417,7 @@
 
                 for (var i = 0; i < 9; i++) {
                     x = (i - 4.0) / 4.0;
-                    blurWeights[i] = this.gaussCoeff * (1.0 / Math.sqrt(2.0 * Math.PI * this.gaussStandDev * this.gaussStandDev)) * Math.exp((-((x - this.gaussMean) * (x - this.gaussMean))) / (2.0 * this.gaussStandDev * this.gaussStandDev));
+                    blurWeights[i] = this.gaussCoeff * (1.0 / Math.sqrt(2.0 * Math.PI * this.gaussStandDev)) * Math.exp((-((x - this.gaussMean) * (x - this.gaussMean))) / (2.0 * this.gaussStandDev * this.gaussStandDev));
                 }
             }
 

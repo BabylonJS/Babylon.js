@@ -35,7 +35,7 @@ var BABYLON;
             */
             this.gaussMean = 1.0;
             /**
-            * Gaussian blur standard derivation
+            * Gaussian blur standard deviation
             * @type {number}
             */
             this.gaussStandDev = 0.8;
@@ -71,8 +71,8 @@ var BABYLON;
             * @type {number}
             */
             this.brightThreshold = 0.8;
-            // Global
             this._needUpdate = true;
+            this._scene = scene;
             // Bright pass
             this._createBrightPassPostProcess(scene, ratio);
             // Down sample X4
@@ -108,6 +108,9 @@ var BABYLON;
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), "HDR", function () { return _this._hdrPostProcess; }, true));
             // Finish
             scene.postProcessRenderPipelineManager.addPipeline(this);
+            if (cameras !== null) {
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+            }
             this.update();
         }
         /**
@@ -127,6 +130,22 @@ var BABYLON;
         */
         HDRRenderingPipeline.prototype.getOutputLuminance = function () {
             return this._hdrOutputLuminance;
+        };
+        /**
+        * Releases the rendering pipeline and its internal effects. Detaches pipeline from cameras
+        */
+        HDRRenderingPipeline.prototype.dispose = function () {
+            this._originalPostProcess = undefined;
+            this._brightPassPostProcess = undefined;
+            this._downSampleX4PostProcess = undefined;
+            this._guassianBlurHPostProcess = undefined;
+            this._guassianBlurVPostProcess = undefined;
+            this._textureAdderPostProcess = undefined;
+            for (var i = HDRRenderingPipeline.LUM_STEPS - 1; i >= 0; i--) {
+                this._downSamplePostProcesses[i] = undefined;
+            }
+            this._hdrPostProcess = undefined;
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
         };
         /**
         * Creates the HDR post-process and computes the luminance adaptation
@@ -325,7 +344,7 @@ var BABYLON;
                 var x = 0.0;
                 for (var i = 0; i < 9; i++) {
                     x = (i - 4.0) / 4.0;
-                    blurWeights[i] = _this.gaussCoeff * (1.0 / Math.sqrt(2.0 * Math.PI * _this.gaussStandDev * _this.gaussStandDev)) * Math.exp((-((x - _this.gaussMean) * (x - _this.gaussMean))) / (2.0 * _this.gaussStandDev * _this.gaussStandDev));
+                    blurWeights[i] = _this.gaussCoeff * (1.0 / Math.sqrt(2.0 * Math.PI * _this.gaussStandDev)) * Math.exp((-((x - _this.gaussMean) * (x - _this.gaussMean))) / (2.0 * _this.gaussStandDev * _this.gaussStandDev));
                 }
             };
             // Callback

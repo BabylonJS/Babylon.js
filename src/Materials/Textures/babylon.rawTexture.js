@@ -13,10 +13,15 @@ var BABYLON;
             if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps, invertY);
+            this.format = format;
             this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
             this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
         }
+        RawTexture.prototype.update = function (data) {
+            this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
+        };
+        ;
         // Statics
         RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }

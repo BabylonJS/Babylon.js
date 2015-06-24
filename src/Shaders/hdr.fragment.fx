@@ -100,12 +100,12 @@ uniform vec2 dsOffsets[4];
 uniform float brightThreshold;
 
 void main() {
-	
 	vec4 average = vec4(0.0, 0.0, 0.0, 0.0);
 
-	for (int i = 0; i < 4; i++) {
-		average += texture2D(textureSampler, vUV + vec2(dsOffsets[i].x, dsOffsets[i].y));
-	}
+	average = texture2D(textureSampler, vUV + vec2(dsOffsets[0].x, dsOffsets[0].y));
+	average += texture2D(textureSampler, vUV + vec2(dsOffsets[1].x, dsOffsets[1].y));
+	average += texture2D(textureSampler, vUV + vec2(dsOffsets[2].x, dsOffsets[2].y));
+	average += texture2D(textureSampler, vUV + vec2(dsOffsets[3].x, dsOffsets[3].y));
 
 	average *= 0.25;
 
@@ -125,9 +125,22 @@ uniform vec2 dsOffsets[16];
 void main() {
 	vec4 average = vec4(0.0, 0.0, 0.0, 0.0);
 
-	for (int i = 0; i < 16; i++) {
-		average += texture2D(textureSampler, vUV + dsOffsets[i]);
-	}
+	average = texture2D(textureSampler, vUV + dsOffsets[0]);
+	average += texture2D(textureSampler, vUV + dsOffsets[1]);
+	average += texture2D(textureSampler, vUV + dsOffsets[2]);
+	average += texture2D(textureSampler, vUV + dsOffsets[3]);
+	average += texture2D(textureSampler, vUV + dsOffsets[4]);
+	average += texture2D(textureSampler, vUV + dsOffsets[5]);
+	average += texture2D(textureSampler, vUV + dsOffsets[6]);
+	average += texture2D(textureSampler, vUV + dsOffsets[7]);
+	average += texture2D(textureSampler, vUV + dsOffsets[8]);
+	average += texture2D(textureSampler, vUV + dsOffsets[9]);
+	average += texture2D(textureSampler, vUV + dsOffsets[10]);
+	average += texture2D(textureSampler, vUV + dsOffsets[11]);
+	average += texture2D(textureSampler, vUV + dsOffsets[12]);
+	average += texture2D(textureSampler, vUV + dsOffsets[13]);
+	average += texture2D(textureSampler, vUV + dsOffsets[14]);
+	average += texture2D(textureSampler, vUV + dsOffsets[15]);
 
 	average /= 16.0;
 
