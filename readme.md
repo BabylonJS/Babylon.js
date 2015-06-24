@@ -10,7 +10,7 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.2-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/Preview%20release)
+- **2.2-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release%20-%20alpha)
 - We are not complicate people, but we still have some [coding guidelines](http://doc.babylonjs.com/page.php?p=22671)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/page.php?p=22641)
 
