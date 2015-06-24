@@ -9844,10 +9844,10 @@ var BABYLON;
         Camera.prototype.detachControl = function (element) {
         };
         Camera.prototype._update = function () {
-            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
+            this._checkInputs();
         };
         Camera.prototype._checkInputs = function () {
         };
@@ -10312,11 +10312,11 @@ var BABYLON;
                         camRight.position.copyFrom(this.position);
                     }
                     else {
-                        camLeft.setTarget(this.getTarget());
-                        camRight.setTarget(this.getTarget());
                         //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
                         this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
                         this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle, camRight.position);
+                        camLeft.setTarget(this.getTarget());
+                        camRight.setTarget(this.getTarget());
                     }
                     break;
             }
