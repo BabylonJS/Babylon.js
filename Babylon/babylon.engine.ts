@@ -1739,7 +1739,7 @@
                     internalFormat = this._gl.RGBA;
                     break;
             }
-			this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);           
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, size.width, size.height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
             if (texture.generateMipMaps) {
