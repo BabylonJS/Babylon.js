@@ -781,9 +781,22 @@ var BABYLON;
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             temp = [];
             for (index = 0; index < data.length; index += 3) {
-                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
+                BABYLON.Vector3.TransformNormal(BABYLON.Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
             }
             this.setVerticesData(BABYLON.VertexBuffer.NormalKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable());
+            // flip faces?
+            if (transform.m[0] * transform.m[5] * transform.m[10] < 0) {
+                this.flipFaces();
+            }
+        };
+        // Will apply current transform to mesh and reset world matrix
+        Mesh.prototype.bakeCurrentTransformIntoVertices = function () {
+            this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
+            this.scaling.copyFromFloats(1, 1, 1);
+            this.position.copyFromFloats(0, 0, 0);
+            this.rotation.copyFromFloats(0, 0, 0);
+            this.rotationQuaternion = BABYLON.Quaternion.Identity();
+            this._worldMatrix = BABYLON.Matrix.Identity();
         };
         // Cache
         Mesh.prototype._resetPointsArrayCache = function () {
@@ -949,6 +962,24 @@ var BABYLON;
                 var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
             this.synchronizeInstances();
+        };
+        // will inverse faces orientations, and invert normals too if specified
+        Mesh.prototype.flipFaces = function (flipNormals) {
+            if (flipNormals === void 0) { flipNormals = false; }
+            var vertex_data = BABYLON.VertexData.ExtractFromMesh(this);
+            if (flipNormals && this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                for (var i = 0; i < vertex_data.normals.length; i++) {
+                    vertex_data.normals[i] *= -1;
+                }
+            }
+            var temp;
+            for (var i = 0; i < vertex_data.indices.length; i += 3) {
+                // reassign indices
+                temp = vertex_data.indices[i + 1];
+                vertex_data.indices[i + 1] = vertex_data.indices[i + 2];
+                vertex_data.indices[i + 2] = temp;
+            }
+            vertex_data.applyToMesh(this);
         };
         // Instances
         Mesh.prototype.createInstance = function (name) {
