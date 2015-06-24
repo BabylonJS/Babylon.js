@@ -7,7 +7,11 @@
 
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._format = format;
         }
+        RawTexture.prototype.update = function (data: ArrayBufferView) {
+            this.getScene().getEngine().updateRawTexture(this._texture, data, this._format, this.getSize(), this._invertY === undefined ? true : this._invertY);
+        };
 
         // Statics
         public static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): RawTexture {
