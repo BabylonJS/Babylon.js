@@ -4,7 +4,8 @@
     "minFilename": "babylon.js",
     "minNoWorkerFilename": "babylon.noworker.js",
     "declarationFilename": "babylon.d.ts",
-    "outputDirectory": "../../dist/"
+    "outputDirectory": "../../dist/",
+	"srcOutputDirectory": "../../src/"
   },
   "core": {
     "typescript": [
