@@ -1648,7 +1648,7 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             this._activeTexturesCache = [];
             texture.isReady = true;
-        };
+        }
 
         public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
