@@ -11,7 +11,7 @@
 
         public update(data: ArrayBufferView): void {
             this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
-        };
+        }
 
         // Statics
         public static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): RawTexture {
