@@ -1381,7 +1381,6 @@ var BABYLON;
             this._activeTexturesCache = [];
             texture.isReady = true;
         };
-        ;
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
@@ -1943,8 +1942,8 @@ var BABYLON;
         // Updatable statics so stick with vars here
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
-        Engine.CodeRepository = "Babylon/";
-        Engine.ShadersRepository = "Babylon/Shaders/";
+        Engine.CodeRepository = "src/";
+        Engine.ShadersRepository = "src/Shaders/";
         return Engine;
     })();
     BABYLON.Engine = Engine;

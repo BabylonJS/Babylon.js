@@ -921,7 +921,10 @@
             this.scaling.copyFromFloats(1, 1, 1);
             this.position.copyFromFloats(0, 0, 0);
             this.rotation.copyFromFloats(0, 0, 0);
-            this.rotationQuaternion = Quaternion.Identity();
+            //only if quaternion is already set
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion = Quaternion.Identity();
+            }
             this._worldMatrix = Matrix.Identity();
         }
 

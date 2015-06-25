@@ -1055,6 +1055,9 @@ var BABYLON;
                                         });
                                     }
                                 });
+                                if (!found) {
+                                    BABYLON.Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+                                }
                             }
                         }
                         // Material ?
@@ -1078,7 +1081,9 @@ var BABYLON;
                             }
                             if (!materialFound) {
                                 loadedMaterialsIds.push(parsedMesh.materialId);
-                                parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                if (!parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl)) {
+                                    BABYLON.Tools.Warn("Material not found for mesh " + parsedMesh.id);
+                                }
                             }
                         }
                         // Skeleton ?
