@@ -1293,6 +1293,9 @@
                                     
                                 }
                             });
+							if(!found) {
+								Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+							}
                         }
                     }
 
@@ -1320,7 +1323,9 @@
 
                         if (!materialFound) {
                             loadedMaterialsIds.push(parsedMesh.materialId);
-                            parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+							if(!parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl)) {
+								Tools.Warn("Material not found for mesh " + parsedMesh.id);
+							}
                         }
                     }
 
