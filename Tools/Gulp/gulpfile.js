@@ -56,7 +56,7 @@ gulp.task('typescript-compile', function() {
             .pipe(concat(config.build.declarationFilename))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
-            .pipe(gulp.dest('../../Babylon/'))
+            .pipe(gulp.dest(config.build.srcOutputDirectory))
     ]);
 });
 
@@ -71,7 +71,7 @@ gulp.task('typescript-sourcemaps', function() {
                 }));
     return tsResult.js
             .pipe(sourcemaps.write("./")) // sourcemaps are written.
-            .pipe(gulp.dest('../../Babylon/'));
+            .pipe(gulp.dest(config.build.srcOutputDirectory));
 });
 
 gulp.task("buildNoWorker", ["shaders"], function () {
@@ -118,12 +118,12 @@ gulp.task('default', function() {
  * Watch task, will call the default task if a js file is updated.
  */
 gulp.task('watch', function() {
-  gulp.watch('../../Babylon/**/*.js', ['build']);
+  gulp.watch(config.core.typescript, ['build']);
 });
 
 /**
  * Watch typescript task, will call the default typescript task if a typescript file is updated.
  */
 gulp.task('watch-typescript', function() {
-  gulp.watch("../../Babylon/**/*.ts", ["typescript-compile", "build"]);
+  gulp.watch(config.core.typescript, ["typescript-compile", "build"]);
 });
