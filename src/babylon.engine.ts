@@ -467,8 +467,8 @@
         // Updatable statics so stick with vars here
         public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
-        public static CodeRepository = "Babylon/";
-        public static ShadersRepository = "Babylon/Shaders/";
+        public static CodeRepository = "src/";
+        public static ShadersRepository = "src/Shaders/";
 
         // Public members
         public isFullscreen = false;
@@ -1648,7 +1648,7 @@
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             this._activeTexturesCache = [];
             texture.isReady = true;
-        };
+        }
 
         public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
