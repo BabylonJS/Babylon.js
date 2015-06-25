@@ -524,7 +524,7 @@ var BABYLON;
             var geometryId = geometry.id;
             serializationObject.geometryId = geometryId;
             if (!mesh.getScene().getGeometryByID(geometryId)) {
-                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize too be able to reload the mesh with its geometry
+                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
                 serializeGeometry(geometry, serializationScene.geometries);
             }
             // SubMeshes
@@ -686,8 +686,47 @@ var BABYLON;
             }
             return serializationObject;
         };
+        SceneSerializer.SerializeMesh = function (mesh) {
+            var serializationObject = {};
+            //only works if the mesh is already loaded
+            if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                //serialize material
+                if (mesh.material) {
+                    if (mesh.material instanceof BABYLON.StandardMaterial) {
+                        serializationObject.materials = [];
+                        serializationObject.materials.push(serializeMaterial(mesh.material));
+                    }
+                    else if (mesh.material instanceof BABYLON.MultiMaterial) {
+                        serializationObject.multiMaterials = [];
+                        serializationObject.multiMaterials.push(serializeMultiMaterial(mesh.material));
+                    }
+                }
+                //serialize geometry
+                var geometry = mesh._geometry;
+                if (geometry) {
+                    serializationObject.geometries = {};
+                    serializationObject.geometries.boxes = [];
+                    serializationObject.geometries.spheres = [];
+                    serializationObject.geometries.cylinders = [];
+                    serializationObject.geometries.toruses = [];
+                    serializationObject.geometries.grounds = [];
+                    serializationObject.geometries.planes = [];
+                    serializationObject.geometries.torusKnots = [];
+                    serializationObject.geometries.vertexData = [];
+                    serializeGeometry(geometry, serializationObject.geometries);
+                }
+                // Skeletons
+                if (mesh.skeleton) {
+                    serializationObject.skeletons = [];
+                    serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
+                }
+                //serialize the actual mesh
+                serializationObject.meshes = [];
+                serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+            }
+            return serializationObject;
+        };
         return SceneSerializer;
     })();
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneSerializer.js.map

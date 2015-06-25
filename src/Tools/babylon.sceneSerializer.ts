@@ -651,7 +651,7 @@
             serializationObject.geometryId = geometryId;
 
             if (!mesh.getScene().getGeometryByID(geometryId)) {
-                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize too be able to reload the mesh with its geometry
+                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
                 serializeGeometry(geometry, serializationScene.geometries);
             }
 
@@ -842,5 +842,50 @@
 
             return serializationObject;
         }
+		
+		public static SerializeMesh(mesh: Mesh) : any {
+			var serializationObject: any = {};
+			
+			//only works if the mesh is already loaded
+			if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
+				//serialize material
+				if(mesh.material) {
+					if (mesh.material instanceof StandardMaterial) {
+						serializationObject.materials = [];
+						serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
+					} else if (mesh.material instanceof MultiMaterial) {
+						serializationObject.multiMaterials = [];
+						serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+					}
+				}
+				//serialize geometry
+				var geometry = mesh._geometry;
+				if (geometry) {
+					serializationObject.geometries = {};
+				
+					serializationObject.geometries.boxes = [];
+					serializationObject.geometries.spheres = [];
+					serializationObject.geometries.cylinders = [];
+					serializationObject.geometries.toruses = [];
+					serializationObject.geometries.grounds = [];
+					serializationObject.geometries.planes = [];
+					serializationObject.geometries.torusKnots = [];
+					serializationObject.geometries.vertexData = [];
+				
+					serializeGeometry(geometry, serializationObject.geometries);
+				}
+				// Skeletons
+				if (mesh.skeleton) {
+					serializationObject.skeletons = [];
+					serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
+				}
+				
+				//serialize the actual mesh
+				serializationObject.meshes = [];
+				serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+			}
+			
+			return serializationObject;
+		}
     }
 }
