@@ -18,6 +18,9 @@ var BABYLON;
         Skeleton.prototype.getTransformMatrices = function () {
             return this._transformMatrices;
         };
+        Skeleton.prototype.getScene = function () {
+            return this._scene;
+        };
         // Methods
         Skeleton.prototype._markAsDirty = function () {
             this._isDirty = true;

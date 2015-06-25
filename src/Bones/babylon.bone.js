@@ -1,7 +1,15 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var BABYLON;
 (function (BABYLON) {
-    var Bone = (function () {
+    var Bone = (function (_super) {
+        __extends(Bone, _super);
         function Bone(name, skeleton, parentBone, matrix) {
+            _super.call(this, name, skeleton.getScene());
             this.name = name;
             this.children = new Array();
             this.animations = new Array();
@@ -68,7 +76,7 @@ var BABYLON;
             this._skeleton._markAsDirty();
         };
         return Bone;
-    })();
+    })(BABYLON.Node);
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.bone.js.map
