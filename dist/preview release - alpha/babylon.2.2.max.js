@@ -6342,7 +6342,6 @@ var BABYLON;
             this._activeTexturesCache = [];
             texture.isReady = true;
         };
-        ;
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
@@ -6904,8 +6903,8 @@ var BABYLON;
         // Updatable statics so stick with vars here
         Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
-        Engine.CodeRepository = "Babylon/";
-        Engine.ShadersRepository = "Babylon/Shaders/";
+        Engine.CodeRepository = "src/";
+        Engine.ShadersRepository = "src/Shaders/";
         return Engine;
     })();
     BABYLON.Engine = Engine;
@@ -14900,7 +14899,10 @@ var BABYLON;
             this.scaling.copyFromFloats(1, 1, 1);
             this.position.copyFromFloats(0, 0, 0);
             this.rotation.copyFromFloats(0, 0, 0);
-            this.rotationQuaternion = BABYLON.Quaternion.Identity();
+            //only if quaternion is already set
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion = BABYLON.Quaternion.Identity();
+            }
             this._worldMatrix = BABYLON.Matrix.Identity();
         };
         // Cache
@@ -19879,6 +19881,9 @@ var BABYLON;
                                         });
                                     }
                                 });
+                                if (!found) {
+                                    BABYLON.Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+                                }
                             }
                         }
                         // Material ?
@@ -19902,7 +19907,9 @@ var BABYLON;
                             }
                             if (!materialFound) {
                                 loadedMaterialsIds.push(parsedMesh.materialId);
-                                parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                if (!parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl)) {
+                                    BABYLON.Tools.Warn("Material not found for mesh " + parsedMesh.id);
+                                }
                             }
                         }
                         // Skeleton ?
@@ -21736,10 +21743,13 @@ var BABYLON;
     BABYLON.OctreeBlock = OctreeBlock;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.octreeBlock.js.map
+
 var BABYLON;
 (function (BABYLON) {
-    var Bone = (function () {
+    var Bone = (function (_super) {
+        __extends(Bone, _super);
         function Bone(name, skeleton, parentBone, matrix) {
+            _super.call(this, name, skeleton.getScene());
             this.name = name;
             this.children = new Array();
             this.animations = new Array();
@@ -21806,7 +21816,7 @@ var BABYLON;
             this._skeleton._markAsDirty();
         };
         return Bone;
-    })();
+    })(BABYLON.Node);
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.bone.js.map
@@ -21829,6 +21839,9 @@ var BABYLON;
         // Members
         Skeleton.prototype.getTransformMatrices = function () {
             return this._transformMatrices;
+        };
+        Skeleton.prototype.getScene = function () {
+            return this._scene;
         };
         // Methods
         Skeleton.prototype._markAsDirty = function () {
@@ -23658,7 +23671,7 @@ var BABYLON;
             var geometryId = geometry.id;
             serializationObject.geometryId = geometryId;
             if (!mesh.getScene().getGeometryByID(geometryId)) {
-                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize too be able to reload the mesh with its geometry
+                // geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
                 serializeGeometry(geometry, serializationScene.geometries);
             }
             // SubMeshes
@@ -23817,6 +23830,46 @@ var BABYLON;
                 if (light.getShadowGenerator()) {
                     serializationObject.shadowGenerators.push(serializeShadowGenerator(light));
                 }
+            }
+            return serializationObject;
+        };
+        SceneSerializer.SerializeMesh = function (mesh) {
+            var serializationObject = {};
+            //only works if the mesh is already loaded
+            if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                //serialize material
+                if (mesh.material) {
+                    if (mesh.material instanceof BABYLON.StandardMaterial) {
+                        serializationObject.materials = [];
+                        serializationObject.materials.push(serializeMaterial(mesh.material));
+                    }
+                    else if (mesh.material instanceof BABYLON.MultiMaterial) {
+                        serializationObject.multiMaterials = [];
+                        serializationObject.multiMaterials.push(serializeMultiMaterial(mesh.material));
+                    }
+                }
+                //serialize geometry
+                var geometry = mesh._geometry;
+                if (geometry) {
+                    serializationObject.geometries = {};
+                    serializationObject.geometries.boxes = [];
+                    serializationObject.geometries.spheres = [];
+                    serializationObject.geometries.cylinders = [];
+                    serializationObject.geometries.toruses = [];
+                    serializationObject.geometries.grounds = [];
+                    serializationObject.geometries.planes = [];
+                    serializationObject.geometries.torusKnots = [];
+                    serializationObject.geometries.vertexData = [];
+                    serializeGeometry(geometry, serializationObject.geometries);
+                }
+                // Skeletons
+                if (mesh.skeleton) {
+                    serializationObject.skeletons = [];
+                    serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
+                }
+                //serialize the actual mesh
+                serializationObject.meshes = [];
+                serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
             }
             return serializationObject;
         };
@@ -29956,61 +30009,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RawTexture = (function (_super) {
-        __extends(RawTexture, _super);
-        function RawTexture(data, width, height, format, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            _super.call(this, null, scene, !generateMipMaps, invertY);
-            this.format = format;
-            this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
-            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-        }
-        RawTexture.prototype.update = function (data) {
-            this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
-        };
-        ;
-        // Statics
-        RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_LUMINANCE, scene, generateMipMaps, invertY, samplingMode);
-        };
-        RawTexture.CreateLuminanceAlphaTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_LUMINANCE_ALPHA, scene, generateMipMaps, invertY, samplingMode);
-        };
-        RawTexture.CreateAlphaTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_ALPHA, scene, generateMipMaps, invertY, samplingMode);
-        };
-        RawTexture.CreateRGBTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_RGB, scene, generateMipMaps, invertY, samplingMode);
-        };
-        RawTexture.CreateRGBATexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
-            if (generateMipMaps === void 0) { generateMipMaps = true; }
-            if (invertY === void 0) { invertY = false; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode);
-        };
-        return RawTexture;
-    })(BABYLON.Texture);
-    BABYLON.RawTexture = RawTexture;
-})(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rawTexture.js.map
-
-var BABYLON;
-(function (BABYLON) {
     var IndexedVector2 = (function (_super) {
         __extends(IndexedVector2, _super);
         function IndexedVector2(original, index) {
@@ -32130,8 +32128,8 @@ var BABYLON;
                 }
                 _this._hdrOutputLuminance = BABYLON.Tools.Clamp(_this._hdrOutputLuminance, _this.minimumLuminance, _this.maximumLuminance);
                 hdrLastLuminance += scene.getEngine().getDeltaTime();
-                effect.setTextureFromPostProcess("textureSampler", _this._originalPostProcess);
-                effect.setTextureFromPostProcess("otherSampler", _this._textureAdderPostProcess);
+                effect.setTextureFromPostProcess("textureSampler", _this._textureAdderPostProcess);
+                effect.setTextureFromPostProcess("otherSampler", _this._originalPostProcess);
                 effect.setFloat("exposure", _this.exposure);
                 effect.setFloat("avgLuminance", _this._hdrOutputLuminance);
                 _this._needUpdate = false;

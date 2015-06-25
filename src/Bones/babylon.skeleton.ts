@@ -21,8 +21,12 @@
         }
 
         // Members
-        public getTransformMatrices() {
+        public getTransformMatrices(): Float32Array {
             return this._transformMatrices;
+        }
+
+        public getScene(): Scene {
+            return this._scene;
         }
 
         // Methods

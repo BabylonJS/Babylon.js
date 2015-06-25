@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class Bone {
+    export class Bone extends Node {
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
 
@@ -12,6 +12,7 @@
         private _parent: Bone;
 
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix) {
+            super(name, skeleton.getScene());
             this._skeleton = skeleton;
             this._matrix = matrix;
             this._baseMatrix = matrix;
