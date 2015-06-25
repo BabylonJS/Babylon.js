@@ -10,6 +10,7 @@
     - Added some utility functions to Vector2/3/4 [PR](https://github.com/BabylonJS/Babylon.js/pull/578) [jahow](https://github.com/jahow)
     - New rawTexture.update function [robgdl](https://github.com/robgdl)
     - Changes to meshes transform baking and added flipFaces [PR](https://github.com/BabylonJS/Babylon.js/pull/579) [jahow](https://github.com/jahow)
-    - SerializeMesh serializes a single mesh to be imported with the loader's ImportMesh. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [RaananW](https://github.com/RaananW)  - **Bug fixes**
+    - SerializeMesh serializes a single mesh to be imported with the loader's ImportMesh. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [RaananW](https://github.com/RaananW)
+  - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
   - **Breaking changes**
