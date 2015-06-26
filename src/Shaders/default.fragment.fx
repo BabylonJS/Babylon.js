@@ -499,10 +499,6 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
-#ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
-#endif
-
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV);
 
@@ -516,6 +512,10 @@ void main(void) {
 #endif
 
 	baseColor.rgb *= vDiffuseInfos.y;
+#endif
+
+#ifdef VERTEXCOLOR
+	baseColor.rgb *= vColor.rgb;
 #endif
 
 	// Bump
