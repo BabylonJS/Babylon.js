@@ -374,10 +374,6 @@ void main(void) {
 	vec4 baseColor = vec4(1., 1., 1., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
 
-#ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
-#endif
-
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV);
 
@@ -387,6 +383,10 @@ void main(void) {
 #endif
 
 	baseColor.rgb *= vDiffuseInfos.y;
+#endif
+
+#ifdef VERTEXCOLOR
+	baseColor.rgb *= vColor.rgb;
 #endif
 
 	// Bump
