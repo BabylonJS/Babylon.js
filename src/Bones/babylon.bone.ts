@@ -85,6 +85,7 @@
         }
 
         public markAsDirty(): void {
+            this._currentRenderId++;
             this._skeleton._markAsDirty();
         }
     }

@@ -444,7 +444,16 @@ var BABYLON;
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._markSyncedWithParent();
-                this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                if (this._meshToBoneReferal) {
+                    if (!this._localMeshReferalTransform) {
+                        this._localMeshReferalTransform = BABYLON.Matrix.Zero();
+                    }
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._localMeshReferalTransform);
+                    this._localMeshReferalTransform.multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                }
+                else {
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                }
             }
             else {
                 this._worldMatrix.copyFrom(this._localWorld);
@@ -501,6 +510,14 @@ var BABYLON;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
             this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+        };
+        AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
+            this._meshToBoneReferal = affectedMesh;
+            this.parent = bone;
+        };
+        AbstractMesh.prototype.detachFromBone = function () {
+            this._meshToBoneReferal = null;
+            this.parent = null;
         };
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);

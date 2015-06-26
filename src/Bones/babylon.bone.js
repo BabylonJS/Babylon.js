@@ -73,6 +73,7 @@ var BABYLON;
             }
         };
         Bone.prototype.markAsDirty = function () {
+            this._currentRenderId++;
             this._skeleton._markAsDirty();
         };
         return Bone;
