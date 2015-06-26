@@ -1,9 +1,9 @@
 - 2.2.0:
   - **Major updates**
+    - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) [deltakosh](https://github.com/deltakosh)
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
   - **Updates**
     - Vertex color and diffuse color can now be mixed [deltakosh](https://github.com/deltakosh)
-    - Meshes can now be attached to bones [deltakosh](https://github.com/deltakosh)
     - Depth-of-field improvements [PR](https://github.com/BabylonJS/Babylon.js/pull/567) [jahow](https://github.com/jahow)
     - Engine now initialize WebGL with preserveDrawingBuffer = false by default [deltakosh](https://github.com/deltakosh)
     - withEpsilon with a user defined epsilon [PR](https://github.com/BabylonJS/Babylon.js/pull/573) [RaananW](https://github.com/RaananW)

@@ -81,6 +81,9 @@
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
 
+        // Attach to bone
+        private _meshToBoneReferal: AbstractMesh;
+
         // Cache
         private _localScaling = Matrix.Zero();
         private _localRotation = Matrix.Zero();
@@ -88,6 +91,7 @@
         private _localBillboard = Matrix.Zero();
         private _localPivotScaling = Matrix.Zero();
         private _localPivotScalingRotation = Matrix.Zero();
+        private _localMeshReferalTransform: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
         private _rotateYByPI = Matrix.RotationY(Math.PI);
@@ -491,7 +495,17 @@
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._markSyncedWithParent();
-                this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+
+                if (this._meshToBoneReferal) {
+                    if (!this._localMeshReferalTransform) {
+                        this._localMeshReferalTransform = Matrix.Zero();
+                    }
+
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._localMeshReferalTransform);
+                    this._localMeshReferalTransform.multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                } else {
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                }
             } else {
                 this._worldMatrix.copyFrom(this._localWorld);
             }
@@ -563,6 +577,16 @@
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
             this.rotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+        }
+
+        public attachToBone(bone: Bone, affectedMesh: AbstractMesh): void {
+            this._meshToBoneReferal = affectedMesh;
+            this.parent = bone;
+        }
+
+        public detachFromBone(): void {
+            this._meshToBoneReferal = null;
+            this.parent = null;
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
