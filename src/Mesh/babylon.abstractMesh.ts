@@ -80,7 +80,7 @@
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
-		public onCollide: (collidedMesh: AbstractMesh) => void;
+        public onCollide: (collidedMesh: AbstractMesh) => void;
 
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
@@ -736,7 +736,7 @@
 
         // Collisions
 
-        public get checkCollisions() : boolean {
+        public get checkCollisions(): boolean {
             return this._checkCollisions;
         }
 
@@ -767,10 +767,10 @@
             if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPositionForCollisions);
             }
-			
-			if (this.onCollide && collidedMesh) {
-				this.onCollide(collidedMesh);
-			}
+
+            if (this.onCollide && collidedMesh) {
+                this.onCollide(collidedMesh);
+            }
         }
 
         // Submeshes octree
@@ -1007,3 +1007,4 @@
         }
     }
 }
+

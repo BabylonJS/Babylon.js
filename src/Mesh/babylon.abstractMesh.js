@@ -1,4 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -81,10 +81,9 @@ var BABYLON;
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPositionForCollisions);
                 }
-				
-				if (_this.onCollide && collidedMesh) {
-					_this.onCollide(collidedMesh);
-				}
+                if (_this.onCollide && collidedMesh) {
+                    _this.onCollide(collidedMesh);
+                }
             };
             scene.addMesh(this);
         }
