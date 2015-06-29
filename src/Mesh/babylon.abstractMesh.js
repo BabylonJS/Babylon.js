@@ -81,6 +81,10 @@ var BABYLON;
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPositionForCollisions);
                 }
+				
+				if (_this.onCollide && collidedMesh) {
+					_this.onCollide(collidedMesh);
+				}
             };
             scene.addMesh(this);
         }
