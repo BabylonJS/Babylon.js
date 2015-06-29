@@ -1207,8 +1207,9 @@ class Light(FCurveAnimatable):
         
         if self.light_type == POINT_LIGHT:
             self.position = light.location
-            if light.data.use_sphere:
-                self.range = light.data.distance            
+            if hasattr(light.data, 'use_sphere'):
+                if light.data.use_sphere:
+                    self.range = light.data.distance            
             
         elif self.light_type == DIRECTIONAL_LIGHT:
             self.position = light.location
