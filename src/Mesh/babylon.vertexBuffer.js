@@ -27,9 +27,11 @@ var BABYLON;
                     this._strideSize = 3;
                     break;
                 case VertexBuffer.UVKind:
-                    this._strideSize = 2;
-                    break;
                 case VertexBuffer.UV2Kind:
+                case VertexBuffer.UV3Kind:
+                case VertexBuffer.UV4Kind:
+                case VertexBuffer.UV5Kind:
+                case VertexBuffer.UV6Kind:
                     this._strideSize = 2;
                     break;
                 case VertexBuffer.ColorKind:
@@ -123,6 +125,34 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(VertexBuffer, "UV3Kind", {
+            get: function () {
+                return VertexBuffer._UV3Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV4Kind", {
+            get: function () {
+                return VertexBuffer._UV4Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV5Kind", {
+            get: function () {
+                return VertexBuffer._UV5Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV6Kind", {
+            get: function () {
+                return VertexBuffer._UV6Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(VertexBuffer, "ColorKind", {
             get: function () {
                 return VertexBuffer._ColorKind;
@@ -149,6 +179,10 @@ var BABYLON;
         VertexBuffer._NormalKind = "normal";
         VertexBuffer._UVKind = "uv";
         VertexBuffer._UV2Kind = "uv2";
+        VertexBuffer._UV3Kind = "uv3";
+        VertexBuffer._UV4Kind = "uv4";
+        VertexBuffer._UV5Kind = "uv5";
+        VertexBuffer._UV6Kind = "uv6";
         VertexBuffer._ColorKind = "color";
         VertexBuffer._MatricesIndicesKind = "matricesIndices";
         VertexBuffer._MatricesWeightsKind = "matricesWeights";

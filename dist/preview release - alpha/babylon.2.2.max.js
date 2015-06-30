@@ -13882,9 +13882,11 @@ var BABYLON;
                     this._strideSize = 3;
                     break;
                 case VertexBuffer.UVKind:
-                    this._strideSize = 2;
-                    break;
                 case VertexBuffer.UV2Kind:
+                case VertexBuffer.UV3Kind:
+                case VertexBuffer.UV4Kind:
+                case VertexBuffer.UV5Kind:
+                case VertexBuffer.UV6Kind:
                     this._strideSize = 2;
                     break;
                 case VertexBuffer.ColorKind:
@@ -13978,6 +13980,34 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(VertexBuffer, "UV3Kind", {
+            get: function () {
+                return VertexBuffer._UV3Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV4Kind", {
+            get: function () {
+                return VertexBuffer._UV4Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV5Kind", {
+            get: function () {
+                return VertexBuffer._UV5Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "UV6Kind", {
+            get: function () {
+                return VertexBuffer._UV6Kind;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(VertexBuffer, "ColorKind", {
             get: function () {
                 return VertexBuffer._ColorKind;
@@ -14004,6 +14034,10 @@ var BABYLON;
         VertexBuffer._NormalKind = "normal";
         VertexBuffer._UVKind = "uv";
         VertexBuffer._UV2Kind = "uv2";
+        VertexBuffer._UV3Kind = "uv3";
+        VertexBuffer._UV4Kind = "uv4";
+        VertexBuffer._UV5Kind = "uv5";
+        VertexBuffer._UV6Kind = "uv6";
         VertexBuffer._ColorKind = "color";
         VertexBuffer._MatricesIndicesKind = "matricesIndices";
         VertexBuffer._MatricesWeightsKind = "matricesWeights";
@@ -19380,6 +19414,18 @@ var BABYLON;
                 if (parsedVertexData.hasUVs2) {
                     geometry._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
                 }
+                if (parsedVertexData.hasUVs3) {
+                    geometry._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
+                }
+                if (parsedVertexData.hasUVs4) {
+                    geometry._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
+                }
+                if (parsedVertexData.hasUVs5) {
+                    geometry._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
+                }
+                if (parsedVertexData.hasUVs6) {
+                    geometry._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
+                }
                 if (parsedVertexData.hasColors) {
                     geometry._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
                 }
@@ -19746,6 +19792,26 @@ var BABYLON;
             var uv2s = parsedVertexData.uv2s;
             if (uv2s) {
                 vertexData.set(uv2s, BABYLON.VertexBuffer.UV2Kind);
+            }
+            // uv3s
+            var uv3s = parsedVertexData.uv3s;
+            if (uv3s) {
+                vertexData.set(uv3s, BABYLON.VertexBuffer.UV3Kind);
+            }
+            // uv4s
+            var uv4s = parsedVertexData.uv4s;
+            if (uv4s) {
+                vertexData.set(uv4s, BABYLON.VertexBuffer.UV4Kind);
+            }
+            // uv5s
+            var uv5s = parsedVertexData.uv5s;
+            if (uv5s) {
+                vertexData.set(uv5s, BABYLON.VertexBuffer.UV5Kind);
+            }
+            // uv6s
+            var uv6s = parsedVertexData.uv6s;
+            if (uv6s) {
+                vertexData.set(uv6s, BABYLON.VertexBuffer.UV6Kind);
             }
             // colors
             var colors = parsedVertexData.colors;
@@ -23629,6 +23695,18 @@ var BABYLON;
         if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
             serializationObject.uvs2 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
         }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
+            serializationObject.uvs3 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
+            serializationObject.uvs4 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
+            serializationObject.uvs5 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
+            serializationObject.uvs6 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
+        }
         if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
             serializationObject.colors = vertexData.getVerticesData(BABYLON.VertexBuffer.ColorKind);
         }
@@ -25006,6 +25084,18 @@ var BABYLON;
                 case BABYLON.VertexBuffer.UV2Kind:
                     this.uv2s = data;
                     break;
+                case BABYLON.VertexBuffer.UV3Kind:
+                    this.uv3s = data;
+                    break;
+                case BABYLON.VertexBuffer.UV4Kind:
+                    this.uv4s = data;
+                    break;
+                case BABYLON.VertexBuffer.UV5Kind:
+                    this.uv5s = data;
+                    break;
+                case BABYLON.VertexBuffer.UV6Kind:
+                    this.uv6s = data;
+                    break;
                 case BABYLON.VertexBuffer.ColorKind:
                     this.colors = data;
                     break;
@@ -25042,6 +25132,18 @@ var BABYLON;
             if (this.uv2s) {
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updatable);
             }
+            if (this.uv3s) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uv3s, updatable);
+            }
+            if (this.uv4s) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uv4s, updatable);
+            }
+            if (this.uv5s) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uv5s, updatable);
+            }
+            if (this.uv6s) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uv6s, updatable);
+            }
             if (this.colors) {
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updatable);
             }
@@ -25067,6 +25169,18 @@ var BABYLON;
             }
             if (this.uv2s) {
                 meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            }
+            if (this.uv3s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uv3s, updateExtends, makeItUnique);
+            }
+            if (this.uv4s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uv4s, updateExtends, makeItUnique);
+            }
+            if (this.uv5s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uv5s, updateExtends, makeItUnique);
+            }
+            if (this.uv6s) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uv6s, updateExtends, makeItUnique);
             }
             if (this.colors) {
                 meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
@@ -25146,6 +25260,38 @@ var BABYLON;
                     this.uv2s.push(other.uv2s[index]);
                 }
             }
+            if (other.uv3s) {
+                if (!this.uv3s) {
+                    this.uv3s = [];
+                }
+                for (index = 0; index < other.uv3s.length; index++) {
+                    this.uv3s.push(other.uv3s[index]);
+                }
+            }
+            if (other.uv4s) {
+                if (!this.uv4s) {
+                    this.uv4s = [];
+                }
+                for (index = 0; index < other.uv4s.length; index++) {
+                    this.uv4s.push(other.uv4s[index]);
+                }
+            }
+            if (other.uv5s) {
+                if (!this.uv5s) {
+                    this.uv5s = [];
+                }
+                for (index = 0; index < other.uv5s.length; index++) {
+                    this.uv5s.push(other.uv5s[index]);
+                }
+            }
+            if (other.uv6s) {
+                if (!this.uv6s) {
+                    this.uv6s = [];
+                }
+                for (index = 0; index < other.uv6s.length; index++) {
+                    this.uv6s.push(other.uv6s[index]);
+                }
+            }
             if (other.matricesIndices) {
                 if (!this.matricesIndices) {
                     this.matricesIndices = [];
@@ -25191,6 +25337,18 @@ var BABYLON;
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
                 result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
+                result.uv3s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
+                result.uv4s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
+                result.uv5s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
+                result.uv6s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                 result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);

@@ -424,6 +424,18 @@ var BABYLON;
         if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
             serializationObject.uvs2 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
         }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
+            serializationObject.uvs3 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
+            serializationObject.uvs4 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
+            serializationObject.uvs5 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
+        }
+        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
+            serializationObject.uvs6 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
+        }
         if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
             serializationObject.colors = vertexData.getVerticesData(BABYLON.VertexBuffer.ColorKind);
         }

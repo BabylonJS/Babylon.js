@@ -40,9 +40,11 @@
                     this._strideSize = 3;
                     break;
                 case VertexBuffer.UVKind:
-                    this._strideSize = 2;
-                    break;
                 case VertexBuffer.UV2Kind:
+                case VertexBuffer.UV3Kind:
+                case VertexBuffer.UV4Kind:
+                case VertexBuffer.UV5Kind:
+                case VertexBuffer.UV6Kind:
                     this._strideSize = 2;
                     break;
                 case VertexBuffer.ColorKind:
@@ -125,6 +127,10 @@
         private static _NormalKind = "normal";
         private static _UVKind = "uv";
         private static _UV2Kind = "uv2";
+        private static _UV3Kind = "uv3";
+        private static _UV4Kind = "uv4";
+        private static _UV5Kind = "uv5";
+        private static _UV6Kind = "uv6";
         private static _ColorKind = "color";
         private static _MatricesIndicesKind = "matricesIndices";
         private static _MatricesWeightsKind = "matricesWeights";
@@ -143,6 +149,22 @@
 
         public static get UV2Kind(): string {
             return VertexBuffer._UV2Kind;
+        }
+
+        public static get UV3Kind(): string {
+            return VertexBuffer._UV3Kind;
+        }
+
+        public static get UV4Kind(): string {
+            return VertexBuffer._UV4Kind;
+        }
+
+        public static get UV5Kind(): string {
+            return VertexBuffer._UV5Kind;
+        }
+
+        public static get UV6Kind(): string {
+            return VertexBuffer._UV6Kind;
         }
 
         public static get ColorKind(): string {
