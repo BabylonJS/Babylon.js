@@ -56,12 +56,12 @@ var BABYLON;
             */
             this.maximumLuminance = 1e20;
             /**
-            * Increase rate for luminance: eye adaptation speed to bright
+            * Increase rate for luminance: eye adaptation speed to dark
             * @type {number}
             */
             this.luminanceIncreaserate = 0.5;
             /**
-            * Decrease rate for luminance: eye adaptation speed to dark
+            * Decrease rate for luminance: eye adaptation speed to bright
             * @type {number}
             */
             this.luminanceDecreaseRate = 0.5;

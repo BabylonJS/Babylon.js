@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     var eventPrefix = Tools.GetPointerPrefix();
 
-    export class ArcRotateCamera extends Camera {
+    export class ArcRotateCamera extends TargetCamera {
         public inertialAlphaOffset = 0;
         public inertialBetaOffset = 0;
         public inertialRadiusOffset = 0;
@@ -24,9 +24,10 @@
         public allowUpsideDown = true;
 
         private _keys = [];
-        private _viewMatrix = new Matrix();
+        public _viewMatrix = new Matrix();
         private _attachedElement: HTMLElement;
 
+        private _onContextMenu: (e: PointerEvent) => void;
         private _onPointerDown: (e: PointerEvent) => void;
         private _onPointerUp: (e: PointerEvent) => void;
         private _onPointerMove: (e: PointerEvent) => void;
@@ -35,10 +36,17 @@
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;
         private _onLostFocus: (e: FocusEvent) => any;
-        private _reset: () => void;
+        public _reset: () => void;
         private _onGestureStart: (e: PointerEvent) => void;
         private _onGesture: (e: MSGestureEvent) => void;
         private _MSGestureHandler: MSGesture;
+
+        // Panning
+        private _localDirection: Vector3;
+        private _transformedDirection: Vector3;
+        private _isRightClick: boolean = false;
+        private _isCtrlPushed: boolean = false;
+        private _lastPanningPosition: Vector2 = new Vector2(0, 0);
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -103,7 +111,7 @@
         }
 
         // Methods
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true): void {
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var previousPinchDistance = 0;
             var pointers = new SmartCollection();
@@ -117,6 +125,12 @@
 
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
+                    // Manage panning
+                    this._isRightClick = evt.button === 2 ? true : false;
+                    this._lastPanningPosition.x = evt.clientX;
+                    this._lastPanningPosition.y = evt.clientY;
+
+                    // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
                     if (!noPreventDefault) {
@@ -139,6 +153,10 @@
                     }
                 };
 
+                this._onContextMenu = evt => {
+                    evt.preventDefault();
+                };
+
                 this._onPointerMove = evt => {
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -147,12 +165,31 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            var offsetX = evt.clientX - cacheSoloPointer.x;
-                            var offsetY = evt.clientY - cacheSoloPointer.y;
-                            this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                            this.inertialBetaOffset -= offsetY / this.angularSensibility;
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
+                            if ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick)) {
+                                if (!this._localDirection) {
+                                    this._localDirection = Vector3.Zero();
+                                    this._transformedDirection = Vector3.Zero();
+                                }
+
+                                var diffx = (evt.clientX - this._lastPanningPosition.x) * 0.1;
+                                var diffy = (evt.clientY - this._lastPanningPosition.y) * 0.1;
+
+                                this._localDirection.copyFromFloats(-diffx, diffy, 0);
+                                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+                                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                                this.target.addInPlace(this._transformedDirection);
+
+                                this._lastPanningPosition.x = evt.clientX;
+                                this._lastPanningPosition.y = evt.clientY;
+
+                            } else {
+                                var offsetX = evt.clientX - cacheSoloPointer.x;
+                                var offsetY = evt.clientY - cacheSoloPointer.y;
+                                this.inertialAlphaOffset -= offsetX / this.angularSensibility;
+                                this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                                cacheSoloPointer.x = evt.clientX;
+                                cacheSoloPointer.y = evt.clientY;
+                            }
                             break;
 
                         case 2: //pinch
@@ -217,6 +254,7 @@
                 };
 
                 this._onKeyDown = evt => {
+                    this._isCtrlPushed = evt.ctrlKey;
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -236,6 +274,7 @@
                 };
 
                 this._onKeyUp = evt => {
+                    this._isCtrlPushed = evt.ctrlKey;
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -299,6 +338,9 @@
 
             }
 
+            if (!useCtrlForPanning) {
+                element.addEventListener("contextmenu", this._onContextMenu, false);
+            }
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
@@ -321,6 +363,7 @@
                 return;
             }
 
+            element.removeEventListener("contextmenu", this._onContextMenu);
             element.removeEventListener(eventPrefix + "down", this._onPointerDown);
             element.removeEventListener(eventPrefix + "up", this._onPointerUp);
             element.removeEventListener(eventPrefix + "out", this._onPointerUp);

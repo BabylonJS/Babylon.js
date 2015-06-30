@@ -104,6 +104,9 @@ var BABYLON;
         };
         Material.prototype.unbind = function () {
         };
+        Material.prototype.clone = function (name) {
+            return null;
+        };
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);

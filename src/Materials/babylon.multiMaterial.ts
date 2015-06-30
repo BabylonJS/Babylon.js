@@ -31,7 +31,6 @@
             return true;
         }
 
-
         public clone(name: string): MultiMaterial {
             var newMultiMaterial = new MultiMaterial(name, this.getScene());
 

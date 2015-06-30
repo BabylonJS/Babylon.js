@@ -39,12 +39,12 @@
         */
         public maximumLuminance: number = 1e20;
         /**
-        * Increase rate for luminance: eye adaptation speed to bright
+        * Increase rate for luminance: eye adaptation speed to dark
         * @type {number}
         */
         public luminanceIncreaserate: number = 0.5;
         /**
-        * Decrease rate for luminance: eye adaptation speed to dark
+        * Decrease rate for luminance: eye adaptation speed to bright
         * @type {number}
         */
         public luminanceDecreaseRate: number = 0.5;

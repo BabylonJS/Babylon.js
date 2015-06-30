@@ -119,6 +119,10 @@
         public unbind(): void {
         }
 
+        public clone(name: string): Material {
+            return null;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);

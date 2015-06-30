@@ -234,6 +234,12 @@
             super.bind(world, mesh);
         }
 
+        public clone(name: string): ShaderMaterial {
+            var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+
+            return newShaderMaterial;
+        }        
+
         public dispose(forceDisposeEffect?: boolean): void {
             for (var name in this._textures) {
                 this._textures[name].dispose();
