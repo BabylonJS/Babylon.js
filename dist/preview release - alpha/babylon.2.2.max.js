@@ -10782,6 +10782,9 @@ var BABYLON;
             this.allowUpsideDown = true;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
+            this._isRightClick = false;
+            this._isCtrlPushed = false;
+            this._lastPanningPosition = new BABYLON.Vector2(0, 0);
             this.checkCollisions = false;
             this.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
             this._collider = new BABYLON.Collider();
@@ -10858,8 +10861,9 @@ var BABYLON;
                 && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         };
         // Methods
-        ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault) {
+        ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault, useCtrlForPanning) {
             var _this = this;
+            if (useCtrlForPanning === void 0) { useCtrlForPanning = true; }
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var previousPinchDistance = 0;
             var pointers = new BABYLON.SmartCollection();
@@ -10870,6 +10874,11 @@ var BABYLON;
             var engine = this.getEngine();
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
+                    // Manage panning
+                    _this._isRightClick = evt.button === 2 ? true : false;
+                    _this._lastPanningPosition.x = evt.clientX;
+                    _this._lastPanningPosition.y = evt.clientY;
+                    // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
                     if (!noPreventDefault) {
@@ -10888,18 +10897,37 @@ var BABYLON;
                         evt.preventDefault();
                     }
                 };
+                this._onContextMenu = function (evt) {
+                    evt.preventDefault();
+                };
                 this._onPointerMove = function (evt) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                     switch (pointers.count) {
                         case 1:
-                            var offsetX = evt.clientX - cacheSoloPointer.x;
-                            var offsetY = evt.clientY - cacheSoloPointer.y;
-                            _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                            _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
+                            if ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick)) {
+                                if (!_this._localDirection) {
+                                    _this._localDirection = BABYLON.Vector3.Zero();
+                                    _this._transformedDirection = BABYLON.Vector3.Zero();
+                                }
+                                var diffx = (evt.clientX - _this._lastPanningPosition.x) * 0.1;
+                                var diffy = (evt.clientY - _this._lastPanningPosition.y) * 0.1;
+                                _this._localDirection.copyFromFloats(-diffx, diffy, 0);
+                                _this._viewMatrix.invertToRef(_this._cameraTransformMatrix);
+                                BABYLON.Vector3.TransformNormalToRef(_this._localDirection, _this._cameraTransformMatrix, _this._transformedDirection);
+                                _this.target.addInPlace(_this._transformedDirection);
+                                _this._lastPanningPosition.x = evt.clientX;
+                                _this._lastPanningPosition.y = evt.clientY;
+                            }
+                            else {
+                                var offsetX = evt.clientX - cacheSoloPointer.x;
+                                var offsetY = evt.clientY - cacheSoloPointer.y;
+                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
+                                _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                                cacheSoloPointer.x = evt.clientX;
+                                cacheSoloPointer.y = evt.clientY;
+                            }
                             break;
                         case 2:
                             //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
@@ -10954,6 +10982,7 @@ var BABYLON;
                     }
                 };
                 this._onKeyDown = function (evt) {
+                    _this._isCtrlPushed = evt.ctrlKey;
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -10970,6 +10999,7 @@ var BABYLON;
                     }
                 };
                 this._onKeyUp = function (evt) {
+                    _this._isCtrlPushed = evt.ctrlKey;
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -11020,6 +11050,9 @@ var BABYLON;
                     cacheSoloPointer = null;
                 };
             }
+            if (!useCtrlForPanning) {
+                element.addEventListener("contextmenu", this._onContextMenu, false);
+            }
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
@@ -11039,6 +11072,7 @@ var BABYLON;
             if (this._attachedElement !== element) {
                 return;
             }
+            element.removeEventListener("contextmenu", this._onContextMenu);
             element.removeEventListener(eventPrefix + "down", this._onPointerDown);
             element.removeEventListener(eventPrefix + "up", this._onPointerUp);
             element.removeEventListener(eventPrefix + "out", this._onPointerUp);
@@ -11231,7 +11265,7 @@ var BABYLON;
             _super.prototype._updateRigCameras.call(this);
         };
         return ArcRotateCamera;
-    })(BABYLON.Camera);
+    })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.arcRotateCamera.js.map
@@ -12017,7 +12051,7 @@ var BABYLON;
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
                     submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
+                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.globalPosition).length();
                 }
                 var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
                 sortedArray.sort(function (a, b) {
@@ -17990,6 +18024,9 @@ var BABYLON;
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
         Material.prototype.unbind = function () {
+        };
+        Material.prototype.clone = function (name) {
+            return null;
         };
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
@@ -24933,6 +24970,10 @@ var BABYLON;
                 }
             }
             _super.prototype.bind.call(this, world, mesh);
+        };
+        ShaderMaterial.prototype.clone = function (name) {
+            var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+            return newShaderMaterial;
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
             for (var name in this._textures) {
@@ -32031,12 +32072,12 @@ var BABYLON;
             */
             this.maximumLuminance = 1e20;
             /**
-            * Increase rate for luminance: eye adaptation speed to bright
+            * Increase rate for luminance: eye adaptation speed to dark
             * @type {number}
             */
             this.luminanceIncreaserate = 0.5;
             /**
-            * Decrease rate for luminance: eye adaptation speed to dark
+            * Decrease rate for luminance: eye adaptation speed to bright
             * @type {number}
             */
             this.luminanceDecreaseRate = 0.5;

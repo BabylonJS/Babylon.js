@@ -45,7 +45,7 @@
                 for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
                     submesh = this._transparentSubMeshes.data[subIndex];
                     submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.position).length();
+                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.globalPosition).length();
                 }
 
                 var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);

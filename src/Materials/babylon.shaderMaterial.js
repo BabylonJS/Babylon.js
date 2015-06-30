@@ -183,6 +183,10 @@ var BABYLON;
             }
             _super.prototype.bind.call(this, world, mesh);
         };
+        ShaderMaterial.prototype.clone = function (name) {
+            var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+            return newShaderMaterial;
+        };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
             for (var name in this._textures) {
                 this._textures[name].dispose();

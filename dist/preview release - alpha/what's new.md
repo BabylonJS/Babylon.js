@@ -3,6 +3,7 @@
     - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) [deltakosh](https://github.com/deltakosh)
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
   - **Updates**
+    - Panning support for ArcRotateCamera [julien-moreau](https://github.com/julien-moreau)
     - Vertex color and diffuse color can now be mixed [deltakosh](https://github.com/deltakosh)
     - Depth-of-field improvements [PR](https://github.com/BabylonJS/Babylon.js/pull/567) [jahow](https://github.com/jahow)
     - Engine now initialize WebGL with preserveDrawingBuffer = false by default [deltakosh](https://github.com/deltakosh)
