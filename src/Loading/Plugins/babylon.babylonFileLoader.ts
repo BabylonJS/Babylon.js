@@ -621,6 +621,22 @@
                 geometry._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
             }
 
+            if (parsedVertexData.hasUVs3) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
+            }
+
+            if (parsedVertexData.hasUVs4) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
+            }
+
+            if (parsedVertexData.hasUVs5) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
+            }
+
+            if (parsedVertexData.hasUVs6) {
+                geometry._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
+            }
+
             if (parsedVertexData.hasColors) {
                 geometry._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
             }
@@ -1067,6 +1083,30 @@
         var uv2s = parsedVertexData.uv2s;
         if (uv2s) {
             vertexData.set(uv2s, BABYLON.VertexBuffer.UV2Kind);
+        }
+
+        // uv3s
+        var uv3s = parsedVertexData.uv3s;
+        if (uv3s) {
+            vertexData.set(uv3s, BABYLON.VertexBuffer.UV3Kind);
+        }
+
+        // uv4s
+        var uv4s = parsedVertexData.uv4s;
+        if (uv4s) {
+            vertexData.set(uv4s, BABYLON.VertexBuffer.UV4Kind);
+        }
+
+        // uv5s
+        var uv5s = parsedVertexData.uv5s;
+        if (uv5s) {
+            vertexData.set(uv5s, BABYLON.VertexBuffer.UV5Kind);
+        }
+
+        // uv6s
+        var uv6s = parsedVertexData.uv6s;
+        if (uv6s) {
+            vertexData.set(uv6s, BABYLON.VertexBuffer.UV6Kind);
         }
 
         // colors

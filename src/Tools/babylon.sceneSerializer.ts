@@ -511,6 +511,22 @@
             serializationObject.uvs2 = vertexData.getVerticesData(VertexBuffer.UV2Kind);
         }
 
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
+            serializationObject.uvs3 = vertexData.getVerticesData(VertexBuffer.UV3Kind);
+        }
+
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
+            serializationObject.uvs4 = vertexData.getVerticesData(VertexBuffer.UV4Kind);
+        }
+
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
+            serializationObject.uvs5 = vertexData.getVerticesData(VertexBuffer.UV5Kind);
+        }
+
+        if (vertexData.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
+            serializationObject.uvs6 = vertexData.getVerticesData(VertexBuffer.UV6Kind);
+        }
+
         if (vertexData.isVerticesDataPresent(VertexBuffer.ColorKind)) {
             serializationObject.colors = vertexData.getVerticesData(VertexBuffer.ColorKind);
         }
