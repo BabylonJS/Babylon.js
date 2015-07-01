@@ -18,27 +18,44 @@
         public subMeshId = 0;
 
         // Methods
-        public getNormal(useWorldCoordinates = false): Vector3 {
+        public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Vector3 {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return null;
             }
 
             var indices = this.pickedMesh.getIndices();
-            var normals = this.pickedMesh.getVerticesData(VertexBuffer.NormalKind);
+            var result: Vector3;
 
-            var normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
-            var normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
-            var normal2 = Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
+            if (useVerticesNormals) {
+                var normals = this.pickedMesh.getVerticesData(VertexBuffer.NormalKind);
 
-            normal0 = normal0.scale(this.bu);
-            normal1 = normal1.scale(this.bv);
-            normal2 = normal2.scale(1.0 - this.bu - this.bv);
+                var normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
+                var normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
+                var normal2 = Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
 
-            var result = new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+                normal0 = normal0.scale(this.bu);
+                normal1 = normal1.scale(this.bv);
+                normal2 = normal2.scale(1.0 - this.bu - this.bv);
+
+                result = new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
+            } else {
+                var positions = this.pickedMesh.getVerticesData(VertexBuffer.PositionKind);
+
+                var vertex1 = Vector3.FromArray(positions, indices[this.faceId * 3] * 3);
+                var vertex2 = Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3);
+                var vertex3 = Vector3.FromArray(positions, indices[this.faceId * 3 + 2] * 3);
+
+                var p1p2 = vertex1.subtract(vertex2);
+                var p3p2 = vertex3.subtract(vertex2);
+
+                result = BABYLON.Vector3.Cross(p1p2, p3p2);
+            }
+
             if (useWorldCoordinates) {
                 result = Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
             }
-            return result;
+
+            return BABYLON.Vector3.Normalize(result);
         }
 
         public getTextureCoordinates(): Vector2 {
