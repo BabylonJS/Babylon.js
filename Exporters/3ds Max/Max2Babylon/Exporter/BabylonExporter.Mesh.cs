@@ -84,6 +84,16 @@ namespace Max2Babylon
             return parentId;
         }
 
+        private void RotationToEulerAngles(BabylonAbstractMesh babylonMesh, IQuat rotation)
+        {
+            float rotx = 0, roty = 0, rotz = 0;
+            unsafe
+            {
+                rotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
+            }
+            babylonMesh.rotation = new[] { rotx, roty, rotz };
+        }
+
         private int bonesCount;
         private void ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
@@ -199,8 +209,19 @@ namespace Max2Babylon
             var meshTrans = localTM.Translation;
             var meshRotation = localTM.Rotation;
             var meshScale = localTM.Scaling;
+            var exportQuaternions = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportquaternions");
+
             babylonMesh.position = new[] { meshTrans.X, meshTrans.Y, meshTrans.Z };
-            babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+
+            if (exportQuaternions)
+            {
+                babylonMesh.rotationQuaternion = new[] { meshRotation.X, meshRotation.Y, meshRotation.Z, -meshRotation.W };
+            }
+            else
+            {
+                RotationToEulerAngles(babylonMesh, meshRotation);
+            }
+
             babylonMesh.scaling = new[] { meshScale.X, meshScale.Y, meshScale.Z };
 
             // Mesh
@@ -413,18 +434,23 @@ namespace Max2Babylon
 
                 var instance = new BabylonAbstractMesh { name = tab.Name };
                 {
-                    var instanceLocalTM = meshNode.GetObjectTM(0);
+                    var instanceLocalTM = instanceGameNode.GetObjectTM(0);
 
                     var instanceTrans = instanceLocalTM.Translation;
                     var instanceRotation = instanceLocalTM.Rotation;
                     var instanceScale = instanceLocalTM.Scaling;
+
                     instance.position = new[] { instanceTrans.X, instanceTrans.Y, instanceTrans.Z };
-                    float rotx = 0, roty = 0, rotz = 0;
-                    unsafe
+
+                    if (exportQuaternions)
                     {
-                        instanceRotation.GetEuler(new IntPtr(&rotx), new IntPtr(&roty), new IntPtr(&rotz));
+                        instance.rotationQuaternion = new[] { instanceRotation.X, instanceRotation.Y, instanceRotation.Z, -instanceRotation.W };
                     }
-                    instance.rotation = new[] { rotx, roty, rotz };
+                    else
+                    {
+                        RotationToEulerAngles(instance, instanceRotation);
+                    }
+
                     instance.scaling = new[] { instanceScale.X, instanceScale.Y, instanceScale.Z };
                 }
                 var instanceAnimations = new List<BabylonAnimation>();
