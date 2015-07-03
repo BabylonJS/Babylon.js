@@ -14,6 +14,7 @@
         public angularSensibility = 1000.0;
         public wheelPrecision = 3.0;
         public pinchPrecision = 2.0;
+        public panningSensibility: number = 0.1;
         public keysUp = [38];
         public keysDown = [40];
         public keysLeft = [37];
@@ -171,8 +172,8 @@
                                     this._transformedDirection = Vector3.Zero();
                                 }
 
-                                var diffx = (evt.clientX - this._lastPanningPosition.x) * 0.1;
-                                var diffy = (evt.clientY - this._lastPanningPosition.y) * 0.1;
+                                var diffx = (evt.clientX - this._lastPanningPosition.x) * this.panningSensibility;
+                                var diffy = (evt.clientY - this._lastPanningPosition.y) * this.panningSensibility;
 
                                 this._localDirection.copyFromFloats(-diffx, diffy, 0);
                                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
@@ -550,7 +551,7 @@
             this._collisionTriggered = false;
         }
 
-        public zoomOn(meshes?: AbstractMesh[]): void {
+        public zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ = false): void {
             meshes = meshes || this.getScene().meshes;
 
             var minMaxVector = Mesh.MinMax(meshes);
@@ -558,10 +559,10 @@
 
             this.radius = distance * this.zoomOnFactor;
 
-            this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance });
+            this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         }
 
-        public focusOn(meshesOrMinMaxVectorAndDistance): void {
+        public focusOn(meshesOrMinMaxVectorAndDistance, doNotUpdateMaxZ = false): void {
             var meshesOrMinMaxVector;
             var distance;
 
@@ -577,7 +578,9 @@
 
             this.target = Mesh.Center(meshesOrMinMaxVector);
 
-            this.maxZ = distance * 2;
+            if (!doNotUpdateMaxZ) {
+                this.maxZ = distance * 2;
+            }
         }
         
         /**

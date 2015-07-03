@@ -28,6 +28,7 @@ var BABYLON;
             this.angularSensibility = 1000.0;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
+            this.panningSensibility = 0.1;
             this.keysUp = [38];
             this.keysDown = [40];
             this.keysLeft = [37];
@@ -167,8 +168,8 @@ var BABYLON;
                                     _this._localDirection = BABYLON.Vector3.Zero();
                                     _this._transformedDirection = BABYLON.Vector3.Zero();
                                 }
-                                var diffx = (evt.clientX - _this._lastPanningPosition.x) * 0.1;
-                                var diffy = (evt.clientY - _this._lastPanningPosition.y) * 0.1;
+                                var diffx = (evt.clientX - _this._lastPanningPosition.x) * _this.panningSensibility;
+                                var diffy = (evt.clientY - _this._lastPanningPosition.y) * _this.panningSensibility;
                                 _this._localDirection.copyFromFloats(-diffx, diffy, 0);
                                 _this._viewMatrix.invertToRef(_this._cameraTransformMatrix);
                                 BABYLON.Vector3.TransformNormalToRef(_this._localDirection, _this._cameraTransformMatrix, _this._transformedDirection);
@@ -462,14 +463,16 @@ var BABYLON;
             }
             return this._viewMatrix;
         };
-        ArcRotateCamera.prototype.zoomOn = function (meshes) {
+        ArcRotateCamera.prototype.zoomOn = function (meshes, doNotUpdateMaxZ) {
+            if (doNotUpdateMaxZ === void 0) { doNotUpdateMaxZ = false; }
             meshes = meshes || this.getScene().meshes;
             var minMaxVector = BABYLON.Mesh.MinMax(meshes);
             var distance = BABYLON.Vector3.Distance(minMaxVector.min, minMaxVector.max);
             this.radius = distance * this.zoomOnFactor;
-            this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance });
+            this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         };
-        ArcRotateCamera.prototype.focusOn = function (meshesOrMinMaxVectorAndDistance) {
+        ArcRotateCamera.prototype.focusOn = function (meshesOrMinMaxVectorAndDistance, doNotUpdateMaxZ) {
+            if (doNotUpdateMaxZ === void 0) { doNotUpdateMaxZ = false; }
             var meshesOrMinMaxVector;
             var distance;
             if (meshesOrMinMaxVectorAndDistance.min === undefined) {
@@ -482,7 +485,9 @@ var BABYLON;
                 distance = meshesOrMinMaxVectorAndDistance.distance;
             }
             this.target = BABYLON.Mesh.Center(meshesOrMinMaxVector);
-            this.maxZ = distance * 2;
+            if (!doNotUpdateMaxZ) {
+                this.maxZ = distance * 2;
+            }
         };
         /**
          * @override
