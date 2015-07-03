@@ -27,6 +27,7 @@
         public blurScale = 2;
         private _blurBoxOffset = 0;
         private _bias = 0.00005;
+        private _lightDirection = Vector3.Zero();
 
         public get bias(): number {
             return this._bias;
@@ -312,18 +313,22 @@
             this._currentRenderID = scene.getRenderId();
 
             var lightPosition = this._light.position;
-            var lightDirection = this._light.direction;
+            Vector3.NormalizeToRef(this._light.direction, this._lightDirection);
 
+            if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) == 1.0) {
+                this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
+            }
+                
             if (this._light.computeTransformedPosition()) {
                 lightPosition = this._light.transformedPosition;
             }
 
-            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
+            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !this._lightDirection.equals(this._cachedDirection)) {
 
                 this._cachedPosition = lightPosition.clone();
-                this._cachedDirection = lightDirection.clone();
+                this._cachedDirection = this._lightDirection.clone();
 
-                Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), Vector3.Up(), this._viewMatrix);
+                Matrix.LookAtLHToRef(lightPosition, this._light.position.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
 
                 this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
 

@@ -8,6 +8,7 @@ var BABYLON;
             this.blurScale = 2;
             this._blurBoxOffset = 0;
             this._bias = 0.00005;
+            this._lightDirection = BABYLON.Vector3.Zero();
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
@@ -277,14 +278,17 @@ var BABYLON;
             }
             this._currentRenderID = scene.getRenderId();
             var lightPosition = this._light.position;
-            var lightDirection = this._light.direction;
+            BABYLON.Vector3.NormalizeToRef(this._light.direction, this._lightDirection);
+            if (Math.abs(BABYLON.Vector3.Dot(this._lightDirection, BABYLON.Vector3.Up())) == 1.0) {
+                this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
+            }
             if (this._light.computeTransformedPosition()) {
                 lightPosition = this._light.transformedPosition;
             }
-            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !lightDirection.equals(this._cachedDirection)) {
+            if (this._light.needRefreshPerFrame() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !this._lightDirection.equals(this._cachedDirection)) {
                 this._cachedPosition = lightPosition.clone();
-                this._cachedDirection = lightDirection.clone();
-                BABYLON.Matrix.LookAtLHToRef(lightPosition, this._light.position.add(lightDirection), BABYLON.Vector3.Up(), this._viewMatrix);
+                this._cachedDirection = this._lightDirection.clone();
+                BABYLON.Matrix.LookAtLHToRef(lightPosition, this._light.position.add(this._lightDirection), BABYLON.Vector3.Up(), this._viewMatrix);
                 this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
