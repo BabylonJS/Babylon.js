@@ -2,6 +2,7 @@
   - **Major updates**
     - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) [deltakosh](https://github.com/deltakosh)
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
+    - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
   - **Updates**
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)
     - PickingInfo.getNormal can now use either vertices normals or vertices positions [deltakosh](https://github.com/deltakosh)
