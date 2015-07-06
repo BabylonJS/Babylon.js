@@ -71,7 +71,11 @@
 
         public isEqual(other: StandardMaterialDefines): boolean {
             for (var prop in this) {
-                if (this[prop] != other[prop]) {
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+
+                if (this[prop] !== other[prop]) {
                     return false;
                 }
             }
@@ -81,16 +85,21 @@
 
         public cloneTo(other: StandardMaterialDefines): void {
             for (var prop in this) {
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+
                 other[prop] = this[prop];
             }
         }
 
         public reset(): void {
             for (var prop in this) {
-                if (typeof this[prop] === "function") {
+                if (!this.hasOwnProperty(prop)) {
                     continue;
                 }
-                if (prop == "BonesPerMesh") {
+
+                if (prop === "BonesPerMesh") {
                     this[prop] = 0;
                     continue;
                 }
@@ -102,11 +111,11 @@
         public toString(): string {
             var result = "";
             for (var prop in this) {
-                if (typeof this[prop] === "function") {
+                if (!this.hasOwnProperty(prop)) {
                     continue;
                 }
 
-                if (prop == "BonesPerMesh" && this[prop] > 0) {
+                if (prop === "BonesPerMesh" && this[prop] > 0) {
                     result += "#define BonesPerMesh " + this[prop] + "\n";
                     continue;
                 }

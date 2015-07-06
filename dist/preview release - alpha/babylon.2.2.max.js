@@ -18184,7 +18184,10 @@ var BABYLON;
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
             for (var prop in this) {
-                if (this[prop] != other[prop]) {
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+                if (this[prop] !== other[prop]) {
                     return false;
                 }
             }
@@ -18192,15 +18195,18 @@ var BABYLON;
         };
         StandardMaterialDefines.prototype.cloneTo = function (other) {
             for (var prop in this) {
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
                 other[prop] = this[prop];
             }
         };
         StandardMaterialDefines.prototype.reset = function () {
             for (var prop in this) {
-                if (typeof this[prop] === "function") {
+                if (!this.hasOwnProperty(prop)) {
                     continue;
                 }
-                if (prop == "BonesPerMesh") {
+                if (prop === "BonesPerMesh") {
                     this[prop] = 0;
                     continue;
                 }
@@ -18210,10 +18216,10 @@ var BABYLON;
         StandardMaterialDefines.prototype.toString = function () {
             var result = "";
             for (var prop in this) {
-                if (typeof this[prop] === "function") {
+                if (!this.hasOwnProperty(prop)) {
                     continue;
                 }
-                if (prop == "BonesPerMesh" && this[prop] > 0) {
+                if (prop === "BonesPerMesh" && this[prop] > 0) {
                     result += "#define BonesPerMesh " + this[prop] + "\n";
                     continue;
                 }
