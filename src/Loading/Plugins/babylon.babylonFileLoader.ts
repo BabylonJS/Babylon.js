@@ -1245,15 +1245,15 @@
             }
 
             mesh.setIndices(parsedGeometry.indices);
+        }
 
-            // SubMeshes
-            if (parsedGeometry.subMeshes) {
-                mesh.subMeshes = [];
-                for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
-                    var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
+        // SubMeshes
+        if (parsedGeometry.subMeshes) {
+            mesh.subMeshes = [];
+            for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
+                var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
-                }
+                var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
             }
         }
 
