@@ -552,7 +552,7 @@ class FCurveAnimatable:
 #===============================================================================
 class Mesh(FCurveAnimatable):
     def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID, noVertexOpt):
-        super().__init__(object, True, True, True)  #Should animations be done when foredParent
+        super().__init__(object, True, True, True)  #Should animations be done when forcedParent
         
         self.name = object.name + str(nameID)
         BabylonExporter.log('processing begun of mesh:  ' + self.name)
@@ -627,14 +627,16 @@ class Mesh(FCurveAnimatable):
         # Get mesh  
         mesh = object.to_mesh(scene, True, 'PREVIEW')
         
-        world = object.matrix_world
-        # if the armature is the parent, let ignore the parent matrix
-        if object.parent and object.parent == objArmature:
-            world *= object.parent.matrix_world.inverted()
-            
         # use defaults when not None
         if forcedParent is None:
-            loc, rot, scale = world.decompose()
+            # Use local matrix
+            locMatrix = object.matrix_local
+            if objArmature != None:
+                # unless the armature is the parent
+                if object.parent and object.parent == objArmature:
+                    locMatrix = object.matrix_world * object.parent.matrix_world.inverted()
+
+            loc, rot, scale = locMatrix.decompose()
             self.position = loc
             self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
             self.scaling  = scale
@@ -955,11 +957,7 @@ class Node(FCurveAnimatable):
         if node.parent and node.parent.type != 'ARMATURE':
             self.parentId = node.parent.name
 
-        world = node.matrix_world
-        #if (node.parent):
-        #    world = node.parent.matrix_world.inverted() * node.matrix_world
-
-        loc, rot, scale = world.decompose()
+        loc, rot, scale = node.matrix_local.decompose()
 
         if node.parent != None:
             self.parentId = node.parent.name
@@ -1040,7 +1038,7 @@ class Bone:
             previousBoneMatrix = None
             for frame in range(start_frame, end_frame + 1):
                 bpy.context.scene.frame_set(frame)
-                currentBoneMatrix = Bone.get_matrix(bone, skeleton.matrix_world)
+                currentBoneMatrix = Bone.get_matrix(bone, matrix_world)
 
                 if (frame != end_frame and currentBoneMatrix == previousBoneMatrix):
                     continue
@@ -1231,11 +1229,11 @@ class Light(FCurveAnimatable):
             
         elif self.light_type == DIRECTIONAL_LIGHT:
             self.position = light.location
-            self.direction = Light.get_direction(light.matrix_world)
+            self.direction = Light.get_direction(light.matrix_local)
             
         elif self.light_type == SPOT_LIGHT:
             self.position = light.location
-            self.direction = Light.get_direction(light.matrix_world)
+            self.direction = Light.get_direction(light.matrix_local)
             self.angle = light.data.spot_size
             self.exponent = light.data.spot_blend * 2
             if light.data.use_sphere:
@@ -1243,9 +1241,9 @@ class Light(FCurveAnimatable):
             
         else:
             # Hemi & Area
-            matrix_world = light.matrix_world.copy()
-            matrix_world.translation = mathutils.Vector((0, 0, 0))
-            self.direction = (mathutils.Vector((0, 0, -1)) * matrix_world)
+            matrix_local = light.matrix_local.copy()
+            matrix_local.translation = mathutils.Vector((0, 0, 0))
+            self.direction = (mathutils.Vector((0, 0, -1)) * matrix_local)
             self.direction = scale_vector(self.direction, -1)
             self.groundColor = mathutils.Color((0, 0, 0))
             
