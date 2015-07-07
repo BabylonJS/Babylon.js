@@ -70,9 +70,9 @@
             var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
             var uv2 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 2] * 2);
 
-            uv0 = uv0.scale(this.bu);
-            uv1 = uv1.scale(this.bv);
-            uv2 = uv2.scale(1.0 - this.bu - this.bv);
+            uv0 = uv0.scale(1.0 - this.bu - this.bv);
+            uv1 = uv1.scale(this.bu);
+            uv2 = uv2.scale(this.bv);
 
             return new Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
         }
