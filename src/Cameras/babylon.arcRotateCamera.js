@@ -28,7 +28,9 @@ var BABYLON;
             this.angularSensibility = 1000.0;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
-            this.panningSensibility = 0.1;
+            this.panningSensibility = 50.0;
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
             this.keysUp = [38];
             this.keysDown = [40];
             this.keysLeft = [37];
@@ -41,7 +43,6 @@ var BABYLON;
             this._viewMatrix = new BABYLON.Matrix();
             this._isRightClick = false;
             this._isCtrlPushed = false;
-            this._lastPanningPosition = new BABYLON.Vector2(0, 0);
             this.checkCollisions = false;
             this.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
             this._collider = new BABYLON.Collider();
@@ -131,10 +132,8 @@ var BABYLON;
             var engine = this.getEngine();
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
-                    // Manage panning
+                    // Manage panning with right click
                     _this._isRightClick = evt.button === 2 ? true : false;
-                    _this._lastPanningPosition.x = evt.clientX;
-                    _this._lastPanningPosition.y = evt.clientY;
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
@@ -164,27 +163,17 @@ var BABYLON;
                     switch (pointers.count) {
                         case 1:
                             if ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick)) {
-                                if (!_this._localDirection) {
-                                    _this._localDirection = BABYLON.Vector3.Zero();
-                                    _this._transformedDirection = BABYLON.Vector3.Zero();
-                                }
-                                var diffx = (evt.clientX - _this._lastPanningPosition.x) * _this.panningSensibility;
-                                var diffy = (evt.clientY - _this._lastPanningPosition.y) * _this.panningSensibility;
-                                _this._localDirection.copyFromFloats(-diffx, diffy, 0);
-                                _this._viewMatrix.invertToRef(_this._cameraTransformMatrix);
-                                BABYLON.Vector3.TransformNormalToRef(_this._localDirection, _this._cameraTransformMatrix, _this._transformedDirection);
-                                _this.target.addInPlace(_this._transformedDirection);
-                                _this._lastPanningPosition.x = evt.clientX;
-                                _this._lastPanningPosition.y = evt.clientY;
+                                _this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                                _this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                             }
                             else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
                                 _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
                                 _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
-                                cacheSoloPointer.x = evt.clientX;
-                                cacheSoloPointer.y = evt.clientY;
                             }
+                            cacheSoloPointer.x = evt.clientX;
+                            cacheSoloPointer.y = evt.clientY;
                             break;
                         case 2:
                             //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
@@ -385,6 +374,23 @@ var BABYLON;
                     this.inertialBetaOffset = 0;
                 if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
+            }
+            // Panning inertia
+            if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
+                if (!this._localDirection) {
+                    this._localDirection = BABYLON.Vector3.Zero();
+                    this._transformedDirection = BABYLON.Vector3.Zero();
+                }
+                this.inertialPanningX *= this.inertia;
+                this.inertialPanningY *= this.inertia;
+                if (Math.abs(this.inertialPanningX) < BABYLON.Engine.Epsilon)
+                    this.inertialPanningX = 0;
+                if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
+                    this.inertialPanningY = 0;
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+                BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                this.target.addInPlace(this._transformedDirection);
             }
             // Limits
             this._checkLimits();
