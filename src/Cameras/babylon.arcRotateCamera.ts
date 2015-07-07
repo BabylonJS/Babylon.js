@@ -14,7 +14,9 @@
         public angularSensibility = 1000.0;
         public wheelPrecision = 3.0;
         public pinchPrecision = 2.0;
-        public panningSensibility: number = 0.1;
+        public panningSensibility: number = 50.0;
+        public inertialPanningX: number = 0;
+        public inertialPanningY: number = 0;
         public keysUp = [38];
         public keysDown = [40];
         public keysLeft = [37];
@@ -47,7 +49,6 @@
         private _transformedDirection: Vector3;
         private _isRightClick: boolean = false;
         private _isCtrlPushed: boolean = false;
-        private _lastPanningPosition: Vector2 = new Vector2(0, 0);
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -126,10 +127,8 @@
 
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
-                    // Manage panning
+                    // Manage panning with right click
                     this._isRightClick = evt.button === 2 ? true : false;
-                    this._lastPanningPosition.x = evt.clientX;
-                    this._lastPanningPosition.y = evt.clientY;
 
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
@@ -167,30 +166,16 @@
 
                         case 1: //normal camera rotation
                             if ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick)) {
-                                if (!this._localDirection) {
-                                    this._localDirection = Vector3.Zero();
-                                    this._transformedDirection = Vector3.Zero();
-                                }
-
-                                var diffx = (evt.clientX - this._lastPanningPosition.x) * this.panningSensibility;
-                                var diffy = (evt.clientY - this._lastPanningPosition.y) * this.panningSensibility;
-
-                                this._localDirection.copyFromFloats(-diffx, diffy, 0);
-                                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-                                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                                this.target.addInPlace(this._transformedDirection);
-
-                                this._lastPanningPosition.x = evt.clientX;
-                                this._lastPanningPosition.y = evt.clientY;
-
+                                this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
+                                this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                             } else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
                                 this.inertialAlphaOffset -= offsetX / this.angularSensibility;
                                 this.inertialBetaOffset -= offsetY / this.angularSensibility;
-                                cacheSoloPointer.x = evt.clientX;
-                                cacheSoloPointer.y = evt.clientY;
                             }
+                            cacheSoloPointer.x = evt.clientX;
+                            cacheSoloPointer.y = evt.clientY;
                             break;
 
                         case 2: //pinch
@@ -422,6 +407,27 @@
                     this.inertialBetaOffset = 0;
                 if (Math.abs(this.inertialRadiusOffset) < Engine.Epsilon)
                     this.inertialRadiusOffset = 0;
+            }
+
+            // Panning inertia
+            if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
+                if (!this._localDirection) {
+                    this._localDirection = Vector3.Zero();
+                    this._transformedDirection = Vector3.Zero();
+                }
+
+                this.inertialPanningX *= this.inertia;
+                this.inertialPanningY *= this.inertia;
+
+                if (Math.abs(this.inertialPanningX) < Engine.Epsilon)
+                    this.inertialPanningX = 0;
+                if (Math.abs(this.inertialPanningY) < Engine.Epsilon)
+                    this.inertialPanningY = 0;
+
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                this.target.addInPlace(this._transformedDirection);
             }
 
             // Limits
