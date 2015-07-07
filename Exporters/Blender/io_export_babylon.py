@@ -591,15 +591,18 @@ class Mesh(FCurveAnimatable):
             self.physicsRestitution = object.rigid_body.restitution
         
         # hasSkeleton detection & skeletonID determination
-        hasSkeleton = True if object.parent and object.parent.type == 'ARMATURE' and len(object.vertex_groups) > 0 else False
-        if hasSkeleton:
-            # determine the skeleton ID by iterating thru objects counting armatures until parent is found
+        hasSkeleton = False
+        objArmature = None      # if there's an armature, this will be the one!
+        if len(object.vertex_groups) > 0:
+            objArmature = object.find_armature()
+            if objArmature != None:
+                hasSkeleton = True
             i = 0
-            for obj in [object for object in scene.objects if object.is_visible(scene)]:
-                if (obj.type == 'ARMATURE'):
-                    if (obj.name == object.parent.name):
+                for obj in scene.objects:
+                    if obj.type == "ARMATURE":
+                        if obj == objArmature:
                         self.skeletonId = i
-                        break;
+                            break
                     else:
                         i += 1
          
@@ -625,7 +628,8 @@ class Mesh(FCurveAnimatable):
         mesh = object.to_mesh(scene, True, 'PREVIEW')
         
         world = object.matrix_world
-        if object.parent and not hasSkeleton:
+        # if the armature is the parent, let ignore the parent matrix
+        if object.parent and object.parent == objArmature:
             world *= object.parent.matrix_world.inverted()
             
         # use defaults when not None
@@ -727,7 +731,7 @@ class Mesh(FCurveAnimatable):
                             index = group.group
                             weight = group.weight
 
-                            for boneIndex, bone in enumerate(object.parent.pose.bones):
+                            for boneIndex, bone in enumerate(objArmature.pose.bones):
                                 if object.vertex_groups[index].name == bone.name:
                                     if (i == MAX_INFLUENCERS_PER_VERTEX):
                                         BabylonExporter.warn('WARNING: Maximum # of influencers exceeded for a vertex, extras ignored', 2)
@@ -942,14 +946,18 @@ class Mesh(FCurveAnimatable):
         file_handler.write('}\n')
         self.alreadyExported = True
 #===============================================================================
-class Node:
+class Node(FCurveAnimatable):
     def __init__(self, node):
+        super().__init__(node, True, True, True)  #Should animations be done when foredParent
         BabylonExporter.log('processing begun of node:  ' + node.name)
         self.name = node.name        
         
+        if node.parent and node.parent.type != 'ARMATURE':
+            self.parentId = node.parent.name
+
         world = node.matrix_world
-        if (node.parent):
-            world = node.parent.matrix_world.inverted() * node.matrix_world
+        #if (node.parent):
+        #    world = node.parent.matrix_world.inverted() * node.matrix_world
 
         loc, rot, scale = world.decompose()
 
@@ -983,6 +991,8 @@ class Node:
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_int(file_handler, 'billboardMode', self.billboardMode)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)      
+
+        super().to_scene_file(file_handler) # Animations
         file_handler.write('}')         
 #===============================================================================
 class SubMesh:
@@ -1100,6 +1110,9 @@ class Camera(FCurveAnimatable):
     def __init__(self, camera):         
         super().__init__(camera, True, True, False, math.pi / 2)
         
+        if camera.parent and camera.parent.type != 'ARMATURE':
+            self.parentId = camera.parent.name
+
         self.CameraType = camera.data.CameraType  
         self.name = camera.name        
         BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
@@ -1174,6 +1187,8 @@ class Camera(FCurveAnimatable):
         
         write_string(file_handler, 'type', self.CameraType)
         
+        if hasattr(self, 'parentId'): write_string(file_handler, 'parentId', self.parentId)
+
         if self.CameraType == FOLLOW_CAM:
             write_float(file_handler, 'heightOffset',  self.followHeight)
             write_float(file_handler, 'radius',  self.followDistance)
@@ -1200,6 +1215,9 @@ class Light(FCurveAnimatable):
     def __init__(self, light):      
         super().__init__(light, False, True, False)
         
+        if light.parent and light.parent.type != 'ARMATURE':
+            self.parentId = light.parent.name
+
         self.name = light.name        
         BabylonExporter.log('processing begun of light (' + light.data.type + '):  ' + self.name)
         light_type_items = {'POINT': POINT_LIGHT, 'SUN': DIRECTIONAL_LIGHT, 'SPOT': SPOT_LIGHT, 'HEMI': HEMI_LIGHT, 'AREA': 0}
@@ -1241,6 +1259,7 @@ class Light(FCurveAnimatable):
         write_string(file_handler, 'id', self.name)        
         write_float(file_handler, 'type', self.light_type)
         
+        if hasattr(self, 'parentId'   ): write_string(file_handler, 'parentId', self.parentId)
         if hasattr(self, 'position'   ): write_vector(file_handler, 'position'   , self.position   )
         if hasattr(self, 'direction'  ): write_vector(file_handler, 'direction'  , self.direction  )
         if hasattr(self, 'angle'      ): write_float (file_handler, 'angle'      , self.angle      )
@@ -1836,4 +1855,3 @@ class ObjectPanel(bpy.types.Panel):
             layout.separator()
 
             layout.prop(ob.data, 'autoAnimate')   
-
