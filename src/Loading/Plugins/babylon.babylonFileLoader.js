@@ -43,7 +43,12 @@ var BABYLON;
                 texture._waitingRenderList = parsedTexture.renderList;
             }
             else {
-                texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+                if (parsedTexture.base64String) {
+                    texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                }
+                else {
+                    texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+                }
             }
             texture.name = parsedTexture.name;
             texture.hasAlpha = parsedTexture.hasAlpha;
@@ -138,6 +143,9 @@ var BABYLON;
             }
             if (parsedMaterial.bumpTexture) {
                 material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
+            }
+            if (parsedMaterial.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
             }
             return material;
         };
@@ -361,6 +369,11 @@ var BABYLON;
                 // Free Camera is the default value
                 camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
             }
+            // apply 3d rig, when found
+            if (parsedCamera.cameraRigMode) {
+                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
+            }
             // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
             if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
                 camera.lockedTarget = lockedTargetMesh;
@@ -409,7 +422,7 @@ var BABYLON;
                 camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
             }
             else {
-                camera.layerMask = 0xFFFFFFFF;
+                camera.layerMask = 0x0FFFFFFF;
             }
             return camera;
         };
@@ -565,6 +578,10 @@ var BABYLON;
             }
             mesh.checkCollisions = parsedMesh.checkCollisions;
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
+            // freezeWorldMatrix
+            if (parsedMesh.freezeWorldMatrix) {
+                mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            }
             // Parent
             if (parsedMesh.parentId) {
                 mesh._waitingParentId = parsedMesh.parentId;
@@ -639,7 +656,7 @@ var BABYLON;
                 mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
             }
             else {
-                mesh.layerMask = 0xFFFFFFFF;
+                mesh.layerMask = 0x0FFFFFFF;
             }
             // Instances
             if (parsedMesh.instances) {
@@ -1143,6 +1160,14 @@ var BABYLON;
                         currentMesh._waitingParentId = undefined;
                     }
                 }
+                // freeze world matrix application
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var currentMesh = scene.meshes[index];
+                    if (currentMesh._waitingFreezeWorldMatrix) {
+                        currentMesh.freezeWorldMatrix();
+                        currentMesh._waitingFreezeWorldMatrix = undefined;
+                    }
+                }
                 // Particles
                 if (parsedData.particleSystems) {
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
@@ -1313,6 +1338,14 @@ var BABYLON;
                     if (mesh._waitingActions) {
                         parseActions(mesh._waitingActions, mesh, scene);
                         mesh._waitingActions = undefined;
+                    }
+                }
+                // freeze world matrix application
+                for (index = 0; index < scene.meshes.length; index++) {
+                    var currentMesh = scene.meshes[index];
+                    if (currentMesh._waitingFreezeWorldMatrix) {
+                        currentMesh.freezeWorldMatrix();
+                        currentMesh._waitingFreezeWorldMatrix = undefined;
                     }
                 }
                 // Particles Systems
