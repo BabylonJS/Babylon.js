@@ -118,6 +118,7 @@
 
         // Loading properties
         public _waitingActions: any;
+        public _waitingFreezeWorldMatrix : boolean;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
