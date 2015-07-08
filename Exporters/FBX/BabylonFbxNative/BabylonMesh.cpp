@@ -239,6 +239,15 @@ web::json::value convertToJson(const std::vector<BabylonSubmesh>& v) {
 	return result;
 }
 
+web::json::value BabylonSubmesh::toJson(){
+	auto jobj = web::json::value::object();
+	jobj[L"materialIndex"] = web::json::value::number(materialIndex);
+	jobj[L"verticesStart"] = web::json::value::number(verticesStart);
+	jobj[L"verticesCount"] = web::json::value::number(verticesCount);
+	jobj[L"indexStart"] = web::json::value::number(indexStart);
+	jobj[L"indexCount"] = web::json::value::number(indexCount);
+	return jobj;
+}
 
 web::json::value BabylonMesh::toJson()
 {
@@ -261,7 +270,12 @@ web::json::value BabylonMesh::toJson()
 	jobj[L"billboardMode"] = web::json::value::number(_billboardMode);
 	jobj[L"visibility"] = web::json::value::number(_visibility);
 	jobj[L"skeletonId"] = web::json::value::number(_skeletonId);
-	
+
+	auto submeshesArray = web::json::value::array();
+	for (auto ix = 0u; ix < submeshes().size(); ++ix){
+		submeshesArray[ix] = submeshes()[ix].toJson();
+	}
+	jobj[L"subMeshes"] = submeshesArray;
 	jobj[L"showBoundingBox"] = web::json::value::boolean(_showBoundingBox);
 	jobj[L"showSubMeshesBoundingBox"] = web::json::value::boolean(_showSubMeshesBoundingBox);
 	jobj[L"applyFog"] = web::json::value::boolean(_applyFog);
@@ -544,7 +558,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				int valueIndex = (uvsReferenceMode == FbxLayerElement::eDirect) ?
 				mappingIndex : uvs->GetIndexArray().GetAt(mappingIndex);
 				v.uv = uvs->GetDirectArray().GetAt(valueIndex);
-				v.uv.y = 1 - v.uv.y;
+				//v.uv.y = 1 - v.uv.y;
 			}
 
 			if (uvs2) {
@@ -553,7 +567,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				int valueIndex = (uvs2ReferenceMode == FbxLayerElement::eDirect) ?
 				mappingIndex : uvs2->GetIndexArray().GetAt(mappingIndex);
 				v.uv2 = uvs2->GetDirectArray().GetAt(valueIndex);
-				v.uv2.y = 1 - v.uv2.y;
+				//v.uv2.y = 1 - v.uv2.y;
 			}
 			if (skinInfo.hasSkin()){
 				auto& skinData = skinInfo.controlPointBoneIndicesAndWeights(controlPointIndex);

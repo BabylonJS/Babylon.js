@@ -12,6 +12,7 @@ class BabylonTexture{
 public:
 	
 	 std::wstring name;
+	 std::wstring fullPath;
 
 		
 	 float level = 1.0f;
@@ -50,10 +51,10 @@ public:
 	 float wAng = 0;
 
 		
-	 int wrapU = 1;
+	 bool wrapU = true;
 
 		
-	 int wrapV = 1;
+	 bool wrapV = true;
 
 		
 	 int coordinatesIndex = 0;
@@ -61,8 +62,10 @@ public:
 		
 	 bool isRenderTarget = false;
 
+	 BabylonTexture(FbxFileTexture* texture);
 
-	 web::json::value toJson() const;
+
+	 web::json::value toJson();
 	
 };
 

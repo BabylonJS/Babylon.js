@@ -11,6 +11,9 @@ struct BabylonSubmesh{
 	int verticesCount;
 	int indexStart;
 	int indexCount;
+
+
+	web::json::value toJson();
 };
 
 class BabylonMesh :

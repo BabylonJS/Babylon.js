@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BabylonMaterial.h"
 #include <Windows.h>
-
+#include "NodeHelpers.h"
 
 web::json::value BabylonMaterial::toJson() const
 {
@@ -16,6 +16,36 @@ web::json::value BabylonMaterial::toJson() const
 	writeVector3(jobj, L"emissive", emissive);
 	jobj[L"specularPower"] = web::json::value::number(specularPower);
 	jobj[L"alpha"] = web::json::value::number(alpha);
+
+	if (diffuseTexture){
+		jobj[L"diffuseTexture"] = diffuseTexture->toJson();
+	}
+	if (ambientTexture){
+		jobj[L"ambientTexture"] = ambientTexture->toJson();
+
+	}
+	if (opacityTexture){
+		jobj[L"opacityTexture"] = opacityTexture->toJson();
+
+	}
+	if (reflectionTexture){
+		jobj[L"reflectionTexture"] = reflectionTexture->toJson();
+
+	}
+	if (emissiveTexture){
+		jobj[L"emissiveTexture"] = emissiveTexture->toJson();
+
+	}
+	if (specularTexture){
+		jobj[L"specularTexture"] = specularTexture->toJson();
+
+	}
+	if (bumpTexture){
+		jobj[L"bumpTexture"] = bumpTexture->toJson();
+
+	}
+
+
 	// todo : textures
 	return jobj;
 }
@@ -42,7 +72,7 @@ std::wstring utf8ToWstring(const std::string& src){
 FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
 	const char * pPropertyName,
 	const char * pFactorPropertyName,
-	std::wstring& pTextureName)
+	FbxFileTexture*& pTexture)
 {
 	FbxDouble3 lResult(0, 0, 0);
 	const FbxProperty lProperty = pMaterial->FindProperty(pPropertyName);
@@ -64,12 +94,8 @@ FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
 		const int lTextureCount = lProperty.GetSrcObjectCount<FbxFileTexture>();
 		if (lTextureCount)
 		{
-			const FbxFileTexture* lTexture = lProperty.GetSrcObject<FbxFileTexture>();
-			if (lTexture)
-			{
-				std::string utf8FilePath = lTexture->GetFileName();
-				pTextureName = utf8ToWstring(utf8FilePath);
-			}
+			FbxFileTexture* lTexture = lProperty.GetSrcObject<FbxFileTexture>();
+			pTexture = lTexture;
 		}
 	}
 
@@ -88,12 +114,12 @@ alpha(1){
 	std::string ansiName = mat->GetName();
 	name = std::wstring(ansiName.begin(), ansiName.end());
 	id = getMaterialId(mat);
-	std::wstring ambientTex;
-	std::wstring diffuseTex;
-	std::wstring specularTex;
-	std::wstring emissiveTex;
-	std::wstring reflectionTex;
-	std::wstring bumpTex;
+	FbxFileTexture* ambientTex = nullptr;
+	FbxFileTexture* diffuseTex = nullptr;
+	FbxFileTexture* specularTex = nullptr;
+	FbxFileTexture* emissiveTex = nullptr;
+	FbxFileTexture* reflectionTex = nullptr;
+	FbxFileTexture* bumpTex = nullptr;
 	ambient = GetMaterialProperty(mat, FbxSurfaceMaterial::sAmbient, FbxSurfaceMaterial::sAmbientFactor, ambientTex);
 	diffuse = GetMaterialProperty(mat, FbxSurfaceMaterial::sDiffuse, FbxSurfaceMaterial::sDiffuseFactor, diffuseTex);
 	specular = GetMaterialProperty(mat, FbxSurfaceMaterial::sSpecular, FbxSurfaceMaterial::sSpecularFactor, specularTex);
@@ -109,11 +135,10 @@ alpha(1){
 		const int lTextureCount = normalMapProp.GetSrcObjectCount<FbxFileTexture>();
 		if (lTextureCount)
 		{
-			const FbxFileTexture* lTexture = normalMapProp.GetSrcObject<FbxFileTexture>();
+			FbxFileTexture* lTexture = normalMapProp.GetSrcObject<FbxFileTexture>();
 			if (lTexture)
 			{
-				std::string utf8FilePath = lTexture->GetFileName();
-				bumpTex = utf8ToWstring(utf8FilePath);
+				bumpTex = lTexture;
 			}
 		}
 	}
@@ -123,39 +148,32 @@ alpha(1){
 			const int lTextureCount = bumpProp.GetSrcObjectCount<FbxFileTexture>();
 			if (lTextureCount)
 			{
-				const FbxFileTexture* lTexture = bumpProp.GetSrcObject<FbxFileTexture>();
+				FbxFileTexture* lTexture = bumpProp.GetSrcObject<FbxFileTexture>();
 				if (lTexture)
 				{
-					std::string utf8FilePath = lTexture->GetFileName();
-					bumpTex = utf8ToWstring(utf8FilePath);
+					bumpTex = lTexture;
 				}
 			}
 		}
 	}
 
-	if (ambientTex.size() > 0){
-		ambientTexture = std::make_shared<BabylonTexture>();
-		ambientTexture->name = ambientTex;
+	if (ambientTex){
+		ambientTexture = std::make_shared<BabylonTexture>(ambientTex);
 	}
-	if (diffuseTex.size() > 0){
-		diffuseTexture = std::make_shared<BabylonTexture>();
-		diffuseTexture->name = diffuseTex;
+	if (diffuseTex){
+		diffuseTexture = std::make_shared<BabylonTexture>(diffuseTex);
 	}
-	if (specularTex.size() > 0){
-		specularTexture = std::make_shared<BabylonTexture>();
-		specularTexture->name = specularTex;
+	if (specularTex){
+		specularTexture = std::make_shared<BabylonTexture>(specularTex);
 	}
-	if (emissiveTex.size() > 0){
-		emissiveTexture = std::make_shared<BabylonTexture>();
-		emissiveTexture->name = emissiveTex;
+	if (emissiveTex){
+		emissiveTexture = std::make_shared<BabylonTexture>(emissiveTex);
 	}
-	if (reflectionTex.size() > 0){
-		reflectionTexture = std::make_shared<BabylonTexture>();
-		reflectionTexture->name = reflectionTex;
+	if (reflectionTex){
+		reflectionTexture = std::make_shared<BabylonTexture>(reflectionTex);
 	}
-	if (bumpTex.size() > 0){
-		bumpTexture = std::make_shared<BabylonTexture>();
-		bumpTexture->name = bumpTex;
+	if (bumpTex){
+		bumpTexture = std::make_shared<BabylonTexture>(bumpTex);
 	}
 
 }
@@ -177,4 +195,94 @@ web::json::value BabylonMultiMaterial::toJson() const
 	}
 	jobj[L"materials"] = jarray;
 	return jobj;
+}
+
+
+web::json::value BabylonTexture::toJson(){
+	auto jobj = web::json::value::object();
+	jobj[L"name"] = web::json::value::string(name);
+	jobj[L"level"] = web::json::value::number(level);
+	jobj[L"hasAlpha"] = web::json::value::boolean(hasAlpha);
+	jobj[L"getAlphaFromRGB"] = web::json::value::boolean(getAlphaFromRGB);
+	jobj[L"coordinatesMode"] = web::json::value::number(coordinatesMode);
+	jobj[L"isCube"] = web::json::value::boolean(isCube);
+	jobj[L"uOffset"] = web::json::value::number(uOffset);
+	jobj[L"vOffset"] = web::json::value::number(vOffset);
+	jobj[L"uScale"] = web::json::value::number(uScale);
+	jobj[L"vScale"] = web::json::value::number(vScale);
+	jobj[L"uAng"] = web::json::value::number(uAng);
+	jobj[L"vAng"] = web::json::value::number(vAng);
+	jobj[L"wAng"] = web::json::value::number(wAng);
+	jobj[L"wrapU"] = web::json::value::boolean(wrapU);
+	jobj[L"wrapV"] = web::json::value::boolean(wrapV);
+	jobj[L"coordinatesIndex"] = web::json::value::number(coordinatesIndex);
+	jobj[L"isRenderTarget"] = web::json::value::boolean(isRenderTarget);
+	return jobj;
+}
+BabylonTexture::BabylonTexture(FbxFileTexture* texture){
+	fullPath = utf8ToWstring(texture->GetFileName());
+	auto indexOfLastBackslash = fullPath.find_last_of(L'\\');
+	name = std::wstring(fullPath.begin() + indexOfLastBackslash + 1, fullPath.end());
+	auto mappingType = texture->GetMappingType();
+	switch (mappingType)
+	{
+	case fbxsdk::FbxTexture::eNull:
+		break;
+	case fbxsdk::FbxTexture::ePlanar:
+		coordinatesMode = 2;
+		break;
+	case fbxsdk::FbxTexture::eSpherical:
+		coordinatesMode = 1;
+		break;
+	case fbxsdk::FbxTexture::eCylindrical:
+		break;
+	case fbxsdk::FbxTexture::eBox:
+		coordinatesMode = 5;
+		break;
+	case fbxsdk::FbxTexture::eFace:
+		break;
+	case fbxsdk::FbxTexture::eUV:
+		break;
+	case fbxsdk::FbxTexture::eEnvironment:
+		break;
+	default:
+		break;
+	}
+	auto alphaSource = texture->GetAlphaSource();
+
+	switch (alphaSource)
+	{
+	case fbxsdk::FbxTexture::eNone:
+		hasAlpha = false;
+		getAlphaFromRGB = false;
+		break;
+	case fbxsdk::FbxTexture::eRGBIntensity:
+		hasAlpha = true;
+		getAlphaFromRGB = true;
+		break;
+	case fbxsdk::FbxTexture::eBlack:
+		hasAlpha = true;
+		getAlphaFromRGB = false;
+		break;
+	default:
+		break;
+	}
+
+	auto translation = texture->Translation.Get();
+	auto rot = texture->Rotation.Get();
+	auto scale  = texture->Scaling.Get();
+	uOffset = translation[0];
+	vOffset = translation[1];
+	uScale = scale[0];
+	vScale = scale[1];
+	uAng = rot[0] * Euler2Rad;
+	vAng = rot[1] * Euler2Rad;
+	wAng = rot[2] * Euler2Rad;
+	auto uwrapMode = texture->GetWrapModeU();
+	auto vwrapMode = texture->GetWrapModeV();
+	wrapU = uwrapMode == FbxTexture::eRepeat;
+	wrapV = vwrapMode == FbxTexture::eRepeat;
+	
+	
+
 }
