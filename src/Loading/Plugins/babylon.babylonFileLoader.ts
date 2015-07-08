@@ -47,9 +47,9 @@
             texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
             texture._waitingRenderList = parsedTexture.renderList;
         } else {
-            if (parsedTexture.Base64String){
-                texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.Base64String, parsedTexture.name, scene);
-            }else{
+            if (parsedTexture.base64String) {
+                texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+            } else {
                 texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
             }
         }
@@ -179,10 +179,10 @@
             material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
         }
 
-        if (parsedMaterial.checkReadyOnlyOnce){
+        if (parsedMaterial.checkReadyOnlyOnce) {
             material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
         }
-        
+
         return material;
     };
 
@@ -448,7 +448,7 @@
         }
         
         // apply 3d rig, when found
-        if (parsedCamera.cameraRigMode){
+        if (parsedCamera.cameraRigMode) {
             var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
             camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
         }
