@@ -1,0 +1,82 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BabylonFbxNative", ".\BabylonFbxNative\BabylonFbxNative.vcxproj", "{6C145CFB-31AC-4B28-8B74-26680D26A6E3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FbxExporter", ".\FbxExporter\FbxExporter.vcxproj", "{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTex", ".\3rdParty\DirectXTex\DirectXTex_Desktop_2013.vcxproj", "{371B9FA9-4C90-4AC6-A123-ACED756D6C77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Profile|x64 = Profile|x64
+		Profile|x86 = Profile|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Debug|x64.ActiveCfg = Debug|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Debug|x64.Build.0 = Debug|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Debug|x86.ActiveCfg = Debug|Win32
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Debug|x86.Build.0 = Debug|Win32
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Profile|x64.ActiveCfg = Release|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Profile|x64.Build.0 = Release|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Profile|x86.ActiveCfg = Release|Win32
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Profile|x86.Build.0 = Release|Win32
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Release|x64.ActiveCfg = Release|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Release|x64.Build.0 = Release|x64
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Release|x86.ActiveCfg = Release|Win32
+		{6C145CFB-31AC-4B28-8B74-26680D26A6E3}.Release|x86.Build.0 = Release|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Debug|x64.ActiveCfg = Debug|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Debug|x64.Build.0 = Debug|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Debug|x86.ActiveCfg = Debug|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Debug|x86.Build.0 = Debug|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Profile|x64.ActiveCfg = Release|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Profile|x64.Build.0 = Release|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Profile|x86.ActiveCfg = Release|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Profile|x86.Build.0 = Release|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Release|x64.ActiveCfg = Release|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Release|x64.Build.0 = Release|x64
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Release|x86.ActiveCfg = Release|Win32
+		{DF8C65DD-1E5C-44BE-8FD2-457C72AA46FC}.Release|x86.Build.0 = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.ActiveCfg = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.Build.0 = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.ActiveCfg = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.Build.0 = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.ActiveCfg = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.Build.0 = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.ActiveCfg = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.Build.0 = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.ActiveCfg = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.Build.0 = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.ActiveCfg = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 3
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://deltakosh.visualstudio.com/defaultcollection
+		SccProjectUniqueName0 = ..\\BabylonFbxNative\\BabylonFbxNative.vcxproj
+		SccProjectName0 = ../BabylonFbxNative
+		SccAuxPath0 = https://deltakosh.visualstudio.com/defaultcollection
+		SccLocalPath0 = ..\\BabylonFbxNative
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = ..\\FbxExporter\\FbxExporter.vcxproj
+		SccProjectName1 = ../FbxExporter
+		SccAuxPath1 = https://deltakosh.visualstudio.com/defaultcollection
+		SccLocalPath1 = ..\\FbxExporter
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = ..\\3rdParty\\DirectXTex\\DirectXTex_Desktop_2013.vcxproj
+		SccProjectName2 = ../3rdParty/DirectXTex
+		SccAuxPath2 = https://deltakosh.visualstudio.com/defaultcollection
+		SccLocalPath2 = ..\\3rdParty\\DirectXTex
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
+EndGlobal
