@@ -119,6 +119,69 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node) {
 
 }
 
+TextureFormat getInputFormat(const std::wstring& fileName){
+	std::wstring ext = fileName.substr(fileName.find_last_of(L'.') + 1);
+	std::wstring extLower;
+	extLower.reserve(ext.size());
+	std::transform(ext.begin(), ext.end(), std::back_inserter(extLower), towlower);
+	if (extLower == L"png"){
+		return TextureFormat::Png;
+	}
+	else if (extLower == L"jpg"){
+		return TextureFormat::Jpg;
+	}
+	else if (extLower == L"tga"){
+		return TextureFormat::Tga;
+	}
+	else if (extLower == L"dds"){
+		return TextureFormat::Dds;
+	}
+	return TextureFormat::Unkwown;
+}
+
+void exportTexture(TextureFormat outputFormat, const std::shared_ptr<BabylonTexture>& tex, const std::wstring& wOutputPath){
+	if (!tex){
+		return;
+	}
+	auto fullPath = tex->fullPath;
+	for (;;){
+		auto indexOfSlash = fullPath.find(L'/');
+		if (indexOfSlash == fullPath.npos){
+			break;
+		}
+		fullPath[indexOfSlash] = L'\\';
+	}
+	auto inputFormat = getInputFormat(tex->fullPath);
+	auto outputPath = tex->name;
+	for (;;){
+		auto indexOfSlash = outputPath.find(L'/');
+		if (indexOfSlash == outputPath.npos){
+			break;
+		}
+		outputPath[indexOfSlash] = L'\\';
+	}
+	auto start = 0;
+	for (;;){
+		auto indexOfSlash = outputPath.find(L'\\', start);
+		if (indexOfSlash == outputPath.npos){
+			break;
+		}
+		auto pathToCreate = wOutputPath;
+		if (pathToCreate[pathToCreate.size() - 1] != L'\\'){
+			pathToCreate.push_back(L'\\');
+		}
+		pathToCreate.append(outputPath.begin(), outputPath.begin() + indexOfSlash);
+		CreateDirectory(pathToCreate.c_str(), nullptr);
+		start = indexOfSlash + 1;
+	}
+	auto fullOutputPath = wOutputPath;
+	if (fullOutputPath[fullOutputPath.size() - 1] != L'\\'){
+		fullOutputPath.push_back(L'\\');
+	}
+	fullOutputPath.append(outputPath);
+	CopyFile(fullPath.c_str(), fullOutputPath.c_str(), false);
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [jpg|png|dds]" << std::endl;
@@ -169,6 +232,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	BabylonScene babScene;
 	std::cout << "exporting empty nodes as empty meshes" << std::endl;
 	exploreMeshes(babScene, *root);
+
+	for (auto& mat : babScene.materials()){
+		exportTexture(texFormat, mat.ambientTexture, wOutputPath);
+		exportTexture(texFormat, mat.diffuseTexture, wOutputPath);
+		exportTexture(texFormat, mat.specularTexture, wOutputPath);
+		exportTexture(texFormat, mat.emissiveTexture, wOutputPath);
+		exportTexture(texFormat, mat.reflectionTexture, wOutputPath);
+		exportTexture(texFormat, mat.bumpTexture, wOutputPath);
+		
+	}
 	/*auto camera = sceneLoader.GetDefaultCamera();
 	auto spaceshipSettings = sceneLoader.getGlobalSettings();
 	FbxMaterialStore materials(wInputDir, wOutputPath, texFormat);
