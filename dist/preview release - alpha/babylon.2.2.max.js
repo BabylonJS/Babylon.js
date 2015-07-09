@@ -19692,6 +19692,18 @@ var BABYLON;
                 if (parsedMesh.hasUVs2) {
                     mesh._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
                 }
+                if (parsedMesh.hasUVs3) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
+                }
+                if (parsedMesh.hasUVs4) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
+                }
+                if (parsedMesh.hasUVs5) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
+                }
+                if (parsedMesh.hasUVs6) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
+                }
                 if (parsedMesh.hasColors) {
                     mesh._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
                 }
@@ -20049,6 +20061,22 @@ var BABYLON;
                     var uvs2Data = new Float32Array(parsedGeometry, binaryInfo.uvs2AttrDesc.offset, binaryInfo.uvs2AttrDesc.count);
                     mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs2Data, false);
                 }
+                if (binaryInfo.uvs3AttrDesc && binaryInfo.uvs3AttrDesc.count > 0) {
+                    var uvs3Data = new Float32Array(parsedGeometry, binaryInfo.uvs3AttrDesc.offset, binaryInfo.uvs3AttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, uvs3Data, false);
+                }
+                if (binaryInfo.uvs4AttrDesc && binaryInfo.uvs4AttrDesc.count > 0) {
+                    var uvs4Data = new Float32Array(parsedGeometry, binaryInfo.uvs4AttrDesc.offset, binaryInfo.uvs4AttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, uvs4Data, false);
+                }
+                if (binaryInfo.uvs5AttrDesc && binaryInfo.uvs5AttrDesc.count > 0) {
+                    var uvs5Data = new Float32Array(parsedGeometry, binaryInfo.uvs5AttrDesc.offset, binaryInfo.uvs5AttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, uvs5Data, false);
+                }
+                if (binaryInfo.uvs6AttrDesc && binaryInfo.uvs6AttrDesc.count > 0) {
+                    var uvs6Data = new Float32Array(parsedGeometry, binaryInfo.uvs6AttrDesc.offset, binaryInfo.uvs6AttrDesc.count);
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, uvs6Data, false);
+                }
                 if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                     var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
                     mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
@@ -20086,6 +20114,18 @@ var BABYLON;
                 }
                 if (parsedGeometry.uvs2) {
                     mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
+                }
+                if (parsedGeometry.uvs3) {
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, parsedGeometry.uvs3, false);
+                }
+                if (parsedGeometry.uvs4) {
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, parsedGeometry.uvs4, false);
+                }
+                if (parsedGeometry.uvs5) {
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, parsedGeometry.uvs5, false);
+                }
+                if (parsedGeometry.uvs6) {
+                    mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, parsedGeometry.uvs6, false);
                 }
                 if (parsedGeometry.colors) {
                     mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, checkColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), false);
@@ -25284,19 +25324,19 @@ var BABYLON;
                     this.uvs = data;
                     break;
                 case BABYLON.VertexBuffer.UV2Kind:
-                    this.uv2s = data;
+                    this.uvs2 = data;
                     break;
                 case BABYLON.VertexBuffer.UV3Kind:
-                    this.uv3s = data;
+                    this.uvs3 = data;
                     break;
                 case BABYLON.VertexBuffer.UV4Kind:
-                    this.uv4s = data;
+                    this.uvs4 = data;
                     break;
                 case BABYLON.VertexBuffer.UV5Kind:
-                    this.uv5s = data;
+                    this.uvs5 = data;
                     break;
                 case BABYLON.VertexBuffer.UV6Kind:
-                    this.uv6s = data;
+                    this.uvs6 = data;
                     break;
                 case BABYLON.VertexBuffer.ColorKind:
                     this.colors = data;
@@ -25331,20 +25371,20 @@ var BABYLON;
             if (this.uvs) {
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updatable);
             }
-            if (this.uv2s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updatable);
+            if (this.uvs2) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uvs2, updatable);
             }
-            if (this.uv3s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uv3s, updatable);
+            if (this.uvs3) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uvs3, updatable);
             }
-            if (this.uv4s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uv4s, updatable);
+            if (this.uvs4) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uvs4, updatable);
             }
-            if (this.uv5s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uv5s, updatable);
+            if (this.uvs5) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uvs5, updatable);
             }
-            if (this.uv6s) {
-                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uv6s, updatable);
+            if (this.uvs6) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uvs6, updatable);
             }
             if (this.colors) {
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updatable);
@@ -25369,20 +25409,20 @@ var BABYLON;
             if (this.uvs) {
                 meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
             }
-            if (this.uv2s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            if (this.uvs2) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV2Kind, this.uvs2, updateExtends, makeItUnique);
             }
-            if (this.uv3s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uv3s, updateExtends, makeItUnique);
+            if (this.uvs3) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV3Kind, this.uvs3, updateExtends, makeItUnique);
             }
-            if (this.uv4s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uv4s, updateExtends, makeItUnique);
+            if (this.uvs4) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV4Kind, this.uvs4, updateExtends, makeItUnique);
             }
-            if (this.uv5s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uv5s, updateExtends, makeItUnique);
+            if (this.uvs5) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV5Kind, this.uvs5, updateExtends, makeItUnique);
             }
-            if (this.uv6s) {
-                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uv6s, updateExtends, makeItUnique);
+            if (this.uvs6) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.UV6Kind, this.uvs6, updateExtends, makeItUnique);
             }
             if (this.colors) {
                 meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this.colors, updateExtends, makeItUnique);
@@ -25454,44 +25494,44 @@ var BABYLON;
                     this.uvs.push(other.uvs[index]);
                 }
             }
-            if (other.uv2s) {
-                if (!this.uv2s) {
-                    this.uv2s = [];
+            if (other.uvs2) {
+                if (!this.uvs2) {
+                    this.uvs2 = [];
                 }
-                for (index = 0; index < other.uv2s.length; index++) {
-                    this.uv2s.push(other.uv2s[index]);
-                }
-            }
-            if (other.uv3s) {
-                if (!this.uv3s) {
-                    this.uv3s = [];
-                }
-                for (index = 0; index < other.uv3s.length; index++) {
-                    this.uv3s.push(other.uv3s[index]);
+                for (index = 0; index < other.uvs2.length; index++) {
+                    this.uvs2.push(other.uvs2[index]);
                 }
             }
-            if (other.uv4s) {
-                if (!this.uv4s) {
-                    this.uv4s = [];
+            if (other.uvs3) {
+                if (!this.uvs3) {
+                    this.uvs3 = [];
                 }
-                for (index = 0; index < other.uv4s.length; index++) {
-                    this.uv4s.push(other.uv4s[index]);
-                }
-            }
-            if (other.uv5s) {
-                if (!this.uv5s) {
-                    this.uv5s = [];
-                }
-                for (index = 0; index < other.uv5s.length; index++) {
-                    this.uv5s.push(other.uv5s[index]);
+                for (index = 0; index < other.uvs3.length; index++) {
+                    this.uvs3.push(other.uvs3[index]);
                 }
             }
-            if (other.uv6s) {
-                if (!this.uv6s) {
-                    this.uv6s = [];
+            if (other.uvs4) {
+                if (!this.uvs4) {
+                    this.uvs4 = [];
                 }
-                for (index = 0; index < other.uv6s.length; index++) {
-                    this.uv6s.push(other.uv6s[index]);
+                for (index = 0; index < other.uvs4.length; index++) {
+                    this.uvs4.push(other.uvs4[index]);
+                }
+            }
+            if (other.uvs5) {
+                if (!this.uvs5) {
+                    this.uvs5 = [];
+                }
+                for (index = 0; index < other.uvs5.length; index++) {
+                    this.uvs5.push(other.uvs5[index]);
+                }
+            }
+            if (other.uvs6) {
+                if (!this.uvs6) {
+                    this.uvs6 = [];
+                }
+                for (index = 0; index < other.uvs6.length; index++) {
+                    this.uvs6.push(other.uvs6[index]);
                 }
             }
             if (other.matricesIndices) {
@@ -25538,19 +25578,19 @@ var BABYLON;
                 result.uvs = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UVKind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV2Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-                result.uv3s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV3Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-                result.uv4s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV4Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-                result.uv5s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV5Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-                result.uv6s = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.UV6Kind, copyWhenShared);
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                 result.colors = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.ColorKind, copyWhenShared);
@@ -30428,6 +30468,60 @@ var BABYLON;
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
 //# sourceMappingURL=babylon.debugLayer.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var RawTexture = (function (_super) {
+        __extends(RawTexture, _super);
+        function RawTexture(data, width, height, format, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            _super.call(this, null, scene, !generateMipMaps, invertY);
+            this.format = format;
+            this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode);
+            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+        }
+        RawTexture.prototype.update = function (data) {
+            this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
+        };
+        // Statics
+        RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_LUMINANCE, scene, generateMipMaps, invertY, samplingMode);
+        };
+        RawTexture.CreateLuminanceAlphaTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_LUMINANCE_ALPHA, scene, generateMipMaps, invertY, samplingMode);
+        };
+        RawTexture.CreateAlphaTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_ALPHA, scene, generateMipMaps, invertY, samplingMode);
+        };
+        RawTexture.CreateRGBTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_RGB, scene, generateMipMaps, invertY, samplingMode);
+        };
+        RawTexture.CreateRGBATexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
+            if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (invertY === void 0) { invertY = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode);
+        };
+        return RawTexture;
+    })(BABYLON.Texture);
+    BABYLON.RawTexture = RawTexture;
+})(BABYLON || (BABYLON = {}));
+
 
 var BABYLON;
 (function (BABYLON) {

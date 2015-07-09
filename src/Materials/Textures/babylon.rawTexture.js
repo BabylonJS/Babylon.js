@@ -21,7 +21,6 @@ var BABYLON;
         RawTexture.prototype.update = function (data) {
             this.getScene().getEngine().updateRawTexture(this._texture, data, this.format, this._invertY);
         };
-        ;
         // Statics
         RawTexture.CreateLuminanceTexture = function (data, width, height, scene, generateMipMaps, invertY, samplingMode) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }
@@ -57,4 +56,3 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.RawTexture = RawTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rawTexture.js.map
