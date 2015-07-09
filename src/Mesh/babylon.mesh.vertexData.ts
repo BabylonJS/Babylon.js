@@ -12,11 +12,11 @@
         public positions: number[];
         public normals: number[];
         public uvs: number[];
-        public uv2s: number[];
-        public uv3s: number[];
-        public uv4s: number[];
-        public uv5s: number[];
-        public uv6s: number[];
+        public uvs2: number[];
+        public uvs3: number[];
+        public uvs4: number[];
+        public uvs5: number[];
+        public uvs6: number[];
         public colors: number[];
         public matricesIndices: number[];
         public matricesWeights: number[];
@@ -34,19 +34,19 @@
                     this.uvs = data;
                     break;
                 case VertexBuffer.UV2Kind:
-                    this.uv2s = data;
+                    this.uvs2 = data;
                     break;
                 case VertexBuffer.UV3Kind:
-                    this.uv3s = data;
+                    this.uvs3 = data;
                     break;
                 case VertexBuffer.UV4Kind:
-                    this.uv4s = data;
+                    this.uvs4 = data;
                     break;
                 case VertexBuffer.UV5Kind:
-                    this.uv5s = data;
+                    this.uvs5 = data;
                     break;
                 case VertexBuffer.UV6Kind:
-                    this.uv6s = data;
+                    this.uvs6 = data;
                     break;
                 case VertexBuffer.ColorKind:
                     this.colors = data;
@@ -89,24 +89,24 @@
                 meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
             }
 
-            if (this.uv2s) {
-                meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uv2s, updatable);
+            if (this.uvs2) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
             }
 
-            if (this.uv3s) {
-                meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uv3s, updatable);
+            if (this.uvs3) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
             }
 
-            if (this.uv4s) {
-                meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uv4s, updatable);
+            if (this.uvs4) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
             }
 
-            if (this.uv5s) {
-                meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uv5s, updatable);
+            if (this.uvs5) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
             }
 
-            if (this.uv6s) {
-                meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uv6s, updatable);
+            if (this.uvs6) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
             }
 
             if (this.colors) {
@@ -139,24 +139,24 @@
                 meshOrGeometry.updateVerticesData(VertexBuffer.UVKind, this.uvs, updateExtends, makeItUnique);
             }
 
-            if (this.uv2s) {
-                meshOrGeometry.updateVerticesData(VertexBuffer.UV2Kind, this.uv2s, updateExtends, makeItUnique);
+            if (this.uvs2) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV2Kind, this.uvs2, updateExtends, makeItUnique);
             }
 
-            if (this.uv3s) {
-                meshOrGeometry.updateVerticesData(VertexBuffer.UV3Kind, this.uv3s, updateExtends, makeItUnique);
+            if (this.uvs3) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV3Kind, this.uvs3, updateExtends, makeItUnique);
             }
 
-            if (this.uv4s) {
-                meshOrGeometry.updateVerticesData(VertexBuffer.UV4Kind, this.uv4s, updateExtends, makeItUnique);
+            if (this.uvs4) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV4Kind, this.uvs4, updateExtends, makeItUnique);
             }
 
-            if (this.uv5s) {
-                meshOrGeometry.updateVerticesData(VertexBuffer.UV5Kind, this.uv5s, updateExtends, makeItUnique);
+            if (this.uvs5) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV5Kind, this.uvs5, updateExtends, makeItUnique);
             }
 
-            if (this.uv6s) {
-                meshOrGeometry.updateVerticesData(VertexBuffer.UV6Kind, this.uv6s, updateExtends, makeItUnique);
+            if (this.uvs6) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.UV6Kind, this.uvs6, updateExtends, makeItUnique);
             }
 
             if (this.colors) {
@@ -246,48 +246,48 @@
                 }
             }
 
-            if (other.uv2s) {
-                if (!this.uv2s) {
-                    this.uv2s = [];
+            if (other.uvs2) {
+                if (!this.uvs2) {
+                    this.uvs2 = [];
                 }
-                for (index = 0; index < other.uv2s.length; index++) {
-                    this.uv2s.push(other.uv2s[index]);
-                }
-            }
-
-            if (other.uv3s) {
-                if (!this.uv3s) {
-                    this.uv3s = [];
-                }
-                for (index = 0; index < other.uv3s.length; index++) {
-                    this.uv3s.push(other.uv3s[index]);
+                for (index = 0; index < other.uvs2.length; index++) {
+                    this.uvs2.push(other.uvs2[index]);
                 }
             }
 
-            if (other.uv4s) {
-                if (!this.uv4s) {
-                    this.uv4s = [];
+            if (other.uvs3) {
+                if (!this.uvs3) {
+                    this.uvs3 = [];
                 }
-                for (index = 0; index < other.uv4s.length; index++) {
-                    this.uv4s.push(other.uv4s[index]);
-                }
-            }
-
-            if (other.uv5s) {
-                if (!this.uv5s) {
-                    this.uv5s = [];
-                }
-                for (index = 0; index < other.uv5s.length; index++) {
-                    this.uv5s.push(other.uv5s[index]);
+                for (index = 0; index < other.uvs3.length; index++) {
+                    this.uvs3.push(other.uvs3[index]);
                 }
             }
 
-            if (other.uv6s) {
-                if (!this.uv6s) {
-                    this.uv6s = [];
+            if (other.uvs4) {
+                if (!this.uvs4) {
+                    this.uvs4 = [];
                 }
-                for (index = 0; index < other.uv6s.length; index++) {
-                    this.uv6s.push(other.uv6s[index]);
+                for (index = 0; index < other.uvs4.length; index++) {
+                    this.uvs4.push(other.uvs4[index]);
+                }
+            }
+
+            if (other.uvs5) {
+                if (!this.uvs5) {
+                    this.uvs5 = [];
+                }
+                for (index = 0; index < other.uvs5.length; index++) {
+                    this.uvs5.push(other.uvs5[index]);
+                }
+            }
+
+            if (other.uvs6) {
+                if (!this.uvs6) {
+                    this.uvs6 = [];
+                }
+                for (index = 0; index < other.uvs6.length; index++) {
+                    this.uvs6.push(other.uvs6[index]);
                 }
             }
 
@@ -344,23 +344,23 @@
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                result.uv2s = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared);
+                result.uvs2 = meshOrGeometry.getVerticesData(VertexBuffer.UV2Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-                result.uv3s = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared);
+                result.uvs3 = meshOrGeometry.getVerticesData(VertexBuffer.UV3Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-                result.uv4s = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared);
+                result.uvs4 = meshOrGeometry.getVerticesData(VertexBuffer.UV4Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-                result.uv5s = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared);
+                result.uvs5 = meshOrGeometry.getVerticesData(VertexBuffer.UV5Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-                result.uv6s = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared);
+                result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared);
             }
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
